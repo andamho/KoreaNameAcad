@@ -3,8 +3,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+
+interface PersonData {
+  name: string;
+  gender: string;
+  birthYear: string;
+  occupation: string;
+}
 
 interface ConsultationFormProps {
   type: "analysis" | "naming";
@@ -12,103 +21,311 @@ interface ConsultationFormProps {
 
 export function ConsultationForm({ type }: ConsultationFormProps) {
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    name: "",
-    birthDate: "",
-    phone: "",
-    email: "",
-    message: "",
-  });
+  const [numPeople, setNumPeople] = useState<number>(1);
+  const [peopleData, setPeopleData] = useState<PersonData[]>([
+    { name: "", gender: "", birthYear: "", occupation: "" }
+  ]);
+  const [phone, setPhone] = useState("");
+  const [hasNameChange, setHasNameChange] = useState<string>("no");
+  const [currentName, setCurrentName] = useState("");
+  const [previousName, setPreviousName] = useState("");
+  const [koreanName, setKoreanName] = useState("");
+  const [chineseName, setChineseName] = useState("");
+  const [changeYear, setChangeYear] = useState("");
+  const [reason, setReason] = useState("");
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [consultationTime, setConsultationTime] = useState("");
+
+  const handleNumPeopleChange = (num: number) => {
+    setNumPeople(num);
+    const newPeopleData = Array.from({ length: num }, (_, i) => 
+      peopleData[i] || { name: "", gender: "", birthYear: "", occupation: "" }
+    );
+    setPeopleData(newPeopleData);
+  };
+
+  const updatePersonData = (index: number, field: keyof PersonData, value: string) => {
+    const newPeopleData = [...peopleData];
+    newPeopleData[index] = { ...newPeopleData[index], [field]: value };
+    setPeopleData(newPeopleData);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    console.log('Form submitted:', {
+      numPeople,
+      peopleData,
+      phone,
+      hasNameChange,
+      currentName,
+      previousName,
+      koreanName,
+      chineseName,
+      changeYear,
+      reason,
+      paymentConfirmed,
+      consultationTime
+    });
     toast({
       title: "신청이 접수되었습니다",
       description: "곧 담당자가 연락드리겠습니다.",
     });
-    setFormData({ name: "", birthDate: "", phone: "", email: "", message: "" });
   };
-
-  const title = type === "analysis" ? "이름 분석 상담 신청" : "작명 상담 신청";
 
   return (
     <Card className="p-6 md:p-8 space-y-6">
       <div className="space-y-2">
-        <h3 className="text-2xl font-bold text-foreground">{title}</h3>
+        <h3 className="text-2xl font-bold text-foreground">이름분석 운명상담 신청</h3>
         <p className="text-muted-foreground tracking-wide">
-          {type === "analysis" 
-            ? "현재 이름에 대한 전문적인 분석을 받아보세요."
-            : "새로운 이름을 위한 상담을 시작하세요."}
+          현재 이름에 대한 전문적인 분석을 받아보세요.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="name" data-testid="label-name">
-            {type === "analysis" ? "분석할 이름" : "성함"}
-          </Label>
-          <Input
-            id="name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="홍길동"
-            required
-            data-testid="input-name"
-          />
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* 등본상 가족 인원 */}
+        <div className="space-y-3">
+          <Label className="text-base font-semibold">등본상 가족 인원</Label>
+          <div className="flex gap-2 flex-wrap">
+            {[1, 2, 3, 4, 5, 6].map((num) => (
+              <Button
+                key={num}
+                type="button"
+                variant={numPeople === num ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleNumPeopleChange(num)}
+                data-testid={`button-people-${num}`}
+                className="w-12 h-12"
+              >
+                {num}
+              </Button>
+            ))}
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="birthDate" data-testid="label-birthdate">생년월일</Label>
-          <Input
-            id="birthDate"
-            type="date"
-            value={formData.birthDate}
-            onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-            required
-            data-testid="input-birthdate"
-          />
-        </div>
+        {/* 각 인원별 정보 입력 */}
+        {peopleData.map((person, index) => (
+          <Card key={index} className="p-4 space-y-4">
+            <h4 className="font-semibold text-foreground">{index + 1}번째 분석 대상</h4>
+            
+            <div className="space-y-2">
+              <Label htmlFor={`name-${index}`}>분석할 이름</Label>
+              <Input
+                id={`name-${index}`}
+                value={person.name}
+                onChange={(e) => updatePersonData(index, "name", e.target.value)}
+                placeholder="홍길동"
+                required
+                data-testid={`input-name-${index}`}
+              />
+            </div>
 
+            <div className="space-y-2">
+              <Label htmlFor={`gender-${index}`}>성별</Label>
+              <RadioGroup
+                value={person.gender}
+                onValueChange={(value) => updatePersonData(index, "gender", value)}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="male" id={`male-${index}`} data-testid={`radio-male-${index}`} />
+                  <Label htmlFor={`male-${index}`} className="font-normal cursor-pointer">남성</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="female" id={`female-${index}`} data-testid={`radio-female-${index}`} />
+                  <Label htmlFor={`female-${index}`} className="font-normal cursor-pointer">여성</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`birthYear-${index}`}>태어난 연도</Label>
+              <Input
+                id={`birthYear-${index}`}
+                value={person.birthYear}
+                onChange={(e) => updatePersonData(index, "birthYear", e.target.value)}
+                placeholder="1990"
+                required
+                data-testid={`input-birthyear-${index}`}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`occupation-${index}`}>하는 일</Label>
+              <Input
+                id={`occupation-${index}`}
+                value={person.occupation}
+                onChange={(e) => updatePersonData(index, "occupation", e.target.value)}
+                placeholder="직업을 입력하세요"
+                required
+                data-testid={`input-occupation-${index}`}
+              />
+            </div>
+          </Card>
+        ))}
+
+        {/* 연락처 */}
         <div className="space-y-2">
-          <Label htmlFor="phone" data-testid="label-phone">연락처</Label>
+          <Label htmlFor="phone">연락처</Label>
           <Input
             id="phone"
             type="tel"
-            value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
             placeholder="010-1234-5678"
             required
             data-testid="input-phone"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email" data-testid="label-email">이메일</Label>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            placeholder="example@email.com"
-            required
-            data-testid="input-email"
-          />
+        {/* 개명여부 */}
+        <div className="space-y-3">
+          <Label className="text-base font-semibold">개명여부</Label>
+          <RadioGroup
+            value={hasNameChange}
+            onValueChange={setHasNameChange}
+            className="flex gap-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="yes" id="namechange-yes" data-testid="radio-namechange-yes" />
+              <Label htmlFor="namechange-yes" className="font-normal cursor-pointer">예</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="no" id="namechange-no" data-testid="radio-namechange-no" />
+              <Label htmlFor="namechange-no" className="font-normal cursor-pointer">아니오</Label>
+            </div>
+          </RadioGroup>
         </div>
 
+        {/* 개명 정보 (예일 경우) */}
+        {hasNameChange === "yes" && (
+          <Card className="p-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="currentName">현재이름</Label>
+              <Input
+                id="currentName"
+                value={currentName}
+                onChange={(e) => setCurrentName(e.target.value)}
+                placeholder="현재 사용하는 이름"
+                data-testid="input-current-name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="previousName">개명전 이름</Label>
+              <Input
+                id="previousName"
+                value={previousName}
+                onChange={(e) => setPreviousName(e.target.value)}
+                placeholder="개명 전 이름"
+                data-testid="input-previous-name"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="koreanName">한글이름</Label>
+                <Input
+                  id="koreanName"
+                  value={koreanName}
+                  onChange={(e) => setKoreanName(e.target.value)}
+                  placeholder="홍길동"
+                  data-testid="input-korean-name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="chineseName">한자이름</Label>
+                <Input
+                  id="chineseName"
+                  value={chineseName}
+                  onChange={(e) => setChineseName(e.target.value)}
+                  placeholder="洪吉洞"
+                  data-testid="input-chinese-name"
+                />
+              </div>
+            </div>
+
+            <div className="bg-muted p-3 rounded-md">
+              <p className="text-sm text-muted-foreground">
+                한자는 한자 자체로 넣어주세요.<br />
+                洪吉洞 이렇게요<br />
+                같은 뜻을 가진 한자들이 여럿인 경우들이 있어서 그렇습니다.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="changeYear">개명년도</Label>
+              <Input
+                id="changeYear"
+                value={changeYear}
+                onChange={(e) => setChangeYear(e.target.value)}
+                placeholder="2020"
+                data-testid="input-change-year"
+              />
+            </div>
+          </Card>
+        )}
+
+        {/* 상담받고 싶은 이유 */}
         <div className="space-y-2">
-          <Label htmlFor="message" data-testid="label-message">상담 내용</Label>
+          <Label htmlFor="reason">상담받고 싶은 이유</Label>
           <Textarea
-            id="message"
-            value={formData.message}
-            onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-            placeholder="상담받고 싶은 내용을 자유롭게 작성해주세요."
+            id="reason"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="상담받고 싶은 내용을 자유롭게 작성해주세요"
             rows={4}
-            data-testid="input-message"
+            data-testid="input-reason"
           />
         </div>
 
-        <Button type="submit" className="w-full" data-testid="button-submit">
+        {/* 입금완료 */}
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="payment"
+              checked={paymentConfirmed}
+              onCheckedChange={(checked) => setPaymentConfirmed(checked as boolean)}
+              data-testid="checkbox-payment"
+            />
+            <Label htmlFor="payment" className="font-semibold cursor-pointer">입금완료</Label>
+          </div>
+          <Card className="p-4 bg-muted">
+            <div className="space-y-2 text-sm">
+              <p className="font-semibold text-foreground">와츠유어네임 이름연구협회 전용 입금계좌</p>
+              <p className="text-foreground">농협 351 8205 8124 53</p>
+              <p className="text-muted-foreground">상담비: 명당 6만원 | 등본상 가족 전체 명수로 입금</p>
+            </div>
+          </Card>
+        </div>
+
+        {/* 상담시간 */}
+        <div className="space-y-3">
+          <Label className="text-base font-semibold">상담시간</Label>
+          <RadioGroup
+            value={consultationTime}
+            onValueChange={setConsultationTime}
+            className="flex gap-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="weekday" id="time-weekday" data-testid="radio-time-weekday" />
+              <Label htmlFor="time-weekday" className="font-normal cursor-pointer">주중 2시</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="weekend" id="time-weekend" data-testid="radio-time-weekend" />
+              <Label htmlFor="time-weekend" className="font-normal cursor-pointer">주말 2시</Label>
+            </div>
+          </RadioGroup>
+          <Card className="p-4 bg-muted">
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p className="font-semibold text-foreground">※ 평균 상담 소요시간</p>
+              <p>1인 - 1시간, 2인 - 1시간 30분,</p>
+              <p>3인 - 2시간, 4인이상 - 2시간 30분</p>
+            </div>
+          </Card>
+        </div>
+
+        <Button type="submit" className="w-full" size="lg" data-testid="button-submit">
           상담 신청하기
         </Button>
       </form>
