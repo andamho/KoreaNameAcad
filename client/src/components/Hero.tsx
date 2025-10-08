@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import heroImage from "@assets/image_1759926542842.png";
 
 export function Hero() {
   const scrollToSection = (id: string) => {
@@ -11,7 +11,14 @@ export function Hero() {
 
   return (
     <section id="home" className="relative py-20 md:py-32 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-background" />
+      <div className="absolute inset-0">
+        <img 
+          src={heroImage} 
+          alt="배경" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-background/70 dark:bg-background/80" />
+      </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
         <div className="text-center max-w-4xl mx-auto space-y-8">
