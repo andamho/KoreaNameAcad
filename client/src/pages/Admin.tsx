@@ -11,9 +11,11 @@ export default function Admin() {
     queryKey: ["/api/consultations"],
   });
 
-  const handleDownloadFile = (fileName: string, fileData: string) => {
+  const handleDownloadFile = (fileName: string, fileData: string, fileType: string) => {
+    // Reconstruct data URL from base64 and MIME type
+    const dataUrl = `data:${fileType};base64,${fileData}`;
     const link = document.createElement("a");
-    link.href = fileData;
+    link.href = dataUrl;
     link.download = fileName;
     document.body.appendChild(link);
     link.click();
@@ -136,7 +138,7 @@ export default function Admin() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleDownloadFile(consultation.fileName!, consultation.fileData!)}
+                            onClick={() => handleDownloadFile(consultation.fileName!, consultation.fileData!, consultation.fileType!)}
                             data-testid={`button-download-${consultation.id}`}
                           >
                             <Download className="w-4 h-4 mr-2" />
