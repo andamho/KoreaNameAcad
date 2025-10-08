@@ -136,21 +136,21 @@ export default function Home() {
               title="개명"
               description="운이 술술 풀리는 개명을 위한 상담과 절차를 안내해드립니다."
               buttonText="자세히 보기"
-              onClick={() => console.log("개명 페이지")}
+              onClick={() => window.open("https://blog.naver.com/whats_ur_name_777/221277653666", "_blank")}
             />
             <ServiceCard
               icon={Baby}
               title="신생아 작명"
               description="가족 모두가 행복해지는 아가이름을 위한 상담과 절차를 안내해드립니다."
               buttonText="자세히 보기"
-              onClick={() => console.log("신생아 작명 페이지")}
+              onClick={() => window.open("https://blog.naver.com/whats_ur_name_777/221277647598", "_blank")}
             />
             <ServiceCard
               icon={Building}
               title="상호작명"
               description="부자되는 상호작명을 위한 상담과 절차를 안내해드립니다."
               buttonText="자세히 보기"
-              onClick={() => console.log("상호작명 페이지")}
+              onClick={() => window.open("https://blog.naver.com/whats_ur_name_777/221274436174", "_blank")}
             />
           </div>
         </div>
