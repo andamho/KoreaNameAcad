@@ -106,11 +106,13 @@ export default function Home() {
               </div>
 
               <div className="mt-8">
-                <img 
-                  src={snsImage} 
-                  alt="SNS 인기 콘텐츠" 
-                  className="w-full max-w-2xl mx-auto rounded-lg shadow-lg"
-                />
+                <div className="w-full max-w-2xl mx-auto overflow-hidden rounded-lg shadow-lg" style={{ maxHeight: '280px' }}>
+                  <img 
+                    src={snsImage} 
+                    alt="SNS 인기 콘텐츠" 
+                    className="w-full"
+                  />
+                </div>
               </div>
             </div>
           </div>
