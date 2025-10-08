@@ -305,7 +305,7 @@ export default function DetailInfo() {
                     📆 <strong>상담요일:</strong> 수~일
                   </p>
                   <p>
-                    ⏰ <strong>상담시간:</strong> 오후 1시
+                    ⏰ <strong>상담시간:</strong> 오후 2시
                   </p>
                   <p className="text-sm text-muted-foreground">
                     (정성스런 상담을 위해<br />
