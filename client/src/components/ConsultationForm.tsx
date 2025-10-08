@@ -43,7 +43,7 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
   const [evaluationKoreanName, setEvaluationKoreanName] = useState("");
   const [evaluationChineseName, setEvaluationChineseName] = useState("");
   const [reason, setReason] = useState("");
-  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [depositorName, setDepositorName] = useState("");
   const [consultationTime, setConsultationTime] = useState("");
 
   const handleNumPeopleChange = (num: number) => {
@@ -84,7 +84,7 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
       numNameChanges,
       nameChangeData,
       reason,
-      paymentConfirmed,
+      depositorName,
       consultationTime
     });
     toast({
@@ -263,9 +263,11 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
 
             <div className="bg-muted p-3 rounded-md">
               <p className="text-sm text-muted-foreground">
-                한자는 한자 자체로 넣어주세요.<br />
-                洪吉洞 이렇게요<br />
-                같은 뜻을 가진 한자들이 여럿인 경우들이 있어서 그렇습니다.
+                넓을 홍 길할 길 동녘 동 ❌<br />
+                洪吉東 ⭕<br />
+                (한자 자체로 꼭 보내주세요.<br />
+                같은 뜻을 가진 한자가 많이 있는<br />
+                경우가 있어서 그렇습니다.)
               </p>
             </div>
           </Card>
@@ -347,9 +349,11 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
                 {index === 0 && (
                   <div className="bg-muted p-3 rounded-md">
                     <p className="text-sm text-muted-foreground">
-                      한자는 한자 자체로 넣어주세요.<br />
-                      洪吉洞 이렇게요<br />
-                      같은 뜻을 가진 한자들이 여럿인 경우들이 있어서 그렇습니다.
+                      넓을 홍 길할 길 동녘 동 ❌<br />
+                      洪吉東 ⭕<br />
+                      (한자 자체로 꼭 보내주세요.<br />
+                      같은 뜻을 가진 한자가 많이 있는<br />
+                      경우가 있어서 그렇습니다.)
                     </p>
                   </div>
                 )}
@@ -369,16 +373,18 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
           </div>
         )}
 
-        {/* 입금완료 */}
+        {/* 입금자명 */}
         <div className="space-y-3">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="payment"
-              checked={paymentConfirmed}
-              onCheckedChange={(checked) => setPaymentConfirmed(checked as boolean)}
-              data-testid="checkbox-payment"
+          <div className="space-y-2">
+            <Label htmlFor="depositor-name">입금자명</Label>
+            <Input
+              id="depositor-name"
+              value={depositorName}
+              onChange={(e) => setDepositorName(e.target.value)}
+              placeholder="입금하신 분의 성함을 입력하세요"
+              required
+              data-testid="input-depositor-name"
             />
-            <Label htmlFor="payment" className="font-semibold cursor-pointer">입금완료</Label>
           </div>
           <Card className="p-4 bg-muted">
             <div className="space-y-2 text-sm">
