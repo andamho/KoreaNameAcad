@@ -234,45 +234,6 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
           </RadioGroup>
         </div>
 
-        {/* 감명받을 이름 (이름감명일 경우) */}
-        {type === "naming" && (
-          <Card className="p-4 space-y-4">
-            <h4 className="font-semibold text-foreground">감명받을 이름</h4>
-            
-            <div className="space-y-2">
-              <Label htmlFor="evaluation-korean-name">한글이름</Label>
-              <Input
-                id="evaluation-korean-name"
-                value={evaluationKoreanName}
-                onChange={(e) => setEvaluationKoreanName(e.target.value)}
-                placeholder="홍길동"
-                data-testid="input-evaluation-korean-name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="evaluation-chinese-name">한자이름</Label>
-              <Input
-                id="evaluation-chinese-name"
-                value={evaluationChineseName}
-                onChange={(e) => setEvaluationChineseName(e.target.value)}
-                placeholder="洪吉洞"
-                data-testid="input-evaluation-chinese-name"
-              />
-            </div>
-
-            <div className="bg-muted p-3 rounded-md">
-              <p className="text-sm text-muted-foreground">
-                넓을 홍 길할 길 동녘 동 ❌<br />
-                洪吉東 ⭕<br />
-                (한자 자체로 꼭 보내주세요.<br />
-                같은 뜻을 가진 한자가 많이 있는<br />
-                경우가 있어서 그렇습니다.)
-              </p>
-            </div>
-          </Card>
-        )}
-
         {/* 개명인원 선택 (예일 경우) */}
         {hasNameChange === "yes" && (
           <div className="space-y-6">
@@ -371,6 +332,45 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
               </Card>
             ))}
           </div>
+        )}
+
+        {/* 감명받을 이름 (이름감명일 경우) */}
+        {type === "naming" && (
+          <Card className="p-4 space-y-4">
+            <h4 className="font-semibold text-foreground">감명받을 이름</h4>
+            
+            <div className="space-y-2">
+              <Label htmlFor="evaluation-korean-name">한글이름</Label>
+              <Input
+                id="evaluation-korean-name"
+                value={evaluationKoreanName}
+                onChange={(e) => setEvaluationKoreanName(e.target.value)}
+                placeholder="홍길동"
+                data-testid="input-evaluation-korean-name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="evaluation-chinese-name">한자이름</Label>
+              <Input
+                id="evaluation-chinese-name"
+                value={evaluationChineseName}
+                onChange={(e) => setEvaluationChineseName(e.target.value)}
+                placeholder="洪吉洞"
+                data-testid="input-evaluation-chinese-name"
+              />
+            </div>
+
+            <div className="bg-muted p-3 rounded-md">
+              <p className="text-sm text-muted-foreground">
+                넓을 홍 길할 길 동녘 동 ❌<br />
+                洪吉東 ⭕<br />
+                (한자 자체로 꼭 보내주세요.<br />
+                같은 뜻을 가진 한자가 많이 있는<br />
+                경우가 있어서 그렇습니다.)
+              </p>
+            </div>
+          </Card>
         )}
 
         {/* 입금자명 */}
