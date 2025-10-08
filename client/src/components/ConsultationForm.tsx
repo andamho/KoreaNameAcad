@@ -7,6 +7,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 interface PersonData {
   name: string;
@@ -74,23 +76,45 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
     setNameChangeData(newNameChangeData);
   };
 
+  const submitMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/consultations", data);
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "신청이 접수되었습니다",
+        description: "곧 담당자가 연락드리겠습니다.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "신청 실패",
+        description: "다시 시도해주세요.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', {
+    
+    const consultationData = {
+      type,
       numPeople,
       peopleData,
       phone,
       hasNameChange,
-      numNameChanges,
-      nameChangeData,
+      numNameChanges: hasNameChange === "yes" ? numNameChanges : undefined,
+      nameChangeData: hasNameChange === "yes" ? nameChangeData : undefined,
+      evaluationKoreanName: type === "naming" ? evaluationKoreanName : undefined,
+      evaluationChineseName: type === "naming" ? evaluationChineseName : undefined,
       reason,
       depositorName,
-      consultationTime
-    });
-    toast({
-      title: "신청이 접수되었습니다",
-      description: "곧 담당자가 연락드리겠습니다.",
-    });
+      consultationTime,
+    };
+
+    submitMutation.mutate(consultationData);
   };
 
   const formTitle = type === "naming" ? "이름감명" : "이름분석 운명상담 신청";
