@@ -7,6 +7,7 @@ import { StoryCard } from "@/components/StoryCard";
 import { Footer } from "@/components/Footer";
 import { Sparkles, PenLine, MessageCircle } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 
 export default function Home() {
+  const [, setLocation] = useLocation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
 
@@ -117,7 +119,7 @@ export default function Home() {
               title="이름분석 및 감명 상세 안내"
               description="이름분석과 이름감명에 대한 자세한 안내해드립니다."
               buttonText="자세히 보기"
-              onClick={() => console.log("상세 안내 페이지")}
+              onClick={() => setLocation("/detail-info")}
             />
             <ServiceCard
               icon={Sparkles}
