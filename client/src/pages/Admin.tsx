@@ -2,12 +2,23 @@ import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 import type { Consultation } from "@shared/schema";
 
 export default function Admin() {
   const { data: consultations, isLoading } = useQuery<Consultation[]>({
     queryKey: ["/api/consultations"],
   });
+
+  const handleDownloadFile = (fileName: string, fileData: string) => {
+    const link = document.createElement("a");
+    link.href = fileData;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   if (isLoading) {
     return (
@@ -111,6 +122,27 @@ export default function Admin() {
                         <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                           {consultation.reason}
                         </p>
+                      </div>
+                    )}
+
+                    {consultation.fileName && consultation.fileData && (
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-2">첨부 파일</h3>
+                        <div className="flex items-center gap-3 bg-muted/30 p-3 rounded">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-foreground">{consultation.fileName}</p>
+                            <p className="text-xs text-muted-foreground">{consultation.fileType}</p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDownloadFile(consultation.fileName!, consultation.fileData!)}
+                            data-testid={`button-download-${consultation.id}`}
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            다운로드
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
