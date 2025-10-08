@@ -6,7 +6,7 @@ import { useLocation } from "wouter";
 import image1 from "@assets/image_1759935489354.png";
 import image2 from "@assets/image_1759935501535.png";
 import image3 from "@assets/image_1759935535730.png";
-import image4 from "@assets/image_1759935607126.png";
+import image4 from "@assets/image_1759936303976.png";
 import image5 from "@assets/image_1759935876767.png";
 
 export default function DetailInfo() {
