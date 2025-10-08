@@ -6,7 +6,6 @@ import { useLocation } from "wouter";
 import image1 from "@assets/image_1759935489354.png";
 import image2 from "@assets/image_1759935501535.png";
 import image3 from "@assets/image_1759935535730.png";
-import image4 from "@assets/image_1759936303976.png";
 import image5 from "@assets/image_1759935876767.png";
 
 export default function DetailInfo() {
@@ -198,17 +197,10 @@ export default function DetailInfo() {
               </div>
             </Card>
 
-            {/* 같이보시면 좋은 글 - 네 번째 이미지와 링크 */}
+            {/* 같이보시면 좋은 글 - 링크 */}
             <Card className="p-6 md:p-8 space-y-6">
               <div className="space-y-4 text-center">
                 <h2 className="text-2xl font-bold text-foreground">📌✨📖 같이보시면 좋은 글</h2>
-                
-                <img 
-                  src={image4} 
-                  alt="같이보시면 좋은 글" 
-                  className="w-full rounded-lg"
-                  data-testid="img-blog-links"
-                />
 
                 <div className="space-y-3">
                   <a 
