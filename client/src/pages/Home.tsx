@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import snsImage from "@assets/image_1759966808837.png";
+import snsImage from "@assets/KakaoTalk_20251009_085023527_1759967444345.png";
 
 export default function Home() {
   const [, setLocation] = useLocation();
