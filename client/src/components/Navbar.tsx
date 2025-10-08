@@ -28,8 +28,7 @@ export function Navbar() {
               <img 
                 src={logoImage} 
                 alt="한국이름학교 로고" 
-                className="h-8 w-8"
-                style={{ mixBlendMode: 'multiply' }}
+                className="h-8 w-8 dark:invert"
               />
               <span className="text-xl font-bold text-foreground tracking-wide">
                 한국이름학교
