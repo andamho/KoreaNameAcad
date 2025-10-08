@@ -6,10 +6,11 @@ interface ServiceCardProps {
   icon: LucideIcon;
   title: string;
   description: string;
+  buttonText?: string;
   onClick: () => void;
 }
 
-export function ServiceCard({ icon: Icon, title, description, onClick }: ServiceCardProps) {
+export function ServiceCard({ icon: Icon, title, description, buttonText = "자세히 보기", onClick }: ServiceCardProps) {
   return (
     <Card className="p-6 space-y-4 hover-elevate transition-all duration-300">
       <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -29,7 +30,7 @@ export function ServiceCard({ icon: Icon, title, description, onClick }: Service
         data-testid={`button-service-${title}`}
         className="w-full justify-start px-0 text-primary hover:text-primary"
       >
-        자세히 보기 →
+        {buttonText} →
       </Button>
     </Card>
   );

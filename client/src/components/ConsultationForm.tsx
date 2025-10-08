@@ -33,6 +33,7 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
   const [peopleData, setPeopleData] = useState<PersonData[]>([
     { name: "", gender: "", birthYear: "", occupation: "" }
   ]);
+  const [registrationDocument, setRegistrationDocument] = useState<File | null>(null);
   const [phone, setPhone] = useState("");
   const [hasNameChange, setHasNameChange] = useState<string>("no");
   const [numNameChanges, setNumNameChanges] = useState<number>(1);
@@ -92,17 +93,10 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h3 className="text-2xl font-bold text-foreground">이름분석 운명상담 신청</h3>
-        <p className="text-muted-foreground tracking-wide">
-          현재 이름에 대한 전문적인 분석을 받아보세요.
-        </p>
-      </div>
-
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* 등본상 가족 인원 */}
         <div className="space-y-3">
-          <Label className="text-base font-semibold">등본상 가족 인원</Label>
+          <Label className="text-base font-semibold">등본상 가족 인원 <span className="text-sm font-normal text-muted-foreground">(해당 인원을 체크하세요)</span></Label>
           <div className="flex gap-2 flex-wrap">
             {[1, 2, 3, 4, 5, 6].map((num) => (
               <Button
@@ -180,6 +174,24 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
             </div>
           </Card>
         ))}
+
+        {/* 주민등본 사진 첨부 */}
+        <div className="space-y-2">
+          <Label htmlFor="registration-document">주민등본 사진</Label>
+          <Input
+            id="registration-document"
+            type="file"
+            accept="image/*"
+            onChange={(e) => setRegistrationDocument(e.target.files?.[0] || null)}
+            data-testid="input-registration-document"
+            className="cursor-pointer"
+          />
+          {registrationDocument && (
+            <p className="text-sm text-muted-foreground">
+              선택된 파일: {registrationDocument.name}
+            </p>
+          )}
+        </div>
 
         {/* 연락처 */}
         <div className="space-y-2">
@@ -319,7 +331,7 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
             id="reason"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="상담받고 싶은 내용을 자유롭게 작성해주세요"
+            placeholder="상담받고 싶은 이유를 자유롭게 작성해주세요"
             rows={4}
             data-testid="input-reason"
           />

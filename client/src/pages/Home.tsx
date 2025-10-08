@@ -97,24 +97,48 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <ServiceCard
               icon={Sparkles}
-              title="이름 분석"
-              description="현재 이름에 담긴 의미와 운세를 전문적으로 분석해드립니다."
+              title="이름분석"
+              description="현재 이름에 들어있는 16가지운을 전문적으로 분석해드립니다."
+              buttonText="신청하기"
               onClick={() => openDialog("analysis")}
             />
             <ServiceCard
               icon={PenLine}
-              title="작명 서비스"
-              description="오행과 음양의 조화를 고려한 아름답고 의미 있는 이름을 지어드립니다."
+              title="이름감명"
+              description="개명을 위해 다른 작명소에서 받은 새이름에 대한 감명을 해드립니다."
+              buttonText="신청하기"
               onClick={() => openDialog("naming")}
             />
             <ServiceCard
               icon={MessageCircle}
-              title="개명 상담"
-              description="새로운 시작을 위한 개명 상담과 절차를 안내해드립니다."
-              onClick={() => openDialog("analysis")}
+              title="이름분석 및 감명 상세 안내"
+              description="이름분석과 이름감명에 대한 자세한 안내해드립니다."
+              buttonText="자세히 보기"
+              onClick={() => console.log("상세 안내 페이지")}
+            />
+            <ServiceCard
+              icon={Sparkles}
+              title="개명상담"
+              description="운이 술술 풀리는 개명을 위한 상담과 절차를 안내해드립니다."
+              buttonText="자세히 보기"
+              onClick={() => console.log("개명상담 페이지")}
+            />
+            <ServiceCard
+              icon={PenLine}
+              title="신생아 작명 상담"
+              description="가족 모두가 행복해지는 아가이름을 위한 상담과 절차를 안내해드립니다."
+              buttonText="자세히 보기"
+              onClick={() => console.log("신생아 작명 페이지")}
+            />
+            <ServiceCard
+              icon={MessageCircle}
+              title="상호작명 상담"
+              description="부자되는 상호작명을 위한 상담과 절차를 안내해드립니다."
+              buttonText="자세히 보기"
+              onClick={() => console.log("상호작명 페이지")}
             />
           </div>
         </div>
