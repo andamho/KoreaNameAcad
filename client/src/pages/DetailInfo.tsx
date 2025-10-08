@@ -47,7 +47,7 @@ export default function DetailInfo() {
 
             {/* 이름분석 섹션 */}
             <Card className="p-6 md:p-8 space-y-6">
-              <div className="space-y-4">
+              <div className="space-y-4 text-center">
                 <h2 className="text-2xl font-bold text-foreground">✔️ 이름분석은</h2>
                 <div className="text-foreground space-y-3 leading-relaxed">
                   <p className="font-semibold">
@@ -86,7 +86,7 @@ export default function DetailInfo() {
 
             {/* 이름감명 섹션 */}
             <Card className="p-6 md:p-8 space-y-6">
-              <div className="space-y-4">
+              <div className="space-y-4 text-center">
                 <h2 className="text-2xl font-bold text-foreground">✔️ 이름감명은</h2>
                 <div className="text-foreground space-y-3 leading-relaxed">
                   <p>
@@ -107,7 +107,7 @@ export default function DetailInfo() {
 
             {/* 가족 상담 원칙 */}
             <Card className="p-6 md:p-8 space-y-6">
-              <div className="space-y-4">
+              <div className="space-y-4 text-center">
                 <h2 className="text-2xl font-bold text-foreground">👨‍👩‍👧‍👦 등본상 가족 상담 원칙</h2>
                 <div className="text-foreground space-y-4 leading-relaxed">
                   <p>
@@ -200,7 +200,7 @@ export default function DetailInfo() {
 
             {/* 같이보시면 좋은 글 - 네 번째 이미지와 링크 */}
             <Card className="p-6 md:p-8 space-y-6">
-              <div className="space-y-4">
+              <div className="space-y-4 text-center">
                 <h2 className="text-2xl font-bold text-foreground">📌✨📖 같이보시면 좋은 글</h2>
                 
                 <img 
@@ -246,7 +246,7 @@ export default function DetailInfo() {
 
             {/* 신청 방법 */}
             <Card className="p-6 md:p-8 space-y-6">
-              <div className="space-y-4">
+              <div className="space-y-4 text-center">
                 <h2 className="text-2xl font-bold text-foreground">📋 신청 방법</h2>
                 <div className="space-y-4">
                   <p className="text-foreground">아래 링크 통해 신청서 작성</p>
@@ -280,7 +280,7 @@ export default function DetailInfo() {
 
             {/* 비용 및 시간 - 다섯 번째 이미지 */}
             <Card className="p-6 md:p-8 space-y-6">
-              <div className="space-y-4">
+              <div className="space-y-4 text-center">
                 <h2 className="text-2xl font-bold text-foreground">💰 비용 및 시간</h2>
                 
                 <img 
@@ -306,7 +306,7 @@ export default function DetailInfo() {
 
             {/* 상담 일정 & 진행 방식 */}
             <Card className="p-6 md:p-8 space-y-6">
-              <div className="space-y-4">
+              <div className="space-y-4 text-center">
                 <h2 className="text-2xl font-bold text-foreground">📞 상담 일정 & 진행 방식</h2>
                 <div className="text-foreground space-y-3 leading-relaxed">
                   <p>
@@ -333,7 +333,7 @@ export default function DetailInfo() {
 
             {/* 작명 & 개명 비용 */}
             <Card className="p-6 md:p-8 space-y-6">
-              <div className="space-y-4">
+              <div className="space-y-4 text-center">
                 <h2 className="text-2xl font-bold text-foreground">🏷️ 작명 & 개명 비용</h2>
                 <div className="text-foreground space-y-3 leading-relaxed">
                   <p>
