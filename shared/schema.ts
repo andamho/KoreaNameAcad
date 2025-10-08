@@ -43,6 +43,9 @@ export const consultationSchema = z.object({
   reason: z.string(),
   depositorName: z.string(),
   consultationTime: z.string(),
+  fileName: z.string().optional(),
+  fileData: z.string().optional(),
+  fileType: z.string().optional(),
   createdAt: z.string(),
 });
 
