@@ -22,6 +22,12 @@ export default function Admin() {
     document.body.removeChild(link);
   };
 
+  const formatConsultationTime = (time: string) => {
+    if (time === "weekday") return "주중 2시";
+    if (time === "weekend") return "주말 2시";
+    return time;
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -72,7 +78,7 @@ export default function Admin() {
                         <div className="space-y-1 text-sm">
                           <p><span className="text-muted-foreground">전화번호:</span> {consultation.phone}</p>
                           <p><span className="text-muted-foreground">입금자명:</span> {consultation.depositorName}</p>
-                          <p><span className="text-muted-foreground">상담시간:</span> {consultation.consultationTime}</p>
+                          <p><span className="text-muted-foreground">상담시간:</span> {formatConsultationTime(consultation.consultationTime)}</p>
                           <p><span className="text-muted-foreground">가족 인원:</span> {consultation.numPeople}명</p>
                         </div>
                       </div>
