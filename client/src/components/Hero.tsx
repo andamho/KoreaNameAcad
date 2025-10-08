@@ -15,21 +15,22 @@ export function Hero() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
         <div className="text-center max-w-4xl mx-auto space-y-8">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
-            <Sparkles className="h-4 w-4" />
-            <span>전문적인 이름 분석과 작명 서비스</span>
-          </div>
-          
           <h1 className="text-4xl md:text-6xl font-bold text-foreground tracking-tight">
-            한국이름학교에서
+            고달픈 인생,
             <br />
-            <span className="text-primary">새로운 이름</span>을 찾아보세요
+            <span className="text-primary">이름 하나로</span> 이유와 해결책을!
           </h1>
           
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto tracking-wide">
-            당신의 이름에 담긴 의미를 발견하고, 전문가의 깊이 있는 분석으로 
-            새로운 시작을 준비하세요. 수십 년의 경험과 전통적인 작명 원리를 바탕으로 합니다.
+          <p className="text-2xl md:text-3xl text-foreground font-semibold tracking-wide">
+            한국이름학교에서 새로운 이름을 찾으세요
           </p>
+          
+          <div className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto tracking-wide leading-relaxed">
+            <p>한글·한자이름만으로 운명상담 <span className="font-semibold">[정확도 80% 이상]</span></p>
+            <p className="mt-2">한국이름학교를 통해</p>
+            <p>운이 술술 풀리는 새 이름으로</p>
+            <p>인생역전하세요.</p>
+          </div>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
