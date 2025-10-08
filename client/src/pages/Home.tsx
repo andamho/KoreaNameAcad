@@ -202,7 +202,10 @@ export default function Home() {
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-          <ConsultationForm type={dialogType} />
+          <ConsultationForm 
+            type={dialogType}
+            onSuccess={() => setDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </div>

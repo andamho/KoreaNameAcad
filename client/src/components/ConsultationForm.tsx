@@ -27,9 +27,10 @@ interface NameChangeData {
 
 interface ConsultationFormProps {
   type: "analysis" | "naming";
+  onSuccess?: () => void;
 }
 
-export function ConsultationForm({ type }: ConsultationFormProps) {
+export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const { toast } = useToast();
   const [numPeople, setNumPeople] = useState<number>(1);
   const [peopleData, setPeopleData] = useState<PersonData[]>([
@@ -86,11 +87,15 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
         title: "신청이 접수되었습니다",
         description: "곧 담당자가 연락드리겠습니다.",
       });
+      if (onSuccess) {
+        setTimeout(() => onSuccess(), 500);
+      }
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Submission error:", error);
       toast({
         title: "신청 실패",
-        description: "다시 시도해주세요.",
+        description: error?.message || "다시 시도해주세요.",
         variant: "destructive",
       });
     },
