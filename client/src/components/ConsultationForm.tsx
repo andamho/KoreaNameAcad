@@ -443,6 +443,19 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           </Card>
         )}
 
+        {/* 상담받고자 하는 이유 */}
+        <div className="space-y-2">
+          <Label htmlFor="reason">상담받고자 하는 이유</Label>
+          <Textarea
+            id="reason"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="상담을 받고자 하는 이유를 간단히 적어주세요"
+            className="min-h-[100px]"
+            data-testid="input-reason"
+          />
+        </div>
+
         {/* 입금자명 */}
         <div className="space-y-3">
           <div className="space-y-2">
