@@ -11,6 +11,7 @@ export function Navbar() {
 
   const goToHome = () => {
     setLocation("/");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setMobileMenuOpen(false);
   };
 
