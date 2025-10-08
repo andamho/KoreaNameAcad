@@ -204,7 +204,7 @@ export default function DetailInfo() {
 
                 <div className="space-y-3">
                   <a 
-                    href="https://m.blog.naver.com" 
+                    href="https://m.blog.naver.com/whats_ur_name_777/223450662435" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="block p-4 bg-muted rounded-lg hover-elevate active-elevate-2"
@@ -219,7 +219,7 @@ export default function DetailInfo() {
                   </a>
 
                   <a 
-                    href="https://m.blog.naver.com" 
+                    href="https://m.blog.naver.com/whats_ur_name_777/223924993144" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="block p-4 bg-muted rounded-lg hover-elevate active-elevate-2"
@@ -335,8 +335,16 @@ export default function DetailInfo() {
                     브랜드/상호/회사명 등은<br />
                     사업 규모에 따라 차등 적용
                   </p>
-                  <p className="text-muted-foreground text-sm mt-4">
-                    👉 작명비용 자세히 보기
+                  <p className="mt-4">
+                    <a 
+                      href="https://blog.naver.com/whats_ur_name_777/221266616435"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                      data-testid="link-pricing-detail"
+                    >
+                      👉 작명비용 자세히 보기
+                    </a>
                   </p>
                   <p className="mt-4">
                     ⚖️ 모든 작명비용은<br />
