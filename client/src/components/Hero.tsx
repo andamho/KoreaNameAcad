@@ -48,11 +48,11 @@ export function Hero() {
             <Button
               variant="outline"
               size="lg"
-              onClick={() => scrollToSection('stories')}
-              data-testid="button-stories"
+              onClick={() => window.open('https://m.blog.naver.com/whats_ur_name_777?categoryNo=11&proxyReferer=https%3A%2F%2Flinkon.id%2F', '_blank')}
+              data-testid="button-reviews"
               className="min-w-[200px] bg-background/50 backdrop-blur-sm"
             >
-              이름 이야기 보기
+              상담 및 개명 후기
             </Button>
           </div>
         </div>
