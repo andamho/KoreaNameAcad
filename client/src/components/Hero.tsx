@@ -24,7 +24,9 @@ export function Hero() {
         <div className="text-center max-w-4xl mx-auto space-y-8">
           <div className="space-y-4">
             <h1 className="text-4xl md:text-6xl font-bold text-foreground tracking-tight">
-              고달픈 인생, <span className="text-primary">이름 하나로</span> 이유를 찾고
+              고달픈 인생
+              <br />
+              <span className="text-primary">이름 하나로</span> 이유를 찾고
               <br />
               운이 술술 풀리는 새 이름으로, 인생역전하세요.
             </h1>
