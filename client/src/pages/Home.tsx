@@ -5,7 +5,7 @@ import { ConsultationForm } from "@/components/ConsultationForm";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import { StoryCard } from "@/components/StoryCard";
 import { Footer } from "@/components/Footer";
-import { Sparkles, PenLine, MessageCircle } from "lucide-react";
+import { Search, Star, MessageCircle, Flower, Baby, Building } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import {
@@ -111,14 +111,14 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <ServiceCard
-              icon={Sparkles}
+              icon={Search}
               title="이름분석"
               description="현재 이름에 들어있는 16가지운을 전문적으로 분석해드립니다."
               buttonText="신청하기"
               onClick={() => openDialog("analysis")}
             />
             <ServiceCard
-              icon={PenLine}
+              icon={Star}
               title="이름감명"
               description="개명을 위해 다른 작명소에서 받은 새이름에 대한 감명을 해드립니다."
               buttonText="신청하기"
@@ -132,22 +132,22 @@ export default function Home() {
               onClick={() => setLocation("/detail-info")}
             />
             <ServiceCard
-              icon={Sparkles}
-              title="개명상담"
+              icon={Flower}
+              title="개명"
               description="운이 술술 풀리는 개명을 위한 상담과 절차를 안내해드립니다."
               buttonText="자세히 보기"
-              onClick={() => console.log("개명상담 페이지")}
+              onClick={() => console.log("개명 페이지")}
             />
             <ServiceCard
-              icon={PenLine}
-              title="신생아 작명 상담"
+              icon={Baby}
+              title="신생아 작명"
               description="가족 모두가 행복해지는 아가이름을 위한 상담과 절차를 안내해드립니다."
               buttonText="자세히 보기"
               onClick={() => console.log("신생아 작명 페이지")}
             />
             <ServiceCard
-              icon={MessageCircle}
-              title="상호작명 상담"
+              icon={Building}
+              title="상호작명"
               description="부자되는 상호작명을 위한 상담과 절차를 안내해드립니다."
               buttonText="자세히 보기"
               onClick={() => console.log("상호작명 페이지")}
