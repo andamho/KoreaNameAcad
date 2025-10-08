@@ -39,7 +39,7 @@ export function Navbar() {
                 className="h-8 w-8 dark:invert"
               />
               <span className="text-xl font-bold text-foreground tracking-wide">
-                한국이름학교
+                한국이름학교 | 와츠유어네임 이름연구협회
               </span>
             </button>
           </div>
@@ -50,7 +50,7 @@ export function Navbar() {
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               data-testid="link-about"
             >
-              학교 소개
+              협회소개
             </button>
             <button
               onClick={() => scrollToSection('services')}
@@ -96,7 +96,7 @@ export function Navbar() {
               className="block w-full text-left px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
               data-testid="mobile-link-about"
             >
-              학교 소개
+              협회소개
             </button>
             <button
               onClick={() => scrollToSection('services')}
