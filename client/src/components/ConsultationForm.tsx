@@ -369,19 +369,6 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
           </div>
         )}
 
-        {/* 상담받고 싶은 이유 */}
-        <div className="space-y-2">
-          <Label htmlFor="reason">상담받고 싶은 이유</Label>
-          <Textarea
-            id="reason"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="상담받고 싶은 이유를 자유롭게 작성해주세요"
-            rows={4}
-            data-testid="input-reason"
-          />
-        </div>
-
         {/* 입금완료 */}
         <div className="space-y-3">
           <div className="flex items-center space-x-2">
