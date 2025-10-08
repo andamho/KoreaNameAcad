@@ -101,8 +101,35 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    let fileData: { fileName?: string; fileData?: string; fileType?: string } = {};
+    
+    if (registrationDocument) {
+      try {
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(registrationDocument);
+        });
+        
+        fileData = {
+          fileName: registrationDocument.name,
+          fileData: base64,
+          fileType: registrationDocument.type,
+        };
+      } catch (error) {
+        console.error("File reading error:", error);
+        toast({
+          title: "파일 업로드 실패",
+          description: "파일을 읽을 수 없습니다. 다시 시도해주세요.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
     
     const consultationData = {
       type,
@@ -117,6 +144,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
       reason,
       depositorName,
       consultationTime,
+      ...fileData,
     };
 
     submitMutation.mutate(consultationData);
