@@ -5,38 +5,37 @@ import { insertConsultationSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Consultation routes
-  app.post("/api/consultations", async (req, res) => {
+  app.post("/api/consultations", async (req, res, next) => {
     try {
       const validatedData = insertConsultationSchema.parse(req.body);
       const consultation = await storage.createConsultation(validatedData);
-      res.json(consultation);
+      return res.json(consultation);
     } catch (error) {
       console.error("Error creating consultation:", error);
-      res.status(400).json({ error: "Invalid consultation data" });
+      return res.status(400).json({ error: "Invalid consultation data" });
     }
   });
 
-  app.get("/api/consultations", async (req, res) => {
+  app.get("/api/consultations", async (req, res, next) => {
     try {
       const consultations = await storage.getAllConsultations();
-      res.json(consultations);
+      return res.json(consultations);
     } catch (error) {
       console.error("Error fetching consultations:", error);
-      res.status(500).json({ error: "Failed to fetch consultations" });
+      return res.status(500).json({ error: "Failed to fetch consultations" });
     }
   });
 
-  app.get("/api/consultations/:id", async (req, res) => {
+  app.get("/api/consultations/:id", async (req, res, next) => {
     try {
       const consultation = await storage.getConsultation(req.params.id);
       if (!consultation) {
-        res.status(404).json({ error: "Consultation not found" });
-        return;
+        return res.status(404).json({ error: "Consultation not found" });
       }
-      res.json(consultation);
+      return res.json(consultation);
     } catch (error) {
       console.error("Error fetching consultation:", error);
-      res.status(500).json({ error: "Failed to fetch consultation" });
+      return res.status(500).json({ error: "Failed to fetch consultation" });
     }
   });
 
