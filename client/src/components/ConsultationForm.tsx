@@ -177,7 +177,7 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
 
         {/* 주민등본 사진 첨부 */}
         <div className="space-y-2">
-          <Label htmlFor="registration-document">주민등본 사진</Label>
+          <Label htmlFor="registration-document">주민등본 사진 <span className="text-sm font-normal text-muted-foreground">(정확한 한자 확인을 위해 반드시 첨부)</span></Label>
           <Input
             id="registration-document"
             type="file"
