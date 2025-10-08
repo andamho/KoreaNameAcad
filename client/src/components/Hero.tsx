@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import heroImage from "@assets/image_1759926542842.png";
+import heroImage from "@assets/ChatGPT Image 2025년 10월 8일 오후 09_34_23_1759926875782.png";
 
 export function Hero() {
   const scrollToSection = (id: string) => {
@@ -28,9 +28,9 @@ export function Hero() {
             <span className="text-primary">이름 하나로</span> 이유와 해결책을!
           </h1>
           
-          <div className="text-2xl md:text-3xl text-foreground font-semibold tracking-wide max-w-2xl mx-auto leading-relaxed">
+          <div className="text-2xl md:text-3xl text-foreground font-semibold tracking-wide max-w-2xl mx-auto space-y-2">
             <p>한글·한자이름만으로 운명상담 [정확도 80% 이상]</p>
-            <p className="mt-2">한국이름학교를 통해</p>
+            <p>한국이름학교를 통해</p>
             <p>운이 술술 풀리는 새 이름으로, 인생역전하세요.</p>
           </div>
           
