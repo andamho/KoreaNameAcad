@@ -450,7 +450,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             id="reason"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="상담을 받고자 하는 이유를 간단히 적어주세요"
+            placeholder="상담을 받고자 하는 이유를 적어주세요"
             className="min-h-[100px]"
             data-testid="input-reason"
           />
