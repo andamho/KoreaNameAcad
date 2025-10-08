@@ -273,8 +273,8 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
           </Card>
         )}
 
-        {/* 개명인원 선택 (이름분석이고 예일 경우) */}
-        {type === "analysis" && hasNameChange === "yes" && (
+        {/* 개명인원 선택 (예일 경우) */}
+        {hasNameChange === "yes" && (
           <div className="space-y-6">
             <div className="space-y-3">
               <Label className="text-base font-semibold">개명인원</Label>
