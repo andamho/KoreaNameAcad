@@ -2,7 +2,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState } from "react";
-import logoImage from "@assets/KakaoTalk_20251008_210513014_1759925144614.png";
+import logoImage from "@assets/KakaoTalk_20251008_214156536_1759927358373.png";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -29,6 +29,7 @@ export function Navbar() {
                 src={logoImage} 
                 alt="한국이름학교 로고" 
                 className="h-8 w-8"
+                style={{ mixBlendMode: 'multiply' }}
               />
               <span className="text-xl font-bold text-foreground tracking-wide">
                 한국이름학교
