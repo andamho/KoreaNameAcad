@@ -165,7 +165,7 @@ export default function Home() {
       <Footer />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {dialogType === "analysis" ? "이름 분석 상담" : "작명 상담"}

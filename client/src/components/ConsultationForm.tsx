@@ -15,6 +15,14 @@ interface PersonData {
   occupation: string;
 }
 
+interface NameChangeData {
+  currentName: string;
+  previousName: string;
+  koreanName: string;
+  chineseName: string;
+  changeYear: string;
+}
+
 interface ConsultationFormProps {
   type: "analysis" | "naming";
 }
@@ -27,11 +35,10 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
   ]);
   const [phone, setPhone] = useState("");
   const [hasNameChange, setHasNameChange] = useState<string>("no");
-  const [currentName, setCurrentName] = useState("");
-  const [previousName, setPreviousName] = useState("");
-  const [koreanName, setKoreanName] = useState("");
-  const [chineseName, setChineseName] = useState("");
-  const [changeYear, setChangeYear] = useState("");
+  const [numNameChanges, setNumNameChanges] = useState<number>(1);
+  const [nameChangeData, setNameChangeData] = useState<NameChangeData[]>([
+    { currentName: "", previousName: "", koreanName: "", chineseName: "", changeYear: "" }
+  ]);
   const [reason, setReason] = useState("");
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [consultationTime, setConsultationTime] = useState("");
@@ -44,10 +51,24 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
     setPeopleData(newPeopleData);
   };
 
+  const handleNumNameChangesChange = (num: number) => {
+    setNumNameChanges(num);
+    const newNameChangeData = Array.from({ length: num }, (_, i) => 
+      nameChangeData[i] || { currentName: "", previousName: "", koreanName: "", chineseName: "", changeYear: "" }
+    );
+    setNameChangeData(newNameChangeData);
+  };
+
   const updatePersonData = (index: number, field: keyof PersonData, value: string) => {
     const newPeopleData = [...peopleData];
     newPeopleData[index] = { ...newPeopleData[index], [field]: value };
     setPeopleData(newPeopleData);
+  };
+
+  const updateNameChangeData = (index: number, field: keyof NameChangeData, value: string) => {
+    const newNameChangeData = [...nameChangeData];
+    newNameChangeData[index] = { ...newNameChangeData[index], [field]: value };
+    setNameChangeData(newNameChangeData);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -57,11 +78,8 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
       peopleData,
       phone,
       hasNameChange,
-      currentName,
-      previousName,
-      koreanName,
-      chineseName,
-      changeYear,
+      numNameChanges,
+      nameChangeData,
       reason,
       paymentConfirmed,
       consultationTime
@@ -73,7 +91,7 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
   };
 
   return (
-    <Card className="p-6 md:p-8 space-y-6">
+    <div className="space-y-6">
       <div className="space-y-2">
         <h3 className="text-2xl font-bold text-foreground">이름분석 운명상담 신청</h3>
         <p className="text-muted-foreground tracking-wide">
@@ -196,74 +214,102 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
           </RadioGroup>
         </div>
 
-        {/* 개명 정보 (예일 경우) */}
+        {/* 개명인원 선택 (예일 경우) */}
         {hasNameChange === "yes" && (
-          <Card className="p-4 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentName">현재이름</Label>
-              <Input
-                id="currentName"
-                value={currentName}
-                onChange={(e) => setCurrentName(e.target.value)}
-                placeholder="현재 사용하는 이름"
-                data-testid="input-current-name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="previousName">개명전 이름</Label>
-              <Input
-                id="previousName"
-                value={previousName}
-                onChange={(e) => setPreviousName(e.target.value)}
-                placeholder="개명 전 이름"
-                data-testid="input-previous-name"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="koreanName">한글이름</Label>
-                <Input
-                  id="koreanName"
-                  value={koreanName}
-                  onChange={(e) => setKoreanName(e.target.value)}
-                  placeholder="홍길동"
-                  data-testid="input-korean-name"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="chineseName">한자이름</Label>
-                <Input
-                  id="chineseName"
-                  value={chineseName}
-                  onChange={(e) => setChineseName(e.target.value)}
-                  placeholder="洪吉洞"
-                  data-testid="input-chinese-name"
-                />
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">개명인원</Label>
+              <div className="flex gap-2 flex-wrap">
+                {[1, 2, 3, 4].map((num) => (
+                  <Button
+                    key={num}
+                    type="button"
+                    variant={numNameChanges === num ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleNumNameChangesChange(num)}
+                    data-testid={`button-namechange-${num}`}
+                    className="w-12 h-12"
+                  >
+                    {num}
+                  </Button>
+                ))}
               </div>
             </div>
 
-            <div className="bg-muted p-3 rounded-md">
-              <p className="text-sm text-muted-foreground">
-                한자는 한자 자체로 넣어주세요.<br />
-                洪吉洞 이렇게요<br />
-                같은 뜻을 가진 한자들이 여럿인 경우들이 있어서 그렇습니다.
-              </p>
-            </div>
+            {/* 각 개명인원별 정보 입력 */}
+            {nameChangeData.map((data, index) => (
+              <Card key={index} className="p-4 space-y-4">
+                <h4 className="font-semibold text-foreground">{index + 1}번째 개명 정보</h4>
 
-            <div className="space-y-2">
-              <Label htmlFor="changeYear">개명년도</Label>
-              <Input
-                id="changeYear"
-                value={changeYear}
-                onChange={(e) => setChangeYear(e.target.value)}
-                placeholder="2020"
-                data-testid="input-change-year"
-              />
-            </div>
-          </Card>
+                <div className="space-y-2">
+                  <Label htmlFor={`currentName-${index}`}>현재이름</Label>
+                  <Input
+                    id={`currentName-${index}`}
+                    value={data.currentName}
+                    onChange={(e) => updateNameChangeData(index, "currentName", e.target.value)}
+                    placeholder="현재 사용하는 이름"
+                    data-testid={`input-current-name-${index}`}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor={`previousName-${index}`}>개명전 이름</Label>
+                  <Input
+                    id={`previousName-${index}`}
+                    value={data.previousName}
+                    onChange={(e) => updateNameChangeData(index, "previousName", e.target.value)}
+                    placeholder="개명 전 이름"
+                    data-testid={`input-previous-name-${index}`}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor={`koreanName-${index}`}>한글이름</Label>
+                    <Input
+                      id={`koreanName-${index}`}
+                      value={data.koreanName}
+                      onChange={(e) => updateNameChangeData(index, "koreanName", e.target.value)}
+                      placeholder="홍길동"
+                      data-testid={`input-korean-name-${index}`}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor={`chineseName-${index}`}>한자이름</Label>
+                    <Input
+                      id={`chineseName-${index}`}
+                      value={data.chineseName}
+                      onChange={(e) => updateNameChangeData(index, "chineseName", e.target.value)}
+                      placeholder="洪吉洞"
+                      data-testid={`input-chinese-name-${index}`}
+                    />
+                  </div>
+                </div>
+
+                {index === 0 && (
+                  <div className="bg-muted p-3 rounded-md">
+                    <p className="text-sm text-muted-foreground">
+                      한자는 한자 자체로 넣어주세요.<br />
+                      洪吉洞 이렇게요<br />
+                      같은 뜻을 가진 한자들이 여럿인 경우들이 있어서 그렇습니다.
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor={`changeYear-${index}`}>개명년도</Label>
+                  <Input
+                    id={`changeYear-${index}`}
+                    value={data.changeYear}
+                    onChange={(e) => updateNameChangeData(index, "changeYear", e.target.value)}
+                    placeholder="2020"
+                    data-testid={`input-change-year-${index}`}
+                  />
+                </div>
+              </Card>
+            ))}
+          </div>
         )}
 
         {/* 상담받고 싶은 이유 */}
@@ -329,6 +375,6 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
           상담 신청하기
         </Button>
       </form>
-    </Card>
+    </div>
   );
 }
