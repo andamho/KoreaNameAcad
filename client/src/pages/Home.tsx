@@ -6,7 +6,7 @@ import { TestimonialCard } from "@/components/TestimonialCard";
 import { StoryCard } from "@/components/StoryCard";
 import { Footer } from "@/components/Footer";
 import { Sparkles, PenLine, MessageCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import {
   Dialog,
@@ -19,6 +19,16 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const openType = params.get("open");
+    if (openType === "analysis" || openType === "naming") {
+      setDialogType(openType);
+      setDialogOpen(true);
+      window.history.replaceState({}, "", "/");
+    }
+  }, []);
 
   const openDialog = (type: "analysis" | "naming") => {
     setDialogType(type);
