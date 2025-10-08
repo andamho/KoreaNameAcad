@@ -2,6 +2,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState } from "react";
+import logoImage from "@assets/KakaoTalk_20251008_210513014_1759925144614.png";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -18,13 +19,20 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => scrollToSection('home')}
-              className="text-xl font-bold text-foreground tracking-wide"
+              className="flex items-center gap-3"
               data-testid="link-home"
             >
-              한국이름학교
+              <img 
+                src={logoImage} 
+                alt="한국이름학교 로고" 
+                className="h-10 w-10"
+              />
+              <span className="text-xl font-bold text-foreground tracking-wide">
+                한국이름학교
+              </span>
             </button>
           </div>
 
