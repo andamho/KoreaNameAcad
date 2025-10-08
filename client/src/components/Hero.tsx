@@ -21,14 +21,9 @@ export function Hero() {
             <span className="text-primary">이름 하나로</span> 이유와 해결책을!
           </h1>
           
-          <p className="text-2xl md:text-3xl text-foreground font-semibold tracking-wide">
-            한국이름학교에서 새로운 이름을 찾으세요
-          </p>
-          
-          <div className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto tracking-wide leading-relaxed">
-            <p>한글·한자이름만으로 운명상담 <span className="font-semibold">[정확도 80% 이상]</span></p>
-            <p className="mt-2">한국이름학교를 통해</p>
-            <p>운이 술술 풀리는 새 이름으로</p>
+          <div className="text-2xl md:text-3xl text-foreground font-semibold tracking-wide max-w-2xl mx-auto leading-relaxed">
+            <p>한글·한자이름만으로 운명상담 [정확도 80% 이상]</p>
+            <p className="mt-2">한국이름학교를 통해 운이 술술 풀리는 새 이름으로,</p>
             <p>인생역전하세요.</p>
           </div>
           
