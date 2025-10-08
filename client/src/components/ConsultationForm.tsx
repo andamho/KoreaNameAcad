@@ -107,17 +107,30 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
     let fileData: { fileName?: string; fileData?: string; fileType?: string } = {};
     
     if (registrationDocument) {
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (registrationDocument.size > maxSize) {
+        toast({
+          title: "파일 크기 초과",
+          description: "파일 크기는 5MB 이하여야 합니다.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       try {
-        const base64 = await new Promise<string>((resolve, reject) => {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
           reader.onerror = reject;
           reader.readAsDataURL(registrationDocument);
         });
         
+        // Extract pure base64 (remove data:image/png;base64, prefix)
+        const base64Data = dataUrl.split(',')[1];
+        
         fileData = {
           fileName: registrationDocument.name,
-          fileData: base64,
+          fileData: base64Data,
           fileType: registrationDocument.type,
         };
       } catch (error) {
