@@ -2,10 +2,17 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import logoImage from "@assets/KakaoTalk_20251008_214156536_1759927358373.png";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [, setLocation] = useLocation();
+
+  const goToHome = () => {
+    setLocation("/");
+    setMobileMenuOpen(false);
+  };
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -21,8 +28,8 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => scrollToSection('home')}
-              className="flex items-center gap-3"
+              onClick={goToHome}
+              className="flex items-center gap-3 hover-elevate active-elevate-2 rounded-md px-2 py-1"
               data-testid="link-home"
             >
               <img 
