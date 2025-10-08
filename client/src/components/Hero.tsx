@@ -22,16 +22,16 @@ export function Hero() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
         <div className="text-center max-w-4xl mx-auto space-y-8">
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground tracking-tight">
-            고달픈 인생,
-            <br />
-            <span className="text-primary">이름 하나로</span> 이유와 해결책을!
-          </h1>
-          
-          <div className="text-2xl md:text-3xl text-foreground font-semibold tracking-wide max-w-2xl mx-auto space-y-2">
-            <p>한글·한자이름만으로 운명상담 [정확도 80% 이상]</p>
-            <p>한국이름학교를 통해</p>
-            <p>운이 술술 풀리는 새 이름으로, 인생역전하세요.</p>
+          <div className="space-y-4">
+            <h1 className="text-4xl md:text-6xl font-bold text-foreground tracking-tight">
+              고달픈 인생, <span className="text-primary">이름 하나로</span> 이유를 찾고
+              <br />
+              운이 술술 풀리는 새 이름으로, 인생역전하세요.
+            </h1>
+            
+            <p className="text-lg md:text-xl text-muted-foreground tracking-wide">
+              한글·한자이름만으로 운명상담 [정확도 80% 이상]
+            </p>
           </div>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
