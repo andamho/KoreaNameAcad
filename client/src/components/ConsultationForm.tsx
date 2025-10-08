@@ -40,6 +40,8 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
   const [nameChangeData, setNameChangeData] = useState<NameChangeData[]>([
     { currentName: "", previousName: "", koreanName: "", chineseName: "", changeYear: "" }
   ]);
+  const [evaluationKoreanName, setEvaluationKoreanName] = useState("");
+  const [evaluationChineseName, setEvaluationChineseName] = useState("");
   const [reason, setReason] = useState("");
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [consultationTime, setConsultationTime] = useState("");
@@ -91,8 +93,14 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
     });
   };
 
+  const formTitle = type === "naming" ? "이름감명" : "이름분석 운명상담 신청";
+
   return (
     <div className="space-y-6">
+      <div className="space-y-2">
+        <h3 className="text-2xl font-bold text-foreground">{formTitle}</h3>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* 등본상 가족 인원 */}
         <div className="space-y-3">
@@ -226,8 +234,45 @@ export function ConsultationForm({ type }: ConsultationFormProps) {
           </RadioGroup>
         </div>
 
-        {/* 개명인원 선택 (예일 경우) */}
-        {hasNameChange === "yes" && (
+        {/* 감명받을 이름 (이름감명일 경우) */}
+        {type === "naming" && (
+          <Card className="p-4 space-y-4">
+            <h4 className="font-semibold text-foreground">감명받을 이름</h4>
+            
+            <div className="space-y-2">
+              <Label htmlFor="evaluation-korean-name">한글이름</Label>
+              <Input
+                id="evaluation-korean-name"
+                value={evaluationKoreanName}
+                onChange={(e) => setEvaluationKoreanName(e.target.value)}
+                placeholder="홍길동"
+                data-testid="input-evaluation-korean-name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="evaluation-chinese-name">한자이름</Label>
+              <Input
+                id="evaluation-chinese-name"
+                value={evaluationChineseName}
+                onChange={(e) => setEvaluationChineseName(e.target.value)}
+                placeholder="洪吉洞"
+                data-testid="input-evaluation-chinese-name"
+              />
+            </div>
+
+            <div className="bg-muted p-3 rounded-md">
+              <p className="text-sm text-muted-foreground">
+                한자는 한자 자체로 넣어주세요.<br />
+                洪吉洞 이렇게요<br />
+                같은 뜻을 가진 한자들이 여럿인 경우들이 있어서 그렇습니다.
+              </p>
+            </div>
+          </Card>
+        )}
+
+        {/* 개명인원 선택 (이름분석이고 예일 경우) */}
+        {type === "analysis" && hasNameChange === "yes" && (
           <div className="space-y-6">
             <div className="space-y-3">
               <Label className="text-base font-semibold">개명인원</Label>
