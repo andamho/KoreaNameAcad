@@ -43,7 +43,7 @@ export function Navbar() {
               </span>
             </button>
             
-            <div className="hidden lg:flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs text-muted-foreground">이름분석</span>
               <span className="text-xs text-muted-foreground">이름감명</span>
               <span className="text-xs text-muted-foreground">이름분석 및 감명 상세 안내</span>
