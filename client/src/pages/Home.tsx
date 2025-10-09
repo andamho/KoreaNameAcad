@@ -36,7 +36,6 @@ export default function Home() {
     setDialogOpen(true);
   };
 
-  // todo: remove mock functionality
   const testimonials = [
     {
       name: "김민수",
@@ -47,13 +46,13 @@ export default function Home() {
     {
       name: "박지은",
       service: "개명",
-      content: "개명 후 새로운 삶을 시작할 수 있었습니다. 선생님의 깊이 있는 상담과 배려에 감사드립니다.",
+      content: "절 좋아하는 사람이 많아졌어요. 예민한 게 사라졌어요. 요즘 돈도 많이 벌어요",
       rating: 5,
     },
     {
       name: "이성호",
-      service: "작명",
-      content: "아이의 작명을 의뢰했는데, 의미 있고 아름다운 이름을 지어주셔서 정말 만족스럽습니다.",
+      service: "개명",
+      content: "직장과 아파트가 생겼어요. 가전제품도 누가 사주셨어요. 아빠 외도 중이셨는데 정리하고 들어오셨어요. 지금은 소아정신과에서 아이들 진료보고 있는데 마더테레사라고 칭찬받고 인정받아요",
       rating: 5,
     },
   ];
