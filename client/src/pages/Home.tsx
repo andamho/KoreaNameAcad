@@ -40,31 +40,31 @@ export default function Home() {
     {
       name: "고객 1",
       service: "개명",
-      content: "절 좋아하는 사람이 많아졌어요. 예민한 게 사라졌어요. 요즘 돈도 많이 벌어요",
+      content: "절 좋아하는 사람이 많아졌어요 예민한 게 사라졌어요 요즘 돈도 많이 벌어요",
       rating: 5,
     },
     {
       name: "고객 2",
       service: "개명",
-      content: "직장과 아파트가 생겼어요. 가전제품도 누가 사주셨어요. 아빠 외도 중이셨는데 정리하고 들어오셨어요. 지금은 소아정신과에서 아이들 진료보고 있는데 마더테레사라고 칭찬받고 인정받아요",
+      content: "직장과 아파트가 생겼어요 가전제품도 누가 사주셨어요 아빠 외도 중이셨는데 정리하고 들어오셨어요 지금은 소아정신과에서 아이들 진료보고 있는데 마더테레사라고 칭찬받고 인정받아요",
       rating: 5,
     },
     {
       name: "고객 3",
       service: "개명",
-      content: "미용실도 이전해서 넘 잘 되고. 사랑하는 사람도 생겨 결혼해요",
+      content: "미용실도 이전해서 넘 잘 되고 사랑하는 사람도 생겨 결혼해요",
       rating: 5,
     },
     {
       name: "고객 4",
       service: "개명",
-      content: "정부지원사업 3천만원 지원받아. 플랫폼 사업 시작해서 넘 잘 돼요",
+      content: "정부지원사업 3천만원 지원받아 플랫폼 사업 시작해서 넘 잘 돼요",
       rating: 5,
     },
     {
       name: "고객 5",
       service: "개명",
-      content: "개명 후 6년. 세상에서 가장 행복한 사람",
+      content: "개명 후 6년 세상에서 가장 행복한 사람",
       rating: 5,
     },
     {
@@ -76,13 +76,13 @@ export default function Home() {
     {
       name: "고객 7",
       service: "개명",
-      content: "가는 곳마다 열광! 이젠 대기업 임원만큼 돈을 벌어요. 크게 되고 빛날 것같아요",
+      content: "가는 곳마다 열광 이젠 대기업 임원만큼 돈을 벌어요 크게 되고 빛날 것같아요",
       rating: 5,
     },
     {
       name: "고객 8",
       service: "개명",
-      content: "우울증과 알콜의존증으로 약까지 먹고 있었는데 거짓말처럼 술이 안땡기고. 마음이 편해지고. 삶이 의욕적으로 바뀌었어요",
+      content: "우울증과 알콜의존증으로 약까지 먹고 있었는데 거짓말처럼 술이 안땡기고 마음이 편해지고 삶이 의욕적으로 바뀌었어요",
       rating: 5,
     },
     {
@@ -94,7 +94,7 @@ export default function Home() {
     {
       name: "고객 10",
       service: "개명",
-      content: "남편이 달라졌어요. 밉지도 않고. 시어머님에 대한 원망이 사라졌어요. 아이가 알아서 스스로 잘 해요",
+      content: "남편이 달라졌어요 밉지도 않고 시어머님에 대한 원망이 사라졌어요 아이가 알아서 스스로 잘 해요",
       rating: 5,
     },
   ];
@@ -103,7 +103,7 @@ export default function Home() {
     {
       name: "고객 1",
       service: "이름 분석",
-      content: "이제야 내 삶의 퍼즐이 맞춰지는 것같습니다. 감탄에 감탄!",
+      content: "이제야 내 삶의 퍼즐이 맞춰지는 것같습니다 감탄에 감탄",
       rating: 5,
     },
     {
@@ -139,7 +139,31 @@ export default function Home() {
     {
       name: "고객 7",
       service: "이름 분석",
-      content: "한 시간이 너무 후딱 지나가더라구요. 뭔지 모를 후련함도 생기고. 누군가에게 말못한 고민까지 털어놓게 됐어요",
+      content: "한 시간이 너무 후딱 지나가더라구요 뭔지 모를 후련함도 생기고 누군가에게 말못한 고민까지 털어놓게 됐어요",
+      rating: 5,
+    },
+    {
+      name: "고객 8",
+      service: "이름 분석",
+      content: "아주 그냥 저희 집에 같이 살고 있는 줄요",
+      rating: 5,
+    },
+    {
+      name: "고객 9",
+      service: "이름 분석",
+      content: "이름대로 살고 있는 게 너무 너무 신기해요",
+      rating: 5,
+    },
+    {
+      name: "고객 10",
+      service: "이름 분석",
+      content: "지난날이 주마등처럼 지나가면서 저를 토닥여주고 싶었어요",
+      rating: 5,
+    },
+    {
+      name: "고객 11",
+      service: "이름 분석",
+      content: "성격 성향이 바뀐 게 이름의 끌어당김이었어요",
       rating: 5,
     },
   ];
@@ -290,13 +314,13 @@ export default function Home() {
               >
                 <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#58C4C4] via-[#6DD4D4] to-[#45B8B8] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-l-3xl" />
                 
-                <div className="absolute top-5 right-6 text-8xl md:text-9xl font-black text-[#58C4C4]/10 leading-none select-none">
-                  0{index + 1}
+                <div className="absolute top-5 right-6 text-8xl md:text-9xl font-black text-[#58C4C4]/10 leading-none select-none z-0">
+                  {index + 1 < 10 ? `0${index + 1}` : index + 1}
                 </div>
 
                 <div className="relative z-10">
                   <p className="text-xl md:text-2xl leading-relaxed text-gray-200 font-light">
-                    {testimonial.content.split('. ').map((sentence, i) => (
+                    {testimonial.content.split(' ').map((word, i) => (
                       <span key={i}>
                         {i === 0 ? (
                           <span 
@@ -308,13 +332,12 @@ export default function Home() {
                               backgroundClip: 'text'
                             }}
                           >
-                            {sentence}
+                            {word}
                           </span>
                         ) : (
-                          sentence
+                          word
                         )}
-                        {i < testimonial.content.split('. ').length - 1 && '. '}
-                        {i < testimonial.content.split('. ').length - 1 && <br />}
+                        {i < testimonial.content.split(' ').length - 1 && ' '}
                       </span>
                     ))}
                   </p>
@@ -354,13 +377,13 @@ export default function Home() {
               >
                 <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#58C4C4] via-[#6DD4D4] to-[#45B8B8] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-l-3xl" />
                 
-                <div className="absolute top-5 right-6 text-8xl md:text-9xl font-black text-[#58C4C4]/10 leading-none select-none">
-                  0{index + 1}
+                <div className="absolute top-5 right-6 text-8xl md:text-9xl font-black text-[#58C4C4]/10 leading-none select-none z-0">
+                  {index + 1 < 10 ? `0${index + 1}` : index + 1}
                 </div>
 
                 <div className="relative z-10">
                   <p className="text-xl md:text-2xl leading-relaxed text-gray-200 font-light">
-                    {testimonial.content.split('. ').map((sentence, i) => (
+                    {testimonial.content.split(' ').map((word, i) => (
                       <span key={i}>
                         {i === 0 ? (
                           <span 
@@ -372,13 +395,12 @@ export default function Home() {
                               backgroundClip: 'text'
                             }}
                           >
-                            {sentence}
+                            {word}
                           </span>
                         ) : (
-                          sentence
+                          word
                         )}
-                        {i < testimonial.content.split('. ').length - 1 && '. '}
-                        {i < testimonial.content.split('. ').length - 1 && <br />}
+                        {i < testimonial.content.split(' ').length - 1 && ' '}
                       </span>
                     ))}
                   </p>
