@@ -48,9 +48,16 @@ Preferred communication style: Simple, everyday language.
 - UUID-based entity identification
 
 **API Endpoints**
-- POST `/api/consultations` - Create new consultation requests
+- POST `/api/consultations` - Create new consultation requests (automatically sends email notification)
 - GET `/api/consultations` - Retrieve all consultations
 - GET `/api/consultations/:id` - Retrieve specific consultation by ID
+
+**Email Notification System**
+- Resend integration for transactional emails
+- Automatic notification to `iimooii1000@gmail.com` when consultations are submitted
+- Non-blocking email sending (consultation saved even if email fails)
+- HTML and text email templates with full consultation details
+- Environment variable: `RESEND_API_KEY` (managed via Replit Secrets)
 
 **Data Models**
 - User model with username/password authentication structure
@@ -97,6 +104,9 @@ Preferred communication style: Simple, everyday language.
 - **typescript** - Type-safe JavaScript
 - **tsx** - TypeScript execution for Node.js
 - **esbuild** - Fast JavaScript bundler
+
+### Communication & Notifications
+- **resend** - Email API for transactional email notifications
 
 ### Date & Utility Libraries
 - **date-fns** - Date manipulation and formatting
