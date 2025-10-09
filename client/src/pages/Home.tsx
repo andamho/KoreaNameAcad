@@ -258,7 +258,10 @@ export default function Home() {
               title="이름분석 및 감명 상세 안내"
               description="이름분석과 이름감명에 대한 자세한 안내해드립니다."
               buttonText="자세히 보기"
-              onClick={() => setLocation("/detail-info")}
+              onClick={() => {
+                setLocation("/detail-info");
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
             <ServiceCard
               icon={Flower}
@@ -292,14 +295,13 @@ export default function Home() {
         
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
           <h2 
-            className="text-5xl md:text-7xl font-black text-center mb-16 tracking-wider"
+            className="text-3xl md:text-5xl font-bold text-center mb-16 tracking-wide"
             style={{
               background: 'linear-gradient(135deg, #58C4C4 0%, #6DD4D4 50%, #45B8B8 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              textTransform: 'uppercase',
-              letterSpacing: '0.3em'
+              letterSpacing: '0.2em'
             }}
           >
             이름분석 상담후기
@@ -351,14 +353,13 @@ export default function Home() {
         
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
           <h2 
-            className="text-5xl md:text-7xl font-black text-center mb-16 tracking-wider"
+            className="text-3xl md:text-5xl font-bold text-center mb-16 tracking-wide"
             style={{
               background: 'linear-gradient(135deg, #58C4C4 0%, #6DD4D4 50%, #45B8B8 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              textTransform: 'uppercase',
-              letterSpacing: '0.3em'
+              letterSpacing: '0.2em'
             }}
           >
             개명 후기
