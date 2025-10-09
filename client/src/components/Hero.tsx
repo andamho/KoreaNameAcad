@@ -38,14 +38,6 @@ export function Hero() {
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
-              size="lg"
-              onClick={() => scrollToSection('services')}
-              data-testid="button-consultation"
-              className="min-w-[200px]"
-            >
-              상담 신청하기
-            </Button>
-            <Button
               variant="outline"
               size="lg"
               onClick={() => scrollToSection('testimonials')}
@@ -53,6 +45,14 @@ export function Hero() {
               className="min-w-[200px] bg-background/50 backdrop-blur-sm"
             >
               상담·개명 후기
+            </Button>
+            <Button
+              size="lg"
+              onClick={() => scrollToSection('services')}
+              data-testid="button-consultation"
+              className="min-w-[200px]"
+            >
+              지금 신청
             </Button>
           </div>
         </div>

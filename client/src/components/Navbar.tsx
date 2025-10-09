@@ -44,37 +44,28 @@ export function Navbar() {
             </button>
           </div>
 
-          <div className="hidden md:flex items-center gap-8">
-            <button
-              onClick={() => scrollToSection('about')}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="link-about"
-            >
-              협회소개
-            </button>
-            <button
+          <div className="hidden md:flex items-center gap-4">
+            <Button
               onClick={() => scrollToSection('services')}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="link-services"
+              className="min-w-[120px]"
+              data-testid="button-apply-now"
             >
-              서비스
-            </button>
-            <button
-              onClick={() => scrollToSection('testimonials')}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="link-testimonials"
+              지금 신청
+            </Button>
+            <Button
+              variant="outline"
+              asChild
+              className="min-w-[100px]"
             >
-              후기
-            </button>
-            <a
-              href="https://pf.kakao.com/_Sxnvbb/chat"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="link-inquiry"
-            >
-              문의
-            </a>
+              <a
+                href="https://pf.kakao.com/_Sxnvbb/chat"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="button-inquiry"
+              >
+                문의
+              </a>
+            </Button>
             <ThemeToggle />
           </div>
 
@@ -93,36 +84,27 @@ export function Navbar() {
 
         {mobileMenuOpen && (
           <div className="md:hidden py-4 space-y-2">
-            <button
-              onClick={() => scrollToSection('about')}
-              className="block w-full text-left px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
-              data-testid="mobile-link-about"
-            >
-              협회소개
-            </button>
-            <button
+            <Button
               onClick={() => scrollToSection('services')}
-              className="block w-full text-left px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
-              data-testid="mobile-link-services"
+              className="w-full"
+              data-testid="mobile-button-apply-now"
             >
-              서비스
-            </button>
-            <button
-              onClick={() => scrollToSection('testimonials')}
-              className="block w-full text-left px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
-              data-testid="mobile-link-testimonials"
+              지금 신청
+            </Button>
+            <Button
+              variant="outline"
+              asChild
+              className="w-full"
             >
-              후기
-            </button>
-            <a
-              href="https://pf.kakao.com/_Sxnvbb/chat"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full text-left px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
-              data-testid="mobile-link-inquiry"
-            >
-              문의
-            </a>
+              <a
+                href="https://pf.kakao.com/_Sxnvbb/chat"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="mobile-button-inquiry"
+              >
+                문의
+              </a>
+            </Button>
           </div>
         )}
       </div>
