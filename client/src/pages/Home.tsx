@@ -79,6 +79,24 @@ export default function Home() {
       content: "가는 곳마다 열광! 이젠 대기업 임원만큼 돈을 벌어요. 크게 되고 빛날 것같아요",
       rating: 5,
     },
+    {
+      name: "고객 8",
+      service: "개명",
+      content: "우울증과 알콜의존증으로 약까지 먹고 있었는데 거짓말처럼 술이 안땡기고. 마음이 편해지고. 삶이 의욕적으로 바뀌었어요",
+      rating: 5,
+    },
+    {
+      name: "고객 9",
+      service: "개명",
+      content: "부지런해지고 원하던 회사에 합격했어요",
+      rating: 5,
+    },
+    {
+      name: "고객 10",
+      service: "개명",
+      content: "남편이 달라졌어요. 밉지도 않고. 시어머님에 대한 원망이 사라졌어요. 아이가 알아서 스스로 잘 해요",
+      rating: 5,
+    },
   ];
 
   const stories = [
