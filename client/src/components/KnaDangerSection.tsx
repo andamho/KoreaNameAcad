@@ -17,7 +17,7 @@ export default function KnaDangerSection({
       <div className="relative mx-auto max-w-6xl px-6 py-16 sm:py-20 lg:px-8">
         <header className="mx-auto max-w-3xl text-center">
           <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl flex items-center justify-center gap-3">
-            <AlertTriangle className="h-8 w-8 sm:h-10 sm:w-10 text-[#0f766e] dark:text-[#58C4C4]" strokeWidth={2.5} />
+            <AlertTriangle className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" strokeWidth={2.5} />
             <span>이름 이렇게 지으면 위험합니다</span>
           </h2>
         </header>
@@ -39,7 +39,7 @@ export default function KnaDangerSection({
 
         <section aria-labelledby="why-title" className="mt-12 rounded-2xl border border-gray-200 dark:border-border bg-white/80 dark:bg-card/80 p-6 shadow-sm">
           <div className="flex items-start gap-3">
-            <Lightbulb className="mt-1 h-7 w-7 text-[#0f766e] dark:text-[#58C4C4]" strokeWidth={2} />
+            <Lightbulb className="mt-1 h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" strokeWidth={2} />
             <div className="flex-1">
               <h3 id="why-title" className="text-xl font-semibold">왜 이름운이 중요한가?</h3>
               <div className="mt-2 grid gap-4 md:grid-cols-2">
@@ -96,7 +96,7 @@ function QA({ q, a }: { q: string; a: string }) {
   return (
     <article className="group relative rounded-2xl border border-gray-200 dark:border-border bg-white dark:bg-card p-6 shadow-sm ring-1 ring-transparent transition hover:-translate-y-0.5 hover:shadow-md hover:ring-[#7fe1d3]/60 dark:hover:ring-[#58C4C4]/60 border-l-4 border-l-[#7fe1d3] dark:border-l-[#58C4C4]">
       <div className="flex items-start gap-3">
-        <AlertTriangle className="mt-0.5 h-7 w-7 text-amber-500" strokeWidth={2} />
+        <AlertTriangle className="mt-0.5 h-6 w-6 flex-shrink-0 text-amber-500" strokeWidth={2} />
         <div>
           <p className="text-base font-semibold text-gray-900 dark:text-foreground">"{q}"</p>
           <p className="mt-1 text-base leading-relaxed text-gray-700 dark:text-muted-foreground">→ {a}</p>
