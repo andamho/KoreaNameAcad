@@ -14,8 +14,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import snsImageTop from "@assets/KakaoTalk_20251009_085023527_1759983933802.png";
 import snsImage1 from "@assets/KakaoTalk_20251009_132036383_01_1759983715584.jpg";
 import snsImage2 from "@assets/KakaoTalk_20251009_132036383_02_1759983715585.jpg";
+import snsImage3 from "@assets/KakaoTalk_20251009_132036383_1759983991613.jpg";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -216,17 +218,29 @@ export default function Home() {
                 <p className="text-lg font-semibold text-foreground">259만, 287만, 260만 조회</p>
               </div>
 
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              <div className="mt-8 space-y-4">
                 <img 
-                  src={snsImage1} 
-                  alt="내 이름은 전국 몇 등일까 - 259.5만 조회" 
-                  className="w-full rounded-lg shadow-lg hover:scale-105 transition-transform duration-300"
+                  src={snsImageTop} 
+                  alt="SNS 인기 콘텐츠 상단" 
+                  className="w-full max-w-4xl mx-auto rounded-lg shadow-lg"
                 />
-                <img 
-                  src={snsImage2} 
-                  alt="95% 직필소 중국사람 이름찾는 꽃 - 6.4만 조회" 
-                  className="w-full rounded-lg shadow-lg hover:scale-105 transition-transform duration-300"
-                />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                  <img 
+                    src={snsImage1} 
+                    alt="내 이름은 전국 몇 등일까 - 259.5만 조회" 
+                    className="w-full rounded-lg shadow-lg hover:scale-105 transition-transform duration-300"
+                  />
+                  <img 
+                    src={snsImage2} 
+                    alt="95% 직필소 중국사람 이름찾는 꽃 - 6.4만 조회" 
+                    className="w-full rounded-lg shadow-lg hover:scale-105 transition-transform duration-300"
+                  />
+                  <img 
+                    src={snsImage3} 
+                    alt="단명은 10초 만에 알아보기 - 115만 조회" 
+                    className="w-full rounded-lg shadow-lg hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
               </div>
             </div>
           </div>
