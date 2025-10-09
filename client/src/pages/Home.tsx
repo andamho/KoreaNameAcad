@@ -424,29 +424,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="stories" className="py-16 md:py-24 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center space-y-4 mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              재미있는 이름 이야기
-            </h2>
-            <p className="text-lg text-muted-foreground tracking-wide">
-              이름에 관한 흥미로운 이야기들
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {stories.map((story, index) => (
-              <StoryCard
-                key={index}
-                {...story}
-                onClick={() => console.log(`Story clicked: ${story.title}`)}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
       <Footer />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

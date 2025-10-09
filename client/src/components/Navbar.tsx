@@ -66,13 +66,6 @@ export function Navbar() {
             >
               후기
             </button>
-            <button
-              onClick={() => scrollToSection('stories')}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="link-stories"
-            >
-              이름 이야기
-            </button>
             <ThemeToggle />
           </div>
 
@@ -111,13 +104,6 @@ export function Navbar() {
               data-testid="mobile-link-testimonials"
             >
               후기
-            </button>
-            <button
-              onClick={() => scrollToSection('stories')}
-              className="block w-full text-left px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
-              data-testid="mobile-link-stories"
-            >
-              이름 이야기
             </button>
           </div>
         )}
