@@ -26,16 +26,6 @@ export default function KnaValueSection() {
             desc="반복되는 어려움의 이유를 이름에서 명확히 찾아드립니다."
           />
           <ValueCard
-            icon={<SparkIcon className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
-            title="강점과 재능 발견"
-            desc="당신이 몰랐던 본연의 장점을 알려드립니다."
-          />
-          <ValueCard
-            icon={<FamilyIcon className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
-            title="가족 이해 향상"
-            desc="이름을 통해 서로의 장점과 문제의 뿌리를 알아 관계가 개선됩니다."
-          />
-          <ValueCard
             icon={<MatchIcon className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
             title="이름–삶 일치 증명"
             desc="현재 '이름대로' 살고 있음을 구체적으로 보여드립니다."
@@ -44,6 +34,16 @@ export default function KnaValueSection() {
             icon={<TimelineIcon className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
             title="개명 전후 분석"
             desc="개명 전후 이름이 삶에 미친 영향을 비교·증명해드립니다."
+          />
+          <ValueCard
+            icon={<FamilyIcon className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
+            title="가족 이해 향상"
+            desc="이름을 통해 서로의 장점과 문제의 뿌리를 알아 관계가 개선됩니다."
+          />
+          <ValueCard
+            icon={<SparkIcon className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
+            title="강점과 재능 발견"
+            desc="당신이 몰랐던 본연의 장점을 알려드립니다."
           />
         </div>
 
