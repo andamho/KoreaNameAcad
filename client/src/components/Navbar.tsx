@@ -43,13 +43,13 @@ export function Navbar() {
               </span>
             </button>
             
-            <div className="hidden xl:flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">이름분석</span>
-              <span className="text-sm text-muted-foreground">이름감명</span>
-              <span className="text-sm text-muted-foreground">이름분석 및 감명 상세 안내</span>
-              <span className="text-sm text-muted-foreground">개명</span>
-              <span className="text-sm text-muted-foreground">신생아 작명</span>
-              <span className="text-sm text-muted-foreground">상호작명</span>
+            <div className="hidden lg:flex items-center gap-3">
+              <span className="text-xs text-muted-foreground">이름분석</span>
+              <span className="text-xs text-muted-foreground">이름감명</span>
+              <span className="text-xs text-muted-foreground">이름분석 및 감명 상세 안내</span>
+              <span className="text-xs text-muted-foreground">개명</span>
+              <span className="text-xs text-muted-foreground">신생아 작명</span>
+              <span className="text-xs text-muted-foreground">상호작명</span>
             </div>
           </div>
 
