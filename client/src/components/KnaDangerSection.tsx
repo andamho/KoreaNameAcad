@@ -1,12 +1,6 @@
 import { AlertTriangle, Lightbulb } from "lucide-react";
 
-export default function KnaDangerSection({
-  onReviews,
-  onBooking,
-}: {
-  onReviews?: () => void;
-  onBooking?: () => void;
-}) {
+export default function KnaDangerSection() {
   return (
     <section className="relative overflow-hidden bg-white dark:bg-background text-gray-900 dark:text-foreground">
       <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -52,41 +46,6 @@ export default function KnaDangerSection({
           </div>
         </section>
 
-        <section className="mt-10 rounded-2xl border border-gray-200 dark:border-border bg-white/80 dark:bg-card/80 p-6 shadow-sm">
-          <h3 className="text-xl font-bold tracking-tight">두 번의 확인, 평생의 안심</h3>
-          <ul className="mt-4 space-y-3">
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">1</span>
-              <span className="text-base text-gray-700 dark:text-muted-foreground">상담·개명 후기로 1차 검증</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">2</span>
-              <span className="text-base text-gray-700 dark:text-muted-foreground">이름만으로 운명상담을 통해 작명이론의 정확도 2차 검증</span>
-            </li>
-          </ul>
-        </section>
-
-        <div className="mt-8 flex w-full max-w-md flex-col items-stretch justify-center gap-3 sm:mx-auto sm:flex-row sm:items-center sm:justify-center">
-          <button
-            onClick={onReviews}
-            className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-gray-300 dark:border-border bg-white dark:bg-background px-5 py-2.5 text-sm font-semibold text-gray-900 dark:text-foreground shadow-sm hover-elevate active-elevate-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-400"
-            data-testid="button-danger-reviews"
-          >
-            상담·개명후기
-          </button>
-          <button
-            onClick={onBooking}
-            className="inline-flex w-full sm:w-auto items-center justify-center rounded-full bg-[#0f766e] dark:bg-primary px-6 py-2.5 text-sm font-semibold text-white dark:text-primary-foreground shadow-lg hover-elevate active-elevate-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f766e]"
-            data-testid="button-danger-booking"
-          >
-            상담예약
-          </button>
-        </div>
-
-        <footer className="mt-12 border-t border-gray-200 dark:border-border pt-6 text-center text-xs text-gray-500 dark:text-muted-foreground">
-          <p className="text-xl font-bold">한국이름학교 | 와츠유어네임 이름연구협회</p>
-          <p className="text-sm">고달픈 인생, 이름 하나로 이유와 해결책을!</p>
-        </footer>
       </div>
     </section>
   );
