@@ -66,6 +66,15 @@ export function Navbar() {
             >
               후기
             </button>
+            <a
+              href="https://pf.kakao.com/_Sxnvbb/chat"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              data-testid="link-inquiry"
+            >
+              문의
+            </a>
             <ThemeToggle />
           </div>
 
@@ -105,6 +114,15 @@ export function Navbar() {
             >
               후기
             </button>
+            <a
+              href="https://pf.kakao.com/_Sxnvbb/chat"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full text-left px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
+              data-testid="mobile-link-inquiry"
+            >
+              문의
+            </a>
           </div>
         )}
       </div>

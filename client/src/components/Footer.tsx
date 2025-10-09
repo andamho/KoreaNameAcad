@@ -7,7 +7,7 @@ export function Footer() {
   };
 
   const handleContactClick = () => {
-    window.open('https://m.blog.naver.com/whats_ur_name_777', '_blank');
+    window.open('https://pf.kakao.com/_Sxnvbb/chat', '_blank');
   };
 
   return (
