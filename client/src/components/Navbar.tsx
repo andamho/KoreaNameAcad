@@ -23,26 +23,6 @@ export function Navbar() {
     }
   };
 
-  const openDialog = (type: "analysis" | "naming") => {
-    setLocation(`/?open=${type}`);
-    setMobileMenuOpen(false);
-  };
-
-  const navigateToDetail = () => {
-    setLocation("/detail-info");
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setMobileMenuOpen(false);
-  };
-
-  const serviceLinks = [
-    { label: "이름분석", onClick: () => openDialog("analysis") },
-    { label: "이름감명", onClick: () => openDialog("naming") },
-    { label: "이름분석 및 감명 상세 안내", onClick: navigateToDetail },
-    { label: "개명", onClick: () => window.open("https://blog.naver.com/whats_ur_name_777/221277653666", "_blank") },
-    { label: "신생아 작명", onClick: () => window.open("https://blog.naver.com/whats_ur_name_777/221277647598", "_blank") },
-    { label: "상호작명", onClick: () => window.open("https://blog.naver.com/whats_ur_name_777/221274436174", "_blank") },
-  ];
-
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -63,17 +43,13 @@ export function Navbar() {
               </span>
             </button>
             
-            <div className="hidden lg:flex items-center gap-4">
-              {serviceLinks.map((link, index) => (
-                <button
-                  key={index}
-                  onClick={link.onClick}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
-                  data-testid={`link-service-${index}`}
-                >
-                  {link.label}
-                </button>
-              ))}
+            <div className="hidden xl:flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">이름분석</span>
+              <span className="text-sm text-muted-foreground">이름감명</span>
+              <span className="text-sm text-muted-foreground">이름분석 및 감명 상세 안내</span>
+              <span className="text-sm text-muted-foreground">개명</span>
+              <span className="text-sm text-muted-foreground">신생아 작명</span>
+              <span className="text-sm text-muted-foreground">상호작명</span>
             </div>
           </div>
 
