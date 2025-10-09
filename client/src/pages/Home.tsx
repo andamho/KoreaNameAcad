@@ -7,6 +7,7 @@ import { StoryCard } from "@/components/StoryCard";
 import { Footer } from "@/components/Footer";
 import KnaDangerSection from "@/components/KnaDangerSection";
 import KnaValueSection from "@/components/KnaValueSection";
+import KnaIntroBlock from "@/components/KnaIntroBlock";
 import { Search, Star, MessageCircle, Flower, Baby, Building } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
@@ -196,6 +197,8 @@ export default function Home() {
       <KnaDangerSection />
 
       <KnaValueSection />
+
+      <KnaIntroBlock />
 
       <section id="services" className="py-16 md:py-24 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
