@@ -1,0 +1,133 @@
+export default function KnaDangerSection({
+  onReviews,
+  onBooking,
+}: {
+  onReviews?: () => void;
+  onBooking?: () => void;
+}) {
+  return (
+    <section className="relative overflow-hidden bg-white dark:bg-background text-gray-900 dark:text-foreground">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#7fe1d3]/25 dark:bg-[#58C4C4]/25 blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-[#0f766e]/10 dark:bg-[#45B8B8]/10 blur-3xl" />
+      </div>
+
+      <div className="relative mx-auto max-w-6xl px-6 py-16 sm:py-20 lg:px-8">
+        <header className="mx-auto max-w-3xl text-center">
+          <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
+            <span className="mr-2" aria-hidden>⚠️</span>이름 이렇게 지으면 위험합니다
+          </h2>
+        </header>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
+          <QA
+            q="비용을 먼저 물어보시나요?"
+            a="비용은 아껴도, 대가는 더 비싸집니다"
+          />
+          <QA
+            q="사주+한자만 보고 지으셨나요?"
+            a="한글 이름의 운이 무너지면, 삶이 비틀립니다"
+          />
+          <QA
+            q="후기도 안 보고 맡기셨나요?"
+            a="검증 없는 작명, 고생은 당사자의 몫입니다"
+          />
+        </div>
+
+        <section aria-labelledby="why-title" className="mt-12 rounded-2xl border border-gray-200 dark:border-border bg-white/80 dark:bg-card/80 p-6 shadow-sm">
+          <div className="flex items-start gap-3">
+            <BulbIcon className="mt-1 h-6 w-6 text-[#0f766e] dark:text-[#58C4C4]" />
+            <div className="flex-1">
+              <h3 id="why-title" className="text-lg font-semibold">왜 이름운이 중요한가?</h3>
+              <div className="mt-2 grid gap-4 md:grid-cols-2">
+                <Note title="이름운 = 인생의 결과" desc="열심히만 산다고 잘 사는 게 아닙니다" />
+                <Note title="잘못 지은 이름" desc="평생을 괴롭힙니다" />
+                <Note title="가족은 운명공동체" desc="한 사람의 이름이 가족 전체에 영향을 줍니다" />
+                <Note title="실제 후기 검증" desc="유명세나 말이 아닌, 결과로 증명된 곳을 선택하세요" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-10 rounded-2xl border border-gray-200 dark:border-border bg-white/80 dark:bg-card/80 p-6 shadow-sm">
+          <h3 className="text-xl font-bold tracking-tight">두 번의 확인, 평생의 안심</h3>
+          <ul className="mt-4 space-y-3">
+            <li className="flex items-start gap-3">
+              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">1</span>
+              <span className="text-sm text-gray-700 dark:text-muted-foreground">상담·개명 후기로 1차 검증</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">2</span>
+              <span className="text-sm text-gray-700 dark:text-muted-foreground">이름만으로 운명상담을 통해 작명이론의 정확도 2차 검증</span>
+            </li>
+          </ul>
+        </section>
+
+        <div className="mt-8 flex w-full max-w-md flex-col items-stretch justify-center gap-3 sm:mx-auto sm:flex-row sm:items-center sm:justify-center">
+          <button
+            onClick={onReviews}
+            className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-gray-300 dark:border-border bg-white dark:bg-background px-5 py-2.5 text-sm font-semibold text-gray-900 dark:text-foreground shadow-sm hover-elevate active-elevate-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-400"
+            data-testid="button-danger-reviews"
+          >
+            상담·개명후기
+          </button>
+          <button
+            onClick={onBooking}
+            className="inline-flex w-full sm:w-auto items-center justify-center rounded-full bg-[#0f766e] dark:bg-primary px-6 py-2.5 text-sm font-semibold text-white dark:text-primary-foreground shadow-lg hover-elevate active-elevate-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f766e]"
+            data-testid="button-danger-booking"
+          >
+            상담예약
+          </button>
+        </div>
+
+        <footer className="mt-12 border-t border-gray-200 dark:border-border pt-6 text-center text-xs text-gray-500 dark:text-muted-foreground">
+          <p className="text-xl font-bold">한국이름학교 | 와츠유어네임 이름연구협회</p>
+          <p className="text-sm">고달픈 인생, 이름 하나로 이유와 해결책을!</p>
+        </footer>
+      </div>
+    </section>
+  );
+}
+
+function QA({ q, a }: { q: string; a: string }) {
+  return (
+    <article className="group relative rounded-2xl border border-gray-200 dark:border-border bg-white dark:bg-card p-6 shadow-sm ring-1 ring-transparent transition hover:-translate-y-0.5 hover:shadow-md hover:ring-[#7fe1d3]/60 dark:hover:ring-[#58C4C4]/60 border-l-4 border-l-[#7fe1d3] dark:border-l-[#58C4C4]">
+      <div className="flex items-start gap-3">
+        <WarnIcon className="mt-0.5 h-6 w-6 text-amber-500" />
+        <div>
+          <p className="text-sm font-semibold text-gray-900 dark:text-foreground">"{q}"</p>
+          <p className="mt-1 text-sm leading-relaxed text-gray-700 dark:text-muted-foreground">→ {a}</p>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function Note({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="rounded-xl border border-gray-200 dark:border-border bg-gradient-to-br from-white to-gray-50 dark:from-card dark:to-muted p-4 shadow-sm">
+      <h4 className="text-sm font-semibold">{title}</h4>
+      <p className="mt-1 text-sm text-gray-700 dark:text-muted-foreground">→ {desc}</p>
+    </div>
+  );
+}
+
+function WarnIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={props.className} aria-hidden>
+      <path d="M12 9v4m0 4h.01" />
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3l-8.47-14.14a2 2 0 0 0-3.42 0Z" />
+    </svg>
+  );
+}
+
+function BulbIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={props.className} aria-hidden>
+      <path d="M9 18h6" />
+      <path d="M10 22h4" />
+      <path d="M2 10a10 10 0 1 0 20 0 10 10 0 1 0-20 0Z" />
+      <path d="M8 14a4 4 0 1 1 8 0" />
+    </svg>
+  );
+}

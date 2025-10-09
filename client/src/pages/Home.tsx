@@ -5,6 +5,7 @@ import { ConsultationForm } from "@/components/ConsultationForm";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import { StoryCard } from "@/components/StoryCard";
 import { Footer } from "@/components/Footer";
+import KnaDangerSection from "@/components/KnaDangerSection";
 import { Search, Star, MessageCircle, Flower, Baby, Building } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
@@ -14,7 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import snsImage from "@assets/KakaoTalk_20251009_133431761_1759984693594.jpg";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -192,40 +192,20 @@ export default function Home() {
       
       <Hero />
 
-      <section id="about" className="py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground text-center">
-              와츠유어네임 이름연구협회 소개
-            </h2>
-            
-            <div className="text-center space-y-6">
-              <p className="text-2xl md:text-3xl font-semibold text-primary tracking-wide">
-                '바른 이름으로, 널리 세상을 이롭게'
-              </p>
-              
-              <p className="text-lg text-muted-foreground leading-relaxed tracking-wide">
-                17년간 43만명 이상의 임상을 통해<br />
-                이름만으로 타고난 운명을<br />
-                80% 이상의 정확도로 분석할 수 있는 이론으로 발전시켰습니다.
-              </p>
-
-              <div className="space-y-2">
-                <p className="text-lg font-semibold text-foreground">SNS 팔로워 5만여명</p>
-                <p className="text-lg font-semibold text-foreground">259만, 287만, 260만 조회</p>
-              </div>
-
-              <div className="mt-8">
-                <img 
-                  src={snsImage} 
-                  alt="SNS 인기 콘텐츠" 
-                  className="w-full max-w-4xl mx-auto rounded-lg shadow-lg"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <KnaDangerSection 
+        onReviews={() => {
+          const element = document.getElementById('testimonials');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
+        onBooking={() => {
+          const element = document.getElementById('services');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
+      />
 
       <section id="services" className="py-16 md:py-24 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
