@@ -97,6 +97,30 @@ export default function Home() {
       content: "남편이 달라졌어요. 밉지도 않고. 시어머님에 대한 원망이 사라졌어요. 아이가 알아서 스스로 잘 해요",
       rating: 5,
     },
+    {
+      name: "고객 11",
+      service: "이름 분석",
+      content: "이제야 내 삶의 퍼즐이 맞춰지는 것같습니다. 감탄에 감탄!",
+      rating: 5,
+    },
+    {
+      name: "고객 12",
+      service: "이름 분석",
+      content: "선생님과의 이름분석 상담은 너무나 달랐습니다",
+      rating: 5,
+    },
+    {
+      name: "고객 13",
+      service: "이름 분석",
+      content: "내용이 정말 소름끼치게 가깝더라구요",
+      rating: 5,
+    },
+    {
+      name: "고객 14",
+      service: "이름 분석",
+      content: "이름을 바꿸 수 있다는 게 얼마나 다행인지",
+      rating: 5,
+    },
   ];
 
   const stories = [
