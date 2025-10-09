@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertConsultationSchema } from "@shared/schema";
+import { sendConsultationNotification } from "./email";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Consultation routes
@@ -9,6 +10,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertConsultationSchema.parse(req.body);
       const consultation = await storage.createConsultation(validatedData);
+      
+      // 이메일 알림 전송 (비동기, 실패해도 상담 신청은 성공)
+      sendConsultationNotification(consultation).catch(error => {
+        console.error("이메일 전송 실패 (상담 신청은 저장됨):", error);
+      });
+      
       return res.json(consultation);
     } catch (error) {
       console.error("Error creating consultation:", error);
