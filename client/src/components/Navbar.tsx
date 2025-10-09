@@ -27,7 +27,7 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
             <button
               onClick={goToHome}
               className="flex items-center gap-3 hover-elevate active-elevate-2 rounded-md px-2 py-1"
@@ -42,15 +42,6 @@ export function Navbar() {
                 한국이름학교 | 와츠유어네임 이름연구협회
               </span>
             </button>
-            
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-sm font-medium text-foreground">이름분석</span>
-              <span className="text-sm font-medium text-foreground">이름감명</span>
-              <span className="text-sm font-medium text-foreground">이름분석 및 감명 상세 안내</span>
-              <span className="text-sm font-medium text-foreground">개명</span>
-              <span className="text-sm font-medium text-foreground">신생아 작명</span>
-              <span className="text-sm font-medium text-foreground">상호작명</span>
-            </div>
           </div>
 
           <div className="hidden md:flex items-center gap-4">
