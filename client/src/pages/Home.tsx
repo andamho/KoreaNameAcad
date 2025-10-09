@@ -302,21 +302,17 @@ export default function Home() {
               letterSpacing: '0.3em'
             }}
           >
-            개명 후기
+            이름분석 상담후기
           </h2>
 
           <div className="space-y-8">
-            {testimonials.map((testimonial, index) => (
+            {analysisTestimonials.map((testimonial, index) => (
               <div
                 key={index}
                 className="group relative bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-10 md:p-12 transition-all duration-500 hover:translate-x-4 hover:scale-[1.02] hover:border-[#58C4C4]/50 hover:shadow-2xl hover:shadow-[#58C4C4]/20"
-                data-testid={`testimonial-card-${index}`}
+                data-testid={`analysis-testimonial-card-${index}`}
               >
                 <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#58C4C4] via-[#6DD4D4] to-[#45B8B8] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-l-3xl" />
-                
-                <div className="absolute top-5 right-6 text-8xl md:text-9xl font-black text-[#58C4C4]/10 leading-none select-none z-0">
-                  {index + 1 < 10 ? `0${index + 1}` : index + 1}
-                </div>
 
                 <div className="relative z-10">
                   <p className="text-xl md:text-2xl leading-relaxed text-gray-200 font-light">
@@ -348,7 +344,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="analysis-testimonials" className="relative py-20 md:py-32 bg-[#0a0a0a] overflow-hidden">
+      <section id="name-change-testimonials" className="relative py-20 md:py-32 bg-[#0a0a0a] overflow-hidden">
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-[#58C4C4]/20 via-transparent to-[#45B8B8]/20 animate-pulse" />
         </div>
@@ -365,21 +361,17 @@ export default function Home() {
               letterSpacing: '0.3em'
             }}
           >
-            이름분석 상담후기
+            개명 후기
           </h2>
 
           <div className="space-y-8">
-            {analysisTestimonials.map((testimonial, index) => (
+            {testimonials.map((testimonial, index) => (
               <div
                 key={index}
                 className="group relative bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-10 md:p-12 transition-all duration-500 hover:translate-x-4 hover:scale-[1.02] hover:border-[#58C4C4]/50 hover:shadow-2xl hover:shadow-[#58C4C4]/20"
-                data-testid={`analysis-testimonial-card-${index}`}
+                data-testid={`testimonial-card-${index}`}
               >
                 <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#58C4C4] via-[#6DD4D4] to-[#45B8B8] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-l-3xl" />
-                
-                <div className="absolute top-5 right-6 text-8xl md:text-9xl font-black text-[#58C4C4]/10 leading-none select-none z-0">
-                  {index + 1 < 10 ? `0${index + 1}` : index + 1}
-                </div>
 
                 <div className="relative z-10">
                   <p className="text-xl md:text-2xl leading-relaxed text-gray-200 font-light">
@@ -407,6 +399,27 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="mt-16 text-center">
+            <a
+              href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=11&proxyReferer=https%3A%2F%2Flinkon.id%2F"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-xl md:text-2xl font-semibold hover:opacity-80 transition-opacity"
+              style={{
+                background: 'linear-gradient(135deg, #58C4C4 0%, #6DD4D4 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+              data-testid="link-detailed-testimonials"
+            >
+              자세한 상담·개명 후기 안내
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6" style={{ stroke: '#58C4C4' }}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+              </svg>
+            </a>
           </div>
         </div>
       </section>
