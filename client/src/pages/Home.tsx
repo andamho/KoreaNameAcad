@@ -124,6 +124,24 @@ export default function Home() {
       content: "이름을 바꿀 수 있다는 게 얼마나 다행인지",
       rating: 5,
     },
+    {
+      name: "고객 5",
+      service: "이름 분석",
+      content: "해결책이 생겨 마음이 편해졌어요",
+      rating: 5,
+    },
+    {
+      name: "고객 6",
+      service: "이름 분석",
+      content: "제 인생의 많은 부분을 다시 돌아보며 이해할 수 있는 시간이었습니다",
+      rating: 5,
+    },
+    {
+      name: "고객 7",
+      service: "이름 분석",
+      content: "한 시간이 너무 후딱 지나가더라구요. 뭔지 모를 후련함도 생기고. 누군가에게 말못한 고민까지 털어놓게 됐어요",
+      rating: 5,
+    },
   ];
 
   const stories = [
