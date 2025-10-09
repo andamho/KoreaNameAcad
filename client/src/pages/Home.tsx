@@ -14,7 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import snsImage from "@assets/KakaoTalk_20251009_085023527_1759967444345.png";
+import snsImage1 from "@assets/KakaoTalk_20251009_132036383_01_1759983715584.jpg";
+import snsImage2 from "@assets/KakaoTalk_20251009_132036383_02_1759983715585.jpg";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -212,14 +213,19 @@ export default function Home() {
 
               <div className="space-y-2">
                 <p className="text-lg font-semibold text-foreground">SNS 팔로워 5만여명</p>
-                <p className="text-lg font-semibold text-foreground">287만, 260만 조회</p>
+                <p className="text-lg font-semibold text-foreground">259만, 287만, 260만 조회</p>
               </div>
 
-              <div className="mt-8">
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                 <img 
-                  src={snsImage} 
-                  alt="SNS 인기 콘텐츠" 
-                  className="w-full max-w-2xl mx-auto rounded-lg shadow-lg"
+                  src={snsImage1} 
+                  alt="내 이름은 전국 몇 등일까 - 259.5만 조회" 
+                  className="w-full rounded-lg shadow-lg hover:scale-105 transition-transform duration-300"
+                />
+                <img 
+                  src={snsImage2} 
+                  alt="95% 직필소 중국사람 이름찾는 꽃 - 6.4만 조회" 
+                  className="w-full rounded-lg shadow-lg hover:scale-105 transition-transform duration-300"
                 />
               </div>
             </div>
