@@ -38,21 +38,33 @@ export default function Home() {
 
   const testimonials = [
     {
-      name: "김민수",
-      service: "이름 분석",
-      content: "이름 분석을 통해 제 이름에 담긴 의미를 깊이 이해할 수 있었습니다. 전문적이고 세심한 상담에 매우 만족합니다.",
+      name: "고객 1",
+      service: "개명",
+      content: "미용실도 이전해서 넘 잘 되고. 사랑하는 사람도 생겨 결혼해요",
       rating: 5,
     },
     {
-      name: "박지은",
+      name: "고객 2",
       service: "개명",
-      content: "절 좋아하는 사람이 많아졌어요. 예민한 게 사라졌어요. 요즘 돈도 많이 벌어요",
+      content: "정부지원사업 3천만원 지원받아. 플랫폼 사업 시작해서 넘 잘 돼요",
       rating: 5,
     },
     {
-      name: "이성호",
+      name: "고객 3",
       service: "개명",
-      content: "직장과 아파트가 생겼어요. 가전제품도 누가 사주셨어요. 아빠 외도 중이셨는데 정리하고 들어오셨어요. 지금은 소아정신과에서 아이들 진료보고 있는데 마더테레사라고 칭찬받고 인정받아요",
+      content: "개명 후 6년. 세상에서 가장 행복한 사람",
+      rating: 5,
+    },
+    {
+      name: "고객 4",
+      service: "개명",
+      content: "이상형의 남친이 생겼어요",
+      rating: 5,
+    },
+    {
+      name: "고객 5",
+      service: "개명",
+      content: "가는 곳마다 열광! 이젠 대기업 임원만큼 돈을 벌어요. 크게 되고 빛날 것같아요",
       rating: 5,
     },
   ];
@@ -195,7 +207,7 @@ export default function Home() {
           </h2>
 
           <div className="space-y-8">
-            {testimonials.slice(1).map((testimonial, index) => (
+            {testimonials.map((testimonial, index) => (
               <div
                 key={index}
                 className="group relative bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-10 md:p-12 transition-all duration-500 hover:translate-x-4 hover:scale-[1.02] hover:border-[#58C4C4]/50 hover:shadow-2xl hover:shadow-[#58C4C4]/20"
