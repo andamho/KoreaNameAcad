@@ -203,10 +203,10 @@ export default function Home() {
       <section id="services" className="py-16 md:py-24 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center space-y-4 mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+            <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
               전문 서비스
             </h2>
-            <p className="text-lg text-muted-foreground tracking-wide">
+            <p className="text-base text-muted-foreground">
               다양한 이름 관련 서비스를 제공합니다
             </p>
           </div>
@@ -267,16 +267,7 @@ export default function Home() {
         </div>
         
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
-          <h2 
-            className="text-3xl md:text-5xl font-bold text-center mb-16 tracking-wide"
-            style={{
-              background: 'linear-gradient(135deg, #58C4C4 0%, #6DD4D4 50%, #45B8B8 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              letterSpacing: '0.2em'
-            }}
-          >
+          <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl text-center mb-16">
             이름분석 상담후기
           </h2>
 
@@ -290,12 +281,12 @@ export default function Home() {
                 <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#58C4C4] via-[#6DD4D4] to-[#45B8B8] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-l-3xl" />
 
                 <div className="relative z-10">
-                  <p className="text-xl md:text-2xl leading-relaxed text-gray-200 font-light">
+                  <p className="text-base leading-relaxed text-gray-200 font-light">
                     {testimonial.content.split(' ').map((word, i) => (
                       <span key={i}>
                         {i === 0 ? (
                           <span 
-                            className="font-bold text-2xl md:text-3xl"
+                            className="font-bold text-xl"
                             style={{
                               background: 'linear-gradient(135deg, #58C4C4 0%, #6DD4D4 100%)',
                               WebkitBackgroundClip: 'text',
@@ -325,16 +316,7 @@ export default function Home() {
         </div>
         
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
-          <h2 
-            className="text-3xl md:text-5xl font-bold text-center mb-16 tracking-wide"
-            style={{
-              background: 'linear-gradient(135deg, #58C4C4 0%, #6DD4D4 50%, #45B8B8 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              letterSpacing: '0.2em'
-            }}
-          >
+          <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl text-center mb-16">
             개명 후기
           </h2>
 
@@ -348,12 +330,12 @@ export default function Home() {
                 <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#58C4C4] via-[#6DD4D4] to-[#45B8B8] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-l-3xl" />
 
                 <div className="relative z-10">
-                  <p className="text-xl md:text-2xl leading-relaxed text-gray-200 font-light">
+                  <p className="text-base leading-relaxed text-gray-200 font-light">
                     {testimonial.content.split(' ').map((word, i) => (
                       <span key={i}>
                         {i === 0 ? (
                           <span 
-                            className="font-bold text-2xl md:text-3xl"
+                            className="font-bold text-xl"
                             style={{
                               background: 'linear-gradient(135deg, #58C4C4 0%, #6DD4D4 100%)',
                               WebkitBackgroundClip: 'text',
