@@ -116,7 +116,7 @@ export async function sendConsultationNotification(consultation: Consultation): 
                 <div class="value">
                   ${consultation.fileName}
                   <br>
-                  <small style="color: #666;">※ 첨부파일은 관리자 페이지에서 확인하실 수 있습니다.</small>
+                  <small style="color: #666;">※ 첨부파일이 이메일에 포함되어 있습니다.</small>
                 </div>
               </div>
             ` : ''}
@@ -185,7 +185,7 @@ ${consultation.reason}
 💰 입금자명: ${consultation.depositorName}
 ⏰ 희망 상담 시간: ${consultation.consultationTime}
 
-${consultation.fileName ? `📎 첨부 파일: ${consultation.fileName}\n※ 첨부파일은 관리자 페이지에서 확인하실 수 있습니다.\n` : ''}
+${consultation.fileName ? `📎 첨부 파일: ${consultation.fileName}\n※ 첨부파일이 이메일에 포함되어 있습니다.\n` : ''}
 
 🕐 신청 시간: ${new Date(consultation.createdAt).toLocaleString('ko-KR', { 
   timeZone: 'Asia/Seoul',
@@ -201,12 +201,19 @@ ${consultation.fileName ? `📎 첨부 파일: ${consultation.fileName}\n※ 첨
 관리자 페이지에서 상세 내용을 확인하실 수 있습니다.
     `.trim();
 
+    // 첨부파일 준비 (있는 경우)
+    const attachments = consultation.fileName && consultation.fileData ? [{
+      filename: consultation.fileName,
+      content: consultation.fileData, // base64 인코딩된 데이터
+    }] : undefined;
+
     await resend.emails.send({
       from: FROM_EMAIL,
       to: RECIPIENT_EMAIL,
       subject: subject,
       html: htmlContent,
       text: textContent,
+      attachments: attachments,
     });
 
     console.log(`✅ 상담 신청 이메일 전송 완료: ${consultation.id}`);
