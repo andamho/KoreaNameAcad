@@ -11,7 +11,7 @@ export default function KnaValueSection() {
       <div className="relative mx-auto max-w-7xl px-6 py-16 sm:py-20 lg:px-8">
         <header className="mx-auto max-w-3xl text-center">
           <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">왜 한국이름학교인가?</h2>
-          <p className="mt-3 text-base text-muted-foreground">전국 최다 후기로 검증된, 가장 신뢰받는 이름 분석</p>
+          <p className="mt-3 text-lg text-muted-foreground">전국 최다 후기로 검증된, 가장 신뢰받는 이름 분석</p>
         </header>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -52,11 +52,11 @@ export default function KnaValueSection() {
           <ul className="mt-4 space-y-3">
             <li className="flex items-start gap-3">
               <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">1</span>
-              <span className="text-base text-gray-700 dark:text-muted-foreground">상담·개명 후기로 1차 검증</span>
+              <span className="text-lg text-gray-700 dark:text-muted-foreground">상담·개명 후기로 1차 검증</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">2</span>
-              <span className="text-base text-gray-700 dark:text-muted-foreground">이름만으로 운명상담을 통해 작명이론의 정확도 2차 검증</span>
+              <span className="text-lg text-gray-700 dark:text-muted-foreground">이름만으로 운명상담을 통해 작명이론의 정확도 2차 검증</span>
             </li>
           </ul>
         </section>

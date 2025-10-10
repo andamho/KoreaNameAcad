@@ -6,7 +6,7 @@ export default function KnaStepsSection() {
           <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
             참 쉽습니다
           </h2>
-          <p className="mt-2 text-base text-muted-foreground">
+          <p className="mt-2 text-lg text-muted-foreground">
             하나씩만 천천히 따라 와주세요
           </p>
         </header>
