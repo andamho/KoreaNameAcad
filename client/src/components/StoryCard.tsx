@@ -18,7 +18,7 @@ export function StoryCard({ title, excerpt, category, onClick }: StoryCardProps)
       </div>
       
       <div className="space-y-2 flex-1">
-        <h3 className="text-xl font-semibold text-foreground" data-testid={`text-title-${title}`}>
+        <h3 className="text-2xl font-semibold text-foreground" data-testid={`text-title-${title}`}>
           {title}
         </h3>
         <p className="text-muted-foreground leading-relaxed tracking-wide line-clamp-3">

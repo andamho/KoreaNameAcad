@@ -121,7 +121,7 @@ function PriceCard({ title, price, desc, bullets, highlight, linkText, onLinkCli
         </span>
       )}
       <header className="flex items-end justify-between">
-        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+        <h3 className="text-[22px] font-semibold text-foreground">{title}</h3>
         <div className="text-right">{price}</div>
       </header>
       <p className="mt-3 text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">{desc}</p>

@@ -35,7 +35,7 @@ export default function KnaDangerSection() {
           <div className="flex items-start gap-3">
             <Lightbulb className="mt-1 h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" strokeWidth={2} />
             <div className="flex-1">
-              <h3 id="why-title" className="text-xl font-semibold">이름운이 중요한 이유</h3>
+              <h3 id="why-title" className="text-2xl font-semibold">이름운이 중요한 이유</h3>
               <div className="mt-2 grid gap-4 md:grid-cols-2">
                 <Note title="이름운 = 인생의 결과" desc="열심히만 산다고 잘 사는 게 아닙니다" />
                 <Note title="잘못 지은 이름" desc="평생을 괴롭힙니다" />
@@ -68,7 +68,7 @@ function QA({ q, a }: { q: string; a: string }) {
 function Note({ title, desc }: { title: string; desc: string }) {
   return (
     <div className="rounded-xl border border-gray-200 dark:border-border bg-gradient-to-br from-white to-gray-50 dark:from-card dark:to-muted p-4 shadow-sm">
-      <h4 className="text-lg font-semibold">{title}</h4>
+      <h4 className="text-[22px] font-semibold">{title}</h4>
       <p className="mt-1 text-lg text-gray-700 dark:text-muted-foreground">→ {desc}</p>
     </div>
   );

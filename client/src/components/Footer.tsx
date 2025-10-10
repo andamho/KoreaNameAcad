@@ -15,7 +15,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-foreground">한국이름학교 | 와츠유어네임 이름연구협회</h3>
+            <h3 className="text-[22px] font-bold text-foreground">한국이름학교 | 와츠유어네임 이름연구협회</h3>
             <p className="text-sm text-muted-foreground tracking-wide">
               바른 이름을 통해, 널리 세상을 이롭게
             </p>

@@ -17,7 +17,7 @@ export function ServiceCard({ icon: Icon, title, description, buttonText = "ÏûêÏ
         <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(88, 196, 196, 0.1)' }}>
           <Icon className="h-7 w-7" style={{ color: '#58C4C4' }} strokeWidth={1.5} />
         </div>
-        <h3 className="text-xl font-semibold text-foreground">{title}</h3>
+        <h3 className="text-2xl font-semibold text-foreground">{title}</h3>
       </div>
       
       <p className="text-lg text-muted-foreground leading-relaxed tracking-wide">

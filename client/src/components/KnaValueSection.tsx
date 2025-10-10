@@ -48,7 +48,7 @@ export default function KnaValueSection() {
         </div>
 
         <section className="mt-12 rounded-2xl border border-gray-200 dark:border-border bg-white/80 dark:bg-card/80 p-6 shadow-sm">
-          <h3 className="text-xl font-bold tracking-tight text-foreground">두 번의 확인, 평생의 안심</h3>
+          <h3 className="text-2xl font-bold tracking-tight text-foreground">두 번의 확인, 평생의 안심</h3>
           <ul className="mt-4 space-y-3">
             <li className="flex items-start gap-3">
               <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">1</span>
@@ -71,7 +71,7 @@ function ValueCard({ icon, title, desc }: { icon: React.ReactNode; title: string
       <div className="flex items-start gap-4">
         <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-[#7fe1d3]/25 dark:bg-[#58C4C4]/25">{icon}</div>
         <div>
-          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+          <h3 className="text-[22px] font-semibold text-foreground">{title}</h3>
           <p className="mt-1 text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">{desc}</p>
         </div>
       </div>
