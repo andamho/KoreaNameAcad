@@ -14,6 +14,7 @@ import KnaPricingSection from "@/components/KnaPricingSection";
 import { Search, Star, MessageCircle, Flower, Baby, Building } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -283,120 +284,67 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="testimonials" className="relative py-20 md:py-32 bg-[#0a0a0a] overflow-hidden">
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-[#58C4C4]/20 via-transparent to-[#45B8B8]/20 animate-pulse" />
-        </div>
-        
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
-          <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl text-center mb-16">
-            이름분석 상담후기
-          </h2>
+      <section id="testimonials" className="py-16 md:py-24 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center space-y-4 mb-12">
+            <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
+              이름분석 상담후기
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              실제 고객님들의 생생한 후기입니다
+            </p>
+          </div>
 
-          <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {analysisTestimonials.map((testimonial, index) => (
-              <div
+              <Card
                 key={index}
-                className="group relative bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-10 md:p-12 transition-all duration-500 hover:translate-x-4 hover:scale-[1.02] hover:border-[#58C4C4]/50 hover:shadow-2xl hover:shadow-[#58C4C4]/20"
+                className="p-6 hover-elevate"
                 data-testid={`analysis-testimonial-card-${index}`}
               >
-                <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#58C4C4] via-[#6DD4D4] to-[#45B8B8] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-l-3xl" />
-
-                <div className="relative z-10">
-                  <p className="text-base leading-relaxed text-gray-200 font-light">
-                    {testimonial.content.split(' ').map((word, i) => (
-                      <span key={i}>
-                        {i === 0 ? (
-                          <span 
-                            className="font-bold text-xl"
-                            style={{
-                              background: 'linear-gradient(135deg, #58C4C4 0%, #6DD4D4 100%)',
-                              WebkitBackgroundClip: 'text',
-                              WebkitTextFillColor: 'transparent',
-                              backgroundClip: 'text'
-                            }}
-                          >
-                            {word}
-                          </span>
-                        ) : (
-                          word
-                        )}
-                        {i < testimonial.content.split(' ').length - 1 && ' '}
-                      </span>
-                    ))}
-                  </p>
-                </div>
-              </div>
+                <p className="text-lg leading-relaxed text-foreground">
+                  {testimonial.content}
+                </p>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="name-change-testimonials" className="relative py-20 md:py-32 bg-[#0a0a0a] overflow-hidden">
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-[#58C4C4]/20 via-transparent to-[#45B8B8]/20 animate-pulse" />
-        </div>
-        
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
-          <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl text-center mb-16">
-            개명 후기
-          </h2>
+      <section id="name-change-testimonials" className="py-16 md:py-24 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center space-y-4 mb-12">
+            <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
+              개명 후기
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              개명 후 달라진 삶을 경험한 고객님들의 이야기
+            </p>
+          </div>
 
-          <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {testimonials.map((testimonial, index) => (
-              <div
+              <Card
                 key={index}
-                className="group relative bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-10 md:p-12 transition-all duration-500 hover:translate-x-4 hover:scale-[1.02] hover:border-[#58C4C4]/50 hover:shadow-2xl hover:shadow-[#58C4C4]/20"
+                className="p-6 hover-elevate"
                 data-testid={`testimonial-card-${index}`}
               >
-                <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#58C4C4] via-[#6DD4D4] to-[#45B8B8] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-l-3xl" />
-
-                <div className="relative z-10">
-                  <p className="text-base leading-relaxed text-gray-200 font-light">
-                    {testimonial.content.split(' ').map((word, i) => (
-                      <span key={i}>
-                        {i === 0 ? (
-                          <span 
-                            className="font-bold text-xl"
-                            style={{
-                              background: 'linear-gradient(135deg, #58C4C4 0%, #6DD4D4 100%)',
-                              WebkitBackgroundClip: 'text',
-                              WebkitTextFillColor: 'transparent',
-                              backgroundClip: 'text'
-                            }}
-                          >
-                            {word}
-                          </span>
-                        ) : (
-                          word
-                        )}
-                        {i < testimonial.content.split(' ').length - 1 && ' '}
-                      </span>
-                    ))}
-                  </p>
-                </div>
-              </div>
+                <p className="text-lg leading-relaxed text-foreground">
+                  {testimonial.content}
+                </p>
+              </Card>
             ))}
           </div>
 
-          <div className="mt-16 text-center">
+          <div className="mt-12 text-center">
             <a
               href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=11&proxyReferer=https%3A%2F%2Flinkon.id%2F"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-xl md:text-2xl font-semibold hover:opacity-80 transition-opacity"
-              style={{
-                background: 'linear-gradient(135deg, #58C4C4 0%, #6DD4D4 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}
+              className="inline-flex items-center gap-2 text-lg font-semibold text-[#0f766e] dark:text-[#58C4C4] hover:underline"
               data-testid="link-detailed-testimonials"
             >
-              자세한 상담·개명 후기 안내
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6" style={{ stroke: '#58C4C4' }}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-              </svg>
+              고객 후기 전체보기 →
             </a>
           </div>
         </div>
