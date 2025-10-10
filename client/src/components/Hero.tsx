@@ -28,7 +28,9 @@ export function Hero() {
               <br />
               <span className="text-primary">이름 하나로</span> 이유를 찾고
               <br />
-              운이 술술 풀리는 새 이름으로, 인생역전하세요.
+              운이 술술 풀리는
+              <br />
+              새 이름으로, 인생역전하세요.
             </h1>
             
             <p className="text-lg md:text-xl text-muted-foreground tracking-wide">
