@@ -20,7 +20,7 @@ export function ServiceCard({ icon: Icon, title, description, buttonText = "ÏûêÏ
         <h3 className="text-xl font-semibold text-foreground">{title}</h3>
       </div>
       
-      <p className="text-muted-foreground leading-relaxed tracking-wide">
+      <p className="text-lg text-muted-foreground leading-relaxed tracking-wide">
         {description}
       </p>
       
@@ -28,7 +28,7 @@ export function ServiceCard({ icon: Icon, title, description, buttonText = "ÏûêÏ
         variant="ghost"
         onClick={onClick}
         data-testid={`button-service-${title}`}
-        className="w-full justify-start px-0 hover:text-primary"
+        className="w-full justify-start px-0 hover:text-primary text-lg"
         style={{ color: '#58C4C4' }}
       >
         {buttonText} ‚Üí

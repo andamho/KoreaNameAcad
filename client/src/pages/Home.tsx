@@ -212,7 +212,7 @@ export default function Home() {
             <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
               전문 서비스
             </h2>
-            <p className="text-base text-muted-foreground">
+            <p className="text-lg text-muted-foreground">
               다양한 이름 관련 서비스를 제공합니다
             </p>
           </div>
