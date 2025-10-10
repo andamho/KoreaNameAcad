@@ -42,7 +42,7 @@ export function Hero() {
               size="lg"
               onClick={() => scrollToSection('testimonials')}
               data-testid="button-reviews"
-              className="min-w-[200px] bg-background/50 backdrop-blur-sm"
+              className="min-w-[200px] bg-background/50 backdrop-blur-sm text-lg"
             >
               상담·개명 후기
             </Button>
@@ -50,7 +50,7 @@ export function Hero() {
               size="lg"
               onClick={() => scrollToSection('services')}
               data-testid="button-consultation"
-              className="min-w-[200px]"
+              className="min-w-[200px] text-lg"
             >
               지금 신청
             </Button>

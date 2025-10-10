@@ -47,7 +47,7 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-4">
             <Button
               onClick={() => scrollToSection('services')}
-              className="min-w-[120px]"
+              className="min-w-[120px] text-lg"
               data-testid="button-apply-now"
             >
               지금 신청
@@ -55,7 +55,7 @@ export function Navbar() {
             <Button
               variant="outline"
               asChild
-              className="min-w-[100px]"
+              className="min-w-[100px] text-lg"
             >
               <a
                 href="https://pf.kakao.com/_Sxnvbb/chat"
@@ -86,7 +86,7 @@ export function Navbar() {
           <div className="md:hidden py-4 space-y-2">
             <Button
               onClick={() => scrollToSection('services')}
-              className="w-full"
+              className="w-full text-lg"
               data-testid="mobile-button-apply-now"
             >
               지금 신청
@@ -94,7 +94,7 @@ export function Navbar() {
             <Button
               variant="outline"
               asChild
-              className="w-full"
+              className="w-full text-lg"
             >
               <a
                 href="https://pf.kakao.com/_Sxnvbb/chat"
