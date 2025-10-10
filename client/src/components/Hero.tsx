@@ -33,7 +33,7 @@ export function Hero() {
               새 이름으로, 인생역전하세요.
             </h1>
             
-            <p className="text-lg md:text-xl text-muted-foreground tracking-wide">
+            <p className="text-[27px] md:text-3xl text-muted-foreground tracking-wide">
               한글·한자이름만으로 운명상담 [정확도 80% 이상]
             </p>
           </div>
