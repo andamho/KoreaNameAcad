@@ -89,7 +89,7 @@ function AccordionItem({ q, children, ...props }: { q: string; children: React.R
         aria-expanded={open ? "true" : "false"}
         data-testid={`button-accordion-${q.substring(0, 10)}`}
       >
-        <span className="text-lg font-semibold text-gray-900 dark:text-foreground">{q}</span>
+        <span className="text-[22px] font-semibold text-gray-900 dark:text-foreground">{q}</span>
         <span 
           className={`inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full transition-colors ${
             open 
