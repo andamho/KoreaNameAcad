@@ -71,8 +71,8 @@ function ValueCard({ icon, title, desc }: { icon: React.ReactNode; title: string
       <div className="flex items-start gap-4">
         <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-[#7fe1d3]/25 dark:bg-[#58C4C4]/25">{icon}</div>
         <div>
-          <h3 className="text-base font-semibold text-foreground">{title}</h3>
-          <p className="mt-1 text-base leading-relaxed text-gray-700 dark:text-muted-foreground">{desc}</p>
+          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+          <p className="mt-1 text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">{desc}</p>
         </div>
       </div>
     </article>
