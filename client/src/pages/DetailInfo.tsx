@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { useEffect } from "react";
 import image1 from "@assets/image_1759935489354.png";
 import image2 from "@assets/image_1759935501535.png";
 import image3 from "@assets/image_1759935535730.png";
@@ -14,6 +15,19 @@ export default function DetailInfo() {
   const openApplication = (type: "analysis" | "naming") => {
     setLocation(`/?open=${type}`);
   };
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const elementId = hash.substring(1);
+      setTimeout(() => {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">

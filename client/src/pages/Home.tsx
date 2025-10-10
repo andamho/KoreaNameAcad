@@ -34,6 +34,17 @@ export default function Home() {
       setDialogOpen(true);
       window.history.replaceState({}, "", "/");
     }
+
+    const hash = window.location.hash;
+    if (hash) {
+      const elementId = hash.substring(1);
+      setTimeout(() => {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
   }, []);
 
   const openDialog = (type: "analysis" | "naming") => {
@@ -207,7 +218,9 @@ export default function Home() {
 
       <KnaMythTruthSection />
 
-      <KnaPricingSection onOpenDialog={openDialog} />
+      <section id="pricing">
+        <KnaPricingSection onOpenDialog={openDialog} />
+      </section>
 
       <section id="services" className="py-16 md:py-24 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
