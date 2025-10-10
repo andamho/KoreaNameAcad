@@ -105,7 +105,7 @@ export default function DetailInfo() {
             </Card>
 
             {/* 가족 상담 원칙 */}
-            <Card className="p-6 md:p-8 space-y-6">
+            <Card id="family-policy" className="p-6 md:p-8 space-y-6">
               <div className="space-y-4 text-center">
                 <h2 className="text-2xl font-bold text-foreground">👨‍👩‍👧‍👦 등본상 가족 상담 원칙</h2>
                 <div className="text-foreground space-y-4 leading-relaxed">
