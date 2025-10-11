@@ -3,7 +3,7 @@ export default function KnaStepsSection() {
     <section className="py-16 md:py-24 bg-background">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <header className="text-center">
-          <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
+          <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
             참 쉽습니다
           </h2>
           <p className="mt-2 text-lg text-muted-foreground">
