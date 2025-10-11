@@ -18,7 +18,6 @@ interface PersonData {
 }
 
 interface NameChangeData {
-  currentName: string;
   previousName: string;
   koreanName: string;
   chineseName: string;
@@ -41,7 +40,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const [hasNameChange, setHasNameChange] = useState<string>("no");
   const [numNameChanges, setNumNameChanges] = useState<number>(1);
   const [nameChangeData, setNameChangeData] = useState<NameChangeData[]>([
-    { currentName: "", previousName: "", koreanName: "", chineseName: "", changeYear: "" }
+    { previousName: "", koreanName: "", chineseName: "", changeYear: "" }
   ]);
   const [evaluationKoreanName, setEvaluationKoreanName] = useState("");
   const [evaluationChineseName, setEvaluationChineseName] = useState("");
@@ -60,7 +59,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const handleNumNameChangesChange = (num: number) => {
     setNumNameChanges(num);
     const newNameChangeData = Array.from({ length: num }, (_, i) => 
-      nameChangeData[i] || { currentName: "", previousName: "", koreanName: "", chineseName: "", changeYear: "" }
+      nameChangeData[i] || { previousName: "", koreanName: "", chineseName: "", changeYear: "" }
     );
     setNameChangeData(newNameChangeData);
   };
@@ -172,30 +171,25 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* 등본상 가족 인원 */}
-        <div className="space-y-3">
-          <Label className="text-lg font-semibold">등본상 가족 인원 <span className="text-base font-normal text-muted-foreground">(해당 인원을 체크하세요)</span></Label>
-          <div className="flex gap-2 flex-wrap">
-            {[1, 2, 3, 4, 5, 6].map((num) => (
-              <Button
-                key={num}
-                type="button"
-                variant={numPeople === num ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleNumPeopleChange(num)}
-                data-testid={`button-people-${num}`}
-                className="w-12 h-12 text-lg"
-              >
-                {num}
-              </Button>
-            ))}
-          </div>
-          {type === "naming" ? (
-            <p className="text-base text-muted-foreground mt-2">
-              <span className="font-bold text-foreground">현재 사용하는 이름 분석 진행 필수</span><br />
-              (현재 이름 운보다 약하거나 너무 커도 안됨)
-            </p>
-          ) : (
+        {/* 등본상 가족 인원 - 이름분석에서만 표시 */}
+        {type === "analysis" && (
+          <div className="space-y-3">
+            <Label className="text-lg font-semibold">등본상 가족 인원 <span className="text-base font-normal text-muted-foreground">(해당 인원을 체크하세요)</span></Label>
+            <div className="flex gap-2 flex-wrap">
+              {[1, 2, 3, 4, 5, 6].map((num) => (
+                <Button
+                  key={num}
+                  type="button"
+                  variant={numPeople === num ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleNumPeopleChange(num)}
+                  data-testid={`button-people-${num}`}
+                  className="w-12 h-12 text-lg"
+                >
+                  {num}
+                </Button>
+              ))}
+            </div>
             <p className="text-base text-muted-foreground mt-2">
               저희 협회는 <span className="font-bold text-foreground">등본상 가족 상담 원칙</span>으로 상담진행해 드리고 있습니다{" "}
               <a 
@@ -208,16 +202,16 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 자세히 보기 →
               </a>
             </p>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* 각 인원별 정보 입력 */}
         {peopleData.map((person, index) => (
           <Card key={index} className="p-4 space-y-4">
-            <h4 className="text-lg font-semibold text-foreground">{index + 1}번째 분석 대상</h4>
+            {type === "analysis" && <h4 className="text-lg font-semibold text-foreground">{index + 1}번째 분석 대상</h4>}
             
             <div className="space-y-2">
-              <Label htmlFor={`name-${index}`} className="text-lg">분석할 이름</Label>
+              <Label htmlFor={`name-${index}`} className="text-lg">이름</Label>
               <Input
                 id={`name-${index}`}
                 value={person.name}
@@ -351,17 +345,6 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 <h4 className="text-lg font-semibold text-foreground">{index + 1}번째 개명 정보</h4>
 
                 <div className="space-y-2">
-                  <Label htmlFor={`currentName-${index}`} className="text-lg">현재이름</Label>
-                  <Input
-                    id={`currentName-${index}`}
-                    value={data.currentName}
-                    onChange={(e) => updateNameChangeData(index, "currentName", e.target.value)}
-                    placeholder="현재 사용하는 이름"
-                    data-testid={`input-current-name-${index}`}
-                  />
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor={`previousName-${index}`} className="text-lg">개명전 이름</Label>
                   <Input
                     id={`previousName-${index}`}
@@ -401,9 +384,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     <p className="text-base text-muted-foreground">
                       넓을 홍 길할 길 동녘 동 ❌<br />
                       洪吉東 ⭕<br />
-                      (한자 자체로 꼭 보내주세요.<br />
-                      같은 뜻을 가진 한자가 많이 있는<br />
-                      경우가 있어서 그렇습니다.)
+                      (한자 자체로 꼭 보내주세요. 같은 뜻을 가진 한자가 많이 있는 경우가 있어서 그렇습니다.)
                     </p>
                   </div>
                 )}
@@ -454,9 +435,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               <p className="text-base text-muted-foreground">
                 넓을 홍 길할 길 동녘 동 ❌<br />
                 洪吉東 ⭕<br />
-                (한자 자체로 꼭 보내주세요.<br />
-                같은 뜻을 가진 한자가 많이 있는<br />
-                경우가 있어서 그렇습니다.)
+                (한자 자체로 꼭 보내주세요. 같은 뜻을 가진 한자가 많이 있는 경우가 있어서 그렇습니다.)
               </p>
             </div>
           </Card>
