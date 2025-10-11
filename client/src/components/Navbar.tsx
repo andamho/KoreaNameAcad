@@ -38,7 +38,7 @@ export function Navbar() {
                 alt="한국이름학교 로고" 
                 className="h-8 w-8 dark:invert"
               />
-              <span className="text-xl font-bold text-foreground tracking-wide">
+              <span className="text-sm md:text-xl font-bold text-foreground tracking-wide whitespace-nowrap">
                 한국이름학교 | 와츠유어네임 이름연구협회
               </span>
             </button>
