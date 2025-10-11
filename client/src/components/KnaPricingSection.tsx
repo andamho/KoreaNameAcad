@@ -120,12 +120,12 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
                   data-testid={`pricing-row-${sectionIndex}-${i}`}
                 >
                   <div className="col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide">이름분석</div>
-                  <div className="col-span-6 sm:col-span-4 text-right font-semibold text-foreground">
-                    <span className="sm:hidden">
+                  <div className="col-span-6 sm:col-span-4 text-right text-foreground">
+                    <span className="sm:hidden font-semibold">
                       6만원
-                      <br /><span className="whitespace-nowrap">[가족 4명 24만원]</span>
+                      <br /><span className="text-[17px] font-normal">[가족 4명 24만원]</span>
                     </span>
-                    <span className="hidden sm:inline whitespace-nowrap">6만원[가족 4명 24만원]</span>
+                    <span className="hidden sm:inline font-semibold whitespace-nowrap">6만원<span className="text-[17px] font-normal">[가족 4명 24만원]</span></span>
                   </div>
                 </div>
               );
