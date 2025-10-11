@@ -19,7 +19,7 @@ export default function KnaDangerSection() {
         <section aria-labelledby="power-title" className="mt-10">
           <div className="flex items-center gap-3">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#e0f5f2] dark:bg-[#0f766e]/20 flex-shrink-0">
-              <Lightbulb className="h-4 w-4 text-[#0f766e] dark:text-[#58C4C4]" strokeWidth={2} />
+              <Lightbulb className="h-6 w-6 text-[#0f766e] dark:text-[#58C4C4]" strokeWidth={2.5} />
             </div>
             <h3 id="power-title" className="text-[23px] md:text-2xl font-semibold">이름은 힘이 셉니다</h3>
           </div>
@@ -33,7 +33,7 @@ export default function KnaDangerSection() {
         <section aria-labelledby="danger-title" className="mt-8">
           <div className="flex items-center gap-3">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/20 flex-shrink-0">
-              <Ban className="h-4 w-4 text-orange-600 dark:text-orange-400" strokeWidth={2} />
+              <Ban className="h-6 w-6 text-orange-600 dark:text-orange-400" strokeWidth={2.5} />
             </div>
             <h3 id="danger-title" className="text-[23px] md:text-2xl font-semibold">이러시면 안됩니다</h3>
           </div>
