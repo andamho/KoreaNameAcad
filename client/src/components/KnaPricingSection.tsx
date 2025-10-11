@@ -126,7 +126,7 @@ function PriceCard({ title, price, desc, bullets, highlight, linkText, onLinkCli
       </header>
       <p className="mt-3 text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">{desc}</p>
       {bullets && bullets.length > 0 && (
-        <ul className="mt-4 space-y-2 text-lg text-gray-700 dark:text-muted-foreground">
+        <ul className="mt-4 space-y-2 text-lg text-orange-600 dark:text-orange-400">
           {bullets.map((b, i) => (
             <li key={i} className="flex items-start gap-2">
               <Dot />
