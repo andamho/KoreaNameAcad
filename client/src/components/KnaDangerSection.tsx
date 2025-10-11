@@ -1,4 +1,4 @@
-import { AlertTriangle, Lightbulb } from "lucide-react";
+import { AlertTriangle, Lightbulb, Ban } from "lucide-react";
 
 export default function KnaDangerSection() {
   return (
@@ -33,7 +33,7 @@ export default function KnaDangerSection() {
         <section aria-labelledby="danger-title" className="mt-8">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/20 flex-shrink-0">
-              <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" strokeWidth={2} />
+              <Ban className="h-5 w-5 text-orange-600 dark:text-orange-400" strokeWidth={2} />
             </div>
             <h3 id="danger-title" className="text-2xl font-semibold">이러시면 안됩니다</h3>
           </div>
