@@ -86,7 +86,7 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
   return (
     <div className="space-y-3">
       <h3 
-        className="inline-flex items-center gap-2 rounded-xl bg-[#e0f5f2] dark:bg-[#0f766e]/20 px-4 py-2 text-2xl font-semibold text-[#0f766e] dark:text-[#58C4C4]"
+        className="inline-flex items-center gap-2 rounded-xl bg-[#e0f5f2] dark:bg-[#0f766e]/20 px-4 py-2 text-[21px] md:text-2xl font-semibold text-[#0f766e] dark:text-[#58C4C4]"
         data-testid={`heading-${headingId}`}
       >
         <svg 
