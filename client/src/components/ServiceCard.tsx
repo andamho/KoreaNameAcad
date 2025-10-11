@@ -24,7 +24,7 @@ export function ServiceCard({
   return (
     <Card className="p-6 space-y-4 hover-elevate transition-all duration-300">
       <div className="flex items-center gap-3">
-        <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(88, 196, 196, 0.1)' }}>
+        <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(88, 196, 196, 0.1)' }}>
           <Icon className="h-7 w-7" style={{ color: '#58C4C4' }} strokeWidth={1.5} />
         </div>
         <h3 className="text-[21px] md:text-2xl font-semibold text-foreground break-keep">{title}</h3>
