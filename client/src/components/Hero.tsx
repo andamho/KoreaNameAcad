@@ -28,7 +28,6 @@ export function Hero() {
               <span className="text-gray-900 dark:text-white">이름 하나로 이유를 찾고</span><br />
               <span className="kna-highlight">
                 <span className="kna-shine">운이 술술 풀리는</span>
-                <span className="kna-underline" aria-hidden="true" />
               </span><br/>
               <span className="kna-highlight">
                 <span className="kna-shine">새 이름으로, 인생역전하세요.</span>
