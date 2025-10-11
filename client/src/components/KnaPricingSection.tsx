@@ -8,7 +8,6 @@ export default function KnaPricingSection({ onOpenDialog }: KnaPricingSectionPro
   const [, setLocation] = useLocation();
 
   const scrollToFamily = () => {
-    window.history.pushState({}, "", "/#pricing");
     setLocation("/detail-info#family-policy");
   };
 

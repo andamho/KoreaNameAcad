@@ -11,7 +11,7 @@ export default function KnaDangerSection() {
       <div className="relative mx-auto max-w-6xl px-6 py-16 sm:py-20 lg:px-8">
         <header className="mx-auto max-w-3xl text-center">
           <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl flex items-center justify-center gap-3">
-            <AlertTriangle className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" strokeWidth={2.5} />
+            <AlertTriangle className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0 text-orange-600 dark:text-orange-400" strokeWidth={2.5} />
             <span>이름 이렇게 지으면 위험합니다</span>
           </h2>
         </header>
