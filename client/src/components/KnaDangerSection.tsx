@@ -19,15 +19,15 @@ export default function KnaDangerSection() {
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           <QA
             q="비용을 먼저 물어보시나요?"
-            a="비용은 아껴도, 대가는 더 비싸집니다"
+            a={<>비용은 아껴도,<br/>대가는 더 비싸집니다</>}
           />
           <QA
             q="사주보고 한자이름만 지으셨나요?"
-            a="한글 이름의 운이 무너지면, 삶이 비틀립니다"
+            a={<>한글 이름의 운이 무너지면,<br/>삶이 비틀립니다</>}
           />
           <QA
             q="후기도 안 보고 맡기셨나요?"
-            a="검증 없는 작명, 고생은 당사자의 몫입니다"
+            a={<>검증 없는 작명,<br/>고생은 당사자의 몫입니다</>}
           />
         </div>
 
@@ -51,7 +51,7 @@ export default function KnaDangerSection() {
   );
 }
 
-function QA({ q, a }: { q: string; a: string }) {
+function QA({ q, a }: { q: string; a: React.ReactNode }) {
   return (
     <article className="group relative rounded-2xl border border-gray-200 dark:border-border bg-white dark:bg-card p-6 shadow-sm ring-1 ring-transparent transition hover:-translate-y-0.5 hover:shadow-md hover:ring-[#7fe1d3]/60 dark:hover:ring-[#58C4C4]/60 border-l-4 border-l-[#7fe1d3] dark:border-l-[#58C4C4]">
       <div className="flex items-start gap-3">
