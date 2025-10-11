@@ -116,14 +116,17 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
               return (
                 <div 
                   key={i} 
-                  className="px-4 py-3 sm:py-4 hover-elevate"
+                  className="grid grid-cols-12 px-4 py-3 sm:py-4 hover-elevate text-[18px]"
                   data-testid={`pricing-row-${sectionIndex}-${i}`}
                 >
-                  <div className="grid grid-cols-12 text-[18px]">
-                    <div className="col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide">이름분석</div>
-                    <div className="col-span-6 sm:col-span-4 text-right font-semibold text-foreground">6만원</div>
+                  <div className="col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide">이름분석</div>
+                  <div className="col-span-6 sm:col-span-4 text-right font-semibold text-foreground">
+                    <span className="sm:hidden">
+                      6만원
+                      <br /><span className="whitespace-nowrap">[가족 4명 24만원]</span>
+                    </span>
+                    <span className="hidden sm:inline whitespace-nowrap">6만원[가족 4명 24만원]</span>
                   </div>
-                  <div className="text-right text-[18px] font-semibold text-foreground mt-1 whitespace-nowrap">[가족 4명 24만원]</div>
                 </div>
               );
             }
