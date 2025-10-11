@@ -69,8 +69,8 @@ export function Footer() {
 
           {/* 우측: 팔로우 섹션 (검은색 배경) */}
           <div className="flex items-center justify-center lg:justify-end">
-            <div className="bg-black rounded-2xl px-8 py-8 w-full max-w-md">
-              <h3 className="text-white text-[31px] font-bold text-center mb-6">
+            <div className="bg-black rounded-2xl px-8 py-6 w-full max-w-md">
+              <h3 className="text-white text-[31px] text-center mb-5">
                 팔로우
               </h3>
               
@@ -85,7 +85,7 @@ export function Footer() {
                     aria-label={social.name}
                     data-testid={social.testId}
                   >
-                    <social.icon className="w-8 h-8" />
+                    <social.icon className="w-[26px] h-[26px]" />
                   </a>
                 ))}
               </div>
