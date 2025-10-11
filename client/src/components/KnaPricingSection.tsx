@@ -76,7 +76,7 @@ export default function KnaPricingSection({ onOpenDialog }: KnaPricingSectionPro
           />
 
           <PriceCard
-            title="작명"
+            title="개명작명"
             price={<span className="text-lg text-muted-foreground">정확도 체험 후 안내</span>}
             desc={<span className="text-orange-600 dark:text-orange-400">이름 분석 상담으로 정확도를 체험하신 후 진행해드립니다.</span>}
             bullets={[
