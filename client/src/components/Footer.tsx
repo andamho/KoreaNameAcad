@@ -1,3 +1,5 @@
+import { SiInstagram, SiYoutube, SiTiktok, SiNaver } from 'react-icons/si';
+
 export function Footer() {
   const handleContactClick = () => {
     window.open('https://pf.kakao.com/_Sxnvbb/chat', '_blank');
@@ -10,33 +12,88 @@ export function Footer() {
     }
   };
 
+  const socialLinks = [
+    { 
+      name: '인스타그램', 
+      icon: SiInstagram, 
+      url: 'https://www.instagram.com/whats_ur_name.777/',
+      testId: 'link-instagram'
+    },
+    { 
+      name: '유튜브', 
+      icon: SiYoutube, 
+      url: 'https://www.youtube.com/@whats_ur_name.777',
+      testId: 'link-youtube'
+    },
+    { 
+      name: '틱톡', 
+      icon: SiTiktok, 
+      url: 'https://www.tiktok.com/@whats_ur_name.777?_t=ZS-90SP0kmBDEG&_r=1',
+      testId: 'link-tiktok'
+    },
+    { 
+      name: '블로그', 
+      icon: SiNaver, 
+      url: 'https://m.blog.naver.com/whats_ur_name_777',
+      testId: 'link-blog'
+    },
+  ];
+
   return (
     <footer className="border-t bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
-        {/* Hero 텍스트 중앙 정렬 */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-            <span className="text-foreground">
-              고달픈 인생<br />
-              이름 하나로 이유를 찾고
-            </span>
-            <br />
-            <span className="kna-highlight">
-              <span className="kna-shine">
-                운이 술술 풀리는<br/>
-                새 이름으로, 인생역전하세요.
+        {/* Hero 텍스트와 팔로우 섹션 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 mb-12">
+          {/* 왼쪽: Hero 텍스트 */}
+          <div className="text-center lg:text-left">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+              <span className="text-foreground">
+                고달픈 인생<br />
+                이름 하나로 이유를 찾고
               </span>
-              <span className="kna-underline" aria-hidden="true" />
-            </span>
-          </h2>
-          
-          <p className="text-lg text-muted-foreground mt-6">
-            한글·한자이름만으로 운명상담<br/>
-            [정확도 80% 이상]
-          </p>
+              <br />
+              <span className="kna-highlight">
+                <span className="kna-shine">
+                  운이 술술 풀리는<br/>
+                  새 이름으로, 인생역전하세요.
+                </span>
+                <span className="kna-underline" aria-hidden="true" />
+              </span>
+            </h2>
+            
+            <p className="text-lg text-muted-foreground mt-6">
+              한글·한자이름만으로 운명상담<br/>
+              [정확도 80% 이상]
+            </p>
+          </div>
+
+          {/* 우측: 팔로우 섹션 (검은색 배경) */}
+          <div className="flex items-center justify-center lg:justify-end">
+            <div className="bg-black rounded-2xl px-8 py-8 w-full max-w-md">
+              <h3 className="text-white text-2xl font-bold text-center mb-6">
+                팔로우
+              </h3>
+              
+              <div className="flex justify-center gap-6">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.name}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white hover:text-[#58C4C4] transition-colors duration-200"
+                    aria-label={social.name}
+                    data-testid={social.testId}
+                  >
+                    <social.icon className="w-8 h-8" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* 버튼들 - Navbar 버튼 위치와 동일하게 배치 */}
+        {/* 버튼들 */}
         <div className="flex justify-center gap-4 mb-12">
           <button
             onClick={() => scrollToSection('services')}
