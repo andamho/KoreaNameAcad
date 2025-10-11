@@ -2,25 +2,16 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { X } from "lucide-react";
 import { useEffect } from "react";
-import { useLocation } from "wouter";
 
 export default function FamilyPolicy() {
-  const [, setLocation] = useLocation();
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleBack = () => {
-    setLocation("/");
-    setTimeout(() => {
-      const pricingSection = document.getElementById("pricing");
-      if (pricingSection) {
-        pricingSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }, 100);
+  const handleClose = () => {
+    window.close();
   };
 
   return (
@@ -161,15 +152,15 @@ export default function FamilyPolicy() {
               </div>
             </Card>
 
-            {/* 이전 페이지로 돌아가기 버튼 */}
+            {/* 페이지 닫기 버튼 */}
             <div className="flex justify-center mt-8">
               <Button
-                onClick={handleBack}
+                onClick={handleClose}
                 className="gap-2"
-                data-testid="button-back"
+                data-testid="button-close"
               >
-                <ArrowLeft className="h-4 w-4" />
-                이전 페이지로 돌아가기
+                <X className="h-4 w-4" />
+                페이지 닫기
               </Button>
             </div>
           </div>
