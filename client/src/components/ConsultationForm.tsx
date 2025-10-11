@@ -168,6 +168,16 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
     <div className="space-y-6">
       <div className="space-y-2">
         <h3 className="text-2xl font-bold text-foreground">{formTitle}</h3>
+        {type === "naming" && (
+          <div className="space-y-1">
+            <p className="text-orange-600 dark:text-orange-400 font-bold">
+              이름감명시 현재 이름에 대한 이름분석 필수
+            </p>
+            <p className="text-base text-muted-foreground">
+              (새이름이 현재 이름운보다 작거나 너무 커도 안좋습니다)
+            </p>
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
