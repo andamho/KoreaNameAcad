@@ -1,4 +1,5 @@
 import React from "react";
+import { Lock } from "lucide-react";
 
 export default function KnaValueSection() {
   return (
@@ -48,7 +49,10 @@ export default function KnaValueSection() {
         </div>
 
         <section className="mt-12 rounded-2xl border border-gray-200 dark:border-border bg-white/80 dark:bg-card/80 p-6 shadow-sm">
-          <h3 className="text-[21px] md:text-2xl font-bold tracking-tight text-foreground break-keep">두 번의 확인, 평생의 안심</h3>
+          <h3 className="text-[21px] md:text-2xl font-bold tracking-tight text-foreground break-keep flex items-center justify-center gap-2">
+            <Lock className="h-5 w-5 md:h-6 md:w-6 text-[#0f766e] dark:text-[#58C4C4]" />
+            두 번의 확인, 평생의 안심
+          </h3>
           <ul className="mt-4 space-y-3">
             <li className="flex items-start gap-3">
               <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">1</span>
