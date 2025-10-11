@@ -44,7 +44,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
         {/* 팔로우 - 상단 한 줄 */}
         <div className="flex items-center justify-center gap-6 mb-12">
-          <span className="text-lg">팔로우</span>
+          <span className="text-[23px]">팔로우</span>
           <div className="w-px h-6 bg-white/30"></div>
           <div className="flex gap-6">
             {socialLinks.map((social) => (
@@ -65,7 +65,7 @@ export function Footer() {
 
         {/* Hero 텍스트 중앙 정렬 */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+          <h2 className="text-[15px] md:text-[24px] tracking-tight">
             <span className="text-white">
               고달픈 인생<br />
               이름 하나로 이유를 찾고
