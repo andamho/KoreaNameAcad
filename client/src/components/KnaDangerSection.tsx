@@ -16,44 +16,40 @@ export default function KnaDangerSection() {
           </h2>
         </header>
 
-        <section aria-labelledby="power-title" className="mt-10 rounded-2xl border border-gray-200 dark:border-border bg-white/80 dark:bg-card/80 p-6 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-[#e0f5f2] dark:bg-[#0f766e]/20 flex-shrink-0">
+        <section aria-labelledby="power-title" className="mt-10">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e0f5f2] dark:bg-[#0f766e]/20 flex-shrink-0">
               <Lightbulb className="h-5 w-5 text-[#0f766e] dark:text-[#58C4C4]" strokeWidth={2} />
             </div>
-            <div className="flex-1">
-              <h3 id="power-title" className="text-2xl font-semibold">이름, 힘이 셉니다</h3>
-              <div className="mt-4 grid gap-4 md:grid-cols-3">
-                <Note title="이름운 = 인생의 결과" desc="열심히만 산다고 잘 사는 게 절대 아닙니다. 잘못하다 못만 망합니다." />
-                <Note title="안 좋은 이름" desc="평생을 따라 다니며 괴롭힙니다." />
-                <Note title="가족은 운명공동체" desc="이름은 자신뿐만 아니라 가족 전체에 영향을 미칩니다." />
-              </div>
-            </div>
+            <h3 id="power-title" className="text-2xl font-semibold">이름, 힘이 셉니다</h3>
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <Note title="이름운 = 인생의 결과" desc="열심히만 산다고 잘 사는 게 절대 아닙니다. 잘못하다 몸만 망칩니다." />
+            <Note title="안 좋은 이름" desc="평생을 따라 다니며 괴롭힙니다." />
+            <Note title="가족은 운명공동체" desc="이름은 자신뿐만 아니라 가족 전체에 영향을 미칩니다." />
           </div>
         </section>
 
-        <section aria-labelledby="danger-title" className="mt-8 rounded-2xl border border-gray-200 dark:border-border bg-white/80 dark:bg-card/80 p-6 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/20 flex-shrink-0">
+        <section aria-labelledby="danger-title" className="mt-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/20 flex-shrink-0">
               <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" strokeWidth={2} />
             </div>
-            <div className="flex-1">
-              <h3 id="danger-title" className="text-2xl font-semibold">이러시면 안됩니다</h3>
-              <div className="mt-4 grid gap-6 md:grid-cols-3">
-                <QA
-                  q="비용을 먼저 물어보시나요?"
-                  a={<>비용을 아껴라,<br/>더 비싼 대가를 치릅니다.</>}
-                />
-                <QA
-                  q="사주보고 한자이름만 지으셨나요?"
-                  a={<>한글 이름의 운이 무너지면,<br/>삶이 비틀립니다.</>}
-                />
-                <QA
-                  q="후기도 안 보고 맡기셨나요?"
-                  a={<>검증 없는 작명,<br/>고생은 결국 본인의 몫입니다.</>}
-                />
-              </div>
-            </div>
+            <h3 id="danger-title" className="text-2xl font-semibold">이러시면 안됩니다</h3>
+          </div>
+          <div className="mt-4 grid gap-6 md:grid-cols-3">
+            <QA
+              q="비용을 먼저 물어보시나요?"
+              a={<>비용을 아끼려다,<br/>더 비싼 대가를 치릅니다.</>}
+            />
+            <QA
+              q="사주보고 한자이름만 지으셨나요?"
+              a={<>한글 이름의 운이 무너지면,<br/>삶이 비틀립니다.</>}
+            />
+            <QA
+              q="후기도 안 보고 맡기셨나요?"
+              a={<>검증 없는 작명,<br/>고생은 결국 본인의 몫입니다.</>}
+            />
           </div>
         </section>
 
