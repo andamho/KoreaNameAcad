@@ -1,5 +1,5 @@
 import React from "react";
-import { Lock } from "lucide-react";
+import { Lock, CircleDot } from "lucide-react";
 
 export default function KnaValueSection() {
   return (
@@ -27,7 +27,7 @@ export default function KnaValueSection() {
             desc="반복되는 어려움의 이유를 이름에서 명확히 찾아드립니다."
           />
           <ValueCard
-            icon={<MatchIcon className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
+            icon={<CircleDot className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
             title="이름–삶 일치 증명"
             desc="이름대로 살고 있음을 구체적으로 보여드립니다."
           />
