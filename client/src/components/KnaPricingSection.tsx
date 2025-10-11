@@ -4,8 +4,8 @@ const pricingData = {
       heading: "이름분석 상담비",
       columns: ["항목", "금액"],
       rows: [
-        { name: "이름분석", price: "6만원 [가족 4명 24만원]" },
-        { name: "이름감명(다른 곳에서 지은 이름)", price: "2만원" },
+        { name: "이름분석", price: "6만원" },
+        { name: "이름감명(타작명소 이름)", price: "2만원" },
         { name: "이름궁합(연인)", price: "10만원" },
         { name: "인스타명(감명)", price: "2만원" },
         { name: "반려동물(감명)", price: "2만원" },
@@ -111,44 +111,8 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
         {/* 테이블 바디 */}
         <div className="divide-y divide-border bg-card">
           {rows.map((row, i) => {
-            // 첫 번째 섹션의 첫 번째 행 (이름분석)은 특별 처리
-            if (sectionIndex === 0 && i === 0) {
-              return (
-                <div 
-                  key={i} 
-                  className="grid grid-cols-12 px-4 py-3 sm:py-4 hover-elevate text-[18px]"
-                  data-testid={`pricing-row-${sectionIndex}-${i}`}
-                >
-                  <div className="col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide">이름분석</div>
-                  <div className="col-span-6 sm:col-span-4 text-right text-foreground">
-                    <span className="sm:hidden font-semibold">
-                      6만원
-                      <br /><span className="text-[15px] font-normal whitespace-nowrap">[가족 4명 24만원]</span>
-                    </span>
-                    <span className="hidden sm:inline font-semibold whitespace-nowrap">6만원<span className="text-[17px] font-normal">[가족 4명 24만원]</span></span>
-                  </div>
-                </div>
-              );
-            }
-            
-            // 이름감명 항목은 모바일에서 줄바꿈
-            if (sectionIndex === 0 && i === 1) {
-              return (
-                <div 
-                  key={i} 
-                  className="grid grid-cols-12 px-4 py-3 sm:py-4 hover-elevate text-[18px]"
-                  data-testid={`pricing-row-${sectionIndex}-${i}`}
-                >
-                  <div className="col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide">
-                    이름감명<br className="sm:hidden" /><span className="whitespace-nowrap text-[15px] sm:text-[18px]">(다른 곳에서 지은 이름)</span>
-                  </div>
-                  <div className="col-span-6 sm:col-span-4 text-right font-semibold text-foreground break-words">{row.price}</div>
-                </div>
-              );
-            }
-            
-            // 이름궁합, 인스타명, 반려동물은 모바일에서 줄바꿈 방지
-            const noBreakItems = ["이름궁합(연인)", "인스타명(감명)", "반려동물(감명)"];
+            // 이름궁합, 인스타명, 반려동물, 이름감명은 모바일에서 줄바꿈 방지
+            const noBreakItems = ["이름궁합(연인)", "인스타명(감명)", "반려동물(감명)", "이름감명(타작명소 이름)"];
             const nameClass = noBreakItems.includes(row.name) 
               ? "col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide whitespace-nowrap"
               : "col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide";
