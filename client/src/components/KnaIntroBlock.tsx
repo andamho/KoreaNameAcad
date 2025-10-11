@@ -15,7 +15,7 @@ export default function KnaIntroBlock() {
             열심히 노력하며 살아가지만
           </h2>
           <p className="mt-3 text-lg md:text-[22px] text-muted-foreground break-keep">
-            삶이 뜻대로 풀리지 않아 답답하신 마음을 압니다
+            삶이 뜻대로 풀리지 않아 답답하신 마음을 잘 압니다
           </p>
         </header>
 
