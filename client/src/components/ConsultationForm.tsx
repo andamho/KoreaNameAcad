@@ -191,7 +191,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             ))}
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            저희 협회는 등본상 가족 상담 원칙으로 상담진행해 드리고 있습니다{" "}
+            저희 협회는 <span className="font-bold text-foreground">등본상 가족 상담 원칙</span>으로 상담진행해 드리고 있습니다{" "}
             <a 
               href="/family-policy" 
               target="_blank"
