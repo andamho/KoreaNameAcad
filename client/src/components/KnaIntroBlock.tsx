@@ -1,6 +1,8 @@
 // 미리보기 전용: 인트로 한 블록만 렌더
 // 사용법: 페이지 어디서나 <KnaIntroBlock /> 단독 사용
 
+import { Star } from "lucide-react";
+
 export default function KnaIntroBlock() {
   return (
     <section className="relative overflow-hidden bg-white dark:bg-background text-gray-900 dark:text-foreground">
@@ -42,7 +44,7 @@ export default function KnaIntroBlock() {
             {/* SNS 팔로워 (모바일에서는 후기 다음) */}
             <div className="order-3 md:col-span-2">
               <p className="text-base md:text-lg text-gray-700 dark:text-muted-foreground flex items-start gap-2">
-                <span className="text-[#0f766e] dark:text-[#58C4C4] mt-0.5">⭐</span>
+                <Star className="h-5 w-5 text-[#0f766e] dark:text-[#58C4C4] mt-0.5 fill-current" />
                 <span>
                   이미 SNS 팔로워 <b>5만 명</b>이 관심을 가지고 있습니다.<br />
                   (200만 뷰 이상 조회수 다수)
