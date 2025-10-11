@@ -65,7 +65,7 @@ export function Footer() {
 
         {/* Hero 텍스트 중앙 정렬 */}
         <div className="text-center mb-12">
-          <h2 className="text-[15px] md:text-[24px] tracking-tight leading-tight">
+          <h2 className="text-[16px] md:text-[24px] tracking-tight leading-tight">
             <span className="text-white">고달픈 인생</span><br />
             <span className="text-white">이름 하나로 이유를 찾고</span><br />
             <span className="kna-highlight">
