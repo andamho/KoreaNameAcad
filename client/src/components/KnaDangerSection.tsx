@@ -22,7 +22,7 @@ export default function KnaDangerSection() {
             a="비용은 아껴도, 대가는 더 비싸집니다"
           />
           <QA
-            q="사주+한자만 보고 지으셨나요?"
+            q="사주보고 한자이름만 지으셨나요?"
             a="한글 이름의 운이 무너지면, 삶이 비틀립니다"
           />
           <QA
