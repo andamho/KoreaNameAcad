@@ -23,7 +23,7 @@ export function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
         <div className="text-center max-w-4xl mx-auto space-y-8">
           <div>
-            <h1 className="text-[36px] md:text-[54px] font-bold tracking-tight" aria-label="고달픈 인생 이름 하나로 이유를 찾고 운이 술술 풀리는 새 이름으로, 인생역전하세요.">
+            <h1 className="text-[32px] md:text-[54px] font-bold tracking-tight break-keep" aria-label="고달픈 인생 이름 하나로 이유를 찾고 운이 술술 풀리는 새 이름으로, 인생역전하세요.">
               <span className="text-gray-900 dark:text-white">
                 고달픈 인생
                 <br />
