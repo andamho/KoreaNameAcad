@@ -25,7 +25,7 @@ export default function KnaDangerSection() {
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             <Note title="이름이 맑아야 인생이 맑다" desc="열심히만 산다고 잘 사는 게 절대 아닙니다. 잘못하다 몸만 망칩니다." />
-            <Note title="안 좋은 이름에 바람 잘 날 없다" desc="평생을 따라 다니며 괴롭힙니다." />
+            <Note title="안 좋은 이름에 바람 잘 날 없다" desc="안좋은 이름은 평생을 따라 다니며 괴롭힙니다." />
             <Note title="가족은 운명공동체" desc="이름은 자신뿐만 아니라 가족 전체에 영향을 미칩니다." />
           </div>
         </section>
