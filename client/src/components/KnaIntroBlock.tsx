@@ -24,9 +24,16 @@ export default function KnaIntroBlock() {
             {/* Left: 신뢰 문구 */}
             <div>
               <p className="text-xl leading-relaxed text-gray-700 dark:text-muted-foreground">
-                한국이름학교는 <b>17년</b>간 <b>43만 명+</b>의 임상 경험을 바탕으로, <b>사주 없이</b> <b>한글·한자 이름만</b>으로 <b>80%+</b>의 정확도를 갖춘 운명 상담을 제공합니다.
+                한국이름학교는<br />
+                <b>17년</b>간 <b>43만 명</b>의 임상 경험을 바탕으로,<br />
+                <b>사주 없이</b> <b>한글·한자 이름만</b>으로<br />
+                <b>80%이상</b>의 정확도를 갖춘 운명 상담을 제공합니다.
               </p>
               <p className="mt-6 text-2xl font-semibold text-[#0f766e] dark:text-[#58C4C4]">이름은 희망입니다.</p>
+              <p className="mt-4 text-lg text-gray-700 dark:text-muted-foreground">
+                이미 SNS 팔로워 <b>5만 명</b>이 관심을 가지고 있습니다.<br />
+                (200만 뷰 이상 조회수 다수)
+              </p>
             </div>
 
             {/* Right: 실제 후기 */}
