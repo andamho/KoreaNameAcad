@@ -190,6 +190,18 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               </Button>
             ))}
           </div>
+          <p className="text-sm text-muted-foreground mt-2">
+            저희 협회는 등본상 가족 상담 원칙으로 상담진행해 드리고 있습니다{" "}
+            <a 
+              href="/family-policy" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-[#0f766e] dark:text-[#58C4C4] hover:underline"
+              data-testid="link-family-policy-form"
+            >
+              자세히 보기 →
+            </a>
+          </p>
         </div>
 
         {/* 각 인원별 정보 입력 */}
