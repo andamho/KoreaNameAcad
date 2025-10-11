@@ -123,7 +123,7 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
                   <div className="col-span-6 sm:col-span-4 text-right text-foreground">
                     <span className="sm:hidden font-semibold">
                       6만원
-                      <br /><span className="text-[17px] font-normal">[가족 4명 24만원]</span>
+                      <br /><span className="text-[17px] font-normal whitespace-nowrap">[가족 4명 24만원]</span>
                     </span>
                     <span className="hidden sm:inline font-semibold whitespace-nowrap">6만원<span className="text-[17px] font-normal">[가족 4명 24만원]</span></span>
                   </div>
