@@ -471,7 +471,11 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <div className="space-y-2 text-base">
               <p className="font-semibold text-foreground">와츠유어네임 이름연구협회 전용 입금계좌</p>
               <p className="text-foreground">농협 351 8205 8124 53</p>
-              <p className="text-muted-foreground">상담비: 명당 6만원 | 등본상 가족 전체 명수로 입금</p>
+              {type === "naming" ? (
+                <p className="text-muted-foreground">상담비: 이름분석 6만원 + 이름감명 2만원(개당)</p>
+              ) : (
+                <p className="text-muted-foreground">상담비: 명당 6만원 | 등본상 가족 전체 명수로 입금</p>
+              )}
             </div>
           </Card>
         </div>
