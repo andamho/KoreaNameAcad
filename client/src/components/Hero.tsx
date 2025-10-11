@@ -23,14 +23,18 @@ export function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
         <div className="text-center max-w-4xl mx-auto space-y-8">
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground tracking-tight">
-              고달픈 인생
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+              <span className="text-gray-900 dark:text-white">
+                고달픈 인생
+                <br />
+                이름 하나로 이유를 찾고
+              </span>
               <br />
-              <span className="text-primary">이름 하나로</span> 이유를 찾고
-              <br />
-              운이 술술 풀리는
-              <br />
-              새 이름으로, 인생역전하세요.
+              <span className="text-[#58C4C4]">
+                운이 술술 풀리는
+                <br />
+                새 이름으로, 인생역전하세요.
+              </span>
             </h1>
             
             <p className="text-[23px] md:text-[26px] text-muted-foreground tracking-wide">
