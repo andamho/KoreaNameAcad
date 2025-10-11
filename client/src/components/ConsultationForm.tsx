@@ -193,7 +193,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           {type === "naming" ? (
             <p className="text-base text-muted-foreground mt-2">
               <span className="font-bold text-foreground">현재 사용하는 이름 분석 진행 필수</span><br />
-              (현재 이름 운에 맞는 새 이름이 좋은 이름)
+              (현재 이름 운보다 약하거나 너무 커도 안됨)
             </p>
           ) : (
             <p className="text-base text-muted-foreground mt-2">
