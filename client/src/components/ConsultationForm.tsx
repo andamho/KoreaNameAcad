@@ -184,7 +184,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 size="sm"
                 onClick={() => handleNumPeopleChange(num)}
                 data-testid={`button-people-${num}`}
-                className="w-12 h-12"
+                className="w-12 h-12 text-lg"
               >
                 {num}
               </Button>
@@ -207,7 +207,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         {/* 각 인원별 정보 입력 */}
         {peopleData.map((person, index) => (
           <Card key={index} className="p-4 space-y-4">
-            <h4 className="font-semibold text-foreground">{index + 1}번째 분석 대상</h4>
+            <h4 className="text-lg font-semibold text-foreground">{index + 1}번째 분석 대상</h4>
             
             <div className="space-y-2">
               <Label htmlFor={`name-${index}`} className="text-lg">분석할 이름</Label>
@@ -330,7 +330,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     size="sm"
                     onClick={() => handleNumNameChangesChange(num)}
                     data-testid={`button-namechange-${num}`}
-                    className="w-12 h-12"
+                    className="w-12 h-12 text-lg"
                   >
                     {num}
                   </Button>
@@ -341,7 +341,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             {/* 각 개명인원별 정보 입력 */}
             {nameChangeData.map((data, index) => (
               <Card key={index} className="p-4 space-y-4">
-                <h4 className="font-semibold text-foreground">{index + 1}번째 개명 정보</h4>
+                <h4 className="text-lg font-semibold text-foreground">{index + 1}번째 개명 정보</h4>
 
                 <div className="space-y-2">
                   <Label htmlFor={`currentName-${index}`} className="text-lg">현재이름</Label>
@@ -516,7 +516,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           </Card>
         </div>
 
-        <Button type="submit" className="w-full" size="lg" data-testid="button-submit">
+        <Button type="submit" className="w-full text-lg" size="lg" data-testid="button-submit">
           상담 신청하기
         </Button>
       </form>
