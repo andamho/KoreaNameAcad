@@ -61,8 +61,8 @@ export default function KnaDangerSection() {
 function QA({ q, a }: { q: string; a: React.ReactNode }) {
   return (
     <article className="group relative rounded-2xl border border-gray-200 dark:border-border bg-orange-50/50 dark:bg-orange-950/10 p-6 shadow-sm ring-1 ring-transparent transition hover:-translate-y-0.5 hover:shadow-md">
-      <p className="text-[22px] font-semibold text-gray-900 dark:text-foreground">"{q}"</p>
-      <p className="mt-2 text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">{a}</p>
+      <p className="text-lg md:text-[22px] font-semibold text-gray-900 dark:text-foreground break-keep">"{q}"</p>
+      <p className="mt-2 text-base md:text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">{a}</p>
     </article>
   );
 }
@@ -70,8 +70,8 @@ function QA({ q, a }: { q: string; a: React.ReactNode }) {
 function Note({ title, desc }: { title: string; desc: string }) {
   return (
     <div className="rounded-xl border border-gray-200 dark:border-border bg-white dark:bg-card p-4 shadow-sm">
-      <h4 className="text-[22px] font-semibold">{title}</h4>
-      <p className="mt-2 text-lg text-gray-700 dark:text-muted-foreground">{desc}</p>
+      <h4 className="text-lg md:text-[22px] font-semibold break-keep">{title}</h4>
+      <p className="mt-2 text-base md:text-lg text-gray-700 dark:text-muted-foreground">{desc}</p>
     </div>
   );
 }
