@@ -252,16 +252,6 @@ export default function Home() {
               onClick={() => openDialog("naming")}
             />
             <ServiceCard
-              icon={MessageCircle}
-              title="이름분석 및 감명 상세 안내"
-              description="이름분석과 이름감명에 대한 자세한 안내해드립니다."
-              buttonText="자세히 보기"
-              onClick={() => {
-                setLocation("/detail-info");
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            />
-            <ServiceCard
               icon={Flower}
               title="개명"
               description="운이 술술 풀리는 개명을 위한 상담과 절차를 안내해드립니다."
