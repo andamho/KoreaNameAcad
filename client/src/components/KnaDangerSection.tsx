@@ -57,7 +57,7 @@ function QA({ q, a }: { q: string; a: string }) {
       <div className="flex items-start gap-3">
         <AlertTriangle className="mt-0.5 h-6 w-6 flex-shrink-0 text-amber-500" strokeWidth={2} />
         <div>
-          <p className="text-lg font-semibold text-gray-900 dark:text-foreground">"{q}"</p>
+          <p className="text-[22px] font-semibold text-gray-900 dark:text-foreground">"{q}"</p>
           <p className="mt-1 text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">→ {a}</p>
         </div>
       </div>
