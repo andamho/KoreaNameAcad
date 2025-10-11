@@ -27,16 +27,16 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={goToHome}
-              className="flex items-center gap-3 hover-elevate active-elevate-2 rounded-md px-2 py-1"
+              className="flex items-center gap-2 hover-elevate active-elevate-2 rounded-md px-2 py-1"
               data-testid="link-home"
             >
               <img 
                 src={logoImage} 
                 alt="한국이름학교 로고" 
-                className="h-8 w-8 dark:invert"
+                className="h-5 w-5 md:h-8 md:w-8 dark:invert"
               />
               <span className="text-sm md:text-xl font-bold text-foreground tracking-wide whitespace-nowrap">
                 한국이름학교 | 와츠유어네임 이름연구협회
@@ -69,7 +69,7 @@ export function Navbar() {
             <ThemeToggle />
           </div>
 
-          <div className="flex md:hidden items-center gap-2">
+          <div className="flex md:hidden items-center gap-1">
             <ThemeToggle />
             <Button
               variant="ghost"
