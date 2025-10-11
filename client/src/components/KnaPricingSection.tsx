@@ -43,7 +43,7 @@ export default function KnaPricingSection({ onOpenDialog }: KnaPricingSectionPro
             desc="이름대로 살고 있음을 증명해드립니다"
             bullets={[
               <>
-                등본상 가족 상담원칙으로 진행
+                <span className="text-orange-600 dark:text-orange-400">등본상 가족 상담원칙으로 진행</span>
                 <button 
                   onClick={scrollToFamily} 
                   className="ml-1 font-semibold text-[#0f766e] dark:text-[#58C4C4] hover:underline"
@@ -68,7 +68,7 @@ export default function KnaPricingSection({ onOpenDialog }: KnaPricingSectionPro
             }
             desc="타 작명소에서 받은 이름의 적합도를 점검합니다"
             bullets={[
-              "현재 사용하는 이름 분석 진행 필수",
+              <span className="text-orange-600 dark:text-orange-400">현재 사용하는 이름 분석 진행 필수</span>,
               "현재 이름운에 맞는 새 이름이 좋은 이름"
             ]}
             linkText="신청하기 →"
@@ -78,7 +78,7 @@ export default function KnaPricingSection({ onOpenDialog }: KnaPricingSectionPro
           <PriceCard
             title="작명"
             price={<span className="text-lg text-muted-foreground">정확도 체험 후 안내</span>}
-            desc="이름 분석 상담으로 정확도를 체험하신 후 진행해드립니다."
+            desc={<span className="text-orange-600 dark:text-orange-400">이름 분석 상담으로 정확도를 체험하신 후 진행해드립니다.</span>}
             bullets={[
               "보통 3개의 이름 후보 제시",
               "기존 이름운과 희망사항 10가지를 반영한 최고의 작명"
@@ -103,7 +103,7 @@ export default function KnaPricingSection({ onOpenDialog }: KnaPricingSectionPro
 interface PriceCardProps {
   title: string;
   price: React.ReactNode;
-  desc: string;
+  desc: React.ReactNode;
   bullets?: React.ReactNode[];
   highlight?: string;
   linkText?: string;
@@ -126,7 +126,7 @@ function PriceCard({ title, price, desc, bullets, highlight, linkText, onLinkCli
       </header>
       <p className="mt-3 text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">{desc}</p>
       {bullets && bullets.length > 0 && (
-        <ul className="mt-4 space-y-2 text-lg text-orange-600 dark:text-orange-400">
+        <ul className="mt-4 space-y-2 text-lg text-gray-700 dark:text-muted-foreground">
           {bullets.map((b, i) => (
             <li key={i} className="flex items-start gap-2">
               <Dot />
