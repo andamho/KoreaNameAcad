@@ -31,7 +31,7 @@ export default function KnaIntroBlock() {
                 <b>사주 없이</b> <b>한글·한자 이름만</b>으로<br />
                 <b>80%이상</b>의 정확도를 갖춘 운명 상담을 제공합니다.
               </p>
-              <p className="mt-6 text-lg md:text-2xl font-semibold text-[#0f766e] dark:text-[#58C4C4] break-keep">이름은 희망입니다.</p>
+              <p className="mt-6 text-lg md:text-2xl font-bold text-[#0f766e] dark:text-[#58C4C4] break-keep">이름은 희망입니다.</p>
             </div>
 
             {/* Right: 실제 후기 */}
