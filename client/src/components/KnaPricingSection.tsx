@@ -104,8 +104,8 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
       <div className="overflow-hidden rounded-2xl border border-border">
         {/* 테이블 헤더 */}
         <div className="grid grid-cols-12 bg-muted/80 dark:bg-muted/40 text-[18px] font-semibold text-muted-foreground">
-          <div className="col-span-7 sm:col-span-8 px-4 py-3">{columns[0]}</div>
-          <div className="col-span-5 sm:col-span-4 px-4 py-3 text-right">{columns[1]}</div>
+          <div className="col-span-6 sm:col-span-8 px-4 py-3">{columns[0]}</div>
+          <div className="col-span-6 sm:col-span-4 px-4 py-3 text-right">{columns[1]}</div>
         </div>
         
         {/* 테이블 바디 */}
@@ -116,8 +116,8 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
               className="grid grid-cols-12 px-4 py-3 sm:py-4 hover-elevate text-[18px]"
               data-testid={`pricing-row-${sectionIndex}-${i}`}
             >
-              <div className="col-span-7 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide">{row.name}</div>
-              <div className="col-span-5 sm:col-span-4 text-right font-semibold text-foreground whitespace-nowrap">{row.price}</div>
+              <div className="col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide">{row.name}</div>
+              <div className="col-span-6 sm:col-span-4 text-right font-semibold text-foreground break-words">{row.price}</div>
             </div>
           ))}
         </div>
