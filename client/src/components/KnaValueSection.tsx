@@ -50,7 +50,7 @@ export default function KnaValueSection() {
 
         <section className="mt-12 rounded-2xl border border-gray-200 dark:border-border bg-white/80 dark:bg-card/80 p-6 shadow-sm">
           <h3 className="text-[21px] md:text-2xl font-bold tracking-tight text-foreground break-keep flex items-center gap-2">
-            <Lock className="h-6 w-6 md:h-7 md:w-7 text-[#0f766e] dark:text-[#58C4C4]" />
+            <Lock className="h-7 w-7 md:h-8 md:w-8 text-[#0f766e] dark:text-[#58C4C4]" />
             <span className="bg-[#7fe1d3]/25 dark:bg-[#58C4C4]/25 px-3 py-1 rounded-md whitespace-nowrap">두 번의 확인, 평생의 안심</span>
           </h3>
           <ul className="mt-4 space-y-3">
