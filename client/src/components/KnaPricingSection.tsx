@@ -39,7 +39,7 @@ export default function KnaPricingSection() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <header className="text-center mb-12">
           <h2 
-            className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-semibold leading-tight text-transparent"
+            className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl"
             data-testid="heading-pricing"
           >
             비용 및 시간
