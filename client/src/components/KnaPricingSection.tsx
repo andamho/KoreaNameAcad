@@ -137,7 +137,7 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
                   data-testid={`pricing-row-${sectionIndex}-${i}`}
                 >
                   <div className="col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide">
-                    이름감명<br /><span className="whitespace-nowrap">(다른 곳에서 지은 이름)</span>
+                    이름감명<br className="sm:hidden" /><span className="whitespace-nowrap">(다른 곳에서 지은 이름)</span>
                   </div>
                   <div className="col-span-6 sm:col-span-4 text-right font-semibold text-foreground break-words">{row.price}</div>
                 </div>
