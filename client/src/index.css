@@ -326,3 +326,75 @@
     inset: -1px;
   }
 }
+
+/* KNA 그라데이션 흐르는 효과 */
+:root {
+  --tiffany: #00b7b1;  /* 티파니 블루 */
+  --mint: #6fdccf;     /* 민트 */
+}
+
+/* 컨테이너 (페이드 인) */
+.kna-highlight {
+  position: relative;
+  display: inline-block;
+  font-weight: 900;
+  line-height: 1.12;
+  opacity: 0;
+  transform: translateY(6px);
+  animation: kna-fadeIn 700ms ease forwards 150ms;
+}
+
+/* ① 글자 내부 '흰색 광택'이 좌우로 흐르는 효과 */
+.kna-shine {
+  /* 흰색 밴드 폭을 아주 얇게: 49%~51%만 white */
+  background: linear-gradient(90deg,
+    var(--tiffany) 0%,
+    var(--mint) 35%,
+    #ffffff 49%,
+    #ffffff 51%,
+    var(--mint) 65%,
+    var(--tiffany) 100%);
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: kna-flow 7s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* ② 밑줄에도 같은 흐름 적용 */
+.kna-underline {
+  position: absolute;
+  left: 0; right: 0; bottom: -10px;
+  height: 2px;                 /* 밑줄 두께 */
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    rgba(0,183,177,.22) 0%,
+    rgba(0,183,177,.22) 35%,
+    rgba(255,255,255,.6) 49%,
+    rgba(255,255,255,.6) 51%,
+    rgba(0,183,177,.22) 65%,
+    rgba(0,183,177,.22) 100%);
+  background-size: 240% 100%;
+  animation: kna-flow 7s ease-in-out infinite;
+}
+
+@keyframes kna-flow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes kna-fadeIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 접근성: 모션 최소화 선호 시 애니메이션 제거 */
+@media (prefers-reduced-motion: reduce) {
+  .kna-highlight, .kna-shine, .kna-underline {
+    animation: none !important;
+    background-position: 50% 50% !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
