@@ -39,7 +39,7 @@ export function Hero() {
               </span>
             </h1>
             
-            <p className="text-[23px] md:text-[26px] text-muted-foreground tracking-wide mt-7">
+            <p className="text-[18px] md:text-[21px] text-muted-foreground tracking-wide mt-7">
               한글·한자이름만으로 운명상담<br/>
               [정확도 80% 이상]
             </p>
