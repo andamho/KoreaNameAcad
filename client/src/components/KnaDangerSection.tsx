@@ -40,15 +40,15 @@ export default function KnaDangerSection() {
           <div className="mt-4 grid gap-6 md:grid-cols-3">
             <QA
               q="비용을 먼저 물어보시나요?"
-              a={<>비용을 아끼려다,<br/><strong>더 비싼 대가를 치릅니다.</strong></>}
+              a={<>비용을 아끼려다,<br/><span className="text-orange-600 dark:text-orange-400">더 비싼 대가를 치릅니다.</span></>}
             />
             <QA
               q="사주보고 한자이름만 지으셨나요?"
-              a={<>한글 이름의 운이 무너지면,<br/><strong>삶이 비틀립니다.</strong></>}
+              a={<>한글 이름의 운이 무너지면,<br/><span className="text-orange-600 dark:text-orange-400">삶이 비틀립니다.</span></>}
             />
             <QA
               q="후기도 안 보고 맡기셨나요?"
-              a={<>검증 없는 작명,<br/><strong>고생은 결국 본인의 몫입니다.</strong></>}
+              a={<>검증 없는 작명,<br/><span className="text-orange-600 dark:text-orange-400">고생은 결국 본인의 몫입니다.</span></>}
             />
           </div>
         </section>
