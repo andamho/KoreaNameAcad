@@ -1,0 +1,131 @@
+import React from "react";
+
+/**
+ * 한국이름학교 · 비용 및 시간 (웹/모바일/인쇄 겸용)
+ * - 티파니 블루 포인트, 세련된 카드 프레임, 표 컴포넌트화
+ * - 반응형, 인쇄(PDF) 최적화
+ * - 필요 시 데이터만 바꿔 재사용 가능
+ */
+
+const data = {
+  title: "비용 및 시간",
+  sections: [
+    {
+      heading: "이름분석 상담비",
+      columns: ["항목", "금액"],
+      rows: [
+        { name: "이름분석", price: "6만원 [가족 4명 24만원]" },
+        { name: "이름감명(다른 곳에서 지은 이름)", price: "2만원" },
+        { name: "이름궁합(연인사이 궁합)", price: "10만원" },
+        { name: "인스타명(작명아님)", price: "2만원" },
+        { name: "반려동물(작명아님)", price: "2만원" },
+      ],
+    },
+    {
+      heading: "상담소요시간",
+      columns: ["인원", "시간"],
+      rows: [
+        { name: "1명", price: "1시간" },
+        { name: "2명", price: "1.5시간" },
+        { name: "3명", price: "2시간" },
+        { name: "4명", price: "2.5시간" },
+      ],
+    },
+    {
+      heading: "번호변경 여권이름",
+      columns: ["항목", "금액"],
+      rows: [
+        { name: "전화번호 변경", price: "35만원" },
+        { name: "여권이름 변경", price: "35만원" },
+        { name: "차량번호 변경", price: "35만원" },
+      ],
+    },
+  ],
+  footnote: "⚖️ 모든 비용은 이름연구협회 규정에 따릅니다",
+};
+
+function Frame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative mx-auto w-full max-w-3xl rounded-[28px] border border-[--ring] bg-white shadow-xl shadow-black/5 backdrop-blur print:shadow-none">
+      {(["tl", "tr", "bl", "br"] as const).map((pos) => (
+        <span
+          key={pos}
+          className={
+            "pointer-events-none absolute h-3 w-3 rounded-full bg-[var(--accent)] shadow-sm " +
+            (pos === "tl"
+              ? "-left-3 -top-3"
+              : pos === "tr"
+              ? "-right-3 -top-3"
+              : pos === "bl"
+              ? "-left-3 -bottom-3"
+              : "-right-3 -bottom-3")
+          }
+          aria-hidden
+        />
+      ))}
+      <div className="rounded-[24px] border border-black/5 p-6 sm:p-8">{children}</div>
+    </div>
+  );
+}
+
+function Section({ heading, columns, rows }: { heading: string; columns: string[]; rows: { name: string; price: string }[] }) {
+  return (
+    <section className="mt-8 first:mt-0">
+      <h3 className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent-weak)] px-3 py-1.5 text-sm font-semibold tracking-tight text-[var(--accent-deep)]">
+        <span className="i-lucide-sparkles" />
+        {heading}
+      </h3>
+      <div className="mt-3 overflow-hidden rounded-2xl border border-black/5">
+        <div className="grid grid-cols-12 bg-zinc-50/80 text-[13px] font-semibold uppercase tracking-wider text-zinc-600">
+          <div className="col-span-8 px-4 py-2 sm:col-span-9">{columns[0]}</div>
+          <div className="col-span-4 px-4 py-2 text-right sm:col-span-3">{columns[1]}</div>
+        </div>
+        <ul className="divide-y divide-black/5 bg-white">
+          {rows.map((r, i) => (
+            <li key={i} className="grid grid-cols-12 px-4 py-3 sm:py-4">
+              <div className="col-span-8 pr-2 text-[15px] sm:col-span-9 sm:text-base">{r.name}</div>
+              <div className="col-span-4 text-right text-[15px] font-semibold sm:col-span-3 sm:text-base whitespace-nowrap">{r.price}</div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+export default function PricingSheet() {
+  return (
+    <div className="min-h-screen w-full bg-[var(--paper)] px-4 py-10 text-zinc-900 antialiased">
+      <style>{`
+        :root{
+          --accent:#80e1d4;
+          --accent-deep:#0f9887;
+          --accent-weak: color-mix(in oklab, var(--accent) 18%, white);
+          --paper:#f7faf9;
+          --ring: color-mix(in oklab, var(--accent) 40%, black 4%);
+        }
+        @media print{
+          body{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        }
+      `}</style>
+
+      <div className="mx-auto mb-6 flex max-w-3xl items-center justify-center gap-3">
+        <h1 className="text-3xl font-extrabold tracking-tight text-[var(--accent-deep)] sm:text-4xl">
+          {data.title}
+        </h1>
+      </div>
+
+      <Frame>
+        <div className="mx-auto max-w-2xl">
+          {data.sections.map((s, idx) => (
+            <Section key={idx} heading={s.heading} columns={s.columns} rows={s.rows} />
+          ))}
+
+          <footer className="mt-8 text-center text-sm text-zinc-500">
+            {data.footnote}
+          </footer>
+        </div>
+      </Frame>
+    </div>
+  );
+}

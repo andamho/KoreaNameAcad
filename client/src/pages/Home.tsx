@@ -219,9 +219,7 @@ export default function Home() {
 
       <KnaMythTruthSection />
 
-      <section id="pricing">
-        <KnaPricingSection onOpenDialog={openDialog} />
-      </section>
+      <KnaPricingSection />
 
       <section id="services" className="py-16 md:py-24 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
