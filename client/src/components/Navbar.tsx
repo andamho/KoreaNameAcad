@@ -70,12 +70,15 @@ export function Navbar() {
           </div>
 
           <div className="flex md:hidden items-center gap-1">
-            <ThemeToggle />
+            <div className="translate-x-[10px]">
+              <ThemeToggle />
+            </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               data-testid="button-mobile-menu"
+              className="-translate-x-[10px]"
             >
               <Menu className="h-5 w-5" />
             </Button>
