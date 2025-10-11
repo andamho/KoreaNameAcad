@@ -354,41 +354,85 @@ export default function Home() {
       </Dialog>
 
       <Dialog open={analysisDetailOpen} onOpenChange={setAnalysisDetailOpen}>
-        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-[#0f766e] dark:text-[#58C4C4]">
-              이름분석 상세 안내
-            </DialogTitle>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto bg-neutral-950 text-white border-white/20">
+          <DialogHeader className="sr-only">
+            <DialogTitle>이름분석 운명상담 안내</DialogTitle>
           </DialogHeader>
-          
-          <div className="space-y-6 py-4">
-            <div className="space-y-4">
-              <p className="text-lg leading-relaxed">
-                <span className="text-[#0f766e] dark:text-[#58C4C4] font-semibold">✔️ 이름분석은</span>
-                <br />
-                사주없이<span className="text-red-600 dark:text-red-400 font-bold">❌❌❌</span>
-                <br />
-                한글·한자 이름 속 숨겨진 흐름
-                <br />
-                <span className="font-semibold">[총 16가지 운세 & 7개의 시기]</span> 을
-                <br />
-                과거 현재 미래까지 정확하게 분석해드립니다.
-              </p>
-              
-              <p className="text-lg leading-relaxed">
-                타고난 장점, 자질과 특징들<br />
-                그리고 그것들을 가지고 꿈을 꾸고 이뤄나가는 데 있어서<br />
-                태클을 거는 흉운들까지 꼼꼼히 알려드립니다.
+          <div className="px-6 py-8" data-testid="name-analysis-root">
+            <style>{`
+              .glass { background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); border: 1px solid rgba(255,255,255,0.12); }
+              .tiffany { color: #81D8D0; }
+            `}</style>
+
+            {/* Header */}
+            <div className="text-center mb-10">
+              <h2 className="mb-4 text-3xl font-semibold tiffany md:text-4xl" data-testid="section-title">
+                이름분석 운명상담이란
+              </h2>
+              <p className="text-white/80 text-sm md:text-base leading-relaxed">
+                사주 없이 한글·한자 이름에 내재된 운명의 흐름을, 체계적으로 해석하는 전문 상담 서비스입니다.
               </p>
             </div>
-            
-            <div className="rounded-lg overflow-hidden border border-border">
-              <img 
-                src={analysisExampleImage} 
-                alt="홍길동 이름분석 예시" 
-                className="w-full h-auto"
-                data-testid="img-analysis-example"
-              />
+
+            {/* 분석 범위 */}
+            <div className="grid gap-6 md:grid-cols-3 mb-16" data-testid="analysis-scope">
+              <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-1">
+                <Flower className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
+                <h3 className="mb-2 font-semibold">16가지 세부 운세 종합 분석</h3>
+                <p className="text-sm leading-relaxed text-white/70">
+                  세밀한 수리운·주역괘운의 분석을 통해<br />인생의 총체적 방향을 진단합니다.
+                </p>
+              </div>
+              <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-2">
+                <MessageCircle className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
+                <h3 className="mb-2 font-semibold">7개 인생 시기별 운의 흐름 파악</h3>
+                <p className="text-sm leading-relaxed text-white/70">
+                  초년·중년·말년 등 7개 시기를 분석하여<br />시기별 강점과 전환점을 명확히 제시합니다.
+                </p>
+              </div>
+              <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-3">
+                <Star className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
+                <h3 className="mb-2 font-semibold">과거·현재·미래 정밀 진단</h3>
+                <p className="text-sm leading-relaxed text-white/70">
+                  지나온 일, 현재 처한 상황, 다가올 운을 세밀히 파악합니다.
+                </p>
+              </div>
+            </div>
+
+            {/* 상담 내용 */}
+            <div data-testid="consulting-content">
+              <h3 className="tiffany mb-10 text-center text-2xl font-semibold">상담 내용</h3>
+              <div className="space-y-10">
+                <div className="flex flex-col items-center gap-6 md:flex-row" data-testid="content-item-1">
+                  <Star className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                  <div>
+                    <h4 className="mb-1 text-lg font-semibold">타고난 강점과 자질</h4>
+                    <p className="text-sm leading-relaxed text-white/70">
+                      선천적 재능과 성격적 특성을 구체적으로 분석합니다.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center gap-6 md:flex-row" data-testid="content-item-2">
+                  <MessageCircle className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                  <div>
+                    <h4 className="mb-1 text-lg font-semibold">인생 방향성</h4>
+                    <p className="text-sm leading-relaxed text-white/70">
+                      어떤 일을 할 때 성공하는지, 어떤 선택이 유리한지 명확히 제시합니다.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center gap-6 md:flex-row" data-testid="content-item-3">
+                  <Flower className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                  <div>
+                    <h4 className="mb-1 text-lg font-semibold">주의해야 할 흉운</h4>
+                    <p className="text-sm leading-relaxed text-white/70">
+                      발전을 저해하는 장애 요소와 극복 방안을 제시합니다.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </DialogContent>
