@@ -1,12 +1,21 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
+import { useLocation } from "wouter";
 
 export default function FamilyPolicy() {
+  const [, setLocation] = useLocation();
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const handleBack = () => {
+    setLocation("/");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -145,6 +154,19 @@ export default function FamilyPolicy() {
                 </div>
               </div>
             </Card>
+
+            {/* 이전 페이지로 돌아가기 버튼 */}
+            <div className="flex justify-center mt-8">
+              <Button
+                onClick={handleBack}
+                variant="outline"
+                className="gap-2"
+                data-testid="button-back"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                이전 페이지로 돌아가기
+              </Button>
+            </div>
           </div>
         </div>
       </div>
