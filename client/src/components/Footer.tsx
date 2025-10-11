@@ -70,11 +70,11 @@ export function Footer() {
           {/* 우측: 팔로우 섹션 (검은색 배경) */}
           <div className="flex items-center justify-center lg:justify-end">
             <div className="bg-black rounded-2xl px-8 py-8 w-full max-w-md">
-              <h3 className="text-white text-2xl font-bold text-center mb-6">
+              <h3 className="text-white text-[31px] font-bold text-center mb-6">
                 팔로우
               </h3>
               
-              <div className="flex justify-center gap-6">
+              <div className="flex justify-center gap-[31px]">
                 {socialLinks.map((social) => (
                   <a
                     key={social.name}
