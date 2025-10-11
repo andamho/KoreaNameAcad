@@ -8,7 +8,7 @@ export default function KnaPricingSection({ onOpenDialog }: KnaPricingSectionPro
   const [, setLocation] = useLocation();
 
   const scrollToFamily = () => {
-    setLocation("/detail-info#family-policy");
+    setLocation("/family-policy");
   };
 
   const openAnalysisForm = () => {

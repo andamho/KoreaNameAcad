@@ -52,7 +52,7 @@ export default function KnaIntroBlock() {
 function Testimonial({ quote }: { quote: string }) {
   return (
     <figure className="rounded-xl border border-gray-200 dark:border-border bg-white dark:bg-card p-4 shadow-sm">
-      <blockquote className="text-lg text-gray-700 dark:text-muted-foreground">"{quote}"</blockquote>
+      <blockquote className="text-lg text-[#0f766e] dark:text-[#58C4C4]">"{quote}"</blockquote>
     </figure>
   );
 }
