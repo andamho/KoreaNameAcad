@@ -6,7 +6,7 @@ const pricingData = {
       rows: [
         { name: "이름분석", price: "6만원 [가족 4명 24만원]" },
         { name: "이름감명(다른 곳에서 지은 이름)", price: "2만원" },
-        { name: "이름궁함(연인)", price: "10만원" },
+        { name: "이름궁합(연인)", price: "10만원" },
         { name: "인스타명(감명)", price: "2만원" },
         { name: "반려동물(감명)", price: "2만원" },
       ],
@@ -128,13 +128,35 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
               );
             }
             
+            // 이름감명 항목은 모바일에서 줄바꿈
+            if (sectionIndex === 0 && i === 1) {
+              return (
+                <div 
+                  key={i} 
+                  className="grid grid-cols-12 px-4 py-3 sm:py-4 hover-elevate text-[18px]"
+                  data-testid={`pricing-row-${sectionIndex}-${i}`}
+                >
+                  <div className="col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide">
+                    이름감명(다른 곳<br className="sm:hidden" />에서 지은 이름)
+                  </div>
+                  <div className="col-span-6 sm:col-span-4 text-right font-semibold text-foreground break-words">{row.price}</div>
+                </div>
+              );
+            }
+            
+            // 이름궁합, 인스타명, 반려동물은 모바일에서 줄바꿈 방지
+            const noBreakItems = ["이름궁합(연인)", "인스타명(감명)", "반려동물(감명)"];
+            const nameClass = noBreakItems.includes(row.name) 
+              ? "col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide whitespace-nowrap"
+              : "col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide";
+            
             return (
               <div 
                 key={i} 
                 className="grid grid-cols-12 px-4 py-3 sm:py-4 hover-elevate text-[18px]"
                 data-testid={`pricing-row-${sectionIndex}-${i}`}
               >
-                <div className="col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide">{row.name}</div>
+                <div className={nameClass}>{row.name}</div>
                 <div className="col-span-6 sm:col-span-4 text-right font-semibold text-foreground break-words">{row.price}</div>
               </div>
             );
