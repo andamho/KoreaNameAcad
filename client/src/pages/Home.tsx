@@ -378,22 +378,22 @@ export default function Home() {
             <div className="grid gap-6 md:grid-cols-3 mb-16" data-testid="analysis-scope">
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-1">
                 <Flower className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-base font-semibold">16가지 세부 운세 종합 분석</h3>
-                <p className="text-base leading-relaxed text-white/70">
+                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">16가지 세부 운세 종합 분석</h3>
+                <p className="text-lg md:text-lg leading-relaxed text-white/70">
                   세밀한 수리운·주역괘운의 분석을 통해<br />인생의 총체적 방향을 진단합니다.
                 </p>
               </div>
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-2">
                 <MessageCircle className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-base font-semibold">7개 인생 시기별 운의 흐름 파악</h3>
-                <p className="text-base leading-relaxed text-white/70">
+                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">7개 인생 시기별 운의 흐름 파악</h3>
+                <p className="text-lg md:text-lg leading-relaxed text-white/70">
                   초년·중년·말년 등 7개 시기를 분석하여<br />시기별 강점과 전환점을 명확히 제시합니다.
                 </p>
               </div>
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-3">
                 <Star className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-base font-semibold">과거·현재·미래 정밀 진단</h3>
-                <p className="text-base leading-relaxed text-white/70">
+                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">과거·현재·미래 정밀 진단</h3>
+                <p className="text-lg md:text-lg leading-relaxed text-white/70">
                   지나온 일, 현재 처한 상황, 다가올 운을 세밀히 파악합니다.
                 </p>
               </div>
@@ -406,8 +406,8 @@ export default function Home() {
                 <div className="flex flex-col items-center gap-6 md:flex-row" data-testid="content-item-1">
                   <Star className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
-                    <h4 className="mb-1 text-base font-semibold">타고난 강점과 자질</h4>
-                    <p className="text-base leading-relaxed text-white/70">
+                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold">타고난 강점과 자질</h4>
+                    <p className="text-lg md:text-lg leading-relaxed text-white/70">
                       선천적 재능과 성격적 특성을 구체적으로 분석합니다.
                     </p>
                   </div>
@@ -416,8 +416,8 @@ export default function Home() {
                 <div className="flex flex-col items-center gap-6 md:flex-row" data-testid="content-item-2">
                   <MessageCircle className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
-                    <h4 className="mb-1 text-base font-semibold">인생 방향성</h4>
-                    <p className="text-base leading-relaxed text-white/70">
+                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold">인생 방향성</h4>
+                    <p className="text-lg md:text-lg leading-relaxed text-white/70">
                       어떤 일을 할 때 성공하는지, 어떤 선택이 유리한지 명확히 제시합니다.
                     </p>
                   </div>
@@ -426,8 +426,8 @@ export default function Home() {
                 <div className="flex flex-col items-center gap-6 md:flex-row" data-testid="content-item-3">
                   <Flower className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
-                    <h4 className="mb-1 text-base font-semibold">주의해야 할 흉운</h4>
-                    <p className="text-base leading-relaxed text-white/70">
+                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold">주의해야 할 흉운</h4>
+                    <p className="text-lg md:text-lg leading-relaxed text-white/70">
                       발전을 저해하는 장애 요소와 극복 방안을 제시합니다.
                     </p>
                   </div>
