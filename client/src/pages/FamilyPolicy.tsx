@@ -15,6 +15,12 @@ export default function FamilyPolicy() {
 
   const handleBack = () => {
     setLocation("/");
+    setTimeout(() => {
+      const pricingSection = document.getElementById("pricing");
+      if (pricingSection) {
+        pricingSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 100);
   };
 
   return (
