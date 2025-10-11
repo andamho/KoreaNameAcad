@@ -245,7 +245,7 @@ export default function Home() {
             <ServiceCard
               icon={Star}
               title="이름감명"
-              description="개명을 위해 다른 작명소에서 받은 새이름에 대한 감명을 해드립니다."
+              description="타 작명소에서 받은 이름의 적합도를 점검해드립니다"
               buttonText="신청하기"
               onClick={() => openDialog("naming")}
             />
