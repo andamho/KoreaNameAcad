@@ -8,9 +8,19 @@ interface ServiceCardProps {
   description: string;
   buttonText?: string;
   onClick: () => void;
+  secondaryButtonText?: string;
+  onSecondaryClick?: () => void;
 }
 
-export function ServiceCard({ icon: Icon, title, description, buttonText = "자세히 보기", onClick }: ServiceCardProps) {
+export function ServiceCard({ 
+  icon: Icon, 
+  title, 
+  description, 
+  buttonText = "자세히 보기", 
+  onClick,
+  secondaryButtonText,
+  onSecondaryClick
+}: ServiceCardProps) {
   return (
     <Card className="p-6 space-y-4 hover-elevate transition-all duration-300">
       <div className="flex items-center gap-3">
@@ -24,15 +34,29 @@ export function ServiceCard({ icon: Icon, title, description, buttonText = "자�
         {description}
       </p>
       
-      <Button
-        variant="ghost"
-        onClick={onClick}
-        data-testid={`button-service-${title}`}
-        className="w-full justify-start px-0 hover:text-primary text-lg"
-        style={{ color: '#58C4C4' }}
-      >
-        {buttonText} →
-      </Button>
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          onClick={onClick}
+          data-testid={`button-service-${title}`}
+          className="justify-start px-0 hover:text-primary text-lg flex-shrink-0"
+          style={{ color: '#58C4C4' }}
+        >
+          {buttonText} →
+        </Button>
+        
+        {secondaryButtonText && onSecondaryClick && (
+          <Button
+            variant="ghost"
+            onClick={onSecondaryClick}
+            data-testid={`button-service-secondary-${title}`}
+            className="justify-start px-0 hover:text-primary text-lg flex-shrink-0"
+            style={{ color: '#58C4C4' }}
+          >
+            {secondaryButtonText} →
+          </Button>
+        )}
+      </div>
     </Card>
   );
 }

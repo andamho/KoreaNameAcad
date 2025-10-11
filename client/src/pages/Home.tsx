@@ -21,11 +21,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import analysisExampleImage from "@assets/hongildong-analysis.jpg";
 
 export default function Home() {
   const [, setLocation] = useLocation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
+  const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -239,6 +241,8 @@ export default function Home() {
               description="현재 이름에 들어있는 16가지운을 전문적으로 분석해드립니다."
               buttonText="신청하기"
               onClick={() => openDialog("analysis")}
+              secondaryButtonText="자세히 보기"
+              onSecondaryClick={() => setAnalysisDetailOpen(true)}
             />
             <ServiceCard
               icon={Star}
@@ -356,6 +360,47 @@ export default function Home() {
             type={dialogType}
             onSuccess={() => setDialogOpen(false)}
           />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={analysisDetailOpen} onOpenChange={setAnalysisDetailOpen}>
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-[#0f766e] dark:text-[#58C4C4]">
+              이름분석 상세 안내
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            <div className="space-y-4">
+              <p className="text-lg leading-relaxed">
+                <span className="text-[#0f766e] dark:text-[#58C4C4] font-semibold">✔️ 이름분석은</span>
+                <br />
+                사주없이<span className="text-red-600 dark:text-red-400 font-bold">❌❌❌</span>
+                <br />
+                한글·한자 이름 속 숨겨진 흐름
+                <br />
+                <span className="font-semibold">[총 16가지 운세 & 7개의 시기]</span> 을
+                <br />
+                과거 현재 미래까지 정확하게 분석해드립니다.
+              </p>
+              
+              <p className="text-lg leading-relaxed">
+                타고난 장점, 자질과 특징들<br />
+                그리고 그것들을 가지고 꿈을 꾸고 이뤄나가는 데 있어서<br />
+                태클을 거는 흉운들까지 꼼꼼히 알려드립니다.
+              </p>
+            </div>
+            
+            <div className="rounded-lg overflow-hidden border border-border">
+              <img 
+                src={analysisExampleImage} 
+                alt="홍길동 이름분석 예시" 
+                className="w-full h-auto"
+                data-testid="img-analysis-example"
+              />
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
