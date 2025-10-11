@@ -40,9 +40,9 @@ function Step({ number, title, desc }: { number: number; title: string; desc: st
         <span className="inline-flex h-10 w-10 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-base font-bold text-[#0f766e] dark:text-[#58C4C4]">
           {number}
         </span>
-        <h3 className="text-lg md:text-[22px] font-semibold break-keep">{title}</h3>
+        <h3 className="text-[21px] md:text-[22px] font-semibold break-keep">{title}</h3>
       </div>
-      <p className="mt-3 text-base md:text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">{desc}</p>
+      <p className="mt-3 text-lg md:text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">{desc}</p>
     </li>
   );
 }

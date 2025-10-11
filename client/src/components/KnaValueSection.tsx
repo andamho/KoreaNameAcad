@@ -48,15 +48,15 @@ export default function KnaValueSection() {
         </div>
 
         <section className="mt-12 rounded-2xl border border-gray-200 dark:border-border bg-white/80 dark:bg-card/80 p-6 shadow-sm">
-          <h3 className="text-lg md:text-2xl font-bold tracking-tight text-foreground break-keep">두 번의 확인, 평생의 안심</h3>
+          <h3 className="text-[21px] md:text-2xl font-bold tracking-tight text-foreground break-keep">두 번의 확인, 평생의 안심</h3>
           <ul className="mt-4 space-y-3">
             <li className="flex items-start gap-3">
               <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">1</span>
-              <span className="text-base md:text-lg text-gray-700 dark:text-muted-foreground">상담·개명 후기로 1차 검증</span>
+              <span className="text-lg md:text-lg text-gray-700 dark:text-muted-foreground">상담·개명 후기로 1차 검증</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">2</span>
-              <span className="text-base md:text-lg text-gray-700 dark:text-muted-foreground">이름만으로 운명상담을 통해 작명이론의 정확도 2차 검증</span>
+              <span className="text-lg md:text-lg text-gray-700 dark:text-muted-foreground">이름만으로 운명상담을 통해 작명이론의 정확도 2차 검증</span>
             </li>
           </ul>
         </section>
@@ -71,8 +71,8 @@ function ValueCard({ icon, title, desc }: { icon: React.ReactNode; title: string
       <div className="flex items-start gap-4">
         <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-[#7fe1d3]/25 dark:bg-[#58C4C4]/25">{icon}</div>
         <div>
-          <h3 className="text-lg md:text-[22px] font-semibold text-foreground break-keep">{title}</h3>
-          <p className="mt-1 text-base md:text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">{desc}</p>
+          <h3 className="text-[21px] md:text-[22px] font-semibold text-foreground break-keep">{title}</h3>
+          <p className="mt-1 text-lg md:text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">{desc}</p>
         </div>
       </div>
     </article>
