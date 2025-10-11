@@ -110,16 +110,35 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
         
         {/* 테이블 바디 */}
         <div className="divide-y divide-border bg-card">
-          {rows.map((row, i) => (
-            <div 
-              key={i} 
-              className="grid grid-cols-12 px-4 py-3 sm:py-4 hover-elevate text-[18px]"
-              data-testid={`pricing-row-${sectionIndex}-${i}`}
-            >
-              <div className="col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide">{row.name}</div>
-              <div className="col-span-6 sm:col-span-4 text-right font-semibold text-foreground break-words">{row.price}</div>
-            </div>
-          ))}
+          {rows.map((row, i) => {
+            // 첫 번째 섹션의 첫 번째 행 (이름분석)은 특별 처리
+            if (sectionIndex === 0 && i === 0) {
+              return (
+                <div 
+                  key={i} 
+                  className="px-4 py-3 sm:py-4 hover-elevate"
+                  data-testid={`pricing-row-${sectionIndex}-${i}`}
+                >
+                  <div className="grid grid-cols-12 text-[18px]">
+                    <div className="col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide">이름분석</div>
+                    <div className="col-span-6 sm:col-span-4 text-right font-semibold text-foreground">6만원</div>
+                  </div>
+                  <div className="text-right text-[18px] font-semibold text-foreground mt-1">[가족 4명 24만원]</div>
+                </div>
+              );
+            }
+            
+            return (
+              <div 
+                key={i} 
+                className="grid grid-cols-12 px-4 py-3 sm:py-4 hover-elevate text-[18px]"
+                data-testid={`pricing-row-${sectionIndex}-${i}`}
+              >
+                <div className="col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide">{row.name}</div>
+                <div className="col-span-6 sm:col-span-4 text-right font-semibold text-foreground break-words">{row.price}</div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
