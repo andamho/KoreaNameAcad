@@ -80,7 +80,7 @@ export function Footer() {
             </span>
           </h2>
           
-          <p className="text-lg text-white/70 mt-6">
+          <p className="text-[14px] text-white/70 mt-6">
             한글·한자이름만으로 운명상담<br/>
             [정확도 80% 이상]
           </p>
