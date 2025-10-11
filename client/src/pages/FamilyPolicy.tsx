@@ -159,7 +159,6 @@ export default function FamilyPolicy() {
             <div className="flex justify-center mt-8">
               <Button
                 onClick={handleBack}
-                variant="outline"
                 className="gap-2"
                 data-testid="button-back"
               >
