@@ -49,7 +49,7 @@ export default function KnaValueSection() {
         </div>
 
         <section className="mt-12 rounded-2xl border border-gray-200 dark:border-border bg-white/80 dark:bg-card/80 p-6 shadow-sm">
-          <h3 className="text-[21px] md:text-2xl font-bold tracking-tight text-foreground break-keep flex items-center justify-center gap-2">
+          <h3 className="text-[21px] md:text-2xl font-bold tracking-tight text-foreground break-keep flex items-center gap-2">
             <Lock className="h-5 w-5 md:h-6 md:w-6 text-[#0f766e] dark:text-[#58C4C4]" />
             두 번의 확인, 평생의 안심
           </h3>
