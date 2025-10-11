@@ -36,10 +36,11 @@ export function Navbar() {
               <img 
                 src={logoImage} 
                 alt="한국이름학교 로고" 
-                className="h-5 w-5 md:h-8 md:w-8 dark:invert"
+                className="h-8 w-8 md:h-8 md:w-8 dark:invert"
               />
-              <span className="text-sm md:text-xl font-bold text-foreground tracking-wide whitespace-nowrap">
-                한국이름학교 | 와츠유어네임 이름연구협회
+              <span className="text-sm md:text-xl font-bold text-foreground tracking-wide">
+                <span className="md:hidden">한국이름학교<br />와츠유어네임 이름연구협회</span>
+                <span className="hidden md:inline whitespace-nowrap">한국이름학교 | 와츠유어네임 이름연구협회</span>
               </span>
             </button>
           </div>
@@ -70,7 +71,7 @@ export function Navbar() {
           </div>
 
           <div className="flex md:hidden items-center gap-1">
-            <div className="translate-x-[10px]">
+            <div className="translate-x-[4px] scale-110">
               <ThemeToggle />
             </div>
             <Button
