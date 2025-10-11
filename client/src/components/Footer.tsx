@@ -69,8 +69,8 @@ export function Footer() {
 
           {/* 우측: 팔로우 섹션 (검은색 배경) */}
           <div className="flex items-center justify-center lg:justify-end">
-            <div className="bg-black rounded-2xl px-8 py-[19px] w-full max-w-md">
-              <h3 className="text-white text-[31px] text-center mb-4">
+            <div className="bg-black rounded-2xl px-8 py-[15px] w-full max-w-md">
+              <h3 className="text-white text-[31px] text-center mb-[13px]">
                 팔로우
               </h3>
               
