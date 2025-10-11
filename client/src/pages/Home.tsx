@@ -333,7 +333,7 @@ export default function Home() {
               href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=11&proxyReferer=https%3A%2F%2Flinkon.id%2F"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-lg font-semibold text-[#0f766e] dark:text-[#58C4C4] hover:underline"
+              className="inline-flex items-center gap-2 text-[27px] font-semibold text-[#0f766e] dark:text-[#58C4C4] hover:underline"
               data-testid="link-detailed-testimonials"
             >
               고객 후기 전체보기 →
