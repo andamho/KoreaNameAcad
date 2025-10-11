@@ -21,7 +21,7 @@ export default function KnaDangerSection() {
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#e0f5f2] dark:bg-[#0f766e]/20 flex-shrink-0">
               <Lightbulb className="h-4 w-4 text-[#0f766e] dark:text-[#58C4C4]" strokeWidth={2} />
             </div>
-            <h3 id="power-title" className="text-[23px] md:text-2xl font-semibold">이름, 힘이 셉니다</h3>
+            <h3 id="power-title" className="text-[23px] md:text-2xl font-semibold">이름은 힘이 셉니다</h3>
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             <Note title="이름운 = 인생의 결과" desc="열심히만 산다고 잘 사는 게 절대 아닙니다. 잘못하다 몸만 망칩니다." />
