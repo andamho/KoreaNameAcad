@@ -11,7 +11,7 @@ import KnaIntroBlock from "@/components/KnaIntroBlock";
 import KnaStepsSection from "@/components/KnaStepsSection";
 import KnaMythTruthSection from "@/components/KnaMythTruthSection";
 import KnaPricingSection from "@/components/KnaPricingSection";
-import { Search, Star, MessageCircle, Flower, Baby, Building } from "lucide-react";
+import { Search, Star, MessageCircle, Flower, Baby, Building, Layers, Compass, Clock, CheckCircle, TriangleAlert } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
@@ -377,21 +377,21 @@ export default function Home() {
             {/* 분석 범위 */}
             <div className="grid gap-6 md:grid-cols-3 mb-16" data-testid="analysis-scope">
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-1">
-                <Flower className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
+                <Layers className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
                 <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">16가지 세부 운세 종합 분석</h3>
                 <p className="text-lg md:text-lg leading-relaxed text-white/70">
                   세밀한 수리운·주역괘운의 분석을 통해<br />인생의 총체적 방향을 진단합니다.
                 </p>
               </div>
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-2">
-                <MessageCircle className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
+                <Compass className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
                 <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">7개 인생 시기별 운의 흐름 파악</h3>
                 <p className="text-lg md:text-lg leading-relaxed text-white/70">
                   초년·중년·말년 등 7개 시기를 분석하여<br />시기별 강점과 전환점을 명확히 제시합니다.
                 </p>
               </div>
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-3">
-                <Star className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
+                <Clock className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
                 <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">과거·현재·미래 정밀 진단</h3>
                 <p className="text-lg md:text-lg leading-relaxed text-white/70">
                   지나온 일, 현재 처한 상황, 다가올 운을 세밀히 파악합니다.
@@ -404,7 +404,7 @@ export default function Home() {
               <h3 className="tiffany mb-10 text-center text-2xl font-semibold">상담 내용</h3>
               <div className="space-y-10">
                 <div className="flex flex-col items-center gap-6 md:flex-row" data-testid="content-item-1">
-                  <Star className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                  <CheckCircle className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
                     <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold">타고난 강점과 자질</h4>
                     <p className="text-lg md:text-lg leading-relaxed text-white/70">
@@ -414,7 +414,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-col items-center gap-6 md:flex-row" data-testid="content-item-2">
-                  <MessageCircle className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                  <Compass className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
                     <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold">인생 방향성</h4>
                     <p className="text-lg md:text-lg leading-relaxed text-white/70">
@@ -424,7 +424,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-col items-center gap-6 md:flex-row" data-testid="content-item-3">
-                  <Flower className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                  <TriangleAlert className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
                     <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold">주의해야 할 흉운</h4>
                     <p className="text-lg md:text-lg leading-relaxed text-white/70">
