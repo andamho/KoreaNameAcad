@@ -33,7 +33,9 @@ export default function KnaDangerSection() {
 
         <section aria-labelledby="why-title" className="mt-12 rounded-2xl border border-gray-200 dark:border-border bg-white/80 dark:bg-card/80 p-6 shadow-sm">
           <div className="flex items-start gap-3">
-            <Lightbulb className="mt-1 h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" strokeWidth={2} />
+            <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-[#e0f5f2] dark:bg-[#0f766e]/20 flex-shrink-0">
+              <Lightbulb className="h-5 w-5 text-[#0f766e] dark:text-[#58C4C4]" strokeWidth={2} />
+            </div>
             <div className="flex-1">
               <h3 id="why-title" className="text-2xl font-semibold">이름운이 중요한 이유</h3>
               <div className="mt-2 grid gap-4 md:grid-cols-2">
