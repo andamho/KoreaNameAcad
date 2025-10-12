@@ -642,7 +642,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="glass rounded-2xl p-6 border border-[#81D8D0]/40">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="h-1.5 w-16 rounded-full bg-[#81D8D0]" />
+                  <div className="h-5 w-5 md:h-1.5 md:w-16 rounded-md md:rounded-full bg-[#81D8D0]" />
                   <h3 className="text-[21px] md:text-[22px] font-semibold text-[#81D8D0]">
                     이름은 '소리'보다 '글자'가 강합니다
                   </h3>
@@ -655,7 +655,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
               <div className="glass rounded-2xl p-6 border border-[#81D8D0]/40">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="h-1.5 w-16 rounded-full bg-[#81D8D0]" />
+                  <div className="h-5 w-5 md:h-1.5 md:w-16 rounded-md md:rounded-full bg-[#81D8D0]" />
                   <h3 className="text-[21px] md:text-[22px] font-semibold text-[#81D8D0]">
                     등본상 가족은 더 깊게 연결됩니다
                   </h3>
