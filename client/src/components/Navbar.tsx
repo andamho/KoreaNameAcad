@@ -71,7 +71,7 @@ export function Navbar() {
           </div>
 
           <div className="flex md:hidden items-center gap-2">
-            <div className="-translate-x-[2px] scale-110">
+            <div className="-translate-x-[2px] scale-[1.54]">
               <ThemeToggle />
             </div>
             <Button
@@ -79,7 +79,7 @@ export function Navbar() {
               size="icon"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               data-testid="button-mobile-menu"
-              className="scale-110"
+              className="scale-[1.54]"
             >
               <Menu className="h-5 w-5" />
             </Button>
