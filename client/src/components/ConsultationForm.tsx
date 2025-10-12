@@ -689,8 +689,8 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   <h3 className="text-[21px] md:text-[22px] font-semibold leading-snug mb-2 text-white">
                     아빠가 바람이
                   </h3>
-                  <p className="text-lg md:text-lg text-white/70 leading-relaxed">
-                    엄마 이름 때문에 발생한 가족의 이야기
+                  <p className="text-lg md:text-lg text-white leading-relaxed">
+                    🤦‍♀️ 아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습...
                   </p>
                 </a>
 
@@ -704,8 +704,8 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   <h3 className="text-[21px] md:text-[22px] font-semibold leading-snug mb-2 text-white">
                     개명한 이름때문에
                   </h3>
-                  <p className="text-lg md:text-lg text-white/70 leading-relaxed">
-                    개명 후 겪게 된 어려움과 그 과정
+                  <p className="text-lg md:text-lg text-white leading-relaxed">
+                    어느날 인스타로 디엠이 왔습니다. 너무 살기 힘들다며 죽고 싶다고까지 했습니다. 젊으신 분이 그러시면 ...
                   </p>
                 </a>
               </div>
