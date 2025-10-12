@@ -380,7 +380,7 @@ export default function Home() {
                 <Layers className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
                 <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">16가지 세부 운세 종합 분석</h3>
                 <p className="text-lg md:text-lg leading-relaxed text-white/70">
-                  세밀한 수리운·주역괘운의 분석을 통해<br />인생의 총체적 방향을 진단합니다.
+                  수리운·주역괘운의 세밀한 분석을 통해<br />인생의 총체적 방향을 진단합니다.
                 </p>
               </div>
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-2">
