@@ -52,11 +52,12 @@ export default function Home() {
 
   // 뒤로 가기 버튼 감지 및 처리
   useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      if (event.state?.dialog === "consultation") {
-        setDialogOpen(false);
-      } else if (event.state?.dialog === "analysisDetail") {
+    const handlePopState = () => {
+      // 뒤로 가기를 눌렀을 때, 현재 열려있는 다이얼로그를 닫음
+      if (analysisDetailOpen) {
         setAnalysisDetailOpen(false);
+      } else if (dialogOpen) {
+        setDialogOpen(false);
       }
     };
 
@@ -65,19 +66,19 @@ export default function Home() {
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, []);
+  }, [dialogOpen, analysisDetailOpen]);
 
   const openDialog = (type: "analysis" | "naming") => {
     setDialogType(type);
     setDialogOpen(true);
     // 히스토리에 추가하여 뒤로 가기 버튼으로 닫을 수 있게 함
-    window.history.pushState({ dialog: "consultation" }, "");
+    window.history.pushState({ modal: true }, "");
   };
 
   const closeDialog = () => {
     setDialogOpen(false);
-    // 현재 히스토리가 다이얼로그 상태라면 뒤로 가기
-    if (window.history.state?.dialog === "consultation") {
+    // 히스토리 뒤로 가기 (조용히 처리)
+    if (window.history.state?.modal) {
       window.history.back();
     }
   };
@@ -85,13 +86,13 @@ export default function Home() {
   const openAnalysisDetail = () => {
     setAnalysisDetailOpen(true);
     // 히스토리에 추가하여 뒤로 가기 버튼으로 닫을 수 있게 함
-    window.history.pushState({ dialog: "analysisDetail" }, "");
+    window.history.pushState({ modal: true }, "");
   };
 
   const closeAnalysisDetail = () => {
     setAnalysisDetailOpen(false);
-    // 현재 히스토리가 분석 상세 다이얼로그 상태라면 뒤로 가기
-    if (window.history.state?.dialog === "analysisDetail") {
+    // 히스토리 뒤로 가기 (조용히 처리)
+    if (window.history.state?.modal) {
       window.history.back();
     }
   };
