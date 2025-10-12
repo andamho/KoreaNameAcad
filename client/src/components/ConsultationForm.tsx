@@ -51,6 +51,12 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const [consultationTime, setConsultationTime] = useState("");
   const [familyPolicyDialogOpen, setFamilyPolicyDialogOpen] = useState(false);
   const isClosingFromBackButton = useRef(false);
+  const familyPolicyDialogOpenRef = useRef(false);
+
+  // ref를 state와 동기화
+  useEffect(() => {
+    familyPolicyDialogOpenRef.current = familyPolicyDialogOpen;
+  }, [familyPolicyDialogOpen]);
 
   // 뒤로 가기 버튼으로 가족 상담 원칙 다이얼로그 닫기
   useEffect(() => {
@@ -58,7 +64,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
       const modalState = event.state?.modal;
       
       // familyPolicy가 열려있고, state가 familyPolicy가 아니면 (consultation 또는 null) 닫음
-      if (familyPolicyDialogOpen && modalState !== "familyPolicy") {
+      if (familyPolicyDialogOpenRef.current && modalState !== "familyPolicy") {
         isClosingFromBackButton.current = true;
         setFamilyPolicyDialogOpen(false);
       }
@@ -69,7 +75,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [familyPolicyDialogOpen]);
+  }, []); // 의존성 배열 비움 - 항상 최신 ref 값을 참조
 
   const openFamilyPolicyDialog = () => {
     setFamilyPolicyDialogOpen(true);

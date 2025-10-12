@@ -29,6 +29,17 @@ export default function Home() {
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
   const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
   const isClosingFromBackButton = useRef(false);
+  const dialogOpenRef = useRef(false);
+  const analysisDetailOpenRef = useRef(false);
+
+  // ref를 state와 동기화
+  useEffect(() => {
+    dialogOpenRef.current = dialogOpen;
+  }, [dialogOpen]);
+
+  useEffect(() => {
+    analysisDetailOpenRef.current = analysisDetailOpen;
+  }, [analysisDetailOpen]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -57,12 +68,12 @@ export default function Home() {
       const modalState = event.state?.modal;
       
       // analysisDetail이 열려있고, state에서 사라졌으면 닫음
-      if (analysisDetailOpen && modalState !== "analysisDetail") {
+      if (analysisDetailOpenRef.current && modalState !== "analysisDetail") {
         isClosingFromBackButton.current = true;
         setAnalysisDetailOpen(false);
       }
       // consultation이 열려있고, state에서 사라졌으면 (null 또는 familyPolicy가 아닌 경우) 닫음
-      else if (dialogOpen && !modalState) {
+      else if (dialogOpenRef.current && !modalState) {
         isClosingFromBackButton.current = true;
         setDialogOpen(false);
       }
@@ -73,7 +84,7 @@ export default function Home() {
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [dialogOpen, analysisDetailOpen]);
+  }, []); // 의존성 배열 비움 - 항상 최신 ref 값을 참조
 
   const openDialog = (type: "analysis" | "naming") => {
     setDialogType(type);
