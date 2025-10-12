@@ -15,7 +15,7 @@ export function Hero() {
         <img 
           src={heroImage} 
           alt="배경" 
-          className="w-full h-full object-cover object-[55%]"
+          className="w-full h-full object-cover object-right"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/50 to-transparent dark:from-background/90 dark:via-background/60 dark:to-transparent" />
       </div>
