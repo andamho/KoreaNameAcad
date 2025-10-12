@@ -31,7 +31,7 @@ export function ThemeToggle() {
       {theme === "light" ? (
         <Moon className="h-7 w-7" />
       ) : (
-        <Sun className="h-7 w-7" />
+        <Sun className="h-7 w-7 text-black" />
       )}
     </Button>
   );
