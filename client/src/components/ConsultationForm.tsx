@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -50,6 +50,33 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const [depositorName, setDepositorName] = useState("");
   const [consultationTime, setConsultationTime] = useState("");
   const [familyPolicyDialogOpen, setFamilyPolicyDialogOpen] = useState(false);
+
+  // 뒤로 가기 버튼으로 가족 상담 원칙 다이얼로그 닫기
+  useEffect(() => {
+    const handlePopState = () => {
+      if (familyPolicyDialogOpen) {
+        setFamilyPolicyDialogOpen(false);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [familyPolicyDialogOpen]);
+
+  const openFamilyPolicyDialog = () => {
+    setFamilyPolicyDialogOpen(true);
+    window.history.pushState({ familyPolicy: true }, "");
+  };
+
+  const closeFamilyPolicyDialog = () => {
+    setFamilyPolicyDialogOpen(false);
+    if (window.history.state?.familyPolicy) {
+      window.history.back();
+    }
+  };
 
   const handleNumPeopleChange = (num: number) => {
     setNumPeople(num);
@@ -207,7 +234,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               저희 협회는 <span className="font-bold">등본상 가족 상담 원칙</span>으로 상담진행해 드리고 있습니다{" "}
               <button
                 type="button"
-                onClick={() => setFamilyPolicyDialogOpen(true)}
+                onClick={openFamilyPolicyDialog}
                 className="font-semibold text-[#0f766e] dark:text-[#58C4C4] hover:underline"
                 data-testid="button-family-policy-form"
               >
@@ -532,7 +559,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
       </form>
 
       {/* 등본상 가족 상담 원칙 다이얼로그 */}
-      <Dialog open={familyPolicyDialogOpen} onOpenChange={setFamilyPolicyDialogOpen}>
+      <Dialog open={familyPolicyDialogOpen} onOpenChange={(open) => { if (!open) closeFamilyPolicyDialog(); }}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-neutral-950 border-[#81D8D0]/30">
           <DialogHeader>
             <DialogTitle className="text-2xl md:text-3xl font-semibold text-center text-[#81D8D0]">
