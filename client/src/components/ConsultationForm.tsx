@@ -675,8 +675,8 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
             {/* 추천 글 */}
             <div>
-              <h2 className="text-lg md:text-xl font-semibold text-center text-[#81D8D0] mb-4">
-                같이 보시면 좋은 글
+              <h2 className="text-lg md:text-xl font-semibold text-center flex items-center justify-center gap-2 text-[#81D8D0] mb-4">
+                <BookOpenText className="h-6 w-6" /> 같이 보시면 좋은 글
               </h2>
               <div className="grid gap-4 md:grid-cols-2">
                 <a 
