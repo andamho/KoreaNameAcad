@@ -50,9 +50,50 @@ export default function Home() {
     }
   }, []);
 
+  // 뒤로 가기 버튼 감지 및 처리
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state?.dialog === "consultation") {
+        setDialogOpen(false);
+      } else if (event.state?.dialog === "analysisDetail") {
+        setAnalysisDetailOpen(false);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
   const openDialog = (type: "analysis" | "naming") => {
     setDialogType(type);
     setDialogOpen(true);
+    // 히스토리에 추가하여 뒤로 가기 버튼으로 닫을 수 있게 함
+    window.history.pushState({ dialog: "consultation" }, "");
+  };
+
+  const closeDialog = () => {
+    setDialogOpen(false);
+    // 현재 히스토리가 다이얼로그 상태라면 뒤로 가기
+    if (window.history.state?.dialog === "consultation") {
+      window.history.back();
+    }
+  };
+
+  const openAnalysisDetail = () => {
+    setAnalysisDetailOpen(true);
+    // 히스토리에 추가하여 뒤로 가기 버튼으로 닫을 수 있게 함
+    window.history.pushState({ dialog: "analysisDetail" }, "");
+  };
+
+  const closeAnalysisDetail = () => {
+    setAnalysisDetailOpen(false);
+    // 현재 히스토리가 분석 상세 다이얼로그 상태라면 뒤로 가기
+    if (window.history.state?.dialog === "analysisDetail") {
+      window.history.back();
+    }
   };
 
   const testimonials = [
@@ -242,7 +283,7 @@ export default function Home() {
               buttonText="신청하기"
               onClick={() => openDialog("analysis")}
               secondaryButtonText="자세히 보기"
-              onSecondaryClick={() => setAnalysisDetailOpen(true)}
+              onSecondaryClick={openAnalysisDetail}
             />
             <ServiceCard
               icon={Star}
@@ -344,16 +385,16 @@ export default function Home() {
 
       <Footer />
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) closeDialog(); }}>
         <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <ConsultationForm 
             type={dialogType}
-            onSuccess={() => setDialogOpen(false)}
+            onSuccess={closeDialog}
           />
         </DialogContent>
       </Dialog>
 
-      <Dialog open={analysisDetailOpen} onOpenChange={setAnalysisDetailOpen}>
+      <Dialog open={analysisDetailOpen} onOpenChange={(open) => { if (!open) closeAnalysisDetail(); }}>
         <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto bg-neutral-950 text-white border-white/20">
           <DialogHeader className="sr-only">
             <DialogTitle>이름분석 운명상담 안내</DialogTitle>
