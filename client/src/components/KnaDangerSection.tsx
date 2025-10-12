@@ -11,15 +11,15 @@ export default function KnaDangerSection() {
       <div className="relative mx-auto max-w-6xl px-6 py-16 sm:py-20 lg:px-8">
         <header className="mx-auto max-w-3xl text-center">
           <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl flex items-center justify-center gap-3">
-            <AlertTriangle className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0 text-orange-600 dark:text-orange-400" strokeWidth={2.5} />
+            <AlertTriangle className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0 fill-orange-600 dark:fill-orange-500 stroke-white dark:stroke-white" strokeWidth={2.5} />
             <span>이름, 모르면 위험합니다</span>
           </h2>
         </header>
 
         <section aria-labelledby="power-title" className="mt-10">
           <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#e0f5f2] dark:bg-[#0f766e]/20 flex-shrink-0">
-              <Zap className="h-6 w-6 text-[#0f766e] dark:text-[#58C4C4]" strokeWidth={2.5} />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-600 dark:bg-orange-500 flex-shrink-0">
+              <Zap className="h-6 w-6 fill-orange-600 dark:fill-orange-500 stroke-white dark:stroke-white" strokeWidth={2.5} />
             </div>
             <h3 id="power-title" className="text-[23px] md:text-2xl font-semibold">이름은 힘이 셉니다</h3>
           </div>
@@ -32,8 +32,8 @@ export default function KnaDangerSection() {
 
         <section aria-labelledby="danger-title" className="mt-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/20 flex-shrink-0">
-              <OctagonAlert className="h-6 w-6 text-orange-600 dark:text-orange-400" strokeWidth={2.5} />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-600 dark:bg-orange-500 flex-shrink-0">
+              <OctagonAlert className="h-6 w-6 fill-orange-600 dark:fill-orange-500 stroke-white dark:stroke-white" strokeWidth={2.5} />
             </div>
             <h3 id="danger-title" className="text-[23px] md:text-2xl font-semibold">이러시면 안됩니다</h3>
           </div>
