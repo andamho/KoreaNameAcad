@@ -438,38 +438,23 @@ export default function Home() {
 
             {/* 분석 범위 */}
             <div className="grid gap-6 md:grid-cols-3 mb-16" data-testid="analysis-scope">
-              <div className="glass rounded-2xl p-6" data-testid="scope-card-1">
-                <div className="flex items-center gap-3 mb-3 md:flex-col md:gap-0">
-                  <Layers className="h-[25px] w-[25px] shrink-0 md:h-10 md:w-10 md:mx-auto md:mb-3 text-[#81D8D0]" aria-hidden="true" />
-                  <h3 className="text-[21px] md:text-[22px] font-semibold md:mb-2 md:text-center">
-                    <span className="md:hidden">16가지 세부 운세 종합 분석</span>
-                    <span className="hidden md:inline">16가지 세부 운세<br />종합 분석</span>
-                  </h3>
-                </div>
+              <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-1">
+                <Layers className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
+                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">16가지 세부 운세<br />종합 분석</h3>
                 <p className="text-lg md:text-lg leading-relaxed text-white/70 text-left">
                   수리운·주역괘운의 세밀한 분석을 통해 인생의 총체적 방향을 진단합니다.
                 </p>
               </div>
-              <div className="glass rounded-2xl p-6" data-testid="scope-card-2">
-                <div className="flex items-center gap-3 mb-3 md:flex-col md:gap-0">
-                  <Compass className="h-[25px] w-[25px] shrink-0 md:h-10 md:w-10 md:mx-auto md:mb-3 text-[#81D8D0]" aria-hidden="true" />
-                  <h3 className="text-[21px] md:text-[22px] font-semibold md:mb-2 md:text-center">
-                    <span className="md:hidden">7개 인생 시기별 운의 흐름 파악</span>
-                    <span className="hidden md:inline">7개 인생 시기별 운의<br />흐름 파악</span>
-                  </h3>
-                </div>
+              <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-2">
+                <Compass className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
+                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">7개 인생 시기별 운의<br />흐름 파악</h3>
                 <p className="text-lg md:text-lg leading-relaxed text-white/70 text-left">
                   초년·중년·말년 등 7개 시기를 분석하여 시기별 강점과 전환점을 명확히 제시합니다.
                 </p>
               </div>
-              <div className="glass rounded-2xl p-6" data-testid="scope-card-3">
-                <div className="flex items-center gap-3 mb-3 md:flex-col md:gap-0">
-                  <Clock className="h-[25px] w-[25px] shrink-0 md:h-10 md:w-10 md:mx-auto md:mb-3 text-[#81D8D0]" aria-hidden="true" />
-                  <h3 className="text-[21px] md:text-[22px] font-semibold md:mb-2 md:text-center">
-                    <span className="md:hidden">과거·현재·미래 정밀 진단</span>
-                    <span className="hidden md:inline">과거·현재·미래<br />정밀 진단</span>
-                  </h3>
-                </div>
+              <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-3">
+                <Clock className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
+                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">과거·현재·미래<br />정밀 진단</h3>
                 <p className="text-lg md:text-lg leading-relaxed text-white/70 text-left">
                   지나온 일, 현재 처한 상황, 다가올 운을 세밀히 파악합니다.
                 </p>
@@ -480,30 +465,39 @@ export default function Home() {
             <div data-testid="consulting-content">
               <h3 className="tiffany mb-10 text-center text-2xl font-semibold">상담 내용</h3>
               <div className="space-y-10">
-                <div className="flex flex-col items-center gap-6 md:flex-row" data-testid="content-item-1">
-                  <CheckCircle className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                <div className="flex flex-col md:flex-row md:items-center md:gap-6" data-testid="content-item-1">
+                  <CheckCircle className="hidden md:block h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
-                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold">타고난 강점과 자질</h4>
+                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold flex items-center gap-3">
+                      <CheckCircle className="h-[25px] w-[25px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                      타고난 강점과 자질
+                    </h4>
                     <p className="text-lg md:text-lg leading-relaxed text-white/70">
                       선천적 재능과 성격적 특성을 구체적으로 분석합니다.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex flex-col items-center gap-6 md:flex-row" data-testid="content-item-2">
-                  <MapPin className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                <div className="flex flex-col md:flex-row md:items-center md:gap-6" data-testid="content-item-2">
+                  <MapPin className="hidden md:block h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
-                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold">인생 방향성</h4>
+                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold flex items-center gap-3">
+                      <MapPin className="h-[25px] w-[25px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                      인생 방향성
+                    </h4>
                     <p className="text-lg md:text-lg leading-relaxed text-white/70">
                       어떤 일을 할 때 성공하는지, 어떤 선택이 유리한지 명확히 제시합니다.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex flex-col items-center gap-6 md:flex-row" data-testid="content-item-3">
-                  <TriangleAlert className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                <div className="flex flex-col md:flex-row md:items-center md:gap-6" data-testid="content-item-3">
+                  <TriangleAlert className="hidden md:block h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
-                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold">주의해야 할 흉운</h4>
+                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold flex items-center gap-3">
+                      <TriangleAlert className="h-[25px] w-[25px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                      주의해야 할 흉운
+                    </h4>
                     <p className="text-lg md:text-lg leading-relaxed text-white/70">
                       발전을 저해하는 장애 요소와 극복 방안을 제시합니다.
                     </p>
