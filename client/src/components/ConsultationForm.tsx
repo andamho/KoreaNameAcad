@@ -223,7 +223,9 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             {type === "analysis" && <h4 className="text-lg font-semibold text-foreground">{index + 1}번째 분석 대상</h4>}
             
             <div className="space-y-2">
-              <Label htmlFor={`name-${index}`} className="text-lg">이름</Label>
+              <Label htmlFor={`name-${index}`} className="text-lg">
+                {type === "naming" ? "현재 이름" : "이름"}
+              </Label>
               <Input
                 id={`name-${index}`}
                 value={person.name}
@@ -512,8 +514,14 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           <Card className="p-4 bg-muted">
             <div className="text-base text-muted-foreground space-y-1">
               <p className="font-semibold text-foreground">※ 평균 상담 소요시간</p>
-              <p>1인 - 1시간, 2인 - 1시간 30분,</p>
-              <p>3인 - 2시간, 4인이상 - 2시간 30분</p>
+              {type === "naming" ? (
+                <p>1시간 10분(감명 개수에 따라 변동)</p>
+              ) : (
+                <>
+                  <p>1인 - 1시간, 2인 - 1시간 30분,</p>
+                  <p>3인 - 2시간, 4인이상 - 2시간 30분</p>
+                </>
+              )}
             </div>
           </Card>
         </div>
