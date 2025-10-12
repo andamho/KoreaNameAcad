@@ -667,8 +667,8 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             </div>
 
             {/* 하이라이트 안내 */}
-            <div className="rounded-2xl p-6 text-center bg-[#81D8D0]/8 shadow-[0_0_25px_rgba(129,216,208,0.2)]">
-              <p className="text-[22px] md:text-[23px] font-semibold tracking-wide leading-relaxed text-[#81D8D0]">
+            <div className="rounded-2xl p-6 bg-[#81D8D0]/8 shadow-[0_0_25px_rgba(129,216,208,0.2)]">
+              <p className="text-[22px] md:text-[23px] font-semibold tracking-wide leading-relaxed text-[#81D8D0] text-left md:text-center">
                 💠 정확한 이름분석 상담을 받으시려면,<br />등본상 가족 전체의 이름 분석이 반드시 필요합니다.
               </p>
             </div>
