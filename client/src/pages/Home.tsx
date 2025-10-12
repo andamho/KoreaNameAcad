@@ -428,7 +428,7 @@ export default function Home() {
 
             {/* Header */}
             <div className="text-center mb-10">
-              <h2 className="mb-4 text-3xl font-semibold tiffany md:text-4xl" data-testid="section-title">
+              <h2 className="mb-4 text-3xl font-semibold tiffany md:text-4xl whitespace-nowrap" data-testid="section-title">
                 이름분석 운명상담이란
               </h2>
               <p className="text-white/80 text-sm md:text-base leading-relaxed">
