@@ -562,7 +562,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     <Baby className="h-5 w-5 text-[#81D8D0]" />
                   </div>
                   <h3 className="text-[21px] md:text-[22px] font-semibold text-white">
-                    <span className="font-bold">자녀</span>, 피와 살로 이어진 존재
+                    <span className="font-bold">자녀</span>, 혈육
                   </h3>
                 </div>
                 <ul className="space-y-1.5 text-lg md:text-lg text-white leading-relaxed list-disc pl-5">
