@@ -11,7 +11,7 @@ import KnaIntroBlock from "@/components/KnaIntroBlock";
 import KnaStepsSection from "@/components/KnaStepsSection";
 import KnaMythTruthSection from "@/components/KnaMythTruthSection";
 import KnaPricingSection from "@/components/KnaPricingSection";
-import { Search, Star, MessageCircle, Flower, Baby, Building, Layers, Compass, Clock, CheckCircle, TriangleAlert } from "lucide-react";
+import { Search, Star, MessageCircle, Flower, Baby, Building, Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
@@ -414,7 +414,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-col items-center gap-6 md:flex-row" data-testid="content-item-2">
-                  <Compass className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                  <MapPin className="h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
                     <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold">인생 방향성</h4>
                     <p className="text-lg md:text-lg leading-relaxed text-white/70">

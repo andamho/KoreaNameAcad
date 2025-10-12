@@ -1,8 +1,9 @@
-import { Menu, MapPin } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState } from "react";
 import { useLocation } from "wouter";
+import logoImage from "@assets/KakaoTalk_20251008_214156536_1759927358373.png";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -32,9 +33,10 @@ export function Navbar() {
               className="flex items-center gap-2 hover-elevate active-elevate-2 rounded-md px-2 py-1"
               data-testid="link-home"
             >
-              <MapPin 
-                className="h-6 w-6 md:h-5 md:w-5 text-[#0f766e] dark:text-[#58C4C4]"
-                strokeWidth={2.5}
+              <img 
+                src={logoImage} 
+                alt="한국이름학교 로고" 
+                className="h-8 w-8 md:h-5 md:w-5 dark:invert scale-90 md:scale-110"
               />
               <div className="text-sm md:text-xl font-bold text-foreground tracking-wide">
                 <div className="md:hidden text-left leading-tight">한국이름학교<br />와츠유어네임 이름연구협회</div>
