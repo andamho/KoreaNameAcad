@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -50,11 +50,16 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const [depositorName, setDepositorName] = useState("");
   const [consultationTime, setConsultationTime] = useState("");
   const [familyPolicyDialogOpen, setFamilyPolicyDialogOpen] = useState(false);
+  const isClosingFromBackButton = useRef(false);
 
   // 뒤로 가기 버튼으로 가족 상담 원칙 다이얼로그 닫기
   useEffect(() => {
-    const handlePopState = () => {
-      if (familyPolicyDialogOpen) {
+    const handlePopState = (event: PopStateEvent) => {
+      const modalState = event.state?.modal;
+      
+      // familyPolicy가 열려있고, state가 familyPolicy가 아니면 (consultation 또는 null) 닫음
+      if (familyPolicyDialogOpen && modalState !== "familyPolicy") {
+        isClosingFromBackButton.current = true;
         setFamilyPolicyDialogOpen(false);
       }
     };
@@ -68,14 +73,17 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
   const openFamilyPolicyDialog = () => {
     setFamilyPolicyDialogOpen(true);
-    window.history.pushState({ familyPolicy: true }, "");
+    // 고유 ID를 저장하여 뒤로 가기 버튼으로 닫을 수 있게 함
+    window.history.pushState({ modal: "familyPolicy" }, "");
   };
 
   const closeFamilyPolicyDialog = () => {
     setFamilyPolicyDialogOpen(false);
-    if (window.history.state?.familyPolicy) {
-      window.history.back();
+    // X 버튼이나 외부 클릭으로 닫을 때만 히스토리를 조용히 정리 (consultation state로 복원)
+    if (!isClosingFromBackButton.current && window.history.state?.modal === "familyPolicy") {
+      window.history.replaceState({ modal: "consultation" }, "", window.location.pathname);
     }
+    isClosingFromBackButton.current = false;
   };
 
   const handleNumPeopleChange = (num: number) => {

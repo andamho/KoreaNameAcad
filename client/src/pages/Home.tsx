@@ -12,7 +12,7 @@ import KnaStepsSection from "@/components/KnaStepsSection";
 import KnaMythTruthSection from "@/components/KnaMythTruthSection";
 import KnaPricingSection from "@/components/KnaPricingSection";
 import { Search, Star, MessageCircle, Flower, Baby, Building, Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import {
@@ -28,6 +28,7 @@ export default function Home() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
   const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
+  const isClosingFromBackButton = useRef(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -52,11 +53,17 @@ export default function Home() {
 
   // 뒤로 가기 버튼 감지 및 처리
   useEffect(() => {
-    const handlePopState = () => {
-      // 뒤로 가기를 눌렀을 때, 현재 열려있는 다이얼로그를 닫음
-      if (analysisDetailOpen) {
+    const handlePopState = (event: PopStateEvent) => {
+      const modalState = event.state?.modal;
+      
+      // analysisDetail이 열려있고, state에서 사라졌으면 닫음
+      if (analysisDetailOpen && modalState !== "analysisDetail") {
+        isClosingFromBackButton.current = true;
         setAnalysisDetailOpen(false);
-      } else if (dialogOpen) {
+      }
+      // consultation이 열려있고, state에서 사라졌으면 (null 또는 familyPolicy가 아닌 경우) 닫음
+      else if (dialogOpen && !modalState) {
+        isClosingFromBackButton.current = true;
         setDialogOpen(false);
       }
     };
@@ -71,30 +78,32 @@ export default function Home() {
   const openDialog = (type: "analysis" | "naming") => {
     setDialogType(type);
     setDialogOpen(true);
-    // 히스토리에 추가하여 뒤로 가기 버튼으로 닫을 수 있게 함
-    window.history.pushState({ modal: true }, "");
+    // 히스토리에 고유 ID를 저장하여 뒤로 가기 버튼으로 닫을 수 있게 함
+    window.history.pushState({ modal: "consultation" }, "");
   };
 
   const closeDialog = () => {
     setDialogOpen(false);
-    // 히스토리 뒤로 가기 (조용히 처리)
-    if (window.history.state?.modal) {
-      window.history.back();
+    // X 버튼이나 외부 클릭으로 닫을 때만 히스토리를 조용히 정리
+    if (!isClosingFromBackButton.current && window.history.state?.modal === "consultation") {
+      window.history.replaceState(null, "", window.location.pathname);
     }
+    isClosingFromBackButton.current = false;
   };
 
   const openAnalysisDetail = () => {
     setAnalysisDetailOpen(true);
-    // 히스토리에 추가하여 뒤로 가기 버튼으로 닫을 수 있게 함
-    window.history.pushState({ modal: true }, "");
+    // 히스토리에 고유 ID를 저장하여 뒤로 가기 버튼으로 닫을 수 있게 함
+    window.history.pushState({ modal: "analysisDetail" }, "");
   };
 
   const closeAnalysisDetail = () => {
     setAnalysisDetailOpen(false);
-    // 히스토리 뒤로 가기 (조용히 처리)
-    if (window.history.state?.modal) {
-      window.history.back();
+    // X 버튼이나 외부 클릭으로 닫을 때만 히스토리를 조용히 정리
+    if (!isClosingFromBackButton.current && window.history.state?.modal === "analysisDetail") {
+      window.history.replaceState(null, "", window.location.pathname);
     }
+    isClosingFromBackButton.current = false;
   };
 
   const testimonials = [
