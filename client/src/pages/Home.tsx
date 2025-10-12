@@ -428,10 +428,10 @@ export default function Home() {
 
             {/* Header */}
             <div className="text-center mb-10">
-              <h2 className="mb-4 text-3xl font-semibold tiffany md:text-4xl whitespace-nowrap" data-testid="section-title">
+              <h2 className="mb-4 text-2xl font-semibold tiffany md:text-4xl whitespace-nowrap" data-testid="section-title">
                 이름분석 운명상담이란
               </h2>
-              <p className="text-white/80 text-sm md:text-base leading-relaxed">
+              <p className="text-white/80 text-base md:text-base leading-relaxed">
                 사주 없이 한글·한자 이름에 내재된 운명의 흐름을, 체계적으로 해석하는 전문 상담 서비스입니다.
               </p>
             </div>
