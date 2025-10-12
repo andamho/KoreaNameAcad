@@ -440,22 +440,22 @@ export default function Home() {
             <div className="grid gap-6 md:grid-cols-3 mb-16" data-testid="analysis-scope">
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-1">
                 <Layers className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">16가지 세부 운세 종합 분석</h3>
-                <p className="text-lg md:text-lg leading-relaxed text-white/70">
-                  수리운·주역괘운의 세밀한 분석을 통해<br />인생의 총체적 방향을 진단합니다.
+                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">16가지 세부 운세<br />종합 분석</h3>
+                <p className="text-lg md:text-lg leading-relaxed text-white/70 text-left">
+                  수리운·주역괘운의 세밀한 분석을 통해 인생의 총체적 방향을 진단합니다.
                 </p>
               </div>
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-2">
                 <Compass className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">7개 인생 시기별 운의 흐름 파악</h3>
-                <p className="text-lg md:text-lg leading-relaxed text-white/70">
-                  초년·중년·말년 등 7개 시기를 분석하여<br />시기별 강점과 전환점을 명확히 제시합니다.
+                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">7개 인생 시기별 운의<br />흐름 파악</h3>
+                <p className="text-lg md:text-lg leading-relaxed text-white/70 text-left">
+                  초년·중년·말년 등 7개 시기를 분석하여 시기별 강점과 전환점을 명확히 제시합니다.
                 </p>
               </div>
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-3">
                 <Clock className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">과거·현재·미래 정밀 진단</h3>
-                <p className="text-lg md:text-lg leading-relaxed text-white/70">
+                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">과거·현재·미래<br />정밀 진단</h3>
+                <p className="text-lg md:text-lg leading-relaxed text-white/70 text-left">
                   지나온 일, 현재 처한 상황, 다가올 운을 세밀히 파악합니다.
                 </p>
               </div>
