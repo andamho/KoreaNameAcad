@@ -36,7 +36,7 @@ export function Navbar() {
               <img 
                 src={logoImage} 
                 alt="한국이름학교 로고" 
-                className="h-8 w-8 md:h-5 md:w-5 dark:invert scale-90 md:scale-110"
+                className="h-10 w-10 md:h-6 md:w-6 dark:invert scale-90 md:scale-110"
               />
               <div className="text-sm md:text-xl font-bold text-foreground tracking-wide">
                 <div className="md:hidden text-left leading-tight">한국이름학교<br />와츠유어네임 이름연구협회</div>
