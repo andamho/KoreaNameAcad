@@ -675,35 +675,39 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
             {/* 추천 글 */}
             <div>
-              <h2 className="text-lg md:text-xl font-semibold text-center flex items-center justify-center gap-2 text-[#81D8D0] mb-4">
-                <BookOpenText className="h-6 w-6" /> 같이 보시면 좋은 글
+              <h2 className="text-lg md:text-xl font-semibold text-center text-[#81D8D0] mb-4">
+                같이 보시면 좋은 글
               </h2>
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="glass rounded-2xl p-5 border border-[#81D8D0]/40">
-                  <div className="flex items-center gap-2 text-sm text-[#81D8D0] mb-2">
-                    <FileText className="h-4 w-4" />
-                    <span>Case Study</span>
-                  </div>
+                <a 
+                  href="https://blog.naver.com/whats_ur_name_777/223450662435" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="glass rounded-2xl p-5 border border-[#81D8D0]/40 hover-elevate active-elevate-2 cursor-pointer block"
+                  data-testid="link-blog-1"
+                >
                   <h3 className="text-[21px] md:text-[22px] font-semibold leading-snug mb-2 text-white">
-                    "아빠가 바람이 났습니다" 엄마 이름 때문에
+                    아빠가 바람이
                   </h3>
-                  <p className="text-lg md:text-lg text-white leading-relaxed">
-                    🤦‍♀️ 아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습...
+                  <p className="text-lg md:text-lg text-white/70 leading-relaxed">
+                    엄마 이름 때문에 발생한 가족의 이야기
                   </p>
-                </div>
+                </a>
 
-                <div className="glass rounded-2xl p-5 border border-[#81D8D0]/40">
-                  <div className="flex items-center gap-2 text-sm text-[#81D8D0] mb-2">
-                    <FileText className="h-4 w-4" />
-                    <span>Case Study</span>
-                  </div>
+                <a 
+                  href="https://blog.naver.com/whats_ur_name_777/223924993144" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="glass rounded-2xl p-5 border border-[#81D8D0]/40 hover-elevate active-elevate-2 cursor-pointer block"
+                  data-testid="link-blog-2"
+                >
                   <h3 className="text-[21px] md:text-[22px] font-semibold leading-snug mb-2 text-white">
-                    개명한 이름 때문에 아빠가 돌아가시고, 소송도 걸리고
+                    개명한 이름때문에
                   </h3>
-                  <p className="text-lg md:text-lg text-white leading-relaxed">
-                    어느날 인스타로 디엠이 왔습니다. 너무 살기 힘들다며 죽고 싶다고까지 했습니다. 젊으신 분이 그러시면 ...
+                  <p className="text-lg md:text-lg text-white/70 leading-relaxed">
+                    개명 후 겪게 된 어려움과 그 과정
                   </p>
-                </div>
+                </a>
               </div>
             </div>
 
