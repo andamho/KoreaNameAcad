@@ -5,10 +5,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { Heart, Baby, Shuffle, X, FileText, BookOpenText } from "lucide-react";
 
 interface PersonData {
   name: string;
@@ -47,6 +49,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const [reason, setReason] = useState("");
   const [depositorName, setDepositorName] = useState("");
   const [consultationTime, setConsultationTime] = useState("");
+  const [familyPolicyDialogOpen, setFamilyPolicyDialogOpen] = useState(false);
 
   const handleNumPeopleChange = (num: number) => {
     setNumPeople(num);
@@ -202,15 +205,14 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             </div>
             <p className="text-base text-orange-600 dark:text-orange-400 mt-2">
               저희 협회는 <span className="font-bold">등본상 가족 상담 원칙</span>으로 상담진행해 드리고 있습니다{" "}
-              <a 
-                href="/family-policy" 
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => setFamilyPolicyDialogOpen(true)}
                 className="font-semibold text-[#0f766e] dark:text-[#58C4C4] hover:underline"
-                data-testid="link-family-policy-form"
+                data-testid="button-family-policy-form"
               >
                 자세히 보기 →
-              </a>
+              </button>
             </p>
           </div>
         )}
@@ -520,6 +522,157 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           상담 신청하기
         </Button>
       </form>
+
+      {/* 등본상 가족 상담 원칙 다이얼로그 */}
+      <Dialog open={familyPolicyDialogOpen} onOpenChange={setFamilyPolicyDialogOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-neutral-950 border-[#81D8D0]/30">
+          <DialogHeader>
+            <DialogTitle className="text-2xl md:text-3xl font-semibold text-center text-[#81D8D0]">
+              등본상 가족 상담 원칙
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-8 px-2">
+            <p className="text-lg md:text-lg text-center text-white/70 leading-relaxed">
+              가족은 운명 공동체로, 서로의 이름운의 영향을 강하게 주고 받습니다.
+            </p>
+
+            {/* 3개 카드 */}
+            <div className="grid gap-4 md:grid-cols-3">
+              {/* 결혼 카드 */}
+              <div className="glass rounded-2xl p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#81D8D0]/10">
+                    <Heart className="h-5 w-5 text-[#81D8D0]" />
+                  </div>
+                  <h3 className="text-[21px] md:text-[22px] font-semibold">
+                    <span className="font-bold">결혼</span>, 혼을 연결하는 인연
+                  </h3>
+                </div>
+                <ul className="space-y-1.5 text-lg md:text-lg text-white/70 leading-relaxed list-disc pl-5">
+                  <li>'결혼'은 본래 '혼(魂)을 연결한다'는 뜻에서 유래</li>
+                  <li>일심동체처럼 몸과 마음이 강력히 연결</li>
+                </ul>
+              </div>
+
+              {/* 자녀 카드 */}
+              <div className="glass rounded-2xl p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#81D8D0]/10">
+                    <Baby className="h-5 w-5 text-[#81D8D0]" />
+                  </div>
+                  <h3 className="text-[21px] md:text-[22px] font-semibold">
+                    <span className="font-bold">자녀</span>, 피와 살로 이어진 존재
+                  </h3>
+                </div>
+                <ul className="space-y-1.5 text-lg md:text-lg text-white/70 leading-relaxed list-disc pl-5">
+                  <li>혈육: 피로 연결되고 살로 이어진 관계</li>
+                  <li>분리된 듯 보이나 결코 분리될 수 없는 특별한 연대</li>
+                </ul>
+              </div>
+
+              {/* 이름운 카드 */}
+              <div className="glass rounded-2xl p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#81D8D0]/10">
+                    <Shuffle className="h-5 w-5 text-[#81D8D0]" />
+                  </div>
+                  <h3 className="text-[21px] md:text-[22px] font-semibold">
+                    <span className="font-bold">이름운</span>, 서로에게 영향
+                  </h3>
+                </div>
+                <ul className="space-y-1.5 text-lg md:text-lg text-white/70 leading-relaxed list-disc pl-5">
+                  <li>부부의 이름운은 결혼과 함께 상호작용</li>
+                  <li>자녀의 초년·총·흉운 → 부모의 중년운에 영향</li>
+                  <li>부모의 중년·총·흉운 → 자녀의 초년운에 영향</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* 특징 블록 */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="glass rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="h-1.5 w-16 rounded-full bg-[#81D8D0]" />
+                  <h3 className="text-[21px] md:text-[22px] font-semibold text-[#81D8D0]">
+                    이름은 '소리'보다 '글자'가 강합니다
+                  </h3>
+                </div>
+                <ul className="space-y-1.5 text-lg md:text-lg text-white/70 leading-relaxed list-disc pl-5">
+                  <li>이름에는 소리 에너지도 있지만, 그보다 훨씬 강력한 것이 바로 글자 에너지입니다.</li>
+                  <li>소리에너지는 뱉어내는 순간 사라지지만, 글자에너지는 폐기하기 전까지 계속 존재합니다.</li>
+                </ul>
+              </div>
+
+              <div className="glass rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="h-1.5 w-16 rounded-full bg-[#81D8D0]" />
+                  <h3 className="text-[21px] md:text-[22px] font-semibold text-[#81D8D0]">
+                    등본상 가족은 더 깊게 연결됩니다
+                  </h3>
+                </div>
+                <ul className="space-y-1.5 text-lg md:text-lg text-white/70 leading-relaxed list-disc pl-5">
+                  <li>법적 에너지권 안에서 글자 에너지로 깊게 연결된 등본상 가족은 더욱 긴밀하며 상당한 영향을 미칩니다.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* 하이라이트 안내 */}
+            <div className="rounded-2xl p-6 text-center bg-[#81D8D0]/8 shadow-[0_0_25px_rgba(129,216,208,0.2)]">
+              <p className="text-lg md:text-xl font-semibold tracking-wide leading-relaxed text-[#81D8D0]">
+                💠 정확한 이름분석 상담을 받으시려면,<br />등본상 가족 전체의 이름 분석이 반드시 필요합니다.
+              </p>
+            </div>
+
+            {/* 추천 글 */}
+            <div>
+              <h2 className="text-lg md:text-xl font-semibold text-center flex items-center justify-center gap-2 text-[#81D8D0] mb-4">
+                <BookOpenText className="h-6 w-6" /> 같이 보시면 좋은 글
+              </h2>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="glass rounded-2xl p-5">
+                  <div className="flex items-center gap-2 text-sm text-[#81D8D0] mb-2">
+                    <FileText className="h-4 w-4" />
+                    <span>Case Study</span>
+                  </div>
+                  <h3 className="text-[21px] md:text-[22px] font-semibold leading-snug mb-2">
+                    "아빠가 바람이 났습니다" 엄마 이름 때문에
+                  </h3>
+                  <p className="text-lg md:text-lg text-white/60 leading-relaxed">
+                    🤦‍♀️ 아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습...
+                  </p>
+                </div>
+
+                <div className="glass rounded-2xl p-5">
+                  <div className="flex items-center gap-2 text-sm text-[#81D8D0] mb-2">
+                    <FileText className="h-4 w-4" />
+                    <span>Case Study</span>
+                  </div>
+                  <h3 className="text-[21px] md:text-[22px] font-semibold leading-snug mb-2">
+                    개명한 이름 때문에 아빠가 돌아가시고, 소송도 걸리고
+                  </h3>
+                  <p className="text-lg md:text-lg text-white/60 leading-relaxed">
+                    어느날 인스타로 디엠이 왔습니다. 너무 살기 힘들다며 죽고 싶다고까지 했습니다. 젊으신 분이 그러시면 ...
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 닫기 버튼 */}
+            <div className="flex justify-center pt-4">
+              <Button
+                type="button"
+                onClick={() => setFamilyPolicyDialogOpen(false)}
+                variant="outline"
+                className="gap-2 border-[#81D8D0] text-[#81D8D0] hover:bg-[#81D8D0]/10"
+                data-testid="button-close-family-policy"
+              >
+                <X className="h-5 w-5" /> 페이지 닫기
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

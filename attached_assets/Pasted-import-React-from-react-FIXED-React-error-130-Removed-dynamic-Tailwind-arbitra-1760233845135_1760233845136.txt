@@ -1,0 +1,233 @@
+import React from "react";
+
+/**
+ * FIXED: React error #130
+ * - Removed dynamic Tailwind arbitrary classes (e.g. border-[${ACCENT}]).
+ * - All dynamic colors use inline style objects (safe in JSX).
+ * - Guarded against accidentally rendering objects as children.
+ * - Added lightweight runtime tests (console.assert) as "test cases".
+ *
+ * Expected behavior (user-confirmed):
+ * - "페이지 닫기"는 시안용으로 모양만 있으면 됨(동작 없음).
+ */
+
+// ===== Theme =====
+const ACCENT = "#81D8D0"; // Tiffany Blue
+const ACCENT_RGB = "129, 216, 208"; // for rgba()
+
+// ===== Runtime Tests (simple, non-fatal) =====
+(function runtimeTests() {
+  try {
+    console.assert(/^#([0-9a-fA-F]{6})$/.test(ACCENT), "ACCENT must be #RRGGBB");
+    console.assert(/^[0-9]{1,3},\s?[0-9]{1,3},\s?[0-9]{1,3}$/.test(ACCENT_RGB), "ACCENT_RGB must be 'r, g, b'");
+    const bulletsSample = ["샘플", "문장"]; bulletsSample.forEach(b => console.assert(typeof b === "string"));
+  } catch (_) {/* no-op */}
+})();
+
+export default function FamilyConsultationPrincipleDark() {
+  return (
+    <div className="min-h-screen w-full bg-black text-white">
+      <section className="relative overflow-hidden">
+        {/* Accent background glow */}
+        <div
+          className="absolute inset-0 opacity-25"
+          style={{
+            background: `radial-gradient(1200px 600px at 10% -10%, ${ACCENT}, transparent 60%), radial-gradient(900px 500px at 110% 10%, ${ACCENT}, transparent 55%)`,
+          }}
+        />
+
+        <div className="relative mx-auto max-w-5xl px-6 py-14 md:py-20">
+          {/* Heading */}
+          <h1 className="text-2xl md:text-4xl font-semibold tracking-tight text-center" style={{ color: ACCENT }}>
+            등본상 가족 상담 원칙
+          </h1>
+          <p className="mt-4 max-w-3xl mx-auto text-sm md:text-base text-zinc-300 leading-relaxed text-center">
+            가족은 운명 공동체로, 서로의 이름운의 영향을 강하게 주고 받습니다.
+          </p>
+
+          {/* 3 info cards */}
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <InfoCard
+              icon={<IconHeartHandshake style={{ color: ACCENT }} />}
+              title={<><span className="font-semibold">결혼</span>, 혼을 연결하는 인연</>}
+              bullets={[
+                "'결혼'은 본래 '혼(魂)을 연결한다'는 뜻에서 유래",
+                "일심동체처럼 몸과 마음이 강력히 연결",
+              ]}
+            />
+            <InfoCard
+              icon={<IconBaby style={{ color: ACCENT }} />}
+              title={<><span className="font-semibold">자녀</span>, 피와 살로 이어진 존재</>}
+              bullets={[
+                "혈육: 피로 연결되고 살로 이어진 관계",
+                "분리된 듯 보이나 결코 분리될 수 없는 특별한 연대",
+              ]}
+            />
+            <InfoCard
+              icon={<IconShuffle style={{ color: ACCENT }} />}
+              title={<><span className="font-semibold">이름운</span>, 서로에게 영향</>}
+              bullets={[
+                "부부의 이름운은 결혼과 함께 상호작용",
+                "자녀의 초년·총·흉운 → 부모의 중년운에 영향",
+                "부모의 중년·총·흉운 → 자녀의 초년운에 영향",
+              ]}
+            />
+          </div>
+
+          {/* Feature blocks */}
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            <FeatureBlock
+              title="이름은 '소리'보다 '글자'가 강합니다"
+              desc={[
+                "이름에는 소리 에너지도 있지만, 그보다 훨씬 강력한 것이 바로 글자 에너지입니다.",
+                "소리에너지는 뱉어내는 순간 사라지지만, 글자에너지는 폐기하기 전까지 계속 존재합니다.",
+              ]}
+            />
+            <FeatureBlock
+              title="등본상 가족은 더 깊게 연결됩니다"
+              desc={["법적 에너지권 안에서 글자 에너지로 깊게 연결된 등본상 가족은 더욱 긴밀하며 상당한 영향을 미칩니다."]}
+            />
+          </div>
+
+          {/* Highlight notice (no border) */}
+          <Notice>
+            💠 정확한 이름분석 상담을 받으시려면,<br />등본상 가족 전체의 이름 분석이 반드시 필요합니다.
+          </Notice>
+
+          {/* Recommended reads */}
+          <div className="mt-10">
+            <h2 className="text-lg md:text-xl font-semibold text-center flex items-center justify-center gap-2" style={{ color: ACCENT }}>
+              <IconBookOpenText className="h-6 w-6" style={{ color: ACCENT }} /> 같이 보시면 좋은 글
+            </h2>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <ArticleCard
+                title={'"아빠가 바람이 났습니다" 엄마 이름 때문에'}
+                summary="🤦‍♀️ 아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습..."
+              />
+              <ArticleCard
+                title="개명한 이름 때문에 아빠가 돌아가시고, 소송도 걸리고"
+                summary="어느날 인스타로 디엠이 왔습니다. 너무 살기 힘들다며 죽고 싶다고까지 했습니다. 젊으신 분이 그러시면 ..."
+              />
+            </div>
+          </div>
+
+          {/* Footer – Close button centered (visual only) */}
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium whitespace-nowrap"
+              style={{ backgroundColor: "#0b0b0b", border: `1px solid ${ACCENT}`, color: ACCENT }}
+            >
+              <IconX className="h-5 w-5" /> 페이지 닫기
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ===== Components =====
+function InfoCard({ icon, title, bullets }) {
+  return (
+    <div
+      className="rounded-2xl shadow-xl"
+      style={{ backgroundColor: "rgba(255,255,255,0.03)", border: `1px solid ${ACCENT}` }}
+    >
+      <div className="p-5">
+        <div className="flex items-center gap-3">
+          <span
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl"
+            style={{ backgroundColor: `rgba(${ACCENT_RGB}, 0.13)`, color: ACCENT }}
+          >
+            {icon}
+          </span>
+          <h3 className="text-base md:text-lg">{title}</h3>
+        </div>
+        <ul className="mt-3 space-y-1.5 text-sm text-zinc-300 leading-relaxed list-disc pl-5">
+          {(bullets || []).map((b, i) => (
+            <li key={i}>{b}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function FeatureBlock({ title, desc }) {
+  return (
+    <div
+      className="rounded-2xl p-6"
+      style={{ backgroundColor: "rgba(255,255,255,0.03)", border: `1px solid ${ACCENT}` }}
+    >
+      <div className="flex items-center gap-2">
+        <div className="h-1.5 w-16 rounded-full" style={{ backgroundColor: ACCENT }} />
+        <h3 className="text-base md:text-lg font-medium" style={{ color: ACCENT }}>
+          {title}
+        </h3>
+      </div>
+      <ul className="mt-3 space-y-1.5 text-sm text-zinc-300 leading-relaxed list-disc pl-5">
+        {(desc || []).map((d, i) => (
+          <li key={i}>{d}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function Notice({ children }) {
+  return (
+    <div
+      className="mt-12 mb-6 text-center rounded-2xl p-6"
+      style={{ backgroundColor: `rgba(${ACCENT_RGB}, 0.08)`, boxShadow: `0 0 25px rgba(${ACCENT_RGB}, 0.2)` }}
+    >
+      <p className="text-lg md:text-xl font-semibold tracking-wide leading-relaxed" style={{ color: ACCENT }}>
+        {children}
+      </p>
+    </div>
+  );
+}
+
+function ArticleCard({ title, summary }) {
+  return (
+    <div
+      className="rounded-2xl"
+      style={{ backgroundColor: "rgba(255,255,255,0.03)", border: `1px solid ${ACCENT}` }}
+    >
+      <div className="p-5">
+        <div className="flex items-center gap-2 text-xs" style={{ color: ACCENT }}>
+          <IconFileText />
+          <span>Case Study</span>
+        </div>
+        <h3 className="mt-2 text-base md:text-lg font-semibold leading-snug text-white">{title}</h3>
+        {summary ? (
+          <p className="mt-2 text-sm text-zinc-400 leading-relaxed">{summary}</p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+// ===== Icons (inline SVG, no external deps) =====
+function IconBase({ children, className, style }) {
+  return (
+    <svg
+      className={className || "h-5 w-5"}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={style}
+    >
+      {children}
+    </svg>
+  );
+}
+function IconHeartHandshake(props) { return (<IconBase {...props}><path d="M12 21s-6-4.35-8.5-6.86A5.5 5.5 0 1 1 11 6.5 5.5 5.5 0 1 1 20.5 14c-2.5 2.51-8.5 7-8.5 7Z"/></IconBase>); }
+function IconBaby(props) { return (<IconBase {...props}><circle cx="12" cy="9" r="3"/><path d="M5 22c1.5-3 5-5 7-5s5.5 2 7 5"/><path d="M9 9h.01M15 9h.01"/></IconBase>); }
+function IconShuffle(props) { return (<IconBase {...props}><path d="M16 3h5v5"/><path d="M4 20l8-8 4-4"/><path d="M21 21h-5v-5"/></IconBase>); }
+function IconX(props) { return (<IconBase {...props}><path d="M18 6 6 18M6 6l12 12"/></IconBase>); }
+function IconFileText(props) { return (<IconBase {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a 2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></IconBase>); }
+function IconBookOpenText(props) { return (<IconBase {...props}><path d="M12 7v10"/><path d="M2 4h8a2 2 0 0 1 2 2v14a 2 2 0 0 0-2-2H2z"/><path d="M22 4h-8a 2 2 0 0 0-2 2v14a 2 2 0 0 1 2-2h8z"/></IconBase>); }
