@@ -595,7 +595,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     <Heart className="h-5 w-5 text-[#81D8D0]" />
                   </div>
                   <h3 className="text-[21px] md:text-[22px] font-semibold text-white">
-                    <span className="font-bold">결혼</span>, 혼을 연결하는 인연
+                    <span className="font-bold">결혼</span>, 혼의 연결
                   </h3>
                 </div>
                 <ul className="space-y-1.5 text-lg md:text-lg text-white leading-relaxed list-disc pl-5">
