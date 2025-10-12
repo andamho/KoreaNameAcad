@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import logoImage from "@assets/KakaoTalk_20251012_190135909_1760263328078.png";
+import logoImage from "@assets/KakaoTalk_20251012_203021647_1760268675997.png";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
