@@ -7,6 +7,8 @@ import Home from "@/pages/Home";
 import DetailInfo from "@/pages/DetailInfo";
 import FamilyPolicy from "@/pages/FamilyPolicy";
 import Admin from "@/pages/Admin";
+import Services from "@/pages/Services";
+import Reviews from "@/pages/Reviews";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +18,8 @@ function Router() {
       <Route path="/detail-info" component={DetailInfo}/>
       <Route path="/family-policy" component={FamilyPolicy}/>
       <Route path="/admin" component={Admin}/>
+      <Route path="/services" component={Services}/>
+      <Route path="/reviews" component={Reviews}/>
       <Route component={NotFound} />
     </Switch>
   );
