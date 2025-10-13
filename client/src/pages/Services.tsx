@@ -79,7 +79,7 @@ export default function Services() {
               buttonText="신청하기"
               onClick={() => setLocation("/?open=analysis")}
               secondaryButtonText="자세히 보기"
-              onSecondaryClick={() => setLocation("/")}
+              onSecondaryClick={() => setLocation("/?detail=analysis")}
               data-testid="card-service-0"
             />
             <ServiceCard

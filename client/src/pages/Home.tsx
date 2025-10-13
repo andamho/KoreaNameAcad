@@ -41,9 +41,14 @@ export default function Home() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const openType = params.get("open");
+    const detailType = params.get("detail");
+    
     if (openType === "analysis" || openType === "naming") {
       setDialogType(openType);
       setDialogOpen(true);
+      window.history.replaceState({}, "", "/");
+    } else if (detailType === "analysis") {
+      setAnalysisDetailOpen(true);
       window.history.replaceState({}, "", "/");
     }
 
