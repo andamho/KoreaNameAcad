@@ -41,7 +41,7 @@ export function Navbar() {
               <div className="md:text-xl font-bold text-foreground font-['Noto_Sans_KR']">
                 <div className="md:hidden text-left flex flex-col justify-center h-10">
                   <div className="text-[17px] leading-none tracking-tight">한국이름학교</div>
-                  <div className="text-[10px] leading-none tracking-[0.15em] mt-0.5">와츠유어네임 이름연구협회</div>
+                  <div className="text-[10px] leading-none tracking-[0.05em] mt-0.5">와츠유어네임 이름연구협회</div>
                 </div>
                 <span className="hidden md:inline whitespace-nowrap tracking-wide">한국이름학교 | 와츠유어네임 이름연구협회</span>
               </div>
