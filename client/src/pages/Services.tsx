@@ -1,54 +1,12 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Sparkles, Users, FileText, Award, Clock } from "lucide-react";
+import { ServiceCard } from "@/components/ServiceCard";
+import { Search, Star, Flower, Baby, Building, FileText } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function Services() {
   const [, setLocation] = useLocation();
-
-  const services = [
-    {
-      icon: BookOpen,
-      title: "이름 분석",
-      description: "현재 사용 중인 이름의 의미와 영향력을 깊이 있게 분석합니다",
-      features: [
-        "한글 이름의 음운 분석",
-        "한자 이름의 의미 해석",
-        "사주와 이름의 조화 분석",
-        "가족 운세와의 상관관계 분석"
-      ],
-      price: "150,000원",
-      duration: "약 2-3일 소요"
-    },
-    {
-      icon: Sparkles,
-      title: "작명 (개명)",
-      description: "사주와 조화를 이루는 최적의 이름을 지어드립니다",
-      features: [
-        "사주 팔자 기반 이름 추천",
-        "한글·한자 모두 고려한 작명",
-        "3-5개의 이름 후보 제시",
-        "이름별 상세 설명서 제공"
-      ],
-      price: "500,000원",
-      duration: "약 7-10일 소요"
-    },
-    {
-      icon: Users,
-      title: "가족 종합 분석",
-      description: "가족 구성원 모두의 이름을 종합적으로 분석합니다",
-      features: [
-        "가족 구성원 간 이름 조화 분석",
-        "가정 운세 진단",
-        "개선이 필요한 부분 파악",
-        "맞춤형 솔루션 제공"
-      ],
-      price: "300,000원",
-      duration: "약 5-7일 소요"
-    }
-  ];
 
   const processSteps = [
     {
@@ -109,50 +67,61 @@ export default function Services() {
         </div>
       </section>
 
-      {/* Services Grid */}
-      <section className="py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4" data-testid="text-services-section-title">
-              제공 서비스
+      {/* Professional Services */}
+      <section className="py-16 md:py-24 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center space-y-4 mb-12">
+            <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl" data-testid="text-services-section-title">
+              전문 서비스
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              각 서비스는 전문가의 깊이 있는 분석을 통해 제공됩니다
+            <p className="text-lg text-muted-foreground">
+              다양한 이름 관련 서비스를 제공합니다
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {services.map((service, index) => (
-              <Card key={index} className="hover-elevate" data-testid={`card-service-${index}`}>
-                <CardHeader>
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                    <service.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-2xl">{service.title}</CardTitle>
-                  <CardDescription className="text-base mt-2">{service.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 mb-6">
-                    {service.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm">
-                        <Award className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="border-t pt-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-muted-foreground">비용</span>
-                      <span className="font-bold text-lg text-primary">{service.price}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <span>{service.duration}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <ServiceCard
+              icon={Search}
+              title="이름분석"
+              description="현재 이름에 들어있는 16가지운을 전문적으로 분석해드립니다."
+              buttonText="신청하기"
+              onClick={() => setLocation("/?open=analysis")}
+              secondaryButtonText="자세히 보기"
+              onSecondaryClick={() => setLocation("/")}
+              data-testid="card-service-0"
+            />
+            <ServiceCard
+              icon={Star}
+              title="이름감명"
+              description="타 작명소에서 받은 이름의 적합도를 점검해드립니다"
+              buttonText="신청하기"
+              onClick={() => setLocation("/?open=naming")}
+              data-testid="card-service-1"
+            />
+            <ServiceCard
+              icon={Flower}
+              title="개명"
+              description="운이 술술 풀리는 개명을 위한 상담과 절차를 안내해드립니다."
+              buttonText="자세히 보기"
+              onClick={() => window.open("https://blog.naver.com/whats_ur_name_777/221277653666", "_blank")}
+              data-testid="card-service-2"
+            />
+            <ServiceCard
+              icon={Baby}
+              title="신생아 작명"
+              description="가족 모두가 행복해지는 아가이름을 위한 상담과 절차를 안내해드립니다."
+              buttonText="자세히 보기"
+              onClick={() => window.open("https://blog.naver.com/whats_ur_name_777/221277647598", "_blank")}
+              data-testid="card-service-3"
+            />
+            <ServiceCard
+              icon={Building}
+              title="상호작명"
+              description="부자되는 상호작명을 위한 상담과 절차를 안내해드립니다."
+              buttonText="자세히 보기"
+              onClick={() => window.open("https://blog.naver.com/whats_ur_name_777/221274436174", "_blank")}
+              data-testid="card-service-4"
+            />
           </div>
         </div>
       </section>

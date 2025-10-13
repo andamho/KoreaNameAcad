@@ -1,9 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
-import { ServiceCard } from "@/components/ServiceCard";
 import { ConsultationForm } from "@/components/ConsultationForm";
-import { TestimonialCard } from "@/components/TestimonialCard";
-import { StoryCard } from "@/components/StoryCard";
 import { Footer } from "@/components/Footer";
 import KnaDangerSection from "@/components/KnaDangerSection";
 import KnaValueSection from "@/components/KnaValueSection";
@@ -11,7 +8,7 @@ import KnaIntroBlock from "@/components/KnaIntroBlock";
 import KnaStepsSection from "@/components/KnaStepsSection";
 import KnaMythTruthSection from "@/components/KnaMythTruthSection";
 import KnaPricingSection from "@/components/KnaPricingSection";
-import { Search, Star, MessageCircle, Flower, Baby, Building, Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin } from "lucide-react";
+import { Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
