@@ -41,7 +41,7 @@ export default function Services() {
     { 
       n: 5, 
       title: "새 이름 설명(전화상담)", 
-      desc: "새로운 이름 & 이름운 상세안내" 
+      desc: "완성된 이름과 이름운 설명" 
     },
     { 
       n: 6, 
