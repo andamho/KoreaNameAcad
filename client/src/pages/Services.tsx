@@ -1,13 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { ServiceCard } from "@/components/ServiceCard";
-import { Search, Star, Flower, Baby, Building, FileText } from "lucide-react";
-import { useLocation } from "wouter";
 
 export default function Services() {
-  const [, setLocation] = useLocation();
-
   const processSteps = [
     {
       step: 1,
@@ -30,16 +24,6 @@ export default function Services() {
       description: "분석 결과서 및 상세 설명 제공"
     }
   ];
-
-  const goToConsultation = () => {
-    setLocation("/?open=analysis");
-    setTimeout(() => {
-      const element = document.getElementById('services');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -75,42 +59,6 @@ export default function Services() {
                 <p className="text-muted-foreground">{item.description}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 md:py-24">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <FileText className="h-16 w-16 text-primary mx-auto mb-6" />
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            이름, 제대로 알고 시작하세요
-          </h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            전문가의 상담을 통해 인생의 긍정적인 변화를 경험할 수 있습니다
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              onClick={goToConsultation}
-              size="lg"
-              data-testid="button-start-consultation"
-            >
-              상담 신청하기
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              asChild
-            >
-              <a
-                href="https://pf.kakao.com/_Sxnvbb/chat"
-                target="_blank"
-                rel="noopener noreferrer"
-                data-testid="button-kakao-inquiry"
-              >
-                카카오톡 문의
-              </a>
-            </Button>
           </div>
         </div>
       </section>
