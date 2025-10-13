@@ -131,7 +131,7 @@ export default function Services() {
             {/* 이름상담 진행과정 */}
             <div className="bg-white dark:bg-slate-800/50 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8" data-testid="card-process-consultation">
               <h3 className="text-xl md:text-2xl font-bold mb-6">
-                이름상담 진행과정
+                이름상담
               </h3>
 
               <ol className="space-y-6">
@@ -158,7 +158,7 @@ export default function Services() {
             {/* 개명 진행 과정 */}
             <div className="bg-white dark:bg-slate-800/50 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8" data-testid="card-process-rename">
               <h3 className="text-xl md:text-2xl font-bold mb-6">
-                개명 진행 과정
+                개명
               </h3>
 
               <ol className="space-y-6">
