@@ -122,28 +122,22 @@ export default function Services() {
       <section className="py-16 md:py-24 bg-slate-50 dark:bg-slate-900/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight" data-testid="text-process-title">
+            <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl" data-testid="text-process-title">
               진행 과정
             </h2>
-            <p className="mt-2 text-muted-foreground">
-              간단하고 명확한 단계별 안내
-            </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-10">
             {/* 이름상담 진행과정 */}
             <div className="bg-white dark:bg-slate-800/50 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8" data-testid="card-process-consultation">
-              <h3 className="text-2xl font-semibold">
+              <h3 className="text-xl md:text-2xl font-bold mb-6">
                 이름상담 진행과정
               </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                전화 상담 전·후 흐름 요약
-              </p>
 
-              <ol className="mt-6 space-y-6">
+              <ol className="space-y-6">
                 {nameConsultationSteps.map((s) => (
                   <li key={s.n} className="flex items-start gap-4" data-testid={`process-consultation-step-${s.n}`}>
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white bg-slate-800 dark:bg-slate-700 font-semibold">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white bg-[#0f766e] dark:bg-[#58C4C4] font-semibold">
                       {s.n}
                     </div>
                     <div className="flex-1">
@@ -163,17 +157,14 @@ export default function Services() {
 
             {/* 개명 진행 과정 */}
             <div className="bg-white dark:bg-slate-800/50 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8" data-testid="card-process-rename">
-              <h3 className="text-2xl font-semibold">
+              <h3 className="text-xl md:text-2xl font-bold mb-6">
                 개명 진행 과정
               </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                입금부터 PDF 발송까지
-              </p>
 
-              <ol className="mt-6 space-y-6">
+              <ol className="space-y-6">
                 {renameSteps.map((s) => (
                   <li key={s.n} className="flex items-start gap-4" data-testid={`process-rename-step-${s.n}`}>
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white bg-slate-800 dark:bg-slate-700 font-semibold">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white bg-[#0f766e] dark:bg-[#58C4C4] font-semibold">
                       {s.n}
                     </div>
                     <div className="flex-1">
