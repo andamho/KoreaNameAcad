@@ -77,9 +77,9 @@ export default function Services() {
               title="이름분석"
               description="현재 이름에 들어있는 16가지운을 전문적으로 분석해드립니다."
               buttonText="신청하기"
-              onClick={() => setLocation("/?open=analysis")}
+              onClick={() => setLocation("/?open=analysis&from=/services")}
               secondaryButtonText="자세히 보기"
-              onSecondaryClick={() => setLocation("/?detail=analysis")}
+              onSecondaryClick={() => setLocation("/?detail=analysis&from=/services")}
               data-testid="card-service-0"
             />
             <ServiceCard
@@ -87,7 +87,7 @@ export default function Services() {
               title="이름감명"
               description="타 작명소에서 받은 이름의 적합도를 점검해드립니다"
               buttonText="신청하기"
-              onClick={() => setLocation("/?open=naming")}
+              onClick={() => setLocation("/?open=naming&from=/services")}
               data-testid="card-service-1"
             />
             <ServiceCard

@@ -28,6 +28,7 @@ export default function Home() {
   const isClosingFromBackButton = useRef(false);
   const dialogOpenRef = useRef(false);
   const analysisDetailOpenRef = useRef(false);
+  const referrerPage = useRef<string | null>(null);
 
   // ref를 state와 동기화
   useEffect(() => {
@@ -42,14 +43,18 @@ export default function Home() {
     const params = new URLSearchParams(window.location.search);
     const openType = params.get("open");
     const detailType = params.get("detail");
+    const fromPage = params.get("from");
+    
+    // referrer 저장 (없으면 null로 초기화)
+    referrerPage.current = fromPage || null;
     
     if (openType === "analysis" || openType === "naming") {
       setDialogType(openType);
       setDialogOpen(true);
-      window.history.replaceState({}, "", "/");
+      window.history.replaceState({ from: fromPage }, "", "/");
     } else if (detailType === "analysis") {
       setAnalysisDetailOpen(true);
-      window.history.replaceState({}, "", "/");
+      window.history.replaceState({ from: fromPage }, "", "/");
     }
 
     const hash = window.location.hash;
@@ -68,16 +73,33 @@ export default function Home() {
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       const modalState = event.state?.modal;
+      const fromPage = event.state?.from || referrerPage.current;
       
       // analysisDetail이 열려있고, state에서 사라졌으면 닫음
       if (analysisDetailOpenRef.current && modalState !== "analysisDetail") {
         isClosingFromBackButton.current = true;
         setAnalysisDetailOpen(false);
+        // referrer 페이지로 이동
+        if (fromPage) {
+          setTimeout(() => {
+            setLocation(fromPage);
+            // referrer 정보 초기화 (한 번 사용 후 삭제)
+            referrerPage.current = null;
+          }, 0);
+        }
       }
       // consultation이 열려있고, state에서 사라졌으면 (null 또는 familyPolicy가 아닌 경우) 닫음
       else if (dialogOpenRef.current && !modalState) {
         isClosingFromBackButton.current = true;
         setDialogOpen(false);
+        // referrer 페이지로 이동
+        if (fromPage) {
+          setTimeout(() => {
+            setLocation(fromPage);
+            // referrer 정보 초기화 (한 번 사용 후 삭제)
+            referrerPage.current = null;
+          }, 0);
+        }
       }
     };
 
@@ -92,7 +114,8 @@ export default function Home() {
     setDialogType(type);
     setDialogOpen(true);
     // 히스토리에 고유 ID를 저장하여 뒤로 가기 버튼으로 닫을 수 있게 함
-    window.history.pushState({ modal: "consultation" }, "");
+    const fromPage = window.history.state?.from || referrerPage.current;
+    window.history.pushState({ modal: "consultation", from: fromPage }, "");
   };
 
   const closeDialog = () => {
@@ -100,6 +123,8 @@ export default function Home() {
     // X 버튼이나 외부 클릭으로 닫을 때만 히스토리를 조용히 정리
     if (!isClosingFromBackButton.current && window.history.state?.modal === "consultation") {
       window.history.replaceState(null, "", window.location.pathname);
+      // X 버튼으로 닫을 때 referrer 정보 초기화
+      referrerPage.current = null;
     }
     isClosingFromBackButton.current = false;
   };
@@ -107,7 +132,8 @@ export default function Home() {
   const openAnalysisDetail = () => {
     setAnalysisDetailOpen(true);
     // 히스토리에 고유 ID를 저장하여 뒤로 가기 버튼으로 닫을 수 있게 함
-    window.history.pushState({ modal: "analysisDetail" }, "");
+    const fromPage = window.history.state?.from || referrerPage.current;
+    window.history.pushState({ modal: "analysisDetail", from: fromPage }, "");
   };
 
   const closeAnalysisDetail = () => {
@@ -115,6 +141,8 @@ export default function Home() {
     // X 버튼이나 외부 클릭으로 닫을 때만 히스토리를 조용히 정리
     if (!isClosingFromBackButton.current && window.history.state?.modal === "analysisDetail") {
       window.history.replaceState(null, "", window.location.pathname);
+      // X 버튼으로 닫을 때 referrer 정보 초기화
+      referrerPage.current = null;
     }
     isClosingFromBackButton.current = false;
   };
