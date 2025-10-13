@@ -1,13 +1,24 @@
 import { Menu, X, Sparkles, MessageCircle, FileText, UserCheck, PenTool, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import logoImage from "@assets/KakaoTalk_20251012_203556567_1760268983553.png";
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [, setLocation] = useLocation();
+
+  // Close menu on ESC key
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && menuOpen) {
+        setMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [menuOpen]);
 
   const goToHome = () => {
     setLocation("/");

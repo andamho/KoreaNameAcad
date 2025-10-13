@@ -178,7 +178,6 @@ export default function Reviews() {
             <Button
               onClick={goToConsultation}
               size="lg"
-              className="text-lg px-8"
               data-testid="button-start-consultation"
             >
               상담 신청하기
@@ -187,7 +186,6 @@ export default function Reviews() {
               variant="outline"
               size="lg"
               asChild
-              className="text-lg px-8"
             >
               <a
                 href="https://pf.kakao.com/_Sxnvbb/chat"

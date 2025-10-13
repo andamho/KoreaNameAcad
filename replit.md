@@ -4,6 +4,14 @@
 
 Korean Name School is a web application that provides professional Korean name analysis and naming services. The platform allows users to understand the meaning and significance of their names, request new names, and receive expert consultations. The application features a modern, culturally-respectful design that honors Korean naming traditions while maintaining contemporary accessibility.
 
+**Key Pages:**
+- **Home (/)** - Landing page with hero, services overview, consultation forms, and customer testimonials
+- **Services (/services)** - Detailed service descriptions (name analysis, naming/renaming, family comprehensive analysis) with pricing and process steps
+- **Reviews (/reviews)** - Customer testimonials and success stories with statistics and social proof
+- **Detail Info (/detail-info)** - Additional information pages
+- **Family Policy (/family-policy)** - Family-related policy information
+- **Admin (/admin)** - Administrative dashboard
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -15,13 +23,15 @@ Preferred communication style: Simple, everyday language.
 **Framework & Build System**
 - React with TypeScript for type-safe component development
 - Vite as the build tool and development server, configured with custom aliasing for clean imports
-- Wouter for lightweight client-side routing (single-page application)
+- Wouter for lightweight client-side routing (multi-page application)
+- Icon-based navigation with overlay menu system (mobile and desktop)
 
 **UI Component System**
 - shadcn/ui component library with Radix UI primitives for accessible, customizable components
 - Tailwind CSS for utility-first styling with custom design tokens
 - Custom theme system supporting light and dark modes with HSL color variables
 - Pretendard font for Korean typography with Inter as fallback
+- Noto Sans KR font for navbar branding (via Google Fonts)
 
 **State Management & Data Fetching**
 - TanStack Query (React Query) for server state management and caching
@@ -33,6 +43,8 @@ Preferred communication style: Simple, everyday language.
 - Custom color palette featuring traditional Korean blue (primary), warm earth tones (secondary), and soft coral (accent)
 - Responsive layout system using Tailwind spacing primitives
 - Component library includes Hero sections, Service cards, Testimonial cards, and Story cards
+- Sophisticated menu overlay system with icon-based navigation (Lucide React icons)
+- Mobile-first responsive design with optimized layouts for all screen sizes
 
 ### Backend Architecture
 

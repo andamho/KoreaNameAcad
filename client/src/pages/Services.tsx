@@ -101,7 +101,7 @@ export default function Services() {
           <Button
             onClick={goToConsultation}
             size="lg"
-            className="bg-white text-[#0f766e] hover:bg-white/90 text-lg px-8"
+            className="bg-white text-[#0f766e] border-white"
             data-testid="button-consultation"
           >
             지금 상담 신청하기
@@ -195,7 +195,6 @@ export default function Services() {
             <Button
               onClick={goToConsultation}
               size="lg"
-              className="text-lg px-8"
               data-testid="button-start-consultation"
             >
               상담 신청하기
@@ -204,7 +203,6 @@ export default function Services() {
               variant="outline"
               size="lg"
               asChild
-              className="text-lg px-8"
             >
               <a
                 href="https://pf.kakao.com/_Sxnvbb/chat"
