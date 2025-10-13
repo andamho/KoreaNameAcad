@@ -1,4 +1,4 @@
-import { Menu, X, Sparkles, MessageCircle, FileText, UserCheck, PenTool, Star } from "lucide-react";
+import { Menu, X, MessageCircle, FileText, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect } from "react";
@@ -26,17 +26,6 @@ export function Navbar() {
     setMenuOpen(false);
   };
 
-  const scrollToSection = (id: string) => {
-    setLocation("/");
-    setTimeout(() => {
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-    setMenuOpen(false);
-  };
-
   const goToPage = (path: string) => {
     setLocation(path);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -45,43 +34,22 @@ export function Navbar() {
 
   const menuItems = [
     { 
-      icon: Sparkles, 
-      label: "지금 신청", 
-      action: () => scrollToSection('services'),
-      description: "상담 신청하기"
-    },
-    { 
-      icon: MessageCircle, 
-      label: "문의", 
-      href: "https://pf.kakao.com/_Sxnvbb/chat",
-      description: "카카오톡 문의"
-    },
-    { 
       icon: FileText, 
       label: "전문서비스", 
       action: () => goToPage('/services'),
       description: "이름 분석 · 작명"
     },
     { 
-      icon: UserCheck, 
-      label: "상담", 
-      action: () => scrollToSection('services'),
-      description: "전문 상담 신청"
-    },
-    { 
-      icon: PenTool, 
-      label: "개명", 
-      action: () => {
-        setLocation("/?open=naming");
-        setMenuOpen(false);
-      },
-      description: "개명 서비스"
-    },
-    { 
       icon: Star, 
-      label: "후기", 
+      label: "이름후기", 
       action: () => goToPage('/reviews'),
       description: "고객 후기 보기"
+    },
+    { 
+      icon: MessageCircle, 
+      label: "문의", 
+      href: "https://pf.kakao.com/_Sxnvbb/chat",
+      description: "카카오톡 문의"
     }
   ];
 
