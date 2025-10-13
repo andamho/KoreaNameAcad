@@ -120,11 +120,20 @@ export default function Home() {
 
   const closeDialog = () => {
     setDialogOpen(false);
-    // X 버튼이나 외부 클릭으로 닫을 때만 히스토리를 조용히 정리
-    if (!isClosingFromBackButton.current && window.history.state?.modal === "consultation") {
+    // X 버튼이나 외부 클릭으로 닫을 때
+    if (!isClosingFromBackButton.current) {
+      const fromPage = window.history.state?.from || referrerPage.current;
       window.history.replaceState(null, "", window.location.pathname);
-      // X 버튼으로 닫을 때 referrer 정보 초기화
-      referrerPage.current = null;
+      
+      // referrer 페이지로 이동
+      if (fromPage) {
+        setTimeout(() => {
+          setLocation(fromPage);
+          referrerPage.current = null;
+        }, 0);
+      } else {
+        referrerPage.current = null;
+      }
     }
     isClosingFromBackButton.current = false;
   };
@@ -138,11 +147,20 @@ export default function Home() {
 
   const closeAnalysisDetail = () => {
     setAnalysisDetailOpen(false);
-    // X 버튼이나 외부 클릭으로 닫을 때만 히스토리를 조용히 정리
-    if (!isClosingFromBackButton.current && window.history.state?.modal === "analysisDetail") {
+    // X 버튼이나 외부 클릭으로 닫을 때
+    if (!isClosingFromBackButton.current) {
+      const fromPage = window.history.state?.from || referrerPage.current;
       window.history.replaceState(null, "", window.location.pathname);
-      // X 버튼으로 닫을 때 referrer 정보 초기화
-      referrerPage.current = null;
+      
+      // referrer 페이지로 이동
+      if (fromPage) {
+        setTimeout(() => {
+          setLocation(fromPage);
+          referrerPage.current = null;
+        }, 0);
+      } else {
+        referrerPage.current = null;
+      }
     }
     isClosingFromBackButton.current = false;
   };
