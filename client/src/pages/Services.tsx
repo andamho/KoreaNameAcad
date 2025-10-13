@@ -149,7 +149,7 @@ export default function Services() {
                         {s.title}
                       </div>
                       {s.desc && (
-                        <div className="text-sm md:text-[15px] text-muted-foreground mt-1">
+                        <div className="text-lg md:text-lg text-muted-foreground mt-1">
                           → {s.desc}
                         </div>
                       )}
@@ -176,7 +176,7 @@ export default function Services() {
                         {s.title}
                       </div>
                       {s.desc && (
-                        <div className="text-sm md:text-[15px] text-muted-foreground mt-1">
+                        <div className="text-lg md:text-lg text-muted-foreground mt-1">
                           → {s.desc}
                         </div>
                       )}
