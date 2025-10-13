@@ -36,7 +36,7 @@ export default function Services() {
     { 
       n: 4, 
       title: "작명 진행 및 마무리", 
-      desc: "개인 1달 / 가족 2달" 
+      desc: "희망사항까지 반영한 작명 (개인 1달 / 가족 2달)" 
     },
     { 
       n: 5, 
