@@ -48,7 +48,7 @@ export default function Services() {
       title: "한글이름 선택", 
       desc: "3개 제시(평균)" 
     },
-    { n: 7, title: "작명장 PDF 발송" }
+    { n: 7, title: "선택된 한글이름의 한자가 포함된 작명장" }
   ];
 
   return (
