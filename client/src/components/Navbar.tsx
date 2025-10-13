@@ -1,4 +1,4 @@
-import { Menu, X, MessageCircle, FileText, Star } from "lucide-react";
+import { Menu, X, MessageCircle, FileText, Star, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect } from "react";
@@ -32,12 +32,29 @@ export function Navbar() {
     setMenuOpen(false);
   };
 
+  const goToPricing = () => {
+    setLocation("/");
+    setMenuOpen(false);
+    setTimeout(() => {
+      const pricingSection = document.getElementById('pricing');
+      if (pricingSection) {
+        pricingSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
   const menuItems = [
     { 
       icon: FileText, 
       label: "전문서비스", 
       action: () => goToPage('/services'),
       description: "이름 분석 · 작명"
+    },
+    { 
+      icon: DollarSign, 
+      label: "비용", 
+      action: goToPricing,
+      description: "상담비 · 소요시간"
     },
     { 
       icon: Star, 
