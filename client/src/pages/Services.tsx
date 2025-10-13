@@ -6,27 +6,49 @@ import { useLocation } from "wouter";
 
 export default function Services() {
   const [, setLocation] = useLocation();
-  const processSteps = [
+  
+  const nameConsultationSteps = [
     {
-      step: 1,
-      title: "상담 신청",
-      description: "온라인 양식 작성 또는 카카오톡 문의"
+      n: 1,
+      title: "일정예약",
+      desc: "신청서 접수, 입금확인 후 예약"
     },
-    {
-      step: 2,
-      title: "정보 전달",
-      description: "사주 정보 및 필요 자료 제공"
+    { 
+      n: 2, 
+      title: "이름분석표 발송", 
+      desc: "상담 바로 전" 
     },
-    {
-      step: 3,
-      title: "전문 분석",
-      description: "이름 전문가의 상세한 분석 진행"
-    },
-    {
-      step: 4,
-      title: "결과 전달",
-      description: "분석 결과서 및 상세 설명 제공"
+    { 
+      n: 3, 
+      title: "전화상담 진행", 
+      desc: "분석표 보며 상담" 
     }
+  ];
+
+  const renameSteps = [
+    { n: 1, title: "개명비 입금" },
+    { n: 2, title: "작명시작" },
+    {
+      n: 3,
+      title: "희망사항 10가지 제출",
+      desc: "1주일 내"
+    },
+    { 
+      n: 4, 
+      title: "작명 진행 및 마무리", 
+      desc: "개인 1달 / 가족 2달" 
+    },
+    { 
+      n: 5, 
+      title: "새 이름 설명(전화상담)", 
+      desc: "새로운 이름 & 이름운 상세안내" 
+    },
+    { 
+      n: 6, 
+      title: "한글이름 선택", 
+      desc: "3개 제시(평균)" 
+    },
+    { n: 7, title: "작명장 PDF 발송" }
   ];
 
   return (
@@ -97,25 +119,77 @@ export default function Services() {
       </section>
 
       {/* Process Section */}
-      <section className="py-16 md:py-24 bg-muted/30">
+      <section className="py-16 md:py-24 bg-slate-50 dark:bg-slate-900/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">진행 과정</h2>
-            <p className="text-lg text-muted-foreground">
-              간단하고 명확한 4단계 프로세스
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight" data-testid="text-process-title">
+              진행 과정
+            </h2>
+            <p className="mt-2 text-muted-foreground">
+              간단하고 명확한 단계별 안내
             </p>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-6">
-            {processSteps.map((item, index) => (
-              <div key={index} className="text-center" data-testid={`process-step-${index}`}>
-                <div className="w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                  {item.step}
-                </div>
-                <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                <p className="text-muted-foreground">{item.description}</p>
-              </div>
-            ))}
+          <div className="grid md:grid-cols-2 gap-10">
+            {/* 이름상담 진행과정 */}
+            <div className="bg-white dark:bg-slate-800/50 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8" data-testid="card-process-consultation">
+              <h3 className="text-2xl font-semibold">
+                이름상담 진행과정
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                전화 상담 전·후 흐름 요약
+              </p>
+
+              <ol className="mt-6 space-y-6">
+                {nameConsultationSteps.map((s) => (
+                  <li key={s.n} className="flex items-start gap-4" data-testid={`process-consultation-step-${s.n}`}>
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white bg-slate-800 dark:bg-slate-700 font-semibold">
+                      {s.n}
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-base md:text-lg font-semibold">
+                        {s.title}
+                      </div>
+                      {s.desc && (
+                        <div className="text-sm md:text-[15px] text-muted-foreground mt-1">
+                          → {s.desc}
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            {/* 개명 진행 과정 */}
+            <div className="bg-white dark:bg-slate-800/50 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8" data-testid="card-process-rename">
+              <h3 className="text-2xl font-semibold">
+                개명 진행 과정
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                입금부터 PDF 발송까지
+              </p>
+
+              <ol className="mt-6 space-y-6">
+                {renameSteps.map((s) => (
+                  <li key={s.n} className="flex items-start gap-4" data-testid={`process-rename-step-${s.n}`}>
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white bg-slate-800 dark:bg-slate-700 font-semibold">
+                      {s.n}
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-base md:text-lg font-semibold">
+                        {s.title}
+                      </div>
+                      {s.desc && (
+                        <div className="text-sm md:text-[15px] text-muted-foreground mt-1">
+                          → {s.desc}
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </div>
         </div>
       </section>

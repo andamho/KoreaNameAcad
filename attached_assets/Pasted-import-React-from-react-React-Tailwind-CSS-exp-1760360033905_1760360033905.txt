@@ -1,0 +1,112 @@
+import React from "react";
+
+// 미리보기용 React 섹션 컴포넌트
+// Tailwind CSS 기준. 색상은 쉽게 바꾸도록 토큰 형태로 정리
+export default function ProcessSections() {
+  const color = {
+    primary: "bg-slate-800", // 원형 배지 배경색 (이미지 느낌의 딥블루/딥그린계열)
+    primaryText: "text-slate-800",
+    accent: "text-slate-500",
+  };
+
+  const nameSteps = [
+    {
+      n: 1,
+      title: "일정예약",
+      desc: "신청서 접수, 입금확인 후 예약",
+    },
+    { n: 2, title: "이름분석표 발송", desc: "상담 바로 전" },
+    { n: 3, title: "전화상담 진행", desc: "분석표 보며 상담" },
+  ];
+
+  const renameSteps = [
+    { n: 1, title: "개명비 입금" },
+    { n: 2, title: "작명시작" },
+    {
+      n: 3,
+      title: "희망사항 10가지 제출",
+      desc: "1주일 내",
+    },
+    { n: 4, title: "작명 진행 및 마무리", desc: "개인 1달 / 가족 2달" },
+    { n: 5, title: "새 이름 설명(전화상담)", desc: "새로운 이름 & 이름운 상세안내" },
+    { n: 6, title: "한글이름 선택", desc: "3개 제시(평균)" },
+    { n: 7, title: "작명장 PDF 발송" },
+  ];
+
+  return (
+    <div className="w-full min-h-screen bg-slate-50 py-12">
+      {/* 전체 헤더 (옵션) */}
+      <header className="text-center mb-12">
+        <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
+          진행 과정
+        </h2>
+        <p className="mt-2 text-slate-500">간단하고 명확한 단계별 안내</p>
+      </header>
+
+      <div className="mx-auto max-w-6xl px-4 grid md:grid-cols-2 gap-10">
+        {/* 이름상담 진행과정 */}
+        <section className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
+          <h3 className="text-2xl font-semibold text-slate-900">
+            이름상담 진행과정
+          </h3>
+          <p className="mt-1 text-sm text-slate-500">전화 상담 전·후 흐름 요약</p>
+
+          <ol className="mt-6 space-y-6">
+            {nameSteps.map((s) => (
+              <li key={s.n} className="flex items-start gap-4">
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white ${color.primary} font-semibold`}
+                >
+                  {s.n}
+                </div>
+                <div className="flex-1">
+                  <div className="text-base md:text-lg font-semibold text-slate-900">
+                    {s.title}
+                  </div>
+                  {s.desc && (
+                    <div className="text-sm md:text-[15px] text-slate-500 mt-1">
+                      → {s.desc}
+                    </div>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        {/* 개명 진행 과정 */}
+        <section className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
+          <h3 className="text-2xl font-semibold text-slate-900">개명 진행 과정</h3>
+          <p className="mt-1 text-sm text-slate-500">입금부터 PDF 발송까지</p>
+
+          <ol className="mt-6 space-y-6">
+            {renameSteps.map((s) => (
+              <li key={s.n} className="flex items-start gap-4">
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white ${color.primary} font-semibold`}
+                >
+                  {s.n}
+                </div>
+                <div className="flex-1">
+                  <div className="text-base md:text-lg font-semibold text-slate-900">
+                    {s.title}
+                  </div>
+                  {s.desc && (
+                    <div className="text-sm md:text-[15px] text-slate-500 mt-1">
+                      → {s.desc}
+                    </div>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      </div>
+
+      {/* 하단 미세 안내 */}
+      <div className="max-w-6xl mx-auto px-4 mt-10 text-center text-xs text-slate-400">
+        색상은 Tailwind 클래스로 즉시 변경 가능합니다. (예: bg-slate-800 → bg-emerald-700)
+      </div>
+    </div>
+  );
+}
