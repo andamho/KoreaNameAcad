@@ -62,7 +62,7 @@ export default function Reviews() {
       date: "2025.02",
     },
     {
-      name: "문○○",
+      name: "김○○",
       service: "이름분석",
       content: "이름대로 살고 있는 게 너무 너무 신기해요",
       rating: 5,
@@ -128,7 +128,7 @@ export default function Reviews() {
       date: "2024.01",
     },
     {
-      name: "하○○",
+      name: "김○○",
       service: "개명",
       content: "가는 곳마다 열광. 이젠 대기업 임원만큼 돈을 벌어요. 크게 되고 빛날 것같아요",
       rating: 5,
@@ -142,7 +142,7 @@ export default function Reviews() {
       date: "2023.06",
     },
     {
-      name: "성○○",
+      name: "김○○",
       service: "개명",
       content: "부지런해지고 원하던 회사에 합격했어요",
       rating: 5,
