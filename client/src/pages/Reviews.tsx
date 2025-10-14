@@ -160,7 +160,7 @@ export default function Reviews() {
   const stats = [
     { value: "10,000+", label: "누적 상담 건수" },
     { value: "98%", label: "고객 만족도" },
-    { value: "17년 43만명 임상", label: "전문가 경력" }
+    { value: "17년 43만명 임상", label: "전문가 경력", multiline: true }
   ];
 
   return (
@@ -189,7 +189,14 @@ export default function Reviews() {
           <div className="grid grid-cols-3 gap-4 sm:gap-8 text-center">
             {stats.map((stat, index) => (
               <div key={index} data-testid={`stat-${index}`}>
-                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-1 sm:mb-2 leading-tight">{stat.value}</div>
+                {stat.multiline ? (
+                  <div className="mb-1 sm:mb-2">
+                    <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary leading-tight">17년</div>
+                    <div className="text-base sm:text-xl md:text-2xl font-bold text-primary leading-tight">43만명 임상</div>
+                  </div>
+                ) : (
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-1 sm:mb-2 leading-tight">{stat.value}</div>
+                )}
                 <div className="text-xs sm:text-sm md:text-base text-muted-foreground leading-snug">{stat.label}</div>
               </div>
             ))}
@@ -220,7 +227,7 @@ export default function Reviews() {
                 <Quote className="absolute top-6 right-6 w-12 h-12 text-muted-foreground/20" />
                 
                 {/* Name */}
-                <h3 className="text-2xl font-bold text-foreground mb-1">
+                <h3 className="text-xl font-bold text-foreground mb-1">
                   {testimonial.name}
                 </h3>
                 
@@ -274,7 +281,7 @@ export default function Reviews() {
                 <Quote className="absolute top-6 right-6 w-12 h-12 text-muted-foreground/20" />
                 
                 {/* Name */}
-                <h3 className="text-2xl font-bold text-foreground mb-1">
+                <h3 className="text-xl font-bold text-foreground mb-1">
                   {testimonial.name}
                 </h3>
                 
