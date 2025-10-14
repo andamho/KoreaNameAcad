@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import logoImage from "@assets/KakaoTalk_20251012_203556567_1760268983553.png";
+import logoImage from "@assets/logo.svg";
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -73,7 +73,7 @@ export function Navbar() {
                 <img 
                   src={logoImage} 
                   alt="한국이름학교 로고" 
-                  className="h-10 w-10 md:h-6 md:w-6 dark:invert scale-90 md:scale-110"
+                  className="h-10 w-10 md:h-6 md:w-6 scale-90 md:scale-110"
                 />
                 <div className="md:text-xl font-bold text-foreground font-['Noto_Sans_KR']">
                   <div className="md:hidden text-left flex flex-col justify-center h-10">
