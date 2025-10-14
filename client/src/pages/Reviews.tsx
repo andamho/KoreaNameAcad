@@ -6,14 +6,14 @@ import { Star, Quote } from "lucide-react";
 export default function Reviews() {
   const analysisTestimonials = [
     {
-      name: "서○○",
+      name: "김○○",
       service: "이름분석",
       content: "이제야 내 삶의 퍼즐이 맞춰지는 것같습니다. 감탄에 감탄",
       rating: 5,
       date: "2025.08",
     },
     {
-      name: "황○○",
+      name: "이○○",
       service: "이름분석",
       content: "선생님과의 이름분석 상담은 너무나 달랐습니다",
       rating: 5,
@@ -27,7 +27,7 @@ export default function Reviews() {
       date: "2023.07",
     },
     {
-      name: "송○○",
+      name: "박○○",
       service: "이름분석",
       content: "이름을 바꿀 수 있다는 게 얼마나 다행인지",
       rating: 5,
@@ -41,7 +41,7 @@ export default function Reviews() {
       date: "2022.09",
     },
     {
-      name: "전○○",
+      name: "최○○",
       service: "이름분석",
       content: "제 인생의 많은 부분을 다시 돌아보며 이해할 수 있는 시간이었습니다",
       rating: 5,
@@ -55,7 +55,7 @@ export default function Reviews() {
       date: "2021.05",
     },
     {
-      name: "배○○",
+      name: "이○○",
       service: "이름분석",
       content: "아주 그냥 저희 집에 같이 살고 있는 줄요",
       rating: 5,
@@ -69,7 +69,7 @@ export default function Reviews() {
       date: "2022.06",
     },
     {
-      name: "손○○",
+      name: "김○○",
       service: "이름분석",
       content: "지난날이 주마등처럼 지나가면서 저를 토닥여주고 싶었어요",
       rating: 5,
@@ -86,14 +86,14 @@ export default function Reviews() {
 
   const testimonials = [
     {
-      name: "백○○",
+      name: "박○○",
       service: "개명",
       content: "절 좋아하는 사람이 많아졌어요. 예민한 게 사라졌어요. 요즘 돈도 많이 벌어요",
       rating: 5,
       date: "2025.09",
     },
     {
-      name: "허○○",
+      name: "최○○",
       service: "개명",
       content: "직장과 아파트가 생겼어요. 가전제품도 누가 사주셨어요. 아빠 외도 중이셨는데 정리하고 들어오셨어요. 지금은 소아정신과에서 아이들 진료보고 있는데 마더테레사라고 칭찬받고 인정받아요",
       rating: 5,
@@ -107,7 +107,7 @@ export default function Reviews() {
       date: "2023.10",
     },
     {
-      name: "심○○",
+      name: "김○○",
       service: "개명",
       content: "정부지원사업 3천만원 지원받아 플랫폼 사업 시작해서 넘 잘 돼요",
       rating: 5,
@@ -121,7 +121,7 @@ export default function Reviews() {
       date: "2021.08",
     },
     {
-      name: "노○○",
+      name: "이○○",
       service: "개명",
       content: "이상형의 남친이 생겼어요",
       rating: 5,
@@ -135,7 +135,7 @@ export default function Reviews() {
       date: "2025.04",
     },
     {
-      name: "곽○○",
+      name: "박○○",
       service: "개명",
       content: "우울증과 알콜의존증으로 약까지 먹고 있었는데 거짓말처럼 술이 안땡겨요. 마음이 편해지고 삶이 의욕적으로 바뀌었어요",
       rating: 5,
@@ -149,7 +149,7 @@ export default function Reviews() {
       date: "2022.03",
     },
     {
-      name: "차○○",
+      name: "최○○",
       service: "개명",
       content: "남편이 달라졌어요. 밉지도 않고. 시어머님에 대한 원망이 사라졌어요. 아이가 알아서 스스로 잘 해요",
       rating: 5,
