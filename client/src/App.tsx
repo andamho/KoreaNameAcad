@@ -9,6 +9,7 @@ import FamilyPolicy from "@/pages/FamilyPolicy";
 import Admin from "@/pages/Admin";
 import Services from "@/pages/Services";
 import Reviews from "@/pages/Reviews";
+import Pricing from "@/pages/Pricing";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/admin" component={Admin}/>
       <Route path="/services" component={Services}/>
       <Route path="/reviews" component={Reviews}/>
+      <Route path="/pricing" component={Pricing}/>
       <Route component={NotFound} />
     </Switch>
   );

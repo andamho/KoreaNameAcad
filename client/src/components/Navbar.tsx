@@ -32,17 +32,6 @@ export function Navbar() {
     setMenuOpen(false);
   };
 
-  const goToPricing = () => {
-    setLocation("/");
-    setMenuOpen(false);
-    setTimeout(() => {
-      const pricingSection = document.getElementById('pricing');
-      if (pricingSection) {
-        pricingSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-  };
-
   const menuItems = [
     { 
       icon: FileText, 
@@ -53,7 +42,7 @@ export function Navbar() {
     { 
       icon: DollarSign, 
       label: "비용", 
-      action: goToPricing,
+      action: () => goToPage('/pricing'),
       description: "상담비 · 소요시간"
     },
     { 
