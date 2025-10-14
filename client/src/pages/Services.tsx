@@ -146,11 +146,11 @@ export default function Services() {
                       {s.n}
                     </div>
                     <div className="flex-1">
-                      <div className="text-base md:text-lg font-semibold">
+                      <div className="text-lg md:text-xl font-semibold">
                         {s.title}
                       </div>
                       {s.desc && (
-                        <div className="text-lg md:text-lg text-muted-foreground mt-1">
+                        <div className="text-base md:text-lg text-muted-foreground mt-1">
                           → {s.desc}
                         </div>
                       )}
@@ -173,11 +173,11 @@ export default function Services() {
                       {s.n}
                     </div>
                     <div className="flex-1">
-                      <div className="text-base md:text-lg font-semibold">
+                      <div className="text-lg md:text-xl font-semibold">
                         {s.title}
                       </div>
                       {s.desc && (
-                        <div className="text-lg md:text-lg text-muted-foreground mt-1">
+                        <div className="text-base md:text-lg text-muted-foreground mt-1">
                           → {s.desc}
                         </div>
                       )}
