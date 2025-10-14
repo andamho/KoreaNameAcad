@@ -5,13 +5,6 @@ import heroImage from "@assets/ChatGPT Image 2025년 10월 8일 오후 09_34_23_
 export function Hero() {
   const [, setLocation] = useLocation();
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <section id="home" className="relative py-20 md:py-32 overflow-hidden">
       <div className="absolute inset-0">
@@ -48,7 +41,10 @@ export function Hero() {
             <Button
               variant="outline"
               size="lg"
-              onClick={() => scrollToSection('testimonials')}
+              onClick={() => {
+                setLocation('/reviews');
+                window.scrollTo(0, 0);
+              }}
               data-testid="button-reviews"
               className="min-w-[200px] bg-background/50 backdrop-blur-sm text-lg"
             >

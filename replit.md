@@ -5,9 +5,9 @@
 Korean Name School is a web application that provides professional Korean name analysis and naming services. The platform allows users to understand the meaning and significance of their names, request new names, and receive expert consultations. The application features a modern, culturally-respectful design that honors Korean naming traditions while maintaining contemporary accessibility.
 
 **Key Pages:**
-- **Home (/)** - Landing page with hero, services overview, consultation forms, and customer testimonials
+- **Home (/)** - Landing page with hero, services overview, consultation forms, and key sections (danger, value, intro, steps, myth/truth, pricing)
 - **Services (/services)** - Detailed service descriptions (name analysis, naming/renaming, family comprehensive analysis) with pricing and process steps
-- **Reviews (/reviews)** - Customer testimonials and success stories with statistics and social proof
+- **Reviews (/reviews)** - Dedicated testimonials page featuring two sections: "이름분석 상담후기" (Name Analysis Reviews) and "개명 후기" (Name Change Reviews), with link to full reviews on Naver blog
 - **Detail Info (/detail-info)** - Additional information pages
 - **Family Policy (/family-policy)** - Family-related policy information
 - **Admin (/admin)** - Administrative dashboard

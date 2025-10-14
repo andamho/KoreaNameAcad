@@ -1,201 +1,208 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Star, Quote } from "lucide-react";
-import { useLocation } from "wouter";
+import { Card } from "@/components/ui/card";
 
 export default function Reviews() {
-  const [, setLocation] = useLocation();
-
-  const reviews = [
+  const analysisTestimonials = [
     {
-      name: "김○○",
+      name: "고객 1",
       service: "이름 분석",
+      content: "이제야 내 삶의 퍼즐이 맞춰지는 것같습니다. 감탄에 감탄",
       rating: 5,
-      content: "이름 하나 때문에 이렇게 고생했구나 싶었어요. 분석 받고 개명하니 정말 삶이 달라졌습니다. 가족들도 놀랄 정도로 긍정적인 변화가 생겼어요.",
-      date: "2024.09"
     },
     {
-      name: "박○○",
-      service: "작명 (개명)",
-      rating: 5,
-      content: "사업이 잘 안 풀려서 고민하다가 개명했는데, 진짜 신기하게 일이 풀리기 시작했어요. 이름이 이렇게 중요한 줄 몰랐습니다.",
-      date: "2024.08"
-    },
-    {
-      name: "이○○",
-      service: "가족 종합 분석",
-      rating: 5,
-      content: "가족들 이름을 다 분석받았는데, 정말 놀라웠어요. 우리 가족이 겪는 문제들이 이름과 연관이 있었다니... 지금은 모두 좋아졌습니다.",
-      date: "2024.07"
-    },
-    {
-      name: "최○○",
+      name: "고객 2",
       service: "이름 분석",
+      content: "선생님과의 이름분석 상담은 너무나 달랐습니다",
       rating: 5,
-      content: "30년 넘게 살면서 이름 때문에 힘들었는데 이제야 이유를 알았어요. 개명 준비 중인데 벌써 마음이 편안해집니다.",
-      date: "2024.09"
     },
     {
-      name: "정○○",
-      service: "작명 (개명)",
-      rating: 5,
-      content: "아이 이름 지을 때 여기서 작명 받았는데 정말 잘한 것 같아요. 아이가 건강하고 밝게 자라고 있습니다.",
-      date: "2024.08"
-    },
-    {
-      name: "강○○",
+      name: "고객 3",
       service: "이름 분석",
+      content: "내용이 정말 소름끼치게 가깝더라구요",
       rating: 5,
-      content: "비용이 아깝다고 생각했는데, 받고 나니 정말 값진 투자였어요. 이름 하나로 인생이 바뀔 수 있다는 걸 실감했습니다.",
-      date: "2024.06"
     },
     {
-      name: "윤○○",
-      service: "가족 종합 분석",
-      rating: 5,
-      content: "남편과 관계가 좋지 않아서 고민이었는데, 이름 분석 받고 개선 방법을 찾았어요. 지금은 가정이 정말 화목합니다.",
-      date: "2024.07"
-    },
-    {
-      name: "조○○",
-      service: "작명 (개명)",
-      rating: 5,
-      content: "건강 문제로 고생하다가 개명했는데, 정말 신기하게 몸이 좋아졌어요. 이름이 이렇게 큰 영향을 미치는지 몰랐습니다.",
-      date: "2024.05"
-    },
-    {
-      name: "한○○",
+      name: "고객 4",
       service: "이름 분석",
+      content: "이름을 바꿀 수 있다는 게 얼마나 다행인지",
       rating: 5,
-      content: "후기 안 보고 다른 곳에서 작명했다가 후회했어요. 여기서 다시 분석받고 제대로 된 이름을 얻었습니다.",
-      date: "2024.09"
-    }
+    },
+    {
+      name: "고객 5",
+      service: "이름 분석",
+      content: "해결책이 생겨 마음이 편해졌어요",
+      rating: 5,
+    },
+    {
+      name: "고객 6",
+      service: "이름 분석",
+      content: "제 인생의 많은 부분을 다시 돌아보며 이해할 수 있는 시간이었습니다",
+      rating: 5,
+    },
+    {
+      name: "고객 7",
+      service: "이름 분석",
+      content: "한 시간이 너무 후딱 지나가더라구요. 뭔지 모를 후련함도 생기고. 누군가에게 말못한 고민까지 털어놓게 됐어요",
+      rating: 5,
+    },
+    {
+      name: "고객 8",
+      service: "이름 분석",
+      content: "아주 그냥 저희 집에 같이 살고 있는 줄요",
+      rating: 5,
+    },
+    {
+      name: "고객 9",
+      service: "이름 분석",
+      content: "이름대로 살고 있는 게 너무 너무 신기해요",
+      rating: 5,
+    },
+    {
+      name: "고객 10",
+      service: "이름 분석",
+      content: "지난날이 주마등처럼 지나가면서 저를 토닥여주고 싶었어요",
+      rating: 5,
+    },
+    {
+      name: "고객 11",
+      service: "이름 분석",
+      content: "성격 성향이 바뀐 게 이름의 끌어당김이었어요",
+      rating: 5,
+    },
   ];
 
-  const stats = [
-    { value: "1,000+", label: "누적 상담 건수" },
-    { value: "98%", label: "고객 만족도" },
-    { value: "15년+", label: "전문가 경력" }
+  const testimonials = [
+    {
+      name: "고객 1",
+      service: "개명",
+      content: "절 좋아하는 사람이 많아졌어요. 예민한 게 사라졌어요. 요즘 돈도 많이 벌어요",
+      rating: 5,
+    },
+    {
+      name: "고객 2",
+      service: "개명",
+      content: "직장과 아파트가 생겼어요. 가전제품도 누가 사주셨어요. 아빠 외도 중이셨는데 정리하고 들어오셨어요. 지금은 소아정신과에서 아이들 진료보고 있는데 마더테레사라고 칭찬받고 인정받아요",
+      rating: 5,
+    },
+    {
+      name: "고객 3",
+      service: "개명",
+      content: "미용실도 이전해서 넘 잘 되고 사랑하는 사람도 생겨 결혼해요",
+      rating: 5,
+    },
+    {
+      name: "고객 4",
+      service: "개명",
+      content: "정부지원사업 3천만원 지원받아 플랫폼 사업 시작해서 넘 잘 돼요",
+      rating: 5,
+    },
+    {
+      name: "고객 5",
+      service: "개명",
+      content: "개명 후 6년 세상에서 가장 행복한 사람",
+      rating: 5,
+    },
+    {
+      name: "고객 6",
+      service: "개명",
+      content: "이상형의 남친이 생겼어요",
+      rating: 5,
+    },
+    {
+      name: "고객 7",
+      service: "개명",
+      content: "가는 곳마다 열광. 이젠 대기업 임원만큼 돈을 벌어요. 크게 되고 빛날 것같아요",
+      rating: 5,
+    },
+    {
+      name: "고객 8",
+      service: "개명",
+      content: "우울증과 알콜의존증으로 약까지 먹고 있었는데 거짓말처럼 술이 안땡겨요. 마음이 편해지고 삶이 의욕적으로 바뀌었어요",
+      rating: 5,
+    },
+    {
+      name: "고객 9",
+      service: "개명",
+      content: "부지런해지고 원하던 회사에 합격했어요",
+      rating: 5,
+    },
+    {
+      name: "고객 10",
+      service: "개명",
+      content: "남편이 달라졌어요. 밉지도 않고. 시어머님에 대한 원망이 사라졌어요. 아이가 알아서 스스로 잘 해요",
+      rating: 5,
+    },
   ];
-
-  const goToConsultation = () => {
-    setLocation("/?open=analysis");
-    setTimeout(() => {
-      const element = document.getElementById('services');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-  };
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0f766e] to-[#4fd1c5] dark:from-[#0a5850] dark:to-[#3ba89e] py-20 md:py-28">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTR2NGg0di00em0wLThoLTR2NGg0di00em04IDhoLTR2NGg4di00em0tOCA4aC00djRoNHYtNHptOCAwac00djRoNHYtNHptMC04aC00djRoNHYtNHptOC04aC00djRoNHYtNHptMCA4aC00djRoNHYtNHptLTggMGgtNHY0aDR2LTR6bTggOGgtNHY0aDR2LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6" data-testid="text-reviews-title">
-            고객 후기
-          </h1>
-          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
-            이름 하나로 인생이 달라진<br className="hidden sm:inline" />
-            실제 고객들의 생생한 이야기
-          </p>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-12 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-3 gap-8 text-center">
-            {stats.map((stat, index) => (
-              <div key={index} data-testid={`stat-${index}`}>
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{stat.value}</div>
-                <div className="text-sm md:text-base text-muted-foreground">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Reviews Grid */}
-      <section className="py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">실제 고객 후기</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              검증된 서비스, 신뢰할 수 있는 결과
+      {/* 이름분석 상담후기 섹션 */}
+      <section id="analysis-testimonials" className="py-16 md:py-24 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center space-y-4 mb-12">
+            <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
+              이름분석 상담후기
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              실제 고객님들의 생생한 후기입니다
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {reviews.map((review, index) => (
-              <Card key={index} className="hover-elevate" data-testid={`card-review-${index}`}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <div className="font-bold text-lg mb-1">{review.name}</div>
-                      <div className="text-sm text-muted-foreground">{review.service}</div>
-                    </div>
-                    <Quote className="h-8 w-8 text-primary/20" />
-                  </div>
-                  
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-
-                  <p className="text-sm leading-relaxed mb-4 text-foreground/90">
-                    "{review.content}"
-                  </p>
-
-                  <div className="text-xs text-muted-foreground">
-                    {review.date}
-                  </div>
-                </CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {analysisTestimonials.map((testimonial, index) => (
+              <Card
+                key={index}
+                className="p-6 hover-elevate"
+                data-testid={`analysis-testimonial-card-${index}`}
+              >
+                <p className="text-lg leading-relaxed text-foreground">
+                  {testimonial.content}
+                </p>
               </Card>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-muted/30">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            당신도 변화를 경험하세요
-          </h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            후기를 보고 확신을 가지셨나요?<br />
-            지금 바로 상담을 신청하고 긍정적인 변화를 시작하세요
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              onClick={goToConsultation}
-              size="lg"
-              data-testid="button-start-consultation"
-            >
-              상담 신청하기
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              asChild
-            >
-              <a
-                href="https://pf.kakao.com/_Sxnvbb/chat"
-                target="_blank"
-                rel="noopener noreferrer"
-                data-testid="button-kakao-inquiry"
+      {/* 개명 후기 섹션 */}
+      <section id="name-change-testimonials" className="py-16 md:py-24 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center space-y-4 mb-12">
+            <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
+              개명 후기
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              개명 후 달라진 삶을 경험한 고객님들의 이야기
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {testimonials.map((testimonial, index) => (
+              <Card
+                key={index}
+                className="p-6 hover-elevate"
+                data-testid={`testimonial-card-${index}`}
               >
-                카카오톡 문의
-              </a>
-            </Button>
+                <p className="text-lg leading-relaxed text-foreground">
+                  {testimonial.content}
+                </p>
+              </Card>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <a
+              href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=11&proxyReferer=https%3A%2F%2Flinkon.id%2F"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-[27px] font-semibold text-[#0f766e] dark:text-[#58C4C4] hover:underline"
+              data-testid="link-detailed-testimonials"
+            >
+              고객 후기 전체보기 →
+            </a>
           </div>
         </div>
       </section>
