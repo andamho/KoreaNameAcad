@@ -176,7 +176,8 @@ export default function Reviews() {
           </h1>
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
             이름대로 살고 있음을 확인한 분들,<br />
-            새로운 이름으로 꽃길을 걸으시는 분들의<br />
+            새로운 이름으로<br />
+            꽃길을 걸으시는 분들의<br />
             생생한 이야기
           </p>
         </div>
@@ -185,11 +186,11 @@ export default function Reviews() {
       {/* Stats Section */}
       <section className="py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-3 gap-8 text-center">
+          <div className="grid grid-cols-3 gap-4 sm:gap-8 text-center">
             {stats.map((stat, index) => (
               <div key={index} data-testid={`stat-${index}`}>
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{stat.value}</div>
-                <div className="text-sm md:text-base text-muted-foreground">{stat.label}</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-1 sm:mb-2 leading-tight">{stat.value}</div>
+                <div className="text-xs sm:text-sm md:text-base text-muted-foreground leading-snug">{stat.label}</div>
               </div>
             ))}
           </div>
