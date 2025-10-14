@@ -266,7 +266,7 @@ export default function Reviews() {
               개명 후기
             </h2>
             <p className="text-lg text-muted-foreground">
-              개명 후 달라진 삶을 경험한 고객님들의 이야기
+              개명 후 꽃길을 걷는 고객님들 이야기
             </p>
           </div>
 
