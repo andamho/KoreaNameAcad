@@ -82,7 +82,10 @@ export function Footer() {
         {/* 버튼들 */}
         <div className="flex justify-center gap-4 mb-12">
           <button
-            onClick={() => setLocation('/services')}
+            onClick={() => {
+              setLocation('/services');
+              window.scrollTo(0, 0);
+            }}
             className="px-5 py-2 md:px-6 md:py-2.5 rounded-md text-white font-semibold hover-elevate active-elevate-2 transition-colors"
             style={{ backgroundColor: '#58C4C4' }}
             data-testid="button-footer-apply"

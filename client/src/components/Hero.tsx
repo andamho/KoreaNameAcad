@@ -56,7 +56,10 @@ export function Hero() {
             </Button>
             <Button
               size="lg"
-              onClick={() => setLocation('/services')}
+              onClick={() => {
+                setLocation('/services');
+                window.scrollTo(0, 0);
+              }}
               data-testid="button-consultation"
               className="min-w-[200px] text-lg"
             >
