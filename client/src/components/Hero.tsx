@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 import heroImage from "@assets/ChatGPT Image 2025년 10월 8일 오후 09_34_23_1759926875782.png";
 
 export function Hero() {
+  const [, setLocation] = useLocation();
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -53,7 +56,7 @@ export function Hero() {
             </Button>
             <Button
               size="lg"
-              onClick={() => scrollToSection('services')}
+              onClick={() => setLocation('/services')}
               data-testid="button-consultation"
               className="min-w-[200px] text-lg"
             >

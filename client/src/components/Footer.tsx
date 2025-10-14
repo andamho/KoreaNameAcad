@@ -1,15 +1,11 @@
 import { SiInstagram, SiYoutube, SiTiktok, SiNaver } from 'react-icons/si';
+import { useLocation } from 'wouter';
 
 export function Footer() {
+  const [, setLocation] = useLocation();
+
   const handleContactClick = () => {
     window.open('https://pf.kakao.com/_Sxnvbb/chat', '_blank');
-  };
-
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
   };
 
   const socialLinks = [
@@ -86,7 +82,7 @@ export function Footer() {
         {/* 버튼들 */}
         <div className="flex justify-center gap-4 mb-12">
           <button
-            onClick={() => scrollToSection('services')}
+            onClick={() => setLocation('/services')}
             className="px-5 py-2 md:px-6 md:py-2.5 rounded-md text-white font-semibold hover-elevate active-elevate-2 transition-colors"
             style={{ backgroundColor: '#58C4C4' }}
             data-testid="button-footer-apply"
