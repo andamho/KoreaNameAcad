@@ -160,7 +160,7 @@ export default function Reviews() {
   const stats = [
     { value: "30,000+", label: "누적 상담 건수" },
     { value: "98%", label: "고객 만족도" },
-    { value: "17년 43만명 임상", label: "전문가 경력", multiline: true }
+    { value: "17년 43만명 임상", label: "", multiline: true }
   ];
 
   return (
@@ -191,13 +191,13 @@ export default function Reviews() {
               <div key={index} data-testid={`stat-${index}`}>
                 {stat.multiline ? (
                   <div className="mb-2">
-                    <div className="text-xl sm:text-3xl md:text-4xl font-bold text-primary mb-1">17년</div>
-                    <div className="text-sm sm:text-xl md:text-2xl font-bold text-primary whitespace-nowrap">43만명 임상</div>
+                    <div className="text-xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1">17년</div>
+                    <div className="text-[0.7rem] sm:text-[1.05rem] md:text-[1.4rem] font-bold text-foreground whitespace-nowrap">43만명 임상</div>
                   </div>
                 ) : (
-                  <div className="text-xl sm:text-3xl md:text-4xl font-bold text-primary mb-2">{stat.value}</div>
+                  <div className="text-xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">{stat.value}</div>
                 )}
-                <div className="text-[10px] sm:text-sm md:text-base text-muted-foreground whitespace-nowrap">{stat.label}</div>
+                {stat.label && <div className="text-[0.7rem] sm:text-[1.05rem] md:text-[1.4rem] text-foreground whitespace-nowrap">{stat.label}</div>}
               </div>
             ))}
           </div>
