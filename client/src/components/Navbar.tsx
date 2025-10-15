@@ -62,12 +62,12 @@ export function Navbar() {
   return (
     <>
       <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto px-1 sm:px-6">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
               <button
                 onClick={goToHome}
-                className="flex items-center gap-2 hover-elevate active-elevate-2 rounded-md px-2 py-1"
+                className="flex items-center gap-1 sm:gap-2 hover-elevate active-elevate-2 rounded-md px-0 sm:px-2 py-1"
                 data-testid="link-home"
               >
                 <img 
@@ -85,7 +85,7 @@ export function Navbar() {
               </button>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 sm:gap-3">
               <div className="md:hidden scale-[1.54]">
                 <ThemeToggle />
               </div>
@@ -96,7 +96,7 @@ export function Navbar() {
                 variant="ghost"
                 onClick={() => setMenuOpen(!menuOpen)}
                 data-testid="button-menu"
-                className="flex items-center gap-2 md:gap-2 scale-[1.54] md:scale-100"
+                className="flex items-center gap-2 md:gap-2 scale-[1.54] md:scale-100 pr-0 sm:pr-3"
               >
                 {menuOpen ? (
                   <X className="h-5 w-5 md:h-6 md:w-6 md:scale-[1.26]" />
