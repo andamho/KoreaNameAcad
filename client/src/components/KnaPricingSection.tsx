@@ -5,7 +5,7 @@ const pricingData = {
       columns: ["항목", "금액"],
       rows: [
         { name: "이름분석", price: "6만원" },
-        { name: "이름감명(타작명소 이름)", price: "2만원" },
+        { name: "이름감명 (타작명소 이름)", price: "2만원" },
         { name: "이름궁합(연인)", price: "10만원" },
         { name: "인스타명(감명)", price: "2만원" },
         { name: "반려동물(감명)", price: "2만원" },
@@ -112,10 +112,13 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
         <div className="divide-y divide-border bg-card">
           {rows.map((row, i) => {
             // 이름궁합, 인스타명, 반려동물, 이름감명은 모바일에서 줄바꿈 방지
-            const noBreakItems = ["이름궁합(연인)", "인스타명(감명)", "반려동물(감명)", "이름감명(타작명소 이름)"];
+            const noBreakItems = ["이름궁합(연인)", "인스타명(감명)", "반려동물(감명)"];
             const nameClass = noBreakItems.includes(row.name) 
               ? "col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide whitespace-nowrap"
               : "col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-relaxed tracking-wide";
+            
+            // 이름감명은 특별 처리 (모바일에서 괄호 부분 작게)
+            const isNameReview = row.name === "이름감명 (타작명소 이름)";
             
             return (
               <div 
@@ -123,7 +126,16 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
                 className="grid grid-cols-12 px-4 py-3 sm:py-4 hover-elevate text-[18px]"
                 data-testid={`pricing-row-${sectionIndex}-${i}`}
               >
-                <div className={nameClass}>{row.name}</div>
+                <div className={nameClass}>
+                  {isNameReview ? (
+                    <>
+                      <span className="text-[18px] md:text-[18px]">이름감명</span>
+                      <span className="text-sm md:text-[18px]"> (타작명소 이름)</span>
+                    </>
+                  ) : (
+                    row.name
+                  )}
+                </div>
                 <div className="col-span-6 sm:col-span-4 text-right font-semibold text-foreground break-words">{row.price}</div>
               </div>
             );
