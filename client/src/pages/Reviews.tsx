@@ -175,7 +175,7 @@ export default function Reviews() {
             고객 후기
           </h1>
           <p className="text-lg md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
-            이름대로 살고 있음을 확인한 분들,<br />
+            이름대로 사는 것을 확인한 분들,<br />
             새로운 이름으로<br />
             꽃길을 걸으시는 분들의<br />
             생생한 이야기
