@@ -229,7 +229,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         {type === "analysis" && (
           <div className="space-y-3">
             <Label className="text-lg font-semibold">등본상 가족 인원 <span className="text-base font-normal text-muted-foreground">(해당 인원을 체크하세요)</span></Label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {[1, 2, 3, 4, 5, 6].map((num) => (
                 <Button
                   key={num}
@@ -238,7 +238,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   size="sm"
                   onClick={() => handleNumPeopleChange(num)}
                   data-testid={`button-people-${num}`}
-                  className="w-12 h-12 text-lg"
+                  className="w-10 h-10 text-lg"
                 >
                   {num}
                 </Button>
