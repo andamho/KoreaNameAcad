@@ -330,7 +330,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             accept="image/*"
             onChange={(e) => setRegistrationDocument(e.target.files?.[0] || null)}
             data-testid="input-registration-document"
-            className="cursor-pointer leading-[2.25rem] file:leading-normal"
+            className="cursor-pointer leading-[1.5rem] md:leading-[2.25rem] file:leading-normal"
           />
           {registrationDocument && (
             <p className="text-base text-muted-foreground">
