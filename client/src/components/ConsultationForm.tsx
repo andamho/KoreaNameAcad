@@ -229,7 +229,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         {type === "analysis" && (
           <div className="space-y-3">
             <Label className="text-lg font-semibold">등본상 가족 인원 <span className="text-base font-normal text-muted-foreground">(해당 인원을 체크하세요)</span></Label>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2">
               {[1, 2, 3, 4, 5, 6].map((num) => (
                 <Button
                   key={num}
@@ -323,14 +323,14 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
         {/* 주민등본 사진 첨부 */}
         <div className="space-y-2">
-          <Label htmlFor="registration-document" className="text-lg">주민등본 사진 <span className="text-base font-normal text-muted-foreground">(정확한 한자 확인을 위해 반드시 첨부)</span></Label>
+          <Label htmlFor="registration-document" className="text-lg">주민등본 사진 <span className="text-base font-normal text-orange-600 dark:text-orange-400">(정확한 한자 확인을 위해 반드시 첨부)</span></Label>
           <Input
             id="registration-document"
             type="file"
             accept="image/*"
             onChange={(e) => setRegistrationDocument(e.target.files?.[0] || null)}
             data-testid="input-registration-document"
-            className="cursor-pointer"
+            className="cursor-pointer items-center"
           />
           {registrationDocument && (
             <p className="text-base text-muted-foreground">
@@ -520,6 +520,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               placeholder="입금하신 분의 성함을 입력하세요"
               required
               data-testid="input-depositor-name"
+              className="placeholder:text-sm"
             />
           </div>
           <Card className="p-4 bg-muted">
