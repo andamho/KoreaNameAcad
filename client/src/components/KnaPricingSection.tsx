@@ -128,11 +128,10 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
               >
                 <div className={nameClass}>
                   {isNameReview ? (
-                    <span className="leading-tight">
-                      <span className="text-[18px] md:text-[18px]">이름감명</span>
-                      <br className="md:hidden" />
-                      <span className="text-sm md:text-[18px] whitespace-nowrap">(타작명소 이름)</span>
-                    </span>
+                    <div className="leading-[1.1]">
+                      <div className="text-[18px] md:text-[18px]">이름감명</div>
+                      <div className="text-sm md:text-[18px] whitespace-nowrap md:inline">(타작명소 이름)</div>
+                    </div>
                   ) : (
                     row.name
                   )}
