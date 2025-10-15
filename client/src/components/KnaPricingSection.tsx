@@ -130,7 +130,8 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
                   {isNameReview ? (
                     <>
                       <span className="text-[18px] md:text-[18px]">이름감명</span>
-                      <span className="text-sm md:text-[18px]"> (타작명소 이름)</span>
+                      <br className="md:hidden" />
+                      <span className="text-sm md:text-[18px]">(타작명소 이름)</span>
                     </>
                   ) : (
                     row.name
