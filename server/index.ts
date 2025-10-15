@@ -50,7 +50,8 @@ app.use((req, res, next) => {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
+  const isDevelopment = process.env.NODE_ENV === "development";
+  if (isDevelopment) {
     await setupVite(app, server);
   } else {
     serveStatic(app);
@@ -66,6 +67,9 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    log(`serving on port ${port}`);
+    log(`serving on port ${port} in ${process.env.NODE_ENV || 'development'} mode`);
   });
-})();
+})().catch((err) => {
+  console.error("Failed to start server:", err);
+  process.exit(1);
+});
