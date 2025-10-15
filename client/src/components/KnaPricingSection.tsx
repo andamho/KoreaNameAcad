@@ -131,7 +131,7 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
                     <>
                       <span className="text-[18px] md:text-[18px]">이름감명</span>
                       <br className="md:hidden" />
-                      <span className="text-sm md:text-[18px]">(타작명소 이름)</span>
+                      <span className="text-sm md:text-[18px] whitespace-nowrap">(타작명소 이름)</span>
                     </>
                   ) : (
                     row.name
