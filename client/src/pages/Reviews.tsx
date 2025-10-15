@@ -158,7 +158,7 @@ export default function Reviews() {
   ];
 
   const stats = [
-    { value: "30,000", label: "누적 상담 건수" },
+    { value: "30,000+", label: "누적 상담 건수" },
     { value: "98%", label: "고객 만족도" },
     { value: "17년 43만명 임상", label: "전문가 경력", multiline: true }
   ];
