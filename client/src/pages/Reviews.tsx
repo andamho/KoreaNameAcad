@@ -174,7 +174,7 @@ export default function Reviews() {
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6" data-testid="text-reviews-title">
             고객 후기
           </h1>
-          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
+          <p className="text-lg md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
             이름대로 살고 있음을 확인한 분들,<br />
             새로운 이름으로<br />
             꽃길을 걸으시는 분들의<br />
@@ -211,9 +211,6 @@ export default function Reviews() {
             <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
               이름분석 상담후기
             </h2>
-            <p className="text-lg text-muted-foreground">
-              실제 고객님들의 생생한 후기입니다
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -265,9 +262,6 @@ export default function Reviews() {
             <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
               개명 후기
             </h2>
-            <p className="text-lg text-muted-foreground">
-              개명 후 꽃길을 걷는 고객님들 이야기
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
