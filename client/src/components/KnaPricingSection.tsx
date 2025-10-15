@@ -25,9 +25,9 @@ const pricingData = {
       heading: "번호변경 여권이름",
       columns: ["항목", "금액"],
       rows: [
-        { name: "전화번호 변경", price: "35만원" },
-        { name: "여권이름 변경", price: "35만원" },
-        { name: "차량번호 변경", price: "35만원" },
+        { name: "전화번호", price: "35만원" },
+        { name: "여권이름", price: "35만원" },
+        { name: "차량번호", price: "35만원" },
       ],
     },
   ],
