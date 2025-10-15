@@ -330,7 +330,8 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             accept="image/*"
             onChange={(e) => setRegistrationDocument(e.target.files?.[0] || null)}
             data-testid="input-registration-document"
-            className="cursor-pointer flex items-center py-[7px]"
+            className="cursor-pointer file:py-[2px]"
+            style={{ display: 'flex', alignItems: 'center', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
           />
           {registrationDocument && (
             <p className="text-base text-muted-foreground">
