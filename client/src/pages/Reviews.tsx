@@ -186,18 +186,18 @@ export default function Reviews() {
       {/* Stats Section */}
       <section className="py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-3 gap-6 sm:gap-8 text-center">
+          <div className="grid grid-cols-3 gap-3 sm:gap-8 text-center">
             {stats.map((stat, index) => (
               <div key={index} data-testid={`stat-${index}`}>
                 {stat.multiline ? (
                   <div className="mb-2">
-                    <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-1">17년</div>
-                    <div className="text-base sm:text-xl md:text-2xl font-bold text-primary whitespace-nowrap">43만명 임상</div>
+                    <div className="text-xl sm:text-3xl md:text-4xl font-bold text-primary mb-1">17년</div>
+                    <div className="text-sm sm:text-xl md:text-2xl font-bold text-primary whitespace-nowrap">43만명 임상</div>
                   </div>
                 ) : (
-                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-2">{stat.value}</div>
+                  <div className="text-xl sm:text-3xl md:text-4xl font-bold text-primary mb-2">{stat.value}</div>
                 )}
-                <div className="text-xs sm:text-sm md:text-base text-muted-foreground">{stat.label}</div>
+                <div className="text-[10px] sm:text-sm md:text-base text-muted-foreground whitespace-nowrap">{stat.label}</div>
               </div>
             ))}
           </div>
