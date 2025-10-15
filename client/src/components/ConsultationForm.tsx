@@ -217,7 +217,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <p className="text-orange-600 dark:text-orange-400 font-bold">
               이름감명시 현재 이름에 대한 이름분석 필수
             </p>
-            <p className="text-base text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               (새이름이 현재 이름운보다 작거나 너무 커도 안좋습니다)
             </p>
           </div>
