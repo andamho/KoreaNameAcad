@@ -323,7 +323,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
         {/* 주민등본 사진 첨부 */}
         <div className="space-y-2">
-          <Label htmlFor="registration-document" className="text-lg">주민등본 사진 <span className="text-base font-normal text-orange-600 dark:text-orange-400">(정확한 한자 확인을 위해 반드시 첨부)</span></Label>
+          <Label htmlFor="registration-document" className="text-lg">주민등본 사진<span className="text-base font-normal text-orange-600 dark:text-orange-400">(정확한 한자 확인을 위해 반드시 첨부 | 주민등록번호 및 주소는 가린 후 제출)</span></Label>
           <Input
             id="registration-document"
             type="file"
@@ -532,6 +532,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               ) : (
                 <p className="text-muted-foreground">상담비: 명당 6만원 | 등본상 가족 전체 명수로 입금</p>
               )}
+              <p className="text-orange-600 dark:text-orange-400">* 입금확인 후 상담예약해드립니다.</p>
             </div>
           </Card>
         </div>
