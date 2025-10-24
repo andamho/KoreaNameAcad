@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 인스타그램 인앱 브라우저 글자 자동확대 방지 */
+html,
+body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* 제목 계열 글자 확대 완전 억제 (안드로이드 인스타그램) */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.hero-title {
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+}
+
 /* LIGHT MODE */
 :root {
   --button-outline: rgba(0,0,0, .10);
