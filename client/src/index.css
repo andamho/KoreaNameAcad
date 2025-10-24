@@ -2,23 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 인스타그램 인앱 브라우저 글자 자동확대 방지 */
-html,
-body {
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
+/* 인스타그램 인앱 브라우저 글자 자동확대 완전 차단 */
+* {
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
 }
 
-/* 제목 계열 글자 확대 완전 억제 (안드로이드 인스타그램) */
+html,
+body {
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+  overflow-x: hidden;
+}
+
+/* 모든 텍스트 요소 글자 확대 완전 억제 */
 h1,
 h2,
 h3,
 h4,
 h5,
 h6,
+p,
+span,
+div,
+a,
+button,
+input,
+textarea,
+label,
 .hero-title {
-  -webkit-text-size-adjust: none;
-  text-size-adjust: none;
+  -webkit-text-size-adjust: none !important;
+  text-size-adjust: none !important;
+}
+
+/* 모바일 브라우저 input 자동 줌인 방지 (최소 16px 폰트) */
+input,
+textarea,
+select {
+  font-size: 16px !important;
 }
 
 /* LIGHT MODE */
