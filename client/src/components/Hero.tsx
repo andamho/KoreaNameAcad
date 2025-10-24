@@ -19,7 +19,7 @@ export function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
         <div className="text-center max-w-4xl mx-auto space-y-8">
           <div>
-            <h1 className="text-[2rem] md:text-[3.375rem] font-bold tracking-tight break-keep leading-tight" style={{WebkitTextSizeAdjust: '100%', textSizeAdjust: '100%'}} aria-label="고달픈 인생 이름 하나로 이유를 찾고 운이 술술 풀리는 새 이름으로, 인생역전하세요.">
+            <h1 className="font-bold tracking-tight break-keep leading-tight" style={{fontSize: 'clamp(28px, 6.2vw, 40px)', lineHeight: '1.15'}} aria-label="고달픈 인생 이름 하나로 이유를 찾고 운이 술술 풀리는 새 이름으로, 인생역전하세요.">
               <span className="text-gray-900 dark:text-white">고달픈 인생</span><br />
               <span className="text-gray-900 dark:text-white">이름 하나로 이유를 찾고</span><br />
               <span className="kna-highlight">
@@ -31,7 +31,7 @@ export function Hero() {
               </span>
             </h1>
             
-            <p className="text-[1.125rem] md:text-[1.3125rem] text-muted-foreground tracking-wide mt-7" style={{WebkitTextSizeAdjust: '100%', textSizeAdjust: '100%'}}>
+            <p className="text-muted-foreground tracking-wide mt-7" style={{fontSize: 'clamp(18px, 4.2vw, 24px)', lineHeight: '1.4'}}>
               한글·한자이름만으로 운명상담<br/>
               [정확도 80% 이상]
             </p>
