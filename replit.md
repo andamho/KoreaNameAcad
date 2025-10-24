@@ -6,6 +6,8 @@ Korean Name School is a web application that provides professional Korean name a
 
 **Key Pages:**
 - **Home (/)** - Landing page with hero, services overview, consultation forms, and key sections (danger, value, intro, steps, myth/truth, pricing)
+- **Instagram Home (/ig)** - Instagram in-app browser optimized version with canonical tag pointing to `/`, includes `ua-instagram` class for font size reduction
+- **TikTok Home (/tt)** - TikTok in-app browser optimized version with canonical tag pointing to `/`, includes `ua-tiktok` class for font size reduction
 - **Services (/services)** - Detailed service descriptions (name analysis, naming/renaming, family comprehensive analysis) with pricing and process steps
 - **Pricing (/pricing)** - Dedicated pricing page featuring consultation fees, time requirements, and additional services (phone/passport/vehicle number changes)
 - **Reviews (/reviews)** - Dedicated testimonials page featuring two sections: "이름분석 상담후기" (Name Analysis Reviews) and "개명 후기" (Name Change Reviews), with link to full reviews on Naver blog
@@ -46,6 +48,14 @@ Preferred communication style: Simple, everyday language.
 - Component library includes Hero sections, Service cards, Testimonial cards, and Story cards
 - Sophisticated menu overlay system with icon-based navigation (Lucide React icons)
 - Mobile-first responsive design with optimized layouts for all screen sizes
+
+**In-App Browser Optimization**
+- Route separation strategy for Instagram (`/ig`) and TikTok (`/tt`) in-app browsers
+- Platform-specific CSS using `html.ua-instagram` and `html.ua-tiktok` selectors
+- Font size reduction via clamp() with !important flags for h1 (max 36px) and p (max 22px)
+- Canonical tags pointing to main homepage (`/`) to avoid SEO duplicate content issues
+- CDN-friendly caching with separate URL paths for platform-specific optimizations
+- Korean text optimization with `word-break: keep-all` and `overflow-wrap: anywhere`
 
 ### Backend Architecture
 

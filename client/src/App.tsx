@@ -4,6 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/Home";
+import InstagramHome from "@/pages/InstagramHome";
+import TikTokHome from "@/pages/TikTokHome";
 import DetailInfo from "@/pages/DetailInfo";
 import FamilyPolicy from "@/pages/FamilyPolicy";
 import Admin from "@/pages/Admin";
@@ -16,6 +18,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home}/>
+      <Route path="/ig" component={InstagramHome}/>
+      <Route path="/tt" component={TikTokHome}/>
       <Route path="/detail-info" component={DetailInfo}/>
       <Route path="/family-policy" component={FamilyPolicy}/>
       <Route path="/admin" component={Admin}/>
