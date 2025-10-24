@@ -439,7 +439,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     <p className="text-base text-muted-foreground">
                       넓을 홍 길할 길 동녘 동 ❌<br />
                       洪吉東 ⭕<br />
-                      (한자 자체로 꼭 보내주세요. 같은 뜻을 가진 한자가 많이 있는 경우가 있어서 그렇습니다.)
+                      (한자는 꼭 직접 입력해주세요. 같은 의미의 한자가 많기 때문에, 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.)
                     </p>
                   </div>
                 )}
@@ -490,7 +490,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               <p className="text-base text-muted-foreground">
                 넓을 홍 길할 길 동녘 동 ❌<br />
                 洪吉東 ⭕<br />
-                (한자 자체로 꼭 보내주세요. 같은 뜻을 가진 한자가 많이 있는 경우가 있어서 그렇습니다.)
+                (한자는 꼭 직접 입력해주세요. 같은 의미의 한자가 많기 때문에, 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.)
               </p>
             </div>
           </Card>
