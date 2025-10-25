@@ -35,6 +35,12 @@ export default function TikTokHome() {
     // html에 ua-tiktok 클래스 추가
     document.documentElement.classList.add('ua-tiktok');
     
+    // viewport 메타 태그 강제 설정 (인앱 브라우저 autosizing 차단)
+    let viewportMeta = document.querySelector('meta[name="viewport"]') as HTMLMetaElement;
+    if (viewportMeta) {
+      viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+    }
+    
     // canonical 태그 추가
     let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonicalLink) {
@@ -71,39 +77,61 @@ export default function TikTokHome() {
       document.head.appendChild(style);
     }
     
-    // JavaScript 강제 폰트 크기 적용 (인앱 브라우저가 CSS 무시하는 경우 대비)
+    // JavaScript 강제 폰트 크기 적용 (더 작게)
     const forceFontSizes = () => {
       const heroTitle = document.querySelector('.hero-title') as HTMLElement;
       const heroSub = document.querySelector('.hero-sub') as HTMLElement;
       
       if (heroTitle) {
-        const width = window.innerWidth;
-        // clamp(26px, 5.4vw, 34px) 계산
-        const titleSize = Math.min(34, Math.max(26, width * 0.054));
-        heroTitle.style.setProperty('font-size', `${titleSize}px`, 'important');
-        heroTitle.style.lineHeight = '1.18';
+        // 고정 크기로 변경 (24px)
+        heroTitle.style.setProperty('font-size', '24px', 'important');
+        heroTitle.style.setProperty('line-height', '1.2', 'important');
       }
       
       if (heroSub) {
-        const width = window.innerWidth;
-        // clamp(17px, 3.6vw, 21px) 계산
-        const subSize = Math.min(21, Math.max(17, width * 0.036));
-        heroSub.style.setProperty('font-size', `${subSize}px`, 'important');
-        heroSub.style.lineHeight = '1.42';
+        // 고정 크기로 변경 (16px)
+        heroSub.style.setProperty('font-size', '16px', 'important');
+        heroSub.style.setProperty('line-height', '1.4', 'important');
       }
     };
     
-    // 100ms마다 강제 적용 (인앱 브라우저가 계속 개입하는 경우 대비)
+    // MutationObserver로 브라우저가 폰트 변경하는 순간 즉시 되돌림
+    const observer = new MutationObserver(() => {
+      forceFontSizes();
+    });
+    
+    // Hero 요소들을 감시
+    const heroTitle = document.querySelector('.hero-title');
+    const heroSub = document.querySelector('.hero-sub');
+    
+    if (heroTitle) {
+      observer.observe(heroTitle, { 
+        attributes: true, 
+        attributeFilter: ['style'],
+        childList: true,
+        subtree: true
+      });
+    }
+    
+    if (heroSub) {
+      observer.observe(heroSub, { 
+        attributes: true, 
+        attributeFilter: ['style'],
+        childList: true,
+        subtree: true
+      });
+    }
+    
+    // 여러 번 강제 적용
+    forceFontSizes();
     const timer1 = setTimeout(forceFontSizes, 100);
     const timer2 = setTimeout(forceFontSizes, 300);
     const timer3 = setTimeout(forceFontSizes, 500);
     const timer4 = setTimeout(forceFontSizes, 1000);
+    const timer5 = setTimeout(forceFontSizes, 2000);
     
     // 리사이즈 시에도 재적용
     window.addEventListener('resize', forceFontSizes);
-    
-    // 첫 렌더링 후 즉시 적용
-    forceFontSizes();
     
     return () => {
       document.documentElement.classList.remove('ua-tiktok');
@@ -111,10 +139,12 @@ export default function TikTokHome() {
       if (styleElement) {
         styleElement.remove();
       }
+      observer.disconnect();
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
       clearTimeout(timer4);
+      clearTimeout(timer5);
       window.removeEventListener('resize', forceFontSizes);
     };
   }, []);
