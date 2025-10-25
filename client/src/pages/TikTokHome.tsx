@@ -77,61 +77,26 @@ export default function TikTokHome() {
       document.head.appendChild(style);
     }
     
-    // JavaScript 강제 폰트 크기 적용 (더 작게)
-    const forceFontSizes = () => {
-      const heroTitle = document.querySelector('.hero-title') as HTMLElement;
-      const heroSub = document.querySelector('.hero-sub') as HTMLElement;
+    // Transform scale 방식으로 텍스트 축소 (폰트 크기 무시하고 전체 축소)
+    const applyScale = () => {
+      const heroWrap = document.querySelector('.hero-wrap') as HTMLElement;
       
-      if (heroTitle) {
-        // 고정 크기로 변경 (24px)
-        heroTitle.style.setProperty('font-size', '24px', 'important');
-        heroTitle.style.setProperty('line-height', '1.2', 'important');
-      }
-      
-      if (heroSub) {
-        // 고정 크기로 변경 (16px)
-        heroSub.style.setProperty('font-size', '16px', 'important');
-        heroSub.style.setProperty('line-height', '1.4', 'important');
+      if (heroWrap) {
+        // 전체를 0.7배로 축소 (인앱 브라우저가 키운 만큼 되돌림)
+        heroWrap.style.setProperty('transform', 'scale(0.7)', 'important');
+        heroWrap.style.setProperty('transform-origin', 'top center', 'important');
       }
     };
     
-    // MutationObserver로 브라우저가 폰트 변경하는 순간 즉시 되돌림
-    const observer = new MutationObserver(() => {
-      forceFontSizes();
-    });
-    
-    // Hero 요소들을 감시
-    const heroTitle = document.querySelector('.hero-title');
-    const heroSub = document.querySelector('.hero-sub');
-    
-    if (heroTitle) {
-      observer.observe(heroTitle, { 
-        attributes: true, 
-        attributeFilter: ['style'],
-        childList: true,
-        subtree: true
-      });
-    }
-    
-    if (heroSub) {
-      observer.observe(heroSub, { 
-        attributes: true, 
-        attributeFilter: ['style'],
-        childList: true,
-        subtree: true
-      });
-    }
-    
     // 여러 번 강제 적용
-    forceFontSizes();
-    const timer1 = setTimeout(forceFontSizes, 100);
-    const timer2 = setTimeout(forceFontSizes, 300);
-    const timer3 = setTimeout(forceFontSizes, 500);
-    const timer4 = setTimeout(forceFontSizes, 1000);
-    const timer5 = setTimeout(forceFontSizes, 2000);
+    applyScale();
+    const timer1 = setTimeout(applyScale, 100);
+    const timer2 = setTimeout(applyScale, 300);
+    const timer3 = setTimeout(applyScale, 500);
+    const timer4 = setTimeout(applyScale, 1000);
     
     // 리사이즈 시에도 재적용
-    window.addEventListener('resize', forceFontSizes);
+    window.addEventListener('resize', applyScale);
     
     return () => {
       document.documentElement.classList.remove('ua-tiktok');
@@ -139,13 +104,11 @@ export default function TikTokHome() {
       if (styleElement) {
         styleElement.remove();
       }
-      observer.disconnect();
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
       clearTimeout(timer4);
-      clearTimeout(timer5);
-      window.removeEventListener('resize', forceFontSizes);
+      window.removeEventListener('resize', applyScale);
     };
   }, []);
 
