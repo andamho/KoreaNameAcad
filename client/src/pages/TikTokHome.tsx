@@ -70,7 +70,7 @@ export default function TikTokHome() {
           text-size-adjust: none !important;
         }
         
-        /* Hero 섹션만 축소 (텍스트 크기 조절) */
+        /* Hero 섹션만 축소 */
         .hero-wrap { 
           max-width: 640px; 
           margin: 0 auto; 
@@ -78,35 +78,6 @@ export default function TikTokHome() {
           transform: scale(0.82) !important;
           transform-origin: top center !important;
           margin-bottom: -28px !important;
-        }
-        
-        /* 모든 섹션의 텍스트 크기를 82%로 축소 */
-        .kna-navbar {
-          font-size: 82% !important;
-        }
-        
-        .kna-danger-section {
-          font-size: 82% !important;
-        }
-        
-        .kna-value-section {
-          font-size: 82% !important;
-        }
-        
-        .kna-intro-block {
-          font-size: 82% !important;
-        }
-        
-        .kna-steps-section {
-          font-size: 82% !important;
-        }
-        
-        .kna-pricing-section {
-          font-size: 82% !important;
-        }
-        
-        .kna-footer {
-          font-size: 82% !important;
         }
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
