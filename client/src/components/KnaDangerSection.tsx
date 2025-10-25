@@ -2,7 +2,7 @@ import { AlertTriangle, Zap, OctagonAlert } from "lucide-react";
 
 export default function KnaDangerSection() {
   return (
-    <section className="relative overflow-hidden bg-white dark:bg-background text-gray-900 dark:text-foreground">
+    <section className="kna-danger-section relative overflow-hidden bg-white dark:bg-background text-gray-900 dark:text-foreground">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#7fe1d3]/25 dark:bg-[#58C4C4]/25 blur-3xl" />
         <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-[#0f766e]/10 dark:bg-[#45B8B8]/10 blur-3xl" />

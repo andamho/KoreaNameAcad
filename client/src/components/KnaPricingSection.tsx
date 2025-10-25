@@ -35,7 +35,7 @@ const pricingData = {
 
 export default function KnaPricingSection() {
   return (
-    <section id="pricing" className="py-16 md:py-24 bg-background">
+    <section id="pricing" className="kna-pricing-section py-16 md:py-24 bg-background">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <header className="text-center mb-12">
           <h2 

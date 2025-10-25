@@ -36,7 +36,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-black text-white">
+    <footer className="kna-footer bg-black text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
         {/* 팔로우 - 상단 한 줄 */}
         <div className="flex items-center justify-center gap-6 mb-12">
