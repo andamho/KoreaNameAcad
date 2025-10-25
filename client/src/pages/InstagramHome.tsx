@@ -80,6 +80,14 @@ export default function InstagramHome() {
           margin-bottom: -28px !important;
         }
         
+        .hero-title {
+          text-align: center !important;
+        }
+        
+        .hero-title span {
+          text-align: center !important;
+        }
+        
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
         input, select, textarea, button { font-size: 16px; }
       `;
