@@ -316,11 +316,6 @@ export default function TikTokHome() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* 디버그용 표식 */}
-      <div style={{position: 'fixed', right: '8px', bottom: '8px', padding: '6px 10px', borderRadius: '8px', background: '#eee', fontSize: '12px', zIndex: 9999, color: '#333'}}>
-        TT MODE
-      </div>
-      
       <Navbar />
       
       <Hero />
