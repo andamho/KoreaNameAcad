@@ -53,9 +53,30 @@ export default function TikTokHome() {
     }
     robotsMeta.content = 'index,follow';
     
+    // 틱톡 전용 강제 스타일 추가
+    const styleId = 'tt-force-style';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        /* /tt 강제 보정: UA 감지 실패해도 적용됨 */
+        html { -webkit-text-size-adjust: 100% !important; text-size-adjust: 100% !important; }
+        h1 { font-size: clamp(26px, 5.6vw, 36px) !important; line-height: 1.18 !important; }
+        p { font-size: clamp(17px, 3.6vw, 22px) !important; line-height: 1.42 !important; }
+        h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
+        input, select, textarea, button { font-size: 16px; }
+      `;
+      document.head.appendChild(style);
+    }
+    
     return () => {
       // 클린업: 클래스 제거
       document.documentElement.classList.remove('ua-tiktok');
+      // 스타일 제거
+      const styleElement = document.getElementById(styleId);
+      if (styleElement) {
+        styleElement.remove();
+      }
     };
   }, []);
 
@@ -197,6 +218,11 @@ export default function TikTokHome() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* 디버그용 표식 */}
+      <div style={{position: 'fixed', right: '8px', bottom: '8px', padding: '6px 10px', borderRadius: '8px', background: '#eee', fontSize: '12px', zIndex: 9999, color: '#333'}}>
+        TT MODE
+      </div>
+      
       <Navbar />
       
       <Hero />
