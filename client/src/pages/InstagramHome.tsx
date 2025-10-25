@@ -70,7 +70,7 @@ export default function InstagramHome() {
           text-size-adjust: none !important;
         }
         
-        /* Hero 섹션 전체 축소 */
+        /* Hero 섹션만 축소 (텍스트 크기 조절) */
         .hero-wrap { 
           max-width: 640px; 
           margin: 0 auto; 
@@ -78,54 +78,6 @@ export default function InstagramHome() {
           transform: scale(0.82) !important;
           transform-origin: top center !important;
           margin-bottom: -28px !important;
-        }
-        
-        /* Navbar 축소 */
-        .kna-navbar {
-          transform: scale(0.82) !important;
-          transform-origin: top center !important;
-        }
-        
-        /* 위험 섹션 축소 */
-        .kna-danger-section {
-          transform: scale(0.82) !important;
-          transform-origin: top center !important;
-          margin-bottom: -50px !important;
-        }
-        
-        /* 왜 한국이름학교인가 섹션 축소 */
-        .kna-value-section {
-          transform: scale(0.82) !important;
-          transform-origin: top center !important;
-          margin-bottom: -50px !important;
-        }
-        
-        /* 열심히 노력하며 살아가지만 섹션 축소 */
-        .kna-intro-block {
-          transform: scale(0.82) !important;
-          transform-origin: top center !important;
-          margin-bottom: -50px !important;
-        }
-        
-        /* 참 쉽습니다 섹션 축소 */
-        .kna-steps-section {
-          transform: scale(0.82) !important;
-          transform-origin: top center !important;
-          margin-bottom: -50px !important;
-        }
-        
-        /* 비용 및 시간 섹션 축소 */
-        .kna-pricing-section {
-          transform: scale(0.82) !important;
-          transform-origin: top center !important;
-          margin-bottom: -50px !important;
-        }
-        
-        /* Footer 축소 */
-        .kna-footer {
-          transform: scale(0.82) !important;
-          transform-origin: top center !important;
-          margin-bottom: -50px !important;
         }
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
