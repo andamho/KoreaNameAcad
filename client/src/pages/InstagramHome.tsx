@@ -81,48 +81,31 @@ export default function InstagramHome() {
         }
         
         /* 모든 섹션의 텍스트 크기를 82%로 축소 */
-        .kna-navbar * {
+        .kna-navbar {
           font-size: 82% !important;
         }
         
-        .kna-danger-section h2,
-        .kna-danger-section h3,
-        .kna-danger-section p,
-        .kna-danger-section div {
+        .kna-danger-section {
           font-size: 82% !important;
         }
         
-        .kna-value-section h2,
-        .kna-value-section h3,
-        .kna-value-section p,
-        .kna-value-section div {
+        .kna-value-section {
           font-size: 82% !important;
         }
         
-        .kna-intro-block h2,
-        .kna-intro-block h3,
-        .kna-intro-block p,
-        .kna-intro-block div {
+        .kna-intro-block {
           font-size: 82% !important;
         }
         
-        .kna-steps-section h2,
-        .kna-steps-section h3,
-        .kna-steps-section p,
-        .kna-steps-section div {
+        .kna-steps-section {
           font-size: 82% !important;
         }
         
-        .kna-pricing-section h2,
-        .kna-pricing-section h3,
-        .kna-pricing-section p,
-        .kna-pricing-section div,
-        .kna-pricing-section td,
-        .kna-pricing-section th {
+        .kna-pricing-section {
           font-size: 82% !important;
         }
         
-        .kna-footer * {
+        .kna-footer {
           font-size: 82% !important;
         }
         
