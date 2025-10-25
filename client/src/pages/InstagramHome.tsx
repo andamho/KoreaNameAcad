@@ -70,30 +70,48 @@ export default function InstagramHome() {
           -webkit-text-size-adjust: none !important;
           text-size-adjust: none !important;
         }
-        .hero-wrap { max-width: 640px; margin: 0 auto; padding: 0 16px; }
+        
+        /* Hero 섹션 전체 축소 */
+        .hero-wrap { 
+          max-width: 640px; 
+          margin: 0 auto; 
+          padding: 0 16px;
+          transform: scale(0.65) !important;
+          transform-origin: top center !important;
+          margin-bottom: -80px !important;
+        }
+        
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
         input, select, textarea, button { font-size: 16px; }
       `;
       document.head.appendChild(style);
     }
     
-    // Transform scale 방식으로 텍스트 축소 (폰트 크기 무시하고 전체 축소)
+    // 디버깅: 실행 확인
+    console.log('[IG] InstagramHome useEffect 실행됨');
+    
+    // Transform scale 방식으로 텍스트 축소 (CSS + JS 이중 적용)
     const applyScale = () => {
       const heroWrap = document.querySelector('.hero-wrap') as HTMLElement;
+      console.log('[IG] applyScale 실행, heroWrap:', heroWrap);
       
       if (heroWrap) {
-        // 전체를 0.7배로 축소 (인앱 브라우저가 키운 만큼 되돌림)
-        heroWrap.style.setProperty('transform', 'scale(0.7)', 'important');
+        heroWrap.style.setProperty('transform', 'scale(0.65)', 'important');
         heroWrap.style.setProperty('transform-origin', 'top center', 'important');
+        heroWrap.style.setProperty('margin-bottom', '-80px', 'important');
+        console.log('[IG] transform 적용 완료');
+      } else {
+        console.log('[IG] heroWrap을 찾지 못함');
       }
     };
     
-    // 여러 번 강제 적용
-    applyScale();
+    // 여러 번 강제 적용 (늦은 렌더링 대비)
+    setTimeout(applyScale, 0);
     const timer1 = setTimeout(applyScale, 100);
     const timer2 = setTimeout(applyScale, 300);
     const timer3 = setTimeout(applyScale, 500);
     const timer4 = setTimeout(applyScale, 1000);
+    const timer5 = setTimeout(applyScale, 2000);
     
     // 리사이즈 시에도 재적용
     window.addEventListener('resize', applyScale);
@@ -108,6 +126,7 @@ export default function InstagramHome() {
       clearTimeout(timer2);
       clearTimeout(timer3);
       clearTimeout(timer4);
+      clearTimeout(timer5);
       window.removeEventListener('resize', applyScale);
     };
   }, []);
