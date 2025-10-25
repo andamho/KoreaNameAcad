@@ -91,6 +91,16 @@ export default function TikTokHome() {
           text-align: center !important;
         }
         
+        /* 모든 섹션 글자 크기 비율 축소 (제목/내용 비율 유지) */
+        .kna-danger-section,
+        .kna-value-section,
+        .kna-intro-block,
+        .kna-steps-section,
+        .kna-pricing-section,
+        .kna-footer {
+          font-size: 88% !important;
+        }
+        
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
         input, select, textarea, button { font-size: 16px; }
       `;
