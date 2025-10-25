@@ -91,6 +91,11 @@ export default function InstagramHome() {
           text-align: center !important;
         }
         
+        /* 네비바 글자 크기 축소 (로고와 균형) */
+        .kna-navbar {
+          font-size: 75% !important;
+        }
+        
         /* 모든 섹션 글자 크기 비율 축소 (제목/내용 비율 유지) */
         .kna-danger-section,
         .kna-value-section,
