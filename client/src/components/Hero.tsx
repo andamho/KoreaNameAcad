@@ -38,7 +38,7 @@ export function Hero() {
           <div>
             <h1 className="font-bold tracking-tight break-keep hero-title" style={{fontSize: h1FontSize, lineHeight: '1.18'}} aria-label="고달픈 인생 이름 하나로 이유를 찾고 운이 술술 풀리는 새 이름으로, 인생역전하세요.">
               <span className="text-gray-900 dark:text-white">고달픈 인생</span><br />
-              <span className="text-gray-900 dark:text-white">이름 하나로 이유를 찾고</span><br />
+              <span className="text-gray-900 dark:text-white">이름 하나로 <span style={{whiteSpace: 'nowrap'}}>이유를 찾고</span></span><br />
               <span className="kna-highlight">
                 <span className="kna-shine">운이 술술 풀리는</span>
               </span><br/>

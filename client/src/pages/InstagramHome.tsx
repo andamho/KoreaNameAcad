@@ -76,9 +76,9 @@ export default function InstagramHome() {
           max-width: 640px; 
           margin: 0 auto; 
           padding: 0 16px;
-          transform: scale(0.65) !important;
+          transform: scale(0.78) !important;
           transform-origin: top center !important;
-          margin-bottom: -80px !important;
+          margin-bottom: -35px !important;
         }
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
@@ -96,9 +96,9 @@ export default function InstagramHome() {
       console.log('[IG] applyScale 실행, heroWrap:', heroWrap);
       
       if (heroWrap) {
-        heroWrap.style.setProperty('transform', 'scale(0.65)', 'important');
+        heroWrap.style.setProperty('transform', 'scale(0.78)', 'important');
         heroWrap.style.setProperty('transform-origin', 'top center', 'important');
-        heroWrap.style.setProperty('margin-bottom', '-80px', 'important');
+        heroWrap.style.setProperty('margin-bottom', '-35px', 'important');
         console.log('[IG] transform 적용 완료');
       } else {
         console.log('[IG] heroWrap을 찾지 못함');
