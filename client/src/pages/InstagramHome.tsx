@@ -59,34 +59,63 @@ export default function InstagramHome() {
       const style = document.createElement('style');
       style.id = styleId;
       style.textContent = `
-        /* 인스타그램 인앱에서 텍스트 자동 확대 완전 차단 */
         html.ua-instagram, html.ua-instagram body,
         html.ua-instagram .hero-wrap {
           -webkit-text-size-adjust: none !important;
           text-size-adjust: none !important;
         }
-
-        /* 히어로 컨테이너 폭을 고정해 autosizing 트리거를 더 줄임 */
         .hero-wrap { max-width: 640px; margin: 0 auto; padding: 0 16px; }
-
-        /* 제목/본문은 보수적 상한으로 고정(autosizing 차단 후에도 안전) */
-        .hero-title { font-size: clamp(26px, 5.4vw, 34px) !important; line-height: 1.18; }
-        .hero-sub { font-size: clamp(17px, 3.6vw, 21px) !important; line-height: 1.42; }
-        
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
         input, select, textarea, button { font-size: 16px; }
       `;
       document.head.appendChild(style);
     }
     
+    // JavaScript 강제 폰트 크기 적용 (인앱 브라우저가 CSS 무시하는 경우 대비)
+    const forceFontSizes = () => {
+      const heroTitle = document.querySelector('.hero-title') as HTMLElement;
+      const heroSub = document.querySelector('.hero-sub') as HTMLElement;
+      
+      if (heroTitle) {
+        const width = window.innerWidth;
+        // clamp(26px, 5.4vw, 34px) 계산
+        const titleSize = Math.min(34, Math.max(26, width * 0.054));
+        heroTitle.style.setProperty('font-size', `${titleSize}px`, 'important');
+        heroTitle.style.lineHeight = '1.18';
+      }
+      
+      if (heroSub) {
+        const width = window.innerWidth;
+        // clamp(17px, 3.6vw, 21px) 계산
+        const subSize = Math.min(21, Math.max(17, width * 0.036));
+        heroSub.style.setProperty('font-size', `${subSize}px`, 'important');
+        heroSub.style.lineHeight = '1.42';
+      }
+    };
+    
+    // 100ms마다 강제 적용 (인앱 브라우저가 계속 개입하는 경우 대비)
+    const timer1 = setTimeout(forceFontSizes, 100);
+    const timer2 = setTimeout(forceFontSizes, 300);
+    const timer3 = setTimeout(forceFontSizes, 500);
+    const timer4 = setTimeout(forceFontSizes, 1000);
+    
+    // 리사이즈 시에도 재적용
+    window.addEventListener('resize', forceFontSizes);
+    
+    // 첫 렌더링 후 즉시 적용
+    forceFontSizes();
+    
     return () => {
-      // 클린업: 클래스 제거
       document.documentElement.classList.remove('ua-instagram');
-      // 스타일 제거
       const styleElement = document.getElementById(styleId);
       if (styleElement) {
         styleElement.remove();
       }
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+      clearTimeout(timer4);
+      window.removeEventListener('resize', forceFontSizes);
     };
   }, []);
 

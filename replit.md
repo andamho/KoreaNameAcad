@@ -52,7 +52,11 @@ Preferred communication style: Simple, everyday language.
 **In-App Browser Optimization**
 - Route separation strategy for Instagram (`/ig`) and TikTok (`/tt`) in-app browsers
 - Platform-specific CSS using `html.ua-instagram` and `html.ua-tiktok` selectors
-- Font size reduction via clamp() with !important flags for h1 (max 36px) and p (max 22px)
+- `text-size-adjust: none` to disable browser text autosizing
+- JavaScript-enforced font sizes to override in-app browser text inflation
+- Hero container max-width (640px) to reduce autosizing triggers
+- Font size: h1 max 34px, p max 21px via clamp() + JS setProperty with 'important' flag
+- Multiple setTimeout intervals (100ms, 300ms, 500ms, 1000ms) to counter browser re-inflation
 - Canonical tags pointing to main homepage (`/`) to avoid SEO duplicate content issues
 - CDN-friendly caching with separate URL paths for platform-specific optimizations
 - Korean text optimization with `word-break: keep-all` and `overflow-wrap: anywhere`
