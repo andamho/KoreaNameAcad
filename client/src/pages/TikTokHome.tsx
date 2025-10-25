@@ -76,9 +76,9 @@ export default function TikTokHome() {
           max-width: 640px; 
           margin: 0 auto; 
           padding: 0 16px;
-          transform: scale(0.8) !important;
+          transform: scale(0.82) !important;
           transform-origin: top center !important;
-          margin-bottom: -32px !important;
+          margin-bottom: -28px !important;
         }
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
@@ -96,9 +96,9 @@ export default function TikTokHome() {
       console.log('[TT] applyScale 실행, heroWrap:', heroWrap);
       
       if (heroWrap) {
-        heroWrap.style.setProperty('transform', 'scale(0.8)', 'important');
+        heroWrap.style.setProperty('transform', 'scale(0.82)', 'important');
         heroWrap.style.setProperty('transform-origin', 'top center', 'important');
-        heroWrap.style.setProperty('margin-bottom', '-32px', 'important');
+        heroWrap.style.setProperty('margin-bottom', '-28px', 'important');
         console.log('[TT] transform 적용 완료');
       } else {
         console.log('[TT] heroWrap을 찾지 못함');
