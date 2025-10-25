@@ -59,10 +59,20 @@ export default function TikTokHome() {
       const style = document.createElement('style');
       style.id = styleId;
       style.textContent = `
-        /* /tt 강제 보정: UA 감지 실패해도 적용됨 */
-        html { -webkit-text-size-adjust: 100% !important; text-size-adjust: 100% !important; }
-        h1 { font-size: clamp(26px, 5.6vw, 36px) !important; line-height: 1.18 !important; }
-        p { font-size: clamp(17px, 3.6vw, 22px) !important; line-height: 1.42 !important; }
+        /* 틱톡 인앱에서 텍스트 자동 확대 완전 차단 */
+        html.ua-tiktok, html.ua-tiktok body,
+        html.ua-tiktok .hero-wrap {
+          -webkit-text-size-adjust: none !important;
+          text-size-adjust: none !important;
+        }
+
+        /* 히어로 컨테이너 폭을 고정해 autosizing 트리거를 더 줄임 */
+        .hero-wrap { max-width: 640px; margin: 0 auto; padding: 0 16px; }
+
+        /* 제목/본문은 보수적 상한으로 고정(autosizing 차단 후에도 안전) */
+        .hero-title { font-size: clamp(26px, 5.4vw, 34px) !important; line-height: 1.18; }
+        .hero-sub { font-size: clamp(17px, 3.6vw, 21px) !important; line-height: 1.42; }
+        
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
         input, select, textarea, button { font-size: 16px; }
       `;

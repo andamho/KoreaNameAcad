@@ -3,7 +3,24 @@ import { useLocation } from "wouter";
 import heroImage from "@assets/ChatGPT Image 2025년 10월 8일 오후 09_34_23_1759926875782.png";
 
 export function Hero() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
+  
+  // 인앱 브라우저 전용 페이지 감지
+  const isInstagram = location === '/ig';
+  const isTikTok = location === '/tt';
+  
+  // 폰트 크기 결정 (더 보수적으로)
+  const h1FontSize = isInstagram 
+    ? 'clamp(26px, 5.4vw, 34px)' 
+    : isTikTok 
+    ? 'clamp(26px, 5.4vw, 34px)'
+    : 'clamp(28px, 6.2vw, 40px)';
+    
+  const pFontSize = isInstagram 
+    ? 'clamp(17px, 3.6vw, 21px)' 
+    : isTikTok 
+    ? 'clamp(17px, 3.6vw, 21px)'
+    : 'clamp(18px, 4.2vw, 24px)';
 
   return (
     <section id="home" className="relative py-20 md:py-32 overflow-hidden">
@@ -17,9 +34,9 @@ export function Hero() {
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
-        <div className="text-center max-w-4xl mx-auto space-y-8">
+        <div className="text-center max-w-4xl mx-auto space-y-8 hero-wrap">
           <div>
-            <h1 className="font-bold tracking-tight break-keep leading-tight" style={{fontSize: 'clamp(28px, 6.2vw, 40px)', lineHeight: '1.15'}} aria-label="고달픈 인생 이름 하나로 이유를 찾고 운이 술술 풀리는 새 이름으로, 인생역전하세요.">
+            <h1 className="font-bold tracking-tight break-keep hero-title" style={{fontSize: h1FontSize, lineHeight: '1.18'}} aria-label="고달픈 인생 이름 하나로 이유를 찾고 운이 술술 풀리는 새 이름으로, 인생역전하세요.">
               <span className="text-gray-900 dark:text-white">고달픈 인생</span><br />
               <span className="text-gray-900 dark:text-white">이름 하나로 이유를 찾고</span><br />
               <span className="kna-highlight">
@@ -31,7 +48,7 @@ export function Hero() {
               </span>
             </h1>
             
-            <p className="text-muted-foreground tracking-wide mt-7" style={{fontSize: 'clamp(18px, 4.2vw, 24px)', lineHeight: '1.4'}}>
+            <p className="text-muted-foreground tracking-wide mt-7 hero-sub" style={{fontSize: pFontSize, lineHeight: '1.42'}}>
               한글·한자이름만으로 운명상담<br/>
               [정확도 80% 이상]
             </p>
