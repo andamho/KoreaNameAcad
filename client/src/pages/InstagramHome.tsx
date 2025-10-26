@@ -104,14 +104,16 @@ export default function InstagramHome() {
           font-size: 7.5px !important;
         }
         
-        /* 모든 섹션 글자 크기 비율 축소 (제목/내용 비율 유지) */
+        /* 모든 섹션 히어로처럼 축소 (transform: scale 방식) */
         .kna-danger-section,
         .kna-value-section,
         .kna-intro-block,
         .kna-steps-section,
         .kna-pricing-section,
         .kna-footer {
-          font-size: 88% !important;
+          transform: scale(0.82) !important;
+          transform-origin: top center !important;
+          margin-bottom: -28px !important;
         }
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
