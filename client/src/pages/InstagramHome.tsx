@@ -186,13 +186,38 @@ export default function InstagramHome() {
       }
     };
     
+    // 푸터 텍스트 크기 강제 설정
+    const applyFooterTextSize = () => {
+      const footerSubtitle = document.querySelector('.kna-footer-subtitle') as HTMLElement;
+      const copyrightText = document.querySelector('.kna-footer .border-t p') as HTMLElement;
+      
+      console.log('[IG] applyFooterTextSize 실행, footerSubtitle:', footerSubtitle, 'copyrightText:', copyrightText);
+      
+      if (footerSubtitle) {
+        footerSubtitle.style.setProperty('font-size', '13px', 'important');
+        footerSubtitle.style.setProperty('line-height', '1.5', 'important');
+        console.log('[IG] 푸터 subtitle 크기 적용: 13px');
+      }
+      
+      if (copyrightText) {
+        copyrightText.style.setProperty('font-size', '11px', 'important');
+        console.log('[IG] 카피라이트 크기 적용: 11px');
+      }
+    };
+    
     // 여러 번 강제 적용 (늦은 렌더링 대비)
     setTimeout(applyScale, 0);
+    setTimeout(applyFooterTextSize, 0);
     const timer1 = setTimeout(applyScale, 100);
+    const timer1b = setTimeout(applyFooterTextSize, 100);
     const timer2 = setTimeout(applyScale, 300);
+    const timer2b = setTimeout(applyFooterTextSize, 300);
     const timer3 = setTimeout(applyScale, 500);
+    const timer3b = setTimeout(applyFooterTextSize, 500);
     const timer4 = setTimeout(applyScale, 1000);
+    const timer4b = setTimeout(applyFooterTextSize, 1000);
     const timer5 = setTimeout(applyScale, 2000);
+    const timer5b = setTimeout(applyFooterTextSize, 2000);
     
     // 리사이즈 시에도 재적용
     window.addEventListener('resize', applyScale);
@@ -204,10 +229,15 @@ export default function InstagramHome() {
         styleElement.remove();
       }
       clearTimeout(timer1);
+      clearTimeout(timer1b);
       clearTimeout(timer2);
+      clearTimeout(timer2b);
       clearTimeout(timer3);
+      clearTimeout(timer3b);
       clearTimeout(timer4);
+      clearTimeout(timer4b);
       clearTimeout(timer5);
+      clearTimeout(timer5b);
       window.removeEventListener('resize', applyScale);
     };
   }, []);
