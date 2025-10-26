@@ -358,17 +358,19 @@ export default function TikTokHome() {
       {/* 동영상 섹션 */}
       <section className="kna-video-section py-16 md:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <video 
-            className="w-full rounded-lg shadow-lg"
-            controls
-            playsInline
-            preload="auto"
-            controlsList="nodownload"
-            data-testid="video-promotion"
-            src="/promotion-video.mp4"
-          >
-            동영상을 재생할 수 없습니다. 브라우저가 MP4 형식을 지원하지 않습니다.
-          </video>
+          <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
+            <video 
+              className="absolute inset-0 w-full h-full rounded-lg shadow-lg object-cover"
+              controls
+              playsInline
+              preload="metadata"
+              controlsList="nodownload"
+              data-testid="video-promotion"
+            >
+              <source src="/promotion-video.mp4" type="video/mp4" />
+              동영상을 재생할 수 없습니다. 브라우저가 MP4 형식을 지원하지 않습니다.
+            </video>
+          </div>
         </div>
       </section>
 
