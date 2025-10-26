@@ -79,15 +79,17 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
   const openFamilyPolicyDialog = () => {
     setFamilyPolicyDialogOpen(true);
-    // 고유 ID를 저장하여 뒤로 가기 버튼으로 닫을 수 있게 함
-    window.history.pushState({ modal: "familyPolicy" }, "");
+    // 현재 state의 from 정보를 유지하면서 familyPolicy 모달 상태 추가
+    const currentFrom = window.history.state?.from;
+    window.history.pushState({ modal: "familyPolicy", from: currentFrom }, "");
   };
 
   const closeFamilyPolicyDialog = () => {
     setFamilyPolicyDialogOpen(false);
     // X 버튼이나 외부 클릭으로 닫을 때만 히스토리를 조용히 정리 (consultation state로 복원)
     if (!isClosingFromBackButton.current && window.history.state?.modal === "familyPolicy") {
-      window.history.replaceState({ modal: "consultation" }, "", window.location.pathname);
+      const currentFrom = window.history.state?.from;
+      window.history.replaceState({ modal: "consultation", from: currentFrom }, "", window.location.pathname);
     }
     isClosingFromBackButton.current = false;
   };
