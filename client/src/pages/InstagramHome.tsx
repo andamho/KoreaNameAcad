@@ -130,27 +130,39 @@ export default function InstagramHome() {
           overflow-x: hidden !important;
         }
         
-        /* 섹션 간 간격 완전 제거 - 각 섹션 높이에 맞춰 개별 조정 */
+        /* 섹션 padding 축소 */
+        .kna-danger-section,
+        .kna-value-section,
+        .kna-intro-block,
+        .kna-steps-section,
+        .kna-myth-truth-section,
+        .kna-video-section,
+        .kna-pricing-section {
+          padding-top: 2rem !important;
+          padding-bottom: 2rem !important;
+        }
+        
+        /* 섹션 간 간격 완전 제거 - 균일하게 조정 */
         .kna-danger-section {
-          margin-bottom: -18% !important;
+          margin-bottom: -25% !important;
         }
         .kna-value-section {
-          margin-bottom: -18% !important;
+          margin-bottom: -25% !important;
         }
         .kna-intro-block {
-          margin-bottom: -20% !important;
+          margin-bottom: -25% !important;
         }
         .kna-steps-section {
-          margin-bottom: -20% !important;
+          margin-bottom: -25% !important;
         }
         .kna-myth-truth-section {
-          margin-bottom: -18% !important;
+          margin-bottom: -25% !important;
         }
         .kna-video-section {
-          margin-bottom: -18% !important;
+          margin-bottom: -25% !important;
         }
         .kna-pricing-section {
-          margin-bottom: -18% !important;
+          margin-bottom: -25% !important;
         }
         
         /* 푸터 텍스트 크기 강제 조정 (인앱 브라우저) */
