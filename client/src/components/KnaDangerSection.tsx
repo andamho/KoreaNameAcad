@@ -21,7 +21,7 @@ export default function KnaDangerSection() {
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-600 dark:bg-orange-500 flex-shrink-0">
               <Zap className="h-6 w-6 fill-orange-600 dark:fill-orange-500 stroke-white dark:stroke-white" strokeWidth={2.5} />
             </div>
-            <h3 id="power-title" className="text-[23px] md:text-2xl font-semibold">이름은 힘이 셉니다</h3>
+            <h3 id="power-title" className="text-[21px] md:text-[22px] font-semibold">이름은 힘이 셉니다</h3>
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             <Note title="이름이 맑아야 인생이 맑다" desc="열심히만 산다고 잘 사는 게 절대 아닙니다. 잘못하다 몸만 망칩니다." />
@@ -35,7 +35,7 @@ export default function KnaDangerSection() {
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-600 dark:bg-orange-500 flex-shrink-0">
               <OctagonAlert className="h-6 w-6 fill-orange-600 dark:fill-orange-500 stroke-white dark:stroke-white" strokeWidth={2.5} />
             </div>
-            <h3 id="danger-title" className="text-[23px] md:text-2xl font-semibold">이러시면 안됩니다</h3>
+            <h3 id="danger-title" className="text-[21px] md:text-[22px] font-semibold">이러시면 안됩니다</h3>
           </div>
           <div className="mt-4 grid gap-6 md:grid-cols-3">
             <QA

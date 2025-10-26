@@ -16,7 +16,7 @@ export default function KnaIntroBlock() {
           <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl break-keep">
             열심히 노력하며 살아가지만
           </h2>
-          <p className="mt-3 text-lg md:text-[22px] text-muted-foreground break-keep">
+          <p className="mt-3 text-lg text-muted-foreground break-keep">
             삶이 뜻대로 풀리지 않아 답답하신 마음을 잘 압니다
           </p>
         </header>
@@ -25,13 +25,13 @@ export default function KnaIntroBlock() {
           <div className="grid items-start gap-8 md:grid-cols-2">
             {/* Left: 신뢰 문구 */}
             <div className="order-1">
-              <p className="text-lg md:text-xl leading-relaxed text-gray-700 dark:text-muted-foreground">
+              <p className="text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">
                 한국이름학교는<br />
                 <b>17년</b>간 <b>43만 명</b>의 임상 경험을 바탕으로,<br />
                 <b>사주 없이</b> <b>한글·한자 이름만</b>으로<br />
                 <b>80% 이상의 정확도</b>를 갖춘 <b>운명상담</b>을 제공합니다.
               </p>
-              <p className="mt-6 text-lg md:text-2xl font-bold break-keep">
+              <p className="mt-6 text-lg font-bold break-keep">
                 <span className="kna-highlight">
                   <span className="kna-shine">이름은 희망입니다.</span>
                 </span>
@@ -47,7 +47,7 @@ export default function KnaIntroBlock() {
 
             {/* SNS 팔로워 (모바일에서는 후기 다음) */}
             <div className="order-3 md:col-span-2">
-              <p className="text-base md:text-lg text-gray-700 dark:text-muted-foreground flex items-start gap-2">
+              <p className="text-base text-gray-700 dark:text-muted-foreground flex items-start gap-2">
                 <Star className="md:hidden h-5 w-5 text-yellow-500 mt-0.5 fill-current" />
                 <span className="hidden md:inline text-[#0f766e] dark:text-[#58C4C4] mt-0.5">⭐</span>
                 <span>
