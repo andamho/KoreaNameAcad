@@ -308,11 +308,11 @@ export default function InstagramHome() {
           section.style.setProperty('padding-bottom', '0', 'important');
           section.style.setProperty('margin', '0', 'important');
           
-          // innerDiv의 상하 padding만 조정 (좌우는 절대 건드리지 않음!)
-          const innerDiv = section.querySelector(':scope > div') as HTMLElement;
-          if (innerDiv) {
-            innerDiv.style.setProperty('padding-top', '24px', 'important');
-            innerDiv.style.setProperty('padding-bottom', '24px', 'important');
+          // 올바른 컨텐츠 div 선택 (.relative.mx-auto가 있는 div)
+          const contentDiv = section.querySelector(':scope > div.relative') as HTMLElement;
+          if (contentDiv) {
+            contentDiv.style.setProperty('padding-top', '24px', 'important');
+            contentDiv.style.setProperty('padding-bottom', '24px', 'important');
           }
         }
       });
