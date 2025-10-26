@@ -130,7 +130,7 @@ export default function InstagramHome() {
           overflow-x: hidden !important;
         }
         
-        /* 섹션 padding 축소 */
+        /* 섹션 padding 축소 - 외부 섹션과 내부 div 모두 */
         .kna-danger-section,
         .kna-value-section,
         .kna-intro-block,
@@ -138,8 +138,18 @@ export default function InstagramHome() {
         .kna-myth-truth-section,
         .kna-video-section,
         .kna-pricing-section {
-          padding-top: 2rem !important;
-          padding-bottom: 2rem !important;
+          padding-top: 1rem !important;
+          padding-bottom: 1rem !important;
+        }
+        
+        /* 각 섹션 내부 div의 padding도 강제 축소 */
+        .kna-danger-section > div,
+        .kna-value-section > div,
+        .kna-intro-block > div,
+        .kna-steps-section > div,
+        .kna-myth-truth-section > div {
+          padding-top: 1.5rem !important;
+          padding-bottom: 1.5rem !important;
         }
         
         /* 섹션 간 간격 완전 제거 - 균일하게 조정 */
