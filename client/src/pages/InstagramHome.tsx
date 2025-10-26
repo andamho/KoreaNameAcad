@@ -109,6 +109,7 @@ export default function InstagramHome() {
         .kna-value-section > div,
         .kna-intro-block > div,
         .kna-steps-section > div,
+        .kna-myth-truth-section > div,
         .kna-pricing-section > div,
         .kna-footer > div {
           transform: scale(0.82) !important;
@@ -121,10 +122,30 @@ export default function InstagramHome() {
         .kna-value-section,
         .kna-intro-block,
         .kna-steps-section,
+        .kna-myth-truth-section,
         .kna-pricing-section,
         .kna-footer {
           overflow-x: hidden !important;
-          margin-bottom: -18% !important;
+        }
+        
+        /* 섹션 간 간격 완전 제거 - 각 섹션 높이에 맞춰 개별 조정 */
+        .kna-danger-section {
+          margin-bottom: -12% !important;
+        }
+        .kna-value-section {
+          margin-bottom: -12% !important;
+        }
+        .kna-intro-block {
+          margin-bottom: -15% !important;
+        }
+        .kna-steps-section {
+          margin-bottom: -15% !important;
+        }
+        .kna-myth-truth-section {
+          margin-bottom: -8% !important;
+        }
+        .kna-pricing-section {
+          margin-bottom: -12% !important;
         }
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
