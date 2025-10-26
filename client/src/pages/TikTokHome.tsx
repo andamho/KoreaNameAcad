@@ -104,22 +104,25 @@ export default function TikTokHome() {
           font-size: 7.5px !important;
         }
         
-        /* 모든 섹션 내부 모든 요소 글자 크기 축소 */
-        .kna-danger-section *,
-        .kna-value-section *,
-        .kna-intro-block *,
-        .kna-steps-section *,
-        .kna-pricing-section *,
-        .kna-footer * {
-          font-size: 82% !important;
+        /* 섹션의 제목(h2, h3, h4)만 작게 - 내용은 그대로 */
+        .kna-danger-section h2,
+        .kna-danger-section h3,
+        .kna-danger-section h4,
+        .kna-value-section h2,
+        .kna-value-section h3,
+        .kna-value-section h4,
+        .kna-intro-block h2,
+        .kna-intro-block h3,
+        .kna-intro-block h4,
+        .kna-steps-section h2,
+        .kna-steps-section h3,
+        .kna-steps-section h4 {
+          font-size: 70% !important;
         }
         
-        /* input, select 등은 최소 16px 유지 (iOS 자동 줌 방지) */
-        .kna-danger-section input,
-        .kna-danger-section select,
-        .kna-danger-section textarea,
-        .kna-danger-section button {
-          font-size: 16px !important;
+        /* 비용 섹션은 전체를 작게 */
+        .kna-pricing-section {
+          font-size: 82% !important;
         }
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
