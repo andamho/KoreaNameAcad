@@ -132,25 +132,33 @@ export default function InstagramHome() {
         
         /* 섹션 간 간격 완전 제거 - 각 섹션 높이에 맞춰 개별 조정 */
         .kna-danger-section {
-          margin-bottom: -12% !important;
+          margin-bottom: -18% !important;
         }
         .kna-value-section {
-          margin-bottom: -12% !important;
+          margin-bottom: -18% !important;
         }
         .kna-intro-block {
-          margin-bottom: -15% !important;
+          margin-bottom: -20% !important;
         }
         .kna-steps-section {
-          margin-bottom: -15% !important;
+          margin-bottom: -20% !important;
         }
         .kna-myth-truth-section {
-          margin-bottom: -8% !important;
+          margin-bottom: -18% !important;
         }
         .kna-video-section {
-          margin-bottom: -12% !important;
+          margin-bottom: -18% !important;
         }
         .kna-pricing-section {
-          margin-bottom: -12% !important;
+          margin-bottom: -18% !important;
+        }
+        
+        /* 푸터 텍스트 크기 강제 조정 (인앱 브라우저) */
+        .kna-footer-title {
+          font-size: 11px !important;
+        }
+        .kna-footer-subtitle {
+          font-size: 10px !important;
         }
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
@@ -362,10 +370,11 @@ export default function InstagramHome() {
             className="w-full h-auto rounded-lg shadow-lg"
             controls
             playsInline
-            preload="auto"
+            preload="metadata"
             controlsList="nodownload"
             data-testid="video-promotion"
-            src="/promotion-video.mp4"
+            src="/promotion-video.mp4#t=0.1"
+            poster=""
           >
             동영상을 재생할 수 없습니다. 브라우저가 MP4 형식을 지원하지 않습니다.
           </video>

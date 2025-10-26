@@ -189,10 +189,11 @@ export default function Home() {
             className="w-full h-auto rounded-lg shadow-lg"
             controls
             playsInline
-            preload="auto"
+            preload="metadata"
             controlsList="nodownload"
             data-testid="video-promotion"
-            src="/promotion-video.mp4"
+            src="/promotion-video.mp4#t=0.1"
+            poster=""
           >
             동영상을 재생할 수 없습니다. 브라우저가 MP4 형식을 지원하지 않습니다.
           </video>

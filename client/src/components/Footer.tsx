@@ -60,8 +60,8 @@ export function Footer() {
         </div>
 
         {/* Hero 텍스트 중앙 정렬 */}
-        <div className="text-center mb-12">
-          <h2 className="text-[16px] md:text-[24px] tracking-tight leading-tight">
+        <div className="text-center mb-12 kna-footer-hero">
+          <h2 className="text-[16px] md:text-[24px] tracking-tight leading-tight kna-footer-title">
             <span className="text-white">고달픈 인생</span><br />
             <span className="text-white">이름 하나로 이유를 찾고</span><br />
             <span className="kna-highlight">
@@ -73,7 +73,7 @@ export function Footer() {
             </span>
           </h2>
           
-          <p className="text-[11px] md:text-[14px] text-white/70 mt-6">
+          <p className="text-[11px] md:text-[14px] text-white/70 mt-6 kna-footer-subtitle">
             한글·한자이름만으로 운명상담<br/>
             [정확도 80% 이상]
           </p>
