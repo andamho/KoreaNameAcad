@@ -185,16 +185,17 @@ export default function Home() {
       {/* 동영상 섹션 */}
       <section className="kna-video-section py-16 md:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
+          <div className="relative w-full bg-muted rounded-lg overflow-hidden" style={{ paddingBottom: '56.25%' }}>
             <video 
-              className="absolute inset-0 w-full h-full rounded-lg shadow-lg object-cover"
+              className="absolute top-0 left-0 w-full h-full object-contain"
               controls
               playsInline
-              preload="metadata"
+              preload="auto"
               controlsList="nodownload"
               data-testid="video-promotion"
+              src="/promotion-video.mp4"
+              style={{ backgroundColor: '#000' }}
             >
-              <source src="/promotion-video.mp4" type="video/mp4" />
               동영상을 재생할 수 없습니다. 브라우저가 MP4 형식을 지원하지 않습니다.
             </video>
           </div>
