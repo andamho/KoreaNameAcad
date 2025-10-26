@@ -154,10 +154,10 @@ export default function TikTokHome() {
         }
         
         /* 푸터 텍스트 크기 강제 조정 (인앱 브라우저) */
-        .kna-footer-title {
-          font-size: 11px !important;
-        }
         .kna-footer-subtitle {
+          font-size: 10px !important;
+        }
+        .kna-footer > div > div:last-child p {
           font-size: 10px !important;
         }
         
