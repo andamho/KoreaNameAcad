@@ -104,16 +104,14 @@ export default function TikTokHome() {
           font-size: 7.5px !important;
         }
         
-        /* 모든 섹션 히어로처럼 축소 (transform: scale 방식) */
+        /* 모든 섹션 글자 크기만 축소 (여백 없이) */
         .kna-danger-section,
         .kna-value-section,
         .kna-intro-block,
         .kna-steps-section,
         .kna-pricing-section,
         .kna-footer {
-          transform: scale(0.82) !important;
-          transform-origin: top center !important;
-          margin-bottom: -28px !important;
+          font-size: 82% !important;
         }
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
