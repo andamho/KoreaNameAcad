@@ -104,20 +104,20 @@ export default function TikTokHome() {
           font-size: 7.5px !important;
         }
         
-        /* 모든 섹션을 scale로 축소 - 배경 div만 적용 (첫 번째 자식) */
-        .kna-danger-section > div:first-child,
-        .kna-value-section > div:first-child,
-        .kna-intro-block > div:first-child,
-        .kna-steps-section > div:first-child,
-        .kna-myth-truth-section > div:first-child,
-        .kna-video-section > div:first-child,
-        .kna-pricing-section > div:first-child,
-        .kna-footer > div:first-child {
+        /* 모든 섹션을 scale로 축소 + 좌우/상하 여백 완전 제거 */
+        .kna-danger-section > div,
+        .kna-value-section > div,
+        .kna-intro-block > div,
+        .kna-steps-section > div,
+        .kna-myth-truth-section > div,
+        .kna-video-section > div,
+        .kna-pricing-section > div,
+        .kna-footer > div {
           transform: scale(0.82) !important;
           transform-origin: top center !important;
+          width: 122% !important;
+          margin-left: -11% !important;
         }
-        
-        /* 컨텐츠 div에는 width/margin-left 적용 안 함! */
         
         .kna-danger-section,
         .kna-value-section,
@@ -130,60 +130,27 @@ export default function TikTokHome() {
           overflow-x: hidden !important;
         }
         
-        /* 섹션 간격 완전 제거 - 픽셀 기반으로 고정 */
-        .kna-danger-section,
-        .kna-value-section,
-        .kna-intro-block,
+        /* 섹션 간 간격 완전 제거 - 각 섹션 높이에 맞춰 개별 조정 */
+        .kna-danger-section {
+          margin-bottom: -18% !important;
+        }
+        .kna-value-section {
+          margin-bottom: -18% !important;
+        }
+        .kna-intro-block {
+          margin-bottom: -20% !important;
+        }
         .kna-steps-section {
-          padding: 0 !important;
-          margin: 0 !important;
+          margin-bottom: -20% !important;
         }
-        
-        /* 각 섹션 내부 div의 padding만 최소화 */
-        .kna-danger-section > div,
-        .kna-value-section > div,
-        .kna-intro-block > div {
-          padding-top: 24px !important;
-          padding-bottom: 24px !important;
-          margin: 0 !important;
+        .kna-myth-truth-section {
+          margin-bottom: -18% !important;
         }
-        
-        /* 참 쉽습니다 섹션은 배경색이 다르므로 padding 유지 */
-        .kna-steps-section {
-          padding-top: 24px !important;
-          padding-bottom: 24px !important;
+        .kna-video-section {
+          margin-bottom: -18% !important;
         }
-        
-        .kna-steps-section > div {
-          padding-top: 0 !important;
-          padding-bottom: 0 !important;
-          margin: 0 !important;
-        }
-        
-        /* 제목 margin 제거 */
-        .kna-danger-section header,
-        .kna-value-section header,
-        .kna-intro-block header,
-        .kna-steps-section header {
-          margin-top: 0 !important;
-        }
-        
-        .kna-danger-section h2,
-        .kna-value-section h2,
-        .kna-intro-block h2,
-        .kna-steps-section h2 {
-          margin-top: 0 !important;
-        }
-        
-        /* 내부 섹션 간격 최소화 */
-        .kna-danger-section section,
-        .kna-value-section section,
-        .kna-intro-block div.rounded-2xl {
-          margin-top: 16px !important;
-        }
-        
-        .kna-steps-section ol {
-          margin-top: 16px !important;
+        .kna-pricing-section {
+          margin-bottom: -18% !important;
         }
         
         /* 푸터 텍스트 크기 강제 조정 (인앱 브라우저) */
@@ -193,58 +160,6 @@ export default function TikTokHome() {
         }
         .kna-footer .border-t p {
           font-size: 11px !important;
-        }
-        
-        /* 영상 밑 CEO 정보 텍스트 크기 조정 */
-        .kna-video-section .text-muted-foreground {
-          font-size: 13px !important;
-        }
-        
-        /* Dialog 내부 텍스트도 크기 조정 */
-        [role="dialog"] h1 {
-          font-size: clamp(18px, 4.5vw, 22px) !important;
-        }
-        
-        [role="dialog"] h2 {
-          font-size: clamp(16px, 4vw, 20px) !important;
-        }
-        
-        [role="dialog"] h3,
-        [role="dialog"] h4 {
-          font-size: clamp(15px, 3.8vw, 18px) !important;
-        }
-        
-        [role="dialog"] p,
-        [role="dialog"] li,
-        [role="dialog"] span,
-        [role="dialog"] label {
-          font-size: 14px !important;
-        }
-        
-        [role="dialog"] .text-lg {
-          font-size: 14px !important;
-        }
-        
-        [role="dialog"] .text-xl {
-          font-size: 15px !important;
-        }
-        
-        [role="dialog"] .text-2xl {
-          font-size: 17px !important;
-        }
-        
-        [role="dialog"] .text-3xl {
-          font-size: 19px !important;
-        }
-        
-        [role="dialog"] .text-4xl {
-          font-size: 22px !important;
-        }
-        
-        [role="dialog"] .text-\[21px\],
-        [role="dialog"] .text-\[22px\],
-        [role="dialog"] .text-\[23px\] {
-          font-size: 16px !important;
         }
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
@@ -290,153 +205,19 @@ export default function TikTokHome() {
       }
     };
     
-    // 섹션 간격 강제 제거 (JavaScript로 확실하게) - innerDiv는 절대 건드리지 않음!
-    const applySectionSpacing = () => {
-      console.log('[TT] applySectionSpacing 시작');
-      
-      // 위험, 왜 한국이름학교, 열심히 노력 섹션 - section만 조정
-      const tightSections = [
-        '.kna-danger-section',
-        '.kna-value-section', 
-        '.kna-intro-block'
-      ];
-      
-      tightSections.forEach(selector => {
-        const section = document.querySelector(selector) as HTMLElement;
-        if (section) {
-          section.style.setProperty('padding-top', '0', 'important');
-          section.style.setProperty('padding-bottom', '0', 'important');
-          section.style.setProperty('margin', '0', 'important');
-          
-          // 올바른 컨텐츠 div 선택 (.relative.mx-auto가 있는 div)
-          const contentDiv = section.querySelector(':scope > div.relative') as HTMLElement;
-          if (contentDiv) {
-            contentDiv.style.setProperty('padding-top', '24px', 'important');
-            contentDiv.style.setProperty('padding-bottom', '24px', 'important');
-          }
-        }
-      });
-      
-      // 참 쉽습니다 섹션 (배경색이 다름) - section만 조정
-      const stepsSection = document.querySelector('.kna-steps-section') as HTMLElement;
-      if (stepsSection) {
-        stepsSection.style.setProperty('padding-top', '24px', 'important');
-        stepsSection.style.setProperty('padding-bottom', '24px', 'important');
-        stepsSection.style.setProperty('margin', '0', 'important');
-      }
-      
-      console.log('[TT] 섹션 간격 제거 완료');
-    };
-    
-    // Dialog 폰트 크기 강제 설정 (JavaScript로 직접)
-    const applyDialogFontSizes = () => {
-      const dialogs = document.querySelectorAll('[role="dialog"]');
-      
-      if (dialogs.length === 0) {
-        return; // Dialog가 없으면 종료
-      }
-      
-      console.log(`[TT] Dialog ${dialogs.length}개 발견, 폰트 크기 설정 시작`);
-      
-      dialogs.forEach(dialog => {
-        // 모든 h1 요소
-        const h1Elements = dialog.querySelectorAll('h1');
-        h1Elements.forEach(el => {
-          (el as HTMLElement).style.setProperty('font-size', '20px', 'important');
-        });
-        console.log(`[TT] h1 ${h1Elements.length}개 처리`);
-        
-        // 모든 h2 요소
-        const h2Elements = dialog.querySelectorAll('h2');
-        h2Elements.forEach(el => {
-          (el as HTMLElement).style.setProperty('font-size', '18px', 'important');
-        });
-        console.log(`[TT] h2 ${h2Elements.length}개 처리`);
-        
-        // 모든 h3, h4 요소
-        const h3h4Elements = dialog.querySelectorAll('h3, h4');
-        h3h4Elements.forEach(el => {
-          (el as HTMLElement).style.setProperty('font-size', '16px', 'important');
-        });
-        console.log(`[TT] h3/h4 ${h3h4Elements.length}개 처리`);
-        
-        // 모든 p, li, label, span 요소
-        const textElements = dialog.querySelectorAll('p, li, label, span');
-        let textCount = 0;
-        textElements.forEach(el => {
-          const classList = (el as HTMLElement).classList;
-          // text-* 클래스가 있으면 건너뛰기 (아래에서 처리)
-          if (!Array.from(classList).some(c => c.startsWith('text-'))) {
-            (el as HTMLElement).style.setProperty('font-size', '14px', 'important');
-            textCount++;
-          }
-        });
-        console.log(`[TT] p/li/label/span ${textCount}개 처리`);
-        
-        // text-lg 클래스
-        dialog.querySelectorAll('.text-lg').forEach(el => {
-          (el as HTMLElement).style.setProperty('font-size', '14px', 'important');
-        });
-        
-        // text-xl 클래스
-        dialog.querySelectorAll('.text-xl').forEach(el => {
-          (el as HTMLElement).style.setProperty('font-size', '15px', 'important');
-        });
-        
-        // text-2xl 클래스
-        dialog.querySelectorAll('.text-2xl').forEach(el => {
-          (el as HTMLElement).style.setProperty('font-size', '17px', 'important');
-        });
-        
-        // text-3xl 클래스
-        dialog.querySelectorAll('.text-3xl').forEach(el => {
-          (el as HTMLElement).style.setProperty('font-size', '19px', 'important');
-        });
-        
-        // text-4xl 클래스
-        dialog.querySelectorAll('.text-4xl').forEach(el => {
-          (el as HTMLElement).style.setProperty('font-size', '22px', 'important');
-        });
-      });
-      
-      console.log('[TT] Dialog 폰트 크기 강제 설정 완료');
-    };
-    
-    // MutationObserver로 Dialog 감지
-    const observer = new MutationObserver(() => {
-      applyDialogFontSizes();
-    });
-    
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-    
     // 여러 번 강제 적용 (늦은 렌더링 대비)
     setTimeout(applyScale, 0);
     setTimeout(applyFooterTextSize, 0);
-    setTimeout(applySectionSpacing, 0);
-    setTimeout(applyDialogFontSizes, 0);
     const timer1 = setTimeout(applyScale, 100);
     const timer1b = setTimeout(applyFooterTextSize, 100);
-    const timer1c = setTimeout(applySectionSpacing, 100);
-    const timer1d = setTimeout(applyDialogFontSizes, 100);
     const timer2 = setTimeout(applyScale, 300);
     const timer2b = setTimeout(applyFooterTextSize, 300);
-    const timer2c = setTimeout(applySectionSpacing, 300);
-    const timer2d = setTimeout(applyDialogFontSizes, 300);
     const timer3 = setTimeout(applyScale, 500);
     const timer3b = setTimeout(applyFooterTextSize, 500);
-    const timer3c = setTimeout(applySectionSpacing, 500);
-    const timer3d = setTimeout(applyDialogFontSizes, 500);
     const timer4 = setTimeout(applyScale, 1000);
     const timer4b = setTimeout(applyFooterTextSize, 1000);
-    const timer4c = setTimeout(applySectionSpacing, 1000);
-    const timer4d = setTimeout(applyDialogFontSizes, 1000);
     const timer5 = setTimeout(applyScale, 2000);
     const timer5b = setTimeout(applyFooterTextSize, 2000);
-    const timer5c = setTimeout(applySectionSpacing, 2000);
-    const timer5d = setTimeout(applyDialogFontSizes, 2000);
     
     // 리사이즈 시에도 재적용
     window.addEventListener('resize', applyScale);
@@ -447,27 +228,16 @@ export default function TikTokHome() {
       if (styleElement) {
         styleElement.remove();
       }
-      observer.disconnect();
       clearTimeout(timer1);
       clearTimeout(timer1b);
-      clearTimeout(timer1c);
-      clearTimeout(timer1d);
       clearTimeout(timer2);
       clearTimeout(timer2b);
-      clearTimeout(timer2c);
-      clearTimeout(timer2d);
       clearTimeout(timer3);
       clearTimeout(timer3b);
-      clearTimeout(timer3c);
-      clearTimeout(timer3d);
       clearTimeout(timer4);
       clearTimeout(timer4b);
-      clearTimeout(timer4c);
-      clearTimeout(timer4d);
       clearTimeout(timer5);
       clearTimeout(timer5b);
-      clearTimeout(timer5c);
-      clearTimeout(timer5d);
       window.removeEventListener('resize', applyScale);
     };
   }, []);
@@ -665,7 +435,7 @@ export default function TikTokHome() {
       </Dialog>
 
       <Dialog open={analysisDetailOpen} onOpenChange={(open) => { if (!open) closeAnalysisDetail(); }}>
-        <DialogContent className="w-[95vw] sm:max-w-[900px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-neutral-950 text-white border-white/20">
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto bg-neutral-950 text-white border-white/20">
           <DialogHeader className="sr-only">
             <DialogTitle>이름분석 운명상담 안내</DialogTitle>
           </DialogHeader>
@@ -677,7 +447,7 @@ export default function TikTokHome() {
 
             {/* Header */}
             <div className="text-center mb-10">
-              <h2 className="mb-4 text-2xl font-semibold tiffany md:text-4xl break-keep" data-testid="section-title">
+              <h2 className="mb-4 text-2xl font-semibold tiffany md:text-4xl whitespace-nowrap" data-testid="section-title">
                 이름분석 운명상담이란
               </h2>
               <p className="text-white/80 text-base md:text-base leading-relaxed">
