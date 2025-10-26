@@ -174,6 +174,11 @@ export default function TikTokHome() {
           font-size: 11px !important;
         }
         
+        /* 영상 밑 CEO 정보 텍스트 크기 조정 */
+        .kna-video-section .text-muted-foreground {
+          font-size: 13px !important;
+        }
+        
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
         input, select, textarea, button { font-size: 16px; }
       `;
