@@ -104,7 +104,7 @@ export default function InstagramHome() {
           font-size: 7.5px !important;
         }
         
-        /* 모든 섹션을 scale로 축소 + 여백 완전 제거 */
+        /* 모든 섹션을 scale로 축소 + 좌우/상하 여백 완전 제거 */
         .kna-danger-section > div,
         .kna-value-section > div,
         .kna-intro-block > div,
@@ -124,6 +124,7 @@ export default function InstagramHome() {
         .kna-pricing-section,
         .kna-footer {
           overflow-x: hidden !important;
+          margin-bottom: -18% !important;
         }
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
