@@ -341,30 +341,46 @@ export default function TikTokHome() {
     const applyDialogFontSizes = () => {
       const dialogs = document.querySelectorAll('[role="dialog"]');
       
+      if (dialogs.length === 0) {
+        return; // Dialog가 없으면 종료
+      }
+      
+      console.log(`[TT] Dialog ${dialogs.length}개 발견, 폰트 크기 설정 시작`);
+      
       dialogs.forEach(dialog => {
         // 모든 h1 요소
-        dialog.querySelectorAll('h1').forEach(el => {
+        const h1Elements = dialog.querySelectorAll('h1');
+        h1Elements.forEach(el => {
           (el as HTMLElement).style.setProperty('font-size', '20px', 'important');
         });
+        console.log(`[TT] h1 ${h1Elements.length}개 처리`);
         
         // 모든 h2 요소
-        dialog.querySelectorAll('h2').forEach(el => {
+        const h2Elements = dialog.querySelectorAll('h2');
+        h2Elements.forEach(el => {
           (el as HTMLElement).style.setProperty('font-size', '18px', 'important');
         });
+        console.log(`[TT] h2 ${h2Elements.length}개 처리`);
         
         // 모든 h3, h4 요소
-        dialog.querySelectorAll('h3, h4').forEach(el => {
+        const h3h4Elements = dialog.querySelectorAll('h3, h4');
+        h3h4Elements.forEach(el => {
           (el as HTMLElement).style.setProperty('font-size', '16px', 'important');
         });
+        console.log(`[TT] h3/h4 ${h3h4Elements.length}개 처리`);
         
         // 모든 p, li, label, span 요소
-        dialog.querySelectorAll('p, li, label, span').forEach(el => {
+        const textElements = dialog.querySelectorAll('p, li, label, span');
+        let textCount = 0;
+        textElements.forEach(el => {
           const classList = (el as HTMLElement).classList;
           // text-* 클래스가 있으면 건너뛰기 (아래에서 처리)
           if (!Array.from(classList).some(c => c.startsWith('text-'))) {
             (el as HTMLElement).style.setProperty('font-size', '14px', 'important');
+            textCount++;
           }
         });
+        console.log(`[TT] p/li/label/span ${textCount}개 처리`);
         
         // text-lg 클래스
         dialog.querySelectorAll('.text-lg').forEach(el => {
