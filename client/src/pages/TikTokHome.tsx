@@ -245,19 +245,67 @@ export default function TikTokHome() {
       }
     };
     
+    // 섹션 간격 강제 축소 (실제 padding/margin 변경)
+    const applySectionSpacing = () => {
+      const sections = [
+        '.kna-danger-section',
+        '.kna-value-section', 
+        '.kna-intro-block',
+        '.kna-steps-section',
+        '.kna-myth-truth-section',
+        '.kna-video-section',
+        '.kna-pricing-section'
+      ];
+      
+      sections.forEach(selector => {
+        const section = document.querySelector(selector) as HTMLElement;
+        if (section) {
+          // 외부 섹션 padding 축소
+          section.style.setProperty('padding-top', '1.5rem', 'important');
+          section.style.setProperty('padding-bottom', '1.5rem', 'important');
+          
+          // 내부 div padding 축소
+          const innerDiv = section.querySelector(':scope > div') as HTMLElement;
+          if (innerDiv) {
+            innerDiv.style.setProperty('padding-top', '1rem', 'important');
+            innerDiv.style.setProperty('padding-bottom', '1rem', 'important');
+          }
+          
+          // 내부 mt-*, mb-* 요소들 축소
+          const mtElements = section.querySelectorAll('[class*="mt-"]');
+          mtElements.forEach(el => {
+            (el as HTMLElement).style.setProperty('margin-top', '1rem', 'important');
+          });
+          
+          const mbElements = section.querySelectorAll('[class*="mb-"]');
+          mbElements.forEach(el => {
+            (el as HTMLElement).style.setProperty('margin-bottom', '1rem', 'important');
+          });
+        }
+      });
+      
+      console.log('[TT] 섹션 간격 축소 완료');
+    };
+    
     // 여러 번 강제 적용 (늦은 렌더링 대비)
     setTimeout(applyScale, 0);
     setTimeout(applyFooterTextSize, 0);
+    setTimeout(applySectionSpacing, 0);
     const timer1 = setTimeout(applyScale, 100);
     const timer1b = setTimeout(applyFooterTextSize, 100);
+    const timer1c = setTimeout(applySectionSpacing, 100);
     const timer2 = setTimeout(applyScale, 300);
     const timer2b = setTimeout(applyFooterTextSize, 300);
+    const timer2c = setTimeout(applySectionSpacing, 300);
     const timer3 = setTimeout(applyScale, 500);
     const timer3b = setTimeout(applyFooterTextSize, 500);
+    const timer3c = setTimeout(applySectionSpacing, 500);
     const timer4 = setTimeout(applyScale, 1000);
     const timer4b = setTimeout(applyFooterTextSize, 1000);
+    const timer4c = setTimeout(applySectionSpacing, 1000);
     const timer5 = setTimeout(applyScale, 2000);
     const timer5b = setTimeout(applyFooterTextSize, 2000);
+    const timer5c = setTimeout(applySectionSpacing, 2000);
     
     // 리사이즈 시에도 재적용
     window.addEventListener('resize', applyScale);
@@ -270,14 +318,19 @@ export default function TikTokHome() {
       }
       clearTimeout(timer1);
       clearTimeout(timer1b);
+      clearTimeout(timer1c);
       clearTimeout(timer2);
       clearTimeout(timer2b);
+      clearTimeout(timer2c);
       clearTimeout(timer3);
       clearTimeout(timer3b);
+      clearTimeout(timer3c);
       clearTimeout(timer4);
       clearTimeout(timer4b);
+      clearTimeout(timer4c);
       clearTimeout(timer5);
       clearTimeout(timer5b);
+      clearTimeout(timer5c);
       window.removeEventListener('resize', applyScale);
     };
   }, []);
