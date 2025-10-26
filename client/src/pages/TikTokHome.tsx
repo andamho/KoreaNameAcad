@@ -414,7 +414,7 @@ export default function TikTokHome() {
             <p className="text-sm md:text-base font-semibold text-foreground">
               Founder & CEO 안서호
             </p>
-            <p className="text-xs md:text-sm text-muted-foreground mt-1">
+            <p className="text-[11px] md:text-[14px] text-muted-foreground mt-1">
               한국이름학교 | 와츠유어네임 이름연구협회
             </p>
           </div>
