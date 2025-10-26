@@ -362,11 +362,12 @@ export default function InstagramHome() {
             className="w-full rounded-lg shadow-lg"
             controls
             playsInline
-            preload="metadata"
+            preload="auto"
+            controlsList="nodownload"
             data-testid="video-promotion"
+            src="/promotion-video.mp4"
           >
-            <source src="/promotion-video.mp4" type="video/mp4" />
-            동영상을 재생할 수 없습니다.
+            동영상을 재생할 수 없습니다. 브라우저가 MP4 형식을 지원하지 않습니다.
           </video>
         </div>
       </section>
