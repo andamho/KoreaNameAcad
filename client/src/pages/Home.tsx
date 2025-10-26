@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import analysisExampleImage from "@assets/hongildong-analysis.jpg";
+import promotionVideo from "@assets/KakaoTalk_20251026_173019162_1761478871174.mp4";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -181,6 +182,22 @@ export default function Home() {
       <KnaStepsSection />
 
       <KnaMythTruthSection />
+
+      {/* 동영상 섹션 */}
+      <section className="kna-video-section py-16 md:py-24">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <video 
+            className="w-full rounded-lg shadow-lg"
+            controls
+            playsInline
+            preload="metadata"
+            data-testid="video-promotion"
+          >
+            <source src={promotionVideo} type="video/mp4" />
+            동영상을 재생할 수 없습니다.
+          </video>
+        </div>
+      </section>
 
       <KnaPricingSection />
 
