@@ -104,20 +104,20 @@ export default function InstagramHome() {
           font-size: 7.5px !important;
         }
         
-        /* 모든 섹션을 scale로 축소 + 좌우/상하 여백 완전 제거 */
-        .kna-danger-section > div,
-        .kna-value-section > div,
-        .kna-intro-block > div,
-        .kna-steps-section > div,
-        .kna-myth-truth-section > div,
-        .kna-video-section > div,
-        .kna-pricing-section > div,
-        .kna-footer > div {
+        /* 모든 섹션을 scale로 축소 - 배경 div만 적용 (첫 번째 자식) */
+        .kna-danger-section > div:first-child,
+        .kna-value-section > div:first-child,
+        .kna-intro-block > div:first-child,
+        .kna-steps-section > div:first-child,
+        .kna-myth-truth-section > div:first-child,
+        .kna-video-section > div:first-child,
+        .kna-pricing-section > div:first-child,
+        .kna-footer > div:first-child {
           transform: scale(0.82) !important;
           transform-origin: top center !important;
-          width: 122% !important;
-          margin-left: -11% !important;
         }
+        
+        /* 컨텐츠 div에는 width/margin-left 적용 안 함! */
         
         .kna-danger-section,
         .kna-value-section,
@@ -290,11 +290,11 @@ export default function InstagramHome() {
       }
     };
     
-    // 섹션 간격 강제 제거 (JavaScript로 확실하게)
+    // 섹션 간격 강제 제거 (JavaScript로 확실하게) - innerDiv는 절대 건드리지 않음!
     const applySectionSpacing = () => {
       console.log('[IG] applySectionSpacing 시작');
       
-      // 위험, 왜 한국이름학교, 열심히 노력 섹션
+      // 위험, 왜 한국이름학교, 열심히 노력 섹션 - section만 조정
       const tightSections = [
         '.kna-danger-section',
         '.kna-value-section', 
@@ -304,34 +304,31 @@ export default function InstagramHome() {
       tightSections.forEach(selector => {
         const section = document.querySelector(selector) as HTMLElement;
         if (section) {
+          console.log(`[IG] ${selector} 섹션 발견`);
           section.style.setProperty('padding-top', '0', 'important');
           section.style.setProperty('padding-bottom', '0', 'important');
           section.style.setProperty('margin', '0', 'important');
           
-          const innerDiv = section.querySelector(':scope > div') as HTMLElement;
-          if (innerDiv) {
-            innerDiv.style.setProperty('padding-top', '24px', 'important');
-            innerDiv.style.setProperty('padding-bottom', '24px', 'important');
-            innerDiv.style.setProperty('margin-top', '0', 'important');
-            innerDiv.style.setProperty('margin-bottom', '0', 'important');
+          // 올바른 컨텐츠 div 선택 (.relative.mx-auto가 있는 div)
+          const contentDiv = section.querySelector(':scope > div.relative') as HTMLElement;
+          if (contentDiv) {
+            console.log(`[IG] ${selector}의 contentDiv 발견, mx-auto 클래스:`, contentDiv.classList.contains('mx-auto'));
+            contentDiv.style.setProperty('padding-top', '24px', 'important');
+            contentDiv.style.setProperty('padding-bottom', '24px', 'important');
+          } else {
+            console.log(`[IG] ${selector}의 contentDiv를 찾을 수 없음!`);
           }
+        } else {
+          console.log(`[IG] ${selector} 섹션을 찾을 수 없음!`);
         }
       });
       
-      // 참 쉽습니다 섹션 (배경색이 다름)
+      // 참 쉽습니다 섹션 (배경색이 다름) - section만 조정
       const stepsSection = document.querySelector('.kna-steps-section') as HTMLElement;
       if (stepsSection) {
         stepsSection.style.setProperty('padding-top', '24px', 'important');
         stepsSection.style.setProperty('padding-bottom', '24px', 'important');
         stepsSection.style.setProperty('margin', '0', 'important');
-        
-        const innerDiv = stepsSection.querySelector(':scope > div') as HTMLElement;
-        if (innerDiv) {
-          innerDiv.style.setProperty('padding-top', '0', 'important');
-          innerDiv.style.setProperty('padding-bottom', '0', 'important');
-          innerDiv.style.setProperty('margin-top', '0', 'important');
-          innerDiv.style.setProperty('margin-bottom', '0', 'important');
-        }
       }
       
       console.log('[IG] 섹션 간격 제거 완료');
