@@ -130,49 +130,60 @@ export default function TikTokHome() {
           overflow-x: hidden !important;
         }
         
-        /* 섹션 padding 축소 - 외부 섹션과 내부 div 모두 */
+        /* 섹션 간격 완전 제거 - 픽셀 기반으로 고정 */
         .kna-danger-section,
         .kna-value-section,
         .kna-intro-block,
-        .kna-steps-section,
-        .kna-myth-truth-section,
-        .kna-video-section,
-        .kna-pricing-section {
-          padding-top: 1rem !important;
-          padding-bottom: 1rem !important;
+        .kna-steps-section {
+          padding: 0 !important;
+          margin: 0 !important;
         }
         
-        /* 각 섹션 내부 div의 padding도 강제 축소 */
+        /* 각 섹션 내부 div의 padding만 최소화 */
         .kna-danger-section > div,
         .kna-value-section > div,
-        .kna-intro-block > div,
-        .kna-steps-section > div,
-        .kna-myth-truth-section > div {
-          padding-top: 1.5rem !important;
-          padding-bottom: 1.5rem !important;
+        .kna-intro-block > div {
+          padding-top: 24px !important;
+          padding-bottom: 24px !important;
+          margin: 0 !important;
         }
         
-        /* 섹션 간 간격 완전 제거 - 균일하게 조정 */
-        .kna-danger-section {
-          margin-bottom: -25% !important;
-        }
-        .kna-value-section {
-          margin-bottom: -25% !important;
-        }
-        .kna-intro-block {
-          margin-bottom: -25% !important;
-        }
+        /* 참 쉽습니다 섹션은 배경색이 다르므로 padding 유지 */
         .kna-steps-section {
-          margin-bottom: -25% !important;
+          padding-top: 24px !important;
+          padding-bottom: 24px !important;
         }
-        .kna-myth-truth-section {
-          margin-bottom: -25% !important;
+        
+        .kna-steps-section > div {
+          padding-top: 0 !important;
+          padding-bottom: 0 !important;
+          margin: 0 !important;
         }
-        .kna-video-section {
-          margin-bottom: -25% !important;
+        
+        /* 제목 margin 제거 */
+        .kna-danger-section header,
+        .kna-value-section header,
+        .kna-intro-block header,
+        .kna-steps-section header {
+          margin-top: 0 !important;
         }
-        .kna-pricing-section {
-          margin-bottom: -25% !important;
+        
+        .kna-danger-section h2,
+        .kna-value-section h2,
+        .kna-intro-block h2,
+        .kna-steps-section h2 {
+          margin-top: 0 !important;
+        }
+        
+        /* 내부 섹션 간격 최소화 */
+        .kna-danger-section section,
+        .kna-value-section section,
+        .kna-intro-block div.rounded-2xl {
+          margin-top: 16px !important;
+        }
+        
+        .kna-steps-section ol {
+          margin-top: 16px !important;
         }
         
         /* 푸터 텍스트 크기 강제 조정 (인앱 브라우저) */
@@ -279,46 +290,47 @@ export default function TikTokHome() {
       }
     };
     
-    // 섹션 간격 강제 축소 (실제 padding/margin 변경)
+    // 섹션 간격 강제 제거 (JavaScript로 확실하게)
     const applySectionSpacing = () => {
-      const sections = [
+      console.log('[TT] applySectionSpacing 시작');
+      
+      // 위험, 왜 한국이름학교, 열심히 노력 섹션
+      const tightSections = [
         '.kna-danger-section',
         '.kna-value-section', 
-        '.kna-intro-block',
-        '.kna-steps-section',
-        '.kna-myth-truth-section',
-        '.kna-video-section',
-        '.kna-pricing-section'
+        '.kna-intro-block'
       ];
       
-      sections.forEach(selector => {
+      tightSections.forEach(selector => {
         const section = document.querySelector(selector) as HTMLElement;
         if (section) {
-          // 외부 섹션 padding 축소
-          section.style.setProperty('padding-top', '1.5rem', 'important');
-          section.style.setProperty('padding-bottom', '1.5rem', 'important');
+          section.style.setProperty('padding', '0', 'important');
+          section.style.setProperty('margin', '0', 'important');
           
-          // 내부 div padding 축소
           const innerDiv = section.querySelector(':scope > div') as HTMLElement;
           if (innerDiv) {
-            innerDiv.style.setProperty('padding-top', '1rem', 'important');
-            innerDiv.style.setProperty('padding-bottom', '1rem', 'important');
+            innerDiv.style.setProperty('padding-top', '24px', 'important');
+            innerDiv.style.setProperty('padding-bottom', '24px', 'important');
+            innerDiv.style.setProperty('margin', '0', 'important');
           }
-          
-          // 내부 mt-*, mb-* 요소들 축소
-          const mtElements = section.querySelectorAll('[class*="mt-"]');
-          mtElements.forEach(el => {
-            (el as HTMLElement).style.setProperty('margin-top', '1rem', 'important');
-          });
-          
-          const mbElements = section.querySelectorAll('[class*="mb-"]');
-          mbElements.forEach(el => {
-            (el as HTMLElement).style.setProperty('margin-bottom', '1rem', 'important');
-          });
         }
       });
       
-      console.log('[TT] 섹션 간격 축소 완료');
+      // 참 쉽습니다 섹션 (배경색이 다름)
+      const stepsSection = document.querySelector('.kna-steps-section') as HTMLElement;
+      if (stepsSection) {
+        stepsSection.style.setProperty('padding-top', '24px', 'important');
+        stepsSection.style.setProperty('padding-bottom', '24px', 'important');
+        stepsSection.style.setProperty('margin', '0', 'important');
+        
+        const innerDiv = stepsSection.querySelector(':scope > div') as HTMLElement;
+        if (innerDiv) {
+          innerDiv.style.setProperty('padding', '0', 'important');
+          innerDiv.style.setProperty('margin', '0', 'important');
+        }
+      }
+      
+      console.log('[TT] 섹션 간격 제거 완료');
     };
     
     // 여러 번 강제 적용 (늦은 렌더링 대비)
