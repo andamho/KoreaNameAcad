@@ -190,16 +190,50 @@ export default function InstagramHome() {
         }
         
         /* Dialog 내부 텍스트도 크기 조정 */
-        [role="dialog"] h1,
-        [role="dialog"] h2,
-        [role="dialog"] h3 {
-          font-size: clamp(18px, 4.5vw, 24px) !important;
+        [role="dialog"] h1 {
+          font-size: clamp(18px, 4.5vw, 22px) !important;
+        }
+        
+        [role="dialog"] h2 {
+          font-size: clamp(16px, 4vw, 20px) !important;
+        }
+        
+        [role="dialog"] h3,
+        [role="dialog"] h4 {
+          font-size: clamp(15px, 3.8vw, 18px) !important;
         }
         
         [role="dialog"] p,
         [role="dialog"] li,
+        [role="dialog"] span,
         [role="dialog"] label {
           font-size: 14px !important;
+        }
+        
+        [role="dialog"] .text-lg {
+          font-size: 14px !important;
+        }
+        
+        [role="dialog"] .text-xl {
+          font-size: 15px !important;
+        }
+        
+        [role="dialog"] .text-2xl {
+          font-size: 17px !important;
+        }
+        
+        [role="dialog"] .text-3xl {
+          font-size: 19px !important;
+        }
+        
+        [role="dialog"] .text-4xl {
+          font-size: 22px !important;
+        }
+        
+        [role="dialog"] .text-\[21px\],
+        [role="dialog"] .text-\[22px\],
+        [role="dialog"] .text-\[23px\] {
+          font-size: 16px !important;
         }
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }

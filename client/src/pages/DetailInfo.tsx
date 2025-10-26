@@ -35,22 +35,37 @@ export default function DetailInfo() {
             font-size: 14px !important;
           }
           html.${className} h1 {
-            font-size: clamp(22px, 5.5vw, 28px) !important;
+            font-size: clamp(18px, 4.5vw, 22px) !important;
           }
           html.${className} h2 {
-            font-size: clamp(18px, 4.5vw, 24px) !important;
-          }
-          html.${className} h3 {
             font-size: clamp(16px, 4vw, 20px) !important;
           }
-          html.${className} p, html.${className} li {
+          html.${className} h3, html.${className} h4 {
+            font-size: clamp(15px, 3.8vw, 18px) !important;
+          }
+          html.${className} p, html.${className} li, html.${className} span {
+            font-size: 14px !important;
+          }
+          html.${className} .text-sm {
+            font-size: 13px !important;
+          }
+          html.${className} .text-base {
+            font-size: 14px !important;
+          }
+          html.${className} .text-lg {
             font-size: 14px !important;
           }
           html.${className} .text-xl {
-            font-size: 16px !important;
+            font-size: 15px !important;
           }
           html.${className} .text-2xl {
+            font-size: 16px !important;
+          }
+          html.${className} .text-3xl {
             font-size: 18px !important;
+          }
+          html.${className} .text-4xl {
+            font-size: 20px !important;
           }
         `;
         document.head.appendChild(style);
