@@ -304,6 +304,7 @@ export default function InstagramHome() {
       tightSections.forEach(selector => {
         const section = document.querySelector(selector) as HTMLElement;
         if (section) {
+          console.log(`[IG] ${selector} 섹션 발견`);
           section.style.setProperty('padding-top', '0', 'important');
           section.style.setProperty('padding-bottom', '0', 'important');
           section.style.setProperty('margin', '0', 'important');
@@ -311,9 +312,14 @@ export default function InstagramHome() {
           // 올바른 컨텐츠 div 선택 (.relative.mx-auto가 있는 div)
           const contentDiv = section.querySelector(':scope > div.relative') as HTMLElement;
           if (contentDiv) {
+            console.log(`[IG] ${selector}의 contentDiv 발견, mx-auto 클래스:`, contentDiv.classList.contains('mx-auto'));
             contentDiv.style.setProperty('padding-top', '24px', 'important');
             contentDiv.style.setProperty('padding-bottom', '24px', 'important');
+          } else {
+            console.log(`[IG] ${selector}의 contentDiv를 찾을 수 없음!`);
           }
+        } else {
+          console.log(`[IG] ${selector} 섹션을 찾을 수 없음!`);
         }
       });
       
