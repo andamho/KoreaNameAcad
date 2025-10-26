@@ -73,7 +73,7 @@ export function Footer() {
             </span>
           </h2>
           
-          <p className="text-[14px] text-white/70 mt-6">
+          <p className="text-[11px] md:text-[14px] text-white/70 mt-6">
             한글·한자이름만으로 운명상담<br/>
             [정확도 80% 이상]
           </p>
@@ -102,7 +102,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-white/20 text-center">
-          <p className="text-sm text-white/50">
+          <p className="text-[10px] md:text-sm text-white/50">
             © {new Date().getFullYear()} 한국이름학교 | 와츠유어네임 이름연구협회. All rights reserved.
           </p>
         </div>
