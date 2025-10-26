@@ -25,22 +25,28 @@ export default function FamilyPolicy() {
             font-size: 14px !important;
           }
           html.${className} h1 {
-            font-size: clamp(22px, 5.5vw, 28px) !important;
+            font-size: clamp(20px, 5vw, 26px) !important;
           }
           html.${className} h2 {
-            font-size: clamp(18px, 4.5vw, 24px) !important;
+            font-size: clamp(17px, 4.2vw, 22px) !important;
           }
           html.${className} h3 {
-            font-size: clamp(16px, 4vw, 20px) !important;
+            font-size: clamp(15px, 3.8vw, 19px) !important;
           }
           html.${className} p, html.${className} li {
             font-size: 14px !important;
           }
           html.${className} .text-xl {
-            font-size: 16px !important;
+            font-size: 15px !important;
           }
           html.${className} .text-2xl {
-            font-size: 18px !important;
+            font-size: 17px !important;
+          }
+          html.${className} .text-3xl {
+            font-size: 20px !important;
+          }
+          html.${className} .text-4xl {
+            font-size: 24px !important;
           }
         `;
         document.head.appendChild(style);

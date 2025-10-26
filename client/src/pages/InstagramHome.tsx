@@ -189,6 +189,19 @@ export default function InstagramHome() {
           font-size: 13px !important;
         }
         
+        /* Dialog 내부 텍스트도 크기 조정 */
+        [role="dialog"] h1,
+        [role="dialog"] h2,
+        [role="dialog"] h3 {
+          font-size: clamp(18px, 4.5vw, 24px) !important;
+        }
+        
+        [role="dialog"] p,
+        [role="dialog"] li,
+        [role="dialog"] label {
+          font-size: 14px !important;
+        }
+        
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
         input, select, textarea, button { font-size: 16px; }
       `;
