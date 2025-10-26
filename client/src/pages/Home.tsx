@@ -19,7 +19,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import analysisExampleImage from "@assets/hongildong-analysis.jpg";
-import promotionVideo from "@assets/KakaoTalk_20251026_173019162_1761478871174.mp4";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -193,7 +192,7 @@ export default function Home() {
             preload="metadata"
             data-testid="video-promotion"
           >
-            <source src={promotionVideo} type="video/mp4" />
+            <source src="/promotion-video.mp4" type="video/mp4" />
             동영상을 재생할 수 없습니다.
           </video>
         </div>
