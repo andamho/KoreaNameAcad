@@ -379,6 +379,15 @@ export default function InstagramHome() {
           >
             동영상을 재생할 수 없습니다. 브라우저가 MP4 형식을 지원하지 않습니다.
           </video>
+          
+          <div className="text-center mt-6">
+            <p className="text-sm md:text-base font-semibold text-foreground">
+              Founder & CEO 안서호
+            </p>
+            <p className="text-xs md:text-sm text-muted-foreground mt-1">
+              한국이름학교 | 와츠유어네임 이름연구협회
+            </p>
+          </div>
         </div>
       </section>
 
