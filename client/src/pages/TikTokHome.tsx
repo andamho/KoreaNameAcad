@@ -304,14 +304,16 @@ export default function TikTokHome() {
       tightSections.forEach(selector => {
         const section = document.querySelector(selector) as HTMLElement;
         if (section) {
-          section.style.setProperty('padding', '0', 'important');
+          section.style.setProperty('padding-top', '0', 'important');
+          section.style.setProperty('padding-bottom', '0', 'important');
           section.style.setProperty('margin', '0', 'important');
           
           const innerDiv = section.querySelector(':scope > div') as HTMLElement;
           if (innerDiv) {
             innerDiv.style.setProperty('padding-top', '24px', 'important');
             innerDiv.style.setProperty('padding-bottom', '24px', 'important');
-            innerDiv.style.setProperty('margin', '0', 'important');
+            innerDiv.style.setProperty('margin-top', '0', 'important');
+            innerDiv.style.setProperty('margin-bottom', '0', 'important');
           }
         }
       });
@@ -325,8 +327,10 @@ export default function TikTokHome() {
         
         const innerDiv = stepsSection.querySelector(':scope > div') as HTMLElement;
         if (innerDiv) {
-          innerDiv.style.setProperty('padding', '0', 'important');
-          innerDiv.style.setProperty('margin', '0', 'important');
+          innerDiv.style.setProperty('padding-top', '0', 'important');
+          innerDiv.style.setProperty('padding-bottom', '0', 'important');
+          innerDiv.style.setProperty('margin-top', '0', 'important');
+          innerDiv.style.setProperty('margin-bottom', '0', 'important');
         }
       }
       
