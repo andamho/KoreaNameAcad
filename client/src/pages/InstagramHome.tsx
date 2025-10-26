@@ -290,11 +290,11 @@ export default function InstagramHome() {
       }
     };
     
-    // 섹션 간격 강제 제거 (JavaScript로 확실하게)
+    // 섹션 간격 강제 제거 (JavaScript로 확실하게) - innerDiv는 절대 건드리지 않음!
     const applySectionSpacing = () => {
       console.log('[IG] applySectionSpacing 시작');
       
-      // 위험, 왜 한국이름학교, 열심히 노력 섹션
+      // 위험, 왜 한국이름학교, 열심히 노력 섹션 - section만 조정
       const tightSections = [
         '.kna-danger-section',
         '.kna-value-section', 
@@ -308,30 +308,21 @@ export default function InstagramHome() {
           section.style.setProperty('padding-bottom', '0', 'important');
           section.style.setProperty('margin', '0', 'important');
           
+          // innerDiv의 상하 padding만 조정 (좌우는 절대 건드리지 않음!)
           const innerDiv = section.querySelector(':scope > div') as HTMLElement;
           if (innerDiv) {
             innerDiv.style.setProperty('padding-top', '24px', 'important');
             innerDiv.style.setProperty('padding-bottom', '24px', 'important');
-            innerDiv.style.setProperty('margin-top', '0', 'important');
-            innerDiv.style.setProperty('margin-bottom', '0', 'important');
           }
         }
       });
       
-      // 참 쉽습니다 섹션 (배경색이 다름)
+      // 참 쉽습니다 섹션 (배경색이 다름) - section만 조정
       const stepsSection = document.querySelector('.kna-steps-section') as HTMLElement;
       if (stepsSection) {
         stepsSection.style.setProperty('padding-top', '24px', 'important');
         stepsSection.style.setProperty('padding-bottom', '24px', 'important');
         stepsSection.style.setProperty('margin', '0', 'important');
-        
-        const innerDiv = stepsSection.querySelector(':scope > div') as HTMLElement;
-        if (innerDiv) {
-          innerDiv.style.setProperty('padding-top', '0', 'important');
-          innerDiv.style.setProperty('padding-bottom', '0', 'important');
-          innerDiv.style.setProperty('margin-top', '0', 'important');
-          innerDiv.style.setProperty('margin-bottom', '0', 'important');
-        }
       }
       
       console.log('[IG] 섹션 간격 제거 완료');
