@@ -104,40 +104,16 @@ export default function TikTokHome() {
           font-size: 7.5px !important;
         }
         
-        /* 섹션의 h2 제목만 절대값으로 작게 (인앱 자동확대 무시) */
-        .kna-danger-section h2,
-        .kna-value-section h2,
-        .kna-intro-block h2,
-        .kna-steps-section h2 {
-          font-size: 18px !important;
-        }
-        
-        /* 섹션의 h3 제목만 절대값으로 작게 */
-        .kna-danger-section h3,
-        .kna-value-section h3,
-        .kna-intro-block h3,
-        .kna-steps-section h3 {
-          font-size: 17px !important;
-        }
-        
-        /* 섹션의 h4 제목만 절대값으로 작게 */
-        .kna-danger-section h4,
-        .kna-value-section h4,
-        .kna-intro-block h4,
-        .kna-steps-section h4 {
-          font-size: 16px !important;
-        }
-        
-        /* 비용 섹션은 전체를 절대값 비율로 작게 */
-        .kna-pricing-section * {
-          font-size: 82% !important;
-        }
-        
-        /* 비용 섹션 input/button은 16px 유지 */
-        .kna-pricing-section input,
-        .kna-pricing-section button,
-        .kna-pricing-section select {
-          font-size: 16px !important;
+        /* 모든 섹션을 히어로처럼 통일된 비율로 축소 */
+        .kna-danger-section,
+        .kna-value-section,
+        .kna-intro-block,
+        .kna-steps-section,
+        .kna-pricing-section,
+        .kna-footer {
+          transform: scale(0.82) !important;
+          transform-origin: top center !important;
+          margin-bottom: -18% !important;
         }
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
