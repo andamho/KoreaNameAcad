@@ -104,20 +104,20 @@ export default function InstagramHome() {
           font-size: 7.5px !important;
         }
         
-        /* 모든 섹션을 scale로 축소 + 좌우/상하 여백 완전 제거 */
-        .kna-danger-section > div,
-        .kna-value-section > div,
-        .kna-intro-block > div,
-        .kna-steps-section > div,
-        .kna-myth-truth-section > div,
-        .kna-video-section > div,
-        .kna-pricing-section > div,
-        .kna-footer > div {
+        /* 모든 섹션을 scale로 축소 - 배경 div만 적용 (첫 번째 자식) */
+        .kna-danger-section > div:first-child,
+        .kna-value-section > div:first-child,
+        .kna-intro-block > div:first-child,
+        .kna-steps-section > div:first-child,
+        .kna-myth-truth-section > div:first-child,
+        .kna-video-section > div:first-child,
+        .kna-pricing-section > div:first-child,
+        .kna-footer > div:first-child {
           transform: scale(0.82) !important;
           transform-origin: top center !important;
-          width: 122% !important;
-          margin-left: -11% !important;
         }
+        
+        /* 컨텐츠 div에는 width/margin-left 적용 안 함! */
         
         .kna-danger-section,
         .kna-value-section,
