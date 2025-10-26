@@ -219,10 +219,10 @@ export default function InstagramHome() {
     if (openType === "analysis" || openType === "naming") {
       setDialogType(openType);
       setDialogOpen(true);
-      window.history.replaceState({ from: fromPage }, "", "/ig");
+      window.history.replaceState({ modal: "consultation", from: fromPage }, "", "/ig");
     } else if (detailType === "analysis") {
       setAnalysisDetailOpen(true);
-      window.history.replaceState({ from: fromPage }, "", "/ig");
+      window.history.replaceState({ modal: "analysisDetail", from: fromPage }, "", "/ig");
     }
 
     const hash = window.location.hash;
@@ -256,8 +256,8 @@ export default function InstagramHome() {
           }, 0);
         }
       }
-      // consultation이 열려있고, state에서 사라졌으면 (null 또는 familyPolicy가 아닌 경우) 닫음
-      else if (dialogOpenRef.current && !modalState) {
+      // consultation이 열려있고, state가 consultation도 familyPolicy도 아니면 닫음
+      else if (dialogOpenRef.current && modalState !== "consultation" && modalState !== "familyPolicy") {
         isClosingFromBackButton.current = true;
         setDialogOpen(false);
         // referrer 페이지로 이동
