@@ -104,25 +104,26 @@ export default function InstagramHome() {
           font-size: 7.5px !important;
         }
         
-        /* 모든 섹션의 모든 글자 크기만 축소 (여백 없이) */
-        .kna-danger-section,
-        .kna-danger-section *,
-        .kna-value-section,
-        .kna-value-section *,
-        .kna-intro-block,
-        .kna-intro-block *,
-        .kna-steps-section,
-        .kna-steps-section *,
-        .kna-pricing-section,
-        .kna-pricing-section *,
-        .kna-footer,
-        .kna-footer * {
-          font-size: 0.82em !important;
+        /* 모든 섹션을 scale로 축소 + 여백 완전 제거 */
+        .kna-danger-section > div,
+        .kna-value-section > div,
+        .kna-intro-block > div,
+        .kna-steps-section > div,
+        .kna-pricing-section > div,
+        .kna-footer > div {
+          transform: scale(0.82) !important;
+          transform-origin: top center !important;
+          width: 122% !important;
+          margin-left: -11% !important;
         }
         
-        /* input/button/select는 16px 유지 (iOS 줌 방지) */
-        input, button, select, textarea {
-          font-size: 16px !important;
+        .kna-danger-section,
+        .kna-value-section,
+        .kna-intro-block,
+        .kna-steps-section,
+        .kna-pricing-section,
+        .kna-footer {
+          overflow-x: hidden !important;
         }
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
