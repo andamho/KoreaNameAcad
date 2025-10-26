@@ -9,11 +9,13 @@ export default function Services() {
   const [, setLocation] = useLocation();
   
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const fromPage = params.get("from");
+    // User Agent로 인앱 브라우저 감지
+    const userAgent = navigator.userAgent || '';
+    const isInstagram = userAgent.includes('Instagram');
+    const isTikTok = userAgent.includes('TikTok') || userAgent.includes('musical_ly');
     
-    if (fromPage === "/ig" || fromPage === "/tt") {
-      const className = fromPage === "/ig" ? "ua-instagram" : "ua-tiktok";
+    if (isInstagram || isTikTok) {
+      const className = isInstagram ? "ua-instagram" : "ua-tiktok";
       document.documentElement.classList.add(className);
       
       const styleId = `inapp-style-${className}`;
@@ -25,10 +27,10 @@ export default function Services() {
             font-size: 14px !important;
           }
           html.${className} h1 {
-            font-size: clamp(24px, 6vw, 32px) !important;
+            font-size: clamp(22px, 5.5vw, 28px) !important;
           }
           html.${className} h2 {
-            font-size: clamp(20px, 5vw, 26px) !important;
+            font-size: clamp(18px, 4.5vw, 24px) !important;
           }
           html.${className} h3 {
             font-size: clamp(16px, 4vw, 20px) !important;
@@ -36,9 +38,17 @@ export default function Services() {
           html.${className} p, html.${className} li {
             font-size: 14px !important;
           }
+          html.${className} .text-xl {
+            font-size: 16px !important;
+          }
+          html.${className} .text-2xl {
+            font-size: 18px !important;
+          }
         `;
         document.head.appendChild(style);
       }
+      
+      console.log(`[Services] 인앱 브라우저 감지: ${className}, User Agent: ${userAgent}`);
       
       return () => {
         document.documentElement.classList.remove(className);
