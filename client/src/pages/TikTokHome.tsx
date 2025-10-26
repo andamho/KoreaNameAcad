@@ -439,7 +439,7 @@ export default function TikTokHome() {
           <DialogHeader className="sr-only">
             <DialogTitle>이름분석 운명상담 안내</DialogTitle>
           </DialogHeader>
-          <div className="py-8" data-testid="name-analysis-root">
+          <div className="px-6 py-8" data-testid="name-analysis-root">
             <style>{`
               .glass { background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); border: 1px solid rgba(255,255,255,0.12); }
               .tiffany { color: #81D8D0; }
