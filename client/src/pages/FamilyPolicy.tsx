@@ -62,6 +62,64 @@ export default function FamilyPolicy() {
       }
       
       console.log(`[FamilyPolicy] 인앱 브라우저 감지: ${className}, User Agent: ${userAgent}`);
+      
+      // JavaScript로 모든 요소 직접 강제 설정
+      const applyAllFontSizes = () => {
+        // h1 요소
+        document.querySelectorAll('h1').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '20px', 'important');
+        });
+        
+        // h2 요소
+        document.querySelectorAll('h2').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '16px', 'important');
+        });
+        
+        // h3, h4 요소
+        document.querySelectorAll('h3, h4').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '15px', 'important');
+        });
+        
+        // p, li, span 요소
+        document.querySelectorAll('p, li, span').forEach(el => {
+          if (!(el as HTMLElement).classList.toString().includes('text-')) {
+            (el as HTMLElement).style.setProperty('font-size', '14px', 'important');
+          }
+        });
+        
+        // text-* 클래스들
+        document.querySelectorAll('.text-sm').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '13px', 'important');
+        });
+        document.querySelectorAll('.text-base').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '14px', 'important');
+        });
+        document.querySelectorAll('.text-lg').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '14px', 'important');
+        });
+        document.querySelectorAll('.text-xl').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '15px', 'important');
+        });
+        document.querySelectorAll('.text-2xl').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '16px', 'important');
+        });
+        document.querySelectorAll('.text-3xl').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '18px', 'important');
+        });
+        document.querySelectorAll('.text-4xl').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '20px', 'important');
+        });
+        
+        console.log('[FamilyPolicy] 모든 폰트 크기 강제 설정 완료');
+      };
+      
+      // 여러 번 반복 실행
+      setTimeout(applyAllFontSizes, 0);
+      setTimeout(applyAllFontSizes, 100);
+      setTimeout(applyAllFontSizes, 300);
+      setTimeout(applyAllFontSizes, 500);
+      setTimeout(applyAllFontSizes, 1000);
+      setTimeout(applyAllFontSizes, 2000);
     }
     
     window.scrollTo(0, 0);

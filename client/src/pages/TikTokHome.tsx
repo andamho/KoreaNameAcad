@@ -333,25 +333,99 @@ export default function TikTokHome() {
       console.log('[TT] 섹션 간격 제거 완료');
     };
     
+    // Dialog 폰트 크기 강제 설정 (JavaScript로 직접)
+    const applyDialogFontSizes = () => {
+      const dialogs = document.querySelectorAll('[role="dialog"]');
+      
+      dialogs.forEach(dialog => {
+        // 모든 h1 요소
+        dialog.querySelectorAll('h1').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '20px', 'important');
+        });
+        
+        // 모든 h2 요소
+        dialog.querySelectorAll('h2').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '18px', 'important');
+        });
+        
+        // 모든 h3, h4 요소
+        dialog.querySelectorAll('h3, h4').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '16px', 'important');
+        });
+        
+        // 모든 p, li, label, span 요소
+        dialog.querySelectorAll('p, li, label, span').forEach(el => {
+          const classList = (el as HTMLElement).classList;
+          // text-* 클래스가 있으면 건너뛰기 (아래에서 처리)
+          if (!Array.from(classList).some(c => c.startsWith('text-'))) {
+            (el as HTMLElement).style.setProperty('font-size', '14px', 'important');
+          }
+        });
+        
+        // text-lg 클래스
+        dialog.querySelectorAll('.text-lg').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '14px', 'important');
+        });
+        
+        // text-xl 클래스
+        dialog.querySelectorAll('.text-xl').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '15px', 'important');
+        });
+        
+        // text-2xl 클래스
+        dialog.querySelectorAll('.text-2xl').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '17px', 'important');
+        });
+        
+        // text-3xl 클래스
+        dialog.querySelectorAll('.text-3xl').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '19px', 'important');
+        });
+        
+        // text-4xl 클래스
+        dialog.querySelectorAll('.text-4xl').forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '22px', 'important');
+        });
+      });
+      
+      console.log('[TT] Dialog 폰트 크기 강제 설정 완료');
+    };
+    
+    // MutationObserver로 Dialog 감지
+    const observer = new MutationObserver(() => {
+      applyDialogFontSizes();
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+    
     // 여러 번 강제 적용 (늦은 렌더링 대비)
     setTimeout(applyScale, 0);
     setTimeout(applyFooterTextSize, 0);
     setTimeout(applySectionSpacing, 0);
+    setTimeout(applyDialogFontSizes, 0);
     const timer1 = setTimeout(applyScale, 100);
     const timer1b = setTimeout(applyFooterTextSize, 100);
     const timer1c = setTimeout(applySectionSpacing, 100);
+    const timer1d = setTimeout(applyDialogFontSizes, 100);
     const timer2 = setTimeout(applyScale, 300);
     const timer2b = setTimeout(applyFooterTextSize, 300);
     const timer2c = setTimeout(applySectionSpacing, 300);
+    const timer2d = setTimeout(applyDialogFontSizes, 300);
     const timer3 = setTimeout(applyScale, 500);
     const timer3b = setTimeout(applyFooterTextSize, 500);
     const timer3c = setTimeout(applySectionSpacing, 500);
+    const timer3d = setTimeout(applyDialogFontSizes, 500);
     const timer4 = setTimeout(applyScale, 1000);
     const timer4b = setTimeout(applyFooterTextSize, 1000);
     const timer4c = setTimeout(applySectionSpacing, 1000);
+    const timer4d = setTimeout(applyDialogFontSizes, 1000);
     const timer5 = setTimeout(applyScale, 2000);
     const timer5b = setTimeout(applyFooterTextSize, 2000);
     const timer5c = setTimeout(applySectionSpacing, 2000);
+    const timer5d = setTimeout(applyDialogFontSizes, 2000);
     
     // 리사이즈 시에도 재적용
     window.addEventListener('resize', applyScale);
@@ -362,21 +436,27 @@ export default function TikTokHome() {
       if (styleElement) {
         styleElement.remove();
       }
+      observer.disconnect();
       clearTimeout(timer1);
       clearTimeout(timer1b);
       clearTimeout(timer1c);
+      clearTimeout(timer1d);
       clearTimeout(timer2);
       clearTimeout(timer2b);
       clearTimeout(timer2c);
+      clearTimeout(timer2d);
       clearTimeout(timer3);
       clearTimeout(timer3b);
       clearTimeout(timer3c);
+      clearTimeout(timer3d);
       clearTimeout(timer4);
       clearTimeout(timer4b);
       clearTimeout(timer4c);
+      clearTimeout(timer4d);
       clearTimeout(timer5);
       clearTimeout(timer5b);
       clearTimeout(timer5c);
+      clearTimeout(timer5d);
       window.removeEventListener('resize', applyScale);
     };
   }, []);
