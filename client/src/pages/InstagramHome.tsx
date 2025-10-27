@@ -435,7 +435,7 @@ export default function InstagramHome() {
       </Dialog>
 
       <Dialog open={analysisDetailOpen} onOpenChange={(open) => { if (!open) closeAnalysisDetail(); }}>
-        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto bg-neutral-950 text-white border-white/20 p-0">
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto bg-neutral-950 text-white border-white/20 !p-0">
           <DialogHeader className="sr-only">
             <DialogTitle>이름분석 운명상담 안내</DialogTitle>
           </DialogHeader>
