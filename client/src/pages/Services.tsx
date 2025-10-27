@@ -59,6 +59,9 @@ export default function Services() {
           html.${className} .text-4xl {
             font-size: 20px !important;
           }
+          html.${className} [data-testid="text-process-title"] {
+            font-size: clamp(20px, 5vw, 24px) !important;
+          }
         `;
         document.head.appendChild(style);
       }
