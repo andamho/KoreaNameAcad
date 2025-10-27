@@ -195,7 +195,7 @@ export default function DetailInfo() {
                 <div className="text-foreground space-y-4 leading-relaxed">
                   <p>
                     가족은 운명 공동체로,<br />
-                    서로의 이름운의 영향을<br />
+                    서로 이름운의 영향을<br />
                     강하게 주고 받습니다.
                   </p>
                   
@@ -241,16 +241,16 @@ export default function DetailInfo() {
                     <p className="mt-2">
                       또한,<br />
                       자녀가 태어나게 되면<br />
-                      아이의 운(초년운, 총운, 흉운)이<br />
+                      자녀의 초년운이<br />
                       👉 부모의 중년운에 영향을 주고,
                     </p>
                     <p className="mt-2">
-                      부모의 운(중년운, 총운, 흉운)은<br />
+                      부모의 중년운은<br />
                       👉 자녀의 초년운에 영향을 미칩니다.
                     </p>
                     <p className="mt-2">
                       이처럼 가족은 운명공동체로서<br />
-                      서로의 이름운의 영향을<br />
+                      서로 이름운의 영향을<br />
                       밀접하게 주고 받습니다.
                     </p>
                   </div>
