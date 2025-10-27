@@ -205,19 +205,37 @@ export default function TikTokHome() {
       }
     };
     
+    // 영상 아래 텍스트 크기 강제 설정 (푸터 subtitle과 동일하게)
+    const applyVideoTextSize = () => {
+      const videoSectionText = document.querySelector('.kna-video-section .text-\\[11px\\]') as HTMLElement;
+      
+      console.log('[TT] applyVideoTextSize 실행, videoSectionText:', videoSectionText);
+      
+      if (videoSectionText) {
+        videoSectionText.style.setProperty('font-size', '13px', 'important');
+        console.log('[TT] 영상 아래 텍스트 크기 적용: 13px (푸터와 동일)');
+      }
+    };
+    
     // 여러 번 강제 적용 (늦은 렌더링 대비)
     setTimeout(applyScale, 0);
     setTimeout(applyFooterTextSize, 0);
+    setTimeout(applyVideoTextSize, 0);
     const timer1 = setTimeout(applyScale, 100);
     const timer1b = setTimeout(applyFooterTextSize, 100);
+    const timer1c = setTimeout(applyVideoTextSize, 100);
     const timer2 = setTimeout(applyScale, 300);
     const timer2b = setTimeout(applyFooterTextSize, 300);
+    const timer2c = setTimeout(applyVideoTextSize, 300);
     const timer3 = setTimeout(applyScale, 500);
     const timer3b = setTimeout(applyFooterTextSize, 500);
+    const timer3c = setTimeout(applyVideoTextSize, 500);
     const timer4 = setTimeout(applyScale, 1000);
     const timer4b = setTimeout(applyFooterTextSize, 1000);
+    const timer4c = setTimeout(applyVideoTextSize, 1000);
     const timer5 = setTimeout(applyScale, 2000);
     const timer5b = setTimeout(applyFooterTextSize, 2000);
+    const timer5c = setTimeout(applyVideoTextSize, 2000);
     
     // 리사이즈 시에도 재적용
     window.addEventListener('resize', applyScale);
@@ -230,14 +248,19 @@ export default function TikTokHome() {
       }
       clearTimeout(timer1);
       clearTimeout(timer1b);
+      clearTimeout(timer1c);
       clearTimeout(timer2);
       clearTimeout(timer2b);
+      clearTimeout(timer2c);
       clearTimeout(timer3);
       clearTimeout(timer3b);
+      clearTimeout(timer3c);
       clearTimeout(timer4);
       clearTimeout(timer4b);
+      clearTimeout(timer4c);
       clearTimeout(timer5);
       clearTimeout(timer5b);
+      clearTimeout(timer5c);
       window.removeEventListener('resize', applyScale);
     };
   }, []);
