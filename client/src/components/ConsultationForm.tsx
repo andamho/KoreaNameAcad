@@ -211,7 +211,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const formTitle = type === "naming" ? "이름감명" : "이름분석 운명상담 신청";
 
   return (
-    <div className="space-y-6">
+    <div className="kna-consultation-form space-y-6">
       <div className="space-y-2">
         <h3 className="text-2xl font-bold text-foreground">{formTitle}</h3>
         {type === "naming" && (
@@ -585,7 +585,10 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-8 px-2">
+          <div className="kna-family-policy-dialog space-y-8 px-2">
+            <style>{`
+              .glass { background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); border: 1px solid rgba(255,255,255,0.12); }
+            `}</style>
             <p className="text-lg md:text-lg text-center text-white/70 leading-relaxed">
               가족은 운명 공동체로, 서로 이름운의 영향을 강하게 주고 받습니다.
             </p>

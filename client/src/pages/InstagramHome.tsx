@@ -163,23 +163,9 @@ export default function InstagramHome() {
         }
         
         /* 다이얼로그와 폼 축소 (일반 섹션과 통일) */
-        [role="dialog"] [data-testid="name-analysis-root"] {
-          transform: scale(0.82) !important;
-          transform-origin: top center !important;
-          width: 122% !important;
-          margin-left: -11% !important;
-        }
-        
-        /* 상담신청 폼도 축소 */
-        [role="dialog"] .space-y-6:has(form) {
-          transform: scale(0.82) !important;
-          transform-origin: top center !important;
-          width: 122% !important;
-          margin-left: -11% !important;
-        }
-        
-        /* 등본상 가족 상담 원칙 다이얼로그 축소 */
-        [role="dialog"] .space-y-8:has(.glass) {
+        [role="dialog"] [data-testid="name-analysis-root"],
+        [role="dialog"] .kna-consultation-form,
+        [role="dialog"] .kna-family-policy-dialog {
           transform: scale(0.82) !important;
           transform-origin: top center !important;
           width: 122% !important;
