@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 인앱 브라우저 다이얼로그 스케일 */
+html.ua-instagram [role="dialog"],
+html.ua-tiktok [role="dialog"] {
+  transform: translate(-50%, -50%) scale(0.82) !important;
+  transform-origin: center !important;
+}
+
+html.ua-instagram [role="dialog"] .kna-consultation-form,
+html.ua-instagram [role="dialog"] .kna-family-policy-dialog,
+html.ua-instagram [role="dialog"] [data-testid="name-analysis-root"],
+html.ua-tiktok [role="dialog"] .kna-consultation-form,
+html.ua-tiktok [role="dialog"] .kna-family-policy-dialog,
+html.ua-tiktok [role="dialog"] [data-testid="name-analysis-root"] {
+  width: 122% !important;
+  margin-left: -11% !important;
+}
+
 /* 틱톡/인스타그램 인앱 브라우저 글자 자동확대 방지 */
 html, body {
   -webkit-text-size-adjust: 100% !important;
