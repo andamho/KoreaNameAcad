@@ -22,33 +22,28 @@ import analysisExampleImage from "@assets/hongildong-analysis.jpg";
 
 // 다이얼로그 스타일 적용 함수
 function applyDialogScale() {
-  console.log('[IG DIALOG] applyDialogScale 실행됨');
   const dialogs = document.querySelectorAll('[role="dialog"]');
-  console.log('[IG DIALOG] 찾은 dialogs:', dialogs.length);
   
-  dialogs.forEach((dialog, dialogIndex) => {
-    console.log(`[IG DIALOG] dialog ${dialogIndex}:`, dialog);
+  dialogs.forEach((dialog) => {
+    const dialogEl = dialog as HTMLElement;
+    
+    // DialogContent 자체에 scale 적용 (기존 translate 유지)
+    const currentTransform = dialogEl.style.transform || '';
+    if (!currentTransform.includes('scale')) {
+      // translate(-50%, -50%)는 유지하고 scale만 추가
+      dialogEl.style.setProperty('transform', 'translate(-50%, -50%) scale(0.82)', 'important');
+      dialogEl.style.setProperty('transform-origin', 'center', 'important');
+    }
+    
+    // 내부 타겟들에는 width만 조정
     const targets = dialog.querySelectorAll(
       '[data-testid="name-analysis-root"], .kna-consultation-form, .kna-family-policy-dialog'
     );
-    console.log(`[IG DIALOG] dialog ${dialogIndex}에서 찾은 targets:`, targets.length);
     
-    targets.forEach((target, targetIndex) => {
+    targets.forEach((target) => {
       const el = target as HTMLElement;
-      console.log(`[IG DIALOG] target ${targetIndex} 스타일 적용 전:`, {
-        transform: el.style.transform,
-        width: el.style.width,
-      });
-      
-      el.style.setProperty('transform', 'scale(0.82)', 'important');
-      el.style.setProperty('transform-origin', 'top center', 'important');
       el.style.setProperty('width', '122%', 'important');
       el.style.setProperty('margin-left', '-11%', 'important');
-      
-      console.log(`[IG DIALOG] target ${targetIndex} 스타일 적용 후:`, {
-        transform: el.style.transform,
-        width: el.style.width,
-      });
     });
   });
 }
@@ -319,13 +314,11 @@ export default function InstagramHome() {
 
   // 다이얼로그가 열릴 때마다 스타일 적용
   useEffect(() => {
-    console.log('[IG DIALOG] useEffect 실행, dialogOpen:', dialogOpen, 'analysisDetailOpen:', analysisDetailOpen);
     if (dialogOpen || analysisDetailOpen) {
       // 다이얼로그 렌더링을 위해 여러 타이밍에 적용
-      const timers = [0, 50, 100, 200, 300, 500].map(delay => {
-        console.log(`[IG DIALOG] ${delay}ms 후 applyDialogScale 예약`);
-        return setTimeout(applyDialogScale, delay);
-      });
+      const timers = [0, 50, 100, 200, 300, 500].map(delay => 
+        setTimeout(applyDialogScale, delay)
+      );
       
       return () => {
         timers.forEach(timer => clearTimeout(timer));
