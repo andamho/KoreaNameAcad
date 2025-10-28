@@ -587,7 +587,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
           <div className="space-y-8 px-2">
             <p className="text-lg md:text-lg text-center text-white/70 leading-relaxed">
-              가족은 운명 공동체로, 서로의 이름운의 영향을 강하게 주고 받습니다.
+              가족은 운명 공동체로, 서로 이름운의 영향을 강하게 주고 받습니다.
             </p>
 
             {/* 3개 카드 */}
@@ -636,8 +636,8 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 </div>
                 <ul className="space-y-1.5 text-lg md:text-lg text-white leading-relaxed list-disc pl-5">
                   <li>부부의 이름운은 결혼과 함께 상호작용</li>
-                  <li>자녀의 초년·총·흉운 → 부모의 중년운에 영향</li>
-                  <li>부모의 중년·총·흉운 → 자녀의 초년운에 영향</li>
+                  <li>자녀의 초년운 → 부모의 중년운에 영향</li>
+                  <li>부모의 중년운 → 자녀의 초년운에 영향</li>
                 </ul>
               </div>
             </div>
