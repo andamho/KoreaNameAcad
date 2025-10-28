@@ -235,7 +235,7 @@ export default function Home() {
 
             {/* Header */}
             <div className="text-center mb-10">
-              <h2 className="mb-4 text-2xl font-semibold tiffany md:text-4xl break-keep" data-testid="section-title">
+              <h2 className="mb-4 text-[25px] font-semibold tiffany sm:text-3xl md:text-4xl break-keep" data-testid="section-title">
                 이름분석 운명상담이란
               </h2>
               <p className="text-white/80 text-base md:text-base leading-relaxed">
@@ -270,7 +270,7 @@ export default function Home() {
 
             {/* 상담 내용 */}
             <div data-testid="consulting-content">
-              <h3 className="tiffany mb-10 text-center text-2xl font-semibold">상담 내용</h3>
+              <h3 className="tiffany mb-10 text-center text-[25px] font-semibold sm:text-3xl md:text-4xl">상담 내용</h3>
               <div className="space-y-10">
                 <div className="flex flex-col md:flex-row md:items-center md:gap-6" data-testid="content-item-1">
                   <CheckCircle className="hidden md:block h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
