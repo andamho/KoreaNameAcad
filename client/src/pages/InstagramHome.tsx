@@ -162,6 +162,30 @@ export default function InstagramHome() {
           font-size: 11px !important;
         }
         
+        /* 다이얼로그와 폼 축소 (일반 섹션과 통일) */
+        [role="dialog"] [data-testid="name-analysis-root"] {
+          transform: scale(0.82) !important;
+          transform-origin: top center !important;
+          width: 122% !important;
+          margin-left: -11% !important;
+        }
+        
+        /* 상담신청 폼도 축소 */
+        [role="dialog"] .space-y-6:has(form) {
+          transform: scale(0.82) !important;
+          transform-origin: top center !important;
+          width: 122% !important;
+          margin-left: -11% !important;
+        }
+        
+        /* 등본상 가족 상담 원칙 다이얼로그 축소 */
+        [role="dialog"] .space-y-8:has(.glass) {
+          transform: scale(0.82) !important;
+          transform-origin: top center !important;
+          width: 122% !important;
+          margin-left: -11% !important;
+        }
+        
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
         input, select, textarea, button { font-size: 16px; }
       `;
