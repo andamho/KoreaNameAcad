@@ -22,17 +22,33 @@ import analysisExampleImage from "@assets/hongildong-analysis.jpg";
 
 // 다이얼로그 스타일 적용 함수
 function applyDialogScale() {
+  console.log('[TT DIALOG] applyDialogScale 실행됨');
   const dialogs = document.querySelectorAll('[role="dialog"]');
-  dialogs.forEach(dialog => {
+  console.log('[TT DIALOG] 찾은 dialogs:', dialogs.length);
+  
+  dialogs.forEach((dialog, dialogIndex) => {
+    console.log(`[TT DIALOG] dialog ${dialogIndex}:`, dialog);
     const targets = dialog.querySelectorAll(
       '[data-testid="name-analysis-root"], .kna-consultation-form, .kna-family-policy-dialog'
     );
-    targets.forEach(target => {
+    console.log(`[TT DIALOG] dialog ${dialogIndex}에서 찾은 targets:`, targets.length);
+    
+    targets.forEach((target, targetIndex) => {
       const el = target as HTMLElement;
+      console.log(`[TT DIALOG] target ${targetIndex} 스타일 적용 전:`, {
+        transform: el.style.transform,
+        width: el.style.width,
+      });
+      
       el.style.setProperty('transform', 'scale(0.82)', 'important');
       el.style.setProperty('transform-origin', 'top center', 'important');
       el.style.setProperty('width', '122%', 'important');
       el.style.setProperty('margin-left', '-11%', 'important');
+      
+      console.log(`[TT DIALOG] target ${targetIndex} 스타일 적용 후:`, {
+        transform: el.style.transform,
+        width: el.style.width,
+      });
     });
   });
 }
@@ -303,11 +319,13 @@ export default function TikTokHome() {
 
   // 다이얼로그가 열릴 때마다 스타일 적용
   useEffect(() => {
+    console.log('[TT DIALOG] useEffect 실행, dialogOpen:', dialogOpen, 'analysisDetailOpen:', analysisDetailOpen);
     if (dialogOpen || analysisDetailOpen) {
       // 다이얼로그 렌더링을 위해 여러 타이밍에 적용
-      const timers = [0, 50, 100, 200, 300, 500].map(delay => 
-        setTimeout(applyDialogScale, delay)
-      );
+      const timers = [0, 50, 100, 200, 300, 500].map(delay => {
+        console.log(`[TT DIALOG] ${delay}ms 후 applyDialogScale 예약`);
+        return setTimeout(applyDialogScale, delay);
+      });
       
       return () => {
         timers.forEach(timer => clearTimeout(timer));
