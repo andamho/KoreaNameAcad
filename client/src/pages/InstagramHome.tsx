@@ -20,6 +20,23 @@ import {
 } from "@/components/ui/dialog";
 import analysisExampleImage from "@assets/hongildong-analysis.jpg";
 
+// 다이얼로그 스타일 적용 함수
+function applyDialogScale() {
+  const dialogs = document.querySelectorAll('[role="dialog"]');
+  dialogs.forEach(dialog => {
+    const targets = dialog.querySelectorAll(
+      '[data-testid="name-analysis-root"], .kna-consultation-form, .kna-family-policy-dialog'
+    );
+    targets.forEach(target => {
+      const el = target as HTMLElement;
+      el.style.setProperty('transform', 'scale(0.82)', 'important');
+      el.style.setProperty('transform-origin', 'top center', 'important');
+      el.style.setProperty('width', '122%', 'important');
+      el.style.setProperty('margin-left', '-11%', 'important');
+    });
+  });
+}
+
 export default function InstagramHome() {
   const [, setLocation] = useLocation();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -283,6 +300,20 @@ export default function InstagramHome() {
   useEffect(() => {
     analysisDetailOpenRef.current = analysisDetailOpen;
   }, [analysisDetailOpen]);
+
+  // 다이얼로그가 열릴 때마다 스타일 적용
+  useEffect(() => {
+    if (dialogOpen || analysisDetailOpen) {
+      // 다이얼로그 렌더링을 위해 여러 타이밍에 적용
+      const timers = [0, 50, 100, 200, 300, 500].map(delay => 
+        setTimeout(applyDialogScale, delay)
+      );
+      
+      return () => {
+        timers.forEach(timer => clearTimeout(timer));
+      };
+    }
+  }, [dialogOpen, analysisDetailOpen]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
