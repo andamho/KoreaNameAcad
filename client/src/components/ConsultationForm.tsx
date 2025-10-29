@@ -216,7 +216,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         <h3 className="text-[21px] md:text-[22px] font-bold text-foreground">{formTitle}</h3>
         {type === "naming" && (
           <div className="space-y-1">
-            <p className="text-orange-600 dark:text-orange-400 font-bold">
+            <p className="text-lg md:text-lg text-orange-600 dark:text-orange-400 font-bold">
               이름감명시 현재 이름에 대한 이름분석 필수
             </p>
             <p className="text-sm text-muted-foreground">
@@ -230,7 +230,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         {/* 등본상 가족 인원 - 이름분석에서만 표시 */}
         {type === "analysis" && (
           <div className="space-y-3">
-            <Label className="text-lg font-semibold">등본상 가족 인원 <span className="text-base font-normal text-muted-foreground">(해당 인원을 체크하세요)</span></Label>
+            <Label className="text-lg md:text-lg font-semibold">등본상 가족 인원 <span className="text-lg md:text-lg font-normal text-muted-foreground">(해당 인원을 체크하세요)</span></Label>
             <div className="flex gap-2 flex-wrap">
               {[1, 2, 3, 4, 5, 6].map((num) => (
                 <Button
@@ -246,7 +246,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 </Button>
               ))}
             </div>
-            <p className="text-base text-orange-600 dark:text-orange-400 mt-2">
+            <p className="text-lg md:text-lg text-orange-600 dark:text-orange-400 mt-2">
               저희 협회는 <span className="font-bold">등본상 가족 상담 원칙</span>으로 상담진행해 드리고 있습니다{" "}
               <button
                 type="button"
@@ -263,10 +263,10 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         {/* 각 인원별 정보 입력 */}
         {peopleData.map((person, index) => (
           <Card key={index} className="p-4 space-y-4">
-            {type === "analysis" && <h4 className="text-lg font-semibold text-foreground">{index + 1}번째 분석 대상</h4>}
+            {type === "analysis" && <h4 className="text-[21px] md:text-[22px] font-semibold text-foreground">{index + 1}번째 분석 대상</h4>}
             
             <div className="space-y-2">
-              <Label htmlFor={`name-${index}`} className="text-lg">
+              <Label htmlFor={`name-${index}`} className="text-lg md:text-lg">
                 {type === "naming" ? "현재 이름" : "이름"}
               </Label>
               <Input
@@ -280,7 +280,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor={`gender-${index}`} className="text-lg">성별</Label>
+              <Label htmlFor={`gender-${index}`} className="text-lg md:text-lg">성별</Label>
               <RadioGroup
                 value={person.gender}
                 onValueChange={(value) => updatePersonData(index, "gender", value)}
@@ -288,17 +288,17 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="male" id={`male-${index}`} data-testid={`radio-male-${index}`} />
-                  <Label htmlFor={`male-${index}`} className="text-lg font-normal cursor-pointer">남성</Label>
+                  <Label htmlFor={`male-${index}`} className="text-lg md:text-lg font-normal cursor-pointer">남성</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="female" id={`female-${index}`} data-testid={`radio-female-${index}`} />
-                  <Label htmlFor={`female-${index}`} className="text-lg font-normal cursor-pointer">여성</Label>
+                  <Label htmlFor={`female-${index}`} className="text-lg md:text-lg font-normal cursor-pointer">여성</Label>
                 </div>
               </RadioGroup>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor={`birthYear-${index}`} className="text-lg">태어난 연도</Label>
+              <Label htmlFor={`birthYear-${index}`} className="text-lg md:text-lg">태어난 연도</Label>
               <Input
                 id={`birthYear-${index}`}
                 value={person.birthYear}
@@ -310,7 +310,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor={`occupation-${index}`} className="text-lg">하는 일</Label>
+              <Label htmlFor={`occupation-${index}`} className="text-lg md:text-lg">하는 일</Label>
               <Input
                 id={`occupation-${index}`}
                 value={person.occupation}
@@ -325,7 +325,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
         {/* 주민등본 사진 첨부 */}
         <div className="space-y-2">
-          <Label htmlFor="registration-document" className="text-lg">주민등본 사진<span className="text-base font-normal text-orange-600 dark:text-orange-400">(정확한 한자 확인을 위해 반드시 첨부 | 주민등록번호 및 주소는 가린 후 제출)</span></Label>
+          <Label htmlFor="registration-document" className="text-lg md:text-lg">주민등본 사진<span className="text-lg md:text-lg font-normal text-orange-600 dark:text-orange-400">(정확한 한자 확인을 위해 반드시 첨부 | 주민등록번호 및 주소는 가린 후 제출)</span></Label>
           <Input
             id="registration-document"
             type="file"
@@ -335,7 +335,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             className="cursor-pointer pt-1.5 pb-2.5 md:pt-2 md:pb-2"
           />
           {registrationDocument && (
-            <p className="text-base text-muted-foreground">
+            <p className="text-lg md:text-lg text-muted-foreground">
               선택된 파일: {registrationDocument.name}
             </p>
           )}
@@ -343,7 +343,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
         {/* 연락처 */}
         <div className="space-y-2">
-          <Label htmlFor="phone" className="text-lg">연락처</Label>
+          <Label htmlFor="phone" className="text-lg md:text-lg">연락처</Label>
           <Input
             id="phone"
             type="tel"
@@ -357,7 +357,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
         {/* 개명여부 */}
         <div className="space-y-3">
-          <Label className="text-lg font-semibold">개명여부</Label>
+          <Label className="text-lg md:text-lg font-semibold">개명여부</Label>
           <RadioGroup
             value={hasNameChange}
             onValueChange={setHasNameChange}
@@ -365,11 +365,11 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="yes" id="namechange-yes" data-testid="radio-namechange-yes" />
-              <Label htmlFor="namechange-yes" className="text-lg font-normal cursor-pointer">예</Label>
+              <Label htmlFor="namechange-yes" className="text-lg md:text-lg font-normal cursor-pointer">예</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="no" id="namechange-no" data-testid="radio-namechange-no" />
-              <Label htmlFor="namechange-no" className="text-lg font-normal cursor-pointer">아니오</Label>
+              <Label htmlFor="namechange-no" className="text-lg md:text-lg font-normal cursor-pointer">아니오</Label>
             </div>
           </RadioGroup>
         </div>
@@ -378,7 +378,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         {hasNameChange === "yes" && (
           <div className="space-y-6">
             <div className="space-y-3">
-              <Label className="text-lg font-semibold">개명인원</Label>
+              <Label className="text-lg md:text-lg font-semibold">개명인원</Label>
               <div className="flex gap-2 flex-wrap">
                 {[1, 2, 3, 4].map((num) => (
                   <Button
@@ -399,10 +399,10 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             {/* 각 개명인원별 정보 입력 */}
             {nameChangeData.map((data, index) => (
               <Card key={index} className="p-4 space-y-4">
-                <h4 className="text-lg font-semibold text-foreground">{index + 1}번째 개명 정보</h4>
+                <h4 className="text-[21px] md:text-[22px] font-semibold text-foreground">{index + 1}번째 개명 정보</h4>
 
                 <div className="space-y-2">
-                  <Label htmlFor={`previousName-${index}`} className="text-lg">개명전 이름</Label>
+                  <Label htmlFor={`previousName-${index}`} className="text-lg md:text-lg">개명전 이름</Label>
                   <Input
                     id={`previousName-${index}`}
                     value={data.previousName}
@@ -414,7 +414,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor={`koreanName-${index}`} className="text-lg">한글이름</Label>
+                    <Label htmlFor={`koreanName-${index}`} className="text-lg md:text-lg">한글이름</Label>
                     <Input
                       id={`koreanName-${index}`}
                       value={data.koreanName}
@@ -425,7 +425,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor={`chineseName-${index}`} className="text-lg">한자이름</Label>
+                    <Label htmlFor={`chineseName-${index}`} className="text-lg md:text-lg">한자이름</Label>
                     <Input
                       id={`chineseName-${index}`}
                       value={data.chineseName}
@@ -438,7 +438,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
                 {index === 0 && (
                   <div className="bg-muted p-3 rounded-md">
-                    <p className="text-base text-muted-foreground">
+                    <p className="text-lg md:text-lg text-muted-foreground">
                       넓을 홍 길할 길 동녘 동 ❌<br />
                       洪吉東 ⭕<br />
                       (한자는 꼭 직접 입력해주세요. 같은 의미의 한자가 많기 때문에, 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.)
@@ -447,7 +447,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor={`changeYear-${index}`} className="text-lg">개명년도</Label>
+                  <Label htmlFor={`changeYear-${index}`} className="text-lg md:text-lg">개명년도</Label>
                   <Input
                     id={`changeYear-${index}`}
                     value={data.changeYear}
@@ -464,10 +464,10 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         {/* 감명받을 이름 (이름감명일 경우) */}
         {type === "naming" && (
           <Card className="p-4 space-y-4">
-            <h4 className="font-semibold text-foreground">감명받을 이름</h4>
+            <h4 className="text-[21px] md:text-[22px] font-semibold text-foreground">감명받을 이름</h4>
             
             <div className="space-y-2">
-              <Label htmlFor="evaluation-korean-name" className="text-lg">한글이름</Label>
+              <Label htmlFor="evaluation-korean-name" className="text-lg md:text-lg">한글이름</Label>
               <Input
                 id="evaluation-korean-name"
                 value={evaluationKoreanName}
@@ -478,7 +478,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="evaluation-chinese-name" className="text-lg">한자이름</Label>
+              <Label htmlFor="evaluation-chinese-name" className="text-lg md:text-lg">한자이름</Label>
               <Input
                 id="evaluation-chinese-name"
                 value={evaluationChineseName}
@@ -489,7 +489,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             </div>
 
             <div className="bg-muted p-3 rounded-md">
-              <p className="text-base text-muted-foreground">
+              <p className="text-lg md:text-lg text-muted-foreground">
                 넓을 홍 길할 길 동녘 동 ❌<br />
                 洪吉東 ⭕<br />
                 (한자는 꼭 직접 입력해주세요. 같은 의미의 한자가 많기 때문에, 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.)
@@ -500,7 +500,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
         {/* 상담받고자 하는 이유 */}
         <div className="space-y-2">
-          <Label htmlFor="reason" className="text-lg">상담받고자 하는 이유</Label>
+          <Label htmlFor="reason" className="text-lg md:text-lg">상담받고자 하는 이유</Label>
           <Textarea
             id="reason"
             value={reason}
@@ -514,7 +514,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         {/* 입금자명 */}
         <div className="space-y-3">
           <div className="space-y-2">
-            <Label htmlFor="depositor-name" className="text-lg">입금자명</Label>
+            <Label htmlFor="depositor-name" className="text-lg md:text-lg">입금자명</Label>
             <Input
               id="depositor-name"
               value={depositorName}
@@ -526,7 +526,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             />
           </div>
           <Card className="p-4 bg-muted">
-            <div className="space-y-2 text-base">
+            <div className="space-y-2 text-lg md:text-lg">
               <p className="font-semibold text-foreground">와츠유어네임 이름연구협회 전용 입금계좌</p>
               <p className="text-foreground">농협 351 8205 8124 53</p>
               {type === "naming" ? (
@@ -541,7 +541,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
         {/* 상담시간 */}
         <div className="space-y-3">
-          <Label className="text-lg font-semibold">상담시간</Label>
+          <Label className="text-lg md:text-lg font-semibold">상담시간</Label>
           <RadioGroup
             value={consultationTime}
             onValueChange={setConsultationTime}
@@ -549,15 +549,15 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="weekday" id="time-weekday" data-testid="radio-time-weekday" />
-              <Label htmlFor="time-weekday" className="text-lg font-normal cursor-pointer">주중 2시</Label>
+              <Label htmlFor="time-weekday" className="text-lg md:text-lg font-normal cursor-pointer">주중 2시</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="weekend" id="time-weekend" data-testid="radio-time-weekend" />
-              <Label htmlFor="time-weekend" className="text-lg font-normal cursor-pointer">주말 2시</Label>
+              <Label htmlFor="time-weekend" className="text-lg md:text-lg font-normal cursor-pointer">주말 2시</Label>
             </div>
           </RadioGroup>
           <Card className="p-4 bg-muted">
-            <div className="text-base text-muted-foreground space-y-1">
+            <div className="text-lg md:text-lg text-muted-foreground space-y-1">
               <p className="font-semibold text-foreground">※ 평균 상담 소요시간</p>
               {type === "naming" ? (
                 <p>1시간 10분(감명 개수에 따라 변동)</p>
@@ -580,7 +580,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
       <Dialog open={familyPolicyDialogOpen} onOpenChange={(open) => { if (!open) closeFamilyPolicyDialog(); }}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-neutral-950 border-[#81D8D0]/30">
           <DialogHeader>
-            <DialogTitle className="text-2xl md:text-3xl font-semibold text-center text-[#81D8D0]">
+            <DialogTitle className="text-[25px] sm:text-3xl md:text-4xl font-semibold text-center text-[#81D8D0]">
               등본상 가족 상담 원칙
             </DialogTitle>
           </DialogHeader>

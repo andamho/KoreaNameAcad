@@ -483,7 +483,7 @@ export default function InstagramHome() {
               <h2 className="mb-4 text-[25px] sm:text-3xl md:text-4xl font-semibold tiffany whitespace-nowrap" data-testid="section-title">
                 이름분석 운명상담이란
               </h2>
-              <p className="text-white/80 text-base md:text-base leading-relaxed">
+              <p className="text-white/80 text-lg md:text-lg leading-relaxed">
                 사주 없이 한글·한자 이름에 내재된 운명의 흐름을, 체계적으로 해석하는 전문 상담 서비스입니다.
               </p>
             </div>
