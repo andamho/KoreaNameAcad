@@ -162,15 +162,7 @@ export default function TikTokHome() {
           font-size: 11px !important;
         }
         
-        /* 다이얼로그와 폼 축소 (일반 섹션과 통일) */
-        [role="dialog"] [data-testid="name-analysis-root"],
-        [role="dialog"] .kna-consultation-form,
-        [role="dialog"] .kna-family-policy-dialog {
-          transform: scale(0.82) !important;
-          transform-origin: top center !important;
-          width: 122% !important;
-          margin-left: -11% !important;
-        }
+        /* 다이얼로그는 축소하지 않음 (폰트 크기를 섹션과 동일하게 이미 설정함) */
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
         input, select, textarea, button { font-size: 16px; }
