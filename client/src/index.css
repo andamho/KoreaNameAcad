@@ -2,13 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 인앱 브라우저 다이얼로그만 축소 (메인 페이지는 영향 없음) */
-html.ua-instagram .ig-tt-dialog,
-html.ua-tiktok .ig-tt-dialog {
-  transform: scale(0.82);
-  transform-origin: top center;
-}
-
 /* 틱톡/인스타그램 인앱 브라우저 글자 자동확대 방지 */
 html, body {
   -webkit-text-size-adjust: 100% !important;
