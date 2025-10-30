@@ -323,11 +323,11 @@ export default function Reviews() {
               return (
                 <div 
                   key={index} 
-                  className="flex flex-col items-center justify-center text-center py-6"
+                  className="flex flex-col items-center justify-center text-center py-4"
                   data-testid={`stat-${index}`}
                 >
                   <div 
-                    className="text-[32px] leading-[1.6] sm:text-4xl md:text-[60px] font-extrabold md:leading-relaxed mb-3 sm:mb-4 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent"
+                    className="text-[36px] leading-[1.4] sm:text-5xl md:text-[60px] font-extrabold md:leading-relaxed mb-2 sm:mb-3 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent w-full px-2"
                     style={{ WebkitTextStroke: '0px' }}
                     data-animate-number
                     data-target={numValue}
@@ -335,9 +335,8 @@ export default function Reviews() {
                   >
                     {stat.multiline ? '0년' : (suffix === '%' ? '0%' : '0+')}
                   </div>
-                  <div className="flex items-center justify-center gap-2 text-[14px] sm:text-[20px] md:text-[29px] font-semibold text-muted-foreground whitespace-nowrap">
-                    <IconComponent className="w-[16px] h-[16px] sm:w-[24px] sm:h-[24px] md:w-[32px] md:h-[32px] opacity-65" strokeWidth={2} />
-                    <span>{stat.label}</span>
+                  <div className="text-[13px] sm:text-[18px] md:text-[24px] font-semibold text-muted-foreground">
+                    {stat.label}
                   </div>
                 </div>
               );
