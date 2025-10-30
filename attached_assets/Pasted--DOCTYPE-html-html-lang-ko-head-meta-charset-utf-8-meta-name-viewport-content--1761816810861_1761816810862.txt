@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>성과 지표 — 라이브 미리보기</title>
+<style>
+  :root {
+    --grad-from: #007C73;
+    --grad-to: #00B8A9;
+    --bg: #ffffff;
+    --text: #0f172a;
+    --muted: #475569;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  .wrap { min-height: 100vh; display: grid; place-items: center; padding: 28px; }
+  .panel { width: min(1080px, 100%); background: rgba(255,255,255,0.86); backdrop-filter: blur(10px); border:1px solid #e5e7eb; border-radius: 28px; box-shadow: 0 10px 30px rgba(2,8,23,.08); padding: 32px; }
+  h1 {
+    font-size: clamp(22px, 2.6vw, 30px); margin:0; font-weight: 900; letter-spacing: -0.3px;
+    background: linear-gradient(90deg, var(--grad-from), var(--grad-to)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  /* CTA Button */
+  .cta { display:inline-flex; align-items:center; gap:10px; padding: 16px 30px; border-radius:999px; text-decoration:none; font-weight:800; font-size:18px; letter-spacing:.3px; background: linear-gradient(90deg, var(--grad-from), var(--grad-to)); color: white; box-shadow: 0 8px 20px rgba(0,140,126,.25); transition: all .4s ease; will-change: transform, box-shadow; }
+  .cta:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 12px 28px rgba(0,140,126,.3); }
+  .cta:active { transform: scale(0.98); box-shadow: 0 6px 16px rgba(0,140,126,.25); }
+
+  /* Divider */
+  .divider { height:1px; background: linear-gradient(90deg, transparent, #e6f5f2, transparent); margin: 28px 0; }
+
+  /* Stats */
+  .stats { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 18px; }
+  .stat { position:relative; border:1px solid #e8eef0; border-radius: 20px; padding: 22px; background: #fff; box-shadow: 0 8px 18px rgba(2,8,23,.04); text-align:center; }
+  .stat::after{ content:""; position:absolute; inset:0; border-radius:20px; padding:1px; background: linear-gradient(135deg, rgba(0,124,115,.15), rgba(0,184,169,.15)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+  .num { font-weight:900; line-height:1; letter-spacing: -0.5px; font-size: clamp(28px, 5.5vw, 58px); margin-bottom: 12px; background: linear-gradient(90deg, var(--grad-from), var(--grad-to)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .label { font-size: clamp(12px, 1.6vw, 16px); color: var(--muted); font-weight:600; }
+  .icon { width: 22px; height: 22px; opacity: .65; vertical-align: -3px; margin-right:6px; }
+
+  /* Responsive */
+  @media (max-width: 760px){ .stats{ grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <h1>성과 지표</h1>
+
+      <!-- Stats Block Only -->
+
+
+      <!-- Stats Block -->
+      <section class="stats" id="stats">
+        <div class="stat">
+          <div class="num" data-end="30000" data-suffix="+" aria-label="누적 상담 건수">0</div>
+          <div class="label"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>누적 상담 건수</div>
+        </div>
+        <div class="stat">
+          <div class="num" data-end="98" data-suffix="%" aria-label="고객 만족도">0</div>
+          <div class="label"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 22l7.8-8.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>고객 만족도</div>
+        </div>
+        <div class="stat">
+          <div class="num" data-end="17" data-suffix="년" aria-label="연혁">0</div>
+          <div class="label"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>43만명 임상</div>
+        </div>
+      </section>
+
+      <p style="margin-top:18px; text-align:center; color:var(--muted); font-size:14px;">스크롤로 이 영역이 보이면 숫자가 부드럽게 증가합니다.</p>
+    </div>
+  </div>
+
+<script>
+  // 숫자 포맷(천 단위 콤마)
+  const fmt = (n) => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+  function animateCounter(el){
+    const end = parseFloat(el.dataset.end);
+    const suffix = el.dataset.suffix || '';
+    const duration = 1600; // ms
+    const start = 0;
+    const startTime = performance.now();
+
+    function easeOutQuad(t){ return t*(2-t); }
+
+    function tick(now){
+      const p = Math.min(1, (now - startTime) / duration);
+      const eased = easeOutQuad(p);
+      const current = Math.floor(start + (end - start) * eased);
+      if(suffix === '%'){
+        el.textContent = current + '%';
+      } else if(suffix === '년'){
+        el.textContent = current + '년';
+      } else if(suffix === '+'){
+        el.textContent = fmt(current) + '+';
+      } else {
+        el.textContent = fmt(current) + suffix;
+      }
+      if(p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // 관찰자: 보일 때 1회만 실행
+  const observer = new IntersectionObserver((entries, obs)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        const nums = e.target.querySelectorAll('.num');
+        nums.forEach(n=> animateCounter(n));
+        obs.unobserve(e.target);
+      }
+    })
+  }, { threshold: 0.35 });
+
+  observer.observe(document.getElementById('stats'));
+</script>
+</body>
+</html>
