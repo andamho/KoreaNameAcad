@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
-import { Star, Quote } from "lucide-react";
+import { Star, Quote, Download, Heart, Clock } from "lucide-react";
 import { useEffect } from "react";
 
 export default function Reviews() {
@@ -226,9 +226,9 @@ export default function Reviews() {
   ];
 
   const stats = [
-    { value: "30,000+", label: "누적 상담 건수" },
-    { value: "98%", label: "고객 만족도" },
-    { value: "17년 43만명 임상", label: "", multiline: true }
+    { value: "30,000+", label: "누적 상담 건수", icon: Download },
+    { value: "98%", label: "고객 만족도", icon: Heart },
+    { value: "17년", label: "43만명 임상", icon: Clock, multiline: true }
   ];
 
   return (
@@ -255,34 +255,39 @@ export default function Reviews() {
       <section className="py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-3 gap-4 sm:gap-6">
-            {stats.map((stat, index) => (
-              <div 
-                key={index} 
-                className="relative border border-gray-200 dark:border-gray-700 rounded-2xl py-6 px-5 sm:py-8 sm:px-6 bg-white dark:bg-card shadow-[0_8px_18px_rgba(2,8,23,0.04)] dark:shadow-[0_8px_18px_rgba(0,0,0,0.3)] text-center
-                  after:content-[''] after:absolute after:inset-0 after:rounded-2xl after:p-[1px] after:bg-gradient-to-br after:from-[#007C73]/15 after:to-[#00B8A9]/15 after:pointer-events-none after:-z-10"
-                data-testid={`stat-${index}`}
-              >
-                {stat.multiline ? (
-                  <>
-                    <div className="text-2xl sm:text-4xl md:text-[60px] font-black leading-tight mb-3 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent">
-                      17년
-                    </div>
-                    <div className="text-[13px] sm:text-[20px] md:text-[29px] font-semibold text-muted-foreground whitespace-nowrap">
-                      43만명 임상
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-2xl sm:text-4xl md:text-[60px] font-black leading-tight mb-3 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent">
-                      {stat.value}
-                    </div>
-                    <div className="text-[13px] sm:text-[20px] md:text-[29px] font-semibold text-muted-foreground whitespace-nowrap">
-                      {stat.label}
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
+            {stats.map((stat, index) => {
+              const IconComponent = stat.icon;
+              return (
+                <div 
+                  key={index} 
+                  className="relative border border-gray-200 dark:border-gray-700 rounded-2xl py-8 px-5 sm:py-10 sm:px-6 bg-white dark:bg-card shadow-[0_8px_18px_rgba(2,8,23,0.04)] dark:shadow-[0_8px_18px_rgba(0,0,0,0.3)] text-center
+                    after:content-[''] after:absolute after:inset-0 after:rounded-2xl after:p-[1px] after:bg-gradient-to-br after:from-[#007C73]/15 after:to-[#00B8A9]/15 after:pointer-events-none after:-z-10"
+                  data-testid={`stat-${index}`}
+                >
+                  {stat.multiline ? (
+                    <>
+                      <div className="text-2xl sm:text-4xl md:text-[60px] font-black leading-[1.2] mb-4 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent">
+                        {stat.value}
+                      </div>
+                      <div className="flex items-center justify-center gap-2 text-[13px] sm:text-[20px] md:text-[29px] font-semibold text-muted-foreground whitespace-nowrap">
+                        <IconComponent className="w-[18px] h-[18px] sm:w-[24px] sm:h-[24px] md:w-[32px] md:h-[32px] opacity-65" strokeWidth={2} />
+                        <span>{stat.label}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-2xl sm:text-4xl md:text-[60px] font-black leading-[1.2] mb-4 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent">
+                        {stat.value}
+                      </div>
+                      <div className="flex items-center justify-center gap-2 text-[13px] sm:text-[20px] md:text-[29px] font-semibold text-muted-foreground whitespace-nowrap">
+                        <IconComponent className="w-[18px] h-[18px] sm:w-[24px] sm:h-[24px] md:w-[32px] md:h-[32px] opacity-65" strokeWidth={2} />
+                        <span>{stat.label}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
