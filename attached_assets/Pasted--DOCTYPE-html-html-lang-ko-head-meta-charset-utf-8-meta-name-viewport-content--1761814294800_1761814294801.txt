@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>🌈 프리미엄형 CTA 미리보기</title>
+<style>
+  :root {
+    --grad-from: #007C73;
+    --grad-to: #00B8A9;
+    --bg: #ffffff;
+    --text: #0f172a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: 'Noto Serif KR', 'Noto Sans KR', serif;
+  }
+  .wrap { min-height: 100vh; display: grid; place-items: center; padding: 32px; }
+  .panel { width: min(920px, 100%); background: rgba(255,255,255,0.82); backdrop-filter: blur(10px); border:1px solid #e5e7eb; border-radius: 24px; box-shadow: 0 10px 25px rgba(2,8,23,.08); padding: 32px; }
+  h1 { font-size: clamp(20px, 2.5vw, 28px); margin:0; font-weight: 800; letter-spacing: -0.3px; background: linear-gradient(90deg, var(--grad-from), var(--grad-to)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+  /* CTA Button */
+  .cta {
+    display:inline-flex; align-items:center; gap:10px;
+    padding: 16px 30px; border-radius:999px; text-decoration:none;
+    font-weight:700; font-size:18px; letter-spacing:.3px;
+    background: linear-gradient(90deg, var(--grad-from), var(--grad-to));
+    color: white; box-shadow: 0 8px 20px rgba(0,140,126,.25);
+    transition: all .4s ease; will-change: transform, box-shadow;
+  }
+  .cta:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 12px 28px rgba(0,140,126,.3);
+  }
+  .cta:active { transform: scale(0.98); box-shadow: 0 6px 16px rgba(0,140,126,.25); }
+  .cta .arrow { transition: transform .3s ease; }
+  .cta:hover .arrow { transform: translateX(6px); }
+
+  p.desc {
+    margin-top: 24px; text-align:center; font-size:15px; color:#475569;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <h1>🌈 프리미엄형 CTA — 럭셔리 & 고급형 미리보기</h1>
+
+      <div style="margin-top:40px; display:grid; place-items:center;">
+        <a href="#" class="cta" aria-label="고객 후기 전체보기">
+          <span>고객 후기 전체보기</span>
+        </a>
+      </div>
+
+      <p class="desc">그라데이션 컬러와 우아한 명조체 조합으로 고급스럽고 세련된 느낌을 주는 CTA입니다.<br/>Hover 시 부드럽게 확대되어 브랜드의 품격을 강조합니다.</p>
+    </div>
+  </div>
+</body>
+</html>
