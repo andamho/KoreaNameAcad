@@ -323,12 +323,13 @@ export default function Reviews() {
               return (
                 <div 
                   key={index} 
-                  className="relative border border-gray-200 dark:border-gray-700 rounded-2xl py-10 px-5 sm:py-12 sm:px-6 bg-white dark:bg-card shadow-[0_8px_18px_rgba(2,8,23,0.04)] dark:shadow-[0_8px_18px_rgba(0,0,0,0.3)] text-center overflow-visible
+                  className="relative border border-gray-200 dark:border-gray-700 rounded-2xl py-12 px-5 sm:py-14 sm:px-6 bg-white dark:bg-card shadow-[0_8px_18px_rgba(2,8,23,0.04)] dark:shadow-[0_8px_18px_rgba(0,0,0,0.3)] text-center overflow-visible
                     after:content-[''] after:absolute after:inset-0 after:rounded-2xl after:p-[1px] after:bg-gradient-to-br after:from-[#007C73]/15 after:to-[#00B8A9]/15 after:pointer-events-none after:-z-10"
                   data-testid={`stat-${index}`}
                 >
                   <div 
-                    className="text-2xl sm:text-4xl md:text-[60px] font-black leading-[1.3] mb-4 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent"
+                    className="text-2xl sm:text-4xl md:text-[60px] font-extrabold leading-relaxed py-2 mb-5 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent"
+                    style={{ WebkitTextStroke: '0px' }}
                     data-animate-number
                     data-target={numValue}
                     data-suffix={suffix}
