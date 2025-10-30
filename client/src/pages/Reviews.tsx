@@ -314,7 +314,7 @@ export default function Reviews() {
       {/* Stats Section */}
       <section className="py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div ref={statsRef} className="grid grid-cols-3 gap-4 sm:gap-6">
+          <div ref={statsRef} className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
             {stats.map((stat, index) => {
               const IconComponent = stat.icon;
               const numValue = stat.multiline ? 17 : (stat.value.includes('%') ? 98 : 30000);
@@ -323,11 +323,11 @@ export default function Reviews() {
               return (
                 <div 
                   key={index} 
-                  className="flex flex-col items-center justify-center text-center py-4"
+                  className={`flex flex-col items-center justify-center text-center py-6 ${index === 0 ? 'col-span-2 sm:col-span-1' : 'col-span-1'}`}
                   data-testid={`stat-${index}`}
                 >
                   <div 
-                    className="text-[36px] leading-[1.4] sm:text-5xl md:text-[60px] font-extrabold md:leading-relaxed mb-2 sm:mb-3 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent w-full px-2"
+                    className="text-[36px] leading-[1.4] sm:text-5xl md:text-[60px] font-extrabold md:leading-relaxed mb-3 sm:mb-4 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent w-full px-2"
                     style={{ WebkitTextStroke: '0px' }}
                     data-animate-number
                     data-target={numValue}
@@ -335,8 +335,9 @@ export default function Reviews() {
                   >
                     {stat.multiline ? '0년' : (suffix === '%' ? '0%' : '0+')}
                   </div>
-                  <div className="text-[13px] sm:text-[18px] md:text-[24px] font-semibold text-muted-foreground">
-                    {stat.label}
+                  <div className="flex items-center justify-center gap-2 text-[13px] sm:text-[18px] md:text-[24px] font-semibold text-muted-foreground">
+                    <IconComponent className="w-[16px] h-[16px] sm:w-[20px] sm:h-[20px] md:w-[28px] md:h-[28px] opacity-65" strokeWidth={2} />
+                    <span>{stat.label}</span>
                   </div>
                 </div>
               );
