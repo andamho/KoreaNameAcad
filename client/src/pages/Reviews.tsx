@@ -323,12 +323,11 @@ export default function Reviews() {
               return (
                 <div 
                   key={index} 
-                  className="relative border border-gray-200 dark:border-gray-700 rounded-2xl py-14 px-3 sm:py-14 sm:px-6 bg-white dark:bg-card shadow-[0_8px_18px_rgba(2,8,23,0.04)] dark:shadow-[0_8px_18px_rgba(0,0,0,0.3)] text-center overflow-visible min-h-[180px] sm:min-h-[200px] flex flex-col items-center justify-center
-                    after:content-[''] after:absolute after:inset-0 after:rounded-2xl after:p-[1px] after:bg-gradient-to-br after:from-[#007C73]/15 after:to-[#00B8A9]/15 after:pointer-events-none after:-z-10"
+                  className="flex flex-col items-center justify-center text-center py-6"
                   data-testid={`stat-${index}`}
                 >
                   <div 
-                    className="text-[28px] leading-[1.6] sm:text-4xl md:text-[60px] font-extrabold md:leading-relaxed py-1 sm:py-2 mb-3 sm:mb-5 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent"
+                    className="text-[32px] leading-[1.6] sm:text-4xl md:text-[60px] font-extrabold md:leading-relaxed mb-3 sm:mb-4 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent"
                     style={{ WebkitTextStroke: '0px' }}
                     data-animate-number
                     data-target={numValue}
@@ -336,8 +335,8 @@ export default function Reviews() {
                   >
                     {stat.multiline ? '0년' : (suffix === '%' ? '0%' : '0+')}
                   </div>
-                  <div className="flex items-center justify-center gap-2 text-[13px] sm:text-[20px] md:text-[29px] font-semibold text-muted-foreground whitespace-nowrap">
-                    <IconComponent className="w-[18px] h-[18px] sm:w-[24px] sm:h-[24px] md:w-[32px] md:h-[32px] opacity-65" strokeWidth={2} />
+                  <div className="flex items-center justify-center gap-2 text-[14px] sm:text-[20px] md:text-[29px] font-semibold text-muted-foreground whitespace-nowrap">
+                    <IconComponent className="w-[16px] h-[16px] sm:w-[24px] sm:h-[24px] md:w-[32px] md:h-[32px] opacity-65" strokeWidth={2} />
                     <span>{stat.label}</span>
                   </div>
                 </div>
