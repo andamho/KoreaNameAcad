@@ -259,13 +259,13 @@ export default function Reviews() {
               <div key={index} data-testid={`stat-${index}`}>
                 {stat.multiline ? (
                   <div className="mb-2">
-                    <div className="text-xl sm:text-3xl md:text-[2.88rem] font-bold text-primary mb-2">17년</div>
-                    <div className="text-[0.7rem] sm:text-[1.05rem] md:text-[1.4rem] font-bold text-foreground whitespace-nowrap">43만명 임상</div>
+                    <div className="text-2xl sm:text-4xl md:text-[60px] font-bold text-primary mb-2">17년</div>
+                    <div className="text-[13px] sm:text-[20px] md:text-[29px] font-bold text-foreground whitespace-nowrap">43만명 임상</div>
                   </div>
                 ) : (
-                  <div className="text-xl sm:text-3xl md:text-[2.88rem] font-bold text-primary mb-2">{stat.value}</div>
+                  <div className="text-2xl sm:text-4xl md:text-[60px] font-bold text-primary mb-2">{stat.value}</div>
                 )}
-                {stat.label && <div className="text-[0.7rem] sm:text-[1.05rem] md:text-[1.4rem] text-foreground whitespace-nowrap">{stat.label}</div>}
+                {stat.label && <div className="text-[13px] sm:text-[20px] md:text-[29px] text-foreground whitespace-nowrap">{stat.label}</div>}
               </div>
             ))}
           </div>
