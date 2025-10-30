@@ -254,18 +254,33 @@ export default function Reviews() {
       {/* Stats Section */}
       <section className="py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-3 gap-3 sm:gap-8 text-center">
+          <div className="grid grid-cols-3 gap-4 sm:gap-6">
             {stats.map((stat, index) => (
-              <div key={index} data-testid={`stat-${index}`}>
+              <div 
+                key={index} 
+                className="relative border border-gray-200 dark:border-gray-700 rounded-2xl p-5 sm:p-6 bg-white dark:bg-card shadow-[0_8px_18px_rgba(2,8,23,0.04)] dark:shadow-[0_8px_18px_rgba(0,0,0,0.3)] text-center
+                  after:content-[''] after:absolute after:inset-0 after:rounded-2xl after:p-[1px] after:bg-gradient-to-br after:from-[#007C73]/15 after:to-[#00B8A9]/15 after:pointer-events-none after:-z-10"
+                data-testid={`stat-${index}`}
+              >
                 {stat.multiline ? (
-                  <div className="mb-2">
-                    <div className="text-2xl sm:text-4xl md:text-[60px] font-bold text-primary mb-2">17년</div>
-                    <div className="text-[13px] sm:text-[20px] md:text-[29px] font-bold text-foreground whitespace-nowrap">43만명 임상</div>
-                  </div>
+                  <>
+                    <div className="text-2xl sm:text-4xl md:text-[60px] font-black leading-none mb-3 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent">
+                      17년
+                    </div>
+                    <div className="text-[13px] sm:text-[20px] md:text-[29px] font-semibold text-muted-foreground whitespace-nowrap">
+                      43만명 임상
+                    </div>
+                  </>
                 ) : (
-                  <div className="text-2xl sm:text-4xl md:text-[60px] font-bold text-primary mb-2">{stat.value}</div>
+                  <>
+                    <div className="text-2xl sm:text-4xl md:text-[60px] font-black leading-none mb-3 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent">
+                      {stat.value}
+                    </div>
+                    <div className="text-[13px] sm:text-[20px] md:text-[29px] font-semibold text-muted-foreground whitespace-nowrap">
+                      {stat.label}
+                    </div>
+                  </>
                 )}
-                {stat.label && <div className="text-[13px] sm:text-[20px] md:text-[29px] text-foreground whitespace-nowrap">{stat.label}</div>}
               </div>
             ))}
           </div>
