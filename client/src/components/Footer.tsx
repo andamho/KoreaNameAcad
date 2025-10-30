@@ -102,7 +102,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-white/20 text-center">
-          <p className="text-[10px] md:text-sm text-white/50">
+          <p className="text-[10px] md:text-sm text-white/50 kna-footer-copyright">
             © {new Date().getFullYear()} 한국이름학교 | 와츠유어네임 이름연구협회. All rights reserved.
           </p>
         </div>
