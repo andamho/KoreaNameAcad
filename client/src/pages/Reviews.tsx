@@ -258,13 +258,13 @@ export default function Reviews() {
             {stats.map((stat, index) => (
               <div 
                 key={index} 
-                className="relative border border-gray-200 dark:border-gray-700 rounded-2xl p-5 sm:p-6 bg-white dark:bg-card shadow-[0_8px_18px_rgba(2,8,23,0.04)] dark:shadow-[0_8px_18px_rgba(0,0,0,0.3)] text-center
+                className="relative border border-gray-200 dark:border-gray-700 rounded-2xl py-6 px-5 sm:py-8 sm:px-6 bg-white dark:bg-card shadow-[0_8px_18px_rgba(2,8,23,0.04)] dark:shadow-[0_8px_18px_rgba(0,0,0,0.3)] text-center
                   after:content-[''] after:absolute after:inset-0 after:rounded-2xl after:p-[1px] after:bg-gradient-to-br after:from-[#007C73]/15 after:to-[#00B8A9]/15 after:pointer-events-none after:-z-10"
                 data-testid={`stat-${index}`}
               >
                 {stat.multiline ? (
                   <>
-                    <div className="text-2xl sm:text-4xl md:text-[60px] font-black leading-none mb-3 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent">
+                    <div className="text-2xl sm:text-4xl md:text-[60px] font-black leading-tight mb-3 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent">
                       17년
                     </div>
                     <div className="text-[13px] sm:text-[20px] md:text-[29px] font-semibold text-muted-foreground whitespace-nowrap">
@@ -273,7 +273,7 @@ export default function Reviews() {
                   </>
                 ) : (
                   <>
-                    <div className="text-2xl sm:text-4xl md:text-[60px] font-black leading-none mb-3 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent">
+                    <div className="text-2xl sm:text-4xl md:text-[60px] font-black leading-tight mb-3 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent">
                       {stat.value}
                     </div>
                     <div className="text-[13px] sm:text-[20px] md:text-[29px] font-semibold text-muted-foreground whitespace-nowrap">
