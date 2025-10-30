@@ -2,9 +2,12 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Star, Quote, Download, Heart, Clock } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Reviews() {
+  const statsRef = useRef<HTMLDivElement>(null);
+  const [animated, setAnimated] = useState(false);
+
   useEffect(() => {
     // User Agent로 인앱 브라우저 감지
     const userAgent = navigator.userAgent || '';
@@ -71,6 +74,63 @@ export default function Reviews() {
       };
     }
   }, []);
+
+  // 애니메이션 효과
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !animated) {
+            setAnimated(true);
+            const numElements = entry.target.querySelectorAll('[data-animate-number]');
+            numElements.forEach((el) => {
+              const target = parseFloat(el.getAttribute('data-target') || '0');
+              const suffix = el.getAttribute('data-suffix') || '';
+              animateNumber(el as HTMLElement, target, suffix);
+            });
+          }
+        });
+      },
+      { threshold: 0.35 }
+    );
+
+    if (statsRef.current) {
+      observer.observe(statsRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [animated]);
+
+  const animateNumber = (element: HTMLElement, end: number, suffix: string) => {
+    const duration = 1600;
+    const start = 0;
+    const startTime = performance.now();
+
+    const easeOutQuad = (t: number) => t * (2 - t);
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = easeOutQuad(progress);
+      const current = Math.floor(start + (end - start) * eased);
+
+      if (suffix === '%') {
+        element.textContent = current + '%';
+      } else if (suffix === '년') {
+        element.textContent = current + '년';
+      } else if (suffix === '+') {
+        element.textContent = current.toLocaleString() + '+';
+      } else {
+        element.textContent = current.toLocaleString() + suffix;
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  };
   
   const analysisTestimonials = [
     {
@@ -254,37 +314,31 @@ export default function Reviews() {
       {/* Stats Section */}
       <section className="py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-3 gap-4 sm:gap-6">
+          <div ref={statsRef} className="grid grid-cols-3 gap-4 sm:gap-6">
             {stats.map((stat, index) => {
               const IconComponent = stat.icon;
+              const numValue = stat.multiline ? 17 : (stat.value.includes('%') ? 98 : 30000);
+              const suffix = stat.value.includes('%') ? '%' : (stat.multiline ? '년' : '+');
+              
               return (
                 <div 
                   key={index} 
-                  className="relative border border-gray-200 dark:border-gray-700 rounded-2xl py-8 px-5 sm:py-10 sm:px-6 bg-white dark:bg-card shadow-[0_8px_18px_rgba(2,8,23,0.04)] dark:shadow-[0_8px_18px_rgba(0,0,0,0.3)] text-center
+                  className="relative border border-gray-200 dark:border-gray-700 rounded-2xl py-10 px-5 sm:py-12 sm:px-6 bg-white dark:bg-card shadow-[0_8px_18px_rgba(2,8,23,0.04)] dark:shadow-[0_8px_18px_rgba(0,0,0,0.3)] text-center overflow-visible
                     after:content-[''] after:absolute after:inset-0 after:rounded-2xl after:p-[1px] after:bg-gradient-to-br after:from-[#007C73]/15 after:to-[#00B8A9]/15 after:pointer-events-none after:-z-10"
                   data-testid={`stat-${index}`}
                 >
-                  {stat.multiline ? (
-                    <>
-                      <div className="text-2xl sm:text-4xl md:text-[60px] font-black leading-[1.2] mb-4 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent">
-                        {stat.value}
-                      </div>
-                      <div className="flex items-center justify-center gap-2 text-[13px] sm:text-[20px] md:text-[29px] font-semibold text-muted-foreground whitespace-nowrap">
-                        <IconComponent className="w-[18px] h-[18px] sm:w-[24px] sm:h-[24px] md:w-[32px] md:h-[32px] opacity-65" strokeWidth={2} />
-                        <span>{stat.label}</span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-2xl sm:text-4xl md:text-[60px] font-black leading-[1.2] mb-4 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent">
-                        {stat.value}
-                      </div>
-                      <div className="flex items-center justify-center gap-2 text-[13px] sm:text-[20px] md:text-[29px] font-semibold text-muted-foreground whitespace-nowrap">
-                        <IconComponent className="w-[18px] h-[18px] sm:w-[24px] sm:h-[24px] md:w-[32px] md:h-[32px] opacity-65" strokeWidth={2} />
-                        <span>{stat.label}</span>
-                      </div>
-                    </>
-                  )}
+                  <div 
+                    className="text-2xl sm:text-4xl md:text-[60px] font-black leading-[1.3] mb-4 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent"
+                    data-animate-number
+                    data-target={numValue}
+                    data-suffix={suffix}
+                  >
+                    {stat.multiline ? '0년' : (suffix === '%' ? '0%' : '0+')}
+                  </div>
+                  <div className="flex items-center justify-center gap-2 text-[13px] sm:text-[20px] md:text-[29px] font-semibold text-muted-foreground whitespace-nowrap">
+                    <IconComponent className="w-[18px] h-[18px] sm:w-[24px] sm:h-[24px] md:w-[32px] md:h-[32px] opacity-65" strokeWidth={2} />
+                    <span>{stat.label}</span>
+                  </div>
                 </div>
               );
             })}
