@@ -50,16 +50,14 @@ export default function Home() {
         const subElements = document.querySelectorAll('.kna-brand-sub');
         
         mainElements.forEach(el => {
-          (el as HTMLElement).style.setProperty('font-size', '14px', 'important');
+          (el as HTMLElement).style.setProperty('font-size', '13px', 'important');
           (el as HTMLElement).style.setProperty('line-height', '1', 'important');
-          (el as HTMLElement).style.setProperty('letter-spacing', '-0.025em', 'important');
         });
         
         subElements.forEach(el => {
-          (el as HTMLElement).style.setProperty('font-size', '7px', 'important');
+          (el as HTMLElement).style.setProperty('font-size', '10px', 'important');
           (el as HTMLElement).style.setProperty('line-height', '1', 'important');
-          (el as HTMLElement).style.setProperty('letter-spacing', '-0.12em', 'important');
-          (el as HTMLElement).style.setProperty('margin-top', '1px', 'important');
+          (el as HTMLElement).style.setProperty('margin-top', '3px', 'important');
         });
         
         console.log(`[Home] 네비바 스타일 적용 완료 - main: ${mainElements.length}개, sub: ${subElements.length}개`);
