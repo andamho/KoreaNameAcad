@@ -75,9 +75,16 @@ export function Navbar() {
                   alt="한국이름학교 로고" 
                   className="h-10 w-10 md:h-10 md:w-10"
                 />
-                <div className="flex flex-col justify-center h-10">
-                  <div className="text-[17px] md:text-[17px] leading-none tracking-tight font-black">한국이름학교</div>
-                  <div className="text-[10px] md:text-[10px] leading-none tracking-normal font-normal mt-0.5">와츠유어네임 이름연구협회</div>
+                <div className="flex flex-col justify-center h-10" style={{ width: '160px' }}>
+                  <div className="text-[17px] md:text-[17px] leading-none font-black flex justify-between w-full">
+                    <span>한</span>
+                    <span>국</span>
+                    <span>이</span>
+                    <span>름</span>
+                    <span>학</span>
+                    <span>교</span>
+                  </div>
+                  <div className="text-[10px] md:text-[10px] leading-none font-normal mt-0.5 w-full">와츠유어네임 이름연구협회</div>
                 </div>
               </button>
             </div>
