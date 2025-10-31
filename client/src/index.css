@@ -34,17 +34,20 @@ select {
   font-size: 16px;
 }
 
-/* 네비바 브랜드 텍스트 - 인앱 브라우저에서 크기 고정 */
+/* 네비바 브랜드 텍스트 - 인앱 브라우저에서 크기 고정 (로고 높이 40px에 맞춤) */
 html.ua-instagram .kna-brand-main,
 html.ua-tiktok .kna-brand-main {
-  font-size: 17px !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
   letter-spacing: -0.025em !important;
 }
 
 html.ua-instagram .kna-brand-sub,
 html.ua-tiktok .kna-brand-sub {
-  font-size: 9.2px !important;
+  font-size: 8px !important;
+  line-height: 1 !important;
   letter-spacing: -0.12em !important;
+  margin-top: 1px !important;
 }
 
 /* 인스타그램 인앱 브라우저 전용: 자동 폰트 축소 방지 */
