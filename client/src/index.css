@@ -34,6 +34,19 @@ select {
   font-size: 16px;
 }
 
+/* 네비바 브랜드 텍스트 - 인앱 브라우저에서 크기 고정 */
+html.ua-instagram .kna-brand-main,
+html.ua-tiktok .kna-brand-main {
+  font-size: 17px !important;
+  letter-spacing: -0.025em !important;
+}
+
+html.ua-instagram .kna-brand-sub,
+html.ua-tiktok .kna-brand-sub {
+  font-size: 9.2px !important;
+  letter-spacing: -0.12em !important;
+}
+
 /* 인스타그램 인앱 브라우저 전용: 자동 폰트 축소 방지 */
 html.ua-instagram h1 {
   font-size: clamp(26px, 5.8vw, 36px) !important;
