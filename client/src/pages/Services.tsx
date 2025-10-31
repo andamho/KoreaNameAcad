@@ -66,6 +66,32 @@ export default function Services() {
         document.head.appendChild(style);
       }
       
+      // JavaScript로 네비바 텍스트 크기 강제 적용
+      const applyNavbarStyles = () => {
+        const mainElements = document.querySelectorAll('.kna-brand-main');
+        const subElements = document.querySelectorAll('.kna-brand-sub');
+        
+        mainElements.forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '14px', 'important');
+          (el as HTMLElement).style.setProperty('line-height', '1', 'important');
+          (el as HTMLElement).style.setProperty('letter-spacing', '-0.025em', 'important');
+        });
+        
+        subElements.forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '7px', 'important');
+          (el as HTMLElement).style.setProperty('line-height', '1', 'important');
+          (el as HTMLElement).style.setProperty('letter-spacing', '-0.12em', 'important');
+          (el as HTMLElement).style.setProperty('margin-top', '1px', 'important');
+        });
+        
+        console.log(`[Services] 네비바 스타일 적용 완료`);
+      };
+      
+      applyNavbarStyles();
+      setTimeout(applyNavbarStyles, 100);
+      setTimeout(applyNavbarStyles, 300);
+      setTimeout(applyNavbarStyles, 500);
+      
       console.log(`[Services] 인앱 브라우저 감지: ${className}, User Agent: ${userAgent}`);
       
       return () => {
