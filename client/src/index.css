@@ -8,6 +8,43 @@ html, body {
   text-size-adjust: 100% !important;
 }
 
+/* 네비바 브랜드 텍스트 정렬 */
+.kna-brand-text {
+  width: 9.2rem;
+  display: inline-block;
+}
+
+.kna-brand-title {
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: justify;
+  text-align-last: justify;
+  letter-spacing: 0.02em;
+}
+
+.kna-brand-title::after {
+  content: '';
+  display: inline-block;
+  width: 100%;
+}
+
+.kna-brand-subtitle {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1;
+  margin-top: 2px;
+  text-align: justify;
+  text-align-last: justify;
+  letter-spacing: 0.01em;
+}
+
+.kna-brand-subtitle::after {
+  content: '';
+  display: inline-block;
+  width: 100%;
+}
+
 html,
 body {
   overflow-x: hidden;
