@@ -34,6 +34,15 @@ select {
   font-size: 16px;
 }
 
+/* 네비바 브랜드 텍스트 - 기본 크기 설정 */
+.kna-brand-main {
+  font-size: 17px;
+}
+
+.kna-brand-sub {
+  font-size: 9.2px;
+}
+
 /* 네비바 브랜드 텍스트 - 인앱 브라우저에서 크기 고정 (로고 높이 40px에 맞춤) */
 html.ua-instagram .kna-brand-main,
 html.ua-tiktok .kna-brand-main {
