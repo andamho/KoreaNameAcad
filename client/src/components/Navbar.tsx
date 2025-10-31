@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import logoImage from "@assets/KakaoTalk_20251014_171358611_1760429674941.png";
+import logoImage from "@assets/KakaoTalk_20251031_094128282_1761871317678.jpg";
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -67,21 +67,15 @@ export function Navbar() {
             <div className="flex items-center gap-2">
               <button
                 onClick={goToHome}
-                className="flex items-center gap-1 sm:gap-2 hover-elevate active-elevate-2 rounded-md px-0 sm:px-2 py-1"
+                className="hover-elevate active-elevate-2 rounded-md px-2 py-1"
                 data-testid="link-home"
               >
                 <img 
                   src={logoImage} 
-                  alt="한국이름학교 로고" 
-                  className="h-10 w-10 md:h-6 md:w-6 scale-90 md:scale-110"
+                  alt="한국이름학교 | 와츠유어네임 이름연구협회" 
+                  className="h-10 md:h-12 w-auto object-contain"
+                  style={{ imageRendering: 'crisp-edges' }}
                 />
-                <div className="md:text-xl font-bold text-foreground font-['Noto_Sans_KR']">
-                  <div className="md:hidden text-left flex flex-col justify-center h-10">
-                    <div className="text-[17px] leading-none tracking-tight">한국이름학교</div>
-                    <div className="text-[10px] leading-none tracking-[-0.02em] mt-0.5">와츠유어네임 이름연구협회</div>
-                  </div>
-                  <span className="hidden md:inline whitespace-nowrap tracking-wide">한국이름학교 | 와츠유어네임 이름연구협회</span>
-                </div>
               </button>
             </div>
 
