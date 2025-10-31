@@ -55,10 +55,10 @@ export default function Home() {
         });
         
         subElements.forEach(el => {
-          (el as HTMLElement).style.setProperty('font-size', '6px', 'important');
+          (el as HTMLElement).style.setProperty('font-size', '7px', 'important');
           (el as HTMLElement).style.setProperty('line-height', '1', 'important');
           (el as HTMLElement).style.setProperty('margin-top', '3px', 'important');
-          (el as HTMLElement).style.setProperty('letter-spacing', '-0.08em', 'important');
+          (el as HTMLElement).style.setProperty('letter-spacing', '-0.06em', 'important');
         });
         
         console.log(`[Home] 네비바 스타일 적용 완료 - main: ${mainElements.length}개, sub: ${subElements.length}개`);
