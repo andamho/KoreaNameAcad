@@ -54,10 +54,10 @@ html.ua-tiktok .kna-brand-main {
 
 html.ua-instagram .kna-brand-sub,
 html.ua-tiktok .kna-brand-sub {
-  font-size: 7px !important;
+  font-size: 6.8px !important;
   line-height: 1 !important;
   margin-top: 3px !important;
-  letter-spacing: -0.06em !important;
+  letter-spacing: -0.065em !important;
 }
 
 /* 인스타그램 인앱 브라우저 전용: 자동 폰트 축소 방지 */
