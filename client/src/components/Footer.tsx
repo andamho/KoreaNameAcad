@@ -40,7 +40,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
         {/* 팔로우 - 상단 한 줄 */}
         <div className="flex items-center justify-center gap-6 mb-12">
-          <span className="text-[23px]">팔로우</span>
+          <span className="text-[23px] kna-footer-follow">팔로우</span>
           <div className="w-px h-6 bg-white/30"></div>
           <div className="flex gap-6">
             {socialLinks.map((social) => (
