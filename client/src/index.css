@@ -60,8 +60,12 @@ html.ua-instagram .ig-tt-dialog label {
 }
 
 /* Footer 푸터 텍스트 크기 조정 (인앱 브라우저) */
+html.ua-instagram .kna-footer-title {
+  font-size: 14px !important;
+}
+
 html.ua-instagram .kna-footer-follow {
-  font-size: 18px !important;
+  font-size: 16px !important;
 }
 
 html.ua-instagram .kna-footer-subtitle {
@@ -100,8 +104,12 @@ html.ua-tiktok .ig-tt-dialog label {
 }
 
 /* Footer 푸터 텍스트 크기 조정 (인앱 브라우저) */
+html.ua-tiktok .kna-footer-title {
+  font-size: 14px !important;
+}
+
 html.ua-tiktok .kna-footer-follow {
-  font-size: 18px !important;
+  font-size: 16px !important;
 }
 
 html.ua-tiktok .kna-footer-subtitle {
