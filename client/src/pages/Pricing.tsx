@@ -70,9 +70,10 @@ export default function Pricing() {
         });
         
         subElements.forEach(el => {
-          (el as HTMLElement).style.setProperty('font-size', '10px', 'important');
+          (el as HTMLElement).style.setProperty('font-size', '8px', 'important');
           (el as HTMLElement).style.setProperty('line-height', '1', 'important');
           (el as HTMLElement).style.setProperty('margin-top', '3px', 'important');
+          (el as HTMLElement).style.setProperty('letter-spacing', '-0.05em', 'important');
         });
         
         console.log(`[Pricing] 네비바 스타일 적용 완료`);
