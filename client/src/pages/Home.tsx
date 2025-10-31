@@ -30,6 +30,23 @@ export default function Home() {
   const analysisDetailOpenRef = useRef(false);
   const referrerPage = useRef<string | null>(null);
 
+  // 인앱 브라우저 감지
+  useEffect(() => {
+    const userAgent = navigator.userAgent || '';
+    const isInstagram = userAgent.includes('Instagram');
+    const isTikTok = userAgent.includes('TikTok') || userAgent.includes('musical_ly');
+    
+    if (isInstagram) {
+      document.documentElement.classList.add('ua-instagram');
+    } else if (isTikTok) {
+      document.documentElement.classList.add('ua-tiktok');
+    }
+    
+    return () => {
+      document.documentElement.classList.remove('ua-instagram', 'ua-tiktok');
+    };
+  }, []);
+
   // ref를 state와 동기화
   useEffect(() => {
     dialogOpenRef.current = dialogOpen;
