@@ -34,29 +34,36 @@ select {
   font-size: 16px;
 }
 
-/* 네비바 브랜드 텍스트 - 기본 크기 설정 */
+/* 네비바 브랜드 텍스트 - 기본 크기 설정 (일반 모바일) */
 .kna-brand-main {
-  font-size: 17px;
+  font-size: 17px !important;
+  line-height: 1 !important;
 }
 
 .kna-brand-sub {
-  font-size: 9.2px;
+  font-size: 9.2px !important;
+  line-height: 1 !important;
 }
 
-/* 네비바 브랜드 텍스트 - 인앱 브라우저에서 크기 고정 (로고 높이 40px에 맞춤) */
+/* 네비바 브랜드 텍스트 - 인앱 브라우저에서만 크기 축소 (로고 높이 40px에 맞춤) */
 html.ua-instagram .kna-brand-main,
 html.ua-tiktok .kna-brand-main {
   font-size: 14px !important;
-  line-height: 1 !important;
-  letter-spacing: -0.025em !important;
+  max-height: 14px !important;
+  overflow: hidden !important;
 }
 
 html.ua-instagram .kna-brand-sub,
 html.ua-tiktok .kna-brand-sub {
   font-size: 7px !important;
-  line-height: 1 !important;
-  letter-spacing: -0.12em !important;
-  margin-top: 1px !important;
+  max-height: 7px !important;
+  overflow: hidden !important;
+  margin-top: 2px !important;
+}
+
+html.ua-instagram .kna-brand-main + .kna-brand-sub,
+html.ua-tiktok .kna-brand-main + .kna-brand-sub {
+  margin-top: 2px !important;
 }
 
 /* 인스타그램 인앱 브라우저 전용: 자동 폰트 축소 방지 */

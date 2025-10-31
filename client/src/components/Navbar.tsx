@@ -76,9 +76,9 @@ export function Navbar() {
                   className="h-10 w-10 md:h-6 md:w-6 scale-90 md:scale-110"
                 />
                 <div className="md:text-xl font-bold text-foreground font-['Noto_Sans_KR']">
-                  <div className="md:hidden text-left flex flex-col justify-center h-10 max-h-10 overflow-hidden">
-                    <div className="kna-brand-main leading-none tracking-tight" style={{ fontSize: '14px', maxHeight: '14px' }}>한국이름학교</div>
-                    <div className="kna-brand-sub leading-none tracking-[-0.12em]" style={{ fontSize: '7px', maxHeight: '7px', marginTop: '2px' }}>와츠유어네임 이름연구협회</div>
+                  <div className="md:hidden text-left flex flex-col justify-center h-10">
+                    <div className="kna-brand-main leading-none tracking-tight">한국이름학교</div>
+                    <div className="kna-brand-sub leading-none tracking-[-0.12em] mt-0.5">와츠유어네임 이름연구협회</div>
                   </div>
                   <span className="hidden md:inline whitespace-nowrap tracking-wide">한국이름학교 | 와츠유어네임 이름연구협회</span>
                 </div>
