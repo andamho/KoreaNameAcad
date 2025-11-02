@@ -29,6 +29,34 @@ export default function InstagramHome() {
   const dialogOpenRef = useRef(false);
   const analysisDetailOpenRef = useRef(false);
   const referrerPage = useRef<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // 동영상 자동 재생 (스크롤 시)
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            video.play().catch(err => {
+              console.log('자동 재생 실패:', err);
+            });
+          } else {
+            video.pause();
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(video);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   // 인스타그램 전용 클래스 및 canonical 태그 추가
   useEffect(() => {
@@ -423,9 +451,12 @@ export default function InstagramHome() {
       <section className="kna-video-section py-16 md:py-24">
         <div className="max-w-md mx-auto px-4 sm:px-6">
           <video 
+            ref={videoRef}
             className="w-full h-auto rounded-lg shadow-lg"
             controls
             playsInline
+            muted
+            loop
             preload="metadata"
             controlsList="nodownload"
             data-testid="video-promotion"
