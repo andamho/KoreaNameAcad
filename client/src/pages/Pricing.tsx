@@ -55,6 +55,12 @@ export default function Pricing() {
           html.${className} .text-4xl {
             font-size: 20px !important;
           }
+          html.${className} .text-\\[18px\\] {
+            font-size: 14px !important;
+          }
+          html.${className} .text-\\[21px\\] {
+            font-size: 16px !important;
+          }
         `;
         document.head.appendChild(style);
       }
