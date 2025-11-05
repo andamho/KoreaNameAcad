@@ -390,7 +390,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     size="sm"
                     onClick={() => handleNumNameChangesChange(num)}
                     data-testid={`button-namechange-${num}`}
-                    className="w-12 h-12 text-lg"
+                    className="w-10 h-10 text-lg"
                   >
                     {num}
                   </Button>
@@ -440,7 +440,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
                 {index === 0 && (
                   <div className="bg-muted p-3 rounded-md">
-                    <p className="text-lg md:text-lg text-muted-foreground">
+                    <p className="text-base md:text-base text-muted-foreground">
                       넓을 홍 길할 길 동녘 동 ❌<br />
                       洪吉東 ⭕<br />
                       (한자는 꼭 직접 입력해주세요. 같은 의미의 한자가 많기 때문에, 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.)
@@ -491,7 +491,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             </div>
 
             <div className="bg-muted p-3 rounded-md">
-              <p className="text-lg md:text-lg text-muted-foreground">
+              <p className="text-base md:text-base text-muted-foreground">
                 넓을 홍 길할 길 동녘 동 ❌<br />
                 洪吉東 ⭕<br />
                 (한자는 꼭 직접 입력해주세요. 같은 의미의 한자가 많기 때문에, 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.)
