@@ -100,6 +100,13 @@ export async function sendConsultationNotification(consultation: Consultation): 
               <div class="value" style="white-space: pre-wrap;">${consultation.reason}</div>
             </div>
 
+            ${consultation.referralSource ? `
+              <div class="section">
+                <div class="label">🔍 문의 경로</div>
+                <div class="value">${consultation.referralSource}</div>
+              </div>
+            ` : ''}
+
             <div class="section">
               <div class="label">💰 입금자명</div>
               <div class="value">${consultation.depositorName}</div>
@@ -182,6 +189,7 @@ ${consultation.type === 'naming' && consultation.evaluationKoreanName ? `
 💬 상담 이유:
 ${consultation.reason}
 
+${consultation.referralSource ? `🔍 문의 경로: ${consultation.referralSource}\n` : ''}
 💰 입금자명: ${consultation.depositorName}
 ⏰ 희망 상담 시간: ${consultation.consultationTime}
 

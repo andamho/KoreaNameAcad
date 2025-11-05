@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>한국이름학교 문의 경로</title>
+  <style>
+    body {
+      font-family: "Noto Sans KR", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background-color: #fafafa;
+      margin: 0;
+      padding: 40px 20px;
+    }
+    .form-container {
+      max-width: 720px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #222;
+    }
+    p {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+    .options {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 480px) {
+      .options { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 840px) {
+      .options { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      background: #f7f7f7;
+      border-radius: 12px;
+      padding: 14px 16px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: 1px solid transparent;
+      height: 52px;
+    }
+    .option:hover { background: #e9f8f6; transform: translateY(-1px); border-color: #b8efe8; }
+    .option input { margin-right: 10px; transform: scale(1.15); accent-color: #00c2a8; }
+    label, span { font-size: 15px; color: #333; cursor: pointer; user-select: none; }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>저희 한국이름학교를 어떻게 알게 되셨나요?</h2>
+    <p>(처음 접하신 경로를 선택해 주세요.)</p>
+
+    <form>
+      <div class="options" role="group" aria-label="문의 경로">
+        <label class="option" for="ref1">
+          <input type="radio" id="ref1" name="source" value="지인소개" required />
+          <span>지인소개</span>
+        </label>
+        <label class="option" for="ref2">
+          <input type="radio" id="ref2" name="source" value="블로그" />
+          <span>블로그</span>
+        </label>
+        <label class="option" for="ref3">
+          <input type="radio" id="ref3" name="source" value="인스타" />
+          <span>인스타</span>
+        </label>
+        <label class="option" for="ref4">
+          <input type="radio" id="ref4" name="source" value="틱톡" />
+          <span>틱톡</span>
+        </label>
+        <label class="option" for="ref5">
+          <input type="radio" id="ref5" name="source" value="유튜브" />
+          <span>유튜브</span>
+        </label>
+        <label class="option" for="ref6">
+          <input type="radio" id="ref6" name="source" value="페이스북" />
+          <span>페이스북</span>
+        </label>
+        <label class="option" for="ref7">
+          <input type="radio" id="ref7" name="source" value="쓰레드" />
+          <span>쓰레드 (Threads)</span>
+        </label>
+        <label class="option" for="ref8">
+          <input type="radio" id="ref8" name="source" value="크몽" />
+          <span>크몽</span>
+        </label>
+        <label class="option" for="ref9">
+          <input type="radio" id="ref9" name="source" value="네이버검색" />
+          <span>네이버검색</span>
+        </label>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

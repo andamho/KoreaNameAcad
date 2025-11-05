@@ -47,6 +47,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const [evaluationKoreanName, setEvaluationKoreanName] = useState("");
   const [evaluationChineseName, setEvaluationChineseName] = useState("");
   const [reason, setReason] = useState("");
+  const [referralSource, setReferralSource] = useState("");
   const [depositorName, setDepositorName] = useState("");
   const [consultationTime, setConsultationTime] = useState("");
   const [familyPolicyDialogOpen, setFamilyPolicyDialogOpen] = useState(false);
@@ -200,6 +201,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
       evaluationKoreanName: type === "naming" ? evaluationKoreanName : undefined,
       evaluationChineseName: type === "naming" ? evaluationChineseName : undefined,
       reason,
+      referralSource: referralSource || undefined,
       depositorName,
       consultationTime,
       ...fileData,
@@ -509,6 +511,47 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             className="min-h-[100px]"
             data-testid="input-reason"
           />
+        </div>
+
+        {/* 문의 경로 */}
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <Label className="text-lg md:text-lg font-semibold">저희 한국이름학교를 어떻게 알게 되셨나요?</Label>
+            <p className="text-sm text-muted-foreground">(처음 접하신 경로를 선택해 주세요.)</p>
+          </div>
+          <RadioGroup 
+            value={referralSource} 
+            onValueChange={setReferralSource}
+            className="grid grid-cols-2 sm:grid-cols-3 gap-3"
+          >
+            {[
+              { value: "지인소개", label: "지인소개" },
+              { value: "블로그", label: "블로그" },
+              { value: "인스타", label: "인스타" },
+              { value: "틱톡", label: "틱톡" },
+              { value: "유튜브", label: "유튜브" },
+              { value: "페이스북", label: "페이스북" },
+              { value: "쓰레드", label: "쓰레드" },
+              { value: "크몽", label: "크몽" },
+              { value: "네이버검색", label: "네이버검색" },
+            ].map((option) => (
+              <label
+                key={option.value}
+                className={`
+                  flex items-center gap-2.5 rounded-xl px-4 py-3.5
+                  border-2 transition-all cursor-pointer hover-elevate
+                  ${referralSource === option.value 
+                    ? 'border-primary bg-primary/5 dark:bg-primary/10' 
+                    : 'border-border bg-card'
+                  }
+                `}
+                data-testid={`referral-${option.value}`}
+              >
+                <RadioGroupItem value={option.value} id={`ref-${option.value}`} />
+                <span className="text-base font-medium">{option.label}</span>
+              </label>
+            ))}
+          </RadioGroup>
         </div>
 
         {/* 입금자명 */}
