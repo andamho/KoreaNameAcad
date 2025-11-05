@@ -248,7 +248,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 </Button>
               ))}
             </div>
-            <p className="text-lg md:text-lg text-orange-600 dark:text-orange-400 mt-2">
+            <p className="text-base md:text-base text-orange-600 dark:text-orange-400 mt-2">
               저희 협회는 <span className="font-bold">등본상 가족 상담 원칙</span>으로 상담진행해 드리고 있습니다{" "}
               <button
                 type="button"
@@ -327,7 +327,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
         {/* 주민등본 사진 첨부 */}
         <div className="space-y-2">
-          <Label htmlFor="registration-document" className="text-lg md:text-lg">주민등본 사진<span className="text-lg md:text-lg font-normal text-orange-600 dark:text-orange-400">(정확한 한자 확인을 위해 반드시 첨부 | 주민등록번호 및 주소는 가린 후 제출)</span></Label>
+          <Label htmlFor="registration-document" className="text-lg md:text-lg">주민등본 사진<span className="text-base md:text-base font-normal text-orange-600 dark:text-orange-400">(정확한 한자 확인을 위해 반드시 첨부 | 주민등록번호 및 주소는 가린 후 제출)</span></Label>
           <Input
             id="registration-document"
             type="file"
@@ -517,7 +517,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         <div className="space-y-3">
           <div className="space-y-2">
             <Label className="text-lg md:text-lg font-semibold">저희 한국이름학교를 어떻게 알게 되셨나요?</Label>
-            <p className="text-sm text-muted-foreground">(처음 접하신 경로를 선택해 주세요.)</p>
+            <p className="text-base md:text-base text-muted-foreground">(처음 접하신 경로를 선택해 주세요.)</p>
           </div>
           <RadioGroup 
             value={referralSource} 
@@ -533,7 +533,6 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               { value: "페이스북", label: "페이스북" },
               { value: "쓰레드", label: "쓰레드" },
               { value: "크몽", label: "크몽" },
-              { value: "네이버검색", label: "네이버검색" },
             ].map((option) => (
               <label
                 key={option.value}
@@ -569,7 +568,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             />
           </div>
           <Card className="p-4 bg-muted">
-            <div className="space-y-2 text-lg md:text-lg">
+            <div className="space-y-2 text-base md:text-base">
               <p className="font-semibold text-foreground">와츠유어네임 이름연구협회 전용 입금계좌</p>
               <p className="text-foreground">농협 351 8205 8124 53</p>
               {type === "naming" ? (
@@ -600,7 +599,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             </div>
           </RadioGroup>
           <Card className="p-4 bg-muted">
-            <div className="text-lg md:text-lg text-muted-foreground space-y-1">
+            <div className="text-base md:text-base text-muted-foreground space-y-1">
               <p className="font-semibold text-foreground">※ 평균 상담 소요시간</p>
               {type === "naming" ? (
                 <p>1시간 10분(감명 개수에 따라 변동)</p>
