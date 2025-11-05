@@ -537,7 +537,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               <label
                 key={option.value}
                 className={`
-                  flex items-center gap-2.5 rounded-xl px-4 py-2.5
+                  flex items-center gap-2.5 rounded-xl px-4 h-9
                   border-2 transition-all cursor-pointer hover-elevate
                   ${referralSource === option.value 
                     ? 'border-primary bg-primary/5 dark:bg-primary/10' 
