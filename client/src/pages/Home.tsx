@@ -325,21 +325,21 @@ export default function Home() {
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-1">
                 <Layers className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
                 <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">16가지 세부 운세<br />종합 분석</h3>
-                <p className="text-lg md:text-lg leading-relaxed text-white/70 text-left">
+                <p className="text-lg md:text-lg leading-relaxed text-white/70">
                   수리운·주역괘운의 세밀한 분석을 통해 인생의 총체적 방향을 진단합니다.
                 </p>
               </div>
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-2">
                 <Compass className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
                 <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">7개 인생 시기별 운의<br />흐름 파악</h3>
-                <p className="text-lg md:text-lg leading-relaxed text-white/70 text-left">
+                <p className="text-lg md:text-lg leading-relaxed text-white/70">
                   초년·중년·말년 등 7개 시기를 분석하여 시기별 강점과 전환점을 명확히 제시합니다.
                 </p>
               </div>
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-3">
                 <Clock className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
                 <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">과거·현재·미래<br />정밀 진단</h3>
-                <p className="text-lg md:text-lg leading-relaxed text-white/70 text-left">
+                <p className="text-lg md:text-lg leading-relaxed text-white/70">
                   지나온 일, 현재 처한 상황, 다가올 운을 세밀히 파악합니다.
                 </p>
               </div>
@@ -394,38 +394,34 @@ export default function Home() {
             <div className="mt-16" data-testid="process-flow">
               <h3 className="tiffany mb-10 text-center text-[25px] font-semibold sm:text-3xl md:text-4xl">진행 과정</h3>
               
-              {/* 이름상담 */}
-              <div>
-                <h4 className="text-[21px] md:text-[22px] font-semibold text-white mb-6">이름상담</h4>
-                <div className="space-y-6">
-                  <div className="flex gap-4" data-testid="process-step-1">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
-                      <span className="text-[21px] font-bold text-white dark:text-neutral-950">1</span>
-                    </div>
-                    <div className="flex-1">
-                      <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">월정예약</h5>
-                      <p className="text-lg md:text-lg text-white/70">→ 신청서 접수, 입금확인 후 예약</p>
-                    </div>
+              <div className="space-y-6">
+                <div className="flex gap-4" data-testid="process-step-1">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                    <span className="text-[21px] font-bold text-white dark:text-neutral-950">1</span>
                   </div>
-
-                  <div className="flex gap-4" data-testid="process-step-2">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
-                      <span className="text-[21px] font-bold text-white dark:text-neutral-950">2</span>
-                    </div>
-                    <div className="flex-1">
-                      <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">이름분석표 발송</h5>
-                      <p className="text-lg md:text-lg text-white/70">→ 상담 바로 전</p>
-                    </div>
+                  <div className="flex-1">
+                    <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">일정예약</h5>
+                    <p className="text-lg md:text-lg text-white/70">→ 신청서 접수, 입금확인 후 예약</p>
                   </div>
+                </div>
 
-                  <div className="flex gap-4" data-testid="process-step-3">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
-                      <span className="text-[21px] font-bold text-white dark:text-neutral-950">3</span>
-                    </div>
-                    <div className="flex-1">
-                      <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">전화상담 진행</h5>
-                      <p className="text-lg md:text-lg text-white/70">→ 분석표 보며 상담</p>
-                    </div>
+                <div className="flex gap-4" data-testid="process-step-2">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                    <span className="text-[21px] font-bold text-white dark:text-neutral-950">2</span>
+                  </div>
+                  <div className="flex-1">
+                    <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">이름분석표 발송</h5>
+                    <p className="text-lg md:text-lg text-white/70">→ 상담 바로 전</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4" data-testid="process-step-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                    <span className="text-[21px] font-bold text-white dark:text-neutral-950">3</span>
+                  </div>
+                  <div className="flex-1">
+                    <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">전화상담 진행</h5>
+                    <p className="text-lg md:text-lg text-white/70">→ 분석표 보며 상담</p>
                   </div>
                 </div>
               </div>
