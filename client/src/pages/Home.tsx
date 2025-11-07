@@ -389,6 +389,83 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+            {/* 진행 과정 */}
+            <div className="mt-16" data-testid="process-flow">
+              <h3 className="tiffany mb-10 text-center text-[25px] font-semibold sm:text-3xl md:text-4xl">진행 과정</h3>
+              
+              {/* 이름상담 */}
+              <div className="mb-12">
+                <h4 className="text-[21px] md:text-[22px] font-semibold text-white mb-6">이름상담</h4>
+                <div className="space-y-6">
+                  <div className="flex gap-4" data-testid="process-step-1">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                      <span className="text-[21px] font-bold text-white dark:text-neutral-950">1</span>
+                    </div>
+                    <div className="flex-1">
+                      <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">월정예약</h5>
+                      <p className="text-lg md:text-lg text-white/70">→ 신청서 접수, 입금확인 후 예약</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4" data-testid="process-step-2">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                      <span className="text-[21px] font-bold text-white dark:text-neutral-950">2</span>
+                    </div>
+                    <div className="flex-1">
+                      <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">이름분석표 발송</h5>
+                      <p className="text-lg md:text-lg text-white/70">→ 상담 바로 전</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4" data-testid="process-step-3">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                      <span className="text-[21px] font-bold text-white dark:text-neutral-950">3</span>
+                    </div>
+                    <div className="flex-1">
+                      <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">전화상담 진행</h5>
+                      <p className="text-lg md:text-lg text-white/70">→ 분석표 보며 상담</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 개명 */}
+              <div>
+                <h4 className="text-[21px] md:text-[22px] font-semibold text-white mb-6">개명</h4>
+                <div className="space-y-6">
+                  <div className="flex gap-4" data-testid="process-renaming-step-1">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                      <span className="text-[21px] font-bold text-white dark:text-neutral-950">1</span>
+                    </div>
+                    <div className="flex-1">
+                      <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">개명비 입금</h5>
+                      <p className="text-lg md:text-lg text-white/70">→ 신청서 접수, 입금확인 후 예약</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4" data-testid="process-renaming-step-2">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                      <span className="text-[21px] font-bold text-white dark:text-neutral-950">2</span>
+                    </div>
+                    <div className="flex-1">
+                      <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">감명표 발송</h5>
+                      <p className="text-lg md:text-lg text-white/70">→ 입금 후 3~7일 이내</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4" data-testid="process-renaming-step-3">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                      <span className="text-[21px] font-bold text-white dark:text-neutral-950">3</span>
+                    </div>
+                    <div className="flex-1">
+                      <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">전화상담 진행</h5>
+                      <p className="text-lg md:text-lg text-white/70">→ 감명표 보며 상담</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
