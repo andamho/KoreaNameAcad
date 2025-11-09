@@ -404,19 +404,19 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 <h4 className="text-[21px] md:text-[22px] font-semibold text-foreground">{index + 1}번째 개명 정보</h4>
 
                 <div className="space-y-2">
-                  <Label htmlFor={`previousName-${index}`} className="text-lg md:text-lg">개명전 이름</Label>
+                  <Label htmlFor={`previousName-${index}`} className="text-lg md:text-lg">현재 이름</Label>
                   <Input
                     id={`previousName-${index}`}
                     value={data.previousName}
                     onChange={(e) => updateNameChangeData(index, "previousName", e.target.value)}
-                    placeholder="개명 전 이름"
+                    placeholder="현재 이름"
                     data-testid={`input-previous-name-${index}`}
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor={`koreanName-${index}`} className="text-lg md:text-lg">한글이름</Label>
+                    <Label htmlFor={`koreanName-${index}`} className="text-lg md:text-lg">개명 전 한글 이름</Label>
                     <Input
                       id={`koreanName-${index}`}
                       value={data.koreanName}
@@ -427,7 +427,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor={`chineseName-${index}`} className="text-lg md:text-lg">한자이름</Label>
+                    <Label htmlFor={`chineseName-${index}`} className="text-lg md:text-lg">개명전 한자 이름</Label>
                     <Input
                       id={`chineseName-${index}`}
                       value={data.chineseName}
