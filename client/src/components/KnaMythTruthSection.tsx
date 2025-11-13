@@ -49,8 +49,11 @@ export default function KnaMythTruthSection() {
   ];
 
   return (
-    <section className="kna-myth-truth-section py-16 md:py-24 bg-muted/30">
-      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+    <section className="kna-myth-truth-section relative overflow-hidden py-16 md:py-24 bg-muted/30">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#7fe1d3]/20 dark:bg-[#58C4C4]/20 blur-3xl" />
+      </div>
+      <div className="relative max-w-5xl mx-auto px-6 lg:px-8">
         <header className="text-center">
           <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
             궁금하셨죠? 솔직하게 답합니다
