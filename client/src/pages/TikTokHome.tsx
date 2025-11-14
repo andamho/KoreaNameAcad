@@ -194,7 +194,7 @@ export default function TikTokHome() {
         
         /* 푸터 텍스트 크기 강제 조정 (인앱 브라우저) */
         p.kna-footer-subtitle {
-          font-size: 5.4px !important;
+          font-size: 9.6px !important;
           line-height: 1.5 !important;
         }
         .kna-footer .border-t p {
@@ -235,9 +235,9 @@ export default function TikTokHome() {
       console.log('[TT] applyFooterTextSize 실행, footerSubtitle:', footerSubtitle, 'copyrightText:', copyrightText);
       
       if (footerSubtitle) {
-        footerSubtitle.style.setProperty('font-size', '5.4px', 'important');
+        footerSubtitle.style.setProperty('font-size', '9.6px', 'important');
         footerSubtitle.style.setProperty('line-height', '1.5', 'important');
-        console.log('[TT] 푸터 subtitle 크기 적용: 5.4px');
+        console.log('[TT] 푸터 subtitle 크기 적용: 9.6px');
       }
       
       if (copyrightText) {
