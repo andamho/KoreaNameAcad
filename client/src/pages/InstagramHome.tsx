@@ -235,9 +235,9 @@ export default function InstagramHome() {
       console.log('[IG] applyFooterTextSize 실행, footerSubtitle:', footerSubtitle, 'copyrightText:', copyrightText);
       
       if (footerSubtitle) {
-        footerSubtitle.style.setProperty('font-size', '13px', 'important');
+        footerSubtitle.style.setProperty('font-size', '5.4px', 'important');
         footerSubtitle.style.setProperty('line-height', '1.5', 'important');
-        console.log('[IG] 푸터 subtitle 크기 적용: 13px');
+        console.log('[IG] 푸터 subtitle 크기 적용: 5.4px');
       }
       
       if (copyrightText) {
