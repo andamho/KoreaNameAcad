@@ -179,6 +179,11 @@ export default function InstagramHome() {
           margin-bottom: -18% !important;
         }
         
+        /* 푸터를 팔로우 글자 높이만큼 아래로 내림 */
+        .kna-footer {
+          padding-top: 23px !important;
+        }
+        
         /* 푸터 텍스트 크기 강제 조정 (인앱 브라우저) */
         p.kna-footer-subtitle {
           font-size: 13px !important;
