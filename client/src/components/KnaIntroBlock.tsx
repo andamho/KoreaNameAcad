@@ -38,7 +38,7 @@ export default function KnaIntroBlock() {
               <Testimonial quote="내 삶을 조종한 건 이름이었다니!" />
               <Testimonial quote="신점보다 훨씬 신뢰가 갑니다." />
               <Testimonial quote="개명 전후, 정말 이름대로 살아왔네요." />
-              <p className="text-lg font-bold break-keep">
+              <p className="!mt-8 text-lg font-bold break-keep">
                 <span className="kna-highlight">
                   <span className="kna-shine">이름은 희망입니다.</span>
                 </span>
