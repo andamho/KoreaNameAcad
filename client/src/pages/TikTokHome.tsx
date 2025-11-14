@@ -178,7 +178,7 @@ export default function TikTokHome() {
           margin-bottom: -18% !important;
         }
         .kna-pricing-section {
-          margin-bottom: -18% !important;
+          margin-bottom: -27% !important;
         }
         
         /* 푸터를 팔로우 글자 높이만큼 아래로 내림 */
