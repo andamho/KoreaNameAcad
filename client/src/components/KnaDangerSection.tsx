@@ -24,7 +24,7 @@ export default function KnaDangerSection() {
             <h3 id="power-title" className="text-[21px] md:text-[22px] font-semibold">이름은 힘이 셉니다</h3>
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
-            <Note title="이름이 맑아야 인생이 맑다" desc="열심히만 산다고 잘 사는 게 절대 아닙니다. 잘못하다 몸만 망칩니다." />
+            <Note title="운칠기삼(運七技三), 운이 70%입니다" desc="이름의 강력한 운을 모른 채 30%의 노력만으로는 인생이 바뀌지 않습니다." />
             <Note title="안 좋은 이름에 바람 잘 날 없다" desc="안좋은 이름은 평생을 따라 다니며 괴롭힙니다." />
             <Note title="가족은 운명공동체" desc="이름은 자신뿐만 아니라 가족 전체에 영향을 미칩니다." />
           </div>
