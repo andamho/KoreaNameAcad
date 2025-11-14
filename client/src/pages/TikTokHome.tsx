@@ -139,7 +139,8 @@ export default function TikTokHome() {
         .kna-steps-section > div,
         .kna-myth-truth-section > div,
         .kna-video-section > div,
-        .kna-pricing-section > div {
+        .kna-pricing-section > div,
+        .kna-footer > div {
           transform: scale(0.82) !important;
           transform-origin: top center !important;
           width: 122% !important;
@@ -152,7 +153,8 @@ export default function TikTokHome() {
         .kna-steps-section,
         .kna-myth-truth-section,
         .kna-video-section,
-        .kna-pricing-section {
+        .kna-pricing-section,
+        .kna-footer {
           overflow-x: hidden !important;
         }
         
