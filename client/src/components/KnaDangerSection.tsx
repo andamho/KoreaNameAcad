@@ -43,8 +43,8 @@ export default function KnaDangerSection() {
               a={<>비용을 아끼려다,<br/><span className="text-orange-600 dark:text-orange-400">더 비싼 대가를 치릅니다.</span></>}
             />
             <QA
-              q="사주보고 한자이름만 지으셨나요?"
-              a={<>한글 이름의 운이 무너지면,<br/><span className="text-orange-600 dark:text-orange-400">삶이 비틀립니다.</span></>}
+              q="사주 기반 작명소를 알아보고 계신가요?"
+              a={<>그곳은 한글이름 작명이론이 없습니다.<br/>한글 이름의 운이 무너지면,<br/>삶이 흔들립니다.</>}
             />
             <QA
               q="후기도 안 보고 맡기셨나요?"
