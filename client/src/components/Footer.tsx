@@ -37,9 +37,9 @@ export function Footer() {
 
   return (
     <footer className="kna-footer bg-black text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
         {/* 팔로우 - 상단 한 줄 */}
-        <div className="flex items-center justify-center gap-6 mb-12">
+        <div className="flex items-center justify-center gap-6 mb-8">
           <span className="text-[23px] kna-footer-follow">팔로우</span>
           <div className="w-px h-6 bg-white/30"></div>
           <div className="flex gap-6">
@@ -60,7 +60,7 @@ export function Footer() {
         </div>
 
         {/* Hero 텍스트 중앙 정렬 */}
-        <div className="text-center mb-12 kna-footer-hero">
+        <div className="text-center mb-8 kna-footer-hero">
           <h2 className="text-[16px] md:text-[24px] tracking-tight leading-tight kna-footer-title">
             <span className="text-white">고달픈 인생</span><br />
             <span className="text-white">이름 하나로 이유를 찾고</span><br />
@@ -80,7 +80,7 @@ export function Footer() {
         </div>
 
         {/* 버튼들 */}
-        <div className="flex justify-center gap-4 mb-12">
+        <div className="flex justify-center gap-4 mb-8">
           <button
             onClick={() => {
               setLocation('/services');
