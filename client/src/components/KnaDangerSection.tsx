@@ -53,7 +53,7 @@ export default function KnaDangerSection() {
               a={<>그곳은 한글이름 작명이론이 없습니다.<br/>한글 이름의 운이 무너지면,<br/><span className="text-orange-600 dark:text-orange-400">삶이 흔들립니다.</span></>}
             />
             <QA
-              q="후기도 안 보고 맡기셨나요?"
+              q="후기도 안살펴보시나요?"
               a={<>검증 없는 작명,<br/><span className="text-orange-600 dark:text-orange-400">고생은 결국 본인의 몫입니다.</span></>}
             />
           </div>
