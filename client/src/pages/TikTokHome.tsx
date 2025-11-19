@@ -193,6 +193,11 @@ export default function TikTokHome() {
           padding-bottom: 0 !important;
         }
         
+        /* 버튼과 카피라이트 사이 간격 축소 */
+        .kna-footer .mb-12:has(button) {
+          margin-bottom: 24px !important;
+        }
+        
         /* 카피라이트 위 여백 제거 */
         .kna-footer .mt-8 {
           margin-top: 0 !important;
