@@ -193,12 +193,6 @@ export default function TikTokHome() {
           padding-bottom: 0 !important;
         }
         
-        /* 푸터 버튼 30% 축소 */
-        .kna-footer button {
-          padding: 5px 12px !important;
-          font-size: 12px !important;
-        }
-        
         /* 푸터 텍스트 크기 강제 조정 (인앱 브라우저) */
         p.kna-footer-subtitle {
           font-size: 9.6px !important;
