@@ -181,10 +181,9 @@ export default function InstagramHome() {
           margin-bottom: -27% !important;
         }
         
-        /* 푸터를 팔로우 글자 높이만큼 아래로 내림 */
+        /* 푸터 상하 여백 조정 */
         .kna-footer {
           padding-top: 60px !important;
-          max-height: 500px !important;
           overflow: hidden !important;
         }
         
