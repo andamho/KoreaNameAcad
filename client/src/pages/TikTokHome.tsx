@@ -183,13 +183,20 @@ export default function TikTokHome() {
         
         /* 푸터를 팔로우 글자 높이만큼 아래로 내림 */
         .kna-footer {
-          padding-top: 46px !important;
+          padding-top: 60px !important;
           max-height: 500px !important;
           overflow: hidden !important;
         }
         
         .kna-footer > div {
-          padding-bottom: 46px !important;
+          padding-top: 0 !important;
+          padding-bottom: 60px !important;
+        }
+        
+        /* 푸터 버튼 30% 축소 */
+        .kna-footer button {
+          padding: 6px 14px !important;
+          font-size: 13px !important;
         }
         
         /* 푸터 텍스트 크기 강제 조정 (인앱 브라우저) */
