@@ -184,8 +184,8 @@ export default function InstagramHome() {
         /* 푸터 상하 여백 조정 */
         .kna-footer {
           padding-top: 60px !important;
-          padding-bottom: 60px !important;
-          overflow: visible !important;
+          padding-bottom: 0 !important;
+          overflow: hidden !important;
         }
         
         .kna-footer > div {
@@ -193,12 +193,15 @@ export default function InstagramHome() {
           padding-bottom: 0 !important;
         }
         
-        /* 카피라이트 위 여백 제거 */
+        /* 카피라이트 위 여백 제거, 아래 여백만 60px */
         .kna-footer .mt-8 {
           margin-top: 0 !important;
         }
         .kna-footer .pt-8 {
           padding-top: 0 !important;
+        }
+        .kna-footer-copyright {
+          padding-bottom: 60px !important;
         }
         
         /* 푸터 버튼 30% 축소 */
