@@ -178,7 +178,7 @@ export default function InstagramHome() {
           margin-bottom: -18% !important;
         }
         .kna-pricing-section {
-          margin-bottom: -27% !important;
+          margin-bottom: 0 !important;
         }
         
         /* 푸터 상하 여백 조정 */
