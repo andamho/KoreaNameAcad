@@ -132,14 +132,15 @@ export default function InstagramHome() {
           font-size: 7.5px !important;
         }
         
-        /* 모든 섹션을 scale로 축소 + 좌우/상하 여백 완전 제거 (푸터 제외) */
+        /* 모든 섹션을 scale로 축소 + 좌우/상하 여백 완전 제거 */
         .kna-danger-section > div,
         .kna-value-section > div,
         .kna-intro-block > div,
         .kna-steps-section > div,
         .kna-myth-truth-section > div,
         .kna-video-section > div,
-        .kna-pricing-section > div {
+        .kna-pricing-section > div,
+        .kna-footer > div {
           transform: scale(0.82) !important;
           transform-origin: top center !important;
           width: 122% !important;
@@ -152,7 +153,8 @@ export default function InstagramHome() {
         .kna-steps-section,
         .kna-myth-truth-section,
         .kna-video-section,
-        .kna-pricing-section {
+        .kna-pricing-section,
+        .kna-footer {
           overflow-x: hidden !important;
         }
         
@@ -179,9 +181,16 @@ export default function InstagramHome() {
           margin-bottom: 0 !important;
         }
         
-        /* 푸터 여백 조정: scale 제거하고 정상 패딩 적용 */
+        /* 푸터 높이 제한으로 검정 바탕 잘라내기 */
         .kna-footer {
-          padding: 60px 0 !important;
+          padding-top: 60px !important;
+          max-height: 500px !important;
+          overflow: hidden !important;
+          position: relative !important;
+        }
+        
+        .kna-footer > div {
+          padding-bottom: 60px !important;
         }
         
         /* 카피라이트 위 여백 제거 */

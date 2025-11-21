@@ -181,27 +181,24 @@ export default function TikTokHome() {
           margin-bottom: 0 !important;
         }
         
-        /* 푸터 상하 여백 조정 */
+        /* 푸터 높이 제한으로 검정 바탕 잘라내기 */
         .kna-footer {
           padding-top: 60px !important;
-          padding-bottom: 0 !important;
+          max-height: 500px !important;
           overflow: hidden !important;
+          position: relative !important;
         }
         
         .kna-footer > div {
-          padding-top: 0 !important;
-          padding-bottom: 0 !important;
+          padding-bottom: 60px !important;
         }
         
-        /* 카피라이트 위 여백 제거, 아래 여백만 60px */
+        /* 카피라이트 위 여백 제거 */
         .kna-footer .mt-8 {
           margin-top: 0 !important;
         }
         .kna-footer .pt-8 {
           padding-top: 0 !important;
-        }
-        .kna-footer-copyright {
-          padding-bottom: 60px !important;
         }
         
         /* 푸터 버튼 30% 축소 */
