@@ -12,6 +12,8 @@ import Admin from "@/pages/Admin";
 import Services from "@/pages/Services";
 import Reviews from "@/pages/Reviews";
 import Pricing from "@/pages/Pricing";
+import NameStories from "@/pages/NameStories";
+import NameStoryDetail from "@/pages/NameStoryDetail";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -26,6 +28,8 @@ function Router() {
       <Route path="/services" component={Services}/>
       <Route path="/reviews" component={Reviews}/>
       <Route path="/pricing" component={Pricing}/>
+      <Route path="/name-stories" component={NameStories}/>
+      <Route path="/name-stories/:id" component={NameStoryDetail}/>
       <Route component={NotFound} />
     </Switch>
   );
