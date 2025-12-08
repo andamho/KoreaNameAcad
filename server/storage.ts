@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Consultation, type InsertConsultation } from "@shared/schema";
+import { type User, type InsertUser, type Consultation, type InsertConsultation, type NameStory, type InsertNameStory } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 // modify the interface with any CRUD methods
@@ -13,15 +13,24 @@ export interface IStorage {
   createConsultation(consultation: InsertConsultation): Promise<Consultation>;
   getAllConsultations(): Promise<Consultation[]>;
   getConsultation(id: string): Promise<Consultation | undefined>;
+  
+  // NameStory methods
+  createNameStory(story: InsertNameStory): Promise<NameStory>;
+  getAllNameStories(): Promise<NameStory[]>;
+  getNameStory(id: string): Promise<NameStory | undefined>;
+  updateNameStory(id: string, story: Partial<InsertNameStory>): Promise<NameStory | undefined>;
+  deleteNameStory(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private consultations: Map<string, Consultation>;
+  private nameStories: Map<string, NameStory>;
 
   constructor() {
     this.users = new Map();
     this.consultations = new Map();
+    this.nameStories = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -57,6 +66,47 @@ export class MemStorage implements IStorage {
 
   async getConsultation(id: string): Promise<Consultation | undefined> {
     return this.consultations.get(id);
+  }
+
+  async createNameStory(insertStory: InsertNameStory): Promise<NameStory> {
+    const id = randomUUID();
+    const now = new Date().toISOString();
+    const story: NameStory = { 
+      ...insertStory, 
+      id, 
+      createdAt: now, 
+      updatedAt: now,
+      isVideo: insertStory.isVideo ?? false
+    };
+    this.nameStories.set(id, story);
+    return story;
+  }
+
+  async getAllNameStories(): Promise<NameStory[]> {
+    return Array.from(this.nameStories.values()).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  async getNameStory(id: string): Promise<NameStory | undefined> {
+    return this.nameStories.get(id);
+  }
+
+  async updateNameStory(id: string, updateData: Partial<InsertNameStory>): Promise<NameStory | undefined> {
+    const existing = this.nameStories.get(id);
+    if (!existing) return undefined;
+    
+    const updated: NameStory = {
+      ...existing,
+      ...updateData,
+      updatedAt: new Date().toISOString(),
+    };
+    this.nameStories.set(id, updated);
+    return updated;
+  }
+
+  async deleteNameStory(id: string): Promise<boolean> {
+    return this.nameStories.delete(id);
   }
 }
 

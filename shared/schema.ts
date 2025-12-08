@@ -54,3 +54,20 @@ export const insertConsultationSchema = consultationSchema.omit({ id: true, crea
 
 export type Consultation = z.infer<typeof consultationSchema>;
 export type InsertConsultation = z.infer<typeof insertConsultationSchema>;
+
+// NameStory schema for blog-like content
+export const nameStorySchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  thumbnail: z.string(), // URL or base64
+  content: z.string(), // HTML or markdown
+  videoUrl: z.string().optional(), // YouTube or other video embed URL
+  isVideo: z.boolean().default(false),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const insertNameStorySchema = nameStorySchema.omit({ id: true, createdAt: true, updatedAt: true });
+
+export type NameStory = z.infer<typeof nameStorySchema>;
+export type InsertNameStory = z.infer<typeof insertNameStorySchema>;
