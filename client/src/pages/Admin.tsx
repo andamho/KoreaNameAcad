@@ -36,7 +36,7 @@ export default function Admin() {
   });
 
   const createStoryMutation = useMutation({
-    mutationFn: (data: InsertNameStory) => apiRequest("/api/name-stories", { method: "POST", body: JSON.stringify(data) }),
+    mutationFn: (data: InsertNameStory) => apiRequest("POST", "/api/name-stories", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/name-stories"] });
       setStoryDialogOpen(false);
@@ -50,7 +50,7 @@ export default function Admin() {
 
   const updateStoryMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<InsertNameStory> }) => 
-      apiRequest(`/api/name-stories/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+      apiRequest("PUT", `/api/name-stories/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/name-stories"] });
       setStoryDialogOpen(false);
@@ -64,7 +64,7 @@ export default function Admin() {
   });
 
   const deleteStoryMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/name-stories/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/name-stories/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/name-stories"] });
       toast({ title: "이야기가 삭제되었습니다." });

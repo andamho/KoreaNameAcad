@@ -28,6 +28,11 @@ export default function NameStoryDetail() {
 
   const { data: story, isLoading, error } = useQuery<NameStory>({
     queryKey: ["/api/name-stories", id],
+    queryFn: async () => {
+      const res = await fetch(`/api/name-stories/${id}`);
+      if (!res.ok) throw new Error("Not found");
+      return res.json();
+    },
     enabled: !!id,
   });
 

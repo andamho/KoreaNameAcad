@@ -13,7 +13,9 @@ Korean Name School is a web application that provides professional Korean name a
 - **Reviews (/reviews)** - Dedicated testimonials page featuring two sections: "이름분석 상담후기" (Name Analysis Reviews) and "개명 후기" (Name Change Reviews), with link to full reviews on Naver blog
 - **Detail Info (/detail-info)** - Additional information pages
 - **Family Policy (/family-policy)** - Family-related policy information
-- **Admin (/admin)** - Administrative dashboard
+- **Name Stories (/name-stories)** - Blog-style page "재미있는 이름이야기" with responsive grid layout (4→1 columns) showing story cards with thumbnails, video badge support
+- **Name Story Detail (/name-stories/:id)** - Individual story page with content display, YouTube video embed support, and share functionality
+- **Admin (/admin)** - Administrative dashboard with tabbed interface for managing consultations and name stories (create/edit/delete)
 
 ## User Preferences
 
@@ -78,6 +80,11 @@ Preferred communication style: Simple, everyday language.
 - POST `/api/consultations` - Create new consultation requests (automatically sends email notification)
 - GET `/api/consultations` - Retrieve all consultations
 - GET `/api/consultations/:id` - Retrieve specific consultation by ID
+- POST `/api/name-stories` - Create new name story (title, thumbnail, content, isVideo, videoUrl)
+- GET `/api/name-stories` - Retrieve all name stories (sorted by date descending)
+- GET `/api/name-stories/:id` - Retrieve specific name story by ID
+- PUT `/api/name-stories/:id` - Update name story
+- DELETE `/api/name-stories/:id` - Delete name story
 
 **Email Notification System**
 - Resend integration for transactional emails
@@ -90,6 +97,9 @@ Preferred communication style: Simple, everyday language.
 - User model with username/password authentication structure
 - Consultation model supporting both name analysis and naming requests
 - Complex consultation data including multiple people, name changes, and file attachments
+- NameStory model for blog content (id, title, thumbnail, content, videoUrl, isVideo, createdAt, updatedAt)
+
+**Note:** Currently using MemStorage (in-memory). Data is lost on server restart. For persistent storage, PostgreSQL database migration is required.
 
 ### Development Environment
 
