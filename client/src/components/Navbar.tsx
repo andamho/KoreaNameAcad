@@ -1,4 +1,4 @@
-import { Menu, X, MessageCircle, FileText, Star, DollarSign } from "lucide-react";
+import { Menu, X, MessageCircle, FileText, Star, DollarSign, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect } from "react";
@@ -50,6 +50,12 @@ export function Navbar() {
       label: "이름후기", 
       action: () => goToPage('/reviews'),
       description: "고객 후기 보기"
+    },
+    { 
+      icon: BookOpen, 
+      label: "재미있는 이름이야기", 
+      action: () => goToPage('/name-stories'),
+      description: "이름에 담긴 이야기"
     },
     { 
       icon: MessageCircle, 
