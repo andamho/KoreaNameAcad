@@ -275,12 +275,21 @@ export default function Admin() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="thumbnail">썸네일 URL</Label>
+                      <Label htmlFor="thumbnail">썸네일 이미지</Label>
                       <Input
                         id="thumbnail"
-                        value={storyForm.thumbnail}
-                        onChange={(e) => setStoryForm({ ...storyForm, thumbnail: e.target.value })}
-                        placeholder="https://example.com/image.jpg"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setStoryForm({ ...storyForm, thumbnail: reader.result as string });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
                         data-testid="input-story-thumbnail"
                       />
                       {storyForm.thumbnail && (
