@@ -80,9 +80,18 @@ export default function NameStories() {
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               재미있는 이름이야기
             </h1>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg text-muted-foreground mb-6">
               이름에 담긴 흥미로운 이야기들을 만나보세요
             </p>
+            <a
+              href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=10&tab=1#contentslist_block"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full font-bold text-lg bg-gradient-to-r from-[#007C73] to-[#00B8A9] text-white shadow-[0_8px_20px_rgba(0,140,126,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-[0_12px_28px_rgba(0,140,126,0.3)] active:scale-[0.98] active:shadow-[0_6px_16px_rgba(0,140,126,0.25)]"
+              data-testid="link-blog-stories"
+            >
+              <span>자세히 보기</span>
+            </a>
           </div>
 
           {isLoading ? (
