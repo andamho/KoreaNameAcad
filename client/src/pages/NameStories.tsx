@@ -19,16 +19,16 @@ function StoryCard({ story }: { story: NameStory }) {
         className="group overflow-hidden hover-elevate active-elevate-2 cursor-pointer"
         data-testid={`card-story-${story.id}`}
       >
-        <div className="relative aspect-video overflow-hidden">
+        <div className="relative aspect-square overflow-hidden">
           <img
             src={story.thumbnail}
             alt={story.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
           {story.isVideo && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-12 h-12 bg-black/60 rounded-full flex items-center justify-center">
-                <Play className="w-6 h-6 text-white fill-white ml-1" />
+            <div className="absolute top-2 right-2">
+              <div className="w-8 h-8 bg-black/60 rounded-full flex items-center justify-center">
+                <Play className="w-4 h-4 text-white fill-white ml-0.5" />
               </div>
             </div>
           )}
@@ -56,7 +56,7 @@ function StoryCard({ story }: { story: NameStory }) {
 function StorySkeleton() {
   return (
     <Card className="overflow-hidden">
-      <Skeleton className="aspect-video w-full" />
+      <Skeleton className="aspect-square w-full" />
       <div className="p-4 space-y-3">
         <Skeleton className="h-5 w-full" />
         <Skeleton className="h-4 w-3/4" />
