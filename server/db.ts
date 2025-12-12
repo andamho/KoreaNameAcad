@@ -3,15 +3,23 @@ import { Pool, neonConfig } from "@neondatabase/serverless";
 import * as schema from "@shared/schema";
 import ws from "ws";
 
-// Configure WebSocket for Neon
 neonConfig.webSocketConstructor = ws;
-neonConfig.fetchConnectionCache = true;
 
 if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable is not set");
+  console.warn("DATABASE_URL environment variable is not set");
 }
 
-const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL
-});
-export const db = drizzle(pool, { schema });
+let db: ReturnType<typeof drizzle> | null = null;
+
+try {
+  if (process.env.DATABASE_URL) {
+    const pool = new Pool({ 
+      connectionString: process.env.DATABASE_URL
+    });
+    db = drizzle(pool, { schema });
+  }
+} catch (error) {
+  console.error("Failed to initialize database:", error);
+}
+
+export { db };
