@@ -80,7 +80,7 @@ export default function NameStories() {
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               재미있는 이름이야기
             </h1>
-            <p className="text-lg text-muted-foreground mb-6">
+            <p className="text-lg text-muted-foreground mb-12">
               이름에 담긴 흥미로운 이야기들을 만나보세요
             </p>
             <a
@@ -110,11 +110,7 @@ export default function NameStories() {
                 <StoryCard key={story.id} story={story} />
               ))}
             </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">아직 등록된 이야기가 없습니다.</p>
-            </div>
-          )}
+          ) : null}
         </div>
       </main>
 
