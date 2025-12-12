@@ -62,9 +62,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const stories = await storage.getAllNameStories();
       return res.json(stories);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching name stories:", error);
-      return res.status(500).json({ error: "Failed to fetch name stories" });
+      return res.status(500).json({ error: "Failed to fetch name stories", details: error?.message || String(error) });
     }
   });
 
