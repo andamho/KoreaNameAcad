@@ -7,8 +7,8 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import type { NameStory } from "@shared/schema";
 
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
+function formatDate(dateValue: string | Date) {
+  const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
   return `${date.getFullYear()}. ${String(date.getMonth() + 1).padStart(2, '0')}. ${String(date.getDate()).padStart(2, '0')}.`;
 }
 

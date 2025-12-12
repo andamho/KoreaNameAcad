@@ -8,8 +8,8 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import type { NameStory } from "@shared/schema";
 
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
+function formatDate(dateValue: string | Date) {
+  const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -55,19 +55,23 @@ export const insertConsultationSchema = consultationSchema.omit({ id: true, crea
 export type Consultation = z.infer<typeof consultationSchema>;
 export type InsertConsultation = z.infer<typeof insertConsultationSchema>;
 
-// NameStory schema for blog-like content
-export const nameStorySchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  thumbnail: z.string(), // URL or base64
-  content: z.string(), // HTML or markdown
-  videoUrl: z.string().optional(), // YouTube or other video embed URL
-  isVideo: z.boolean().default(false),
-  createdAt: z.string(),
-  updatedAt: z.string(),
+// NameStory table for blog-like content
+export const nameStories = pgTable("name_stories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  thumbnail: text("thumbnail").notNull(),
+  content: text("content").notNull(),
+  videoUrl: text("video_url"),
+  isVideo: boolean("is_video").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const insertNameStorySchema = nameStorySchema.omit({ id: true, createdAt: true, updatedAt: true });
+export const insertNameStorySchema = createInsertSchema(nameStories).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true 
+});
 
-export type NameStory = z.infer<typeof nameStorySchema>;
 export type InsertNameStory = z.infer<typeof insertNameStorySchema>;
+export type NameStory = typeof nameStories.$inferSelect;
