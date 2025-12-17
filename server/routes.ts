@@ -8,6 +8,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Consultation routes
   app.post("/api/consultations", async (req, res, next) => {
     try {
+      console.log("Received consultation data:", JSON.stringify(req.body, null, 2));
       const validatedData = insertConsultationSchema.parse(req.body);
       const consultation = await storage.createConsultation(validatedData);
       
@@ -17,9 +18,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       return res.json(consultation);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating consultation:", error);
-      return res.status(400).json({ error: "Invalid consultation data" });
+      console.error("Validation errors:", error?.errors || error?.message);
+      return res.status(400).json({ error: "Invalid consultation data", details: error?.errors || error?.message });
     }
   });
 
