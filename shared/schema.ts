@@ -32,7 +32,6 @@ export const consultationSchema = z.object({
   hasNameChange: z.string(),
   numNameChanges: z.number().optional(),
   nameChangeData: z.array(z.object({
-    currentName: z.string(),
     previousName: z.string(),
     koreanName: z.string(),
     chineseName: z.string(),
