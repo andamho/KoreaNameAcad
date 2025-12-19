@@ -763,12 +763,11 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   <p className="text-lg md:text-lg text-white leading-relaxed mb-3">
                     🤦‍♀️ 아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습...
                   </p>
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center text-sm">
                     <span className="flex items-center gap-1.5 text-[#81D8D0]">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#81D8D0]"></span>
                       터치해서 전체 내용 보기
                     </span>
-                    <span className="text-gray-400">자세히 보기 &gt;</span>
                   </div>
                 </a>
 
@@ -785,12 +784,11 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   <p className="text-lg md:text-lg text-white leading-relaxed mb-3">
                     어느날 인스타로 디엠이 왔습니다. 너무 살기 힘들다며 죽고 싶다고까지 했습니다. 젊으신 분이 그러시면 ...
                   </p>
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center text-sm">
                     <span className="flex items-center gap-1.5 text-[#81D8D0]">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#81D8D0]"></span>
                       터치해서 전체 내용 보기
                     </span>
-                    <span className="text-gray-400">자세히 보기 &gt;</span>
                   </div>
                 </a>
               </div>
