@@ -727,6 +727,12 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               <h2 className="text-[21px] md:text-[22px] font-semibold text-center flex items-center justify-center gap-2 text-[#81D8D0] mb-4">
                 <BookOpenText className="h-6 w-6" /> 같이 보시면 좋은 글
               </h2>
+              <div className="flex justify-center mb-4">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/80 border border-[#81D8D0]/30">
+                  <span className="w-2 h-2 rounded-full bg-[#81D8D0]"></span>
+                  <span className="text-sm text-white">카드를 <span className="text-[#81D8D0] font-semibold">터치</span>하면 전체 내용을 볼 수 있어요.</span>
+                </div>
+              </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <a 
                   href="https://blog.naver.com/whats_ur_name_777/223450662435" 
