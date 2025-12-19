@@ -51,12 +51,26 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const [depositorName, setDepositorName] = useState("");
   const [consultationTime, setConsultationTime] = useState("");
   const [familyPolicyDialogOpen, setFamilyPolicyDialogOpen] = useState(false);
+  const [showCardHint, setShowCardHint] = useState(false);
   const isClosingFromBackButton = useRef(false);
   const familyPolicyDialogOpenRef = useRef(false);
 
   // ref를 state와 동기화
   useEffect(() => {
     familyPolicyDialogOpenRef.current = familyPolicyDialogOpen;
+  }, [familyPolicyDialogOpen]);
+
+  // 가족 상담 원칙 다이얼로그 열릴 때 힌트 토스트 3초간 표시
+  useEffect(() => {
+    if (familyPolicyDialogOpen) {
+      setShowCardHint(true);
+      const timer = setTimeout(() => {
+        setShowCardHint(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowCardHint(false);
+    }
   }, [familyPolicyDialogOpen]);
 
   // 뒤로 가기 버튼으로 가족 상담 원칙 다이얼로그 닫기
@@ -727,12 +741,14 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               <h2 className="text-[21px] md:text-[22px] font-semibold text-center flex items-center justify-center gap-2 text-[#81D8D0] mb-4">
                 <BookOpenText className="h-6 w-6" /> 같이 보시면 좋은 글
               </h2>
-              <div className="flex justify-center mb-4">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/80 border border-[#81D8D0]/30">
-                  <span className="w-2 h-2 rounded-full bg-[#81D8D0]"></span>
-                  <span className="text-sm text-white">카드를 <span className="text-[#81D8D0] font-semibold">터치</span>하면 전체 내용을 볼 수 있어요.</span>
+              {showCardHint && (
+                <div className="flex justify-center mb-4 animate-in fade-in duration-300">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/80 border border-[#81D8D0]/30">
+                    <span className="w-2 h-2 rounded-full bg-[#81D8D0]"></span>
+                    <span className="text-sm text-white">카드를 <span className="text-[#81D8D0] font-semibold">터치</span>하면 전체 내용을 볼 수 있어요.</span>
+                  </div>
                 </div>
-              </div>
+              )}
               <div className="grid gap-4 md:grid-cols-2">
                 <a 
                   href="https://blog.naver.com/whats_ur_name_777/223450662435" 
@@ -744,9 +760,16 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   <h3 className="text-[21px] md:text-[22px] font-semibold leading-snug mb-2 text-white">
                     "아빠가 바람이 났습니다" 엄마 이름 때문에
                   </h3>
-                  <p className="text-lg md:text-lg text-white leading-relaxed">
+                  <p className="text-lg md:text-lg text-white leading-relaxed mb-3">
                     🤦‍♀️ 아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습...
                   </p>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-1.5 text-[#81D8D0]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#81D8D0]"></span>
+                      터치해서 전체 내용 보기
+                    </span>
+                    <span className="text-gray-400">자세히 보기 &gt;</span>
+                  </div>
                 </a>
 
                 <a 
@@ -759,9 +782,16 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   <h3 className="text-[21px] md:text-[22px] font-semibold leading-snug mb-2 text-white">
                     개명한 이름 때문에 아빠가 돌아가시고, 소송도 걸리고
                   </h3>
-                  <p className="text-lg md:text-lg text-white leading-relaxed">
+                  <p className="text-lg md:text-lg text-white leading-relaxed mb-3">
                     어느날 인스타로 디엠이 왔습니다. 너무 살기 힘들다며 죽고 싶다고까지 했습니다. 젊으신 분이 그러시면 ...
                   </p>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-1.5 text-[#81D8D0]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#81D8D0]"></span>
+                      터치해서 전체 내용 보기
+                    </span>
+                    <span className="text-gray-400">자세히 보기 &gt;</span>
+                  </div>
                 </a>
               </div>
             </div>
