@@ -106,18 +106,18 @@ export default function Services() {
   const nameConsultationSteps = [
     {
       n: 1,
-      title: "일정예약",
-      desc: "신청서 접수, 입금확인 후 예약"
+      title: "상담 일정 예약",
+      desc: "신청서 접수 및 입금 확인 후 예약 확정"
     },
     { 
       n: 2, 
       title: "이름분석표 발송", 
-      desc: "상담 바로 전" 
+      desc: "상담 시작 직전 발송" 
     },
     { 
       n: 3, 
-      title: "전화상담 진행", 
-      desc: "분석표 보며 상담" 
+      title: "1:1 전화 상담 진행", 
+      desc: "분석표를 토대로 심층 상담" 
     }
   ];
 
