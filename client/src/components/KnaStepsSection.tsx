@@ -7,7 +7,7 @@ export default function KnaStepsSection() {
       <div className="relative max-w-5xl mx-auto px-6 lg:px-8">
         <header className="text-center">
           <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
-            참 쉽습니다
+            막막했던 인생의 답, 단 3단계면 충분합니다
           </h2>
           <p className="mt-2 text-lg text-muted-foreground">
             하나씩만 천천히 따라 와주세요
@@ -18,7 +18,7 @@ export default function KnaStepsSection() {
           <Step 
             number={1} 
             title="일정 예약" 
-            desc="상담 신청서 작성 후 입금하시면 가장 빠른 일정으로 예약해 드립니다." 
+            desc="상담 신청서 작성 후 결제를 완료하시면 가장 빠른 일정으로 예약해 드립니다." 
           />
           <Step 
             number={2} 
@@ -28,7 +28,7 @@ export default function KnaStepsSection() {
           <Step 
             number={3} 
             title="인생 역전" 
-            desc="정확도 체험 후, 운이 술술 풀리는 새 이름으로 인생을 역전시켜 드립니다." 
+            desc="운명상의 정확도 체험 후, 운이 술술 풀리는 새 이름으로 인생을 역전시켜 드립니다." 
           />
         </ol>
       </div>
