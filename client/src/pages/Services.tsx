@@ -269,13 +269,13 @@ export default function Services() {
                       {s.n}
                     </div>
                     <div className="flex-1">
-                      <div className={`text-lg md:text-xl font-semibold ${[3, 4, 5].includes(s.n) ? 'text-[#58C4C4]' : ''}`}>
+                      <div className={`text-lg md:text-xl font-semibold ${[3, 4, 5].includes(s.n) ? 'text-[#0d9488]' : ''}`}>
                         {s.title}
                       </div>
                       {s.desc && (
                         <div className="text-base md:text-lg text-muted-foreground mt-1">
                           → {s.n === 4 ? (
-                            <>희망사항 반영 <span className="font-bold text-[#58C4C4]">(개인 약 1개월 / 가족 2개월 소요)</span></>
+                            <>희망사항 반영 <span className="font-bold text-[#0d9488]">(개인 약 1개월 / 가족 2개월 소요)</span></>
                           ) : s.desc}
                         </div>
                       )}
