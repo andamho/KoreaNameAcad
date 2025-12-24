@@ -400,8 +400,8 @@ export default function Home() {
                     <span className="text-[21px] font-bold text-white dark:text-neutral-950">1</span>
                   </div>
                   <div className="flex-1">
-                    <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">일정예약</h5>
-                    <p className="text-lg md:text-lg text-white/70">→ 신청서 접수, 입금확인 후 예약</p>
+                    <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">상담 일정 예약</h5>
+                    <p className="text-lg md:text-lg text-white/70">→ 신청서 접수 및 입금 확인 후 예약 확정</p>
                   </div>
                 </div>
 
@@ -411,7 +411,7 @@ export default function Home() {
                   </div>
                   <div className="flex-1">
                     <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">이름분석표 발송</h5>
-                    <p className="text-lg md:text-lg text-white/70">→ 상담 바로 전</p>
+                    <p className="text-lg md:text-lg text-white/70">→ 상담 시작 직전 발송</p>
                   </div>
                 </div>
 
@@ -420,8 +420,8 @@ export default function Home() {
                     <span className="text-[21px] font-bold text-white dark:text-neutral-950">3</span>
                   </div>
                   <div className="flex-1">
-                    <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">전화상담 진행</h5>
-                    <p className="text-lg md:text-lg text-white/70">→ 분석표 보며 상담</p>
+                    <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">1:1 전화 상담 진행</h5>
+                    <p className="text-lg md:text-lg text-white/70">→ 분석표를 토대로 심층 상담</p>
                   </div>
                 </div>
               </div>
