@@ -28,7 +28,7 @@ export default function KnaStepsSection() {
           <Step 
             number={3} 
             title="인생 역전" 
-            desc="운명상의 정확도 체험 후, 운이 술술 풀리는 새 이름으로 인생을 역전시켜 드립니다." 
+            desc="운명상담의 정확도 체험 후, 운이 술술 풀리는 새 이름으로 인생을 역전시켜 드립니다." 
           />
         </ol>
       </div>
