@@ -1,0 +1,18 @@
+{
+  "name": "이름의신 - 한국이름학교",
+  "short_name": "이름의신",
+  "description": "이름만으로 이유를 찾고, 운이 풀리는 새이름으로 인생역전하세요!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#58C4C4",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
