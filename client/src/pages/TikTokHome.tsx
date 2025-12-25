@@ -19,17 +19,33 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import analysisExampleImage from "@assets/hongildong-analysis.jpg";
+import christmasImage from "@assets/KakaoTalk_20251225_120409894_1766631888776.png";
 
 export default function TikTokHome() {
   const [, setLocation] = useLocation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
   const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
+  const [showChristmasPopup, setShowChristmasPopup] = useState(true);
   const isClosingFromBackButton = useRef(false);
   const dialogOpenRef = useRef(false);
   const analysisDetailOpenRef = useRef(false);
   const referrerPage = useRef<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // 크리스마스 팝업 3초 후 자동 닫기
+  useEffect(() => {
+    if (showChristmasPopup) {
+      const timer = setTimeout(() => {
+        setShowChristmasPopup(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showChristmasPopup]);
+
+  const closeChristmasPopup = () => {
+    setShowChristmasPopup(false);
+  };
 
   // 동영상 자동 재생 (스크롤 시)
   useEffect(() => {
@@ -459,6 +475,22 @@ export default function TikTokHome() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* 크리스마스 팝업 */}
+      {showChristmasPopup && (
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 animate-in fade-in duration-300"
+          onClick={closeChristmasPopup}
+        >
+          <div className="relative max-w-sm mx-4 animate-in zoom-in-95 duration-300">
+            <img 
+              src={christmasImage} 
+              alt="Merry Christmas" 
+              className="w-full h-auto rounded-2xl shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
+
       <Navbar />
       
       <Hero />
