@@ -26,7 +26,10 @@ export default function Home() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
   const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
-  const [showChristmasPopup, setShowChristmasPopup] = useState(true);
+  const [showChristmasPopup, setShowChristmasPopup] = useState(() => {
+    // 세션에서 이미 본 경우 다시 표시 안 함
+    return !sessionStorage.getItem('christmasPopupShown');
+  });
   const isClosingFromBackButton = useRef(false);
   const dialogOpenRef = useRef(false);
   const analysisDetailOpenRef = useRef(false);
@@ -38,10 +41,16 @@ export default function Home() {
     if (showChristmasPopup) {
       const timer = setTimeout(() => {
         setShowChristmasPopup(false);
+        sessionStorage.setItem('christmasPopupShown', 'true');
       }, 3000);
       return () => clearTimeout(timer);
     }
   }, [showChristmasPopup]);
+
+  const closeChristmasPopup = () => {
+    setShowChristmasPopup(false);
+    sessionStorage.setItem('christmasPopupShown', 'true');
+  };
 
   // 동영상 자동 재생 (스크롤 시)
   useEffect(() => {
@@ -258,7 +267,7 @@ export default function Home() {
       {showChristmasPopup && (
         <div 
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 animate-in fade-in duration-300"
-          onClick={() => setShowChristmasPopup(false)}
+          onClick={closeChristmasPopup}
         >
           <div className="relative max-w-sm mx-4 animate-in zoom-in-95 duration-300">
             <img 
