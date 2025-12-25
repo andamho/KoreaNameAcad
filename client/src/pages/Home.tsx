@@ -28,7 +28,12 @@ export default function Home() {
   const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
   const [showChristmasPopup, setShowChristmasPopup] = useState(() => {
     // 세션에서 이미 본 경우 다시 표시 안 함
-    return !sessionStorage.getItem('christmasPopupShown');
+    try {
+      return !sessionStorage.getItem('christmasPopupShown');
+    } catch {
+      // 인앱 브라우저에서 sessionStorage 사용 불가시 항상 표시
+      return true;
+    }
   });
   const isClosingFromBackButton = useRef(false);
   const dialogOpenRef = useRef(false);
@@ -41,7 +46,7 @@ export default function Home() {
     if (showChristmasPopup) {
       const timer = setTimeout(() => {
         setShowChristmasPopup(false);
-        sessionStorage.setItem('christmasPopupShown', 'true');
+        try { sessionStorage.setItem('christmasPopupShown', 'true'); } catch {}
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -49,7 +54,7 @@ export default function Home() {
 
   const closeChristmasPopup = () => {
     setShowChristmasPopup(false);
-    sessionStorage.setItem('christmasPopupShown', 'true');
+    try { sessionStorage.setItem('christmasPopupShown', 'true'); } catch {}
   };
 
   // 동영상 자동 재생 (스크롤 시)
