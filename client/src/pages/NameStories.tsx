@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import type { NameStory } from "@shared/schema";
+import storiesCharacterImage from "@assets/KakaoTalk_20251226_141747822_1766726282057.png";
 
 function formatDate(dateValue: string | Date) {
   const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
@@ -94,23 +95,39 @@ export default function NameStories() {
             </a>
           </div>
 
-          {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <StorySkeleton key={i} />
-              ))}
+          {/* Story cards with overlay character */}
+          <div className="relative">
+            <img 
+              src={storiesCharacterImage}
+              alt="이름이야기 캐릭터"
+              className="absolute left-1/2 z-10"
+              style={{ 
+                width: 'auto', 
+                height: '110px',
+                transform: 'translateX(-50%) translateY(-50%)',
+                top: '0'
+              }}
+            />
+            <div className="pt-14">
+              {isLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <StorySkeleton key={i} />
+                  ))}
+                </div>
+              ) : error ? (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">콘텐츠를 불러오는데 실패했습니다.</p>
+                </div>
+              ) : stories && stories.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {stories.map((story) => (
+                    <StoryCard key={story.id} story={story} />
+                  ))}
+                </div>
+              ) : null}
             </div>
-          ) : error ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">콘텐츠를 불러오는데 실패했습니다.</p>
-            </div>
-          ) : stories && stories.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {stories.map((story) => (
-                <StoryCard key={story.id} story={story} />
-              ))}
-            </div>
-          ) : null}
+          </div>
         </div>
       </main>
 
