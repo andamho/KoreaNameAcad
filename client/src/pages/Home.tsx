@@ -34,11 +34,21 @@ export default function Home() {
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
   const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
   const [showChristmasPopup, setShowChristmasPopup] = useState(() => {
+    // 뒤로가기/앞으로가기로 온 경우 팝업 표시 안 함
+    const navigationType = (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming)?.type;
+    if (navigationType === 'back_forward') {
+      return false;
+    }
+    
     // 세션에서 이미 본 경우 다시 표시 안 함
     try {
       return !sessionStorage.getItem('christmasPopupShown');
     } catch {
-      // 인앱 브라우저에서 sessionStorage 사용 불가시 항상 표시
+      // 인앱 브라우저에서 sessionStorage 사용 불가시에도 최초 한번만 표시
+      // history.state로 이미 본 경우 체크
+      if (window.history.state?.popupShown) {
+        return false;
+      }
       return true;
     }
   });
@@ -54,6 +64,7 @@ export default function Home() {
       const timer = setTimeout(() => {
         setShowChristmasPopup(false);
         try { sessionStorage.setItem('christmasPopupShown', 'true'); } catch {}
+        try { window.history.replaceState({ ...window.history.state, popupShown: true }, ''); } catch {}
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -62,6 +73,10 @@ export default function Home() {
   const closeChristmasPopup = () => {
     setShowChristmasPopup(false);
     try { sessionStorage.setItem('christmasPopupShown', 'true'); } catch {}
+    // 인앱 브라우저용: history.state에도 기록
+    try { 
+      window.history.replaceState({ ...window.history.state, popupShown: true }, ''); 
+    } catch {}
   };
 
   // 동영상 자동 재생 (스크롤 시)

@@ -33,7 +33,18 @@ export default function TikTokHome() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
   const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
-  const [showChristmasPopup, setShowChristmasPopup] = useState(true);
+  const [showChristmasPopup, setShowChristmasPopup] = useState(() => {
+    // 뒤로가기/앞으로가기로 온 경우 팝업 표시 안 함
+    const navigationType = (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming)?.type;
+    if (navigationType === 'back_forward') {
+      return false;
+    }
+    // history.state로 이미 본 경우 체크
+    if (window.history.state?.popupShown) {
+      return false;
+    }
+    return true;
+  });
   const isClosingFromBackButton = useRef(false);
   const dialogOpenRef = useRef(false);
   const analysisDetailOpenRef = useRef(false);
@@ -45,6 +56,7 @@ export default function TikTokHome() {
     if (showChristmasPopup) {
       const timer = setTimeout(() => {
         setShowChristmasPopup(false);
+        try { window.history.replaceState({ ...window.history.state, popupShown: true }, ''); } catch {}
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -52,6 +64,7 @@ export default function TikTokHome() {
 
   const closeChristmasPopup = () => {
     setShowChristmasPopup(false);
+    try { window.history.replaceState({ ...window.history.state, popupShown: true }, ''); } catch {}
   };
 
   // 동영상 자동 재생 (스크롤 시)
