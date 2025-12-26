@@ -1,4 +1,4 @@
-import pricingCharacterImage from "@assets/KakaoTalk_20251226_133114644_1766723493092.png";
+import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_1766729101276.png";
 
 const pricingData = {
   sections: [
