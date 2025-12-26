@@ -4,6 +4,7 @@ import { ServiceCard } from "@/components/ServiceCard";
 import { Search, Star, Flower, Baby, Building } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
+import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
 
 export default function Services() {
   const [, setLocation] = useLocation();
@@ -169,11 +170,23 @@ export default function Services() {
         </div>
       </section>
 
-      {/* Professional Services */}
-      <section className="py-16 md:py-24 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <ServiceCard
+      {/* Professional Services with overlay character */}
+      <div className="relative">
+        <img 
+          src={servicesCharacterImage}
+          alt="서비스 안내 캐릭터"
+          className="absolute left-1/2 z-10"
+          style={{ 
+            width: 'auto', 
+            height: '110px',
+            transform: 'translateX(-50%) translateY(-50%)',
+            top: '0'
+          }}
+        />
+        <section className="py-16 md:py-24 bg-muted/30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <ServiceCard
               icon={Search}
               title="이름분석"
               description="현재 이름에 들어있는 16가지운을 전문적으로 분석해드립니다."
@@ -215,9 +228,10 @@ export default function Services() {
               onClick={() => window.open("https://blog.naver.com/whats_ur_name_777/221274436174", "_blank")}
               data-testid="card-service-4"
             />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* Process Section */}
       <section className="py-16 md:py-24 bg-slate-50 dark:bg-slate-900/20">
