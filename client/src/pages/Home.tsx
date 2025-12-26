@@ -24,6 +24,7 @@ import characterImage from "@assets/KakaoTalk_20251226_112051215_1766716081551.p
 import warningCharacterImage from "@assets/KakaoTalk_20251226_113721756_1766716681811.png";
 import sadCharacterImage from "@assets/KakaoTalk_20251226_113704028_1766716735122.png";
 import happyCharacterImage from "@assets/KakaoTalk_20251226_114203894_1766717036057.png";
+import prayCharacterImage from "@assets/KakaoTalk_20251226_115131742_1766717529135.png";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -292,47 +293,62 @@ export default function Home() {
       
       <Hero />
 
-      {/* 경고 캐릭터 이미지 */}
-      <div className="flex justify-center py-6">
+      {/* KnaDangerSection with overlay warning character */}
+      <div className="relative">
         <img 
           src={warningCharacterImage}
           alt="경고 캐릭터"
-          style={{ width: '100px', height: 'auto' }}
+          className="absolute left-1/2 z-10"
+          style={{ 
+            width: '70px', 
+            height: 'auto',
+            transform: 'translateX(-50%) translateY(-50%)',
+            top: '0'
+          }}
         />
+        <KnaDangerSection />
       </div>
 
-      <KnaDangerSection />
-
-      {/* 캐릭터 이미지 섹션 */}
-      <div className="flex justify-center py-8">
+      {/* KnaValueSection with overlay character */}
+      <div className="relative">
         <img 
           src={characterImage}
           alt="한국이름학교 캐릭터"
-          className="w-32 md:w-40 h-auto"
+          className="absolute left-1/2 z-10"
+          style={{ 
+            width: '70px', 
+            height: 'auto',
+            transform: 'translateX(-50%) translateY(-50%)',
+            top: '0'
+          }}
         />
+        <KnaValueSection />
       </div>
 
-      <KnaValueSection />
-
-      {/* 슬픈 캐릭터 이미지 */}
-      <div className="flex justify-center py-6">
+      {/* KnaIntroBlock with overlay sad character */}
+      <div className="relative">
         <img 
           src={sadCharacterImage}
           alt="힘든 캐릭터"
-          style={{ width: '80px', height: 'auto' }}
+          className="absolute left-1/2 z-10"
+          style={{ 
+            width: '70px', 
+            height: 'auto',
+            transform: 'translateX(-50%) translateY(-50%)',
+            top: '0'
+          }}
         />
+        <KnaIntroBlock />
       </div>
 
-      <KnaIntroBlock />
-
-      {/* KnaStepsSection with overlay character */}
+      {/* KnaStepsSection with overlay happy character */}
       <div className="relative">
         <img 
           src={happyCharacterImage}
           alt="행복한 캐릭터"
           className="absolute left-1/2 z-10"
           style={{ 
-            width: '80px', 
+            width: '70px', 
             height: 'auto',
             transform: 'translateX(-50%) translateY(-50%)',
             top: '0'
@@ -341,7 +357,21 @@ export default function Home() {
         <KnaStepsSection />
       </div>
 
-      <KnaMythTruthSection />
+      {/* KnaMythTruthSection with overlay pray character */}
+      <div className="relative">
+        <img 
+          src={prayCharacterImage}
+          alt="기도하는 캐릭터"
+          className="absolute left-1/2 z-10"
+          style={{ 
+            width: '70px', 
+            height: 'auto',
+            transform: 'translateX(-50%) translateY(-50%)',
+            top: '0'
+          }}
+        />
+        <KnaMythTruthSection />
+      </div>
 
       {/* 동영상 섹션 */}
       <section className="kna-video-section py-16 md:py-24">
