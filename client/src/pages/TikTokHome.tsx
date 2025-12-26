@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import analysisExampleImage from "@assets/hongildong-analysis.jpg";
 import newYearImage from "@assets/Screenshot_20251226_110720_CapCut_1766715016537.jpg";
+import characterImage from "@assets/KakaoTalk_20251226_112051215_1766716081551.png";
 
 export default function TikTokHome() {
   const [, setLocation] = useLocation();
@@ -496,6 +497,15 @@ export default function TikTokHome() {
       <Hero />
 
       <KnaDangerSection />
+
+      {/* 캐릭터 이미지 섹션 */}
+      <div className="flex justify-center py-8">
+        <img 
+          src={characterImage}
+          alt="한국이름학교 캐릭터"
+          className="w-32 md:w-40 h-auto"
+        />
+      </div>
 
       <KnaValueSection />
 
