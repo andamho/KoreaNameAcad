@@ -22,7 +22,7 @@ import analysisExampleImage from "@assets/hongildong-analysis.jpg";
 import newYearImage from "@assets/Screenshot_20251226_110720_CapCut_1766715016537.jpg";
 import characterImage from "@assets/KakaoTalk_20251226_135549799_1766724973553.png";
 import warningCharacterImage from "@assets/KakaoTalk_20251226_113721756_1766716681811.png";
-import sadCharacterImage from "@assets/KakaoTalk_20251226_113704028_1766716735122.png";
+import effortCharacterImage from "@assets/KakaoTalk_20251226_152116391_1766730095506.png";
 import happyCharacterImage from "@assets/KakaoTalk_20251226_114203894_1766717036057.png";
 import guideCharacterImage from "@assets/KakaoTalk_20251226_151729031_1766729868877.png";
 import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_1766729101276.png";
@@ -327,11 +327,11 @@ export default function Home() {
         <KnaValueSection />
       </div>
 
-      {/* KnaIntroBlock with overlay sad character */}
+      {/* KnaIntroBlock with overlay effort character */}
       <div className="relative">
         <img 
-          src={sadCharacterImage}
-          alt="힘든 캐릭터"
+          src={effortCharacterImage}
+          alt="노력하는 캐릭터"
           className="absolute left-1/2 z-10"
           style={{ 
             width: 'auto', 
