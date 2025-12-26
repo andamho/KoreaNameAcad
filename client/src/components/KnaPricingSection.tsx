@@ -68,7 +68,7 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
       )}
 
       {/* Pricing Content Section */}
-      <section id="pricing" className="kna-pricing-section relative overflow-hidden py-16 md:py-24 bg-background">
+      <section id="pricing" className="kna-pricing-section relative overflow-hidden pt-24 pb-16 md:py-24 bg-background">
         <div aria-hidden className="pointer-events-none absolute inset-0">
           <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-[#7fe1d3]/20 dark:bg-[#58C4C4]/20 blur-3xl" />
         </div>

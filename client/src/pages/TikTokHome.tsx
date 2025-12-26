@@ -616,7 +616,7 @@ export default function TikTokHome() {
             top: '0'
           }}
         />
-        <section className="kna-video-section py-16 md:py-24">
+        <section className="kna-video-section pt-24 pb-16 md:py-24">
           <div className="max-w-md mx-auto px-4 sm:px-6">
             <video 
               ref={videoRef}
