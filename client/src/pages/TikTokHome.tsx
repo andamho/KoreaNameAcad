@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import analysisExampleImage from "@assets/hongildong-analysis.jpg";
-import newYearImage from "@assets/Screenshot_20251226_110720_CapCut_1766715016537.jpg";
+import newYearImage from "@assets/newYearPopup_optimized.jpg";
 import characterImage from "@assets/KakaoTalk_20251226_135549799_1766724973553.png";
 import dangerCharacterImage from "@assets/KakaoTalk_20251226_152419337_1766730274782.png";
 import effortCharacterImage from "@assets/KakaoTalk_20251226_152116391_1766730095506.png";

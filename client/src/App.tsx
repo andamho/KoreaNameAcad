@@ -25,7 +25,7 @@ import dangerCharacterImage from "@assets/KakaoTalk_20251226_152419337_176673027
 import effortCharacterImage from "@assets/KakaoTalk_20251226_152116391_1766730095506.png";
 import stepsCharacterImage from "@assets/KakaoTalk_20251226_152750745_1766730485133.png";
 import guideCharacterImage from "@assets/KakaoTalk_20251226_151729031_1766729868877.png";
-import newYearImage from "@assets/Screenshot_20251226_110720_CapCut_1766715016537.jpg";
+import newYearImage from "@assets/newYearPopup_optimized.jpg";
 
 const characterImages = [
   servicesCharacterImage,
