@@ -79,19 +79,21 @@ export default function NameStories() {
       <section className="relative overflow-hidden bg-gradient-to-br from-[#0f766e] to-[#4fd1c5] dark:from-[#0a5850] dark:to-[#3ba89e] py-16 md:py-24">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTR2NGg0di00em0wLThoLTR2NGg0di00em04IDhoLTR2NGg0di00em0tOCA4aC00djRoNHYtNHptOCAwaC00djRoNHYtNHptMC04aC00djRoNHYtNHptOC04aC00djRoNHYtNHptMCA4aC00djRoNHYtNHptLTggMGgtNHY0aDR2LTR6bTggOGgtNHY0aDR2LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-center">
-            {/* Title and description */}
-            <div className="text-center mb-8">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
+            {/* Character - on top for mobile, right for desktop */}
+            <img 
+              src={storiesCharacterImage}
+              alt="이름이야기 캐릭터"
+              className="w-auto h-40 md:h-56 flex-shrink-0 order-1 md:order-2"
+            />
+            {/* Title, description, and button as one unit */}
+            <div className="text-center md:text-left order-2 md:order-1">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4" data-testid="text-stories-title">
                 재미있는 이름이야기
               </h1>
-              <p className="text-lg md:text-2xl text-white/90">
+              <p className="text-lg md:text-2xl text-white/90 mb-8">
                 이름에 담긴 흥미로운 이야기들을 만나보세요
               </p>
-            </div>
-            
-            {/* Button + Character row - centered as a unit */}
-            <div className="flex flex-row items-center justify-center gap-4 md:gap-8">
               <a
                 href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=10&tab=1#contentslist_block"
                 target="_blank"
@@ -101,11 +103,6 @@ export default function NameStories() {
               >
                 <span>자세히 보기</span>
               </a>
-              <img 
-                src={storiesCharacterImage}
-                alt="이름이야기 캐릭터"
-                className="w-auto h-24 md:h-48 flex-shrink-0"
-              />
             </div>
           </div>
         </div>
