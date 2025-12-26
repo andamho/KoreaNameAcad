@@ -22,6 +22,7 @@ import analysisExampleImage from "@assets/hongildong-analysis.jpg";
 import newYearImage from "@assets/Screenshot_20251226_110720_CapCut_1766715016537.jpg";
 import characterImage from "@assets/KakaoTalk_20251226_112051215_1766716081551.png";
 import warningCharacterImage from "@assets/KakaoTalk_20251226_113721756_1766716681811.png";
+import sadCharacterImage from "@assets/KakaoTalk_20251226_113704028_1766716735122.png";
 
 export default function InstagramHome() {
   const [, setLocation] = useLocation();
@@ -518,6 +519,15 @@ export default function InstagramHome() {
       </div>
 
       <KnaValueSection />
+
+      {/* 슬픈 캐릭터 이미지 */}
+      <div className="flex justify-center py-6">
+        <img 
+          src={sadCharacterImage}
+          alt="힘든 캐릭터"
+          style={{ width: '80px', height: 'auto' }}
+        />
+      </div>
 
       <KnaIntroBlock />
 
