@@ -179,17 +179,13 @@ export default function Services() {
         </div>
       </section>
 
-      {/* 통합 솔루션 타이틀 */}
-      <div className="bg-background py-8 md:py-12">
-        <div className="max-w-4xl mx-auto px-4 text-center">
+      {/* Professional Services */}
+      <section className="py-16 md:py-24 bg-muted/30">
+        <div className="text-center mb-12">
           <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
             진단부터 작명까지, 통합 이름 솔루션
           </h2>
         </div>
-      </div>
-
-      {/* Professional Services */}
-      <section className="py-16 md:py-24 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <ServiceCard
