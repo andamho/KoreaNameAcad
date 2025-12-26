@@ -508,8 +508,8 @@ export default function InstagramHome() {
           alt="경고 캐릭터"
           className="absolute left-1/2 z-10"
           style={{ 
-            width: '70px', 
-            height: 'auto',
+            width: 'auto', 
+            height: '110px',
             transform: 'translateX(-50%) translateY(-50%)',
             top: '0'
           }}
@@ -524,8 +524,8 @@ export default function InstagramHome() {
           alt="한국이름학교 캐릭터"
           className="absolute left-1/2 z-10"
           style={{ 
-            width: '70px', 
-            height: 'auto',
+            width: 'auto', 
+            height: '110px',
             transform: 'translateX(-50%) translateY(-50%)',
             top: '0'
           }}
@@ -540,8 +540,8 @@ export default function InstagramHome() {
           alt="힘든 캐릭터"
           className="absolute left-1/2 z-10"
           style={{ 
-            width: '70px', 
-            height: 'auto',
+            width: 'auto', 
+            height: '110px',
             transform: 'translateX(-50%) translateY(-50%)',
             top: '0'
           }}
@@ -556,8 +556,8 @@ export default function InstagramHome() {
           alt="행복한 캐릭터"
           className="absolute left-1/2 z-10"
           style={{ 
-            width: '70px', 
-            height: 'auto',
+            width: 'auto', 
+            height: '110px',
             transform: 'translateX(-50%) translateY(-50%)',
             top: '0'
           }}
@@ -572,8 +572,8 @@ export default function InstagramHome() {
           alt="기도하는 캐릭터"
           className="absolute left-1/2 z-10"
           style={{ 
-            width: '70px', 
-            height: 'auto',
+            width: 'auto', 
+            height: '110px',
             transform: 'translateX(-50%) translateY(-50%)',
             top: '0'
           }}
@@ -618,8 +618,8 @@ export default function InstagramHome() {
           alt="어깨 으쓱 캐릭터"
           className="absolute left-1/2 z-10"
           style={{ 
-            width: '70px', 
-            height: 'auto',
+            width: 'auto', 
+            height: '110px',
             transform: 'translateX(-50%) translateY(-50%)',
             top: '0'
           }}
