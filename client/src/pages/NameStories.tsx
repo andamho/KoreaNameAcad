@@ -78,11 +78,11 @@ export default function NameStories() {
       <main className="flex-1 py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Header with character on left */}
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 mb-16">
+          <div className="flex flex-col md:flex-row items-center md:justify-start justify-center gap-6 md:gap-12 mb-16 md:pl-8 lg:pl-16">
             <img 
               src={storiesCharacterImage}
               alt="이름이야기 캐릭터"
-              className="w-auto h-48 md:h-64"
+              className="w-auto h-48 md:h-64 flex-shrink-0"
             />
             <div className="text-center md:text-left">
               <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
