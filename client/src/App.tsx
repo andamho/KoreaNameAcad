@@ -17,10 +17,10 @@ import NameStories from "@/pages/NameStories";
 import NameStoryDetail from "@/pages/NameStoryDetail";
 import NotFound from "@/pages/not-found";
 
-import servicesCharacterImage from "@assets/KakaoTalk_20251226_145154152_1766728332131.png";
-import reviewsCharacterImage from "@assets/KakaoTalk_20251226_145359989_1766728475161.png";
+import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
+import reviewsCharacterImage from "@assets/KakaoTalk_20251226_140721227_1766725962281.png";
 import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_1766729101276.png";
-import nameStoriesCharacterImage from "@assets/KakaoTalk_20251226_145811461_1766728723127.png";
+import storiesCharacterImage from "@assets/KakaoTalk_20251226_141747822_1766726282057.png";
 import dangerCharacterImage from "@assets/KakaoTalk_20251226_152419337_1766730274782.png";
 import effortCharacterImage from "@assets/KakaoTalk_20251226_152116391_1766730095506.png";
 import stepsCharacterImage from "@assets/KakaoTalk_20251226_152750745_1766730485133.png";
@@ -30,7 +30,7 @@ const characterImages = [
   servicesCharacterImage,
   reviewsCharacterImage,
   pricingCharacterImage,
-  nameStoriesCharacterImage,
+  storiesCharacterImage,
   dangerCharacterImage,
   effortCharacterImage,
   stepsCharacterImage,
