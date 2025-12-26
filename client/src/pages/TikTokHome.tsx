@@ -21,6 +21,7 @@ import {
 import analysisExampleImage from "@assets/hongildong-analysis.jpg";
 import newYearImage from "@assets/Screenshot_20251226_110720_CapCut_1766715016537.jpg";
 import characterImage from "@assets/KakaoTalk_20251226_112051215_1766716081551.png";
+import warningCharacterImage from "@assets/KakaoTalk_20251226_113721756_1766716681811.png";
 
 export default function TikTokHome() {
   const [, setLocation] = useLocation();
@@ -495,6 +496,15 @@ export default function TikTokHome() {
       <Navbar />
       
       <Hero />
+
+      {/* 경고 캐릭터 이미지 */}
+      <div className="flex justify-center py-6">
+        <img 
+          src={warningCharacterImage}
+          alt="경고 캐릭터"
+          style={{ width: '100px', height: 'auto' }}
+        />
+      </div>
 
       <KnaDangerSection />
 
