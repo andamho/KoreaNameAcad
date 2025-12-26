@@ -23,6 +23,7 @@ import newYearImage from "@assets/Screenshot_20251226_110720_CapCut_176671501653
 import characterImage from "@assets/KakaoTalk_20251226_112051215_1766716081551.png";
 import warningCharacterImage from "@assets/KakaoTalk_20251226_113721756_1766716681811.png";
 import sadCharacterImage from "@assets/KakaoTalk_20251226_113704028_1766716735122.png";
+import happyCharacterImage from "@assets/KakaoTalk_20251226_114203894_1766717036057.png";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -324,7 +325,21 @@ export default function Home() {
 
       <KnaIntroBlock />
 
-      <KnaStepsSection />
+      {/* KnaStepsSection with overlay character */}
+      <div className="relative">
+        <img 
+          src={happyCharacterImage}
+          alt="행복한 캐릭터"
+          className="absolute left-1/2 z-10"
+          style={{ 
+            width: '80px', 
+            height: 'auto',
+            transform: 'translateX(-50%) translateY(-50%)',
+            top: '0'
+          }}
+        />
+        <KnaStepsSection />
+      </div>
 
       <KnaMythTruthSection />
 
