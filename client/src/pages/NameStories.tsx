@@ -78,14 +78,19 @@ export default function NameStories() {
       <main className="flex-1 py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Header with character on right (hand pointing left), centered as a unit */}
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 mb-16">
-            <div className="text-center md:text-left order-2 md:order-1">
+          <div className="flex flex-col items-center justify-center mb-16">
+            {/* Title and description - always centered */}
+            <div className="text-center mb-8">
               <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                 재미있는 이름이야기
               </h1>
-              <p className="text-lg text-muted-foreground mb-8">
+              <p className="text-lg text-muted-foreground">
                 이름에 담긴 흥미로운 이야기들을 만나보세요
               </p>
+            </div>
+            
+            {/* Button + Character row - centered as a unit */}
+            <div className="flex flex-row items-center justify-center gap-4 md:gap-8">
               <a
                 href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=10&tab=1#contentslist_block"
                 target="_blank"
@@ -95,12 +100,12 @@ export default function NameStories() {
               >
                 <span>자세히 보기</span>
               </a>
+              <img 
+                src={storiesCharacterImage}
+                alt="이름이야기 캐릭터"
+                className="w-auto h-24 md:h-48 flex-shrink-0"
+              />
             </div>
-            <img 
-              src={storiesCharacterImage}
-              alt="이름이야기 캐릭터"
-              className="w-auto h-48 md:h-64 flex-shrink-0 order-1 md:order-2"
-            />
           </div>
 
           {/* Story cards */}
