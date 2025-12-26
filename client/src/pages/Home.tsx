@@ -25,7 +25,7 @@ import warningCharacterImage from "@assets/KakaoTalk_20251226_113721756_17667166
 import sadCharacterImage from "@assets/KakaoTalk_20251226_113704028_1766716735122.png";
 import happyCharacterImage from "@assets/KakaoTalk_20251226_114203894_1766717036057.png";
 import prayCharacterImage from "@assets/KakaoTalk_20251226_115131742_1766723059740.png";
-import shrugCharacterImage from "@assets/KakaoTalk_20251226_133114644_1766723493092.png";
+import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_1766729101276.png";
 import butterflyCharacterImage from "@assets/KakaoTalk_20251226_134433821_1766724285654.png";
 
 export default function Home() {
@@ -418,11 +418,11 @@ export default function Home() {
         </section>
       </div>
 
-      {/* KnaPricingSection with overlay shrug character */}
+      {/* KnaPricingSection with overlay pricing character */}
       <div className="relative">
         <img 
-          src={shrugCharacterImage}
-          alt="어깨 으쓱 캐릭터"
+          src={pricingCharacterImage}
+          alt="비용 안내 캐릭터"
           className="absolute left-1/2 z-10"
           style={{ 
             width: 'auto', 
