@@ -523,6 +523,15 @@ export default function InstagramHome() {
       
       <Hero />
 
+      {/* 통합 솔루션 타이틀 */}
+      <div className="bg-background py-8 md:py-12">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
+            진단부터 작명까지, 통합 이름 솔루션
+          </h2>
+        </div>
+      </div>
+
       {/* KnaDangerSection with overlay warning character */}
       <div className="relative">
         <img 
