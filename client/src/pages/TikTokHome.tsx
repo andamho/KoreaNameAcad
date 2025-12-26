@@ -26,6 +26,7 @@ import sadCharacterImage from "@assets/KakaoTalk_20251226_113704028_176671673512
 import happyCharacterImage from "@assets/KakaoTalk_20251226_114203894_1766717036057.png";
 import prayCharacterImage from "@assets/KakaoTalk_20251226_115131742_1766723059740.png";
 import shrugCharacterImage from "@assets/KakaoTalk_20251226_133114644_1766723493092.png";
+import butterflyCharacterImage from "@assets/KakaoTalk_20251226_134433821_1766724285654.png";
 
 export default function TikTokHome() {
   const [, setLocation] = useLocation();
@@ -581,35 +582,48 @@ export default function TikTokHome() {
         <KnaMythTruthSection />
       </div>
 
-      {/* 동영상 섹션 */}
-      <section className="kna-video-section py-16 md:py-24">
-        <div className="max-w-md mx-auto px-4 sm:px-6">
-          <video 
-            ref={videoRef}
-            className="w-full h-auto rounded-lg shadow-lg"
-            controls
-            playsInline
-            muted
-            loop
-            preload="metadata"
-            controlsList="nodownload"
-            data-testid="video-promotion"
-            src="/promotion-video.mp4#t=0.1"
-            poster=""
-          >
-            동영상을 재생할 수 없습니다. 브라우저가 MP4 형식을 지원하지 않습니다.
-          </video>
-          
-          <div className="text-center mt-6">
-            <p className="text-sm md:text-base font-semibold text-foreground">
-              Founder & CEO 안서호
-            </p>
-            <p className="text-[11px] md:text-[14px] text-muted-foreground mt-1">
-              한국이름학교 | 와츠유어네임 이름연구협회
-            </p>
+      {/* 동영상 섹션 with overlay butterfly character */}
+      <div className="relative">
+        <img 
+          src={butterflyCharacterImage}
+          alt="나비 캐릭터"
+          className="absolute left-1/2 z-10"
+          style={{ 
+            width: 'auto', 
+            height: '110px',
+            transform: 'translateX(-50%) translateY(-50%)',
+            top: '0'
+          }}
+        />
+        <section className="kna-video-section py-16 md:py-24">
+          <div className="max-w-md mx-auto px-4 sm:px-6">
+            <video 
+              ref={videoRef}
+              className="w-full h-auto rounded-lg shadow-lg"
+              controls
+              playsInline
+              muted
+              loop
+              preload="metadata"
+              controlsList="nodownload"
+              data-testid="video-promotion"
+              src="/promotion-video.mp4#t=0.1"
+              poster=""
+            >
+              동영상을 재생할 수 없습니다. 브라우저가 MP4 형식을 지원하지 않습니다.
+            </video>
+            
+            <div className="text-center mt-6">
+              <p className="text-sm md:text-base font-semibold text-foreground">
+                Founder & CEO 안서호
+              </p>
+              <p className="text-[11px] md:text-[14px] text-muted-foreground mt-1">
+                한국이름학교 | 와츠유어네임 이름연구협회
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* KnaPricingSection with overlay shrug character */}
       <div className="relative">
