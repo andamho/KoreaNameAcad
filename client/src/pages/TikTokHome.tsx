@@ -506,6 +506,9 @@ export default function TikTokHome() {
               src={newYearImage}
               alt="새해 복 많이 받으세요"
               className="w-full h-auto rounded-2xl shadow-2xl"
+              loading="eager"
+              fetchPriority="high"
+              decoding="sync"
             />
           </div>
         </div>

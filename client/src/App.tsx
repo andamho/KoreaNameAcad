@@ -25,6 +25,7 @@ import dangerCharacterImage from "@assets/KakaoTalk_20251226_152419337_176673027
 import effortCharacterImage from "@assets/KakaoTalk_20251226_152116391_1766730095506.png";
 import stepsCharacterImage from "@assets/KakaoTalk_20251226_152750745_1766730485133.png";
 import guideCharacterImage from "@assets/KakaoTalk_20251226_151729031_1766729868877.png";
+import newYearImage from "@assets/Screenshot_20251226_110720_CapCut_1766715016537.jpg";
 
 const characterImages = [
   servicesCharacterImage,
@@ -36,6 +37,9 @@ const characterImages = [
   stepsCharacterImage,
   guideCharacterImage,
 ];
+
+// 팝업 이미지 (최우선 로드)
+const popupImage = newYearImage;
 
 function Router() {
   return (
@@ -57,10 +61,21 @@ function Router() {
 }
 
 function App() {
-  // 캐릭터 이미지 미리 로딩 (link preload + Image 객체 동시 사용)
+  // 팝업 이미지 최우선 로딩 + 캐릭터 이미지 미리 로딩
   useEffect(() => {
+    // 1. 팝업 이미지 최우선 로드 (가장 먼저!)
+    const popupLink = document.createElement('link');
+    popupLink.rel = 'preload';
+    popupLink.as = 'image';
+    popupLink.href = popupImage;
+    popupLink.setAttribute('fetchpriority', 'high');
+    document.head.insertBefore(popupLink, document.head.firstChild);
+    
+    const popupImg = new Image();
+    popupImg.src = popupImage;
+    
+    // 2. 캐릭터 이미지 로딩
     characterImages.forEach((src) => {
-      // 1. link preload 태그로 브라우저에 우선순위 높게 요청
       const link = document.createElement('link');
       link.rel = 'preload';
       link.as = 'image';
@@ -68,7 +83,6 @@ function App() {
       link.setAttribute('fetchpriority', 'high');
       document.head.appendChild(link);
       
-      // 2. Image 객체로 캐시에 저장
       const img = new Image();
       img.src = src;
     });
