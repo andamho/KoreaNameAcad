@@ -156,34 +156,31 @@ export default function Services() {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0f766e] to-[#4fd1c5] dark:from-[#0a5850] dark:to-[#3ba89e] py-20 md:py-28">
+      {/* Hero Section with character on left */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0f766e] to-[#4fd1c5] dark:from-[#0a5850] dark:to-[#3ba89e] py-16 md:py-24">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTR2NGg0di00em0wLThoLTR2NGg0di00em04IDhoLTR2NGg0di00em0tOCA4aC00djRoNHYtNHptOCAwaC00djRoNHYtNHptMC04aC00djRoNHYtNHptOC04aC00djRoNHYtNHptMCA4aC00djRoNHYtNHptLTggMGgtNHY0aDR2LTR6bTggOGgtNHY0aDR2LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6" data-testid="text-services-title">
-            전문적인 이름 서비스
-          </h1>
-          <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto text-center">
-            고달픈 인생,<br />
-            이름 하나로 이유와 해결책을
-          </p>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
+            <img 
+              src={servicesCharacterImage}
+              alt="서비스 안내 캐릭터"
+              className="w-auto h-40 md:h-56 flex-shrink-0"
+            />
+            <div className="text-center md:text-left">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6" data-testid="text-services-title">
+                전문적인 이름 서비스
+              </h1>
+              <p className="text-xl md:text-2xl text-white/90">
+                고달픈 인생,<br />
+                이름 하나로 이유와 해결책을
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Professional Services with overlay character */}
-      <div className="relative">
-        <img 
-          src={servicesCharacterImage}
-          alt="서비스 안내 캐릭터"
-          className="absolute left-1/2 z-10"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%) translateY(-50%)',
-            top: '0'
-          }}
-        />
-        <section className="py-16 md:py-24 bg-muted/30">
+      {/* Professional Services */}
+      <section className="py-16 md:py-24 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <ServiceCard
@@ -231,7 +228,6 @@ export default function Services() {
             </div>
           </div>
         </section>
-      </div>
 
       {/* Process Section */}
       <section className="py-16 md:py-24 bg-slate-50 dark:bg-slate-900/20">
