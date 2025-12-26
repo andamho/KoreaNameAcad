@@ -498,10 +498,10 @@ export default function TikTokHome() {
       {/* 크리스마스 팝업 */}
       {showChristmasPopup && (
         <div 
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 animate-in fade-in duration-300"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60"
           onClick={closeChristmasPopup}
         >
-          <div className="relative max-w-sm mx-4 animate-in zoom-in-95 duration-300">
+          <div className="relative max-w-sm mx-4">
             <img 
               src={newYearImage}
               alt="새해 복 많이 받으세요"
