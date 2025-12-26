@@ -24,7 +24,7 @@ import characterImage from "@assets/KakaoTalk_20251226_112051215_1766716081551.p
 import warningCharacterImage from "@assets/KakaoTalk_20251226_113721756_1766716681811.png";
 import sadCharacterImage from "@assets/KakaoTalk_20251226_113704028_1766716735122.png";
 import happyCharacterImage from "@assets/KakaoTalk_20251226_114203894_1766717036057.png";
-import prayCharacterImage from "@assets/KakaoTalk_20251226_115131742_1766717529135.png";
+import prayCharacterImage from "@assets/KakaoTalk_20251226_115131742_1766723059740.png";
 
 export default function InstagramHome() {
   const [, setLocation] = useLocation();
