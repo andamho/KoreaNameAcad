@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Star, Quote, Download, Heart, Clock } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import reviewsCharacterImage from "@assets/KakaoTalk_20251226_140721227_1766725962281.png";
 
 export default function Reviews() {
   const statsRef = useRef<HTMLDivElement>(null);
@@ -336,10 +337,22 @@ export default function Reviews() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-12 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div ref={statsRef} className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
+      {/* Stats Section with overlay character */}
+      <div className="relative">
+        <img 
+          src={reviewsCharacterImage}
+          alt="후기 캐릭터"
+          className="absolute left-1/2 z-10"
+          style={{ 
+            width: 'auto', 
+            height: '110px',
+            transform: 'translateX(-50%) translateY(-50%)',
+            top: '0'
+          }}
+        />
+        <section className="py-12 bg-muted/30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div ref={statsRef} className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
             {stats.map((stat, index) => {
               const IconComponent = stat.icon;
               const numValue = stat.multiline ? 17 : (stat.value.includes('%') ? 98 : 30000);
@@ -367,9 +380,10 @@ export default function Reviews() {
                 </div>
               );
             })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* 이름분석 상담후기 섹션 */}
       <section id="analysis-testimonials" className="py-16 md:py-24 bg-background">
