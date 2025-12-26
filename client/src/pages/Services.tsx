@@ -5,7 +5,6 @@ import { Search, Star, Flower, Baby, Building } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
-import heroCharacterImage from "@assets/KakaoTalk_20251226_141747822_1766726282057.png";
 
 export default function Services() {
   const [, setLocation] = useLocation();
