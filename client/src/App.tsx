@@ -23,7 +23,7 @@ import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_17667291
 import storiesCharacterImage from "@assets/KakaoTalk_20251226_141747822_1766726282057.png";
 import dangerCharacterImage from "@assets/KakaoTalk_20251226_152419337_1766730274782.png";
 import effortCharacterImage from "@assets/KakaoTalk_20251226_152116391_1766730095506.png";
-import stepsCharacterImage from "@assets/KakaoTalk_20251226_152750745_1766730485133.png";
+import stepsCharacterImage from "@assets/KakaoTalk_20251226_164036756_1766734877281.png";
 import guideCharacterImage from "@assets/KakaoTalk_20251226_151729031_1766729868877.png";
 import newYearImage from "@assets/newYearPopup_optimized.jpg";
 
