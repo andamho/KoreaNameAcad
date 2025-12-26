@@ -1,5 +1,4 @@
 import { useState } from "react";
-import guideCharacterImage from "@assets/KakaoTalk_20251226_151729031_1766729868877.png";
 
 export default function KnaMythTruthSection() {
   const items = [
@@ -57,13 +56,8 @@ export default function KnaMythTruthSection() {
         <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#7fe1d3]/20 dark:bg-[#58C4C4]/20 blur-3xl" />
       </div>
       <div className="relative max-w-5xl mx-auto px-6 lg:px-8">
-        <header className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
-          <img 
-            src={guideCharacterImage}
-            alt="개명 가이드 캐릭터"
-            className="w-auto h-32 md:h-40 flex-shrink-0"
-          />
-          <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl text-center md:text-left">
+        <header className="text-center">
+          <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
             개명 완벽 가이드
           </h2>
         </header>

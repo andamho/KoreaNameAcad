@@ -24,7 +24,7 @@ import characterImage from "@assets/KakaoTalk_20251226_135549799_1766724973553.p
 import warningCharacterImage from "@assets/KakaoTalk_20251226_113721756_1766716681811.png";
 import sadCharacterImage from "@assets/KakaoTalk_20251226_113704028_1766716735122.png";
 import happyCharacterImage from "@assets/KakaoTalk_20251226_114203894_1766717036057.png";
-import prayCharacterImage from "@assets/KakaoTalk_20251226_115131742_1766723059740.png";
+import guideCharacterImage from "@assets/KakaoTalk_20251226_151729031_1766729868877.png";
 import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_1766729101276.png";
 import butterflyCharacterImage from "@assets/KakaoTalk_20251226_134433821_1766724285654.png";
 
@@ -359,11 +359,11 @@ export default function Home() {
         <KnaStepsSection />
       </div>
 
-      {/* KnaMythTruthSection with overlay pray character */}
+      {/* KnaMythTruthSection with overlay guide character */}
       <div className="relative">
         <img 
-          src={prayCharacterImage}
-          alt="기도하는 캐릭터"
+          src={guideCharacterImage}
+          alt="개명 가이드 캐릭터"
           className="absolute left-1/2 z-10"
           style={{ 
             width: 'auto', 
