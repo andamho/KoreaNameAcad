@@ -2,7 +2,6 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import KnaPricingSection from "@/components/KnaPricingSection";
 import { useEffect } from "react";
-import shrugCharacterImage from "@assets/KakaoTalk_20251226_133114644_1766723493092.png";
 
 export default function Pricing() {
   useEffect(() => {
@@ -106,21 +105,7 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      {/* KnaPricingSection with overlay shrug character */}
-      <div className="relative">
-        <img 
-          src={shrugCharacterImage}
-          alt="어깨 으쓱 캐릭터"
-          className="absolute left-1/2 z-10"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%) translateY(-50%)',
-            top: '0'
-          }}
-        />
-        <KnaPricingSection />
-      </div>
+      <KnaPricingSection />
       <Footer />
     </div>
   );

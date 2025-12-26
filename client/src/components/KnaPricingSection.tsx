@@ -1,3 +1,5 @@
+import pricingCharacterImage from "@assets/KakaoTalk_20251226_133114644_1766723493092.png";
+
 const pricingData = {
   sections: [
     {
@@ -40,14 +42,21 @@ export default function KnaPricingSection() {
         <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-[#7fe1d3]/20 dark:bg-[#58C4C4]/20 blur-3xl" />
       </div>
       <div className="relative max-w-5xl mx-auto px-6 lg:px-8">
-        <header className="text-center mb-12">
-          <h2 
-            className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl"
-            data-testid="heading-pricing"
-          >
-            비용 및 시간
-          </h2>
-          <p className="mt-3 text-lg text-muted-foreground" data-testid="text-pricing-policy">⚖️ 모든 비용은 이름연구협회 규정에 따릅니다</p>
+        <header className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10 mb-12">
+          <img 
+            src={pricingCharacterImage}
+            alt="비용 안내 캐릭터"
+            className="w-auto h-40 md:h-56 flex-shrink-0"
+          />
+          <div className="text-center md:text-left">
+            <h2 
+              className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl"
+              data-testid="heading-pricing"
+            >
+              비용 및 시간
+            </h2>
+            <p className="mt-3 text-lg text-muted-foreground" data-testid="text-pricing-policy">⚖️ 모든 비용은 이름연구협회 규정에 따릅니다</p>
+          </div>
         </header>
 
         <div className="relative mx-auto w-full max-w-4xl">
