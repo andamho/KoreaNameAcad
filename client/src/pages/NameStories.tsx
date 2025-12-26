@@ -77,57 +77,50 @@ export default function NameStories() {
       
       <main className="flex-1 py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              재미있는 이름이야기
-            </h1>
-            <p className="text-lg text-muted-foreground mb-12">
-              이름에 담긴 흥미로운 이야기들을 만나보세요
-            </p>
-            <a
-              href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=10&tab=1#contentslist_block"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full font-bold text-lg bg-gradient-to-r from-[#007C73] to-[#00B8A9] text-white shadow-[0_8px_20px_rgba(0,140,126,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-[0_12px_28px_rgba(0,140,126,0.3)] active:scale-[0.98] active:shadow-[0_6px_16px_rgba(0,140,126,0.25)]"
-              data-testid="link-blog-stories"
-            >
-              <span>자세히 보기</span>
-            </a>
-          </div>
-
-          {/* Story cards with overlay character */}
-          <div className="relative">
+          {/* Header with character on left */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 mb-16">
             <img 
               src={storiesCharacterImage}
               alt="이름이야기 캐릭터"
-              className="absolute left-1/2 z-10"
-              style={{ 
-                width: 'auto', 
-                height: '110px',
-                transform: 'translateX(-50%) translateY(-50%)',
-                top: '0'
-              }}
+              className="w-auto h-48 md:h-64"
             />
-            <div className="pt-14">
-              {isLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <StorySkeleton key={i} />
-                  ))}
-                </div>
-              ) : error ? (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">콘텐츠를 불러오는데 실패했습니다.</p>
-                </div>
-              ) : stories && stories.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {stories.map((story) => (
-                    <StoryCard key={story.id} story={story} />
-                  ))}
-                </div>
-              ) : null}
+            <div className="text-center md:text-left">
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                재미있는 이름이야기
+              </h1>
+              <p className="text-lg text-muted-foreground mb-8">
+                이름에 담긴 흥미로운 이야기들을 만나보세요
+              </p>
+              <a
+                href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=10&tab=1#contentslist_block"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full font-bold text-lg bg-gradient-to-r from-[#007C73] to-[#00B8A9] text-white shadow-[0_8px_20px_rgba(0,140,126,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-[0_12px_28px_rgba(0,140,126,0.3)] active:scale-[0.98] active:shadow-[0_6px_16px_rgba(0,140,126,0.25)]"
+                data-testid="link-blog-stories"
+              >
+                <span>자세히 보기</span>
+              </a>
             </div>
           </div>
+
+          {/* Story cards */}
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <StorySkeleton key={i} />
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">콘텐츠를 불러오는데 실패했습니다.</p>
+            </div>
+          ) : stories && stories.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {stories.map((story) => (
+                <StoryCard key={story.id} story={story} />
+              ))}
+            </div>
+          ) : null}
         </div>
       </main>
 
