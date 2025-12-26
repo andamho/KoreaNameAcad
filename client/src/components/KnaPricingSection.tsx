@@ -46,9 +46,9 @@ export default function KnaPricingSection() {
           <img 
             src={pricingCharacterImage}
             alt="비용 안내 캐릭터"
-            className="w-auto h-40 md:h-56 flex-shrink-0"
+            className="w-auto h-40 md:h-56 flex-shrink-0 order-2 md:order-1"
           />
-          <div className="text-center md:text-left">
+          <div className="text-center md:text-left order-1 md:order-2">
             <h2 
               className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-2xl font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl"
               data-testid="heading-pricing"
