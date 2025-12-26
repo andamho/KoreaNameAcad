@@ -19,7 +19,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import analysisExampleImage from "@assets/hongildong-analysis.jpg";
-import christmasImage from "@assets/KakaoTalk_20251225_120409894_1766631888776.png";
 
 export default function InstagramHome() {
   const [, setLocation] = useLocation();
@@ -482,9 +481,11 @@ export default function InstagramHome() {
           onClick={closeChristmasPopup}
         >
           <div className="relative max-w-sm mx-4 animate-in zoom-in-95 duration-300">
-            <img 
-              src={christmasImage} 
-              alt="Merry Christmas" 
+            <video 
+              src="/popup-video.mp4"
+              autoPlay
+              muted
+              playsInline
               className="w-full h-auto rounded-2xl shadow-2xl"
             />
           </div>
