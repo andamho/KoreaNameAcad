@@ -182,7 +182,7 @@ export default function Services() {
       {/* 통합 솔루션 타이틀 */}
       <div className="bg-background py-8 md:py-12">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
+          <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
             진단부터 작명까지, 통합 이름 솔루션
           </h2>
         </div>
