@@ -301,7 +301,8 @@ export default function Home() {
           className="absolute left-1/2 z-10"
           style={{ 
             width: '70px', 
-            height: 'auto',
+            height: '70px',
+            objectFit: 'contain',
             transform: 'translateX(-50%) translateY(-50%)',
             top: '0'
           }}
@@ -317,7 +318,8 @@ export default function Home() {
           className="absolute left-1/2 z-10"
           style={{ 
             width: '70px', 
-            height: 'auto',
+            height: '70px',
+            objectFit: 'contain',
             transform: 'translateX(-50%) translateY(-50%)',
             top: '0'
           }}
