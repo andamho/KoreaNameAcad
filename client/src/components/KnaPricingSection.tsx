@@ -73,6 +73,18 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
           <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-[#7fe1d3]/20 dark:bg-[#58C4C4]/20 blur-3xl" />
         </div>
         <div className="relative max-w-5xl mx-auto px-6 lg:px-8">
+          {/* Section header - only shown when Hero is NOT displayed */}
+          {!showHero && (
+            <div className="text-center mb-12">
+              <h2 
+                className="text-[25px] md:text-4xl font-extrabold text-[#0f766e] dark:text-[#58C4C4] mb-4"
+                data-testid="heading-pricing-section"
+              >
+                비용 및 시간
+              </h2>
+              <p className="text-[18px] md:text-xl text-muted-foreground" data-testid="text-pricing-policy-section">⚖️ 모든 비용은 이름연구협회 규정에 따릅니다</p>
+            </div>
+          )}
           <div className="relative mx-auto w-full max-w-4xl">
           {/* 장식용 코너 점들 */}
           <div className="absolute -left-3 -top-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
