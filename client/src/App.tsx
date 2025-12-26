@@ -57,9 +57,18 @@ function Router() {
 }
 
 function App() {
-  // 캐릭터 이미지 미리 로딩 (페이지 전환 시 빠른 표시)
+  // 캐릭터 이미지 미리 로딩 (link preload + Image 객체 동시 사용)
   useEffect(() => {
     characterImages.forEach((src) => {
+      // 1. link preload 태그로 브라우저에 우선순위 높게 요청
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = src;
+      link.setAttribute('fetchpriority', 'high');
+      document.head.appendChild(link);
+      
+      // 2. Image 객체로 캐시에 저장
       const img = new Image();
       img.src = src;
     });
