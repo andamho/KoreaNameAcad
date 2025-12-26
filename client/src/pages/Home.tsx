@@ -40,6 +40,12 @@ export default function Home() {
       return false;
     }
     
+    // URL 파라미터가 있으면 (다른 페이지에서 온 경우) 팝업 표시 안 함
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('open') || params.get('detail') || params.get('from')) {
+      return false;
+    }
+    
     // 세션에서 이미 본 경우 다시 표시 안 함
     try {
       return !sessionStorage.getItem('christmasPopupShown');

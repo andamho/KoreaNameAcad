@@ -39,6 +39,11 @@ export default function TikTokHome() {
     if (navigationType === 'back_forward') {
       return false;
     }
+    // URL 파라미터가 있으면 (다른 페이지에서 온 경우) 팝업 표시 안 함
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('open') || params.get('detail') || params.get('from')) {
+      return false;
+    }
     // history.state로 이미 본 경우 체크
     if (window.history.state?.popupShown) {
       return false;
