@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import analysisExampleImage from "@assets/hongildong-analysis.jpg";
+import newYearImage from "@assets/Screenshot_20251226_110720_CapCut_1766715016537.jpg";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -274,11 +275,9 @@ export default function Home() {
           onClick={closeChristmasPopup}
         >
           <div className="relative max-w-sm mx-4 animate-in zoom-in-95 duration-300">
-            <video 
-              src="/popup-video.mp4"
-              autoPlay
-              muted
-              playsInline
+            <img 
+              src={newYearImage}
+              alt="새해 복 많이 받으세요"
               className="w-full h-auto rounded-2xl shadow-2xl"
             />
           </div>
