@@ -75,16 +75,17 @@ export default function NameStories() {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       
-      <main className="flex-1 py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          {/* Header with character on right (hand pointing left), centered as a unit */}
-          <div className="flex flex-col items-center justify-center mb-16">
-            {/* Title and description - always centered */}
+      {/* Hero Section with character on right */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0f766e] to-[#4fd1c5] dark:from-[#0a5850] dark:to-[#3ba89e] py-16 md:py-24">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTR2NGg0di00em0wLThoLTR2NGg0di00em04IDhoLTR2NGg0di00em0tOCA4aC00djRoNHYtNHptOCAwaC00djRoNHYtNHptMC04aC00djRoNHYtNHptOC04aC00djRoNHYtNHptMCA4aC00djRoNHYtNHptLTggMGgtNHY0aDR2LTR6bTggOGgtNHY0aDR2LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center justify-center">
+            {/* Title and description */}
             <div className="text-center mb-8">
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4" data-testid="text-stories-title">
                 재미있는 이름이야기
               </h1>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-lg md:text-2xl text-white/90">
                 이름에 담긴 흥미로운 이야기들을 만나보세요
               </p>
             </div>
@@ -95,7 +96,7 @@ export default function NameStories() {
                 href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=10&tab=1#contentslist_block"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full font-bold text-lg bg-gradient-to-r from-[#007C73] to-[#00B8A9] text-white shadow-[0_8px_20px_rgba(0,140,126,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-[0_12px_28px_rgba(0,140,126,0.3)] active:scale-[0.98] active:shadow-[0_6px_16px_rgba(0,140,126,0.25)]"
+                className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full font-bold text-lg bg-white/20 backdrop-blur-sm border border-white/30 text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:bg-white/30 active:scale-[0.98]"
                 data-testid="link-blog-stories"
               >
                 <span>자세히 보기</span>
@@ -107,6 +108,11 @@ export default function NameStories() {
               />
             </div>
           </div>
+        </div>
+      </section>
+
+      <main className="flex-1 py-12 md:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
           {/* Story cards */}
           {isLoading ? (
