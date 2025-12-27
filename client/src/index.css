@@ -651,11 +651,16 @@ html.ua-tiktok .review-section-title {
 /* 섹션 간 간격 조정 - 고정 음수 마진으로 scale 빈 공간 제거 */
 /* -50%는 viewport width 기준이라 섹션마다 다르게 보임 → 고정값 사용 */
 .ig-shell .kna-danger-section,
-.ig-shell .kna-steps-section,
-.ig-shell .kna-myth-truth-section,
-.ig-shell .kna-video-section,
 .ig-shell .kna-pricing-section {
   margin-bottom: -180px !important;
+  padding-bottom: 0 !important;
+}
+
+/* steps, myth-truth, video: pb-16이 없으므로 64px 추가 (+64 = -116px) */
+.ig-shell .kna-steps-section,
+.ig-shell .kna-myth-truth-section,
+.ig-shell .kna-video-section {
+  margin-bottom: -116px !important;
   padding-bottom: 0 !important;
 }
 
