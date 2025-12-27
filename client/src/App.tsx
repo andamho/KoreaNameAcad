@@ -61,35 +61,6 @@ function Router() {
 }
 
 function App() {
-  // 인앱 브라우저 전역 감지 (클래스 추가 + text-size-adjust만 설정)
-  useEffect(() => {
-    const userAgent = navigator.userAgent || '';
-    const isInstagram = userAgent.includes('Instagram');
-    const isTikTok = userAgent.includes('TikTok') || userAgent.includes('musical_ly');
-    
-    if (isInstagram || isTikTok) {
-      const className = isInstagram ? 'ua-instagram' : 'ua-tiktok';
-      // html 클래스 추가
-      document.documentElement.classList.add(className);
-      // body에 ig-shell 추가하여 기존 CSS 규칙 적용
-      document.body.classList.add('ig-shell');
-      
-      // text-size-adjust만 설정 (폰트 크기는 CSS에서 관리)
-      const styleId = 'global-inapp-base-style';
-      if (!document.getElementById(styleId)) {
-        const style = document.createElement('style');
-        style.id = styleId;
-        style.textContent = `
-          html.${className}, html.${className} body {
-            -webkit-text-size-adjust: none !important;
-            text-size-adjust: none !important;
-          }
-        `;
-        document.head.appendChild(style);
-      }
-    }
-  }, []);
-
   // 팝업 이미지 최우선 로딩 + 캐릭터 이미지 미리 로딩
   useEffect(() => {
     // 1. 팝업 이미지 최우선 로드 (가장 먼저!)

@@ -128,9 +128,6 @@ export default function TikTokHome() {
     }
     robotsMeta.content = 'index,follow';
     
-    // /tt 전용 body 클래스 추가 (네비게이션 시 제거됨)
-    document.body.classList.add('page-tt');
-    
     // 틱톡 전용 추가 스타일 (섹션 간격은 index.css에서 처리)
     const styleId = 'tt-force-style';
     if (!document.getElementById(styleId)) {
@@ -142,12 +139,25 @@ export default function TikTokHome() {
           text-size-adjust: none !important;
         }
         
-        /* /tt 전용: 푸터 텍스트 크기 강제 조정 */
-        body.page-tt p.kna-footer-subtitle {
+        /* 네비바 글자 크기 축소 (로고와 균형) */
+        .kna-navbar * {
+          font-size: 75% !important;
+        }
+        
+        .kna-navbar .text-\\[17px\\] {
+          font-size: 13px !important;
+        }
+        
+        .kna-navbar .text-\\[10px\\] {
+          font-size: 7.5px !important;
+        }
+        
+        /* 푸터 텍스트 크기 강제 조정 */
+        p.kna-footer-subtitle {
           font-size: 9.6px !important;
           line-height: 1.5 !important;
         }
-        body.page-tt .kna-footer .border-t p {
+        .kna-footer .border-t p {
           font-size: 11px !important;
         }
         
@@ -230,13 +240,6 @@ export default function TikTokHome() {
     window.addEventListener('resize', applyScale);
     
     return () => {
-      // page-tt 클래스 제거 (네비게이션 시 /tt 전용 스타일 해제)
-      document.body.classList.remove('page-tt');
-      // ua-tiktok은 App.tsx에서 관리하므로 제거하지 않음
-      const styleElement = document.getElementById(styleId);
-      if (styleElement) {
-        styleElement.remove();
-      }
       clearTimeout(timer1);
       clearTimeout(timer1b);
       clearTimeout(timer1c);
