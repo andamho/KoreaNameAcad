@@ -543,12 +543,11 @@ export default function TikTokHome() {
         <img 
           src={characterImage}
           alt="한국이름학교 캐릭터"
-          className="absolute left-1/2 z-10"
+          className="absolute left-1/2 z-10 top-[32px] sm:top-[40px]"
           style={{ 
             width: 'auto', 
             height: '110px',
-            transform: 'translateX(-50%) translateY(-50%)',
-            top: '0'
+            transform: 'translateX(-50%)'
           }}
         />
         <KnaValueSection />
@@ -559,12 +558,11 @@ export default function TikTokHome() {
         <img 
           src={effortCharacterImage}
           alt="힘든 캐릭터"
-          className="absolute left-1/2 z-10"
+          className="absolute left-1/2 z-10 top-[32px] sm:top-[40px]"
           style={{ 
             width: 'auto', 
             height: '110px',
-            transform: 'translateX(-50%) translateY(-50%)',
-            top: '0'
+            transform: 'translateX(-50%)'
           }}
         />
         <KnaIntroBlock />
@@ -575,12 +573,11 @@ export default function TikTokHome() {
         <img 
           src={stepsCharacterImage}
           alt="행복한 캐릭터"
-          className="absolute left-1/2 z-10"
+          className="absolute left-1/2 z-10 top-[32px] md:top-[48px]"
           style={{ 
             width: 'auto', 
             height: '110px',
-            transform: 'translateX(-50%) translateY(-50%)',
-            top: '0'
+            transform: 'translateX(-50%)'
           }}
         />
         <KnaStepsSection />
@@ -591,12 +588,11 @@ export default function TikTokHome() {
         <img 
           src={guideCharacterImage}
           alt="기도하는 캐릭터"
-          className="absolute left-1/2 z-10"
+          className="absolute left-1/2 z-10 top-[32px] md:top-[48px]"
           style={{ 
             width: 'auto', 
             height: '110px',
-            transform: 'translateX(-50%) translateY(-50%)',
-            top: '0'
+            transform: 'translateX(-50%)'
           }}
         />
         <KnaMythTruthSection />
@@ -607,15 +603,14 @@ export default function TikTokHome() {
         <img 
           src={butterflyCharacterImage}
           alt="나비 캐릭터"
-          className="absolute left-1/2 z-10"
+          className="absolute left-1/2 z-10 top-[32px] md:top-[48px]"
           style={{ 
             width: 'auto', 
             height: '110px',
-            transform: 'translateX(-50%) translateY(-50%)',
-            top: '0'
+            transform: 'translateX(-50%)'
           }}
         />
-        <section className="kna-video-section pt-24 pb-16 md:py-24">
+        <section className="kna-video-section pt-[174px] pb-16 md:pt-[206px] md:pb-24">
           <div className="max-w-md mx-auto px-4 sm:px-6">
             <video 
               ref={videoRef}
@@ -650,12 +645,11 @@ export default function TikTokHome() {
         <img 
           src={pricingCharacterImage}
           alt="어깨 으쓱 캐릭터"
-          className="absolute left-1/2 z-10"
+          className="absolute left-1/2 z-10 top-[32px] sm:top-[40px]"
           style={{ 
             width: 'auto', 
             height: '110px',
-            transform: 'translateX(-50%) translateY(-50%)',
-            top: '0'
+            transform: 'translateX(-50%)'
           }}
         />
         <KnaPricingSection />

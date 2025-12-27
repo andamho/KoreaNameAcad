@@ -11,9 +11,9 @@ export default function KnaIntroBlock() {
         <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-[#0f766e]/10 dark:bg-[#45B8B8]/10 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-6 py-16 sm:py-20 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-6 pt-[174px] pb-16 sm:pt-[190px] sm:pb-20 lg:px-8">
         <header className="mx-auto max-w-3xl text-center">
-          <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl break-keep">
+          <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl break-keep">
             열심히 노력하며 살아가지만
           </h2>
           <p className="mt-3 text-lg text-muted-foreground break-keep">
