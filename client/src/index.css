@@ -646,10 +646,11 @@ html.ua-tiktok .kna-intro-block > div {
   padding-top: 213px !important;
 }
 
-/* 비용 섹션: 캐릭터 아래 여백 줄이기 */
+/* 비용 섹션: 캐릭터 위아래 여백 동일하게 (32px) */
+/* 캐릭터 top-[32px] + 높이110px = 하단142px, 여백32px → 패딩174px */
 html.ua-instagram .kna-pricing-section,
 html.ua-tiktok .kna-pricing-section {
-  padding-top: 155px !important;
+  padding-top: 174px !important;
 }
 
 /* 섹션 overflow 숨김 */
