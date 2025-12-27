@@ -661,9 +661,9 @@ html.ua-tiktok .review-section-title {
   padding-bottom: 0 !important;
 }
 
-.ig-shell .kna-danger-section > div,
-.ig-shell .kna-value-section > div,
-.ig-shell .kna-intro-block > div,
+.ig-shell .kna-danger-section > div:last-child,
+.ig-shell .kna-value-section > div:last-child,
+.ig-shell .kna-intro-block > div:last-child,
 .ig-shell .kna-steps-inner,
 .ig-shell .kna-myth-truth-inner,
 .ig-shell .kna-video-inner,
