@@ -53,7 +53,7 @@ export function Navbar() {
     },
     { 
       icon: BookOpen, 
-      label: "재미있는 이름이야기", 
+      label: "흥미진진 이름이야기", 
       action: () => goToPage('/name-stories'),
       description: "이름에 담긴 이야기"
     },
