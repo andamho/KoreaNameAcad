@@ -231,6 +231,7 @@ export default function TikTokHome() {
           margin-bottom: -18% !important;
         }
         .kna-pricing-section {
+          padding-top: 155px !important; /* 캐릭터 아래 여백 줄이기 (174 → 155) */
           margin-bottom: 0 !important;
         }
         /* 영상/비용 섹션 캐릭터 컨테이너: 위 섹션 음수 마진 상쇄 */
@@ -616,7 +617,7 @@ export default function TikTokHome() {
       </div>
 
       {/* 동영상 섹션 with overlay butterfly character */}
-      <div className="relative">
+      <div className="relative ig-video-char-container">
         <img 
           src={butterflyCharacterImage}
           alt="나비 캐릭터"
@@ -658,7 +659,7 @@ export default function TikTokHome() {
       </div>
 
       {/* KnaPricingSection with overlay shrug character */}
-      <div className="relative">
+      <div className="relative ig-pricing-char-container">
         <img 
           src={pricingCharacterImage}
           alt="어깨 으쓱 캐릭터"

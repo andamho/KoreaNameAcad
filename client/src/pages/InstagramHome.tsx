@@ -231,6 +231,7 @@ export default function InstagramHome() {
           margin-bottom: -18% !important;
         }
         .kna-pricing-section {
+          padding-top: 155px !important; /* 캐릭터 아래 여백 줄이기 (174 → 155) */
           margin-bottom: 0 !important;
         }
         /* 영상/비용 섹션 캐릭터 컨테이너: 위 섹션 음수 마진 상쇄 */
