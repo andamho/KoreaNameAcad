@@ -649,59 +649,23 @@ html.ua-tiktok .review-section-title {
 }
 
 /* 섹션 간 간격 조정 - 음수 마진으로 scale 빈 공간 제거 */
-.ig-shell .kna-danger-section {
-  margin-bottom: -50% !important;
-}
-
-.ig-shell .kna-danger-section > div {
-  padding-bottom: 0 !important;
-}
-
-.ig-shell .kna-value-section {
-  margin-bottom: -50% !important;
-}
-
-.ig-shell .kna-value-section > div {
-  padding-bottom: 0 !important;
-}
-
-.ig-shell .kna-intro-block {
-  margin-bottom: -50% !important;
-}
-
-.ig-shell .kna-intro-block > div {
-  padding-bottom: 0 !important;
-}
-
-.ig-shell .kna-steps-section {
-  margin-bottom: -50% !important;
-}
-
-.ig-shell .kna-steps-inner {
-  padding-bottom: 0 !important;
-}
-
-.ig-shell .kna-myth-truth-section {
-  margin-bottom: -50% !important;
-  padding-bottom: 0 !important;
-}
-
-.ig-shell .kna-myth-truth-inner {
-  padding-bottom: 0 !important;
-}
-
-.ig-shell .kna-video-section {
-  margin-bottom: -50% !important;
-}
-
-.ig-shell .kna-video-inner {
-  padding-bottom: 0 !important;
-}
-
+.ig-shell .kna-danger-section,
+.ig-shell .kna-value-section,
+.ig-shell .kna-intro-block,
+.ig-shell .kna-steps-section,
+.ig-shell .kna-myth-truth-section,
+.ig-shell .kna-video-section,
 .ig-shell .kna-pricing-section {
   margin-bottom: -50% !important;
+  padding-bottom: 0 !important;
 }
 
+.ig-shell .kna-danger-section > div,
+.ig-shell .kna-value-section > div,
+.ig-shell .kna-intro-block > div,
+.ig-shell .kna-steps-inner,
+.ig-shell .kna-myth-truth-inner,
+.ig-shell .kna-video-inner,
 .ig-shell .kna-pricing-inner {
   padding-bottom: 0 !important;
 }
