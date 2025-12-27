@@ -188,6 +188,17 @@ export default function TikTokHome() {
           margin-left: -11% !important;
         }
         
+        /* 캐릭터 있는 섹션: scale 보정을 위해 상단 패딩 증가 */
+        /* 원래 174px → scale(0.82) 후 143px, 캐릭터 하단 142px → 여백 1px */
+        /* 목표 여백 32px → 필요 패딩: (142 + 32) / 0.82 = 213px */
+        .kna-danger-section > div,
+        .kna-value-section > div,
+        .kna-intro-block > div,
+        .kna-video-section > div,
+        .kna-pricing-section > div {
+          padding-top: 213px !important;
+        }
+        
         .kna-danger-section,
         .kna-value-section,
         .kna-intro-block,
