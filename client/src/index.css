@@ -710,6 +710,11 @@ html.ua-tiktok .review-section-title {
   margin-top: 0 !important;
 }
 
+/* 비용 페이지 히어로 → 카드 간격 축소 */
+.ig-shell .kna-pricing-section-hero .kna-pricing-inner {
+  padding-top: 16px !important;
+}
+
 /* 푸터 조정 */
 .ig-shell .kna-footer {
   padding-top: 60px !important;
