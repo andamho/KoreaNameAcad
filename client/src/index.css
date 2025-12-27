@@ -630,7 +630,9 @@ html.ua-tiktok .review-section-title {
 .ig-shell .kna-value-section > div,
 .ig-shell .kna-intro-block > div,
 .ig-shell .kna-steps-section > div,
-.ig-shell .kna-myth-truth-section > div {
+.ig-shell .kna-myth-truth-section > div,
+.ig-shell .kna-video-section,
+.ig-shell .kna-pricing-section > div {
   padding-top: 213px !important;
 }
 
