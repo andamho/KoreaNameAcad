@@ -664,15 +664,15 @@ html.ua-tiktok .review-section-title {
   padding-bottom: 0 !important;
 }
 
-/* intro 섹션: 아래 여백 두 배로 증가 */
+/* intro 섹션: 아래 여백 40% 축소 */
 .ig-shell .kna-intro-block {
-  margin-bottom: -90px !important;
+  margin-bottom: -126px !important;
   padding-bottom: 0 !important;
 }
 
-/* value 섹션: 아래 여백 40% 축소 */
+/* value 섹션: 아래 여백 20% 축소 */
 .ig-shell .kna-value-section {
-  margin-bottom: -302px !important;
+  margin-bottom: -216px !important;
   padding-bottom: 0 !important;
 }
 
