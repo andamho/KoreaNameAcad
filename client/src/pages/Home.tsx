@@ -329,7 +329,7 @@ export default function Home() {
             width: 'auto', 
             height: '110px',
             transform: 'translateX(-50%)',
-            top: '33px'
+            top: '49px'
           }}
         />
         <KnaDangerSection />
