@@ -625,14 +625,10 @@ html.ua-tiktok .review-section-title {
   margin-left: -11% !important;
 }
 
-/* 모든 섹션: scale 보정을 위해 상단 패딩 213px 통일 */
+/* 캐릭터가 섹션 내부에 있는 섹션만 상단 패딩 213px 적용 */
 .ig-shell .kna-danger-section > div,
 .ig-shell .kna-value-section > div,
-.ig-shell .kna-intro-block > div,
-.ig-shell .kna-steps-section > div,
-.ig-shell .kna-myth-truth-section > div,
-.ig-shell .kna-video-section > div,
-.ig-shell .kna-pricing-section > div {
+.ig-shell .kna-intro-block > div {
   padding-top: 213px !important;
 }
 
