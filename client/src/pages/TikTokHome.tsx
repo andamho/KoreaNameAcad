@@ -401,7 +401,7 @@ export default function TikTokHome() {
 
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background ig-shell">
       {/* 크리스마스 팝업 */}
       {showChristmasPopup && (
         <div 

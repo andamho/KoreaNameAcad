@@ -586,12 +586,11 @@ html.ua-tiktok .review-section-title {
 
 /* ============================================
    인앱 브라우저 (Instagram/TikTok) 섹션 간격 조정
-   - 동기적으로 로드되어 첫 로드에서도 적용됨
+   - .ig-shell 래퍼 클래스 사용으로 네비게이션 후에도 유지
    ============================================ */
 
 /* Hero 섹션 축소 */
-html.ua-instagram .hero-wrap,
-html.ua-tiktok .hero-wrap {
+.ig-shell .hero-wrap {
   max-width: 640px;
   margin: 0 auto;
   padding: 0 16px;
@@ -600,36 +599,26 @@ html.ua-tiktok .hero-wrap {
   margin-bottom: -28px !important;
 }
 
-html.ua-instagram .hero-title,
-html.ua-tiktok .hero-title {
+.ig-shell .hero-title {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   text-align: center !important;
 }
 
-html.ua-instagram .hero-title span,
-html.ua-tiktok .hero-title span {
+.ig-shell .hero-title span {
   text-align: center !important;
 }
 
 /* 모든 섹션을 scale로 축소 + 좌우/상하 여백 조정 */
-html.ua-instagram .kna-danger-section > div,
-html.ua-instagram .kna-value-section > div,
-html.ua-instagram .kna-intro-block > div,
-html.ua-instagram .kna-steps-section > div,
-html.ua-instagram .kna-myth-truth-section > div,
-html.ua-instagram .kna-video-section > div,
-html.ua-instagram .kna-pricing-section > div,
-html.ua-instagram .kna-footer > div,
-html.ua-tiktok .kna-danger-section > div,
-html.ua-tiktok .kna-value-section > div,
-html.ua-tiktok .kna-intro-block > div,
-html.ua-tiktok .kna-steps-section > div,
-html.ua-tiktok .kna-myth-truth-section > div,
-html.ua-tiktok .kna-video-section > div,
-html.ua-tiktok .kna-pricing-section > div,
-html.ua-tiktok .kna-footer > div {
+.ig-shell .kna-danger-section > div,
+.ig-shell .kna-value-section > div,
+.ig-shell .kna-intro-block > div,
+.ig-shell .kna-steps-section > div,
+.ig-shell .kna-myth-truth-section > div,
+.ig-shell .kna-video-section > div,
+.ig-shell .kna-pricing-section > div,
+.ig-shell .kna-footer > div {
   transform: scale(0.82) !important;
   transform-origin: top center !important;
   width: 122% !important;
@@ -637,112 +626,86 @@ html.ua-tiktok .kna-footer > div {
 }
 
 /* 캐릭터 있는 섹션: scale 보정을 위해 상단 패딩 증가 */
-html.ua-instagram .kna-danger-section > div,
-html.ua-instagram .kna-value-section > div,
-html.ua-instagram .kna-intro-block > div,
-html.ua-tiktok .kna-danger-section > div,
-html.ua-tiktok .kna-value-section > div,
-html.ua-tiktok .kna-intro-block > div {
+.ig-shell .kna-danger-section > div,
+.ig-shell .kna-value-section > div,
+.ig-shell .kna-intro-block > div {
   padding-top: 213px !important;
 }
 
 /* 비용 섹션: 캐릭터 위아래 여백 동일하게 (32px) */
 /* 캐릭터 top-[32px] + 높이110px = 하단142px, 여백32px → 패딩174px */
-html.ua-instagram .kna-pricing-section,
-html.ua-tiktok .kna-pricing-section {
+.ig-shell .kna-pricing-section {
   padding-top: 174px !important;
 }
 
 /* 섹션 overflow 숨김 */
-html.ua-instagram .kna-danger-section,
-html.ua-instagram .kna-value-section,
-html.ua-instagram .kna-intro-block,
-html.ua-instagram .kna-steps-section,
-html.ua-instagram .kna-myth-truth-section,
-html.ua-instagram .kna-video-section,
-html.ua-instagram .kna-pricing-section,
-html.ua-instagram .kna-footer,
-html.ua-tiktok .kna-danger-section,
-html.ua-tiktok .kna-value-section,
-html.ua-tiktok .kna-intro-block,
-html.ua-tiktok .kna-steps-section,
-html.ua-tiktok .kna-myth-truth-section,
-html.ua-tiktok .kna-video-section,
-html.ua-tiktok .kna-pricing-section,
-html.ua-tiktok .kna-footer {
+.ig-shell .kna-danger-section,
+.ig-shell .kna-value-section,
+.ig-shell .kna-intro-block,
+.ig-shell .kna-steps-section,
+.ig-shell .kna-myth-truth-section,
+.ig-shell .kna-video-section,
+.ig-shell .kna-pricing-section,
+.ig-shell .kna-footer {
   overflow-x: hidden !important;
 }
 
 /* 섹션 간 간격 조정 - 음수 마진으로 scale 빈 공간 제거 */
-html.ua-instagram .kna-danger-section,
-html.ua-tiktok .kna-danger-section {
+.ig-shell .kna-danger-section {
   margin-bottom: -18% !important;
 }
 
-html.ua-instagram .kna-value-section,
-html.ua-tiktok .kna-value-section {
+.ig-shell .kna-value-section {
   margin-bottom: -18% !important;
 }
 
-html.ua-instagram .kna-intro-block,
-html.ua-tiktok .kna-intro-block {
+.ig-shell .kna-intro-block {
   margin-bottom: -20% !important;
 }
 
-html.ua-instagram .kna-steps-section,
-html.ua-tiktok .kna-steps-section {
+.ig-shell .kna-steps-section {
   margin-bottom: -20% !important;
 }
 
-html.ua-instagram .kna-myth-truth-section,
-html.ua-tiktok .kna-myth-truth-section {
+.ig-shell .kna-myth-truth-section {
   margin-bottom: -18% !important;
 }
 
-html.ua-instagram .kna-video-section,
-html.ua-tiktok .kna-video-section {
+.ig-shell .kna-video-section {
   margin-bottom: -18% !important;
 }
 
-html.ua-instagram .kna-pricing-section,
-html.ua-tiktok .kna-pricing-section {
+.ig-shell .kna-pricing-section {
   margin-bottom: 0 !important;
 }
 
 /* 영상/비용 섹션 캐릭터 컨테이너: 위 섹션 음수 마진 상쇄 */
-html.ua-instagram .ig-video-char-container,
-html.ua-instagram .ig-pricing-char-container,
-html.ua-tiktok .ig-video-char-container,
-html.ua-tiktok .ig-pricing-char-container {
+.ig-shell .ig-video-char-container,
+.ig-shell .ig-pricing-char-container {
   margin-top: 60px !important;
 }
 
 /* 푸터 조정 */
-html.ua-instagram .kna-footer,
-html.ua-tiktok .kna-footer {
+.ig-shell .kna-footer {
   padding-top: 60px !important;
   max-height: 500px !important;
   overflow: hidden !important;
   position: relative !important;
 }
 
-html.ua-instagram .kna-footer > div,
-html.ua-tiktok .kna-footer > div {
+.ig-shell .kna-footer > div {
   padding-bottom: 60px !important;
 }
 
-html.ua-instagram .kna-footer .mt-8,
-html.ua-tiktok .kna-footer .mt-8 {
+.ig-shell .kna-footer .mt-8 {
   margin-top: 0 !important;
 }
 
-html.ua-instagram .kna-footer .pt-8,
-html.ua-tiktok .kna-footer .pt-8 {
+.ig-shell .kna-footer .pt-8 {
   padding-top: 0 !important;
 }
 
-html.ua-instagram .kna-footer button,
-html.ua-tiktok .kna-footer button {
+.ig-shell .kna-footer button {
   padding: 5px 12px !important;
   font-size: 13px !important;
 }
