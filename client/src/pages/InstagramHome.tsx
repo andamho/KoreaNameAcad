@@ -513,7 +513,7 @@ export default function InstagramHome() {
           }}
         />
         <section className="kna-video-section pb-16 md:pb-24">
-          <div className="max-w-md mx-auto px-4 sm:px-6">
+          <div className="kna-video-inner max-w-md mx-auto px-4 sm:px-6 pt-[174px] sm:pt-[190px]">
             <video 
               ref={videoRef}
               className="w-full h-auto rounded-lg shadow-lg"

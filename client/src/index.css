@@ -616,7 +616,7 @@ html.ua-tiktok .review-section-title {
 .ig-shell .kna-intro-block > div,
 .ig-shell .kna-steps-section > div,
 .ig-shell .kna-myth-truth-section > div,
-.ig-shell .kna-video-section > div,
+.ig-shell .kna-video-inner,
 .ig-shell .kna-pricing-inner,
 .ig-shell .kna-footer > div {
   transform: scale(0.82) !important;
@@ -631,7 +631,7 @@ html.ua-tiktok .review-section-title {
 .ig-shell .kna-intro-block > div,
 .ig-shell .kna-steps-section > div,
 .ig-shell .kna-myth-truth-section > div,
-.ig-shell .kna-video-section,
+.ig-shell .kna-video-inner,
 .ig-shell .kna-pricing-inner {
   padding-top: 213px !important;
 }
@@ -693,7 +693,7 @@ html.ua-tiktok .review-section-title {
   margin-bottom: -50% !important;
 }
 
-.ig-shell .kna-video-section > div {
+.ig-shell .kna-video-inner {
   padding-bottom: 0 !important;
 }
 
