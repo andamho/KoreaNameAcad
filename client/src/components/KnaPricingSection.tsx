@@ -44,16 +44,22 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
     <>
       {/* Hero Section with Tiffany Blue gradient - only shown when showHero is true */}
       {showHero && (
-        <section className="kna-pricing-hero relative overflow-hidden bg-gradient-to-br from-[#0f766e] to-[#4fd1c5] dark:from-[#0a5850] dark:to-[#3ba89e] pt-24 pb-16 md:pt-32 md:pb-24">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTR2NGg0di00em0wLThoLTR2NGg0di00em04IDhoLTR2NGg0di00em0tOCA4aC00djRoNHYtNHptOCAwaC00djRoNHYtNHptMC04aC00djRoNHYtNHptOC04aC00djRoNHYtNHptMCA4aC00djRoNHYtNHptLTggMGgtNHY0aDR2LTR6bTggOGgtNHY0aDR2LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
-              <img 
-                src={pricingCharacterImage}
-                alt="비용 안내 캐릭터"
-                className="w-auto h-40 md:h-56 flex-shrink-0 order-1 md:order-2"
-              />
-              <div className="text-center md:text-left order-2 md:order-1">
+        <div className="relative">
+          {/* 캐릭터 - 섹션 위에 absolute 배치 */}
+          <img 
+            src={pricingCharacterImage}
+            alt="비용 안내 캐릭터"
+            className="absolute left-1/2 z-10 top-[60px] sm:top-[80px]"
+            style={{ 
+              width: 'auto', 
+              height: '130px',
+              transform: 'translateX(-50%)'
+            }}
+          />
+          <section className="kna-pricing-hero relative overflow-hidden bg-gradient-to-br from-[#0f766e] to-[#4fd1c5] dark:from-[#0a5850] dark:to-[#3ba89e] pt-[180px] pb-8 md:pt-[220px] md:pb-12">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTR2NGg0di00em0wLThoLTR2NGg0di00em04IDhoLTR2NGg0di00em0tOCA4aC00djRoNHYtNHptOCAwaC00djRoNHYtNHptMC04aC00djRoNHYtNHptOC04aC00djRoNHYtNHptMCA4aC00djRoNHYtNHptLTggMGgtNHY0aDR2LTR6bTggOGgtNHY0aDR2LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center">
                 <h1 
                   className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4"
                   data-testid="heading-pricing"
@@ -63,8 +69,8 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
                 <p className="text-lg md:text-2xl text-white/90" data-testid="text-pricing-policy">⚖️ 모든 비용은 이름연구협회 규정에 따릅니다</p>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       )}
 
       {/* Pricing Content Section */}
