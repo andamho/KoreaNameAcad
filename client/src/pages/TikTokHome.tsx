@@ -233,6 +233,11 @@ export default function TikTokHome() {
         .kna-pricing-section {
           margin-bottom: 0 !important;
         }
+        /* 영상/비용 섹션 캐릭터 컨테이너: 위 섹션 음수 마진 상쇄 */
+        .ig-video-char-container,
+        .ig-pricing-char-container {
+          margin-top: 60px !important;
+        }
         
         /* 푸터 높이 제한으로 검정 바탕 잘라내기 */
         .kna-footer {

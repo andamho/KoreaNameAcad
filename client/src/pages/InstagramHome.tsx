@@ -233,6 +233,11 @@ export default function InstagramHome() {
         .kna-pricing-section {
           margin-bottom: 0 !important;
         }
+        /* 영상/비용 섹션 캐릭터 컨테이너: 위 섹션 음수 마진 상쇄 */
+        .ig-video-char-container,
+        .ig-pricing-char-container {
+          margin-top: 60px !important;
+        }
         
         /* 푸터 높이 제한으로 검정 바탕 잘라내기 */
         .kna-footer {
@@ -611,7 +616,7 @@ export default function InstagramHome() {
       </div>
 
       {/* 동영상 섹션 with overlay butterfly character */}
-      <div className="relative">
+      <div className="relative ig-video-char-container">
         <img 
           src={butterflyCharacterImage}
           alt="나비 캐릭터"
@@ -653,7 +658,7 @@ export default function InstagramHome() {
       </div>
 
       {/* KnaPricingSection with overlay shrug character */}
-      <div className="relative">
+      <div className="relative ig-pricing-char-container">
         <img 
           src={pricingCharacterImage}
           alt="어깨 으쓱 캐릭터"
