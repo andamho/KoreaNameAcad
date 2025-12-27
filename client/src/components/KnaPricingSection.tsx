@@ -72,7 +72,7 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
         <div aria-hidden className="pointer-events-none absolute inset-0">
           <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-[#7fe1d3]/20 dark:bg-[#58C4C4]/20 blur-3xl" />
         </div>
-        <div className="kna-pricing-inner relative max-w-5xl mx-auto px-6 lg:px-8 pt-[174px] sm:pt-[190px]">
+        <div className="kna-pricing-inner relative max-w-5xl mx-auto px-6 lg:px-8 pt-8 sm:pt-10">
           {/* Section header - only shown when Hero is NOT displayed */}
           {!showHero && (
             <div className="text-center mb-12">
