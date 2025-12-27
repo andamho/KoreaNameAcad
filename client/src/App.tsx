@@ -67,10 +67,11 @@ function App() {
     const isInstagram = userAgent.includes('Instagram');
     const isTikTok = userAgent.includes('TikTok') || userAgent.includes('musical_ly');
     
-    if (isInstagram) {
-      document.documentElement.classList.add('ua-instagram');
-    } else if (isTikTok) {
-      document.documentElement.classList.add('ua-tiktok');
+    if (isInstagram || isTikTok) {
+      // html 클래스 추가
+      document.documentElement.classList.add(isInstagram ? 'ua-instagram' : 'ua-tiktok');
+      // body에 ig-shell 추가하여 기존 CSS 규칙 적용
+      document.body.classList.add('ig-shell');
     }
   }, []);
 
