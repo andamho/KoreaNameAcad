@@ -423,7 +423,7 @@ export default function InstagramHome() {
       )}
 
       <Navbar />
-      <InAppBrowserHint platform="instagram" />
+      {/* <InAppBrowserHint platform="instagram" /> */}
       
       <Hero />
 

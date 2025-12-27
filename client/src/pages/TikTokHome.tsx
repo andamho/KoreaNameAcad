@@ -423,7 +423,7 @@ export default function TikTokHome() {
       )}
 
       <Navbar />
-      <InAppBrowserHint platform="tiktok" />
+      {/* <InAppBrowserHint platform="tiktok" /> */}
       
       <Hero />
 
