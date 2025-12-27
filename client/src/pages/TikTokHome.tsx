@@ -486,7 +486,7 @@ export default function TikTokHome() {
       </div>
 
       {/* KnaMythTruthSection with overlay pray character */}
-      <div className="relative">
+      <div className="relative ig-myth-char-container">
         <img 
           src={guideCharacterImage}
           alt="기도하는 캐릭터"
