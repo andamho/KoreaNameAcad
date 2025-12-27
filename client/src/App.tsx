@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -42,6 +42,22 @@ const characterImages = [
 const popupImage = newYearImage;
 
 function Router() {
+  const [location] = useLocation();
+  
+  // /ig, /tt가 아닌 페이지에서는 인앱 브라우저 스타일 제거
+  useEffect(() => {
+    if (location !== '/ig' && location !== '/tt') {
+      // 인앱 브라우저 스타일 태그 제거
+      const igStyle = document.getElementById('ig-force-style');
+      const ttStyle = document.getElementById('tt-force-style');
+      if (igStyle) igStyle.remove();
+      if (ttStyle) ttStyle.remove();
+      
+      // UA 클래스 제거
+      document.documentElement.classList.remove('ua-instagram', 'ua-tiktok');
+    }
+  }, [location]);
+  
   return (
     <Switch>
       <Route path="/" component={Home}/>
