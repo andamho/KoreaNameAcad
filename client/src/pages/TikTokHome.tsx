@@ -142,19 +142,6 @@ export default function TikTokHome() {
           text-size-adjust: none !important;
         }
         
-        /* /tt 전용: 네비바 글자 크기 축소 (로고와 균형) */
-        body.page-tt .kna-navbar * {
-          font-size: 75% !important;
-        }
-        
-        body.page-tt .kna-navbar .text-\\[17px\\] {
-          font-size: 13px !important;
-        }
-        
-        body.page-tt .kna-navbar .text-\\[10px\\] {
-          font-size: 7.5px !important;
-        }
-        
         /* /tt 전용: 푸터 텍스트 크기 강제 조정 */
         body.page-tt p.kna-footer-subtitle {
           font-size: 9.6px !important;

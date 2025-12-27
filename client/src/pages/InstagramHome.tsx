@@ -142,19 +142,6 @@ export default function InstagramHome() {
           text-size-adjust: none !important;
         }
         
-        /* /ig 전용: 네비바 글자 크기 축소 (로고와 균형) */
-        body.page-ig .kna-navbar * {
-          font-size: 75% !important;
-        }
-        
-        body.page-ig .kna-navbar .text-\\[17px\\] {
-          font-size: 13px !important;
-        }
-        
-        body.page-ig .kna-navbar .text-\\[10px\\] {
-          font-size: 7.5px !important;
-        }
-        
         /* /ig 전용: 푸터 텍스트 크기 강제 조정 */
         body.page-ig p.kna-footer-subtitle {
           font-size: 9.6px !important;
