@@ -652,7 +652,7 @@ html.ua-tiktok .review-section-title {
 
 /* 섹션 간 간격 조정 - 음수 마진으로 scale 빈 공간 제거 */
 .ig-shell .kna-danger-section {
-  margin-bottom: -30% !important;
+  margin-bottom: -40% !important;
 }
 
 .ig-shell .kna-danger-section > div {
