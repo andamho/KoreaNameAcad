@@ -664,9 +664,11 @@ html.ua-tiktok .review-section-title {
 }
 
 /* video 섹션: 상단 여백 추가 (캐릭터 공간 확보) */
+.ig-shell .ig-video-char-container {
+  margin-top: 120px !important;
+}
 .ig-shell .kna-video-section {
   margin-bottom: -116px !important;
-  padding-top: 120px !important;
   padding-bottom: 0 !important;
 }
 
