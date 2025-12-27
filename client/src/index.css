@@ -625,17 +625,15 @@ html.ua-tiktok .review-section-title {
   margin-left: -11% !important;
 }
 
-/* 캐릭터 있는 섹션: scale 보정을 위해 상단 패딩 증가 */
+/* 모든 섹션: scale 보정을 위해 상단 패딩 213px 통일 */
 .ig-shell .kna-danger-section > div,
 .ig-shell .kna-value-section > div,
-.ig-shell .kna-intro-block > div {
+.ig-shell .kna-intro-block > div,
+.ig-shell .kna-steps-section > div,
+.ig-shell .kna-myth-truth-section > div,
+.ig-shell .kna-video-section > div,
+.ig-shell .kna-pricing-section > div {
   padding-top: 213px !important;
-}
-
-/* 비용 섹션: 캐릭터 위아래 여백 동일하게 (32px) */
-/* 캐릭터 top-[32px] + 높이110px = 하단142px, 여백32px → 패딩174px */
-.ig-shell .kna-pricing-section {
-  padding-top: 174px !important;
 }
 
 /* 섹션 overflow 숨김 */
