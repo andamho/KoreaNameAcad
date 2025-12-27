@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="ko">
   <head>
+    <script>
+      // 인앱 브라우저 클래스 즉시 추가 (CSS 로드 전에 실행)
+      (function() {
+        var path = window.location.pathname;
+        if (path === '/ig' || path === '/ig/') {
+          document.documentElement.classList.add('ua-instagram');
+        } else if (path === '/tt' || path === '/tt/') {
+          document.documentElement.classList.add('ua-tiktok');
+        }
+      })();
+    </script>
     <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
