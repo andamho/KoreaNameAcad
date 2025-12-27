@@ -55,7 +55,7 @@ export default function KnaMythTruthSection() {
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#7fe1d3]/20 dark:bg-[#58C4C4]/20 blur-3xl" />
       </div>
-      <div className="relative max-w-5xl mx-auto px-6 lg:px-8">
+      <div className="kna-myth-truth-inner relative max-w-5xl mx-auto px-6 lg:px-8 pt-[174px] sm:pt-[190px]">
         <header className="text-center">
           <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
             개명 완벽 가이드
