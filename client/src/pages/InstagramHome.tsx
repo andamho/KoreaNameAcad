@@ -128,6 +128,9 @@ export default function InstagramHome() {
     }
     robotsMeta.content = 'index,follow';
     
+    // /ig 전용 body 클래스 추가 (네비게이션 시 제거됨)
+    document.body.classList.add('page-ig');
+    
     // 인스타그램 전용 추가 스타일 (섹션 간격은 index.css에서 처리)
     const styleId = 'ig-force-style';
     if (!document.getElementById(styleId)) {
@@ -139,25 +142,25 @@ export default function InstagramHome() {
           text-size-adjust: none !important;
         }
         
-        /* 네비바 글자 크기 축소 (로고와 균형) */
-        .kna-navbar * {
+        /* /ig 전용: 네비바 글자 크기 축소 (로고와 균형) */
+        body.page-ig .kna-navbar * {
           font-size: 75% !important;
         }
         
-        .kna-navbar .text-\\[17px\\] {
+        body.page-ig .kna-navbar .text-\\[17px\\] {
           font-size: 13px !important;
         }
         
-        .kna-navbar .text-\\[10px\\] {
+        body.page-ig .kna-navbar .text-\\[10px\\] {
           font-size: 7.5px !important;
         }
         
-        /* 푸터 텍스트 크기 강제 조정 */
-        p.kna-footer-subtitle {
+        /* /ig 전용: 푸터 텍스트 크기 강제 조정 */
+        body.page-ig p.kna-footer-subtitle {
           font-size: 9.6px !important;
           line-height: 1.5 !important;
         }
-        .kna-footer .border-t p {
+        body.page-ig .kna-footer .border-t p {
           font-size: 11px !important;
         }
         
