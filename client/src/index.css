@@ -662,9 +662,11 @@ html.ua-tiktok .review-section-title {
   padding-bottom: 0 !important;
 }
 
-/* myth-truth: 여백 40% 추가 감소 */
-.ig-shell .kna-myth-truth-section {
+/* myth-truth: 래퍼에 margin-bottom 적용 */
+.ig-shell .ig-myth-char-container {
   margin-bottom: -203px !important;
+}
+.ig-shell .kna-myth-truth-section {
   padding-bottom: 0 !important;
 }
 
