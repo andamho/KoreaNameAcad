@@ -699,8 +699,7 @@ html.ua-tiktok .review-section-title {
   padding-bottom: 0 !important;
 }
 
-/* 영상/비용 섹션 캐릭터 컨테이너: 고정 마진으로 통일 */
-.ig-shell .ig-video-char-container,
+/* 비용 섹션 캐릭터 컨테이너: 고정 마진으로 통일 */
 .ig-shell .ig-pricing-char-container {
   margin-top: 0 !important;
 }
