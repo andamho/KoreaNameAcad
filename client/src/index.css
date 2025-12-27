@@ -656,8 +656,13 @@ html.ua-tiktok .review-section-title {
   padding-bottom: 0 !important;
 }
 
-/* steps, myth-truth, video: pb-16이 없으므로 64px 추가 (+64 = -116px) */
-.ig-shell .kna-steps-section,
+/* steps: 여백 30% 증가 */
+.ig-shell .kna-steps-section {
+  margin-bottom: -81px !important;
+  padding-bottom: 0 !important;
+}
+
+/* myth-truth */
 .ig-shell .kna-myth-truth-section {
   margin-bottom: -116px !important;
   padding-bottom: 0 !important;
