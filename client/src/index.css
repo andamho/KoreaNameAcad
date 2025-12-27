@@ -711,7 +711,9 @@ html.ua-tiktok .review-section-title {
 }
 
 /* 비용 페이지 히어로 → 카드 간격 축소 */
-.ig-shell .kna-pricing-section-hero .kna-pricing-inner {
+.ig-shell .kna-pricing-section-hero .kna-pricing-inner,
+html.ua-instagram .kna-pricing-section-hero .kna-pricing-inner,
+html.ua-tiktok .kna-pricing-section-hero .kna-pricing-inner {
   padding-top: 16px !important;
 }
 
