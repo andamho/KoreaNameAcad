@@ -533,7 +533,7 @@ export default function TikTokHome() {
             width: 'auto', 
             height: '110px',
             transform: 'translateX(-50%)',
-            top: '55px'
+            top: '33px'
           }}
         />
         <KnaDangerSection />

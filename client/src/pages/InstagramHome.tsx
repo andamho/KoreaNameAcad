@@ -533,7 +533,7 @@ export default function InstagramHome() {
             width: 'auto', 
             height: '110px',
             transform: 'translateX(-50%)',
-            top: '55px'
+            top: '33px'
           }}
         />
         <KnaDangerSection />
