@@ -53,7 +53,12 @@ Preferred communication style: Simple, everyday language.
 
 **In-App Browser Optimization**
 - Route separation strategy for Instagram (`/ig`) and TikTok (`/tt`) in-app browsers
-- Platform-specific CSS using `html.ua-instagram` and `html.ua-tiktok` selectors
+- **일관성 규칙**: 모든 섹션은 동일한 구조를 사용해야 함
+  - 캐릭터: 래퍼 div 안에 absolute 배치, 섹션 컴포넌트 외부
+  - padding-top: 컴포넌트 자체에는 없고, CSS `.ig-shell` 규칙으로 213px 통일 적용
+  - margin-bottom: CSS `.ig-shell` 규칙으로 -50% 통일 적용
+  - padding-bottom: CSS `.ig-shell` 규칙으로 0 통일 적용
+- `.ig-shell` 래퍼 클래스로 네비게이션 후에도 CSS 유지 (html 셀렉터 대신 사용)
 - `text-size-adjust: none` to disable browser text autosizing
 - JavaScript-enforced font sizes to override in-app browser text inflation
 - Hero container max-width (640px) to reduce autosizing triggers
