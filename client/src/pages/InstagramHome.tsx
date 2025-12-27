@@ -243,7 +243,9 @@ export default function InstagramHome() {
     window.addEventListener('resize', applyScale);
     
     return () => {
-      document.documentElement.classList.remove('ua-instagram');
+      // page-ig 클래스 제거 (네비게이션 시 /ig 전용 스타일 해제)
+      document.body.classList.remove('page-ig');
+      // ua-instagram은 App.tsx에서 관리하므로 제거하지 않음
       const styleElement = document.getElementById(styleId);
       if (styleElement) {
         styleElement.remove();
