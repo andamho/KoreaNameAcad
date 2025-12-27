@@ -191,17 +191,14 @@ export default function InstagramHome() {
         /* 캐릭터 있는 섹션: scale 보정을 위해 상단 패딩 증가 */
         /* 원래 174px → scale(0.82) 후 143px, 캐릭터 하단 142px → 여백 1px */
         /* 목표 여백 32px → 필요 패딩: (142 + 32) / 0.82 = 213px */
-        /* 컴포넌트 섹션 (패딩이 > div에 있음) */
+        /* 컴포넌트 섹션 (패딩이 > div에 있음 - scale 적용됨) */
         .kna-danger-section > div,
         .kna-value-section > div,
         .kna-intro-block > div {
           padding-top: 213px !important;
         }
-        /* 영상/비용 섹션 (패딩이 section 자체에 있음) */
-        .kna-video-section,
-        .kna-pricing-section {
-          padding-top: 213px !important;
-        }
+        /* 영상/비용 섹션: 패딩이 section에 있고 scale은 > div에만 적용됨 */
+        /* section 패딩은 scale되지 않으므로 보정 불필요 - 174px 유지 */
         
         .kna-danger-section,
         .kna-value-section,
