@@ -674,9 +674,9 @@ html.ua-tiktok .review-section-title {
   padding-bottom: 0 !important;
 }
 
-/* video 섹션: 상단 여백 */
-.ig-shell .ig-video-char-container {
-  margin-top: 0 !important;
+/* video 섹션: 캐릭터 숨김 */
+.ig-shell .ig-video-char-container > img {
+  display: none !important;
 }
 .ig-shell .kna-video-section {
   margin-bottom: -58px !important;
