@@ -49,14 +49,14 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
           <img 
             src={pricingCharacterImage}
             alt="비용 안내 캐릭터"
-            className="absolute left-1/2 z-10 top-[60px] sm:top-[80px]"
+            className="absolute left-1/2 z-10 top-[32px] sm:top-[40px]"
             style={{ 
               width: 'auto', 
               height: '130px',
               transform: 'translateX(-50%)'
             }}
           />
-          <section className="kna-pricing-hero relative overflow-hidden bg-gradient-to-br from-[#0f766e] to-[#4fd1c5] dark:from-[#0a5850] dark:to-[#3ba89e] pt-[180px] pb-8 md:pt-[220px] md:pb-12">
+          <section className="kna-pricing-hero relative overflow-hidden bg-gradient-to-br from-[#0f766e] to-[#4fd1c5] dark:from-[#0a5850] dark:to-[#3ba89e] pt-[174px] pb-8 sm:pt-[190px] md:pb-12">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTR2NGg0di00em0wLThoLTR2NGg0di00em04IDhoLTR2NGg0di00em0tOCA4aC00djRoNHYtNHptOCAwaC00djRoNHYtNHptMC04aC00djRoNHYtNHptOC04aC00djRoNHYtNHptMCA4aC00djRoNHYtNHptLTggMGgtNHY0aDR2LTR6bTggOGgtNHY0aDR2LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center">
