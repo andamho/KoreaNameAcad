@@ -128,7 +128,7 @@ export default function InstagramHome() {
     }
     robotsMeta.content = 'index,follow';
     
-    // 인스타그램 전용 강제 스타일 추가
+    // 인스타그램 전용 추가 스타일 (섹션 간격은 index.css에서 처리)
     const styleId = 'ig-force-style';
     if (!document.getElementById(styleId)) {
       const style = document.createElement('style');
@@ -137,27 +137,6 @@ export default function InstagramHome() {
         html.ua-instagram, html.ua-instagram body {
           -webkit-text-size-adjust: none !important;
           text-size-adjust: none !important;
-        }
-        
-        /* Hero 섹션만 축소 */
-        .hero-wrap { 
-          max-width: 640px; 
-          margin: 0 auto; 
-          padding: 0 16px;
-          transform: scale(0.82) !important;
-          transform-origin: top center !important;
-          margin-bottom: -28px !important;
-        }
-        
-        .hero-title {
-          display: flex !important;
-          flex-direction: column !important;
-          align-items: center !important;
-          text-align: center !important;
-        }
-        
-        .hero-title span {
-          text-align: center !important;
         }
         
         /* 네비바 글자 크기 축소 (로고와 균형) */
@@ -173,100 +152,7 @@ export default function InstagramHome() {
           font-size: 7.5px !important;
         }
         
-        /* 모든 섹션을 scale로 축소 + 좌우/상하 여백 완전 제거 */
-        .kna-danger-section > div,
-        .kna-value-section > div,
-        .kna-intro-block > div,
-        .kna-steps-section > div,
-        .kna-myth-truth-section > div,
-        .kna-video-section > div,
-        .kna-pricing-section > div,
-        .kna-footer > div {
-          transform: scale(0.82) !important;
-          transform-origin: top center !important;
-          width: 122% !important;
-          margin-left: -11% !important;
-        }
-        
-        /* 캐릭터 있는 섹션: scale 보정을 위해 상단 패딩 증가 */
-        /* 원래 174px → scale(0.82) 후 143px, 캐릭터 하단 142px → 여백 1px */
-        /* 목표 여백 32px → 필요 패딩: (142 + 32) / 0.82 = 213px */
-        /* 컴포넌트 섹션 (패딩이 > div에 있음 - scale 적용됨) */
-        .kna-danger-section > div,
-        .kna-value-section > div,
-        .kna-intro-block > div {
-          padding-top: 213px !important;
-        }
-        /* 영상/비용 섹션: 패딩이 section에 있고 scale은 > div에만 적용됨 */
-        /* section 패딩은 scale되지 않으므로 보정 불필요 - 174px 유지 */
-        
-        .kna-danger-section,
-        .kna-value-section,
-        .kna-intro-block,
-        .kna-steps-section,
-        .kna-myth-truth-section,
-        .kna-video-section,
-        .kna-pricing-section,
-        .kna-footer {
-          overflow-x: hidden !important;
-        }
-        
-        /* 섹션 간 간격 완전 제거 - 각 섹션 높이에 맞춰 개별 조정 */
-        .kna-danger-section {
-          margin-bottom: -18% !important;
-        }
-        .kna-value-section {
-          margin-bottom: -18% !important;
-        }
-        .kna-intro-block {
-          margin-bottom: -20% !important;
-        }
-        .kna-steps-section {
-          margin-bottom: -20% !important;
-        }
-        .kna-myth-truth-section {
-          margin-bottom: -18% !important;
-        }
-        .kna-video-section {
-          margin-bottom: -18% !important;
-        }
-        .kna-pricing-section {
-          padding-top: 155px !important; /* 캐릭터 아래 여백 줄이기 (174 → 155) */
-          margin-bottom: 0 !important;
-        }
-        /* 영상/비용 섹션 캐릭터 컨테이너: 위 섹션 음수 마진 상쇄 */
-        .ig-video-char-container,
-        .ig-pricing-char-container {
-          margin-top: 60px !important;
-        }
-        
-        /* 푸터 높이 제한으로 검정 바탕 잘라내기 */
-        .kna-footer {
-          padding-top: 60px !important;
-          max-height: 500px !important;
-          overflow: hidden !important;
-          position: relative !important;
-        }
-        
-        .kna-footer > div {
-          padding-bottom: 60px !important;
-        }
-        
-        /* 카피라이트 위 여백 제거 */
-        .kna-footer .mt-8 {
-          margin-top: 0 !important;
-        }
-        .kna-footer .pt-8 {
-          padding-top: 0 !important;
-        }
-        
-        /* 푸터 버튼 30% 축소 */
-        .kna-footer button {
-          padding: 5px 12px !important;
-          font-size: 13px !important;
-        }
-        
-        /* 푸터 텍스트 크기 강제 조정 (인앱 브라우저) */
+        /* 푸터 텍스트 크기 강제 조정 */
         p.kna-footer-subtitle {
           font-size: 9.6px !important;
           line-height: 1.5 !important;
@@ -274,8 +160,6 @@ export default function InstagramHome() {
         .kna-footer .border-t p {
           font-size: 11px !important;
         }
-        
-        /* 다이얼로그는 축소하지 않음 (폰트 크기를 섹션과 동일하게 이미 설정함) */
         
         h1, h2, h3, p { word-break: keep-all; overflow-wrap: anywhere; }
         input, select, textarea, button { font-size: 16px; }
