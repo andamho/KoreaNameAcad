@@ -87,7 +87,16 @@ export default function DetailInfo() {
       }, 100);
     }
     
-    // cleanup에서 클래스 제거하지 않음 (App.tsx에서 전역 관리)
+    return () => {
+      if (isInstagram || isTikTok) {
+        const className = isInstagram ? "ua-instagram" : "ua-tiktok";
+        document.documentElement.classList.remove(className);
+        const styleElement = document.getElementById(`inapp-style-${className}`);
+        if (styleElement) {
+          styleElement.remove();
+        }
+      }
+    };
   }, []);
 
   return (

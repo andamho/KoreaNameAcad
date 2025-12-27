@@ -117,7 +117,13 @@ export default function NameStories() {
         document.head.appendChild(style);
       }
       
-      // cleanup에서 클래스 제거하지 않음 (App.tsx에서 전역 관리)
+      return () => {
+        document.documentElement.classList.remove(className);
+        const styleElement = document.getElementById(styleId);
+        if (styleElement) {
+          styleElement.remove();
+        }
+      };
     }
   }, []);
 
