@@ -61,17 +61,69 @@ function Router() {
 }
 
 function App() {
-  // 인앱 브라우저 전역 감지
+  // 인앱 브라우저 전역 감지 및 스타일 적용
   useEffect(() => {
     const userAgent = navigator.userAgent || '';
     const isInstagram = userAgent.includes('Instagram');
     const isTikTok = userAgent.includes('TikTok') || userAgent.includes('musical_ly');
     
     if (isInstagram || isTikTok) {
+      const className = isInstagram ? 'ua-instagram' : 'ua-tiktok';
       // html 클래스 추가
-      document.documentElement.classList.add(isInstagram ? 'ua-instagram' : 'ua-tiktok');
+      document.documentElement.classList.add(className);
       // body에 ig-shell 추가하여 기존 CSS 규칙 적용
       document.body.classList.add('ig-shell');
+      
+      // 전역 폰트 스타일 추가 (한 번만)
+      const styleId = 'global-inapp-font-style';
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+          html.${className} {
+            font-size: 14px !important;
+            -webkit-text-size-adjust: none !important;
+            text-size-adjust: none !important;
+          }
+          html.${className} h1 {
+            font-size: clamp(20px, 5vw, 26px) !important;
+          }
+          html.${className} h2 {
+            font-size: clamp(18px, 4.5vw, 22px) !important;
+          }
+          html.${className} h3, html.${className} h4 {
+            font-size: clamp(16px, 4vw, 20px) !important;
+          }
+          html.${className} p, html.${className} li, html.${className} span {
+            font-size: 15px !important;
+          }
+          html.${className} .text-sm {
+            font-size: 13px !important;
+          }
+          html.${className} .text-base {
+            font-size: 15px !important;
+          }
+          html.${className} .text-lg {
+            font-size: 16px !important;
+          }
+          html.${className} .text-xl {
+            font-size: 17px !important;
+          }
+          html.${className} .text-2xl {
+            font-size: 18px !important;
+          }
+          html.${className} .text-3xl {
+            font-size: 20px !important;
+          }
+          html.${className} .text-4xl {
+            font-size: 22px !important;
+          }
+          html.${className} .text-5xl {
+            font-size: 24px !important;
+          }
+        `;
+        document.head.appendChild(style);
+      }
     }
   }, []);
 
