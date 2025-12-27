@@ -52,7 +52,7 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
             className="absolute left-1/2 z-10 top-[32px] sm:top-[40px]"
             style={{ 
               width: 'auto', 
-              height: '130px',
+              height: '110px',
               transform: 'translateX(-50%)'
             }}
           />
