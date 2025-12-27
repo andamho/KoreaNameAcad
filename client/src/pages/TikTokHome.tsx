@@ -240,6 +240,14 @@ export default function TikTokHome() {
     window.addEventListener('resize', applyScale);
     
     return () => {
+      // 스타일 태그 제거 (다른 페이지에 영향 방지)
+      const styleElement = document.getElementById(styleId);
+      if (styleElement) {
+        styleElement.remove();
+      }
+      // UA 클래스 제거
+      document.documentElement.classList.remove('ua-tiktok');
+      
       clearTimeout(timer1);
       clearTimeout(timer1b);
       clearTimeout(timer1c);
