@@ -648,7 +648,8 @@ html.ua-tiktok .review-section-title {
   overflow-x: hidden !important;
 }
 
-/* 섹션 간 간격 조정 - 음수 마진으로 scale 빈 공간 제거 */
+/* 섹션 간 간격 조정 - 고정 음수 마진으로 scale 빈 공간 제거 */
+/* -50%는 viewport width 기준이라 섹션마다 다르게 보임 → 고정값 사용 */
 .ig-shell .kna-danger-section,
 .ig-shell .kna-value-section,
 .ig-shell .kna-intro-block,
@@ -656,7 +657,7 @@ html.ua-tiktok .review-section-title {
 .ig-shell .kna-myth-truth-section,
 .ig-shell .kna-video-section,
 .ig-shell .kna-pricing-section {
-  margin-bottom: -50% !important;
+  margin-bottom: -180px !important;
   padding-bottom: 0 !important;
 }
 
@@ -670,10 +671,10 @@ html.ua-tiktok .review-section-title {
   padding-bottom: 0 !important;
 }
 
-/* 영상/비용 섹션 캐릭터 컨테이너: 위 섹션 음수 마진 상쇄 */
+/* 영상/비용 섹션 캐릭터 컨테이너: 고정 마진으로 통일 */
 .ig-shell .ig-video-char-container,
 .ig-shell .ig-pricing-char-container {
-  margin-top: 120px !important;
+  margin-top: 0 !important;
 }
 
 /* 푸터 조정 */
