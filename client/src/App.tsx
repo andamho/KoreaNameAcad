@@ -61,7 +61,7 @@ function Router() {
 }
 
 function App() {
-  // 인앱 브라우저 전역 감지 (클래스만 추가, 스타일은 CSS에서 관리)
+  // 인앱 브라우저 전역 감지 (클래스 추가 + text-size-adjust만 설정)
   useEffect(() => {
     const userAgent = navigator.userAgent || '';
     const isInstagram = userAgent.includes('Instagram');
@@ -73,6 +73,20 @@ function App() {
       document.documentElement.classList.add(className);
       // body에 ig-shell 추가하여 기존 CSS 규칙 적용
       document.body.classList.add('ig-shell');
+      
+      // text-size-adjust만 설정 (폰트 크기는 CSS에서 관리)
+      const styleId = 'global-inapp-base-style';
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+          html.${className}, html.${className} body {
+            -webkit-text-size-adjust: none !important;
+            text-size-adjust: none !important;
+          }
+        `;
+        document.head.appendChild(style);
+      }
     }
   }, []);
 
