@@ -324,12 +324,11 @@ export default function Home() {
         <img 
           src={dangerCharacterImage}
           alt="위험 경고 캐릭터"
-          className="absolute left-1/2 z-10"
+          className="absolute left-1/2 z-10 top-[32px] sm:top-[40px]"
           style={{ 
             width: 'auto', 
             height: '110px',
-            transform: 'translateX(-50%)',
-            top: '25px'
+            transform: 'translateX(-50%)'
           }}
         />
         <KnaDangerSection />
