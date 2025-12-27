@@ -152,9 +152,7 @@ export default function Home() {
       setTimeout(applyNavbarStyles, 300);
       setTimeout(applyNavbarStyles, 500);
       
-      return () => {
-        document.documentElement.classList.remove(className);
-      };
+      // cleanup에서 클래스 제거하지 않음 (App.tsx에서 전역 관리)
     }
   }, []);
 

@@ -91,13 +91,7 @@ export default function Reviews() {
       
       console.log(`[Reviews] 인앱 브라우저 감지: ${className}, User Agent: ${userAgent}`);
       
-      return () => {
-        document.documentElement.classList.remove(className);
-        const styleElement = document.getElementById(styleId);
-        if (styleElement) {
-          styleElement.remove();
-        }
-      };
+      // cleanup에서 클래스 제거하지 않음 (App.tsx에서 전역 관리)
     }
   }, []);
 
