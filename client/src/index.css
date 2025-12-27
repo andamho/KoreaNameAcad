@@ -660,27 +660,51 @@ html.ua-tiktok .review-section-title {
 }
 
 .ig-shell .kna-value-section {
-  margin-bottom: -18% !important;
+  margin-bottom: -50% !important;
+}
+
+.ig-shell .kna-value-section > div {
+  padding-bottom: 0 !important;
 }
 
 .ig-shell .kna-intro-block {
-  margin-bottom: -20% !important;
+  margin-bottom: -50% !important;
+}
+
+.ig-shell .kna-intro-block > div {
+  padding-bottom: 0 !important;
 }
 
 .ig-shell .kna-steps-section {
-  margin-bottom: -20% !important;
+  margin-bottom: -50% !important;
+}
+
+.ig-shell .kna-steps-section > div {
+  padding-bottom: 0 !important;
 }
 
 .ig-shell .kna-myth-truth-section {
-  margin-bottom: -18% !important;
+  margin-bottom: -50% !important;
+}
+
+.ig-shell .kna-myth-truth-section > div {
+  padding-bottom: 0 !important;
 }
 
 .ig-shell .kna-video-section {
-  margin-bottom: -18% !important;
+  margin-bottom: -50% !important;
+}
+
+.ig-shell .kna-video-section > div {
+  padding-bottom: 0 !important;
 }
 
 .ig-shell .kna-pricing-section {
   margin-bottom: 0 !important;
+}
+
+.ig-shell .kna-pricing-section > div {
+  padding-bottom: 0 !important;
 }
 
 /* 영상/비용 섹션 캐릭터 컨테이너: 위 섹션 음수 마진 상쇄 */
