@@ -631,9 +631,13 @@ html.ua-tiktok .review-section-title {
 .ig-shell .kna-intro-block > div,
 .ig-shell .kna-steps-inner,
 .ig-shell .kna-myth-truth-inner,
-.ig-shell .kna-video-inner,
 .ig-shell .kna-pricing-inner {
   padding-top: 213px !important;
+}
+
+/* 영상 섹션: 패딩 줄여서 캐릭터와 영상 간격 맞춤 */
+.ig-shell .kna-video-inner {
+  padding-top: 160px !important;
 }
 
 /* 섹션 overflow 숨김 */
