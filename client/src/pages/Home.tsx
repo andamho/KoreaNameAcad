@@ -328,8 +328,8 @@ export default function Home() {
           style={{ 
             width: 'auto', 
             height: '110px',
-            transform: 'translateX(-50%) translateY(-50%)',
-            top: '0'
+            transform: 'translateX(-50%)',
+            top: '55px'
           }}
         />
         <KnaDangerSection />
