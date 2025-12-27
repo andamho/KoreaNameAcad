@@ -501,7 +501,7 @@ export default function InstagramHome() {
       </div>
 
       {/* 동영상 섹션 with overlay butterfly character */}
-      <div className="relative ig-video-char-container">
+      <div className="relative ig-video-char-container" style={{ marginTop: '60px' }}>
         <img 
           src={butterflyCharacterImage}
           alt="나비 캐릭터"
@@ -543,7 +543,7 @@ export default function InstagramHome() {
       </div>
 
       {/* KnaPricingSection with overlay shrug character */}
-      <div className="relative ig-pricing-char-container">
+      <div className="relative ig-pricing-char-container" style={{ marginTop: '60px' }}>
         <img 
           src={pricingCharacterImage}
           alt="어깨 으쓱 캐릭터"
