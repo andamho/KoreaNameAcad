@@ -8,7 +8,7 @@ export default function KnaDangerSection() {
         <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-[#0f766e]/10 dark:bg-[#45B8B8]/10 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-6 pt-52 pb-16 sm:py-20 lg:px-8">
+      <div className="relative mx-auto max-w-6xl px-6 pt-40 pb-16 sm:py-20 lg:px-8">
         <header className="mx-auto max-w-3xl text-center">
           <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl flex items-center justify-center gap-3">
             <AlertTriangle className="hidden md:flex h-[39px] w-[39px] sm:h-[42px] sm:w-[42px] md:h-[50px] md:w-[50px] flex-shrink-0 fill-orange-600 dark:fill-orange-500 stroke-white dark:stroke-white" strokeWidth={2.7} strokeLinecap="round" strokeLinejoin="round" />
