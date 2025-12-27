@@ -512,7 +512,7 @@ export default function InstagramHome() {
             transform: 'translateX(-50%)'
           }}
         />
-        <section className="kna-video-section pt-[174px] pb-16 md:pt-[206px] md:pb-24">
+        <section className="kna-video-section pb-16 md:pb-24">
           <div className="max-w-md mx-auto px-4 sm:px-6">
             <video 
               ref={videoRef}
