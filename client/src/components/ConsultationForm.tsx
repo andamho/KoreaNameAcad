@@ -228,8 +228,8 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
   return (
     <div className="kna-consultation-form ig-tt-dialog space-y-6 py-8">
-      <div className="space-y-2">
-        <h3 className="text-[21px] md:text-[22px] font-bold text-foreground">{formTitle}</h3>
+      <div className="space-y-2.5">
+        <h3 className="text-[21px] md:text-[22px] font-bold text-[#58C4C4]">{formTitle}</h3>
         {type === "naming" && (
           <div className="space-y-1">
             <p className="text-lg md:text-lg text-orange-600 dark:text-orange-400 font-bold">
