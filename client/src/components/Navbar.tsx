@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import logoImage from "@assets/1766901829379_1766903006112.png";
+import logoImage from "@assets/로고_1766906801837.png";
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
