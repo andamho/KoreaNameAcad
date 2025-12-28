@@ -227,7 +227,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const formTitle = type === "naming" ? "이름감명" : "이름분석 운명상담 신청";
 
   return (
-    <div className="kna-consultation-form ig-tt-dialog space-y-6">
+    <div className="kna-consultation-form ig-tt-dialog space-y-6 py-8">
       <div className="space-y-2">
         <h3 className="text-[21px] md:text-[22px] font-bold text-foreground">{formTitle}</h3>
         {type === "naming" && (
