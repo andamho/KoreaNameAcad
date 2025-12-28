@@ -1,6 +1,6 @@
 {
-  "name": "이름의신 - 한국이름학교",
-  "short_name": "이름의신",
+  "name": "한국이름학교",
+  "short_name": "한국이름학교",
   "description": "이름만으로 이유를 찾고, 운이 풀리는 새이름으로 인생역전하세요!",
   "start_url": "/",
   "display": "standalone",
