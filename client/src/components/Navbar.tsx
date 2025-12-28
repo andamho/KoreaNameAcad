@@ -69,7 +69,7 @@ export function Navbar() {
     <>
       <nav className="kna-navbar sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b">
         <div className="max-w-7xl mx-auto px-1 sm:px-6">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-20 md:h-[72px]">
             <div className="flex items-center gap-2">
               <button
                 onClick={goToHome}
@@ -123,7 +123,7 @@ export function Navbar() {
             className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
             onClick={() => setMenuOpen(false)}
           />
-          <div className="fixed top-16 right-0 w-full md:w-96 bg-card border-l border-b shadow-2xl z-50 max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <div className="fixed top-20 md:top-[72px] right-0 w-full md:w-96 bg-card border-l border-b shadow-2xl z-50 max-h-[calc(100vh-5rem)] md:max-h-[calc(100vh-72px)] overflow-y-auto">
             <div className="p-6">
               <h3 className="text-lg font-bold mb-6 text-foreground">메뉴</h3>
               <div className="space-y-1">
