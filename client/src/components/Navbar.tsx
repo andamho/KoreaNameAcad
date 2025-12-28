@@ -79,7 +79,7 @@ export function Navbar() {
                 <img 
                   src={logoImage} 
                   alt="한국이름학교 로고" 
-                  className="h-8 w-8 md:h-[29px] md:w-[29px]"
+                  className="h-9 w-9 md:h-[29px] md:w-[29px]"
                 />
                 <div className="md:text-xl font-bold text-foreground font-['Noto_Sans_KR']">
                   <div className="md:hidden text-left flex flex-col justify-center h-10">
