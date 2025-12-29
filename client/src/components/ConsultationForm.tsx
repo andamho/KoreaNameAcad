@@ -232,7 +232,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
       <img 
         src={formLogoImage} 
         alt="한국이름학교 로고" 
-        className="absolute top-6 right-0 w-16 h-16 md:w-20 md:h-20 opacity-80"
+        className="absolute top-6 right-0 w-[52px] h-[52px] md:w-16 md:h-16 opacity-80"
       />
       <div className="space-y-2.5 pr-20">
         <h3 className="text-[21px] md:text-[22px] font-bold text-[#58C4C4]">{formTitle}</h3>
