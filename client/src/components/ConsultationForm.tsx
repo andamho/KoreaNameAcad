@@ -235,6 +235,8 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           src={formLogoImage} 
           alt="한국이름학교 로고" 
           className="w-[52px] h-[52px] md:w-16 md:h-16 opacity-80 flex-shrink-0"
+          loading="eager"
+          fetchPriority="high"
         />
       </div>
       <div className="space-y-2.5">
