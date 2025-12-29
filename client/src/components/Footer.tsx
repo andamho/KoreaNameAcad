@@ -9,7 +9,7 @@ function NaverIcon({ className }: { className?: string }) {
       className={className}
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.4"
+      strokeWidth="4.2"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
