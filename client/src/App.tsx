@@ -26,6 +26,7 @@ import effortCharacterImage from "@assets/KakaoTalk_20251226_152116391_176673009
 import stepsCharacterImage from "@assets/KakaoTalk_20251226_164036756_1766734877281.png";
 import guideCharacterImage from "@assets/KakaoTalk_20251226_151729031_1766729868877.png";
 import newYearImage from "@assets/newYearPopup_optimized.jpg";
+import formLogoImage from "@assets/file_00000000e75c71fabfe62e47dff1209b_1766979230188.png";
 
 const characterImages = [
   servicesCharacterImage,
@@ -86,6 +87,17 @@ function App() {
     
     const popupImg = new Image();
     popupImg.src = popupImage;
+
+    // 1.5. 상담신청서 로고 최우선 로드
+    const formLogoLink = document.createElement('link');
+    formLogoLink.rel = 'preload';
+    formLogoLink.as = 'image';
+    formLogoLink.href = formLogoImage;
+    formLogoLink.setAttribute('fetchpriority', 'high');
+    document.head.insertBefore(formLogoLink, document.head.firstChild);
+    
+    const formLogoImg = new Image();
+    formLogoImg.src = formLogoImage;
     
     // 2. 캐릭터 이미지 로딩
     characterImages.forEach((src) => {
