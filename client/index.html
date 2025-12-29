@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
   <head>
+    <link rel="preload" as="image" href="/navbar-logo.png" fetchpriority="high">
     <script>
+      // 내비바 로고 즉시 로드
+      (new Image()).src = '/navbar-logo.png';
       // 인앱 브라우저 클래스 즉시 추가 (CSS 로드 전에 실행)
       (function() {
         var path = window.location.pathname;

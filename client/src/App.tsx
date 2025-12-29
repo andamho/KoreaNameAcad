@@ -27,6 +27,7 @@ import stepsCharacterImage from "@assets/KakaoTalk_20251226_164036756_1766734877
 import guideCharacterImage from "@assets/KakaoTalk_20251226_151729031_1766729868877.png";
 import newYearImage from "@assets/newYearPopup_optimized.jpg";
 import formLogoImage from "@assets/file_00000000e75c71fabfe62e47dff1209b_1766979230188.png";
+import navbarLogoImage from "@assets/file_000000009b2c7206ad0a70c0142cb99a_1766915164756.png";
 
 const characterImages = [
   servicesCharacterImage,
@@ -88,7 +89,18 @@ function App() {
     const popupImg = new Image();
     popupImg.src = popupImage;
 
-    // 1.5. 상담신청서 로고 최우선 로드
+    // 1.5. 내비바 로고 최우선 로드
+    const navbarLogoLink = document.createElement('link');
+    navbarLogoLink.rel = 'preload';
+    navbarLogoLink.as = 'image';
+    navbarLogoLink.href = navbarLogoImage;
+    navbarLogoLink.setAttribute('fetchpriority', 'high');
+    document.head.insertBefore(navbarLogoLink, document.head.firstChild);
+    
+    const navbarLogoImg = new Image();
+    navbarLogoImg.src = navbarLogoImage;
+
+    // 1.6. 상담신청서 로고 로드
     const formLogoLink = document.createElement('link');
     formLogoLink.rel = 'preload';
     formLogoLink.as = 'image';
