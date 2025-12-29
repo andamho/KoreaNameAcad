@@ -1,13 +1,19 @@
 import { Menu, X, MessageCircle, FileText, Star, DollarSign, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import logoImage from "@assets/file_000000009b2c7206ad0a70c0142cb99a_1766915164756.png";
+
+// 인앱 브라우저용 작은 base64 로고 (836 bytes) - HTML에서 미리 로드
+const LOGO_TINY = (typeof window !== 'undefined' && (window as any).__LOGO_TINY) || 
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACABAMAAAAxEHz4AAAAIVBMVEVHcExW1ttY1ttS1dtV1dtT1dta19z5/v6n6eyE4OXT9PZkEfEhAAAABnRSTlMAruEddUD/GPw7AAACzElEQVRo3u2XzXLaMBDHyVDuCW2554tz00nuTUNzZkimdxiyY/UBIqMHsCU/AAgeoDI8ZWTZgE1ssrJPnep/IRD2x+5K3o9Wy8nJycnJyekf0t3gTGvwVNO8fd8Ho4sv3+rY33Zhp/MaTtz2IafxQzN7gMkPO/tODw40HloBfsI7XdnY30CJPjcJwASBP8wRlOoS7UC/HIB24TtUCJmFdq8KMMYBPkGlcLfpdzXgGhVBvxqASuORCHAxjI4BMFehdwwwtb5FUhSf6o+TcAIg8vZ5gsQkQV9DFWwtuIh8yefZO49hkvAIsGDGhEi+jJjyl1yk79UM4AWTQ48yAYRzIRWbE8W45NoLqWiAuM3mGq0ojYngisb6p0lEWSznEaXrOSKLnSTWtf62L1Sc5U9GTIbafpXkZoi5hyqWGxqH2+QBYRGNRcQwd/EETAhMSD+ck422WW3mhIU6H3Sd/O8UVUySELj2IMnbH6oBXIcQAx6gz0+lgHUGYPGSo56GFBDq70sDYClAaKKPAqTVxNOWKYAGKUB/EKBqSlaOiIxMCIy+piHEIjuTF2Q9I8J4MFMs9UBujxQLAG4ArwsaGQC3BkDqgUepAQAWsC9onvEgyWMBcI3uSqkHsDgAXKIBmQeeJeDk0AMdQwFwiu4KXhiQTZw8TLqWCXRn6OwBC3/752K2q5If1oN9YyOcZpePUB7g6/q+r/Awc2HhS4sO/7iPQdC/5jXnAKI15cYTvkrqO1E+t2mOueZMRKgJIZOBTXvO90YplB8xnmtuk6Fdd5a6NwhuOSUVZjQuxa41YueD4oTCC/aoCaU45ZEao+ao4ZTWfE6snpKmOPvybcFmY6galvELw00zB6pcmFqsn2UHYbf4ldyFr3Z787u978pyfz5c3M7t9s6E0G1mrwn3u9Iyqbf/t5+7BnFx9tCqq7vnweDXU8vJycnJycnpv9IbR7jl9lsqExQAAAAASUVORK5CYII=';
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [, setLocation] = useLocation();
+  const [logoLoaded, setLogoLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   // Close menu on ESC key
   useEffect(() => {
@@ -77,11 +83,20 @@ export function Navbar() {
                 data-testid="link-home"
               >
                 <img 
-                  src={logoImage} 
+                  ref={imgRef}
+                  src={logoLoaded ? logoImage : LOGO_TINY} 
                   alt="한국이름학교 로고" 
                   className="h-16 w-16 md:h-[58px] md:w-[58px]"
                   loading="eager"
                   decoding="sync"
+                  onLoad={() => {
+                    // 큰 로고 미리 로드
+                    if (!logoLoaded) {
+                      const img = new Image();
+                      img.src = logoImage;
+                      img.onload = () => setLogoLoaded(true);
+                    }
+                  }}
                 />
                 <div className="md:text-xl font-bold text-foreground font-['Noto_Sans_KR']">
                   <div className="md:hidden text-left flex flex-col justify-center h-10">
