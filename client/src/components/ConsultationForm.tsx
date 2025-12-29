@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Heart, Baby, Shuffle, X, FileText, BookOpenText } from "lucide-react";
+import formLogoImage from "@assets/file_00000000e75c71fabfe62e47dff1209b_1766979230188.png";
 
 interface PersonData {
   name: string;
@@ -227,8 +228,13 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const formTitle = type === "naming" ? "이름감명" : "이름분석 운명상담 신청";
 
   return (
-    <div className="kna-consultation-form ig-tt-dialog space-y-6 py-8">
-      <div className="space-y-2.5">
+    <div className="kna-consultation-form ig-tt-dialog space-y-6 py-8 relative">
+      <img 
+        src={formLogoImage} 
+        alt="한국이름학교 로고" 
+        className="absolute top-6 right-0 w-16 h-16 md:w-20 md:h-20 opacity-80"
+      />
+      <div className="space-y-2.5 pr-20">
         <h3 className="text-[21px] md:text-[22px] font-bold text-[#58C4C4]">{formTitle}</h3>
         {type === "naming" && (
           <div className="space-y-1">
