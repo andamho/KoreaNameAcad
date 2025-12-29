@@ -1,5 +1,22 @@
-import { SiInstagram, SiYoutube, SiTiktok, SiNaver } from 'react-icons/si';
+import { SiInstagram, SiYoutube, SiTiktok } from 'react-icons/si';
 import { useLocation } from 'wouter';
+
+// 커스텀 얇은 N 아이콘 (stroke 기반)
+function NaverIcon({ className }: { className?: string }) {
+  return (
+    <svg 
+      viewBox="0 0 24 24" 
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 4v16M5 4l14 16M19 4v16" />
+    </svg>
+  );
+}
 
 export function Footer() {
   const [, setLocation] = useLocation();
@@ -29,7 +46,7 @@ export function Footer() {
     },
     { 
       name: '블로그', 
-      icon: SiNaver, 
+      icon: NaverIcon, 
       url: 'https://m.blog.naver.com/whats_ur_name_777',
       testId: 'link-blog'
     },
