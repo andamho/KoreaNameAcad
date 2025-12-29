@@ -228,14 +228,16 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const formTitle = type === "naming" ? "이름감명" : "이름분석 운명상담 신청";
 
   return (
-    <div className="kna-consultation-form ig-tt-dialog space-y-6 py-8 relative">
-      <img 
-        src={formLogoImage} 
-        alt="한국이름학교 로고" 
-        className="absolute top-6 right-0 w-[52px] h-[52px] md:w-16 md:h-16 opacity-80"
-      />
-      <div className="space-y-2.5 pr-20">
+    <div className="kna-consultation-form ig-tt-dialog space-y-6 py-8">
+      <div className="flex items-end justify-between gap-4">
         <h3 className="text-[21px] md:text-[22px] font-bold text-[#58C4C4]">{formTitle}</h3>
+        <img 
+          src={formLogoImage} 
+          alt="한국이름학교 로고" 
+          className="w-[52px] h-[52px] md:w-16 md:h-16 opacity-80 flex-shrink-0"
+        />
+      </div>
+      <div className="space-y-2.5">
         {type === "naming" && (
           <div className="space-y-1">
             <p className="text-lg md:text-lg text-orange-600 dark:text-orange-400 font-bold">
