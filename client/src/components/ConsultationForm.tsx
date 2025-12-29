@@ -225,7 +225,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
     submitMutation.mutate(consultationData);
   };
 
-  const formTitle = type === "naming" ? "이름감명" : "이름분석 운명상담 신청";
+  const formTitle = type === "naming" ? "이름감명" : "이름분석 운명상담";
 
   return (
     <div className="kna-consultation-form ig-tt-dialog space-y-6 py-8">
