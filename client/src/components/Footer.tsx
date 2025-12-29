@@ -86,7 +86,7 @@ export function Footer() {
               setLocation('/services');
               window.scrollTo(0, 0);
             }}
-            className="px-4 py-1.5 md:px-6 md:py-2.5 rounded-md text-white font-semibold hover-elevate active-elevate-2 transition-colors"
+            className="px-3 py-1 md:px-6 md:py-2.5 rounded-md text-white font-semibold hover-elevate active-elevate-2 transition-colors"
             style={{ backgroundColor: '#58C4C4' }}
             data-testid="button-footer-apply"
           >
@@ -94,7 +94,7 @@ export function Footer() {
           </button>
           <button
             onClick={handleContactClick}
-            className="px-4 py-1.5 md:px-6 md:py-2.5 rounded-md border-2 border-white text-white font-semibold hover-elevate active-elevate-2 transition-colors"
+            className="px-3 py-1 md:px-6 md:py-2.5 rounded-md border-2 border-white text-white font-semibold hover-elevate active-elevate-2 transition-colors"
             data-testid="button-contact"
           >
             문의
