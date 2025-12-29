@@ -81,7 +81,6 @@ export function Navbar() {
                   alt="한국이름학교 로고" 
                   className="h-16 w-16 md:h-[58px] md:w-[58px]"
                   loading="eager"
-                  fetchPriority="high"
                   decoding="sync"
                 />
                 <div className="md:text-xl font-bold text-foreground font-['Noto_Sans_KR']">
