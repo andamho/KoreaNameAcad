@@ -126,52 +126,6 @@ export default function Home() {
       document.documentElement.classList.add(className);
       console.log(`[Home] ${className} 클래스 추가됨`);
       
-      // 인앱 브라우저용 스타일 태그 주입 (다른 페이지와 동일)
-      const styleId = `inapp-style-${className}`;
-      if (!document.getElementById(styleId)) {
-        const style = document.createElement('style');
-        style.id = styleId;
-        style.textContent = `
-          html.${className} {
-            font-size: 14px !important;
-          }
-          html.${className} h1:not(.kna-navbar *) {
-            font-size: clamp(18px, 4.5vw, 22px) !important;
-          }
-          html.${className} h2:not(.kna-navbar *) {
-            font-size: clamp(16px, 4vw, 20px) !important;
-          }
-          html.${className} h3:not(.kna-navbar *), html.${className} h4:not(.kna-navbar *) {
-            font-size: clamp(15px, 3.8vw, 18px) !important;
-          }
-          html.${className} p:not(.kna-navbar *), html.${className} li:not(.kna-navbar *), html.${className} span:not(.kna-navbar *) {
-            font-size: 14px !important;
-          }
-          html.${className} .text-sm:not(.kna-navbar *) {
-            font-size: 13px !important;
-          }
-          html.${className} .text-base:not(.kna-navbar *) {
-            font-size: 14px !important;
-          }
-          html.${className} .text-lg:not(.kna-navbar *) {
-            font-size: 14px !important;
-          }
-          html.${className} .text-xl:not(.kna-navbar *) {
-            font-size: 15px !important;
-          }
-          html.${className} .text-2xl:not(.kna-navbar *) {
-            font-size: 16px !important;
-          }
-          html.${className} .text-3xl:not(.kna-navbar *) {
-            font-size: 18px !important;
-          }
-          html.${className} .text-4xl:not(.kna-navbar *) {
-            font-size: 20px !important;
-          }
-        `;
-        document.head.appendChild(style);
-      }
-      
       // JavaScript로 네비바 텍스트 크기 강제 적용
       const applyNavbarStyles = () => {
         const mainElements = document.querySelectorAll('.kna-brand-main');
@@ -197,14 +151,6 @@ export default function Home() {
       setTimeout(applyNavbarStyles, 100);
       setTimeout(applyNavbarStyles, 300);
       setTimeout(applyNavbarStyles, 500);
-      
-      return () => {
-        document.documentElement.classList.remove(className);
-        const styleElement = document.getElementById(styleId);
-        if (styleElement) {
-          styleElement.remove();
-        }
-      };
     }
   }, []);
 

@@ -90,14 +90,6 @@ export default function Reviews() {
       setTimeout(applyNavbarStyles, 500);
       
       console.log(`[Reviews] 인앱 브라우저 감지: ${className}, User Agent: ${userAgent}`);
-      
-      return () => {
-        document.documentElement.classList.remove(className);
-        const styleElement = document.getElementById(styleId);
-        if (styleElement) {
-          styleElement.remove();
-        }
-      };
     }
   }, []);
 
