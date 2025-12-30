@@ -718,25 +718,15 @@ html.ua-tiktok .kna-pricing-section-hero .kna-pricing-inner {
 }
 
 /* 푸터 조정 */
-.ig-shell .kna-footer,
-html.ua-instagram .kna-footer,
-html.ua-tiktok .kna-footer {
-  padding-top: 36px !important;
+.ig-shell .kna-footer {
+  padding-top: 60px !important;
   max-height: 500px !important;
   overflow: hidden !important;
   position: relative !important;
 }
 
-.ig-shell .kna-footer-inner,
-html.ua-instagram .kna-footer-inner,
-html.ua-tiktok .kna-footer-inner {
-  padding-top: 24px !important;
-}
-
-.ig-shell .kna-footer > div,
-html.ua-instagram .kna-footer > div,
-html.ua-tiktok .kna-footer > div {
-  padding-bottom: 0 !important;
+.ig-shell .kna-footer > div {
+  padding-bottom: 60px !important;
 }
 
 .ig-shell .kna-footer .mt-8 {
