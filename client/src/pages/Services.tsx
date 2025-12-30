@@ -66,7 +66,41 @@ export default function Services() {
         `;
         document.head.appendChild(style);
       }
-      // applyNavbarStyles 제거 - CSS가 네비바 스타일 처리
+      
+      // JavaScript로 네비바 텍스트 크기 강제 적용
+      const applyNavbarStyles = () => {
+        const mainElements = document.querySelectorAll('.kna-brand-main');
+        const subElements = document.querySelectorAll('.kna-brand-sub');
+        
+        mainElements.forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '13px', 'important');
+          (el as HTMLElement).style.setProperty('line-height', '1', 'important');
+        });
+        
+        subElements.forEach(el => {
+          (el as HTMLElement).style.setProperty('font-size', '6.7px', 'important');
+          (el as HTMLElement).style.setProperty('line-height', '1', 'important');
+          (el as HTMLElement).style.setProperty('margin-top', '3px', 'important');
+          (el as HTMLElement).style.setProperty('letter-spacing', '-0.068em', 'important');
+        });
+        
+        console.log(`[Services] 네비바 스타일 적용 완료`);
+      };
+      
+      applyNavbarStyles();
+      setTimeout(applyNavbarStyles, 100);
+      setTimeout(applyNavbarStyles, 300);
+      setTimeout(applyNavbarStyles, 500);
+      
+      console.log(`[Services] 인앱 브라우저 감지: ${className}, User Agent: ${userAgent}`);
+      
+      return () => {
+        document.documentElement.classList.remove(className);
+        const styleElement = document.getElementById(styleId);
+        if (styleElement) {
+          styleElement.remove();
+        }
+      };
     }
   }, []);
   
