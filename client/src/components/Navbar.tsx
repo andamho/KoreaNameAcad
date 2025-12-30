@@ -118,29 +118,18 @@ export function Navbar() {
               <div className="hidden md:block scale-[1.25]">
                 <ThemeToggle />
               </div>
-              {/* Mobile menu button */}
-              <Button
-                variant="ghost"
-                onClick={() => setMenuOpen(!menuOpen)}
-                data-testid="button-menu-mobile"
-                className="flex md:hidden items-center scale-[1.9] pr-2"
-              >
-                {menuOpen ? <X size={20} /> : <Menu size={20} />}
-              </Button>
-              
-              {/* Desktop menu button */}
               <Button
                 variant="ghost"
                 onClick={() => setMenuOpen(!menuOpen)}
                 data-testid="button-menu"
-                className="hidden md:flex items-center gap-2 pr-3 [&_svg]:w-[29px] [&_svg]:h-[29px]"
+                className="flex items-center gap-2 md:gap-2 scale-[1.9] md:scale-[1.25] pr-2 sm:pr-3"
               >
                 {menuOpen ? (
-                  <X strokeWidth={2.5} />
+                  <X className="h-5 w-5 md:h-[29px] md:w-[29px] md:[stroke-width:2.5]" />
                 ) : (
-                  <Menu strokeWidth={2.5} />
+                  <Menu className="h-5 w-5 md:h-[29px] md:w-[29px] md:[stroke-width:2.5]" />
                 )}
-                <span className="text-sm font-medium font-['KoreaUniv']">메뉴</span>
+                <span className="hidden md:inline text-sm font-medium font-['KoreaUniv']">메뉴</span>
               </Button>
             </div>
           </div>
