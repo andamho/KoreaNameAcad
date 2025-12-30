@@ -98,16 +98,15 @@ export function Navbar() {
                     }
                   }}
                 />
-                <div className="md:text-2xl font-bold text-foreground font-['Noto_Sans_KR']">
-                  <div className="md:hidden text-left flex flex-col justify-center h-12">
-                    <div className="kna-brand-main leading-none tracking-tight text-[1.25rem]">한국이름학교</div>
-                    <div className="kna-brand-sub leading-none tracking-normal mt-0.5 flex items-center gap-1 text-[0.7rem]">
+                <div className="font-bold text-foreground font-['Noto_Sans_KR']">
+                  <div className="text-left flex flex-col justify-center h-12 md:h-14">
+                    <div className="kna-brand-main leading-none tracking-tight">한국이름학교</div>
+                    <div className="kna-brand-sub leading-none tracking-normal mt-0.5 flex items-center gap-1">
                       <span>와츠유어네임</span>
                       <span className="text-[#58C4C4]">·</span>
                       <span>이름연구협회</span>
                     </div>
                   </div>
-                  <span className="hidden md:inline whitespace-nowrap tracking-wide">한국이름학교 | 와츠유어네임 이름연구협회</span>
                 </div>
               </button>
             </div>

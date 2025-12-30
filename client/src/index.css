@@ -45,6 +45,16 @@ select {
   line-height: 1.1 !important;
 }
 
+/* 데스크탑 브랜드 텍스트 - 100px 높이에 맞춤 */
+@media (min-width: 768px) {
+  .kna-brand-main {
+    font-size: 26px !important;
+  }
+  .kna-brand-sub {
+    font-size: 14px !important;
+  }
+}
+
 /* 네비바 브랜드 텍스트 - 인앱 브라우저에서만 크기 축소 (로고 높이 40px에 맞춤) */
 html.ua-instagram .kna-brand-main,
 html.ua-tiktok .kna-brand-main {
