@@ -63,32 +63,16 @@ function Router() {
 }
 
 function App() {
-  // 인앱 브라우저 전역 감지 및 설정 (모든 페이지에서 유지)
+  // 인앱 브라우저 전역 감지
   useEffect(() => {
     const userAgent = navigator.userAgent || '';
     const isInstagram = userAgent.includes('Instagram');
     const isTikTok = userAgent.includes('TikTok') || userAgent.includes('musical_ly');
-    const isInAppBrowser = isInstagram || isTikTok;
     
     if (isInstagram) {
       document.documentElement.classList.add('ua-instagram');
     } else if (isTikTok) {
       document.documentElement.classList.add('ua-tiktok');
-    }
-    
-    // 인앱 브라우저일 때 전역 설정 적용 (페이지 이동해도 유지)
-    if (isInAppBrowser) {
-      // viewport 메타 태그 설정
-      let viewport = document.querySelector('meta[name="viewport"]');
-      if (viewport) {
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-      }
-      
-      // text-size-adjust 비활성화
-      document.documentElement.style.setProperty('-webkit-text-size-adjust', 'none', 'important');
-      document.documentElement.style.setProperty('text-size-adjust', 'none', 'important');
-      document.body.style.setProperty('-webkit-text-size-adjust', 'none', 'important');
-      document.body.style.setProperty('text-size-adjust', 'none', 'important');
     }
   }, []);
 
