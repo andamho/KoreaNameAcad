@@ -98,7 +98,7 @@ export function Navbar() {
                     }
                   }}
                 />
-                <div className="font-bold text-foreground font-['Noto_Sans_KR']">
+                <div className="text-foreground">
                   <div className="text-left flex flex-col justify-center h-12 md:h-14">
                     <div className="kna-brand-main leading-none tracking-tight">한국이름학교</div>
                     <div className="kna-brand-sub leading-none tracking-normal mt-0.5 flex items-center gap-1">
@@ -129,7 +129,7 @@ export function Navbar() {
                 ) : (
                   <Menu className="h-5 w-5 md:h-6 md:w-6" />
                 )}
-                <span className="hidden md:inline text-sm font-medium">메뉴</span>
+                <span className="hidden md:inline text-sm font-medium font-['KoreaUniv']">메뉴</span>
               </Button>
             </div>
           </div>
