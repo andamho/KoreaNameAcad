@@ -129,7 +129,7 @@ export function Navbar() {
                 ) : (
                   <Menu className="h-5 w-5 md:h-[29px] md:w-[29px] md:[stroke-width:2.5]" />
                 )}
-                <span className="hidden md:inline text-sm font-medium font-['KoreaUniv']">메뉴</span>
+                <span className="hidden md:inline text-[11px] font-medium font-['KoreaUniv']">메뉴</span>
               </Button>
             </div>
           </div>
