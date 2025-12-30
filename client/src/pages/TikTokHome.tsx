@@ -241,7 +241,11 @@ export default function TikTokHome() {
     window.addEventListener('resize', applyScale);
     
     return () => {
-      // 클래스와 스타일 제거 안함 - App.tsx에서 전역 관리
+      document.documentElement.classList.remove('ua-tiktok');
+      const styleElement = document.getElementById(styleId);
+      if (styleElement) {
+        styleElement.remove();
+      }
       clearTimeout(timer1);
       clearTimeout(timer1b);
       clearTimeout(timer1c);

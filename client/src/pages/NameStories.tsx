@@ -116,7 +116,14 @@ export default function NameStories() {
         `;
         document.head.appendChild(style);
       }
-      // cleanup 제거 - App.tsx에서 전역 관리
+      
+      return () => {
+        document.documentElement.classList.remove(className);
+        const styleElement = document.getElementById(styleId);
+        if (styleElement) {
+          styleElement.remove();
+        }
+      };
     }
   }, []);
 

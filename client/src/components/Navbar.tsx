@@ -73,20 +73,20 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="kna-navbar sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <nav className="kna-navbar sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b">
         <div className="max-w-7xl mx-auto px-1 sm:px-6">
-          <div className="flex items-center justify-between h-20 md:h-[100px]">
+          <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
               <button
                 onClick={goToHome}
-                className="flex items-center gap-px hover-elevate active-elevate-2 rounded-md px-0 sm:px-2 py-1"
+                className="flex items-center gap-0.5 sm:gap-1 hover-elevate active-elevate-2 rounded-md px-0 sm:px-2 py-1"
                 data-testid="link-home"
               >
                 <img 
                   ref={imgRef}
                   src={logoLoaded ? logoImage : LOGO_TINY} 
                   alt="한국이름학교 로고" 
-                  className="h-20 w-20 md:h-[95px] md:w-[95px] -ml-3.5 -mr-2.5 md:-ml-4 md:-mr-3"
+                  className="h-16 w-16 md:h-[58px] md:w-[58px]"
                   loading="eager"
                   decoding="sync"
                   onLoad={() => {
@@ -98,8 +98,8 @@ export function Navbar() {
                     }
                   }}
                 />
-                <div className="text-foreground">
-                  <div className="text-left flex flex-col justify-center h-12 md:h-14">
+                <div className="md:text-xl font-bold text-foreground font-['Noto_Sans_KR']">
+                  <div className="md:hidden text-left flex flex-col justify-center h-10">
                     <div className="kna-brand-main leading-none tracking-tight">한국이름학교</div>
                     <div className="kna-brand-sub leading-none tracking-normal mt-0.5 flex items-center gap-1">
                       <span>와츠유어네임</span>
@@ -107,29 +107,30 @@ export function Navbar() {
                       <span>이름연구협회</span>
                     </div>
                   </div>
+                  <span className="hidden md:inline whitespace-nowrap tracking-wide">한국이름학교 | 와츠유어네임 이름연구협회</span>
                 </div>
               </button>
             </div>
 
-            <div className="flex items-center gap-1 sm:gap-3 pr-0.5">
-              <div className="md:hidden scale-[1.9]">
+            <div className="flex items-center gap-1 sm:gap-3">
+              <div className="md:hidden scale-[1.54]">
                 <ThemeToggle />
               </div>
-              <div className="hidden md:block scale-[1.25]">
+              <div className="hidden md:block">
                 <ThemeToggle />
               </div>
               <Button
                 variant="ghost"
                 onClick={() => setMenuOpen(!menuOpen)}
                 data-testid="button-menu"
-                className="flex items-center gap-2 md:gap-2 scale-[1.9] md:scale-[1.25] pr-2 sm:pr-3"
+                className="flex items-center gap-2 md:gap-2 scale-[1.54] md:scale-100 pr-2 sm:pr-3"
               >
                 {menuOpen ? (
-                  <X className="h-5 w-5 md:h-[29px] md:w-[29px] md:[stroke-width:2.5]" />
+                  <X className="h-5 w-5 md:h-6 md:w-6 md:scale-[1.26]" />
                 ) : (
-                  <Menu className="h-5 w-5 md:h-[29px] md:w-[29px] md:[stroke-width:2.5]" />
+                  <Menu className="h-5 w-5 md:h-6 md:w-6 md:scale-[1.26]" />
                 )}
-                <span className="hidden md:inline text-sm font-medium font-['KoreaUniv']">메뉴</span>
+                <span className="hidden md:inline text-sm font-medium">메뉴</span>
               </Button>
             </div>
           </div>
@@ -143,7 +144,7 @@ export function Navbar() {
             className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
             onClick={() => setMenuOpen(false)}
           />
-          <div className="fixed top-20 right-0 w-full md:w-96 bg-card border-l border-b shadow-2xl z-50 max-h-[calc(100vh-5rem)] overflow-y-auto">
+          <div className="fixed top-16 right-0 w-full md:w-96 bg-card border-l border-b shadow-2xl z-50 max-h-[calc(100vh-4rem)] overflow-y-auto">
             <div className="p-6">
               <h3 className="text-lg font-bold mb-6 text-foreground">메뉴</h3>
               <div className="space-y-1">
