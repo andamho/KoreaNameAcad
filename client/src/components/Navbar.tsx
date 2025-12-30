@@ -79,7 +79,7 @@ export function Navbar() {
             <div className="flex items-center gap-2">
               <button
                 onClick={goToHome}
-                className="flex items-center gap-px sm:gap-1 hover-elevate active-elevate-2 rounded-md px-0 sm:px-2 py-1"
+                className="flex items-center gap-px hover-elevate active-elevate-2 rounded-md px-0 sm:px-2 py-1"
                 data-testid="link-home"
               >
                 <img 
