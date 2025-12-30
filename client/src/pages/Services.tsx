@@ -27,37 +27,37 @@ export default function Services() {
           html.${className} {
             font-size: 14px !important;
           }
-          html.${className} h1 {
+          html.${className} h1:not(.kna-navbar *) {
             font-size: clamp(18px, 4.5vw, 22px) !important;
           }
-          html.${className} h2 {
+          html.${className} h2:not(.kna-navbar *) {
             font-size: clamp(16px, 4vw, 20px) !important;
           }
-          html.${className} h3, html.${className} h4 {
+          html.${className} h3:not(.kna-navbar *), html.${className} h4:not(.kna-navbar *) {
             font-size: clamp(15px, 3.8vw, 18px) !important;
           }
-          html.${className} p, html.${className} li, html.${className} span {
+          html.${className} p:not(.kna-navbar *), html.${className} li:not(.kna-navbar *), html.${className} span:not(.kna-navbar *) {
             font-size: 14px !important;
           }
-          html.${className} .text-sm {
+          html.${className} .text-sm:not(.kna-navbar *) {
             font-size: 13px !important;
           }
-          html.${className} .text-base {
+          html.${className} .text-base:not(.kna-navbar *) {
             font-size: 14px !important;
           }
-          html.${className} .text-lg {
+          html.${className} .text-lg:not(.kna-navbar *) {
             font-size: 14px !important;
           }
-          html.${className} .text-xl {
+          html.${className} .text-xl:not(.kna-navbar *) {
             font-size: 15px !important;
           }
-          html.${className} .text-2xl {
+          html.${className} .text-2xl:not(.kna-navbar *) {
             font-size: 16px !important;
           }
-          html.${className} .text-3xl {
+          html.${className} .text-3xl:not(.kna-navbar *) {
             font-size: 18px !important;
           }
-          html.${className} .text-4xl {
+          html.${className} .text-4xl:not(.kna-navbar *) {
             font-size: 20px !important;
           }
           html.${className} [data-testid="text-process-title"] {
