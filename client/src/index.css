@@ -9,7 +9,7 @@
        url('/fonts/KoreaUniv-Bold-fixed.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -18,7 +18,7 @@
        url('/fonts/KoreaUniv-Regular-fixed.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 /* 틱톡/인스타그램 인앱 브라우저 글자 자동확대 방지 */
