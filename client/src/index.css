@@ -34,14 +34,14 @@ select {
   font-size: 16px;
 }
 
-/* 네비바 브랜드 텍스트 - 기본 크기 설정 (일반 모바일) */
+/* 네비바 브랜드 텍스트 - 기본 크기 설정 (일반 모바일) - 80px 높이에 맞춤 */
 .kna-brand-main {
-  font-size: 17px !important;
+  font-size: 21px !important;
   line-height: 1.1 !important;
 }
 
 .kna-brand-sub {
-  font-size: 9.2px !important;
+  font-size: 11.5px !important;
   line-height: 1.1 !important;
 }
 
