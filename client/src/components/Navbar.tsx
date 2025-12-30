@@ -122,14 +122,14 @@ export function Navbar() {
                 variant="ghost"
                 onClick={() => setMenuOpen(!menuOpen)}
                 data-testid="button-menu"
-                className="flex items-center gap-2 md:gap-2 scale-[1.9] md:scale-[1.25] pr-2 sm:pr-3"
+                className="flex items-center gap-2 md:gap-2 scale-[1.9] md:scale-100 pr-2 sm:pr-3"
               >
                 {menuOpen ? (
-                  <X className="h-5 w-5 md:h-[29px] md:w-[29px] md:[stroke-width:2.5]" />
+                  <X className="h-5 w-5 md:h-9 md:w-9 md:[stroke-width:2.5]" />
                 ) : (
-                  <Menu className="h-5 w-5 md:h-[29px] md:w-[29px] md:[stroke-width:2.5]" />
+                  <Menu className="h-5 w-5 md:h-9 md:w-9 md:[stroke-width:2.5]" />
                 )}
-                <span className="hidden md:inline text-[11px] font-medium font-['KoreaUniv']">메뉴</span>
+                <span className="hidden md:inline text-sm font-medium font-['KoreaUniv']">메뉴</span>
               </Button>
             </div>
           </div>
