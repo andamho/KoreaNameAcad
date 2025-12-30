@@ -2,11 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 고려대학교 전용 서체 */
+/* 고려대학교 전용 서체 (kern 테이블 제거됨) */
 @font-face {
   font-family: 'KoreaUniv';
   src: url('/fonts/KoreaUniv-Bold.woff2') format('woff2'),
-       url('/fonts/KoreaUniv-Bold.ttf') format('truetype');
+       url('/fonts/KoreaUniv-Bold-fixed.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -15,7 +15,7 @@
 @font-face {
   font-family: 'KoreaUniv';
   src: url('/fonts/KoreaUniv-Regular.woff2') format('woff2'),
-       url('/fonts/KoreaUniv-Regular.ttf') format('truetype');
+       url('/fonts/KoreaUniv-Regular-fixed.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
