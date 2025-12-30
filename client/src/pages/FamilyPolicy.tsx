@@ -123,17 +123,7 @@ export default function FamilyPolicy() {
     }
     
     window.scrollTo(0, 0);
-    
-    return () => {
-      if (isInstagram || isTikTok) {
-        const className = isInstagram ? "ua-instagram" : "ua-tiktok";
-        document.documentElement.classList.remove(className);
-        const styleElement = document.getElementById(`inapp-style-${className}`);
-        if (styleElement) {
-          styleElement.remove();
-        }
-      }
-    };
+    // cleanup 제거 - App.tsx에서 전역 관리
   }, []);
 
   const handleClose = () => {
