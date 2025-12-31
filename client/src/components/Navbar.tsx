@@ -86,7 +86,7 @@ export function Navbar() {
                   ref={imgRef}
                   src={logoLoaded ? logoImage : LOGO_TINY} 
                   alt="한국이름학교 로고" 
-                  className="h-[68px] w-[68px] md:h-[61px] md:w-[61px] -ml-[13px] -mr-[11px]"
+                  className="h-[68px] w-[68px] md:h-[61px] md:w-[61px] -ml-[15px] -mr-[11px]"
                   loading="eager"
                   decoding="sync"
                   onLoad={() => {
@@ -113,7 +113,7 @@ export function Navbar() {
                 variant="ghost"
                 onClick={() => setMenuOpen(!menuOpen)}
                 data-testid="button-menu"
-                className="flex items-center gap-2 md:gap-2 md:scale-100 -mr-[12px] sm:mr-0 sm:pr-3"
+                className="flex items-center gap-2 md:gap-2 md:scale-100 -mr-[14px] sm:mr-0 sm:pr-3"
               >
                 {menuOpen ? (
                   <X className="!h-[37px] !w-[37px] md:!h-6 md:!w-6 md:scale-[1.26] text-[#58C4C4]" strokeWidth={2.3} />
