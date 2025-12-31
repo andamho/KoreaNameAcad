@@ -117,6 +117,13 @@ export default function NameStories() {
         document.head.appendChild(style);
       }
       
+      return () => {
+        document.documentElement.classList.remove(className);
+        const styleElement = document.getElementById(styleId);
+        if (styleElement) {
+          styleElement.remove();
+        }
+      };
     }
   }, []);
 

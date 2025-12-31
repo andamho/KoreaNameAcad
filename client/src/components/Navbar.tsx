@@ -122,9 +122,9 @@ export function Navbar() {
                 className="flex items-center gap-2 md:gap-2 scale-[1.54] md:scale-100 pr-2 sm:pr-3"
               >
                 {menuOpen ? (
-                  <X className="h-5 w-5 md:h-6 md:w-6 md:scale-[1.26]" style={{ color: '#58C4C4' }} />
+                  <X className="h-5 w-5 md:h-6 md:w-6 md:scale-[1.26]" />
                 ) : (
-                  <Menu className="h-5 w-5 md:h-6 md:w-6 md:scale-[1.26]" style={{ color: '#58C4C4' }} />
+                  <Menu className="h-5 w-5 md:h-6 md:w-6 md:scale-[1.26]" />
                 )}
                 <span className="hidden md:inline text-sm font-medium">메뉴</span>
               </Button>
