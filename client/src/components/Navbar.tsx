@@ -73,7 +73,7 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="kna-navbar sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <nav className="kna-navbar fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="max-w-7xl mx-auto px-1 sm:px-6">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
@@ -185,6 +185,8 @@ export function Navbar() {
           </div>
         </>
       )}
+      {/* Spacer for fixed navbar */}
+      <div className="h-16" />
     </>
   );
 }
