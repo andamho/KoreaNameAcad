@@ -75,7 +75,7 @@ export function Navbar() {
     <>
       <nav className="kna-navbar fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-[68px]">
             <div className="flex items-center gap-2">
               <button
                 onClick={goToHome}
@@ -86,7 +86,7 @@ export function Navbar() {
                   ref={imgRef}
                   src={logoLoaded ? logoImage : LOGO_TINY} 
                   alt="한국이름학교 로고" 
-                  className="h-20 w-20 md:h-[72px] md:w-[72px] -ml-3 -mr-[13px]"
+                  className="h-[68px] w-[68px] md:h-[61px] md:w-[61px] -ml-[10px] -mr-[11px]"
                   loading="eager"
                   decoding="sync"
                   onLoad={() => {
@@ -116,9 +116,9 @@ export function Navbar() {
                 className="flex items-center gap-2 md:gap-2 scale-[1.54] md:scale-100 pr-1 sm:pr-3"
               >
                 {menuOpen ? (
-                  <X className="!h-[33px] !w-[33px] md:!h-7 md:!w-7 md:scale-[1.26] text-[#58C4C4]" strokeWidth={2.3} />
+                  <X className="!h-[28px] !w-[28px] md:!h-6 md:!w-6 md:scale-[1.26] text-[#58C4C4]" strokeWidth={2.3} />
                 ) : (
-                  <Menu className="!h-[33px] !w-[33px] md:!h-7 md:!w-7 md:scale-[1.26] text-[#58C4C4]" strokeWidth={2.3} />
+                  <Menu className="!h-[28px] !w-[28px] md:!h-6 md:!w-6 md:scale-[1.26] text-[#58C4C4]" strokeWidth={2.3} />
                 )}
                 <span className="hidden md:inline text-sm font-medium">메뉴</span>
               </Button>
@@ -134,7 +134,7 @@ export function Navbar() {
             className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
             onClick={() => setMenuOpen(false)}
           />
-          <div className="kna-menu-overlay fixed top-20 right-0 w-full md:w-96 bg-card border-l border-b shadow-2xl z-50 max-h-[calc(100vh-5rem)] overflow-y-auto">
+          <div className="kna-menu-overlay fixed top-[68px] right-0 w-full md:w-96 bg-card border-l border-b shadow-2xl z-50 max-h-[calc(100vh-68px)] overflow-y-auto">
             <div className="p-6">
               <h3 className="text-lg font-bold mb-6 text-foreground">메뉴</h3>
               <div className="space-y-1">

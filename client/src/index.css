@@ -34,22 +34,22 @@ select {
   font-size: 16px;
 }
 
-/* 네비바 브랜드 텍스트 - 기본 크기 설정 (일반 모바일) - h-20 (80px) 기준 */
+/* 네비바 브랜드 텍스트 - 기본 크기 설정 (일반 모바일) - 68px 기준 */
 .kna-brand-main {
-  font-size: 21px !important;
+  font-size: 18px !important;
   line-height: 1.1 !important;
 }
 
 .kna-brand-sub {
-  font-size: 11.5px !important;
+  font-size: 9.8px !important;
   line-height: 1.1 !important;
 }
 
-/* 네비바 로고 - 인앱 브라우저에서 확대 (80px -> 90px) */
+/* 네비바 로고 - 인앱 브라우저에서 확대 (68px -> 77px) */
 html.ua-instagram .kna-navbar img,
 html.ua-tiktok .kna-navbar img {
-  height: 90px !important;
-  width: 90px !important;
+  height: 77px !important;
+  width: 77px !important;
 }
 
 /* 메뉴 오버레이 - 인앱 브라우저에서 82% 축소 (페이지와 동일한 비율) */
@@ -60,16 +60,16 @@ html.ua-tiktok .kna-menu-overlay {
   width: 122% !important;
 }
 
-/* 네비바 브랜드 텍스트 - 인앱 브라우저에서 크기 조정 (h-20 기준 25% 증가) */
+/* 네비바 브랜드 텍스트 - 인앱 브라우저에서 크기 조정 (68px 기준 15% 감소) */
 html.ua-instagram .kna-brand-main,
 html.ua-tiktok .kna-brand-main {
-  font-size: 16px !important;
+  font-size: 14px !important;
   line-height: 1 !important;
 }
 
 html.ua-instagram .kna-brand-sub,
 html.ua-tiktok .kna-brand-sub {
-  font-size: 8.4px !important;
+  font-size: 7.1px !important;
   line-height: 1 !important;
   margin-top: 3px !important;
   letter-spacing: -0.068em !important;
