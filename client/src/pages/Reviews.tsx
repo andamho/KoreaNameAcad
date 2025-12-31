@@ -289,7 +289,7 @@ export default function Reviews() {
   const stats = [
     { value: "30,000+", label: "누적 상담 건수", icon: Download },
     { value: "98%", label: "고객 만족도", icon: Heart },
-    { value: "17년", label: "43만명 임상", icon: Clock, multiline: true }
+    { value: "18년", label: "45만명 임상", icon: Clock, multiline: true }
   ];
 
   return (
