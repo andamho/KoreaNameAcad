@@ -134,7 +134,7 @@ export function Navbar() {
             className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
             onClick={() => setMenuOpen(false)}
           />
-          <div className="fixed top-16 right-0 w-full md:w-96 bg-card border-l border-b shadow-2xl z-50 max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <div className="kna-menu-overlay fixed top-16 right-0 w-full md:w-96 bg-card border-l border-b shadow-2xl z-50 max-h-[calc(100vh-4rem)] overflow-y-auto">
             <div className="p-6">
               <h3 className="text-lg font-bold mb-6 text-foreground">메뉴</h3>
               <div className="space-y-1">
