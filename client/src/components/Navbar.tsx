@@ -74,7 +74,7 @@ export function Navbar() {
   return (
     <>
       <nav className="kna-navbar fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="max-w-7xl mx-auto px-1 sm:px-6">
+        <div className="max-w-7xl mx-auto px-0.5 sm:px-6">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
               <button
@@ -86,7 +86,7 @@ export function Navbar() {
                   ref={imgRef}
                   src={logoLoaded ? logoImage : LOGO_TINY} 
                   alt="한국이름학교 로고" 
-                  className="h-16 w-16 md:h-[58px] md:w-[58px] -mr-4"
+                  className="h-16 w-16 md:h-[58px] md:w-[58px] -mr-[13px]"
                   loading="eager"
                   decoding="sync"
                   onLoad={() => {
@@ -113,7 +113,7 @@ export function Navbar() {
                 variant="ghost"
                 onClick={() => setMenuOpen(!menuOpen)}
                 data-testid="button-menu"
-                className="flex items-center gap-2 md:gap-2 scale-[1.54] md:scale-100 pr-2 sm:pr-3"
+                className="flex items-center gap-2 md:gap-2 scale-[1.54] md:scale-100 pr-0.5 sm:pr-3"
               >
                 {menuOpen ? (
                   <X className="h-[26px] w-[26px] md:h-6 md:w-6 md:scale-[1.26] text-[#58C4C4]" strokeWidth={2.3} />
