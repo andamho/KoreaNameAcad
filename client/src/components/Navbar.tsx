@@ -109,12 +109,6 @@ export function Navbar() {
             </div>
 
             <div className="flex items-center gap-1 sm:gap-3">
-              <div className="md:hidden scale-[1.54]">
-                <ThemeToggle />
-              </div>
-              <div className="hidden md:block">
-                <ThemeToggle />
-              </div>
               <Button
                 variant="ghost"
                 onClick={() => setMenuOpen(!menuOpen)}
