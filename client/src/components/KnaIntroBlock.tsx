@@ -27,7 +27,7 @@ export default function KnaIntroBlock() {
             <div className="order-1">
               <p className="text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">
                 한국이름학교는<br />
-                <b>17년</b>간 <b>43만 명</b>의 임상 경험을 바탕으로,<br />
+                <b>18년</b>간 <b>45만 명</b>의 임상 경험을 바탕으로,<br />
                 <b>사주 없이</b> <b>한글·한자 이름만</b>으로<br />
                 <b>80% 이상의 정확도</b>를 갖춘 <b>운명상담</b>을 제공합니다.
               </p>
