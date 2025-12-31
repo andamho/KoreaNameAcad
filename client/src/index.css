@@ -45,6 +45,13 @@ select {
   line-height: 1.1 !important;
 }
 
+/* 네비바 로고 - 인앱 브라우저에서 13% 확대 (64px -> 72px) */
+html.ua-instagram .kna-navbar img,
+html.ua-tiktok .kna-navbar img {
+  height: 72px !important;
+  width: 72px !important;
+}
+
 /* 네비바 브랜드 텍스트 - 인앱 브라우저에서만 크기 축소 (로고 높이 40px에 맞춤) */
 html.ua-instagram .kna-brand-main,
 html.ua-tiktok .kna-brand-main {
