@@ -45,11 +45,11 @@ select {
   line-height: 1.1 !important;
 }
 
-/* 네비바 로고 - 인앱 브라우저에서 확대 (68px -> 77px) */
+/* 네비바 로고 - 인앱 브라우저에서 확대 (80px -> 90px) */
 html.ua-instagram .kna-navbar img,
 html.ua-tiktok .kna-navbar img {
-  height: 77px !important;
-  width: 77px !important;
+  height: 90px !important;
+  width: 90px !important;
 }
 
 /* 메뉴 오버레이 - 인앱 브라우저에서 82% 축소 (페이지와 동일한 비율) */
