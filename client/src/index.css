@@ -604,9 +604,9 @@ html.ua-tiktok .review-section-title {
    - .ig-shell 래퍼 클래스 사용으로 네비게이션 후에도 유지
    ============================================ */
 
-/* ig-shell 기본: navbar 80px 높이에 맞춘 상단 패딩 */
+/* ig-shell 기본 설정 */
 .ig-shell {
-  padding-top: 80px !important;
+  /* 상단 패딩 없음 - 인앱 홈화면에서는 navbar spacer 사용 */
 }
 
 /* Hero 섹션 축소 */
