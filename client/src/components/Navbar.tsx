@@ -98,7 +98,7 @@ export function Navbar() {
                     }
                   }}
                 />
-                <div className="md:text-xl font-bold text-foreground font-['Noto_Sans_KR']">
+                <div className="md:text-xl font-bold text-[#58C4C4] font-['Noto_Sans_KR']">
                   <div className="md:hidden text-left flex flex-col justify-center h-10">
                     <div className="kna-brand-main leading-none tracking-tight">한국이름학교</div>
                     <div className="kna-brand-sub leading-none tracking-[-0.12em] mt-0.5">와츠유어네임 이름연구협회</div>
