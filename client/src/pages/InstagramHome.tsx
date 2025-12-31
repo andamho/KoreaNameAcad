@@ -241,11 +241,6 @@ export default function InstagramHome() {
     window.addEventListener('resize', applyScale);
     
     return () => {
-      document.documentElement.classList.remove('ua-instagram');
-      const styleElement = document.getElementById(styleId);
-      if (styleElement) {
-        styleElement.remove();
-      }
       clearTimeout(timer1);
       clearTimeout(timer1b);
       clearTimeout(timer1c);

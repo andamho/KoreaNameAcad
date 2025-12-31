@@ -152,9 +152,6 @@ export default function Home() {
       setTimeout(applyNavbarStyles, 300);
       setTimeout(applyNavbarStyles, 500);
       
-      return () => {
-        document.documentElement.classList.remove(className);
-      };
     }
   }, []);
 
