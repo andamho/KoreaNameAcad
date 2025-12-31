@@ -402,27 +402,27 @@ export default function TikTokHome() {
 
 
   return (
-    <div className="min-h-screen bg-background ig-shell">
-      {/* 크리스마스 팝업 */}
-      {showChristmasPopup && (
-        <div 
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60"
-          onClick={closeChristmasPopup}
-        >
-          <div className="relative max-w-sm mx-4">
-            <img 
-              src={newYearImage}
-              alt="새해 복 많이 받으세요"
-              className="w-full h-auto rounded-2xl shadow-2xl"
-              loading="eager"
-              fetchPriority="high"
-              decoding="sync"
-            />
-          </div>
-        </div>
-      )}
-
+    <>
       <Navbar />
+      <div className="min-h-screen bg-background ig-shell">
+        {/* 크리스마스 팝업 */}
+        {showChristmasPopup && (
+          <div 
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60"
+            onClick={closeChristmasPopup}
+          >
+            <div className="relative max-w-sm mx-4">
+              <img 
+                src={newYearImage}
+                alt="새해 복 많이 받으세요"
+                className="w-full h-auto rounded-2xl shadow-2xl"
+                loading="eager"
+                fetchPriority="high"
+                decoding="sync"
+              />
+            </div>
+          </div>
+        )}
       {/* <InAppBrowserHint platform="tiktok" /> */}
       
       <Hero />
@@ -663,6 +663,7 @@ export default function TikTokHome() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </>
   );
 }
