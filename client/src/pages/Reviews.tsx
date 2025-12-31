@@ -327,7 +327,7 @@ export default function Reviews() {
             <div ref={statsRef} className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
             {stats.map((stat, index) => {
               const IconComponent = stat.icon;
-              const numValue = stat.multiline ? 17 : (stat.value.includes('%') ? 98 : 30000);
+              const numValue = stat.multiline ? 18 : (stat.value.includes('%') ? 98 : 30000);
               const suffix = stat.value.includes('%') ? '%' : (stat.multiline ? '년' : '+');
               
               return (
