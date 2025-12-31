@@ -98,7 +98,7 @@ export function Navbar() {
                     }
                   }}
                 />
-                <div className="md:text-xl font-bold text-[#58C4C4] font-['Noto_Sans_KR']">
+                <div className="md:text-xl font-bold text-foreground font-['Noto_Sans_KR']">
                   <div className="md:hidden text-left flex flex-col justify-center h-10">
                     <div className="kna-brand-main leading-none tracking-tight">한국이름학교</div>
                     <div className="kna-brand-sub leading-none tracking-[-0.12em] mt-0.5">와츠유어네임 이름연구협회</div>
@@ -116,9 +116,9 @@ export function Navbar() {
                 className="flex items-center gap-2 md:gap-2 md:scale-100 -mr-[14px] sm:mr-0 sm:pr-3"
               >
                 {menuOpen ? (
-                  <X className="!h-[37px] !w-[37px] md:!h-6 md:!w-6 md:scale-[1.26] text-[#58C4C4]" strokeWidth={2.3} />
+                  <X className="!h-[37px] !w-[37px] md:!h-6 md:!w-6 md:scale-[1.26] text-[#56D5DB]" strokeWidth={2.3} />
                 ) : (
-                  <Menu className="!h-[37px] !w-[37px] md:!h-6 md:!w-6 md:scale-[1.26] text-[#58C4C4]" strokeWidth={2.3} />
+                  <Menu className="!h-[37px] !w-[37px] md:!h-6 md:!w-6 md:scale-[1.26] text-[#56D5DB]" strokeWidth={2.3} />
                 )}
                 <span className="hidden md:inline text-sm font-medium">메뉴</span>
               </Button>
