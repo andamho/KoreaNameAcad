@@ -116,9 +116,9 @@ export function Navbar() {
                 className="flex items-center gap-2 md:gap-2 scale-[1.54] md:scale-100 pr-1 sm:pr-3"
               >
                 {menuOpen ? (
-                  <X className="h-[33px] w-[33px] md:h-7 md:w-7 md:scale-[1.26] text-[#58C4C4]" strokeWidth={2.3} />
+                  <X className="!h-[33px] !w-[33px] md:!h-7 md:!w-7 md:scale-[1.26] text-[#58C4C4]" strokeWidth={2.3} />
                 ) : (
-                  <Menu className="h-[33px] w-[33px] md:h-7 md:w-7 md:scale-[1.26] text-[#58C4C4]" strokeWidth={2.3} />
+                  <Menu className="!h-[33px] !w-[33px] md:!h-7 md:!w-7 md:scale-[1.26] text-[#58C4C4]" strokeWidth={2.3} />
                 )}
                 <span className="hidden md:inline text-sm font-medium">메뉴</span>
               </Button>
