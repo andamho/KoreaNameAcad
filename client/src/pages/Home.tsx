@@ -126,32 +126,6 @@ export default function Home() {
       document.documentElement.classList.add(className);
       console.log(`[Home] ${className} 클래스 추가됨`);
       
-      // JavaScript로 네비바 텍스트 크기 강제 적용
-      const applyNavbarStyles = () => {
-        const mainElements = document.querySelectorAll('.kna-brand-main');
-        const subElements = document.querySelectorAll('.kna-brand-sub');
-        
-        mainElements.forEach(el => {
-          (el as HTMLElement).style.setProperty('font-size', '13px', 'important');
-          (el as HTMLElement).style.setProperty('line-height', '1', 'important');
-        });
-        
-        subElements.forEach(el => {
-          (el as HTMLElement).style.setProperty('font-size', '6.7px', 'important');
-          (el as HTMLElement).style.setProperty('line-height', '1', 'important');
-          (el as HTMLElement).style.setProperty('margin-top', '3px', 'important');
-          (el as HTMLElement).style.setProperty('letter-spacing', '-0.068em', 'important');
-        });
-        
-        console.log(`[Home] 네비바 스타일 적용 완료 - main: ${mainElements.length}개, sub: ${subElements.length}개`);
-      };
-      
-      // 즉시 실행 + 지연 실행 (DOM 로드 대비)
-      applyNavbarStyles();
-      setTimeout(applyNavbarStyles, 100);
-      setTimeout(applyNavbarStyles, 300);
-      setTimeout(applyNavbarStyles, 500);
-      
       return () => {
         document.documentElement.classList.remove(className);
       };
