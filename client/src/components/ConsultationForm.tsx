@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Heart, Baby, Shuffle, X, FileText, BookOpenText } from "lucide-react";
-import formLogoImage from "@assets/신청서_로고(색상_통일_최종)_1767252669056.png";
+import formLogoImage from "@assets/ChatGPT_Image_2026년_1월_1일_오후_04_47_37_1767253736531.png";
 
 interface PersonData {
   name: string;
