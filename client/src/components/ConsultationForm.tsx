@@ -389,11 +389,11 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="yes" id="namechange-yes" data-testid="radio-namechange-yes" />
-              <Label htmlFor="namechange-yes" className="text-lg md:text-lg font-normal cursor-pointer">예</Label>
+              <Label htmlFor="namechange-yes" className="font-normal cursor-pointer">예</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="no" id="namechange-no" data-testid="radio-namechange-no" />
-              <Label htmlFor="namechange-no" className="text-lg md:text-lg font-normal cursor-pointer">아니오</Label>
+              <Label htmlFor="namechange-no" className="font-normal cursor-pointer">아니오</Label>
             </div>
           </RadioGroup>
         </div>
@@ -569,7 +569,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 data-testid={`referral-${option.value}`}
               >
                 <RadioGroupItem value={option.value} id={`ref-${option.value}`} />
-                <span className="text-base font-medium">{option.label}</span>
+                <span className="font-medium">{option.label}</span>
               </label>
             ))}
           </RadioGroup>
@@ -613,11 +613,11 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="weekday" id="time-weekday" data-testid="radio-time-weekday" />
-              <Label htmlFor="time-weekday" className="text-lg md:text-lg font-normal cursor-pointer">주중 2시</Label>
+              <Label htmlFor="time-weekday" className="font-normal cursor-pointer">주중 2시</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="weekend" id="time-weekend" data-testid="radio-time-weekend" />
-              <Label htmlFor="time-weekend" className="text-lg md:text-lg font-normal cursor-pointer">주말 2시</Label>
+              <Label htmlFor="time-weekend" className="font-normal cursor-pointer">주말 2시</Label>
             </div>
           </RadioGroup>
           <Card className="p-4 bg-muted">
