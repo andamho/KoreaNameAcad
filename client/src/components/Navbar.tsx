@@ -100,7 +100,7 @@ export function Navbar() {
                   }}
                 />
                 <div className="font-bold text-foreground text-left flex flex-col justify-center">
-                  <div className="kna-brand-main leading-none tracking-tight md:text-[24px]">한국이름학교</div>
+                  <div className="kna-brand-main leading-none">한국이름학교</div>
                   <div className="kna-brand-sub leading-none mt-0.5">와츠유어네임 이름연구협회</div>
                 </div>
               </button>

@@ -253,6 +253,7 @@ select {
   font-family: 'KoreaUnivB', sans-serif !important;
   font-size: 20.7px !important;
   line-height: 1.1 !important;
+  letter-spacing: -0.025em !important;
 }
 
 .kna-brand-sub {
