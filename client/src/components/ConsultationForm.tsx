@@ -351,7 +351,9 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         <div className="space-y-2">
           <Label htmlFor="registration-document" className="text-lg md:text-lg flex flex-col md:flex-row md:items-baseline md:gap-1">
             <span>주민등본 사진</span>
-            <span className="text-base md:text-base font-normal text-orange-600 dark:text-orange-400">(정확한 한자 확인을 위해 반드시 첨부 | 주민등록번호 및 주소는 가린 후 제출)</span>
+            <span className="text-base md:text-base font-normal text-orange-600 dark:text-orange-400">
+              <span className="hidden md:inline">(</span>정확한 한자 확인을 위해 반드시 첨부 | 주민등록번호 및 주소는 가린 후 제출<span className="hidden md:inline">)</span>
+            </span>
           </Label>
           <Input
             id="registration-document"
