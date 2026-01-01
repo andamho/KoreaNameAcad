@@ -315,18 +315,40 @@ html.ua-instagram p {
   line-height: 1.4 !important;
 }
 
-/* 다이얼로그 내부 요소는 Tailwind 클래스 우선 (inherit로 덮어쓰지 않음) */
+/* 다이얼로그 내부 요소 - 82% 축소 적용 */
 html.ua-instagram .ig-tt-dialog h2 {
-  font-size: 25px !important;
+  font-size: 20px !important;
 }
 
 html.ua-instagram .ig-tt-dialog h3 {
-  font-size: 21px !important;
+  font-size: 17px !important;
 }
 
 html.ua-instagram .ig-tt-dialog p,
 html.ua-instagram .ig-tt-dialog label {
-  font-size: 18px !important;
+  font-size: 15px !important;
+}
+
+html.ua-instagram .ig-tt-dialog .text-lg {
+  font-size: 15px !important;
+}
+
+html.ua-instagram .ig-tt-dialog .text-base {
+  font-size: 13px !important;
+}
+
+html.ua-instagram .ig-tt-dialog .text-sm {
+  font-size: 11px !important;
+}
+
+html.ua-instagram .ig-tt-dialog button {
+  font-size: 13px !important;
+}
+
+html.ua-instagram .ig-tt-dialog input,
+html.ua-instagram .ig-tt-dialog textarea,
+html.ua-instagram .ig-tt-dialog select {
+  font-size: 14px !important;
 }
 
 /* Footer 푸터 텍스트 크기 조정 (인앱 브라우저) */
@@ -376,18 +398,40 @@ html.ua-tiktok p {
   line-height: 1.4 !important;
 }
 
-/* 다이얼로그 내부 요소는 고정 크기 적용 */
+/* 다이얼로그 내부 요소 - 82% 축소 적용 */
 html.ua-tiktok .ig-tt-dialog h2 {
-  font-size: 25px !important;
+  font-size: 20px !important;
 }
 
 html.ua-tiktok .ig-tt-dialog h3 {
-  font-size: 21px !important;
+  font-size: 17px !important;
 }
 
 html.ua-tiktok .ig-tt-dialog p,
 html.ua-tiktok .ig-tt-dialog label {
-  font-size: 18px !important;
+  font-size: 15px !important;
+}
+
+html.ua-tiktok .ig-tt-dialog .text-lg {
+  font-size: 15px !important;
+}
+
+html.ua-tiktok .ig-tt-dialog .text-base {
+  font-size: 13px !important;
+}
+
+html.ua-tiktok .ig-tt-dialog .text-sm {
+  font-size: 11px !important;
+}
+
+html.ua-tiktok .ig-tt-dialog button {
+  font-size: 13px !important;
+}
+
+html.ua-tiktok .ig-tt-dialog input,
+html.ua-tiktok .ig-tt-dialog textarea,
+html.ua-tiktok .ig-tt-dialog select {
+  font-size: 14px !important;
 }
 
 /* Footer 푸터 텍스트 크기 조정 (인앱 브라우저) */
