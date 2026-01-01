@@ -317,6 +317,7 @@ html.ua-instagram p {
 
 /* 다이얼로그 내부 요소 - 82% 축소 적용 */
 html.ua-instagram .ig-tt-dialog h2,
+html.ua-instagram .ig-tt-dialog .ig-dialog-title,
 html.ua-instagram .ig-tt-dialog [class*="text-[25px]"],
 html.ua-instagram .ig-tt-dialog [class*="text-[24px]"] {
   font-size: 20px !important;
@@ -411,6 +412,7 @@ html.ua-tiktok p {
 
 /* 다이얼로그 내부 요소 - 82% 축소 적용 */
 html.ua-tiktok .ig-tt-dialog h2,
+html.ua-tiktok .ig-tt-dialog .ig-dialog-title,
 html.ua-tiktok .ig-tt-dialog [class*="text-[25px]"],
 html.ua-tiktok .ig-tt-dialog [class*="text-[24px]"] {
   font-size: 20px !important;

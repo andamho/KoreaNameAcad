@@ -622,7 +622,7 @@ export default function InstagramHome() {
 
             {/* Header */}
             <div className="text-center mb-10">
-              <h2 className="mb-8 text-[25px] font-semibold tiffany whitespace-nowrap" data-testid="section-title">
+              <h2 className="ig-dialog-title mb-8 text-[25px] font-semibold tiffany whitespace-nowrap" data-testid="section-title">
                 이름분석 운명상담이란
               </h2>
               <p className="text-white/80 text-lg leading-relaxed">
