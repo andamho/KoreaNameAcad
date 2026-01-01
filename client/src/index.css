@@ -338,6 +338,16 @@ html.ua-tiktok .ig-tt-dialog h3 {
   font-size: 16px !important;
 }
 
+/* h4 - "1번째 분석 대상" 등 */
+html.ua-instagram .ig-tt-dialog h4,
+html.ua-tiktok .ig-tt-dialog h4,
+html.ua-instagram .ig-tt-dialog [class*="text-[21px]"],
+html.ua-instagram .ig-tt-dialog [class*="text-[22px]"],
+html.ua-tiktok .ig-tt-dialog [class*="text-[21px]"],
+html.ua-tiktok .ig-tt-dialog [class*="text-[22px]"] {
+  font-size: 16px !important;
+}
+
 html.ua-instagram .ig-tt-dialog p,
 html.ua-instagram .ig-tt-dialog label,
 html.ua-tiktok .ig-tt-dialog p,
