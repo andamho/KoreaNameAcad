@@ -28,7 +28,17 @@ export function Navbar() {
   }, [menuOpen]);
 
   const goToHome = () => {
-    setLocation("/");
+    // 인앱 브라우저에서는 해당 경로로 이동
+    const isInstagram = document.documentElement.classList.contains('ua-instagram');
+    const isTikTok = document.documentElement.classList.contains('ua-tiktok');
+    
+    if (isInstagram) {
+      setLocation("/ig");
+    } else if (isTikTok) {
+      setLocation("/tt");
+    } else {
+      setLocation("/");
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setMenuOpen(false);
   };
