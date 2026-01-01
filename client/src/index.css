@@ -11,6 +11,15 @@
   font-display: swap;
 }
 
+/* 고려대학교 라이트체 폰트 */
+@font-face {
+  font-family: 'KoreaUnivL';
+  src: url('/fonts/KoreaUnivL.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* 햄버거 메뉴 애니메이션 - 숨 고르기형 */
 .hamburger-icon {
   width: 37px;
@@ -248,17 +257,17 @@ select {
   font-size: 16px;
 }
 
-/* 네비바 브랜드 텍스트 - 모바일 크기 */
+/* 네비바 브랜드 텍스트 - 모바일 크기 (7% 줄임) */
 .kna-brand-main {
   font-family: 'KoreaUnivB', sans-serif !important;
-  font-size: 21.4px !important; /* 23.8px × 0.9 = 21.4px */
+  font-size: 19.9px !important; /* 21.4px × 0.93 = 19.9px */
   line-height: 1.1 !important;
   letter-spacing: -0.025em !important;
 }
 
 .kna-brand-sub {
-  font-family: 'KoreaUnivB', sans-serif !important;
-  font-size: 11.7px !important; /* 13px × 0.9 = 11.7px */
+  font-family: 'KoreaUnivL', sans-serif !important; /* 라이트체 */
+  font-size: 10.9px !important; /* 11.7px × 0.93 = 10.9px */
   line-height: 1.1 !important;
   letter-spacing: -0.025em !important;
 }
@@ -274,11 +283,11 @@ select {
   }
 }
 
-/* 네비바 로고 - 인앱 브라우저에서도 모바일과 동일하게 90px (15% 확대) */
+/* 네비바 로고 - 인앱 브라우저에서도 모바일과 동일하게 84px (7% 줄임) */
 html.ua-instagram .kna-navbar img,
 html.ua-tiktok .kna-navbar img {
-  height: 90px !important;
-  width: 90px !important;
+  height: 84px !important;
+  width: 84px !important;
 }
 
 /* 메뉴 오버레이 - 인앱 브라우저에서 82% 축소 (페이지와 동일한 비율) */
@@ -289,16 +298,17 @@ html.ua-tiktok .kna-menu-overlay {
   width: 122% !important;
 }
 
-/* 네비바 브랜드 텍스트 - 인앱 브라우저에서도 10% 줄인 크기 */
+/* 네비바 브랜드 텍스트 - 인앱 브라우저 (7% 추가 줄임) */
 html.ua-instagram .kna-brand-main,
 html.ua-tiktok .kna-brand-main {
-  font-size: 18.6px !important; /* 20.7px × 0.9 = 18.6px */
+  font-size: 17.3px !important; /* 18.6px × 0.93 = 17.3px */
   line-height: 1.1 !important;
 }
 
 html.ua-instagram .kna-brand-sub,
 html.ua-tiktok .kna-brand-sub {
-  font-size: 10.2px !important; /* 11.3px × 0.9 = 10.2px */
+  font-family: 'KoreaUnivL', sans-serif !important; /* 라이트체 */
+  font-size: 9.5px !important; /* 10.2px × 0.93 = 9.5px */
   line-height: 1.1 !important;
   margin-top: 2px !important;
   letter-spacing: -0.025em !important;
