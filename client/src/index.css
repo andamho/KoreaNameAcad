@@ -338,11 +338,11 @@ html.ua-tiktok .ig-tt-dialog [class*="text-[22px]"] {
 }
 
 /* 타이틀 (이름분석운명상담, 이름감명) - 18px */
-/* 순서 중요: text-[21px] 규칙 뒤에 와야 함 */
+/* .ig-tt-title 클래스로 specificity 높임 */
+html.ua-instagram .ig-tt-dialog .ig-tt-title,
+html.ua-tiktok .ig-tt-dialog .ig-tt-title,
 html.ua-instagram .ig-tt-dialog h2,
-html.ua-instagram .ig-tt-dialog h3,
-html.ua-tiktok .ig-tt-dialog h2,
-html.ua-tiktok .ig-tt-dialog h3 {
+html.ua-tiktok .ig-tt-dialog h2 {
   font-size: 18px !important;
 }
 
