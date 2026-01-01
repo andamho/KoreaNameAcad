@@ -75,7 +75,7 @@ export function Navbar() {
   return (
     <>
       <nav className="kna-navbar fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:max-w-none lg:px-12">
           <div className="flex items-center justify-between h-[80px]">
             <div className="flex items-center gap-2">
               <button
