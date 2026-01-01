@@ -87,7 +87,7 @@ export function Navbar() {
                   ref={imgRef}
                   src={logoLoaded ? logoImage : LOGO_TINY} 
                   alt="한국이름학교 로고" 
-                  className="h-[68px] w-[68px] md:h-[61px] md:w-[61px] -ml-[15px] -mr-[11px]"
+                  className="h-[68px] w-[68px] md:h-[80px] md:w-[80px] -ml-[15px] -mr-[11px]"
                   loading="eager"
                   decoding="sync"
                   onLoad={() => {
@@ -99,12 +99,9 @@ export function Navbar() {
                     }
                   }}
                 />
-                <div className="md:text-xl font-bold text-foreground">
-                  <div className="md:hidden text-left flex flex-col justify-center h-10">
-                    <div className="kna-brand-main leading-none tracking-tight">한국이름학교</div>
-                    <div className="kna-brand-sub leading-none tracking-[-0.12em] mt-0.5">와츠유어네임 이름연구협회</div>
-                  </div>
-                  <span className="kna-brand-desktop hidden md:inline whitespace-nowrap tracking-wide">한국이름학교 | 와츠유어네임 이름연구협회</span>
+                <div className="font-bold text-foreground text-left flex flex-col justify-center">
+                  <div className="kna-brand-main leading-none tracking-tight md:text-[24px]">한국이름학교</div>
+                  <div className="kna-brand-sub leading-none tracking-[-0.12em] mt-0.5">와츠유어네임 이름연구협회</div>
                 </div>
               </button>
             </div>

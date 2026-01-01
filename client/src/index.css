@@ -248,7 +248,7 @@ select {
   font-size: 16px;
 }
 
-/* 네비바 브랜드 텍스트 - 기본 크기 설정 (일반 모바일) - 68px 기준 */
+/* 네비바 브랜드 텍스트 - 기본 크기 설정 (모바일) - 68px 기준 */
 .kna-brand-main {
   font-family: 'KoreaUnivB', sans-serif !important;
   font-size: 18px !important;
@@ -261,8 +261,14 @@ select {
   line-height: 1.1 !important;
 }
 
-.kna-brand-desktop {
-  font-family: 'KoreaUnivB', sans-serif !important;
+/* 데스크탑 네비바 브랜드 텍스트 - 80px 로고 기준 */
+@media (min-width: 768px) {
+  .kna-brand-main {
+    font-size: 24px !important;
+  }
+  .kna-brand-sub {
+    font-size: 13px !important;
+  }
 }
 
 /* 네비바 로고 - 인앱 브라우저에서 확대 (68px -> 77px) */
