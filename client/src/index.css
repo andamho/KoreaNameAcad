@@ -289,19 +289,19 @@ html.ua-tiktok .kna-menu-overlay {
   width: 122% !important;
 }
 
-/* 네비바 브랜드 텍스트 - 인앱 브라우저에서 크기 조정 (68px 기준 15% 감소) */
+/* 네비바 브랜드 텍스트 - 인앱 브라우저에서 15% 증가 (20.7px->23.8px, 11.3px->13px) */
 html.ua-instagram .kna-brand-main,
 html.ua-tiktok .kna-brand-main {
-  font-size: 14px !important;
-  line-height: 1 !important;
+  font-size: 23.8px !important;
+  line-height: 1.1 !important;
 }
 
 html.ua-instagram .kna-brand-sub,
 html.ua-tiktok .kna-brand-sub {
-  font-size: 7.1px !important;
-  line-height: 1 !important;
-  margin-top: 3px !important;
-  letter-spacing: -0.068em !important;
+  font-size: 13px !important;
+  line-height: 1.1 !important;
+  margin-top: 2px !important;
+  letter-spacing: -0.025em !important;
 }
 
 /* 인스타그램 인앱 브라우저 전용: 자동 폰트 축소 방지 */
