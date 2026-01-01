@@ -248,17 +248,17 @@ select {
   font-size: 16px;
 }
 
-/* 네비바 브랜드 텍스트 - 모바일에서 15% 확대된 크기 */
+/* 네비바 브랜드 텍스트 - 모바일 크기 */
 .kna-brand-main {
   font-family: 'KoreaUnivB', sans-serif !important;
-  font-size: 23.8px !important; /* 20.7px × 1.15 = 23.8px */
+  font-size: 21.4px !important; /* 23.8px × 0.9 = 21.4px */
   line-height: 1.1 !important;
   letter-spacing: -0.025em !important;
 }
 
 .kna-brand-sub {
   font-family: 'KoreaUnivB', sans-serif !important;
-  font-size: 13px !important; /* 11.3px × 1.15 = 13px */
+  font-size: 11.7px !important; /* 13px × 0.9 = 11.7px */
   line-height: 1.1 !important;
   letter-spacing: -0.025em !important;
 }
