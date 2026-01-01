@@ -362,13 +362,13 @@ html.ua-tiktok .ig-tt-dialog [class*="Card"] label {
   font-size: 14px !important;
 }
 
-/* 라디오/체크박스 옵션 라벨 (예, 아니오, 주중 2시, 주말 2시, 지인소개 등) - 15px */
+/* 라디오/체크박스 옵션 라벨 (예, 아니오, 주중 2시, 주말 2시, 지인소개 등) - 14px (인앱 확대 후 ~16px로 표시) */
 /* 순서 중요: rounded-xl 규칙 뒤에 와야 함 */
 html.ua-instagram .ig-tt-dialog label.cursor-pointer,
 html.ua-tiktok .ig-tt-dialog label.cursor-pointer,
 html.ua-instagram .ig-tt-dialog label.cursor-pointer span,
 html.ua-tiktok .ig-tt-dialog label.cursor-pointer span {
-  font-size: 15px !important;
+  font-size: 14px !important;
 }
 
 /* p - 14px */
