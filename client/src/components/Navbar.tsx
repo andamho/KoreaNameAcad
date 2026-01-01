@@ -32,8 +32,12 @@ export function Navbar() {
     const isInstagram = document.documentElement.classList.contains('ua-instagram');
     const isTikTok = document.documentElement.classList.contains('ua-tiktok');
     
-    // history state 초기화 (팝업 방지)
-    window.history.replaceState(null, "", window.location.pathname);
+    // history state 초기화 (modal만 제거, popupShown은 유지)
+    const currentState = window.history.state || {};
+    window.history.replaceState({ popupShown: currentState.popupShown || true }, "", window.location.pathname);
+    
+    // 모든 Dialog 닫기 이벤트 발생
+    window.dispatchEvent(new CustomEvent('closeAllDialogs'));
     
     if (isInstagram) {
       setLocation("/ig");

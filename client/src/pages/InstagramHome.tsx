@@ -345,6 +345,18 @@ export default function InstagramHome() {
     };
   }, []); // 의존성 배열 비움 - 항상 최신 ref 값을 참조
 
+  // 홈 버튼 클릭 시 모든 Dialog 닫기
+  useEffect(() => {
+    const handleCloseAllDialogs = () => {
+      setDialogOpen(false);
+      setAnalysisDetailOpen(false);
+      setShowChristmasPopup(false);
+    };
+    
+    window.addEventListener('closeAllDialogs', handleCloseAllDialogs);
+    return () => window.removeEventListener('closeAllDialogs', handleCloseAllDialogs);
+  }, []);
+
   const openDialog = (type: "analysis" | "naming") => {
     setDialogType(type);
     setDialogOpen(true);
