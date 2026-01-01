@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 고려대학교 볼드체 폰트 */
+@font-face {
+  font-family: 'KoreaUnivB';
+  src: url('/fonts/KoreaUnivB.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* 틱톡/인스타그램 인앱 브라우저 글자 자동확대 방지 */
 html, body {
   -webkit-text-size-adjust: 100% !important;
@@ -36,11 +45,13 @@ select {
 
 /* 네비바 브랜드 텍스트 - 기본 크기 설정 (일반 모바일) - 68px 기준 */
 .kna-brand-main {
+  font-family: 'KoreaUnivB', sans-serif !important;
   font-size: 18px !important;
   line-height: 1.1 !important;
 }
 
 .kna-brand-sub {
+  font-family: 'KoreaUnivB', sans-serif !important;
   font-size: 9.8px !important;
   line-height: 1.1 !important;
 }
