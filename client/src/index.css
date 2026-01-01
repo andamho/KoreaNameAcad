@@ -259,6 +259,7 @@ select {
   font-family: 'KoreaUnivB', sans-serif !important;
   font-size: 9.8px !important;
   line-height: 1.1 !important;
+  letter-spacing: -0.025em !important; /* tracking-tight와 동일하게 통일 */
 }
 
 /* 데스크탑 네비바 브랜드 텍스트 - 96px 로고 기준 (20% 증가) */
