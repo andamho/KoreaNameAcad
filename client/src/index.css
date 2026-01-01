@@ -1037,6 +1037,12 @@ html.ua-tiktok .review-section-title {
   margin-top: 0 !important;
 }
 
+/* 비용 섹션 하단 여백 15% 줄임 */
+.ig-shell .kna-pricing-section,
+.ig-shell .kna-pricing-section-hero {
+  padding-bottom: 54px !important; /* 64px × 0.85 = 54px */
+}
+
 /* 비용 페이지 히어로 → 카드 간격 축소 */
 .ig-shell .kna-pricing-section-hero .kna-pricing-inner,
 html.ua-instagram .kna-pricing-section-hero .kna-pricing-inner,
