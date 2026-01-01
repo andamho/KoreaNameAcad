@@ -248,19 +248,19 @@ select {
   font-size: 16px;
 }
 
-/* 네비바 브랜드 텍스트 - 기본 크기 설정 (모바일) - 68px 기준 */
+/* 네비바 브랜드 텍스트 - 모바일에서 15% 확대된 크기 */
 .kna-brand-main {
   font-family: 'KoreaUnivB', sans-serif !important;
-  font-size: 20.7px !important;
+  font-size: 23.8px !important; /* 20.7px × 1.15 = 23.8px */
   line-height: 1.1 !important;
   letter-spacing: -0.025em !important;
 }
 
 .kna-brand-sub {
   font-family: 'KoreaUnivB', sans-serif !important;
-  font-size: 11.3px !important;
+  font-size: 13px !important; /* 11.3px × 1.15 = 13px */
   line-height: 1.1 !important;
-  letter-spacing: -0.025em !important; /* tracking-tight와 동일하게 통일 */
+  letter-spacing: -0.025em !important;
 }
 
 /* 데스크탑 네비바 브랜드 텍스트 - 96px 로고 기준 (20% 증가) */
@@ -274,11 +274,12 @@ select {
   }
 }
 
-/* 네비바 로고 - 인앱 브라우저에서 확대 (68px -> 77px) */
+/* 네비바 로고 - 인앱 브라우저에서는 원래 크기 유지 (자체 확대가 15% 역할) */
+/* 모바일 기본 로고는 Navbar.tsx에서 90px로 설정 (78px × 1.15) */
 html.ua-instagram .kna-navbar img,
 html.ua-tiktok .kna-navbar img {
-  height: 77px !important;
-  width: 77px !important;
+  height: 78px !important;
+  width: 78px !important;
 }
 
 /* 메뉴 오버레이 - 인앱 브라우저에서 82% 축소 (페이지와 동일한 비율) */
