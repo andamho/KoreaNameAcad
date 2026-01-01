@@ -33,8 +33,8 @@ export default function KnaValueSection() {
           />
           <ValueCard
             icon={<TimelineIcon className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
-            title="개명 전·후 분석"
-            desc="개명 전·후 이름대로 살았다는 걸 증명해드립니다."
+            title="개명 전·후 삶 증명"
+            desc="개명하셨다면 전·후 이름대로 살았다는 걸 증명해드립니다."
           />
           <ValueCard
             icon={<FamilyIcon className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
