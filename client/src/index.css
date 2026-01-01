@@ -11,6 +11,167 @@
   font-display: swap;
 }
 
+/* 햄버거 메뉴 애니메이션 - 숨 고르기형 */
+.hamburger-icon {
+  width: 37px;
+  height: 37px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  .hamburger-icon {
+    width: 30px;
+    height: 30px;
+    gap: 5px;
+  }
+}
+
+.hamburger-line {
+  display: block;
+  width: 26px;
+  height: 2.8px;
+  background-color: #56D5DB;
+  border-radius: 2px;
+  transition: all 0.22s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transform-origin: center;
+}
+
+@media (min-width: 768px) {
+  .hamburger-line {
+    width: 22px;
+    height: 2.4px;
+  }
+}
+
+/* 멈칫 후 모였다가 회전 */
+.hamburger-icon.open .line-1 {
+  animation: line1-to-x 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+
+.hamburger-icon.open .line-2 {
+  animation: line2-fade 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+
+.hamburger-icon.open .line-3 {
+  animation: line3-to-x 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+
+@keyframes line1-to-x {
+  0% {
+    transform: translateY(0) rotate(0);
+  }
+  20% {
+    transform: translateY(0) rotate(0);
+  }
+  50% {
+    transform: translateY(9px) rotate(0);
+  }
+  100% {
+    transform: translateY(9px) rotate(45deg);
+  }
+}
+
+@keyframes line2-fade {
+  0% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  20% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  50% {
+    opacity: 0;
+    transform: scaleX(0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+}
+
+@keyframes line3-to-x {
+  0% {
+    transform: translateY(0) rotate(0);
+  }
+  20% {
+    transform: translateY(0) rotate(0);
+  }
+  50% {
+    transform: translateY(-9px) rotate(0);
+  }
+  100% {
+    transform: translateY(-9px) rotate(-45deg);
+  }
+}
+
+/* 닫힐 때 역방향 애니메이션 */
+.hamburger-icon:not(.open) .line-1 {
+  animation: line1-from-x 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+
+.hamburger-icon:not(.open) .line-2 {
+  animation: line2-appear 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+
+.hamburger-icon:not(.open) .line-3 {
+  animation: line3-from-x 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+
+@keyframes line1-from-x {
+  0% {
+    transform: translateY(9px) rotate(45deg);
+  }
+  50% {
+    transform: translateY(9px) rotate(0);
+  }
+  80% {
+    transform: translateY(0) rotate(0);
+  }
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+}
+
+@keyframes line2-appear {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  50% {
+    opacity: 0;
+    transform: scaleX(0.5);
+  }
+  80% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes line3-from-x {
+  0% {
+    transform: translateY(-9px) rotate(-45deg);
+  }
+  50% {
+    transform: translateY(-9px) rotate(0);
+  }
+  80% {
+    transform: translateY(0) rotate(0);
+  }
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+}
+
 /* 틱톡/인스타그램 인앱 브라우저 글자 자동확대 방지 */
 html, body {
   -webkit-text-size-adjust: 100% !important;

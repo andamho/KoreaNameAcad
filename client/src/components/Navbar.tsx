@@ -1,4 +1,4 @@
-import { Menu, X, MessageCircle, FileText, Star, DollarSign, BookOpen } from "lucide-react";
+import { MessageCircle, FileText, Star, DollarSign, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect, useRef } from "react";
@@ -115,11 +115,11 @@ export function Navbar() {
                 data-testid="button-menu"
                 className="flex items-center gap-2 md:gap-2 md:scale-100 -mr-[14px] sm:mr-0 sm:pr-3"
               >
-                {menuOpen ? (
-                  <X className="!h-[37px] !w-[37px] md:!h-6 md:!w-6 md:scale-[1.26] text-[#56D5DB]" strokeWidth={2.3} />
-                ) : (
-                  <Menu className="!h-[37px] !w-[37px] md:!h-6 md:!w-6 md:scale-[1.26] text-[#56D5DB]" strokeWidth={2.3} />
-                )}
+                <div className={`hamburger-icon ${menuOpen ? 'open' : ''}`}>
+                  <span className="hamburger-line line-1"></span>
+                  <span className="hamburger-line line-2"></span>
+                  <span className="hamburger-line line-3"></span>
+                </div>
                 <span className="hidden md:inline text-sm font-medium">메뉴</span>
               </Button>
             </div>
