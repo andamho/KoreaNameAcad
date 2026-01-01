@@ -217,6 +217,10 @@ select {
   line-height: 1.1 !important;
 }
 
+.kna-brand-desktop {
+  font-family: 'KoreaUnivB', sans-serif !important;
+}
+
 /* 네비바 로고 - 인앱 브라우저에서 확대 (68px -> 77px) */
 html.ua-instagram .kna-navbar img,
 html.ua-tiktok .kna-navbar img {
