@@ -62,33 +62,6 @@
   }
 }
 
-@keyframes line1-to-x-desktop {
-  0% { transform: translateY(0) rotate(0); }
-  20% { transform: translateY(0) rotate(0); }
-  50% { transform: translateY(8px) rotate(0); }
-  100% { transform: translateY(8px) rotate(45deg); }
-}
-
-@keyframes line3-to-x-desktop {
-  0% { transform: translateY(0) rotate(0); }
-  20% { transform: translateY(0) rotate(0); }
-  50% { transform: translateY(-8px) rotate(0); }
-  100% { transform: translateY(-8px) rotate(-45deg); }
-}
-
-@keyframes line1-from-x-desktop {
-  0% { transform: translateY(8px) rotate(45deg); }
-  50% { transform: translateY(8px) rotate(0); }
-  80% { transform: translateY(0) rotate(0); }
-  100% { transform: translateY(0) rotate(0); }
-}
-
-@keyframes line3-from-x-desktop {
-  0% { transform: translateY(-8px) rotate(-45deg); }
-  50% { transform: translateY(-8px) rotate(0); }
-  80% { transform: translateY(0) rotate(0); }
-  100% { transform: translateY(0) rotate(0); }
-}
 
 /* 모바일 애니메이션 (767px 이하) */
 @media (max-width: 767px) {
@@ -212,6 +185,35 @@
   100% {
     transform: translateY(0) rotate(0);
   }
+}
+
+/* 데스크탑 keyframes - 모바일 keyframe 이후에 배치하여 우선순위 확보 */
+@keyframes line1-to-x-desktop {
+  0% { transform: translateY(0) rotate(0); }
+  20% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(7.8px) rotate(0); }
+  100% { transform: translateY(7.8px) rotate(45deg); }
+}
+
+@keyframes line3-to-x-desktop {
+  0% { transform: translateY(0) rotate(0); }
+  20% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-7.8px) rotate(0); }
+  100% { transform: translateY(-7.8px) rotate(-45deg); }
+}
+
+@keyframes line1-from-x-desktop {
+  0% { transform: translateY(7.8px) rotate(45deg); }
+  50% { transform: translateY(7.8px) rotate(0); }
+  80% { transform: translateY(0) rotate(0); }
+  100% { transform: translateY(0) rotate(0); }
+}
+
+@keyframes line3-from-x-desktop {
+  0% { transform: translateY(-7.8px) rotate(-45deg); }
+  50% { transform: translateY(-7.8px) rotate(0); }
+  80% { transform: translateY(0) rotate(0); }
+  100% { transform: translateY(0) rotate(0); }
 }
 
 /* 틱톡/인스타그램 인앱 브라우저 글자 자동확대 방지 */
