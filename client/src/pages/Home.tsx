@@ -380,11 +380,11 @@ export default function Home() {
             transform: 'translateX(-50%)'
           }}
         />
-        <section className="kna-video-section pt-[174px] pb-16 md:pt-[206px] md:pb-24">
-          <div className="max-w-md mx-auto px-4 sm:px-6">
+        <section className="kna-video-section pt-[174px] pb-16 md:pt-[206px] md:pb-24 lg:pt-[80px] lg:pb-0 lg:h-screen lg:flex lg:flex-col lg:justify-center">
+          <div className="max-w-md mx-auto px-4 sm:px-6 lg:max-w-none lg:px-0 lg:flex lg:flex-col lg:items-center lg:justify-center lg:h-full">
             <video 
               ref={videoRef}
-              className="w-full h-auto rounded-lg shadow-lg"
+              className="w-full h-auto rounded-lg shadow-lg lg:rounded-none lg:shadow-none lg:h-[calc(100vh-160px)] lg:w-auto lg:max-w-full"
               controls
               playsInline
               muted
@@ -398,7 +398,7 @@ export default function Home() {
               동영상을 재생할 수 없습니다. 브라우저가 MP4 형식을 지원하지 않습니다.
             </video>
             
-            <div className="text-center mt-6">
+            <div className="text-center mt-6 lg:mt-4">
               <p className="text-sm md:text-base font-semibold text-foreground">
                 Founder & CEO 안서호
               </p>
