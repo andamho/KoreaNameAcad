@@ -380,7 +380,7 @@ export default function Home() {
             transform: 'translateX(-50%)'
           }}
         />
-        <section className="kna-video-section pt-[174px] pb-16 md:pt-[206px] md:pb-24 lg:pt-[80px] lg:pb-0 lg:h-screen lg:flex lg:flex-col lg:justify-center">
+        <section className="kna-video-section pt-[174px] pb-16 md:pt-[206px] md:pb-24 lg:pt-[80px] lg:pb-24 lg:min-h-screen lg:flex lg:flex-col lg:justify-center">
           <div className="max-w-md mx-auto px-4 sm:px-6 lg:max-w-none lg:px-0 lg:flex lg:flex-col lg:items-center lg:justify-center lg:h-full">
             <video 
               ref={videoRef}
