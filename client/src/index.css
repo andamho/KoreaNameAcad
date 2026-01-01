@@ -354,20 +354,19 @@ html.ua-tiktok .ig-tt-dialog .text-lg {
   font-size: 16px !important;
 }
 
-/* 라디오/체크박스 옵션 라벨 (예, 아니오, 주중 2시, 주말 2시, 지인소개 등) - 15px */
-html.ua-instagram .ig-tt-dialog label.cursor-pointer,
-html.ua-tiktok .ig-tt-dialog label.cursor-pointer,
-html.ua-instagram .ig-tt-dialog .ig-tt-15px,
-html.ua-tiktok .ig-tt-dialog .ig-tt-15px {
-  font-size: 15px !important;
-}
-
 /* 분석 대상 카드 내부 label - 이름, 성별, 태어난 연도, 하는일 - 14px */
 html.ua-instagram .ig-tt-dialog .rounded-xl label,
 html.ua-tiktok .ig-tt-dialog .rounded-xl label,
 html.ua-instagram .ig-tt-dialog [class*="Card"] label,
 html.ua-tiktok .ig-tt-dialog [class*="Card"] label {
   font-size: 14px !important;
+}
+
+/* 라디오/체크박스 옵션 라벨 (예, 아니오, 주중 2시, 주말 2시, 지인소개 등) - 15px */
+/* 순서 중요: rounded-xl 규칙 뒤에 와야 함 */
+html.ua-instagram .ig-tt-dialog label.cursor-pointer,
+html.ua-tiktok .ig-tt-dialog label.cursor-pointer {
+  font-size: 15px !important;
 }
 
 /* p - 14px */
