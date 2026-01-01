@@ -365,7 +365,9 @@ html.ua-tiktok .ig-tt-dialog [class*="Card"] label {
 /* 라디오/체크박스 옵션 라벨 (예, 아니오, 주중 2시, 주말 2시, 지인소개 등) - 15px */
 /* 순서 중요: rounded-xl 규칙 뒤에 와야 함 */
 html.ua-instagram .ig-tt-dialog label.cursor-pointer,
-html.ua-tiktok .ig-tt-dialog label.cursor-pointer {
+html.ua-tiktok .ig-tt-dialog label.cursor-pointer,
+html.ua-instagram .ig-tt-dialog label.cursor-pointer span,
+html.ua-tiktok .ig-tt-dialog label.cursor-pointer span {
   font-size: 15px !important;
 }
 
