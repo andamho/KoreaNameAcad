@@ -403,6 +403,14 @@ html.ua-tiktok .ig-tt-dialog select {
   font-size: 13px !important;
 }
 
+/* input placeholder - 13px */
+html.ua-instagram .ig-tt-dialog input::placeholder,
+html.ua-instagram .ig-tt-dialog textarea::placeholder,
+html.ua-tiktok .ig-tt-dialog input::placeholder,
+html.ua-tiktok .ig-tt-dialog textarea::placeholder {
+  font-size: 13px !important;
+}
+
 /* Footer 푸터 텍스트 크기 조정 (인앱 브라우저) */
 html.ua-instagram .kna-footer-title {
   font-size: 14px !important;
