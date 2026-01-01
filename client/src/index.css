@@ -261,13 +261,14 @@ select {
   line-height: 1.1 !important;
 }
 
-/* 데스크탑 네비바 브랜드 텍스트 - 80px 로고 기준 */
+/* 데스크탑 네비바 브랜드 텍스트 - 96px 로고 기준 (20% 증가) */
 @media (min-width: 768px) {
   .kna-brand-main {
-    font-size: 24px !important;
+    font-size: 29px !important;
   }
   .kna-brand-sub {
-    font-size: 13px !important;
+    font-size: 16px !important;
+    letter-spacing: -0.025em !important; /* tracking-tight와 동일하게 통일 */
   }
 }
 

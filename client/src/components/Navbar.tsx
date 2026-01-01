@@ -87,7 +87,7 @@ export function Navbar() {
                   ref={imgRef}
                   src={logoLoaded ? logoImage : LOGO_TINY} 
                   alt="한국이름학교 로고" 
-                  className="h-[68px] w-[68px] md:h-[80px] md:w-[80px] -ml-[15px] -mr-[11px]"
+                  className="h-[68px] w-[68px] md:h-[96px] md:w-[96px] -ml-[15px] -mr-[11px]"
                   loading="eager"
                   decoding="sync"
                   onLoad={() => {
