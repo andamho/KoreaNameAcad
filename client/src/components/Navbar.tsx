@@ -32,6 +32,9 @@ export function Navbar() {
     const isInstagram = document.documentElement.classList.contains('ua-instagram');
     const isTikTok = document.documentElement.classList.contains('ua-tiktok');
     
+    // history state 초기화 (팝업 방지)
+    window.history.replaceState(null, "", window.location.pathname);
+    
     if (isInstagram) {
       setLocation("/ig");
     } else if (isTikTok) {
