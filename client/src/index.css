@@ -325,11 +325,53 @@ html.ua-instagram p {
   line-height: 1.4 !important;
 }
 
-/* 다이얼로그 - 75% 스케일 적용 */
-html.ua-instagram .ig-tt-dialog,
-html.ua-tiktok .ig-tt-dialog {
-  transform: scale(0.75) !important;
-  transform-origin: center center !important;
+/* 다이얼로그 내부 요소 - 75% 축소 적용 (폰트 크기 조정) */
+html.ua-instagram .ig-tt-dialog h2,
+html.ua-instagram .ig-tt-dialog .ig-dialog-title,
+html.ua-tiktok .ig-tt-dialog h2,
+html.ua-tiktok .ig-tt-dialog .ig-dialog-title {
+  font-size: 18px !important;
+}
+
+html.ua-instagram .ig-tt-dialog h3,
+html.ua-tiktok .ig-tt-dialog h3 {
+  font-size: 16px !important;
+}
+
+html.ua-instagram .ig-tt-dialog p,
+html.ua-instagram .ig-tt-dialog label,
+html.ua-tiktok .ig-tt-dialog p,
+html.ua-tiktok .ig-tt-dialog label {
+  font-size: 14px !important;
+}
+
+html.ua-instagram .ig-tt-dialog .text-lg,
+html.ua-tiktok .ig-tt-dialog .text-lg {
+  font-size: 14px !important;
+}
+
+html.ua-instagram .ig-tt-dialog .text-base,
+html.ua-tiktok .ig-tt-dialog .text-base {
+  font-size: 12px !important;
+}
+
+html.ua-instagram .ig-tt-dialog .text-sm,
+html.ua-tiktok .ig-tt-dialog .text-sm {
+  font-size: 10px !important;
+}
+
+html.ua-instagram .ig-tt-dialog button,
+html.ua-tiktok .ig-tt-dialog button {
+  font-size: 12px !important;
+}
+
+html.ua-instagram .ig-tt-dialog input,
+html.ua-instagram .ig-tt-dialog textarea,
+html.ua-instagram .ig-tt-dialog select,
+html.ua-tiktok .ig-tt-dialog input,
+html.ua-tiktok .ig-tt-dialog textarea,
+html.ua-tiktok .ig-tt-dialog select {
+  font-size: 13px !important;
 }
 
 /* Footer 푸터 텍스트 크기 조정 (인앱 브라우저) */
