@@ -327,13 +327,8 @@ html.ua-instagram p {
 
 /* 다이얼로그 내부 요소 - 인앱 브라우저 폰트 크기 조정 */
 
-/* 타이틀 (이름분석운명상담, 이름감명 신청서) - 17px */
-html.ua-instagram .ig-tt-dialog h2,
-html.ua-instagram .ig-tt-dialog .ig-dialog-title,
-html.ua-tiktok .ig-tt-dialog h2,
-html.ua-tiktok .ig-tt-dialog .ig-dialog-title {
-  font-size: 17px !important;
-}
+/* 타이틀 (이름분석운명상담, 이름감명 신청서) - 원래 크기 유지 (인앱 자동 확대 적용) */
+/* h2 규칙 제거 - 인앱 브라우저 자체 확대가 적용되어 적절한 크기로 표시됨 */
 
 /* h3 - 16px */
 html.ua-instagram .ig-tt-dialog h3,
@@ -351,11 +346,19 @@ html.ua-tiktok .ig-tt-dialog [class*="text-[22px]"] {
   font-size: 15px !important;
 }
 
-/* label, .text-lg - 이름, 성별, 태어난 연도, 하는일 등 - 14px */
+/* label, .text-lg - 등본상 가족인원, 주민등본 사진, 연락처 등 최상위 - 16px */
 html.ua-instagram .ig-tt-dialog label,
 html.ua-tiktok .ig-tt-dialog label,
 html.ua-instagram .ig-tt-dialog .text-lg,
 html.ua-tiktok .ig-tt-dialog .text-lg {
+  font-size: 16px !important;
+}
+
+/* 분석 대상 카드 내부 label - 이름, 성별, 태어난 연도, 하는일 - 14px */
+html.ua-instagram .ig-tt-dialog .rounded-xl label,
+html.ua-tiktok .ig-tt-dialog .rounded-xl label,
+html.ua-instagram .ig-tt-dialog [class*="Card"] label,
+html.ua-tiktok .ig-tt-dialog [class*="Card"] label {
   font-size: 14px !important;
 }
 
