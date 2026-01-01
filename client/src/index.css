@@ -289,6 +289,13 @@ html.ua-tiktok .kna-menu-overlay {
   width: 122% !important;
 }
 
+/* 다이얼로그 - 인앱 브라우저에서 82% 축소 */
+html.ua-instagram [data-radix-dialog-content],
+html.ua-tiktok [data-radix-dialog-content] {
+  transform: scale(0.82) !important;
+  transform-origin: center center !important;
+}
+
 /* 네비바 브랜드 텍스트 - 인앱 브라우저에서 크기 조정 (68px 기준 15% 감소) */
 html.ua-instagram .kna-brand-main,
 html.ua-tiktok .kna-brand-main {
