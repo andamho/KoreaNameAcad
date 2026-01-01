@@ -11,6 +11,7 @@ const LOGO_TINY = (typeof window !== 'undefined' && (window as any).__LOGO_TINY)
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hasBeenOpened, setHasBeenOpened] = useState(false);
   const [, setLocation] = useLocation();
   const [logoLoaded, setLogoLoaded] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -111,11 +112,14 @@ export function Navbar() {
             <div className="flex items-center gap-1 sm:gap-3">
               <Button
                 variant="ghost"
-                onClick={() => setMenuOpen(!menuOpen)}
+                onClick={() => {
+                  if (!menuOpen) setHasBeenOpened(true);
+                  setMenuOpen(!menuOpen);
+                }}
                 data-testid="button-menu"
                 className="flex items-center gap-2 md:gap-2 md:scale-100 -mr-[14px] sm:mr-0 sm:pr-3"
               >
-                <div className={`hamburger-icon ${menuOpen ? 'open' : ''}`}>
+                <div className={`hamburger-icon ${menuOpen ? 'open' : ''} ${hasBeenOpened ? 'animated' : ''}`}>
                   <span className="hamburger-line line-1"></span>
                   <span className="hamburger-line line-2"></span>
                   <span className="hamburger-line line-3"></span>
