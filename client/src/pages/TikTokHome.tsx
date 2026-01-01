@@ -29,6 +29,27 @@ import guideCharacterImage from "@assets/KakaoTalk_20251226_151729031_1766729868
 import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_1766729101276.png";
 import butterflyCharacterImage from "@assets/KakaoTalk_20251226_134433821_1766724285654.png";
 
+const INLINE_TT_STYLES = `
+  html.ua-tiktok .ig-tt-dialog h2,
+  html.ua-tiktok .ig-tt-dialog [class*="text-[25px]"] {
+    font-size: 20px !important;
+  }
+  html.ua-tiktok .ig-tt-dialog h3,
+  html.ua-tiktok .ig-tt-dialog [class*="text-[21px]"] {
+    font-size: 17px !important;
+  }
+  html.ua-tiktok .ig-tt-dialog p,
+  html.ua-tiktok .ig-tt-dialog [class*="text-lg"] {
+    font-size: 15px !important;
+  }
+  html.ua-tiktok .ig-tt-dialog [class*="text-base"] {
+    font-size: 13px !important;
+  }
+  html.ua-tiktok .ig-tt-dialog [class*="text-sm"] {
+    font-size: 12px !important;
+  }
+`;
+
 export default function TikTokHome() {
   const [, setLocation] = useLocation();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -115,6 +136,15 @@ export default function TikTokHome() {
     // html에 ua-tiktok 클래스 추가
     document.documentElement.classList.add('ua-tiktok');
     
+    // 인라인 스타일 주입 (캐시 우회용 - 가장 확실한 방법)
+    const ttDialogStyleId = 'tt-inline-font-override';
+    if (!document.getElementById(ttDialogStyleId)) {
+      const styleTag = document.createElement('style');
+      styleTag.id = ttDialogStyleId;
+      styleTag.textContent = INLINE_TT_STYLES;
+      document.head.appendChild(styleTag);
+    }
+    
     // viewport 메타 태그 강제 설정 (인앱 브라우저 autosizing 차단)
     let viewportMeta = document.querySelector('meta[name="viewport"]') as HTMLMetaElement;
     if (viewportMeta) {
@@ -140,10 +170,10 @@ export default function TikTokHome() {
     robotsMeta.content = 'index,follow';
     
     // 틱톡 전용 추가 스타일 (섹션 간격은 index.css에서 처리)
-    const styleId = 'tt-force-style';
-    if (!document.getElementById(styleId)) {
+    const ttForceStyleId = 'tt-force-style';
+    if (!document.getElementById(ttForceStyleId)) {
       const style = document.createElement('style');
-      style.id = styleId;
+      style.id = ttForceStyleId;
       style.textContent = `
         html.ua-tiktok, html.ua-tiktok body {
           -webkit-text-size-adjust: none !important;
@@ -252,9 +282,13 @@ export default function TikTokHome() {
     
     return () => {
       document.documentElement.classList.remove('ua-tiktok');
-      const styleElement = document.getElementById(styleId);
+      const styleElement = document.getElementById(ttForceStyleId);
       if (styleElement) {
         styleElement.remove();
+      }
+      const dialogStyleElement = document.getElementById(ttDialogStyleId);
+      if (dialogStyleElement) {
+        dialogStyleElement.remove();
       }
       clearTimeout(timer1);
       clearTimeout(timer1b);
