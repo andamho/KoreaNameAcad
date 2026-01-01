@@ -327,16 +327,7 @@ html.ua-instagram p {
 
 /* 다이얼로그 내부 요소 - 인앱 브라우저 폰트 크기 조정 */
 
-/* 타이틀 (이름분석운명상담, 이름감명 신청서) - 18px */
-html.ua-instagram .ig-tt-dialog h2,
-html.ua-instagram .ig-tt-dialog h3,
-html.ua-tiktok .ig-tt-dialog h2,
-html.ua-tiktok .ig-tt-dialog h3 {
-  font-size: 18px !important;
-}
-
-
-/* h4 - "1번째 분석 대상, 2번째 분석 대상" 등 - 15px */
+/* h4, text-[21px], text-[22px] - "1번째 분석 대상" 등 - 15px */
 html.ua-instagram .ig-tt-dialog h4,
 html.ua-tiktok .ig-tt-dialog h4,
 html.ua-instagram .ig-tt-dialog [class*="text-[21px]"],
@@ -344,6 +335,15 @@ html.ua-instagram .ig-tt-dialog [class*="text-[22px]"],
 html.ua-tiktok .ig-tt-dialog [class*="text-[21px]"],
 html.ua-tiktok .ig-tt-dialog [class*="text-[22px]"] {
   font-size: 15px !important;
+}
+
+/* 타이틀 (이름분석운명상담, 이름감명) - 18px */
+/* 순서 중요: text-[21px] 규칙 뒤에 와야 함 */
+html.ua-instagram .ig-tt-dialog h2,
+html.ua-instagram .ig-tt-dialog h3,
+html.ua-tiktok .ig-tt-dialog h2,
+html.ua-tiktok .ig-tt-dialog h3 {
+  font-size: 18px !important;
 }
 
 /* label, .text-lg - 등본상 가족인원, 주민등본 사진, 연락처 등 최상위 - 16px */
