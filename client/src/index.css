@@ -967,26 +967,40 @@ html.ua-tiktok .kna-pricing-section-hero .kna-pricing-inner {
 }
 
 /* 푸터 조정 */
-.ig-shell .kna-footer {
+.ig-shell .kna-footer,
+html.ua-instagram .kna-footer,
+html.ua-tiktok .kna-footer {
   padding-top: 60px !important;
   max-height: 500px !important;
   overflow: hidden !important;
   position: relative !important;
 }
 
-.ig-shell .kna-footer > div {
+.ig-shell .kna-footer > div,
+html.ua-instagram .kna-footer > div,
+html.ua-tiktok .kna-footer > div {
+  transform: scale(0.82) !important;
+  transform-origin: top center !important;
+  width: 122% !important;
+  margin-left: -11% !important;
   padding-bottom: 60px !important;
 }
 
-.ig-shell .kna-footer .mt-8 {
+.ig-shell .kna-footer .mt-8,
+html.ua-instagram .kna-footer .mt-8,
+html.ua-tiktok .kna-footer .mt-8 {
   margin-top: 0 !important;
 }
 
-.ig-shell .kna-footer .pt-8 {
+.ig-shell .kna-footer .pt-8,
+html.ua-instagram .kna-footer .pt-8,
+html.ua-tiktok .kna-footer .pt-8 {
   padding-top: 0 !important;
 }
 
-.ig-shell .kna-footer button {
+.ig-shell .kna-footer button,
+html.ua-instagram .kna-footer button,
+html.ua-tiktok .kna-footer button {
   padding: 5px 12px !important;
   font-size: 13px !important;
 }
