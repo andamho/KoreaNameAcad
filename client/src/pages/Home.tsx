@@ -373,7 +373,7 @@ export default function Home() {
         <img 
           src={butterflyCharacterImage}
           alt="나비 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] md:top-[48px]"
+          className="absolute left-1/2 z-10 top-[32px] md:top-[48px] lg:hidden"
           style={{ 
             width: 'auto', 
             height: '110px',
