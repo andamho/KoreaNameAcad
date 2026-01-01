@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pwa-cache-v1';
+const CACHE_NAME = 'pwa-cache-v2';
 const urlsToCache = [
   '/',
   '/icon-192.png',
