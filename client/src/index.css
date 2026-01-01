@@ -44,8 +44,50 @@
 @media (min-width: 768px) {
   .hamburger-line {
     width: 22px;
-    height: 2.4px;
+    height: 2.8px;
   }
+  
+  /* 데스크탑용 애니메이션 - gap 5px에 맞춤 */
+  .hamburger-icon.open .line-1 {
+    animation: line1-to-x-desktop 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  }
+  .hamburger-icon.open .line-3 {
+    animation: line3-to-x-desktop 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  }
+  .hamburger-icon.animated:not(.open) .line-1 {
+    animation: line1-from-x-desktop 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  }
+  .hamburger-icon.animated:not(.open) .line-3 {
+    animation: line3-from-x-desktop 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  }
+}
+
+@keyframes line1-to-x-desktop {
+  0% { transform: translateY(0) rotate(0); }
+  20% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(8px) rotate(0); }
+  100% { transform: translateY(8px) rotate(45deg); }
+}
+
+@keyframes line3-to-x-desktop {
+  0% { transform: translateY(0) rotate(0); }
+  20% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-8px) rotate(0); }
+  100% { transform: translateY(-8px) rotate(-45deg); }
+}
+
+@keyframes line1-from-x-desktop {
+  0% { transform: translateY(8px) rotate(45deg); }
+  50% { transform: translateY(8px) rotate(0); }
+  80% { transform: translateY(0) rotate(0); }
+  100% { transform: translateY(0) rotate(0); }
+}
+
+@keyframes line3-from-x-desktop {
+  0% { transform: translateY(-8px) rotate(-45deg); }
+  50% { transform: translateY(-8px) rotate(0); }
+  80% { transform: translateY(0) rotate(0); }
+  100% { transform: translateY(0) rotate(0); }
 }
 
 /* 멈칫 후 모였다가 회전 */
