@@ -90,17 +90,25 @@
   100% { transform: translateY(0) rotate(0); }
 }
 
-/* 멈칫 후 모였다가 회전 */
-.hamburger-icon.open .line-1 {
-  animation: line1-to-x 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+/* 모바일 애니메이션 (767px 이하) */
+@media (max-width: 767px) {
+  .hamburger-icon.open .line-1 {
+    animation: line1-to-x 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  }
+  .hamburger-icon.open .line-3 {
+    animation: line3-to-x 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  }
+  .hamburger-icon.animated:not(.open) .line-1 {
+    animation: line1-from-x 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  }
+  .hamburger-icon.animated:not(.open) .line-3 {
+    animation: line3-from-x 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  }
 }
 
+/* line-2는 모든 화면에서 동일 */
 .hamburger-icon.open .line-2 {
   animation: line2-fade 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
-}
-
-.hamburger-icon.open .line-3 {
-  animation: line3-to-x 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
 }
 
 @keyframes line1-to-x {
@@ -152,17 +160,9 @@
   }
 }
 
-/* 닫힐 때 역방향 애니메이션 - 한 번 열린 후에만 */
-.hamburger-icon.animated:not(.open) .line-1 {
-  animation: line1-from-x 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
-}
-
+/* line-2 역방향은 모든 화면에서 동일 */
 .hamburger-icon.animated:not(.open) .line-2 {
   animation: line2-appear 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
-}
-
-.hamburger-icon.animated:not(.open) .line-3 {
-  animation: line3-from-x 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
 }
 
 @keyframes line1-from-x {
