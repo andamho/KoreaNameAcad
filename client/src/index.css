@@ -327,14 +327,14 @@ html.ua-instagram p {
 
 /* 다이얼로그 내부 요소 - 인앱 브라우저 폰트 크기 조정 */
 
-/* 타이틀 (이름분석운명상담, 이름감명 신청서) - 원래 크기 유지 (인앱 자동 확대 적용) */
-/* h2 규칙 제거 - 인앱 브라우저 자체 확대가 적용되어 적절한 크기로 표시됨 */
-
-/* h3 - 16px */
+/* 타이틀 (이름분석운명상담, 이름감명 신청서) - 18px */
+html.ua-instagram .ig-tt-dialog h2,
 html.ua-instagram .ig-tt-dialog h3,
+html.ua-tiktok .ig-tt-dialog h2,
 html.ua-tiktok .ig-tt-dialog h3 {
-  font-size: 16px !important;
+  font-size: 18px !important;
 }
+
 
 /* h4 - "1번째 분석 대상, 2번째 분석 대상" 등 - 15px */
 html.ua-instagram .ig-tt-dialog h4,
