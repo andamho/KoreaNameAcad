@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Heart, Baby, Shuffle, X, FileText, BookOpenText } from "lucide-react";
-import formLogoImage from "@assets/신청서의_로고(내비바로고와_칼러동일)_1767250380686.png";
+import formLogoImage from "@assets/신청서_로고(색상_통일_최종)_1767252669056.png";
 
 interface PersonData {
   name: string;
