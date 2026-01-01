@@ -325,7 +325,9 @@ html.ua-instagram p {
   line-height: 1.4 !important;
 }
 
-/* 다이얼로그 내부 요소 - 75% 축소 적용 (폰트 크기 조정) */
+/* 다이얼로그 내부 요소 - 인앱 브라우저 폰트 크기 조정 */
+
+/* 타이틀 (이름분석운명상담, 이름감명 신청서) - 18px */
 html.ua-instagram .ig-tt-dialog h2,
 html.ua-instagram .ig-tt-dialog .ig-dialog-title,
 html.ua-tiktok .ig-tt-dialog h2,
@@ -333,48 +335,55 @@ html.ua-tiktok .ig-tt-dialog .ig-dialog-title {
   font-size: 18px !important;
 }
 
+/* h3 - 16px */
 html.ua-instagram .ig-tt-dialog h3,
 html.ua-tiktok .ig-tt-dialog h3 {
   font-size: 16px !important;
 }
 
-/* h4 - "1번째 분석 대상" 등 */
+/* h4 - "1번째 분석 대상" 등 - 14px */
 html.ua-instagram .ig-tt-dialog h4,
 html.ua-tiktok .ig-tt-dialog h4,
 html.ua-instagram .ig-tt-dialog [class*="text-[21px]"],
 html.ua-instagram .ig-tt-dialog [class*="text-[22px]"],
 html.ua-tiktok .ig-tt-dialog [class*="text-[21px]"],
 html.ua-tiktok .ig-tt-dialog [class*="text-[22px]"] {
+  font-size: 14px !important;
+}
+
+/* label, .text-lg - 등본상 가족인원, 주민등본 사진, 연락처 등 - 16px */
+html.ua-instagram .ig-tt-dialog label,
+html.ua-tiktok .ig-tt-dialog label,
+html.ua-instagram .ig-tt-dialog .text-lg,
+html.ua-tiktok .ig-tt-dialog .text-lg {
   font-size: 16px !important;
 }
 
+/* p - 14px */
 html.ua-instagram .ig-tt-dialog p,
-html.ua-instagram .ig-tt-dialog label,
-html.ua-tiktok .ig-tt-dialog p,
-html.ua-tiktok .ig-tt-dialog label {
+html.ua-tiktok .ig-tt-dialog p {
   font-size: 14px !important;
 }
 
-html.ua-instagram .ig-tt-dialog .text-lg,
-html.ua-tiktok .ig-tt-dialog .text-lg {
-  font-size: 14px !important;
-}
-
+/* text-base - 12px */
 html.ua-instagram .ig-tt-dialog .text-base,
 html.ua-tiktok .ig-tt-dialog .text-base {
   font-size: 12px !important;
 }
 
+/* text-sm - 10px */
 html.ua-instagram .ig-tt-dialog .text-sm,
 html.ua-tiktok .ig-tt-dialog .text-sm {
   font-size: 10px !important;
 }
 
+/* button - 12px */
 html.ua-instagram .ig-tt-dialog button,
 html.ua-tiktok .ig-tt-dialog button {
   font-size: 12px !important;
 }
 
+/* input, textarea, select - 13px */
 html.ua-instagram .ig-tt-dialog input,
 html.ua-instagram .ig-tt-dialog textarea,
 html.ua-instagram .ig-tt-dialog select,
