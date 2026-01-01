@@ -4,7 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["ffmpeg", "imagemagick", "pngquant", "optipng"]
+packages = ["ffmpeg", "imagemagick", "pngquant", "optipng", "fontforge"]
 
 [deployment]
 deploymentTarget = "cloudrun"
