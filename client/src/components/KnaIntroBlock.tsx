@@ -36,12 +36,12 @@ export default function KnaIntroBlock() {
 
             {/* Right: 실제 후기 - 전체를 감싸는 큰 쌍따옴표 카드 */}
             <div className="order-2">
-              <div className="relative rounded-2xl border border-[#56D5DB]/30 dark:border-[#58C4C4]/30 bg-gradient-to-br from-[#56D5DB]/5 to-[#7fe1d3]/10 dark:from-[#58C4C4]/10 dark:to-[#45B8B8]/5 p-5 pt-10 pb-[72px]">
+              <div className="relative rounded-2xl border border-[#56D5DB]/30 dark:border-[#58C4C4]/30 bg-gradient-to-br from-[#56D5DB]/5 to-[#7fe1d3]/10 dark:from-[#58C4C4]/10 dark:to-[#45B8B8]/5 p-5 pt-16 pb-16">
                 <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-[#56D5DB] dark:bg-[#58C4C4] flex items-center justify-center shadow-sm">
                   <Lightbulb size={20} weight="light" color="white" />
                 </div>
                 <svg 
-                  className="absolute top-4 left-4 w-8 h-8 text-[#56D5DB] dark:text-[#58C4C4] opacity-80"
+                  className="absolute top-6 left-4 w-8 h-8 text-[#56D5DB] dark:text-[#58C4C4] opacity-80"
                   viewBox="0 0 24 24" 
                   fill="currentColor"
                   aria-hidden="true"
