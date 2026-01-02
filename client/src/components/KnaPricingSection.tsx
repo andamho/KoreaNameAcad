@@ -1,5 +1,5 @@
 import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_1766729101276.png";
-import { Diamond, Clock, Settings } from "lucide-react";
+import { Gem, Clock, Settings } from "lucide-react";
 
 const pricingData = {
   sections: [
@@ -127,13 +127,13 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
   const getIcon = () => {
     switch (sectionIndex) {
       case 0:
-        return <Diamond className="h-5 w-5" aria-hidden="true" />;
+        return <Gem className="h-5 w-5" aria-hidden="true" />;
       case 1:
         return <Clock className="h-5 w-5" aria-hidden="true" />;
       case 2:
         return <Settings className="h-5 w-5" aria-hidden="true" />;
       default:
-        return <Diamond className="h-5 w-5" aria-hidden="true" />;
+        return <Gem className="h-5 w-5" aria-hidden="true" />;
     }
   };
   
