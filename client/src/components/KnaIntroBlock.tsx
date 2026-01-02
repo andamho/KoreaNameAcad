@@ -1,7 +1,8 @@
 // 미리보기 전용: 인트로 한 블록만 렌더
 // 사용법: 페이지 어디서나 <KnaIntroBlock /> 단독 사용
 
-import { Star, Lightbulb } from "lucide-react";
+import { Star } from "lucide-react";
+import { Lightbulb } from "@phosphor-icons/react";
 
 export default function KnaIntroBlock() {
   return (
@@ -37,7 +38,7 @@ export default function KnaIntroBlock() {
             <div className="order-2">
               <div className="relative rounded-2xl border border-[#56D5DB]/30 dark:border-[#58C4C4]/30 bg-gradient-to-br from-[#56D5DB]/5 to-[#7fe1d3]/10 dark:from-[#58C4C4]/10 dark:to-[#45B8B8]/5 p-5 pt-10 pb-8">
                 <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-[#56D5DB] dark:bg-[#58C4C4] flex items-center justify-center shadow-sm">
-                  <Lightbulb className="w-5 h-5 text-white" />
+                  <Lightbulb size={20} weight="light" color="white" />
                 </div>
                 <svg 
                   className="absolute top-2 left-4 w-8 h-8 text-[#56D5DB] dark:text-[#58C4C4] opacity-80"
