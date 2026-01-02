@@ -289,7 +289,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         {/* 각 인원별 정보 입력 */}
         {peopleData.map((person, index) => (
           <Card key={index} className="p-4 space-y-4">
-            {type === "analysis" && <h4 className="text-[21px] md:text-[22px] font-semibold text-foreground">{index + 1}번째 분석 대상</h4>}
+            {type === "analysis" && <h4 className="text-lg md:text-lg font-semibold text-foreground">{index + 1}번째 분석 대상</h4>}
             
             <div className="space-y-2">
               <Label htmlFor={`name-${index}`} className="text-lg md:text-lg">
