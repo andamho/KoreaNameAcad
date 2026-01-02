@@ -39,7 +39,7 @@ export default function KnaDangerSection() {
         <section aria-labelledby="danger-title" className="mt-8">
           <div className="flex items-center gap-3">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-600 dark:bg-orange-500 flex-shrink-0 animate-pulse-glow">
-              <OctagonAlert className="h-6 w-6 fill-orange-600 dark:fill-orange-500 stroke-white dark:stroke-white" strokeWidth={2.5} />
+              <OctagonAlert className="h-5 w-5 fill-orange-600 dark:fill-orange-500 stroke-white dark:stroke-white" strokeWidth={2.5} />
             </div>
             <h3 id="danger-title" className="text-[21px] md:text-[22px] font-semibold">이러시면 안됩니다</h3>
           </div>
