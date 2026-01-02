@@ -35,6 +35,10 @@
   align-items: center;
   gap: 6px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 
 @media (min-width: 768px) {
