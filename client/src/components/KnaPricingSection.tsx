@@ -1,4 +1,5 @@
 import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_1766729101276.png";
+import { Diamond, Clock, Settings } from "lucide-react";
 
 const pricingData = {
   sections: [
@@ -122,21 +123,27 @@ interface PricingTableProps {
 function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProps) {
   const headingId = heading.replace(/\s+/g, '-').toLowerCase();
   
+  // 섹션별 아이콘: 0=상담비(다이아몬드), 1=시간(시계), 2=번호변경(톱니바퀴)
+  const getIcon = () => {
+    switch (sectionIndex) {
+      case 0:
+        return <Diamond className="h-5 w-5" aria-hidden="true" />;
+      case 1:
+        return <Clock className="h-5 w-5" aria-hidden="true" />;
+      case 2:
+        return <Settings className="h-5 w-5" aria-hidden="true" />;
+      default:
+        return <Diamond className="h-5 w-5" aria-hidden="true" />;
+    }
+  };
+  
   return (
     <div className="space-y-3">
       <h3 
         className="inline-flex items-center gap-2 rounded-xl bg-[#e0f5f2] dark:bg-[#0f766e]/20 px-4 py-2 text-[21px] md:text-2xl font-semibold text-[#0f766e] dark:text-[#58C4C4]"
         data-testid={`heading-${headingId}`}
       >
-        <svg 
-          className="h-5 w-5" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          stroke="currentColor"
-          aria-hidden="true"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-        </svg>
+        {getIcon()}
         {heading}
       </h3>
       
