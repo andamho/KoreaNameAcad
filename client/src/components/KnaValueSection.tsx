@@ -56,7 +56,7 @@ export default function KnaValueSection() {
           <ul className="mt-4 space-y-3">
             <li className="flex items-start gap-3">
               <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">1</span>
-              <span className="text-lg md:text-lg text-gray-700 dark:text-muted-foreground">상담·개명 후기로 1차 검증</span>
+              <span className="text-lg md:text-lg text-gray-700 dark:text-muted-foreground">상담·개명 후기 기반 1차 검증</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">2</span>
