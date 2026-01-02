@@ -6,8 +6,11 @@ export default function KnaStepsSection() {
       </div>
       <div className="kna-steps-inner relative max-w-5xl mx-auto px-6 lg:px-8 pt-[174px] sm:pt-[190px]">
         <header className="text-center">
-          <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
-            막막했던 인생의 답, 단 3단계면 충분합니다
+          <h2 className="text-[25px] font-extrabold leading-tight sm:text-3xl md:text-4xl">
+            <span className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-transparent">막막했던 인생의 답,</span>
+            <br className="sm:hidden" />
+            <span className="text-[#FFB800]"> 단 3단계</span>
+            <span className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-transparent">면 충분합니다</span>
           </h2>
           <p className="mt-2 text-lg text-muted-foreground">
             하나씩만 천천히 따라 와주세요
