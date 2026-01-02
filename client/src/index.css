@@ -965,6 +965,11 @@ html.ua-tiktok .review-section-title {
   animation: pulse-scale 4s ease-in-out infinite;
 }
 
+.animate-pulse-scale-white {
+  display: inline-flex;
+  animation: pulse-scale 4s ease-in-out infinite;
+}
+
 /* 접근성: 모션 최소화 선호 시 애니메이션 제거 */
 @media (prefers-reduced-motion: reduce) {
   .kna-highlight, .kna-shine, .kna-underline {

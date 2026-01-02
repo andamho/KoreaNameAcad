@@ -48,9 +48,9 @@ export default function KnaValueSection() {
           />
         </div>
 
-        <section className="mt-12 rounded-2xl border border-[#56D5DB] bg-[#56D5DB] p-6 shadow-sm">
+        <section className="mt-12 rounded-2xl border border-[#56D5DB] bg-[#56D5DB] p-6 shadow-lg shadow-[#56D5DB]/40">
           <h3 className="text-[21px] md:text-[22px] font-bold tracking-tight text-white break-keep flex items-center gap-2">
-            <Lock className="h-6 w-6 md:h-7 md:w-7 text-white flex-shrink-0" />
+            <span className="animate-pulse-scale-white"><Lock className="h-6 w-6 md:h-7 md:w-7 text-white flex-shrink-0" /></span>
             <span className="md:whitespace-nowrap">두 번의 확인, 평생의 안심</span>
           </h3>
           <ul className="mt-4 space-y-3">
