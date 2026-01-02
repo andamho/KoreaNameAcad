@@ -48,19 +48,19 @@ export default function KnaValueSection() {
           />
         </div>
 
-        <section className="mt-12 rounded-2xl border border-gray-200 dark:border-border bg-white/80 dark:bg-card/80 p-6 shadow-sm">
-          <h3 className="text-[21px] md:text-[22px] font-bold tracking-tight text-foreground break-keep flex items-center gap-2">
-            <Lock className="h-6 w-6 md:h-7 md:w-7 text-[#0f766e] dark:text-[#58C4C4] flex-shrink-0" />
-            <span className="bg-[#7fe1d3]/25 dark:bg-[#58C4C4]/25 px-3 py-1 rounded-md md:whitespace-nowrap">두 번의 확인, 평생의 안심</span>
+        <section className="mt-12 rounded-2xl border border-[#56D5DB] bg-[#56D5DB] p-6 shadow-sm">
+          <h3 className="text-[21px] md:text-[22px] font-bold tracking-tight text-white break-keep flex items-center gap-2">
+            <Lock className="h-6 w-6 md:h-7 md:w-7 text-white flex-shrink-0" />
+            <span className="md:whitespace-nowrap">두 번의 확인, 평생의 안심</span>
           </h3>
           <ul className="mt-4 space-y-3">
             <li className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">1</span>
-              <span className="text-lg md:text-lg text-gray-700 dark:text-muted-foreground">상담·개명 후기 기반 1차 검증</span>
+              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-white text-xs font-bold text-[#56D5DB]">1</span>
+              <span className="text-lg md:text-lg text-white">상담·개명 후기 기반 1차 검증</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">2</span>
-              <span className="text-lg md:text-lg text-gray-700 dark:text-muted-foreground">이름만으로 운명상담 통해 2차 검증</span>
+              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-white text-xs font-bold text-[#56D5DB]">2</span>
+              <span className="text-lg md:text-lg text-white">이름만으로 운명상담 통해 2차 검증</span>
             </li>
           </ul>
         </section>
