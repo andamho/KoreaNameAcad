@@ -112,9 +112,11 @@ function SparkIcon(props: React.SVGProps<SVGSVGElement>) {
 function FamilyIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={props.className} aria-hidden>
-      <circle cx="7" cy="10" r="3" />
-      <circle cx="17" cy="8" r="3" />
-      <path d="M2 22a5 5 0 0 1 10 0M12 22a5 5 0 0 1 10 0" />
+      <circle cx="6" cy="8" r="2.5" />
+      <circle cx="18" cy="8" r="2.5" />
+      <path d="M6 11c-2.5 0-4 1.5-4 3.5v1.5h8v-1.5c0-2-1.5-3.5-4-3.5z" />
+      <path d="M18 11c-2.5 0-4 1.5-4 3.5v1.5h8v-1.5c0-2-1.5-3.5-4-3.5z" />
+      <path d="M8 12.5c1.5 1 4.5 1 6 0" strokeLinecap="round" />
     </svg>
   );
 }
