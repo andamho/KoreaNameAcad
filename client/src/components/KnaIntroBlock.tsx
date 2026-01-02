@@ -37,7 +37,16 @@ export default function KnaIntroBlock() {
             <div className="order-2">
               <div className="relative rounded-2xl border border-[#56D5DB]/30 dark:border-[#58C4C4]/30 bg-gradient-to-br from-[#56D5DB]/5 to-[#7fe1d3]/10 dark:from-[#58C4C4]/10 dark:to-[#45B8B8]/5 p-5 pt-10 pb-8">
                 <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-[#56D5DB] dark:bg-[#58C4C4] flex items-center justify-center shadow-sm">
-                  <Lightbulb className="w-5 h-5 text-white" />
+                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+                    <path d="M9 18h6" />
+                    <path d="M10 22h4" />
+                    <line x1="12" y1="2" x2="12" y2="4" strokeDasharray="2 2" />
+                    <line x1="4.93" y1="4.93" x2="6.34" y2="6.34" strokeDasharray="2 2" />
+                    <line x1="2" y1="12" x2="4" y2="12" strokeDasharray="2 2" />
+                    <line x1="19.07" y1="4.93" x2="17.66" y2="6.34" strokeDasharray="2 2" />
+                    <line x1="22" y1="12" x2="20" y2="12" strokeDasharray="2 2" />
+                  </svg>
                 </div>
                 <svg 
                   className="absolute top-2 left-4 w-8 h-8 text-[#56D5DB] dark:text-[#58C4C4] opacity-80"
