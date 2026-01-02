@@ -1,7 +1,7 @@
 // 미리보기 전용: 인트로 한 블록만 렌더
 // 사용법: 페이지 어디서나 <KnaIntroBlock /> 단독 사용
 
-import { Star } from "lucide-react";
+import { Star, Lightbulb } from "lucide-react";
 
 export default function KnaIntroBlock() {
   return (
@@ -35,9 +35,12 @@ export default function KnaIntroBlock() {
 
             {/* Right: 실제 후기 - 전체를 감싸는 큰 쌍따옴표 카드 */}
             <div className="order-2">
-              <div className="relative rounded-2xl border border-[#56D5DB]/30 dark:border-[#58C4C4]/30 bg-gradient-to-br from-[#56D5DB]/5 to-[#7fe1d3]/10 dark:from-[#58C4C4]/10 dark:to-[#45B8B8]/5 p-5 pt-8 pb-8">
+              <div className="relative rounded-2xl border border-[#56D5DB]/30 dark:border-[#58C4C4]/30 bg-gradient-to-br from-[#56D5DB]/5 to-[#7fe1d3]/10 dark:from-[#58C4C4]/10 dark:to-[#45B8B8]/5 p-5 pt-10 pb-8">
+                <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-[#56D5DB]/20 dark:bg-[#58C4C4]/20 flex items-center justify-center">
+                  <Lightbulb className="w-5 h-5 text-[#0f766e] dark:text-[#58C4C4]" />
+                </div>
                 <span 
-                  className="absolute -top-1 left-4 text-[48px] font-serif leading-none text-[#56D5DB] dark:text-[#58C4C4] select-none opacity-80"
+                  className="absolute top-2 left-4 text-[48px] font-serif leading-none text-[#56D5DB] dark:text-[#58C4C4] select-none opacity-80"
                   aria-hidden="true"
                 >
                   "
