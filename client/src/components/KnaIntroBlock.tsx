@@ -36,11 +36,11 @@ export default function KnaIntroBlock() {
             {/* Right: 실제 후기 - 전체를 감싸는 큰 쌍따옴표 카드 */}
             <div className="order-2">
               <div className="relative rounded-2xl border border-[#56D5DB]/30 dark:border-[#58C4C4]/30 bg-gradient-to-br from-[#56D5DB]/5 to-[#7fe1d3]/10 dark:from-[#58C4C4]/10 dark:to-[#45B8B8]/5 p-5 pt-10 pb-8">
-                <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-[#56D5DB] dark:bg-[#58C4C4] flex items-center justify-center shadow-sm">
+                <div className="absolute -top-5 left-1/2 -translate-x-1/2">
                   <img 
                     src="/lightbulb-icon.png" 
                     alt="아이디어" 
-                    className="w-6 h-6"
+                    className="w-10 h-10 rounded-full shadow-sm object-cover"
                   />
                 </div>
                 <svg 
