@@ -99,6 +99,7 @@ export function Navbar() {
                 onClick={goToHome}
                 className="flex items-center gap-0.5 sm:gap-1 hover-elevate active-elevate-2 rounded-md px-0 sm:px-2 py-1"
                 data-testid="link-home"
+                style={{ WebkitTapHighlightColor: 'rgba(0,0,0,0)' }}
               >
                 <img 
                   ref={imgRef}
@@ -132,6 +133,7 @@ export function Navbar() {
                 }}
                 data-testid="button-menu"
                 className="flex items-center gap-2 md:gap-2 md:scale-100 -mr-[14px] sm:mr-0 sm:pr-3"
+                style={{ WebkitTapHighlightColor: 'rgba(0,0,0,0)' }}
               >
                 <div className={`hamburger-icon ${menuOpen ? 'open' : ''} ${hasBeenOpened ? 'animated' : ''}`}>
                   <span className="hamburger-line line-1"></span>
