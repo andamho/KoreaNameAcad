@@ -33,11 +33,27 @@ export default function KnaIntroBlock() {
               </p>
             </div>
 
-            {/* Right: 실제 후기 */}
-            <div className="space-y-3 order-2">
-              <Testimonial quote="내 삶을 조종한 건 이름이었다니!" />
-              <Testimonial quote="개명 전후, 정말 이름대로 살아왔네요." />
-              <Testimonial quote="개명 후 6년, 세상에서 가장 행복한 사람" />
+            {/* Right: 실제 후기 - 전체를 감싸는 큰 쌍따옴표 카드 */}
+            <div className="order-2">
+              <div className="relative rounded-2xl border border-[#56D5DB]/30 dark:border-[#58C4C4]/30 bg-gradient-to-br from-[#56D5DB]/5 to-[#7fe1d3]/10 dark:from-[#58C4C4]/10 dark:to-[#45B8B8]/5 p-5 pt-8 pb-8">
+                <span 
+                  className="absolute -top-1 left-4 text-[48px] font-serif leading-none text-[#56D5DB] dark:text-[#58C4C4] select-none opacity-80"
+                  aria-hidden="true"
+                >
+                  "
+                </span>
+                <div className="space-y-3">
+                  <Testimonial quote="내 삶을 조종한 건 이름이었다니!" />
+                  <Testimonial quote="개명 전후, 정말 이름대로 살아왔네요." />
+                  <Testimonial quote="개명 후 6년, 세상에서 가장 행복한 사람" />
+                </div>
+                <span 
+                  className="absolute -bottom-3 right-4 text-[48px] font-serif leading-none text-[#56D5DB] dark:text-[#58C4C4] select-none opacity-80"
+                  aria-hidden="true"
+                >
+                  "
+                </span>
+              </div>
               <p className="!mt-8 text-lg font-bold break-keep">
                 이름대로 삽니다.<br />
                 이름을 바꾸면, 삶이 바뀝니다.
