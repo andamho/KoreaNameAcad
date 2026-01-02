@@ -28,7 +28,7 @@
   src: url('/fonts/KoreaUnivB.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 /* 고려대학교 라이트체 폰트 */
@@ -37,7 +37,7 @@
   src: url('/fonts/KoreaUnivL.ttf') format('truetype');
   font-weight: 300;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 /* 햄버거 메뉴 애니메이션 - 숨 고르기형 */
