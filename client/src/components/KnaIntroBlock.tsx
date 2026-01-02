@@ -36,26 +36,30 @@ export default function KnaIntroBlock() {
             {/* Right: 실제 후기 - 전체를 감싸는 큰 쌍따옴표 카드 */}
             <div className="order-2">
               <div className="relative rounded-2xl border border-[#56D5DB]/30 dark:border-[#58C4C4]/30 bg-gradient-to-br from-[#56D5DB]/5 to-[#7fe1d3]/10 dark:from-[#58C4C4]/10 dark:to-[#45B8B8]/5 p-5 pt-10 pb-8">
-                <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-white dark:bg-card border-2 border-[#56D5DB] dark:border-[#58C4C4] flex items-center justify-center shadow-sm">
-                  <Lightbulb className="w-5 h-5 text-[#56D5DB] dark:text-[#58C4C4]" />
+                <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-[#56D5DB] dark:bg-[#58C4C4] flex items-center justify-center shadow-sm">
+                  <Lightbulb className="w-5 h-5 text-white" />
                 </div>
-                <span 
-                  className="absolute top-2 left-4 text-[48px] font-serif leading-none text-[#56D5DB] dark:text-[#58C4C4] select-none opacity-80"
+                <svg 
+                  className="absolute top-2 left-4 w-8 h-8 text-[#56D5DB] dark:text-[#58C4C4] opacity-80"
+                  viewBox="0 0 24 24" 
+                  fill="currentColor"
                   aria-hidden="true"
                 >
-                  "
-                </span>
+                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                </svg>
                 <div className="space-y-3">
                   <Testimonial quote="내 삶을 조종한 건 이름이었다니!" />
                   <Testimonial quote="개명 전후, 정말 이름대로 살아왔네요." />
                   <Testimonial quote="개명 후 6년, 세상에서 가장 행복한 사람" />
                 </div>
-                <span 
-                  className="absolute -bottom-3 right-4 text-[48px] font-serif leading-none text-[#56D5DB] dark:text-[#58C4C4] select-none opacity-80"
+                <svg 
+                  className="absolute -bottom-2 right-4 w-8 h-8 text-[#56D5DB] dark:text-[#58C4C4] opacity-80 rotate-180"
+                  viewBox="0 0 24 24" 
+                  fill="currentColor"
                   aria-hidden="true"
                 >
-                  "
-                </span>
+                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                </svg>
               </div>
               <p className="!mt-8 text-lg font-bold break-keep">
                 이름대로 삽니다.<br />
