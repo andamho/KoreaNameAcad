@@ -73,7 +73,7 @@ function ValueCard({ icon, title, desc }: { icon: React.ReactNode; title: string
   return (
     <article className="group relative rounded-2xl border border-gray-200 dark:border-border bg-white dark:bg-card p-6 shadow-sm ring-1 ring-transparent transition hover:-translate-y-0.5 hover:shadow-md hover:ring-[#7fe1d3]/60 dark:hover:ring-[#58C4C4]/60">
       <div className="flex items-start gap-4">
-        <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-[#7fe1d3]/25 dark:bg-[#58C4C4]/25">{icon}</div>
+        <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-[#7fe1d3]/25 dark:bg-[#58C4C4]/25 animate-pulse-glow-teal">{icon}</div>
         <div>
           <h3 className="text-[21px] md:text-[22px] font-semibold text-foreground break-keep">{title}</h3>
           <p className="mt-1 text-lg md:text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">{desc}</p>
