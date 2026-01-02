@@ -888,6 +888,15 @@ html.ua-tiktok .review-section-title {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
 /* 접근성: 모션 최소화 선호 시 애니메이션 제거 */
 @media (prefers-reduced-motion: reduce) {
   .kna-highlight, .kna-shine, .kna-underline {
