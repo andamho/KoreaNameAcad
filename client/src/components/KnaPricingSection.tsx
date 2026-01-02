@@ -61,7 +61,7 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
                 >
                   비용 및 시간
                 </h1>
-                <p className="text-lg md:text-2xl text-white/90" data-testid="text-pricing-policy">⚖️ 모든 비용은 이름연구협회 규정에 따릅니다</p>
+                <p className="text-lg md:text-2xl text-white/90" data-testid="text-pricing-policy">모든 비용은 이름연구협회 규정에 따릅니다</p>
               </div>
             </div>
           </div>
@@ -83,7 +83,7 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
               >
                 비용 및 시간
               </h2>
-              <p className="text-[18px] md:text-xl text-muted-foreground" data-testid="text-pricing-policy-section">⚖️ 모든 비용은 이름연구협회 규정에 따릅니다</p>
+              <p className="text-[18px] md:text-xl text-muted-foreground" data-testid="text-pricing-policy-section">모든 비용은 이름연구협회 규정에 따릅니다</p>
             </div>
           )}
           <div className="relative mx-auto w-full max-w-4xl">
