@@ -69,8 +69,20 @@ export default function KnaIntroBlock() {
 
 function Testimonial({ quote }: { quote: string }) {
   return (
-    <figure className="rounded-xl border border-gray-200 dark:border-border bg-white dark:bg-card p-4 shadow-sm">
-      <blockquote className="text-lg md:text-lg text-[#0f766e] dark:text-[#58C4C4]">"{quote}"</blockquote>
+    <figure className="relative rounded-xl border border-gray-200 dark:border-border bg-white dark:bg-card p-4 pt-6 pb-6 shadow-sm">
+      <span 
+        className="absolute -top-2 left-3 text-[28px] font-serif leading-none text-[#56D5DB] dark:text-[#58C4C4] select-none"
+        aria-hidden="true"
+      >
+        "
+      </span>
+      <blockquote className="text-lg md:text-lg text-[#0f766e] dark:text-[#58C4C4] px-1">{quote}</blockquote>
+      <span 
+        className="absolute -bottom-4 right-3 text-[28px] font-serif leading-none text-[#56D5DB] dark:text-[#58C4C4] select-none"
+        aria-hidden="true"
+      >
+        "
+      </span>
     </figure>
   );
 }
