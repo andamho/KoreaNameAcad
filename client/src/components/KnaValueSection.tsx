@@ -28,7 +28,7 @@ export default function KnaValueSection() {
           />
           <ValueCard
             icon={<Equal className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
-            title="이름–삶 일치 증명"
+            title="이름 · 삶 일치 증명"
             desc="이름대로 살고 있음을 구체적으로 보여드립니다."
           />
           <ValueCard
