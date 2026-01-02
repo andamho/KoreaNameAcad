@@ -1,5 +1,5 @@
 import React from "react";
-import { Lock, Equal } from "lucide-react";
+import { Lock, Equal, Link2 } from "lucide-react";
 
 export default function KnaValueSection() {
   return (
@@ -32,7 +32,7 @@ export default function KnaValueSection() {
             desc="이름대로 살고 있음을 구체적으로 보여드립니다."
           />
           <ValueCard
-            icon={<TimelineIcon className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
+            icon={<Link2 className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
             title="개명 전·후 삶 증명"
             desc="개명하셨다면 전·후 이름대로 살았다는 걸 증명해드립니다."
           />
