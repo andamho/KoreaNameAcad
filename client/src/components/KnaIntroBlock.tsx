@@ -54,7 +54,7 @@ export default function KnaIntroBlock() {
                   <Testimonial quote="개명 후 6년, 세상에서 가장 행복한 사람" />
                 </div>
                 <svg 
-                  className="absolute -bottom-2 right-4 w-8 h-8 text-[#56D5DB] dark:text-[#58C4C4] opacity-80"
+                  className="absolute bottom-2 right-4 w-8 h-8 text-[#56D5DB] dark:text-[#58C4C4] opacity-80"
                   viewBox="0 0 24 24" 
                   fill="currentColor"
                   aria-hidden="true"
