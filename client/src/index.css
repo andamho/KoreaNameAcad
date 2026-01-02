@@ -951,31 +951,18 @@ html.ua-tiktok .review-section-title {
   animation: pulse-glow-icon 4s ease-in-out infinite;
 }
 
-/* Teal 색상 pulse 애니메이션 (왜 한국이름학교인가 섹션) */
-@keyframes pulse-glow-teal {
+/* 아이콘 크기 pulse 애니메이션 (왜 한국이름학교인가 섹션) */
+@keyframes pulse-scale {
   0%, 100% { 
-    background-color: rgba(127, 225, 211, 0.25);
+    transform: scale(1);
   }
   50% { 
-    background-color: rgba(127, 225, 211, 0.5);
+    transform: scale(1.1);
   }
-}
-
-@keyframes pulse-glow-teal-icon {
-  0%, 100% { 
-    color: rgb(15, 118, 110);
-  }
-  50% { 
-    color: rgb(6, 95, 88);
-  }
-}
-
-.animate-pulse-glow-teal {
-  animation: pulse-glow-teal 4s ease-in-out infinite;
 }
 
 .animate-pulse-glow-teal svg {
-  animation: pulse-glow-teal-icon 4s ease-in-out infinite;
+  animation: pulse-scale 4s ease-in-out infinite;
 }
 
 /* 접근성: 모션 최소화 선호 시 애니메이션 제거 */
