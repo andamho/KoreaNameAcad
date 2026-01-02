@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 모바일 터치 하이라이트 제거 */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* 고려대학교 볼드체 폰트 */
 @font-face {
   font-family: 'KoreaUnivB';
