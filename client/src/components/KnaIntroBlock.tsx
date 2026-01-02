@@ -37,14 +37,7 @@ export default function KnaIntroBlock() {
             <div className="order-2">
               <div className="relative rounded-2xl border border-[#56D5DB]/30 dark:border-[#58C4C4]/30 bg-gradient-to-br from-[#56D5DB]/5 to-[#7fe1d3]/10 dark:from-[#58C4C4]/10 dark:to-[#45B8B8]/5 p-5 pt-10 pb-8">
                 <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-[#56D5DB] dark:bg-[#58C4C4] flex items-center justify-center shadow-sm">
-                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="9" r="5" />
-                    <path d="M10 14v2h4v-2" />
-                    <path d="M10 17h4" />
-                    <line x1="12" y1="6" x2="12" y2="8" strokeDasharray="0.8 0.8" />
-                    <line x1="9.5" y1="7" x2="9.5" y2="9" strokeDasharray="0.8 0.8" />
-                    <line x1="14.5" y1="7" x2="14.5" y2="9" strokeDasharray="0.8 0.8" />
-                  </svg>
+                  <Lightbulb className="w-5 h-5 text-white" />
                 </div>
                 <svg 
                   className="absolute top-2 left-4 w-8 h-8 text-[#56D5DB] dark:text-[#58C4C4] opacity-80"
