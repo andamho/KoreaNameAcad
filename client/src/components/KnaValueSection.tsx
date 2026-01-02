@@ -60,7 +60,7 @@ export default function KnaValueSection() {
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-xs font-bold text-[#0f766e] dark:text-[#58C4C4]">2</span>
-              <span className="text-lg md:text-lg text-gray-700 dark:text-muted-foreground">이름만으로 운명상담을 통해 작명이론의 정확도 2차 검증</span>
+              <span className="text-lg md:text-lg text-gray-700 dark:text-muted-foreground">이름만으로 운명상담 통해 2차 검증</span>
             </li>
           </ul>
         </section>
