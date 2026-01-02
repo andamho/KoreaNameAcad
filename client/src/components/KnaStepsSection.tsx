@@ -43,7 +43,7 @@ function Step({ number, title, desc }: { number: number; title: string; desc: st
   return (
     <li className="group rounded-2xl border border-gray-200 dark:border-border bg-white dark:bg-card p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="flex items-center gap-3">
-        <span className="inline-flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[#7fe1d3]/30 dark:bg-[#58C4C4]/30 text-[21px] font-bold text-[#0f766e] dark:text-[#58C4C4]">
+        <span className="inline-flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[#FFB800]/25 text-[21px] font-bold text-[#CC9300] dark:text-[#FFB800]">
           {number}
         </span>
         <h3 className="text-[21px] md:text-[22px] font-semibold break-keep">{title}</h3>
