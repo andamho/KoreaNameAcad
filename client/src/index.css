@@ -41,6 +41,17 @@
 }
 
 /* 햄버거 메뉴 애니메이션 - 숨 고르기형 */
+/* 네비바 버튼 터치 하이라이트 완전 제거 */
+.kna-navbar button,
+.kna-navbar button:active,
+.kna-navbar button:focus,
+.kna-navbar button:hover {
+  -webkit-tap-highlight-color: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
 .hamburger-icon {
   width: 37px;
   height: 37px;
