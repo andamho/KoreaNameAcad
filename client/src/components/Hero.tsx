@@ -75,7 +75,6 @@ export function Hero() {
               }}
               data-testid="button-consultation"
               className="min-w-[200px] text-lg"
-              style={{ backgroundColor: '#56D5DB' }}
             >
               지금 신청
             </Button>
