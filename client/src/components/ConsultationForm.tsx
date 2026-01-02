@@ -231,11 +231,12 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   return (
     <div className="kna-consultation-form ig-tt-dialog space-y-6 py-8">
       <div className="flex items-end justify-between gap-4">
-        <h3 className="ig-tt-title text-[21px] md:text-[22px] font-bold text-[#0f766e] dark:text-[#58C4C4] mb-2">{formTitle}</h3>
+        <h3 className="ig-tt-title text-[21px] md:text-[22px] font-bold text-[#56D5DB] mb-2">{formTitle}</h3>
         <img 
           src={formLogoImage} 
           alt="한국이름학교 로고" 
-          className="w-[52px] h-[52px] md:w-16 md:h-16 opacity-80 flex-shrink-0"
+          className="w-[52px] h-[52px] md:w-16 md:h-16 flex-shrink-0"
+          style={{ filter: "brightness(0) saturate(100%) invert(75%) sepia(37%) saturate(520%) hue-rotate(127deg) brightness(95%) contrast(91%)" }}
           loading="eager"
           fetchPriority="high"
         />
