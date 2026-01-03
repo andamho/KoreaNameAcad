@@ -50,16 +50,16 @@ export default function KnaValueSection() {
 
         <section className="mt-12 rounded-2xl border border-[#56D5DB] bg-[#56D5DB] p-6 shadow-lg shadow-[#56D5DB]/40">
           <h3 className="text-[21px] md:text-[22px] font-bold tracking-tight text-white break-keep flex items-center gap-2">
-            <span className="animate-pulse-scale-white"><Lock className="h-6 w-6 md:h-7 md:w-7 text-white flex-shrink-0" /></span>
+            <span className="animate-pulse-scale-white"><Lock className="h-6 w-6 md:h-7 md:w-7 text-white flex-shrink-0" fill="white" /></span>
             <span className="md:whitespace-nowrap">두 번의 확인, 평생의 안심</span>
           </h3>
           <ul className="mt-4 space-y-3">
             <li className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-white text-sm font-bold text-[#56D5DB]">1</span>
+              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-transparent border-2 border-white text-sm font-bold text-white">1</span>
               <span className="text-lg md:text-lg text-white">상담·개명 후기 기반 1차 검증</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-white text-sm font-bold text-[#56D5DB]">2</span>
+              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-transparent border-2 border-white text-sm font-bold text-white">2</span>
               <span className="text-lg md:text-lg text-white">이름만으로 운명상담 통해 2차 검증</span>
             </li>
           </ul>
