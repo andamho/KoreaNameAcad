@@ -1,5 +1,5 @@
 import React from "react";
-import { Lock, Equal, Link2 } from "lucide-react";
+import { Equal, Link2 } from "lucide-react";
 
 export default function KnaValueSection() {
   return (
@@ -50,7 +50,7 @@ export default function KnaValueSection() {
 
         <section className="mt-12 rounded-2xl border border-[#56D5DB] bg-[#56D5DB] p-6 shadow-lg shadow-[#56D5DB]/40">
           <h3 className="text-[21px] md:text-[22px] font-bold tracking-tight text-white break-keep flex items-center gap-2">
-            <span className="animate-pulse-scale-white"><Lock className="h-6 w-6 md:h-7 md:w-7 text-white flex-shrink-0" fill="white" /></span>
+            <span className="animate-pulse-scale-white"><LockIcon className="h-6 w-6 md:h-7 md:w-7 flex-shrink-0" /></span>
             <span className="md:whitespace-nowrap">두 번의 확인, 평생의 안심</span>
           </h3>
           <ul className="mt-4 space-y-3">
@@ -137,6 +137,17 @@ function TimelineIcon(props: React.SVGProps<SVGSVGElement>) {
       <circle cx="12" cy="12" r="2" />
       <circle cx="18" cy="12" r="2" />
       <path d="M6 12h6m0 0h6" />
+    </svg>
+  );
+}
+
+function LockIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" className={props.className} aria-hidden>
+      {/* 아래쪽 사각형 - 흰색으로 채움 */}
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" fill="white" stroke="white" strokeWidth="2" />
+      {/* 위쪽 반원 고리 - stroke만 */}
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
