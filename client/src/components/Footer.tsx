@@ -16,12 +16,25 @@ function NaverIcon({ className }: { className?: string }) {
   );
 }
 
-export function Footer() {
+interface FooterProps {
+  onApplyClick?: () => void;
+}
+
+export function Footer({ onApplyClick }: FooterProps = {}) {
   const [, setLocation] = useLocation();
   const [legalOpen, setLegalOpen] = useState(false);
 
   const handleKakaoClick = () => {
     window.open('https://pf.kakao.com/_Sxnvbb/chat', '_blank');
+  };
+  
+  const handleApplyClick = () => {
+    if (onApplyClick) {
+      onApplyClick();
+    } else {
+      setLocation('/services');
+      window.scrollTo(0, 0);
+    }
   };
 
   const socialLinks = [
@@ -107,10 +120,7 @@ export function Footer() {
         {/* CTA 버튼 영역 */}
         <div className="flex items-center justify-center gap-3 sm:gap-4 my-12">
           <button
-            onClick={() => {
-              setLocation('/services');
-              window.scrollTo(0, 0);
-            }}
+            onClick={handleApplyClick}
             className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-md bg-[#56D5DB] text-black font-medium text-sm border-2 border-[#56D5DB] hover:bg-[#3bc4ca] transition-colors whitespace-nowrap"
             style={{ minWidth: '140px' }}
             data-testid="button-footer-apply"

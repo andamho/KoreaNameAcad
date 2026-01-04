@@ -523,7 +523,10 @@ export default function TikTokHome() {
         <KnaPricingSection />
       </div>
 
-      <Footer />
+      <Footer onApplyClick={() => {
+        setDialogType("analysis");
+        setDialogOpen(true);
+      }} />
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) closeDialog(); }}>
