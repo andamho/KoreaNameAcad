@@ -1,13 +1,29 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Bell } from "lucide-react";
+import { useEffect } from "react";
 
 export default function Notice() {
+  useEffect(() => {
+    const userAgent = navigator.userAgent || '';
+    const isInstagram = userAgent.includes('Instagram');
+    const isTikTok = userAgent.includes('TikTok') || userAgent.includes('musical_ly');
+    
+    if (isInstagram || isTikTok) {
+      const className = isInstagram ? "ua-instagram" : "ua-tiktok";
+      document.documentElement.classList.add(className);
+      
+      return () => {
+        document.documentElement.classList.remove(className);
+      };
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <main className="pt-[100px] pb-16">
+      <main className="pt-[100px] pb-16 legal-page-content">
         <div className="max-w-4xl mx-auto px-6">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-8">
             공지사항
