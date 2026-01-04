@@ -221,18 +221,18 @@ export default function Services() {
           <div className="grid md:grid-cols-2 gap-10">
             {/* 이름상담 진행과정 */}
             <div className="bg-white dark:bg-slate-800/50 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8" data-testid="card-process-consultation">
-              <h3 className="text-xl md:text-2xl font-bold mb-6">
+              <h3 className="text-[21px] md:text-2xl font-semibold mb-6">
                 이름상담
               </h3>
 
               <ol className="space-y-6">
                 {nameConsultationSteps.map((s) => (
                   <li key={s.n} className="flex items-start gap-4" data-testid={`process-consultation-step-${s.n}`}>
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white bg-[#0f766e] dark:bg-[#58C4C4] font-semibold">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white bg-[#0f766e] dark:bg-[#58C4C4] text-sm font-semibold">
                       {s.n}
                     </div>
                     <div className="flex-1">
-                      <div className="text-lg md:text-xl font-semibold">
+                      <div className="text-lg md:text-lg font-semibold">
                         {s.title}
                       </div>
                       {s.desc && (
@@ -248,18 +248,18 @@ export default function Services() {
 
             {/* 개명 진행 과정 */}
             <div className="bg-white dark:bg-slate-800/50 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8" data-testid="card-process-rename">
-              <h3 className="text-xl md:text-2xl font-bold mb-6">
+              <h3 className="text-[21px] md:text-2xl font-semibold mb-6">
                 개명
               </h3>
 
               <ol className="space-y-6">
                 {renameSteps.map((s) => (
                   <li key={s.n} className="flex items-start gap-4" data-testid={`process-rename-step-${s.n}`}>
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white bg-[#0f766e] dark:bg-[#58C4C4] font-semibold">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white bg-[#0f766e] dark:bg-[#58C4C4] text-sm font-semibold">
                       {s.n}
                     </div>
                     <div className="flex-1">
-                      <div className={`text-lg md:text-xl font-semibold ${[3, 4, 5].includes(s.n) ? 'text-[#0d9488]' : ''}`}>
+                      <div className={`text-lg md:text-lg font-semibold ${[3, 4, 5].includes(s.n) ? 'text-[#0d9488]' : ''}`}>
                         {s.title}
                       </div>
                       {s.desc && (
