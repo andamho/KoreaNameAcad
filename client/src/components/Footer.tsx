@@ -16,25 +16,26 @@ function NaverIcon({ className }: { className?: string }) {
   );
 }
 
-interface FooterProps {
-  onApplyClick?: () => void;
-}
-
-export function Footer({ onApplyClick }: FooterProps = {}) {
-  const [, setLocation] = useLocation();
+export function Footer() {
+  const [location, setLocation] = useLocation();
   const [legalOpen, setLegalOpen] = useState(false);
+  
+  // 현재 URL에서 basePath 자동 감지 (/ig, /tt 또는 빈 문자열)
+  const basePath = location.startsWith('/ig') ? '/ig' : location.startsWith('/tt') ? '/tt' : '';
 
   const handleKakaoClick = () => {
     window.open('https://pf.kakao.com/_Sxnvbb/chat', '_blank');
   };
   
   const handleApplyClick = () => {
-    if (onApplyClick) {
-      onApplyClick();
-    } else {
-      setLocation('/services');
-      window.scrollTo(0, 0);
-    }
+    setLocation(`${basePath}/services`);
+    window.scrollTo(0, 0);
+  };
+  
+  // 내부 링크 이동 (basePath 적용)
+  const navigateTo = (path: string) => {
+    setLocation(`${basePath}${path}`);
+    window.scrollTo(0, 0);
   };
 
   const socialLinks = [
