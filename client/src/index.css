@@ -1106,6 +1106,26 @@ html.ua-tiktok .kna-pricing-section-hero .kna-pricing-inner {
   padding-top: 16px !important;
 }
 
+/* 푸터/영상 텍스트 크기 - JS DOM 조작 대신 CSS로 처리 */
+.ig-shell .kna-footer-subtitle,
+html.ua-instagram .kna-footer-subtitle,
+html.ua-tiktok .kna-footer-subtitle {
+  font-size: 9.6px !important;
+  line-height: 1.5 !important;
+}
+
+.ig-shell .kna-footer .border-t p,
+html.ua-instagram .kna-footer .border-t p,
+html.ua-tiktok .kna-footer .border-t p {
+  font-size: 11px !important;
+}
+
+.ig-shell .kna-video-section .text-\[11px\],
+html.ua-instagram .kna-video-section .text-\[11px\],
+html.ua-tiktok .kna-video-section .text-\[11px\] {
+  font-size: 13px !important;
+}
+
 /* 푸터 조정 - zoom 사용으로 음수 마진 불필요 */
 .ig-shell .kna-footer,
 html.ua-instagram .kna-footer,
