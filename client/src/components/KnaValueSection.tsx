@@ -54,12 +54,12 @@ export default function KnaValueSection() {
             <span className="md:whitespace-nowrap">두 번의 확인, 평생의 안심</span>
           </h3>
           <ul className="mt-4 space-y-3">
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-transparent border-2 border-white text-sm font-bold text-white">1</span>
+            <li className="flex items-center gap-3">
+              <span className="inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-transparent border-2 border-white text-sm font-bold text-white">1</span>
               <span className="text-lg md:text-lg text-white">상담·개명 후기 기반 1차 검증</span>
             </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-transparent border-2 border-white text-sm font-bold text-white">2</span>
+            <li className="flex items-center gap-3">
+              <span className="inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-transparent border-2 border-white text-sm font-bold text-white">2</span>
               <span className="text-lg md:text-lg text-white">이름만으로 운명상담 통해 2차 검증</span>
             </li>
           </ul>
