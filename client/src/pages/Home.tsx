@@ -533,7 +533,7 @@ export default function Home() {
               
               <div className="space-y-6">
                 <div className="flex items-start gap-4" data-testid="process-step-1">
-                  <div className="flex h-[24px] w-[24px] md:h-[26px] md:w-[26px] mt-[1px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                  <div className="flex h-[24px] w-[24px] md:h-[26px] md:w-[26px] mt-[3px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
                     <span className="text-sm md:text-base font-bold text-white dark:text-neutral-950">1</span>
                   </div>
                   <div className="flex-1">
@@ -543,7 +543,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex items-start gap-4" data-testid="process-step-2">
-                  <div className="flex h-[24px] w-[24px] md:h-[26px] md:w-[26px] mt-[1px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                  <div className="flex h-[24px] w-[24px] md:h-[26px] md:w-[26px] mt-[3px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
                     <span className="text-sm md:text-base font-bold text-white dark:text-neutral-950">2</span>
                   </div>
                   <div className="flex-1">
@@ -553,7 +553,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex items-start gap-4" data-testid="process-step-3">
-                  <div className="flex h-[24px] w-[24px] md:h-[26px] md:w-[26px] mt-[1px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                  <div className="flex h-[24px] w-[24px] md:h-[26px] md:w-[26px] mt-[3px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
                     <span className="text-sm md:text-base font-bold text-white dark:text-neutral-950">3</span>
                   </div>
                   <div className="flex-1">
