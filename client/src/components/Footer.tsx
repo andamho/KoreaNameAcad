@@ -69,13 +69,13 @@ export function Footer() {
         
         {/* 상단 메시지 영역 - 히어로 섹션과 동일 스타일 */}
         <div className="text-center mb-8">
-          <h2 className="font-bold tracking-tight text-base sm:text-lg md:text-xl leading-snug" style={{ lineHeight: '1.4' }}>
-            <span className="text-white block">고달픈 인생</span>
-            <span className="text-white block">이름 하나로 이유를 찾고</span>
-            <span className="kna-highlight kna-footer-highlight block">
+          <h2 className="font-bold tracking-tight text-base sm:text-lg md:text-xl flex flex-col items-center" style={{ lineHeight: '1.4' }}>
+            <span className="text-white">고달픈 인생</span>
+            <span className="text-white">이름 하나로 이유를 찾고</span>
+            <span className="kna-highlight kna-footer-highlight">
               <span className="kna-shine">운이 술술 풀리는</span>
             </span>
-            <span className="kna-highlight kna-footer-highlight block">
+            <span className="kna-highlight kna-footer-highlight">
               <span className="kna-shine">새 이름으로, 인생역전하세요.</span>
               <span className="kna-underline" aria-hidden="true" />
             </span>
