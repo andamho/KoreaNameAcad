@@ -581,7 +581,6 @@ export default function InstagramHome() {
             </div>
           </div>
         </section>
-      </div>
 
       {/* KnaPricingSection with overlay shrug character */}
       <div className="relative ig-pricing-char-container">
@@ -599,6 +598,7 @@ export default function InstagramHome() {
       </div>
 
       <Footer />
+      </div>
 
       <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) closeDialog(); }}>
         <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
