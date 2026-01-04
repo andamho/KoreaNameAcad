@@ -1190,3 +1190,16 @@ html.ua-tiktok .kna-footer button {
   padding: 5px 12px !important;
   font-size: 13px !important;
 }
+
+/* 인앱 푸터 하단 정보 글자 크기 축소 */
+.ig-shell .kna-footer .footer-org-name,
+html.ua-instagram .kna-footer .footer-org-name,
+html.ua-tiktok .kna-footer .footer-org-name {
+  font-size: 11px !important;
+}
+
+.ig-shell .kna-footer .text-xs,
+html.ua-instagram .kna-footer .text-xs,
+html.ua-tiktok .kna-footer .text-xs {
+  font-size: 10px !important;
+}
