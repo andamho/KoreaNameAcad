@@ -146,12 +146,13 @@ export function Footer() {
           </div>
 
           {/* CONTACT */}
-          <div className="text-center">
+          <div className="text-center flex flex-col items-center">
             <h3 className="text-[#56D5DB] font-semibold text-sm tracking-wider mb-4">CONTACT</h3>
             <p className="text-white/80 text-sm mb-4">수~일 10:00 ~ 18:00</p>
             <button
               onClick={handleKakaoClick}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white text-black font-medium text-sm border-2 border-[#56D5DB] hover:bg-[#56D5DB] hover:text-white transition-colors"
+              className="inline-flex items-center justify-center gap-2 py-2 rounded-md bg-white text-black font-medium text-sm border-2 border-[#56D5DB] hover:bg-[#56D5DB] hover:text-white transition-colors"
+              style={{ width: '142px' }}
               data-testid="button-kakao-contact"
             >
               <MessageCircle className="w-4 h-4" />
