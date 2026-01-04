@@ -6,7 +6,7 @@ export default function Privacy() {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <main className="pt-[100px] pb-16">
+      <main className="pt-[100px] pb-16 legal-page-content">
         <div className="max-w-4xl mx-auto px-6">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
             개인정보 처리방침

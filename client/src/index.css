@@ -1167,3 +1167,9 @@ html.ua-instagram .kna-footer .text-xs,
 html.ua-tiktok .kna-footer .text-xs {
   font-size: 10px !important;
 }
+
+/* 인앱 이용약관/개인정보 페이지 스케일 적용 */
+html.ua-instagram .legal-page-content,
+html.ua-tiktok .legal-page-content {
+  zoom: 0.82 !important;
+}
