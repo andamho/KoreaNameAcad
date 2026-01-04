@@ -161,7 +161,7 @@ export function Footer() {
         </div>
 
         {/* 하단 티파니 블루 구분선 - 3단 레이아웃 너비에 맞춤, 양쪽 그라데이션 */}
-        <div className="w-full h-px mb-8" style={{ background: 'linear-gradient(90deg, transparent 0%, #56D5DB 10%, #56D5DB 90%, transparent 100%)' }} />
+        <div className="max-w-3xl mx-auto h-px mb-8" style={{ background: 'linear-gradient(90deg, transparent 0%, #56D5DB 10%, #56D5DB 90%, transparent 100%)' }} />
 
         {/* 하단 정보 영역 */}
         <div className="text-center">
