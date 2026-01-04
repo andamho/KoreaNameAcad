@@ -99,11 +99,12 @@ export function Footer() {
         <div className="max-w-xl mx-auto h-px mb-10" style={{ background: 'linear-gradient(90deg, transparent 0%, #56D5DB 15%, #56D5DB 85%, transparent 100%)' }} />
 
         {/* 3단 레이아웃 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 mb-10">
           
           {/* SERVICE */}
-          <div className="text-center">
-            <h3 className="text-[#56D5DB] font-semibold text-sm tracking-wider mb-4">SERVICE</h3>
+          <div className="text-center md:border-r md:border-[#56D5DB]/50 md:pr-8">
+            <h3 className="text-[#56D5DB] font-semibold text-sm tracking-wider mb-2">SERVICE</h3>
+            <div className="w-24 h-px mx-auto mb-4" style={{ background: 'linear-gradient(90deg, transparent 0%, #56D5DB 20%, #56D5DB 80%, transparent 100%)' }} />
             <ul className="space-y-2">
               {serviceLinks.map((link, idx) => (
                 <li key={idx}>
@@ -124,8 +125,9 @@ export function Footer() {
           </div>
 
           {/* SUPPORT */}
-          <div className="text-center">
-            <h3 className="text-[#56D5DB] font-semibold text-sm tracking-wider mb-4">SUPPORT</h3>
+          <div className="text-center md:border-r md:border-[#56D5DB]/50 md:px-8">
+            <h3 className="text-[#56D5DB] font-semibold text-sm tracking-wider mb-2">SUPPORT</h3>
+            <div className="w-24 h-px mx-auto mb-4" style={{ background: 'linear-gradient(90deg, transparent 0%, #56D5DB 20%, #56D5DB 80%, transparent 100%)' }} />
             <ul className="space-y-2">
               {supportLinks.map((link, idx) => (
                 <li key={idx}>
@@ -146,8 +148,9 @@ export function Footer() {
           </div>
 
           {/* CONTACT */}
-          <div className="text-center flex flex-col items-center">
-            <h3 className="text-[#56D5DB] font-semibold text-sm tracking-wider mb-4">CONTACT</h3>
+          <div className="text-center flex flex-col items-center md:pl-8">
+            <h3 className="text-[#56D5DB] font-semibold text-sm tracking-wider mb-2">CONTACT</h3>
+            <div className="w-24 h-px mx-auto mb-4" style={{ background: 'linear-gradient(90deg, transparent 0%, #56D5DB 20%, #56D5DB 80%, transparent 100%)' }} />
             <p className="text-white/80 text-sm mb-4">수~일 10:00 ~ 18:00</p>
             <button
               onClick={handleKakaoClick}
