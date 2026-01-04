@@ -1150,9 +1150,11 @@ html.ua-tiktok .kna-pricing-section-hero .kna-pricing-inner {
 html.ua-instagram .kna-footer,
 html.ua-tiktok .kna-footer {
   padding-top: 30px !important;
+  padding-bottom: 0 !important;
   max-height: none !important;
   overflow: visible !important;
   position: relative !important;
+  margin-bottom: -18% !important;
 }
 
 /* 인앱 푸터 상단 메시지 줄바꿈 */
@@ -1169,7 +1171,7 @@ html.ua-tiktok .kna-footer > div {
   transform-origin: top center !important;
   width: 122% !important;
   margin-left: -11% !important;
-  padding-bottom: 20px !important;
+  padding-bottom: 30px !important;
 }
 
 .ig-shell .kna-footer .mt-8,
