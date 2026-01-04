@@ -1011,12 +1011,14 @@ html.ua-tiktok .review-section-title {
   /* 상단 패딩 없음 - 인앱 홈화면에서는 navbar spacer 사용 */
 }
 
-/* Hero 섹션 축소 - zoom 사용 (레이아웃 크기도 변경) */
+/* Hero 섹션 축소 - transform 유지 (스크롤 복원과 무관) */
 .ig-shell .hero-wrap {
   max-width: 640px;
   margin: 0 auto;
   padding: 0 16px;
-  zoom: 0.82 !important;
+  transform: scale(0.82) !important;
+  transform-origin: top center !important;
+  margin-bottom: -28px !important;
 }
 
 .ig-shell .hero-title {
