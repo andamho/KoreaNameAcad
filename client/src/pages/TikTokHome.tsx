@@ -12,6 +12,7 @@ import InAppBrowserHint from "@/components/InAppBrowserHint";
 import { Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
+import { useInAppScrollRestore } from "@/hooks/useInAppScrollRestore";
 import { Card } from "@/components/ui/card";
 import {
   Dialog,
@@ -51,6 +52,7 @@ const INLINE_TT_STYLES = `
 `;
 
 export default function TikTokHome() {
+  useInAppScrollRestore("tt-home");
   const [, setLocation] = useLocation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
