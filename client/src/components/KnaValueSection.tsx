@@ -55,11 +55,11 @@ export default function KnaValueSection() {
           </h3>
           <ul className="mt-4 space-y-3">
             <li className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-transparent border-2 border-white text-sm font-bold text-white">1</span>
+              <span className="mt-[2px] inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-transparent border-2 border-white text-sm font-bold text-white">1</span>
               <span className="text-lg md:text-lg text-white">상담·개명 후기 기반 1차 검증</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-transparent border-2 border-white text-sm font-bold text-white">2</span>
+              <span className="mt-[2px] inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-transparent border-2 border-white text-sm font-bold text-white">2</span>
               <span className="text-lg md:text-lg text-white">이름만으로 운명상담 통해 2차 검증</span>
             </li>
           </ul>
