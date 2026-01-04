@@ -198,12 +198,76 @@ export default function InstagramHome() {
     }
     
     // 디버깅: 실행 확인
-    console.log('[IG] InstagramHome useEffect 실행됨 (CSS 기반, JS DOM 조작 제거)');
+    console.log('[IG] InstagramHome useEffect 실행됨');
     
-    // CSS가 모든 스타일을 처리하므로 JS DOM 조작 불필요
-    // - .ig-shell .hero-wrap { transform: scale(0.82) } → CSS에서 처리
-    // - .ig-shell .kna-footer-subtitle { font-size: 9.6px } → CSS에서 처리
-    // - .ig-shell .kna-video-section .text-[11px] { font-size: 13px } → CSS에서 처리
+    // Transform scale 방식으로 텍스트 축소 (CSS + JS 이중 적용)
+    const applyScale = () => {
+      const heroWrap = document.querySelector('.hero-wrap') as HTMLElement;
+      console.log('[IG] applyScale 실행, heroWrap:', heroWrap);
+      
+      if (heroWrap) {
+        heroWrap.style.setProperty('transform', 'scale(0.82)', 'important');
+        heroWrap.style.setProperty('transform-origin', 'top center', 'important');
+        heroWrap.style.setProperty('margin-bottom', '-28px', 'important');
+        console.log('[IG] transform 적용 완료');
+      } else {
+        console.log('[IG] heroWrap을 찾지 못함');
+      }
+    };
+    
+    // 푸터 텍스트 크기 강제 설정
+    const applyFooterTextSize = () => {
+      const footerSubtitle = document.querySelector('.kna-footer-subtitle') as HTMLElement;
+      const copyrightText = document.querySelector('.kna-footer .border-t p') as HTMLElement;
+      
+      console.log('[IG] applyFooterTextSize 실행, footerSubtitle:', footerSubtitle, 'copyrightText:', copyrightText);
+      
+      if (footerSubtitle) {
+        footerSubtitle.style.setProperty('font-size', '9.6px', 'important');
+        footerSubtitle.style.setProperty('line-height', '1.5', 'important');
+        console.log('[IG] 푸터 subtitle 크기 적용: 9.6px');
+      }
+      
+      if (copyrightText) {
+        copyrightText.style.setProperty('font-size', '11px', 'important');
+        console.log('[IG] 카피라이트 크기 적용: 11px');
+      }
+    };
+    
+    // 영상 아래 텍스트 크기 강제 설정 (푸터 subtitle과 동일하게)
+    const applyVideoTextSize = () => {
+      const videoSectionText = document.querySelector('.kna-video-section .text-\\[11px\\]') as HTMLElement;
+      
+      console.log('[IG] applyVideoTextSize 실행, videoSectionText:', videoSectionText);
+      
+      if (videoSectionText) {
+        videoSectionText.style.setProperty('font-size', '13px', 'important');
+        console.log('[IG] 영상 아래 텍스트 크기 적용: 13px (푸터와 동일)');
+      }
+    };
+    
+    // 여러 번 강제 적용 (늦은 렌더링 대비)
+    setTimeout(applyScale, 0);
+    setTimeout(applyFooterTextSize, 0);
+    setTimeout(applyVideoTextSize, 0);
+    const timer1 = setTimeout(applyScale, 100);
+    const timer1b = setTimeout(applyFooterTextSize, 100);
+    const timer1c = setTimeout(applyVideoTextSize, 100);
+    const timer2 = setTimeout(applyScale, 300);
+    const timer2b = setTimeout(applyFooterTextSize, 300);
+    const timer2c = setTimeout(applyVideoTextSize, 300);
+    const timer3 = setTimeout(applyScale, 500);
+    const timer3b = setTimeout(applyFooterTextSize, 500);
+    const timer3c = setTimeout(applyVideoTextSize, 500);
+    const timer4 = setTimeout(applyScale, 1000);
+    const timer4b = setTimeout(applyFooterTextSize, 1000);
+    const timer4c = setTimeout(applyVideoTextSize, 1000);
+    const timer5 = setTimeout(applyScale, 2000);
+    const timer5b = setTimeout(applyFooterTextSize, 2000);
+    const timer5c = setTimeout(applyVideoTextSize, 2000);
+    
+    // 리사이즈 시에도 재적용
+    window.addEventListener('resize', applyScale);
     
     return () => {
       document.documentElement.classList.remove('ua-instagram');
@@ -211,6 +275,22 @@ export default function InstagramHome() {
       if (styleElement) {
         styleElement.remove();
       }
+      clearTimeout(timer1);
+      clearTimeout(timer1b);
+      clearTimeout(timer1c);
+      clearTimeout(timer2);
+      clearTimeout(timer2b);
+      clearTimeout(timer2c);
+      clearTimeout(timer3);
+      clearTimeout(timer3b);
+      clearTimeout(timer3c);
+      clearTimeout(timer4);
+      clearTimeout(timer4b);
+      clearTimeout(timer4c);
+      clearTimeout(timer5);
+      clearTimeout(timer5b);
+      clearTimeout(timer5c);
+      window.removeEventListener('resize', applyScale);
     };
   }, []);
 

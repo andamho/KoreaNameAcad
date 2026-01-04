@@ -17,25 +17,11 @@ function NaverIcon({ className }: { className?: string }) {
 }
 
 export function Footer() {
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
   const [legalOpen, setLegalOpen] = useState(false);
-  
-  // 현재 URL에서 basePath 자동 감지 (/ig, /tt 또는 빈 문자열)
-  const basePath = location.startsWith('/ig') ? '/ig' : location.startsWith('/tt') ? '/tt' : '';
 
   const handleKakaoClick = () => {
     window.open('https://pf.kakao.com/_Sxnvbb/chat', '_blank');
-  };
-  
-  const handleApplyClick = () => {
-    setLocation(`${basePath}/services`);
-    window.scrollTo(0, 0);
-  };
-  
-  // 내부 링크 이동 (basePath 적용)
-  const navigateTo = (path: string) => {
-    setLocation(`${basePath}${path}`);
-    window.scrollTo(0, 0);
   };
 
   const socialLinks = [
@@ -121,7 +107,10 @@ export function Footer() {
         {/* CTA 버튼 영역 */}
         <div className="flex items-center justify-center gap-3 sm:gap-4 my-12">
           <button
-            onClick={handleApplyClick}
+            onClick={() => {
+              setLocation('/services');
+              window.scrollTo(0, 0);
+            }}
             className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-md bg-[#56D5DB] text-black font-medium text-sm border-2 border-[#56D5DB] hover:bg-[#3bc4ca] transition-colors whitespace-nowrap"
             style={{ minWidth: '140px' }}
             data-testid="button-footer-apply"
@@ -154,7 +143,10 @@ export function Footer() {
               {serviceLinks.map((link, idx) => (
                 <li key={idx}>
                   <button
-                    onClick={() => navigateTo(link.path)}
+                    onClick={() => {
+                      setLocation(link.path);
+                      window.scrollTo(0, 0);
+                    }}
                     className="text-white/80 hover:text-white text-sm transition-colors inline-flex items-center gap-2"
                     data-testid={`footer-service-${idx}`}
                   >
@@ -174,7 +166,10 @@ export function Footer() {
               {supportLinks.map((link, idx) => (
                 <li key={idx}>
                   <button
-                    onClick={() => navigateTo(link.path)}
+                    onClick={() => {
+                      setLocation(link.path);
+                      window.scrollTo(0, 0);
+                    }}
                     className="text-white/80 hover:text-white text-sm transition-colors inline-flex items-center gap-2"
                     data-testid={`footer-support-${idx}`}
                   >
