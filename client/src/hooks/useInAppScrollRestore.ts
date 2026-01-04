@@ -23,15 +23,23 @@ export function useInAppScrollRestore(pageKey: string) {
   useEffect(() => {
     mountedRef.current = true;
     restoredRef.current = false;
-
-    // 1순위: 브라우저 자동 복원 비활성화
-    const previousScrollRestoration = history.scrollRestoration;
-    history.scrollRestoration = 'manual';
+    
+    // 저장된 스크롤 위치 확인
+    const savedScrollY = sessionStorage.getItem(storageKey);
+    const targetScrollY = savedScrollY ? parseInt(savedScrollY, 10) : 0;
+    
+    // 복원할 스크롤이 있을 때만 manual 모드 사용 (뒤로가기 history 보존)
+    let previousScrollRestoration: ScrollRestoration | null = null;
+    if (targetScrollY > 0) {
+      previousScrollRestoration = history.scrollRestoration;
+      history.scrollRestoration = 'manual';
+    }
 
     if (DEBUG_SCROLL) {
       console.log('[SCROLL] ========== 페이지 마운트 ==========');
       console.log('[SCROLL] pageKey:', pageKey);
-      console.log('[SCROLL] history.scrollRestoration 변경: auto → manual');
+      console.log('[SCROLL] targetScrollY:', targetScrollY);
+      console.log('[SCROLL] history.scrollRestoration:', targetScrollY > 0 ? 'manual (임시)' : '변경 안함');
       console.log('[SCROLL] sessionStorage keys:', 
         Object.keys(sessionStorage).filter(k => k.startsWith(SCROLL_STORAGE_PREFIX))
       );
@@ -59,13 +67,6 @@ export function useInAppScrollRestore(pageKey: string) {
     let lastFooterHeight = 0;
     let footerStableCount = 0;
 
-    const savedScrollY = sessionStorage.getItem(storageKey);
-    const targetScrollY = savedScrollY ? parseInt(savedScrollY, 10) : 0;
-    
-    if (DEBUG_SCROLL) {
-      console.log('[SCROLL] 저장된 scrollY:', targetScrollY);
-    }
-
     // 레이아웃 안정화 후 1회만 복원하는 함수
     const performRestore = () => {
       if (!mountedRef.current || restoredRef.current || targetScrollY <= 0) return;
@@ -92,6 +93,13 @@ export function useInAppScrollRestore(pageKey: string) {
       setTimeout(() => {
         isRestoringRef.current = false;
         sessionStorage.removeItem(storageKey);
+        // 복원 완료 후 즉시 scrollRestoration 원복 (뒤로가기 history 보존)
+        if (previousScrollRestoration !== null) {
+          history.scrollRestoration = previousScrollRestoration;
+          if (DEBUG_SCROLL) {
+            console.log('[SCROLL] scrollRestoration 원복:', previousScrollRestoration);
+          }
+        }
         if (DEBUG_SCROLL) {
           console.log('[SCROLL] 복원 완료, sessionStorage 삭제');
         }
@@ -199,8 +207,10 @@ export function useInAppScrollRestore(pageKey: string) {
 
     return () => {
       mountedRef.current = false;
-      // 원래 scrollRestoration 복원
-      history.scrollRestoration = previousScrollRestoration;
+      // 원래 scrollRestoration 복원 (변경했던 경우에만)
+      if (previousScrollRestoration !== null) {
+        history.scrollRestoration = previousScrollRestoration;
+      }
       window.removeEventListener("scroll", throttledScroll);
       window.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("click", handleClick, { capture: true });
