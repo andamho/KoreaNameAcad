@@ -1,79 +1,79 @@
 import { useEffect, useRef } from "react";
 
-const SCROLL_KEY_PREFIX = "inapp_scroll_";
-const BACK_NAV_KEY = "inapp_back_nav";
+const SCROLL_STATE_KEY = "__scrollY";
 
 export function useInAppScrollRestore(pageKey: string) {
-  const scrollKey = `${SCROLL_KEY_PREFIX}${pageKey}`;
   const isRestoringRef = useRef(false);
+  const mountedRef = useRef(false);
 
   useEffect(() => {
-    // 브라우저의 기본 스크롤 복원 비활성화
-    if ("scrollRestoration" in history) {
-      history.scrollRestoration = "manual";
-    }
+    mountedRef.current = true;
 
-    // 뒤로가기 플래그 확인 후 복원
-    const isBackNav = sessionStorage.getItem(BACK_NAV_KEY) === "true";
-    if (isBackNav) {
-      sessionStorage.removeItem(BACK_NAV_KEY);
-      const savedPosition = sessionStorage.getItem(scrollKey);
-      if (savedPosition) {
-        const scrollY = parseInt(savedPosition, 10);
-        isRestoringRef.current = true;
+    // history.state에서 스크롤 위치 읽기
+    const savedScrollY = window.history.state?.[SCROLL_STATE_KEY];
+    
+    if (typeof savedScrollY === "number" && savedScrollY > 0) {
+      isRestoringRef.current = true;
+      
+      // 레이아웃이 완료될 때까지 기다린 후 복원
+      const restoreScroll = () => {
+        const documentHeight = document.documentElement.scrollHeight;
         
-        // 여러 번 시도하여 레이아웃 완료 후 정확한 위치로 복원
-        const restore = () => {
-          window.scrollTo(0, scrollY);
+        // 문서 높이가 스크롤 위치보다 크면 복원
+        if (documentHeight > savedScrollY) {
+          window.scrollTo(0, savedScrollY);
+          isRestoringRef.current = false;
+          return true;
+        }
+        return false;
+      };
+
+      // 즉시 시도
+      if (!restoreScroll()) {
+        // 레이아웃 완료 대기 (최대 1초)
+        let attempts = 0;
+        const maxAttempts = 20;
+        
+        const tryRestore = () => {
+          if (!mountedRef.current) return;
+          attempts++;
+          
+          if (restoreScroll() || attempts >= maxAttempts) {
+            // 마지막 시도
+            window.scrollTo(0, savedScrollY);
+            isRestoringRef.current = false;
+          } else {
+            requestAnimationFrame(tryRestore);
+          }
         };
         
-        restore();
-        requestAnimationFrame(() => {
-          restore();
-          requestAnimationFrame(() => {
-            restore();
-            setTimeout(() => {
-              restore();
-              isRestoringRef.current = false;
-            }, 100);
-          });
-        });
+        requestAnimationFrame(tryRestore);
       }
     }
 
-    // 스크롤 위치 저장 (복원 중이 아닐 때만)
+    // 스크롤 시 history.state에 저장
     const handleScroll = () => {
       if (isRestoringRef.current) return;
+      
       const scrollY = window.scrollY;
       if (scrollY > 0) {
-        sessionStorage.setItem(scrollKey, String(scrollY));
+        // 기존 state 유지하면서 스크롤 위치만 업데이트
+        const currentState = window.history.state || {};
+        window.history.replaceState(
+          { ...currentState, [SCROLL_STATE_KEY]: scrollY },
+          ""
+        );
       }
     };
 
-    const throttledScroll = throttle(handleScroll, 100);
+    const throttledScroll = throttle(handleScroll, 150);
     window.addEventListener("scroll", throttledScroll, { passive: true });
 
-    // popstate로 뒤로가기 감지
-    const handlePopState = () => {
-      sessionStorage.setItem(BACK_NAV_KEY, "true");
-    };
-
-    window.addEventListener("popstate", handlePopState);
-
     return () => {
+      mountedRef.current = false;
       window.removeEventListener("scroll", throttledScroll);
-      window.removeEventListener("popstate", handlePopState);
     };
-  }, [scrollKey]);
-}
-
-// 네비게이션 직전 스크롤 위치 저장 (CTA 핸들러에서 호출)
-export function saveScrollPosition(pageKey: string) {
-  const scrollKey = `${SCROLL_KEY_PREFIX}${pageKey}`;
-  const scrollY = window.scrollY;
-  if (scrollY > 0) {
-    sessionStorage.setItem(scrollKey, String(scrollY));
-  }
+  }, [pageKey]);
 }
 
 function throttle<T extends (...args: unknown[]) => void>(fn: T, delay: number): T {
