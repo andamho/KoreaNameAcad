@@ -1,9 +1,8 @@
 import { useEffect, useRef } from "react";
 
 const SCROLL_STORAGE_PREFIX = "__scroll_";
-const DEBUG_SCROLL = true; // 테스트 후 false로 변경
+const DEBUG_SCROLL = true;
 
-// 디버깅: 스크롤 상태 로깅
 function logScrollState(label: string) {
   if (!DEBUG_SCROLL) return;
   const footer = document.querySelector('[data-testid="footer"]');
@@ -18,23 +17,27 @@ function logScrollState(label: string) {
 export function useInAppScrollRestore(pageKey: string) {
   const isRestoringRef = useRef(false);
   const mountedRef = useRef(false);
+  const restoredRef = useRef(false);
   const storageKey = SCROLL_STORAGE_PREFIX + pageKey;
 
   useEffect(() => {
     mountedRef.current = true;
+    restoredRef.current = false;
 
-    // 디버깅: 초기 상태 로깅
+    // 1순위: 브라우저 자동 복원 비활성화
+    const previousScrollRestoration = history.scrollRestoration;
+    history.scrollRestoration = 'manual';
+
     if (DEBUG_SCROLL) {
       console.log('[SCROLL] ========== 페이지 마운트 ==========');
       console.log('[SCROLL] pageKey:', pageKey);
-      console.log('[SCROLL] history.scrollRestoration:', history.scrollRestoration);
+      console.log('[SCROLL] history.scrollRestoration 변경: auto → manual');
       console.log('[SCROLL] sessionStorage keys:', 
         Object.keys(sessionStorage).filter(k => k.startsWith(SCROLL_STORAGE_PREFIX))
       );
       logScrollState('마운트 직후');
     }
 
-    // 디버깅: pageshow 이벤트
     const handlePageShow = (e: PageTransitionEvent) => {
       if (DEBUG_SCROLL) {
         console.log('[SCROLL] pageshow 이벤트, persisted:', e.persisted);
@@ -42,7 +45,6 @@ export function useInAppScrollRestore(pageKey: string) {
       }
     };
 
-    // 디버깅: popstate 이벤트
     const handlePopState = () => {
       if (DEBUG_SCROLL) {
         console.log('[SCROLL] popstate 이벤트');
@@ -53,90 +55,115 @@ export function useInAppScrollRestore(pageKey: string) {
     window.addEventListener('pageshow', handlePageShow);
     window.addEventListener('popstate', handlePopState);
 
-    // 디버깅: Footer ResizeObserver
     let footerObserver: ResizeObserver | null = null;
+    let lastFooterHeight = 0;
+    let footerStableCount = 0;
+
+    const savedScrollY = sessionStorage.getItem(storageKey);
+    const targetScrollY = savedScrollY ? parseInt(savedScrollY, 10) : 0;
+    
     if (DEBUG_SCROLL) {
-      const footer = document.querySelector('[data-testid="footer"]');
-      if (footer) {
-        footerObserver = new ResizeObserver((entries) => {
-          const height = entries[0]?.contentRect.height;
-          console.log('[SCROLL] Footer 크기 변경:', height);
-        });
-        footerObserver.observe(footer);
-      }
+      console.log('[SCROLL] 저장된 scrollY:', targetScrollY);
     }
 
-    // sessionStorage에서 스크롤 위치 읽기
-    const savedScrollY = sessionStorage.getItem(storageKey);
-    const scrollY = savedScrollY ? parseInt(savedScrollY, 10) : 0;
-    
-    if (DEBUG_SCROLL) {
-      console.log('[SCROLL] 저장된 scrollY:', scrollY);
-    }
-    
-    if (scrollY > 0) {
+    // 레이아웃 안정화 후 1회만 복원하는 함수
+    const performRestore = () => {
+      if (!mountedRef.current || restoredRef.current || targetScrollY <= 0) return;
+      
+      restoredRef.current = true;
       isRestoringRef.current = true;
-      
-      // 레이아웃이 완료될 때까지 기다린 후 복원
-      let attempts = 0;
-      const maxAttempts = 30;
-      
-      const tryRestore = () => {
-        if (!mountedRef.current) return;
-        attempts++;
-        
-        const documentHeight = document.documentElement.scrollHeight;
-        
+
+      if (DEBUG_SCROLL) {
+        console.log('[SCROLL] ===== 레이아웃 안정화 확인, 복원 실행! =====');
+        console.log('[SCROLL] 목표 scrollY:', targetScrollY);
+        logScrollState('복원 직전');
+      }
+
+      window.scrollTo(0, targetScrollY);
+
+      if (DEBUG_SCROLL) {
+        setTimeout(() => logScrollState('복원 후 0ms'), 0);
+        setTimeout(() => logScrollState('복원 후 50ms'), 50);
+        setTimeout(() => logScrollState('복원 후 100ms'), 100);
+        setTimeout(() => logScrollState('복원 후 300ms'), 300);
+        setTimeout(() => logScrollState('복원 후 500ms'), 500);
+      }
+
+      setTimeout(() => {
+        isRestoringRef.current = false;
+        sessionStorage.removeItem(storageKey);
         if (DEBUG_SCROLL) {
-          logScrollState(`복원 시도 #${attempts}`);
+          console.log('[SCROLL] 복원 완료, sessionStorage 삭제');
         }
+      }, 600);
+    };
+
+    if (targetScrollY > 0) {
+      // Footer를 기다리고, 높이가 안정화될 때까지 대기
+      const waitForLayoutStability = () => {
+        const footer = document.querySelector('[data-testid="footer"]');
         
-        // 문서 높이가 스크롤 위치보다 크면 복원
-        if (documentHeight > scrollY || attempts >= maxAttempts) {
+        if (!footer) {
+          // Footer가 아직 없으면 계속 대기
           if (DEBUG_SCROLL) {
-            console.log('[SCROLL] 복원 실행! 목표:', scrollY);
+            console.log('[SCROLL] Footer 대기 중...');
           }
-          
-          window.scrollTo(0, scrollY);
-          
-          if (DEBUG_SCROLL) {
-            // 복원 직후 상태
-            setTimeout(() => {
-              logScrollState('복원 직후 (0ms)');
-            }, 0);
-            setTimeout(() => {
-              logScrollState('복원 후 50ms');
-            }, 50);
-            setTimeout(() => {
-              logScrollState('복원 후 100ms');
-            }, 100);
-            setTimeout(() => {
-              logScrollState('복원 후 300ms');
-            }, 300);
-          }
-          
-          isRestoringRef.current = false;
-          
-          // 복원 완료 후 저장값 삭제 (다음 방문 시 영향 없도록)
-          sessionStorage.removeItem(storageKey);
-        } else {
-          requestAnimationFrame(tryRestore);
+          setTimeout(waitForLayoutStability, 50);
+          return;
         }
+
+        // Footer ResizeObserver로 안정화 감지
+        footerObserver = new ResizeObserver((entries) => {
+          const currentHeight = entries[0]?.contentRect.height ?? 0;
+          
+          if (DEBUG_SCROLL) {
+            console.log('[SCROLL] Footer 크기:', currentHeight, '이전:', lastFooterHeight);
+          }
+
+          if (Math.abs(currentHeight - lastFooterHeight) < 1) {
+            footerStableCount++;
+            if (DEBUG_SCROLL) {
+              console.log('[SCROLL] Footer 안정화 카운트:', footerStableCount);
+            }
+            
+            // 3번 연속 동일하면 안정화된 것으로 판단
+            if (footerStableCount >= 3 && !restoredRef.current) {
+              footerObserver?.disconnect();
+              performRestore();
+            }
+          } else {
+            footerStableCount = 0;
+          }
+          
+          lastFooterHeight = currentHeight;
+        });
+
+        footerObserver.observe(footer);
+
+        // 최대 대기 시간 (1초) 후 강제 복원
+        setTimeout(() => {
+          if (!restoredRef.current) {
+            if (DEBUG_SCROLL) {
+              console.log('[SCROLL] 타임아웃 - 강제 복원');
+            }
+            footerObserver?.disconnect();
+            performRestore();
+          }
+        }, 1000);
       };
-      
-      // 약간의 지연 후 시작 (레이아웃 안정화)
+
+      // 초기 지연 (transform 적용 대기)
       setTimeout(() => {
         if (DEBUG_SCROLL) {
-          console.log('[SCROLL] 복원 시작 (50ms 지연 후)');
+          console.log('[SCROLL] 레이아웃 안정화 대기 시작 (200ms 후)');
         }
-        requestAnimationFrame(tryRestore);
-      }, 50);
+        waitForLayoutStability();
+      }, 200);
     }
 
-    // 스크롤 시 sessionStorage에 저장
+    // 스크롤 시 저장
     const handleScroll = () => {
       if (isRestoringRef.current) return;
-      
       const currentScrollY = window.scrollY;
       if (currentScrollY > 0) {
         sessionStorage.setItem(storageKey, String(currentScrollY));
@@ -146,15 +173,13 @@ export function useInAppScrollRestore(pageKey: string) {
     const throttledScroll = throttle(handleScroll, 100);
     window.addEventListener("scroll", throttledScroll, { passive: true });
 
-    // 페이지 이탈 시에도 저장 (링크 클릭 등)
     const handleBeforeUnload = () => {
       const currentScrollY = window.scrollY;
       if (currentScrollY > 0) {
         sessionStorage.setItem(storageKey, String(currentScrollY));
       }
     };
-    
-    // 클릭 시 현재 스크롤 위치 즉시 저장
+
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const link = target.closest('a');
@@ -174,6 +199,8 @@ export function useInAppScrollRestore(pageKey: string) {
 
     return () => {
       mountedRef.current = false;
+      // 원래 scrollRestoration 복원
+      history.scrollRestoration = previousScrollRestoration;
       window.removeEventListener("scroll", throttledScroll);
       window.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("click", handleClick, { capture: true });
