@@ -94,7 +94,7 @@ export function Footer() {
         </div>
 
         {/* 티파니 블루 구분선 */}
-        <div className="w-full h-px bg-[#56D5DB] mb-10" />
+        <div className="max-w-4xl mx-auto h-px bg-[#56D5DB] mb-10" />
 
         {/* 3단 레이아웃 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mb-10">
@@ -159,7 +159,7 @@ export function Footer() {
         </div>
 
         {/* 하단 티파니 블루 구분선 */}
-        <div className="w-full h-px bg-[#56D5DB] mb-8" />
+        <div className="max-w-4xl mx-auto h-px bg-[#56D5DB] mb-8" />
 
         {/* 하단 정보 영역 */}
         <div className="text-center">
