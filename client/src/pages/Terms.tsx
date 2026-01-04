@@ -1,7 +1,23 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { useEffect } from "react";
 
 export default function Terms() {
+  useEffect(() => {
+    const userAgent = navigator.userAgent || '';
+    const isInstagram = userAgent.includes('Instagram');
+    const isTikTok = userAgent.includes('TikTok') || userAgent.includes('musical_ly');
+    
+    if (isInstagram || isTikTok) {
+      const className = isInstagram ? "ua-instagram" : "ua-tiktok";
+      document.documentElement.classList.add(className);
+      
+      return () => {
+        document.documentElement.classList.remove(className);
+      };
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

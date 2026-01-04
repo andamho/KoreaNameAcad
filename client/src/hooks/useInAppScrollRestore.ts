@@ -1,54 +1,51 @@
 import { useEffect, useRef } from "react";
 
 const SCROLL_KEY_PREFIX = "inapp_scroll_";
-const SCROLL_LOCK_KEY = "inapp_scroll_locked";
+const BACK_NAV_KEY = "inapp_back_nav";
 
 export function useInAppScrollRestore(pageKey: string) {
-  const hasRestoredRef = useRef(false);
   const scrollKey = `${SCROLL_KEY_PREFIX}${pageKey}`;
-  const lastValidScrollRef = useRef(0);
+  const isRestoringRef = useRef(false);
 
   useEffect(() => {
-    // 브라우저의 기본 스크롤 복원 비활성화 (인앱에서 zoom과 충돌 방지)
+    // 브라우저의 기본 스크롤 복원 비활성화
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }
 
-    // 잠금 해제
-    sessionStorage.removeItem(SCROLL_LOCK_KEY);
-
-    const navigationType = (
-      performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming
-    )?.type;
-    const isBackForward = navigationType === "back_forward";
-
-    if (isBackForward && !hasRestoredRef.current) {
+    // 뒤로가기 플래그 확인 후 복원
+    const isBackNav = sessionStorage.getItem(BACK_NAV_KEY) === "true";
+    if (isBackNav) {
+      sessionStorage.removeItem(BACK_NAV_KEY);
       const savedPosition = sessionStorage.getItem(scrollKey);
       if (savedPosition) {
         const scrollY = parseInt(savedPosition, 10);
-        hasRestoredRef.current = true;
+        isRestoringRef.current = true;
+        
         // 여러 번 시도하여 레이아웃 완료 후 정확한 위치로 복원
-        requestAnimationFrame(() => {
+        const restore = () => {
           window.scrollTo(0, scrollY);
+        };
+        
+        restore();
+        requestAnimationFrame(() => {
+          restore();
           requestAnimationFrame(() => {
-            window.scrollTo(0, scrollY);
+            restore();
             setTimeout(() => {
-              window.scrollTo(0, scrollY);
-            }, 50);
+              restore();
+              isRestoringRef.current = false;
+            }, 100);
           });
         });
       }
     }
 
+    // 스크롤 위치 저장 (복원 중이 아닐 때만)
     const handleScroll = () => {
-      // 잠금 상태면 저장하지 않음
-      if (sessionStorage.getItem(SCROLL_LOCK_KEY) === "true") {
-        return;
-      }
+      if (isRestoringRef.current) return;
       const scrollY = window.scrollY;
-      // 유효한 스크롤 위치만 저장 (0이 아닌 경우 또는 처음 로드 시)
       if (scrollY > 0) {
-        lastValidScrollRef.current = scrollY;
         sessionStorage.setItem(scrollKey, String(scrollY));
       }
     };
@@ -56,34 +53,27 @@ export function useInAppScrollRestore(pageKey: string) {
     const throttledScroll = throttle(handleScroll, 100);
     window.addEventListener("scroll", throttledScroll, { passive: true });
 
-    // 페이지 떠나기 전 마지막 유효 스크롤 위치 저장 + 잠금
-    const handleBeforeUnload = () => {
-      if (lastValidScrollRef.current > 0) {
-        sessionStorage.setItem(scrollKey, String(lastValidScrollRef.current));
-      }
-      sessionStorage.setItem(SCROLL_LOCK_KEY, "true");
+    // popstate로 뒤로가기 감지
+    const handlePopState = () => {
+      sessionStorage.setItem(BACK_NAV_KEY, "true");
     };
 
-    // 링크 클릭 시 스크롤 위치 잠금
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest("a, button")) {
-        if (lastValidScrollRef.current > 0) {
-          sessionStorage.setItem(scrollKey, String(lastValidScrollRef.current));
-        }
-        sessionStorage.setItem(SCROLL_LOCK_KEY, "true");
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    document.addEventListener("click", handleClick, { capture: true });
+    window.addEventListener("popstate", handlePopState);
 
     return () => {
       window.removeEventListener("scroll", throttledScroll);
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      document.removeEventListener("click", handleClick, { capture: true });
+      window.removeEventListener("popstate", handlePopState);
     };
   }, [scrollKey]);
+}
+
+// 네비게이션 직전 스크롤 위치 저장 (CTA 핸들러에서 호출)
+export function saveScrollPosition(pageKey: string) {
+  const scrollKey = `${SCROLL_KEY_PREFIX}${pageKey}`;
+  const scrollY = window.scrollY;
+  if (scrollY > 0) {
+    sessionStorage.setItem(scrollKey, String(scrollY));
+  }
 }
 
 function throttle<T extends (...args: unknown[]) => void>(fn: T, delay: number): T {
