@@ -1,5 +1,5 @@
 import { SiInstagram, SiYoutube, SiTiktok } from 'react-icons/si';
-import { MessageCircle, ChevronDown } from 'lucide-react';
+import { MessageCircle, ChevronDown, Send } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useState } from 'react';
 
@@ -67,8 +67,25 @@ export function Footer() {
     <footer className="kna-footer bg-black text-white">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 py-12 sm:py-16">
         
+        {/* 소셜 아이콘 영역 - 상단 */}
+        <div className="flex items-center justify-center gap-6 sm:gap-8 mb-6">
+          {socialLinks.map((social) => (
+            <a
+              key={social.name}
+              href={social.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white hover:text-[#56D5DB] transition-colors duration-200"
+              aria-label={social.name}
+              data-testid={social.testId}
+            >
+              <social.icon className="w-6 h-6 sm:w-7 sm:h-7" />
+            </a>
+          ))}
+        </div>
+
         {/* 상단 메시지 영역 - 히어로 섹션과 동일 스타일 */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <h2 className="font-bold tracking-tight text-base sm:text-lg md:text-xl flex flex-col items-center" style={{ lineHeight: '1.4' }}>
             <span className="text-white">고달픈 인생</span>
             <span className="text-white">이름 하나로 이유를 찾고</span>
@@ -87,21 +104,36 @@ export function Footer() {
           </p>
         </div>
 
-        {/* 소셜 아이콘 영역 */}
-        <div className="flex items-center justify-center gap-6 sm:gap-8 mb-8">
-          {socialLinks.map((social) => (
-            <a
-              key={social.name}
-              href={social.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white hover:text-[#56D5DB] transition-colors duration-200"
-              aria-label={social.name}
-              data-testid={social.testId}
-            >
-              <social.icon className="w-6 h-6 sm:w-7 sm:h-7" />
-            </a>
-          ))}
+        {/* CTA 버튼 영역 */}
+        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-8">
+          <button
+            onClick={() => {
+              const consultSection = document.getElementById('consult-section');
+              if (consultSection) {
+                consultSection.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                setLocation('/');
+                setTimeout(() => {
+                  document.getElementById('consult-section')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }
+            }}
+            className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-md bg-[#56D5DB] text-black font-medium text-sm border-2 border-[#56D5DB] hover:bg-[#3bc4ca] transition-colors whitespace-nowrap"
+            style={{ minWidth: '140px' }}
+            data-testid="button-footer-apply"
+          >
+            <Send className="w-4 h-4 flex-shrink-0" />
+            <span>지금 신청</span>
+          </button>
+          <button
+            onClick={handleKakaoClick}
+            className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-md bg-white text-black font-medium text-sm border-2 border-[#56D5DB] hover:bg-[#56D5DB] hover:text-white transition-colors whitespace-nowrap"
+            style={{ minWidth: '140px' }}
+            data-testid="button-footer-kakao"
+          >
+            <MessageCircle className="w-4 h-4 flex-shrink-0" />
+            <span>카톡 실시간 상담</span>
+          </button>
         </div>
 
         {/* 티파니 블루 구분선 - 양쪽 그라데이션 */}
@@ -160,16 +192,7 @@ export function Footer() {
           <div className="text-center flex flex-col items-center md:pl-8">
             <h3 className="text-[#56D5DB] font-semibold text-sm tracking-wider mb-2">CONTACT</h3>
             <div className="w-24 h-px mx-auto mb-4" style={{ background: 'linear-gradient(90deg, transparent 0%, #56D5DB 20%, #56D5DB 80%, transparent 100%)' }} />
-            <p className="text-white/80 text-xs footer-contact-hours mb-4">수~일 10:00 ~ 18:00</p>
-            <button
-              onClick={handleKakaoClick}
-              className="inline-flex items-center justify-center gap-2 py-2 rounded-md bg-white text-black font-medium text-xs footer-kakao-btn border-2 border-[#56D5DB] hover:bg-[#56D5DB] hover:text-white transition-colors whitespace-nowrap"
-              style={{ width: '142px' }}
-              data-testid="button-kakao-contact"
-            >
-              <MessageCircle className="w-4 h-4 flex-shrink-0" />
-              <span className="whitespace-nowrap">카톡 실시간 상담</span>
-            </button>
+            <p className="text-white/80 text-sm">수~일 10:00 ~ 18:00</p>
           </div>
         </div>
 
