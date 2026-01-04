@@ -533,31 +533,31 @@ export default function Home() {
               
               <div className="space-y-6">
                 <div className="flex gap-4" data-testid="process-step-1">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
-                    <span className="text-sm font-bold text-white dark:text-neutral-950">1</span>
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                    <span className="text-[21px] font-bold text-white dark:text-neutral-950">1</span>
                   </div>
                   <div className="flex-1">
-                    <h5 className="text-lg md:text-lg font-semibold text-white mb-1">상담 일정 예약</h5>
+                    <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">상담 일정 예약</h5>
                     <p className="text-lg md:text-lg text-white/70">→ 신청서 접수 및 입금 확인 후 예약 확정</p>
                   </div>
                 </div>
 
                 <div className="flex gap-4" data-testid="process-step-2">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
-                    <span className="text-sm font-bold text-white dark:text-neutral-950">2</span>
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                    <span className="text-[21px] font-bold text-white dark:text-neutral-950">2</span>
                   </div>
                   <div className="flex-1">
-                    <h5 className="text-lg md:text-lg font-semibold text-white mb-1">이름분석표 발송</h5>
+                    <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">이름분석표 발송</h5>
                     <p className="text-lg md:text-lg text-white/70">→ 상담 시작 직전 발송</p>
                   </div>
                 </div>
 
                 <div className="flex gap-4" data-testid="process-step-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
-                    <span className="text-sm font-bold text-white dark:text-neutral-950">3</span>
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                    <span className="text-[21px] font-bold text-white dark:text-neutral-950">3</span>
                   </div>
                   <div className="flex-1">
-                    <h5 className="text-lg md:text-lg font-semibold text-white mb-1">1:1 전화 상담 진행</h5>
+                    <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">1:1 전화 상담 진행</h5>
                     <p className="text-lg md:text-lg text-white/70">→ 분석표를 토대로 심층 상담</p>
                   </div>
                 </div>
