@@ -95,8 +95,8 @@ export function Footer() {
           ))}
         </div>
 
-        {/* 티파니 블루 구분선 */}
-        <div className="max-w-4xl mx-auto h-px bg-[#56D5DB] mb-10" />
+        {/* 티파니 블루 구분선 - 양쪽 그라데이션 */}
+        <div className="max-w-xl mx-auto h-px mb-10" style={{ background: 'linear-gradient(90deg, transparent 0%, #56D5DB 15%, #56D5DB 85%, transparent 100%)' }} />
 
         {/* 3단 레이아웃 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mb-10">
