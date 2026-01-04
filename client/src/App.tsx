@@ -71,7 +71,7 @@ function Router() {
 }
 
 function App() {
-  // 인앱 브라우저 전역 감지 + 스크롤 복원 비활성화
+  // 인앱 브라우저 전역 감지 + 스크롤 복원 직접 제어
   useEffect(() => {
     const userAgent = navigator.userAgent || '';
     const isInstagram = userAgent.includes('Instagram');
@@ -83,11 +83,53 @@ function App() {
       document.documentElement.classList.add('ua-tiktok');
     }
     
-    // 인앱 브라우저에서 뒤로가기 시 스크롤 복원 비활성화
+    // 인앱 브라우저에서 스크롤 복원 직접 제어
     if (isInstagram || isTikTok) {
       if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual';
       }
+      
+      // 페이지 이동 전 스크롤 위치 저장
+      const saveScrollPosition = () => {
+        const scrollY = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight;
+        // 비율로 저장 (scale 변환 영향 최소화)
+        const scrollRatio = docHeight > 0 ? scrollY / docHeight : 0;
+        sessionStorage.setItem('scrollRatio', scrollRatio.toString());
+        sessionStorage.setItem('scrollPath', window.location.pathname);
+      };
+      
+      // 뒤로가기 시 스크롤 위치 복원
+      const handlePopState = () => {
+        const savedPath = sessionStorage.getItem('scrollPath');
+        const savedRatio = sessionStorage.getItem('scrollRatio');
+        
+        if (savedPath === window.location.pathname && savedRatio) {
+          // DOM 렌더링 후 스크롤 복원
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              const docHeight = document.documentElement.scrollHeight;
+              const targetScroll = parseFloat(savedRatio) * docHeight;
+              window.scrollTo(0, targetScroll);
+            }, 100);
+          });
+        }
+      };
+      
+      // 링크 클릭 시 스크롤 위치 저장
+      document.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const link = target.closest('a, button');
+        if (link) {
+          saveScrollPosition();
+        }
+      });
+      
+      window.addEventListener('popstate', handlePopState);
+      
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
     }
   }, []);
 
