@@ -105,7 +105,7 @@ export function Footer() {
         </div>
 
         {/* CTA 버튼 영역 */}
-        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-8">
+        <div className="flex items-center justify-center gap-3 sm:gap-4 my-12">
           <button
             onClick={() => {
               setLocation('/services');
