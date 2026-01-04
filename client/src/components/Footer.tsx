@@ -80,10 +80,10 @@ export function Footer() {
               <span className="kna-underline" aria-hidden="true" />
             </span>
           </h2>
-          <p className="text-xs sm:text-sm text-[#56D5DB]/80 mt-3">
+          <p className="text-xs sm:text-sm text-white/80 mt-3">
             한글·한자이름만으로 운명상담
             <br />
-            <span className="text-[#56D5DB]/60">[정확도 80% 이상]</span>
+            <span className="text-white/60">[정확도 80% 이상]</span>
           </p>
         </div>
 
