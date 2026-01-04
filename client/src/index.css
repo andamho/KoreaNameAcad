@@ -1149,10 +1149,12 @@ html.ua-tiktok .kna-pricing-section-hero .kna-pricing-inner {
 .ig-shell .kna-footer,
 html.ua-instagram .kna-footer,
 html.ua-tiktok .kna-footer {
-  padding: 0 !important;
+  padding-top: 30px !important;
+  padding-bottom: 0 !important;
   max-height: none !important;
   overflow: visible !important;
   position: relative !important;
+  margin-bottom: -18% !important;
 }
 
 /* 인앱 푸터 상단 메시지 줄바꿈 */
@@ -1165,33 +1167,11 @@ html.ua-tiktok .kna-footer .footer-line-break {
 .ig-shell .kna-footer > div,
 html.ua-instagram .kna-footer > div,
 html.ua-tiktok .kna-footer > div {
-  padding: 24px 16px 24px 16px !important;
-}
-
-/* 인앱 푸터 내부 margin 축소 */
-.ig-shell .kna-footer .my-12,
-html.ua-instagram .kna-footer .my-12,
-html.ua-tiktok .kna-footer .my-12 {
-  margin-top: 16px !important;
-  margin-bottom: 16px !important;
-}
-
-.ig-shell .kna-footer .mb-10,
-html.ua-instagram .kna-footer .mb-10,
-html.ua-tiktok .kna-footer .mb-10 {
-  margin-bottom: 16px !important;
-}
-
-.ig-shell .kna-footer .mb-8,
-html.ua-instagram .kna-footer .mb-8,
-html.ua-tiktok .kna-footer .mb-8 {
-  margin-bottom: 12px !important;
-}
-
-.ig-shell .kna-footer .mb-6,
-html.ua-instagram .kna-footer .mb-6,
-html.ua-tiktok .kna-footer .mb-6 {
-  margin-bottom: 10px !important;
+  transform: scale(0.82) !important;
+  transform-origin: top center !important;
+  width: 122% !important;
+  margin-left: -11% !important;
+  padding-bottom: 30px !important;
 }
 
 .ig-shell .kna-footer .mt-8,
