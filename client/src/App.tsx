@@ -52,7 +52,21 @@ function Router() {
     <Switch>
       <Route path="/" component={Home}/>
       <Route path="/ig" component={InstagramHome}/>
+      <Route path="/ig/services" component={Services}/>
+      <Route path="/ig/reviews" component={Reviews}/>
+      <Route path="/ig/pricing" component={Pricing}/>
+      <Route path="/ig/terms" component={Terms}/>
+      <Route path="/ig/privacy" component={Privacy}/>
+      <Route path="/ig/notice" component={Notice}/>
+      <Route path="/ig/expert-course" component={ExpertCourse}/>
       <Route path="/tt" component={TikTokHome}/>
+      <Route path="/tt/services" component={Services}/>
+      <Route path="/tt/reviews" component={Reviews}/>
+      <Route path="/tt/pricing" component={Pricing}/>
+      <Route path="/tt/terms" component={Terms}/>
+      <Route path="/tt/privacy" component={Privacy}/>
+      <Route path="/tt/notice" component={Notice}/>
+      <Route path="/tt/expert-course" component={ExpertCourse}/>
       <Route path="/detail-info" component={DetailInfo}/>
       <Route path="/family-policy" component={FamilyPolicy}/>
       <Route path="/admin" component={Admin}/>
