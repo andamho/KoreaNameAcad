@@ -519,10 +519,7 @@ export default function InstagramHome() {
         <KnaPricingSection />
       </div>
 
-      <Footer onApplyClick={() => {
-        setDialogType("analysis");
-        setDialogOpen(true);
-      }} />
+      <Footer />
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) closeDialog(); }}>

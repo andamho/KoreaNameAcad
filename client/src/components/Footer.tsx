@@ -154,10 +154,7 @@ export function Footer() {
               {serviceLinks.map((link, idx) => (
                 <li key={idx}>
                   <button
-                    onClick={() => {
-                      setLocation(link.path);
-                      window.scrollTo(0, 0);
-                    }}
+                    onClick={() => navigateTo(link.path)}
                     className="text-white/80 hover:text-white text-sm transition-colors inline-flex items-center gap-2"
                     data-testid={`footer-service-${idx}`}
                   >
@@ -177,10 +174,7 @@ export function Footer() {
               {supportLinks.map((link, idx) => (
                 <li key={idx}>
                   <button
-                    onClick={() => {
-                      setLocation(link.path);
-                      window.scrollTo(0, 0);
-                    }}
+                    onClick={() => navigateTo(link.path)}
                     className="text-white/80 hover:text-white text-sm transition-colors inline-flex items-center gap-2"
                     data-testid={`footer-support-${idx}`}
                   >
