@@ -109,7 +109,6 @@ export function Footer() {
           <button
             onClick={() => {
               setLocation('/services');
-              window.scrollTo(0, 0);
             }}
             className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-md bg-[#56D5DB] text-black font-medium text-sm border-2 border-[#56D5DB] hover:bg-[#3bc4ca] transition-colors whitespace-nowrap"
             style={{ minWidth: '140px' }}
@@ -145,7 +144,6 @@ export function Footer() {
                   <button
                     onClick={() => {
                       setLocation(link.path);
-                      window.scrollTo(0, 0);
                     }}
                     className="text-white/80 hover:text-white text-sm transition-colors inline-flex items-center gap-2"
                     data-testid={`footer-service-${idx}`}
