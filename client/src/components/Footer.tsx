@@ -60,7 +60,7 @@ export function Footer() {
 
   const supportLinks = [
     { label: '공지사항', path: '/' },
-    { label: '이용약관', path: '/' },
+    { label: '이용약관', path: '/terms' },
     { label: '개인정보처리방침', path: '/' },
   ];
 

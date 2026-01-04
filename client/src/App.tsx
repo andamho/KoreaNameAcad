@@ -15,6 +15,7 @@ import Reviews from "@/pages/Reviews";
 import Pricing from "@/pages/Pricing";
 import NameStories from "@/pages/NameStories";
 import NameStoryDetail from "@/pages/NameStoryDetail";
+import Terms from "@/pages/Terms";
 import NotFound from "@/pages/not-found";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
@@ -57,6 +58,7 @@ function Router() {
       <Route path="/pricing" component={Pricing}/>
       <Route path="/name-stories" component={NameStories}/>
       <Route path="/name-stories/:id" component={NameStoryDetail}/>
+      <Route path="/terms" component={Terms}/>
       <Route component={NotFound} />
     </Switch>
   );
