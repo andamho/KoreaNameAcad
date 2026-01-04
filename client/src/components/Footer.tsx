@@ -1,6 +1,7 @@
 import { SiInstagram, SiYoutube, SiTiktok } from 'react-icons/si';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, ChevronDown } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { useState } from 'react';
 
 // 커스텀 블로그 아이콘 (B자 스타일)
 function BlogIcon({ className }: { className?: string }) {
@@ -18,6 +19,7 @@ function BlogIcon({ className }: { className?: string }) {
 
 export function Footer() {
   const [, setLocation] = useLocation();
+  const [legalOpen, setLegalOpen] = useState(false);
 
   const handleKakaoClick = () => {
     window.open('https://pf.kakao.com/_Sxnvbb/chat', '_blank');
@@ -166,6 +168,32 @@ export function Footer() {
           <p className="text-white/70 text-sm mb-2">
             한국이름학교 | 와츠유어네임 이름연구협회
           </p>
+          
+          {/* 데스크탑: 항상 표시 */}
+          <div className="hidden md:block text-white/50 text-xs mb-2 space-y-1">
+            <p>대표: 안서호 | 사업자번호: 250-96-01311</p>
+            <p>주소: 충남 서산시 지곡면 산성서골길 26-6 | 통신판매업신고: 2023-충남서산-0094</p>
+          </div>
+          
+          {/* 모바일: 아코디언 */}
+          <div className="md:hidden mb-2">
+            <button
+              onClick={() => setLegalOpen(!legalOpen)}
+              className="inline-flex items-center gap-1 text-white/50 text-xs hover:text-white/70 transition-colors"
+              data-testid="button-legal-toggle"
+            >
+              <span>사업자 정보</span>
+              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${legalOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {legalOpen && (
+              <div className="mt-2 text-white/50 text-xs space-y-1">
+                <p>대표: 안서호 | 사업자번호: 250-96-01311</p>
+                <p>주소: 충남 서산시 지곡면 산성서골길 26-6</p>
+                <p>통신판매업신고: 2023-충남서산-0094</p>
+              </div>
+            )}
+          </div>
+          
           <p className="text-white/50 text-xs">
             © 2026 KOREA NAME ACADEMY. All rights reserved.
           </p>
