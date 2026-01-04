@@ -3,12 +3,16 @@ import { MessageCircle, ChevronDown } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useState } from 'react';
 
-// 블로그 텍스트 컴포넌트
-function BlogText({ className }: { className?: string }) {
+// 네이버 블로그 N 아이콘 (틱톡 굵기 참조)
+function NaverIcon({ className }: { className?: string }) {
   return (
-    <span className={`font-bold text-sm ${className || ''}`} style={{ lineHeight: 1 }}>
-      BLOG
-    </span>
+    <svg 
+      viewBox="0 0 24 24" 
+      className={className}
+      fill="currentColor"
+    >
+      <path d="M16.273 12.845L7.376 0H0v24h7.726V11.156L16.624 24H24V0h-7.727v12.845z" transform="scale(0.75) translate(4, 4)" />
+    </svg>
   );
 }
 
@@ -41,7 +45,7 @@ export function Footer() {
     },
     { 
       name: 'Blog', 
-      icon: BlogText, 
+      icon: NaverIcon, 
       url: 'https://m.blog.naver.com/whats_ur_name_777',
       testId: 'link-blog'
     },
@@ -63,17 +67,23 @@ export function Footer() {
     <footer className="kna-footer bg-black text-white">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 py-12 sm:py-16">
         
-        {/* 상단 메시지 영역 */}
+        {/* 상단 메시지 영역 - 히어로 섹션과 동일 스타일 */}
         <div className="text-center mb-8">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">
-            <span className="text-[#56D5DB]">고달픈 인생,</span>
-            <br className="footer-line-break hidden" />
-            <span className="text-[#56D5DB] animate-pulse-glow-footer"> 이름 하나로 이유와 해결책을!</span>
+          <h2 className="font-bold tracking-tight text-base sm:text-lg md:text-xl leading-snug" style={{ lineHeight: '1.4' }}>
+            <span className="text-white block">고달픈 인생</span>
+            <span className="text-white block">이름 하나로 이유를 찾고</span>
+            <span className="kna-highlight kna-footer-highlight block">
+              <span className="kna-shine">운이 술술 풀리는</span>
+            </span>
+            <span className="kna-highlight kna-footer-highlight block">
+              <span className="kna-shine">새 이름으로, 인생역전하세요.</span>
+              <span className="kna-underline" aria-hidden="true" />
+            </span>
           </h2>
-          <p className="text-sm sm:text-base text-[#56D5DB]/80 mt-3">
+          <p className="text-xs sm:text-sm text-[#56D5DB]/80 mt-3">
             한글·한자이름만으로 운명상담
-            <br className="footer-line-break hidden" />
-            <span className="text-[#56D5DB]/60"> [정확도 80% 이상]</span>
+            <br />
+            <span className="text-[#56D5DB]/60">[정확도 80% 이상]</span>
           </p>
         </div>
 
@@ -150,15 +160,15 @@ export function Footer() {
           <div className="text-center flex flex-col items-center md:pl-8">
             <h3 className="text-[#56D5DB] font-semibold text-sm tracking-wider mb-2">CONTACT</h3>
             <div className="w-24 h-px mx-auto mb-4" style={{ background: 'linear-gradient(90deg, transparent 0%, #56D5DB 20%, #56D5DB 80%, transparent 100%)' }} />
-            <p className="text-white/80 text-sm mb-4">수~일 10:00 ~ 18:00</p>
+            <p className="text-white/80 text-xs footer-contact-hours mb-4">수~일 10:00 ~ 18:00</p>
             <button
               onClick={handleKakaoClick}
-              className="inline-flex items-center justify-center gap-2 py-2 rounded-md bg-white text-black font-medium text-sm border-2 border-[#56D5DB] hover:bg-[#56D5DB] hover:text-white transition-colors"
+              className="inline-flex items-center justify-center gap-2 py-2 rounded-md bg-white text-black font-medium text-xs footer-kakao-btn border-2 border-[#56D5DB] hover:bg-[#56D5DB] hover:text-white transition-colors whitespace-nowrap"
               style={{ width: '142px' }}
               data-testid="button-kakao-contact"
             >
-              <MessageCircle className="w-4 h-4" />
-              카톡 실시간 상담
+              <MessageCircle className="w-4 h-4 flex-shrink-0" />
+              <span className="whitespace-nowrap">카톡 실시간 상담</span>
             </button>
           </div>
         </div>

@@ -984,6 +984,13 @@ html.ua-tiktok .review-section-title {
   animation: pulse-glow-footer 4s ease-in-out infinite;
 }
 
+/* 푸터용 kna-highlight (즉시 표시, 딜레이 없음) */
+.kna-footer-highlight {
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
+}
+
 /* 접근성: 모션 최소화 선호 시 애니메이션 제거 */
 @media (prefers-reduced-motion: reduce) {
   .kna-highlight, .kna-shine, .kna-underline {
