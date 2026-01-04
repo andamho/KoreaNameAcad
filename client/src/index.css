@@ -1191,11 +1191,17 @@ html.ua-tiktok .kna-footer button {
   font-size: 13px !important;
 }
 
-/* 인앱 푸터 하단 정보 글자 크기 축소 */
+/* 인앱 푸터 모든 텍스트 크기 통일 (글로벌 p 규칙 override) */
+.ig-shell .kna-footer p,
+html.ua-instagram .kna-footer p,
+html.ua-tiktok .kna-footer p {
+  font-size: 12px !important;
+}
+
 .ig-shell .kna-footer .footer-org-name,
 html.ua-instagram .kna-footer .footer-org-name,
 html.ua-tiktok .kna-footer .footer-org-name {
-  font-size: 11px !important;
+  font-size: 12px !important;
 }
 
 .ig-shell .kna-footer .text-xs,
