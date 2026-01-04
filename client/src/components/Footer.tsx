@@ -3,17 +3,12 @@ import { MessageCircle, ChevronDown } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useState } from 'react';
 
-// 커스텀 블로그 아이콘 (B자 스타일)
-function BlogIcon({ className }: { className?: string }) {
+// 블로그 텍스트 컴포넌트
+function BlogText({ className }: { className?: string }) {
   return (
-    <svg 
-      viewBox="0 0 24 24" 
-      className={className}
-      fill="currentColor"
-    >
-      <text x="4" y="18" fontSize="16" fontWeight="bold" fontFamily="Arial, sans-serif">B</text>
-      <text x="12" y="18" fontSize="16" fontWeight="bold" fontFamily="Arial, sans-serif">L</text>
-    </svg>
+    <span className={`font-bold text-sm ${className || ''}`} style={{ lineHeight: 1 }}>
+      BLOG
+    </span>
   );
 }
 
@@ -46,7 +41,7 @@ export function Footer() {
     },
     { 
       name: 'Blog', 
-      icon: BlogIcon, 
+      icon: BlogText, 
       url: 'https://m.blog.naver.com/whats_ur_name_777',
       testId: 'link-blog'
     },
