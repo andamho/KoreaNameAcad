@@ -1011,14 +1011,12 @@ html.ua-tiktok .review-section-title {
   /* 상단 패딩 없음 - 인앱 홈화면에서는 navbar spacer 사용 */
 }
 
-/* Hero 섹션 축소 */
+/* Hero 섹션 축소 - zoom 사용 (레이아웃 크기도 변경) */
 .ig-shell .hero-wrap {
   max-width: 640px;
   margin: 0 auto;
   padding: 0 16px;
-  transform: scale(0.82) !important;
-  transform-origin: top center !important;
-  margin-bottom: -28px !important;
+  zoom: 0.82 !important;
 }
 
 .ig-shell .hero-title {
@@ -1032,7 +1030,7 @@ html.ua-tiktok .review-section-title {
   text-align: center !important;
 }
 
-/* 모든 섹션을 scale로 축소 + 좌우/상하 여백 조정 */
+/* 모든 섹션을 zoom으로 축소 (레이아웃 크기도 변경) */
 .ig-shell .kna-danger-section > div,
 .ig-shell .kna-value-section > div,
 .ig-shell .kna-intro-block > div,
@@ -1041,10 +1039,7 @@ html.ua-tiktok .review-section-title {
 .ig-shell .kna-video-inner,
 .ig-shell .kna-pricing-inner,
 .ig-shell .kna-footer > div {
-  transform: scale(0.82) !important;
-  transform-origin: top center !important;
-  width: 122% !important;
-  margin-left: -11% !important;
+  zoom: 0.82 !important;
 }
 
 /* 캐릭터가 있는 섹션: 상단 패딩 213px 적용 */
@@ -1074,47 +1069,11 @@ html.ua-tiktok .review-section-title {
   overflow-x: hidden !important;
 }
 
-/* 섹션 간 간격 조정 - 고정 음수 마진으로 scale 빈 공간 제거 */
-/* -50%는 viewport width 기준이라 섹션마다 다르게 보임 → 고정값 사용 */
-.ig-shell .kna-danger-section,
-.ig-shell .kna-pricing-section {
-  margin-bottom: -180px !important;
-  padding-bottom: 0 !important;
-}
-
-/* steps: 여백 30% 증가 */
-.ig-shell .kna-steps-section {
-  margin-bottom: -81px !important;
-  padding-bottom: 0 !important;
-}
-
-/* myth-truth: 래퍼에 margin-bottom 적용 */
-.ig-shell .ig-myth-char-container {
-  margin-bottom: -203px !important;
-}
-.ig-shell .kna-myth-truth-section {
-  padding-bottom: 0 !important;
-}
+/* zoom 사용으로 음수 마진 불필요 - 레이아웃 크기가 자동으로 조정됨 */
 
 /* video 섹션: 캐릭터 숨김 */
 .ig-shell .ig-video-char-container > img {
   display: none !important;
-}
-.ig-shell .kna-video-section {
-  margin-bottom: -58px !important;
-  padding-bottom: 0 !important;
-}
-
-/* intro 섹션: 아래 여백 40% 축소 */
-.ig-shell .kna-intro-block {
-  margin-bottom: -126px !important;
-  padding-bottom: 0 !important;
-}
-
-/* value 섹션: 아래 여백 20% 축소 */
-.ig-shell .kna-value-section {
-  margin-bottom: -216px !important;
-  padding-bottom: 0 !important;
 }
 
 .ig-shell .kna-danger-section > div:last-child,
@@ -1145,16 +1104,15 @@ html.ua-tiktok .kna-pricing-section-hero .kna-pricing-inner {
   padding-top: 16px !important;
 }
 
-/* 푸터 조정 */
+/* 푸터 조정 - zoom 사용으로 음수 마진 불필요 */
 .ig-shell .kna-footer,
 html.ua-instagram .kna-footer,
 html.ua-tiktok .kna-footer {
   padding-top: 30px !important;
-  padding-bottom: 0 !important;
+  padding-bottom: 30px !important;
   max-height: none !important;
   overflow: visible !important;
   position: relative !important;
-  margin-bottom: -18% !important;
 }
 
 /* 인앱 푸터 상단 메시지 줄바꿈 */
@@ -1167,12 +1125,7 @@ html.ua-tiktok .kna-footer .footer-line-break {
 .ig-shell .kna-footer > div,
 html.ua-instagram .kna-footer > div,
 html.ua-tiktok .kna-footer > div {
-  transform: scale(0.82) !important;
-  transform-origin: top center !important;
-  width: 122% !important;
-  margin-left: -11% !important;
-  padding-bottom: 30px !important;
-  margin-bottom: -22% !important;
+  zoom: 0.82 !important;
 }
 
 .ig-shell .kna-footer .mt-8,
