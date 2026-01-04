@@ -227,8 +227,8 @@ export default function Services() {
 
               <ol className="space-y-6">
                 {nameConsultationSteps.map((s) => (
-                  <li key={s.n} className="flex items-center gap-4" data-testid={`process-consultation-step-${s.n}`}>
-                    <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-white bg-[#0f766e] dark:bg-[#58C4C4] text-sm font-semibold">
+                  <li key={s.n} className="flex items-start gap-4" data-testid={`process-consultation-step-${s.n}`}>
+                    <div className="flex h-[24px] w-[24px] mt-[2px] shrink-0 items-center justify-center rounded-full text-white bg-[#0f766e] dark:bg-[#58C4C4] text-sm font-semibold">
                       {s.n}
                     </div>
                     <div className="flex-1">
@@ -254,8 +254,8 @@ export default function Services() {
 
               <ol className="space-y-6">
                 {renameSteps.map((s) => (
-                  <li key={s.n} className="flex items-center gap-4" data-testid={`process-rename-step-${s.n}`}>
-                    <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-white bg-[#0f766e] dark:bg-[#58C4C4] text-sm font-semibold">
+                  <li key={s.n} className="flex items-start gap-4" data-testid={`process-rename-step-${s.n}`}>
+                    <div className="flex h-[24px] w-[24px] mt-[2px] shrink-0 items-center justify-center rounded-full text-white bg-[#0f766e] dark:bg-[#58C4C4] text-sm font-semibold">
                       {s.n}
                     </div>
                     <div className="flex-1">

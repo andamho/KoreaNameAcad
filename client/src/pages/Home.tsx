@@ -532,9 +532,9 @@ export default function Home() {
               <h3 className="tiffany mb-10 text-center text-[25px] font-semibold sm:text-3xl md:text-4xl">진행 과정</h3>
               
               <div className="space-y-6">
-                <div className="flex items-center gap-4" data-testid="process-step-1">
-                  <div className="flex h-[18px] w-[18px] md:h-[20px] md:w-[20px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
-                    <span className="text-xs md:text-sm font-bold text-white dark:text-neutral-950">1</span>
+                <div className="flex items-start gap-4" data-testid="process-step-1">
+                  <div className="flex h-[24px] w-[24px] md:h-[26px] md:w-[26px] mt-[1px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                    <span className="text-sm md:text-base font-bold text-white dark:text-neutral-950">1</span>
                   </div>
                   <div className="flex-1">
                     <h5 className="text-lg md:text-lg font-semibold text-white">상담 일정 예약</h5>
@@ -542,9 +542,9 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4" data-testid="process-step-2">
-                  <div className="flex h-[18px] w-[18px] md:h-[20px] md:w-[20px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
-                    <span className="text-xs md:text-sm font-bold text-white dark:text-neutral-950">2</span>
+                <div className="flex items-start gap-4" data-testid="process-step-2">
+                  <div className="flex h-[24px] w-[24px] md:h-[26px] md:w-[26px] mt-[1px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                    <span className="text-sm md:text-base font-bold text-white dark:text-neutral-950">2</span>
                   </div>
                   <div className="flex-1">
                     <h5 className="text-lg md:text-lg font-semibold text-white">이름분석표 발송</h5>
@@ -552,9 +552,9 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4" data-testid="process-step-3">
-                  <div className="flex h-[18px] w-[18px] md:h-[20px] md:w-[20px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
-                    <span className="text-xs md:text-sm font-bold text-white dark:text-neutral-950">3</span>
+                <div className="flex items-start gap-4" data-testid="process-step-3">
+                  <div className="flex h-[24px] w-[24px] md:h-[26px] md:w-[26px] mt-[1px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                    <span className="text-sm md:text-base font-bold text-white dark:text-neutral-950">3</span>
                   </div>
                   <div className="flex-1">
                     <h5 className="text-lg md:text-lg font-semibold text-white">1:1 전화 상담 진행</h5>
