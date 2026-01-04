@@ -97,7 +97,7 @@ export function Footer() {
               <span className="kna-underline" aria-hidden="true" />
             </span>
           </h2>
-          <p className="text-xs sm:text-sm text-white/80 mt-3">
+          <p className="text-sm text-white/80 mt-3">
             한글·한자이름만으로 운명상담
             <br />
             <span className="text-white/60">[정확도 80% 이상]</span>
@@ -108,15 +108,8 @@ export function Footer() {
         <div className="flex items-center justify-center gap-3 sm:gap-4 mb-8">
           <button
             onClick={() => {
-              const consultSection = document.getElementById('consult-section');
-              if (consultSection) {
-                consultSection.scrollIntoView({ behavior: 'smooth' });
-              } else {
-                setLocation('/');
-                setTimeout(() => {
-                  document.getElementById('consult-section')?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }
+              setLocation('/services');
+              window.scrollTo(0, 0);
             }}
             className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-md bg-[#56D5DB] text-black font-medium text-sm border-2 border-[#56D5DB] hover:bg-[#3bc4ca] transition-colors whitespace-nowrap"
             style={{ minWidth: '140px' }}
@@ -201,7 +194,7 @@ export function Footer() {
 
         {/* 하단 정보 영역 */}
         <div className="text-center">
-          <p className="text-white/70 text-sm mb-2">
+          <p className="text-white/70 text-sm footer-org-name mb-2">
             한국이름학교 | 와츠유어네임 이름연구협회
           </p>
           
