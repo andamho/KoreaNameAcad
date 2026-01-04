@@ -487,10 +487,10 @@ export default function Home() {
               <h3 className="tiffany mb-10 text-center text-[25px] font-semibold sm:text-3xl md:text-4xl">상담 내용</h3>
               <div className="space-y-10">
                 <div className="flex flex-col md:flex-row md:items-center md:gap-6" data-testid="content-item-1">
-                  <CheckCircle className="hidden md:block h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                  <CheckCircle className="hidden md:block h-[22px] w-[22px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
                     <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold flex items-center gap-3">
-                      <CheckCircle className="h-[25px] w-[25px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                      <CheckCircle className="h-[21px] w-[21px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
                       타고난 강점과 자질
                     </h4>
                     <p className="text-lg md:text-lg leading-relaxed text-white/70">
@@ -500,10 +500,10 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-col md:flex-row md:items-center md:gap-6" data-testid="content-item-2">
-                  <MapPin className="hidden md:block h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                  <MapPin className="hidden md:block h-[22px] w-[22px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
                     <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold flex items-center gap-3">
-                      <MapPin className="h-[25px] w-[25px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                      <MapPin className="h-[21px] w-[21px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
                       인생 방향성
                     </h4>
                     <p className="text-lg md:text-lg leading-relaxed text-white/70">
@@ -513,10 +513,10 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-col md:flex-row md:items-center md:gap-6" data-testid="content-item-3">
-                  <TriangleAlert className="hidden md:block h-10 w-10 shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                  <TriangleAlert className="hidden md:block h-[22px] w-[22px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
                     <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold flex items-center gap-3">
-                      <TriangleAlert className="h-[25px] w-[25px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                      <TriangleAlert className="h-[21px] w-[21px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
                       주의해야 할 흉운
                     </h4>
                     <p className="text-lg md:text-lg leading-relaxed text-white/70">
@@ -532,33 +532,33 @@ export default function Home() {
               <h3 className="tiffany mb-10 text-center text-[25px] font-semibold sm:text-3xl md:text-4xl">진행 과정</h3>
               
               <div className="space-y-6">
-                <div className="flex gap-4" data-testid="process-step-1">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
-                    <span className="text-[21px] font-bold text-white dark:text-neutral-950">1</span>
+                <div className="flex items-center gap-4" data-testid="process-step-1">
+                  <div className="flex h-[18px] w-[18px] md:h-[20px] md:w-[20px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                    <span className="text-xs md:text-sm font-bold text-white dark:text-neutral-950">1</span>
                   </div>
                   <div className="flex-1">
-                    <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">상담 일정 예약</h5>
-                    <p className="text-lg md:text-lg text-white/70">→ 신청서 접수 및 입금 확인 후 예약 확정</p>
+                    <h5 className="text-lg md:text-lg font-semibold text-white">상담 일정 예약</h5>
+                    <p className="text-base md:text-base text-white/70">→ 신청서 접수 및 입금 확인 후 예약 확정</p>
                   </div>
                 </div>
 
-                <div className="flex gap-4" data-testid="process-step-2">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
-                    <span className="text-[21px] font-bold text-white dark:text-neutral-950">2</span>
+                <div className="flex items-center gap-4" data-testid="process-step-2">
+                  <div className="flex h-[18px] w-[18px] md:h-[20px] md:w-[20px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                    <span className="text-xs md:text-sm font-bold text-white dark:text-neutral-950">2</span>
                   </div>
                   <div className="flex-1">
-                    <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">이름분석표 발송</h5>
-                    <p className="text-lg md:text-lg text-white/70">→ 상담 시작 직전 발송</p>
+                    <h5 className="text-lg md:text-lg font-semibold text-white">이름분석표 발송</h5>
+                    <p className="text-base md:text-base text-white/70">→ 상담 시작 직전 발송</p>
                   </div>
                 </div>
 
-                <div className="flex gap-4" data-testid="process-step-3">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
-                    <span className="text-[21px] font-bold text-white dark:text-neutral-950">3</span>
+                <div className="flex items-center gap-4" data-testid="process-step-3">
+                  <div className="flex h-[18px] w-[18px] md:h-[20px] md:w-[20px] shrink-0 items-center justify-center rounded-full bg-[#0f766e] dark:bg-[#58C4C4]">
+                    <span className="text-xs md:text-sm font-bold text-white dark:text-neutral-950">3</span>
                   </div>
                   <div className="flex-1">
-                    <h5 className="text-[21px] md:text-[22px] font-semibold text-white mb-1">1:1 전화 상담 진행</h5>
-                    <p className="text-lg md:text-lg text-white/70">→ 분석표를 토대로 심층 상담</p>
+                    <h5 className="text-lg md:text-lg font-semibold text-white">1:1 전화 상담 진행</h5>
+                    <p className="text-base md:text-base text-white/70">→ 분석표를 토대로 심층 상담</p>
                   </div>
                 </div>
               </div>

@@ -668,7 +668,7 @@ export default function TikTokHome() {
                 <div className="flex flex-col" data-testid="content-item-1">
                   <div>
                     <h4 className="mb-1 text-[21px] font-semibold flex items-center gap-3">
-                      <CheckCircle className="h-[25px] w-[25px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                      <CheckCircle className="h-[21px] w-[21px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
                       타고난 강점과 자질
                     </h4>
                     <p className="text-lg leading-relaxed text-white/70">
@@ -680,7 +680,7 @@ export default function TikTokHome() {
                 <div className="flex flex-col" data-testid="content-item-2">
                   <div>
                     <h4 className="mb-1 text-[21px] font-semibold flex items-center gap-3">
-                      <MapPin className="h-[25px] w-[25px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                      <MapPin className="h-[21px] w-[21px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
                       인생 방향성
                     </h4>
                     <p className="text-lg leading-relaxed text-white/70">
@@ -692,7 +692,7 @@ export default function TikTokHome() {
                 <div className="flex flex-col" data-testid="content-item-3">
                   <div>
                     <h4 className="mb-1 text-[21px] font-semibold flex items-center gap-3">
-                      <TriangleAlert className="h-[25px] w-[25px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
+                      <TriangleAlert className="h-[21px] w-[21px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
                       주의해야 할 흉운
                     </h4>
                     <p className="text-lg leading-relaxed text-white/70">
