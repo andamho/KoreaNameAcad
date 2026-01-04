@@ -55,11 +55,11 @@ export function Footer() {
   const serviceLinks = [
     { label: '이름분석 · 감명', path: '/services' },
     { label: '작명 · 개명', path: '/services' },
-    { label: '이름분석학 전문가 과정', path: '/services' },
+    { label: '한국이름학교 전문가 과정', path: '/expert-course' },
   ];
 
   const supportLinks = [
-    { label: '공지사항', path: '/' },
+    { label: '공지사항', path: '/notice' },
     { label: '이용약관', path: '/terms' },
     { label: '개인정보처리방침', path: '/privacy' },
   ];

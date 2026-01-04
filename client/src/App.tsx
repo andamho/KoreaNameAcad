@@ -17,6 +17,8 @@ import NameStories from "@/pages/NameStories";
 import NameStoryDetail from "@/pages/NameStoryDetail";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
+import Notice from "@/pages/Notice";
+import ExpertCourse from "@/pages/ExpertCourse";
 import NotFound from "@/pages/not-found";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
@@ -61,6 +63,8 @@ function Router() {
       <Route path="/name-stories/:id" component={NameStoryDetail}/>
       <Route path="/terms" component={Terms}/>
       <Route path="/privacy" component={Privacy}/>
+      <Route path="/notice" component={Notice}/>
+      <Route path="/expert-course" component={ExpertCourse}/>
       <Route component={NotFound} />
     </Switch>
   );
