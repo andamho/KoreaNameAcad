@@ -65,11 +65,15 @@ export function Footer() {
         
         {/* 상단 메시지 영역 */}
         <div className="text-center mb-8">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-tight">
-            고달픈 인생, 이름 하나로 이유와 해결책을!
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">
+            <span className="text-[#56D5DB]">고달픈 인생,</span>
+            <br className="footer-line-break hidden" />
+            <span className="text-[#56D5DB] animate-pulse-glow-footer"> 이름 하나로 이유와 해결책을!</span>
           </h2>
-          <p className="text-sm sm:text-base text-white/70 mt-3">
-            한글·한자이름만으로 운명상담 [정확도 80% 이상]
+          <p className="text-sm sm:text-base text-[#56D5DB]/80 mt-3">
+            한글·한자이름만으로 운명상담
+            <br className="footer-line-break hidden" />
+            <span className="text-[#56D5DB]/60"> [정확도 80% 이상]</span>
           </p>
         </div>
 

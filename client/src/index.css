@@ -970,6 +970,20 @@ html.ua-tiktok .review-section-title {
   animation: pulse-scale 4s ease-in-out infinite;
 }
 
+/* 푸터용 pulse-glow 애니메이션 (티파니 블루 ↔ 화이트) */
+@keyframes pulse-glow-footer {
+  0%, 100% { 
+    color: #56D5DB;
+  }
+  50% { 
+    color: white;
+  }
+}
+
+.animate-pulse-glow-footer {
+  animation: pulse-glow-footer 4s ease-in-out infinite;
+}
+
 /* 접근성: 모션 최소화 선호 시 애니메이션 제거 */
 @media (prefers-reduced-motion: reduce) {
   .kna-highlight, .kna-shine, .kna-underline {
@@ -1129,9 +1143,16 @@ html.ua-tiktok .kna-pricing-section-hero .kna-pricing-inner {
 html.ua-instagram .kna-footer,
 html.ua-tiktok .kna-footer {
   padding-top: 30px !important;
-  max-height: 500px !important;
-  overflow: hidden !important;
+  max-height: none !important;
+  overflow: visible !important;
   position: relative !important;
+}
+
+/* 인앱 푸터 상단 메시지 줄바꿈 */
+.ig-shell .kna-footer .footer-line-break,
+html.ua-instagram .kna-footer .footer-line-break,
+html.ua-tiktok .kna-footer .footer-line-break {
+  display: block !important;
 }
 
 .ig-shell .kna-footer > div,
