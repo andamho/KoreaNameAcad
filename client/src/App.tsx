@@ -71,7 +71,7 @@ function Router() {
 }
 
 function App() {
-  // 인앱 브라우저 전역 감지
+  // 인앱 브라우저 전역 감지 + 스크롤 복원 비활성화
   useEffect(() => {
     const userAgent = navigator.userAgent || '';
     const isInstagram = userAgent.includes('Instagram');
@@ -81,6 +81,13 @@ function App() {
       document.documentElement.classList.add('ua-instagram');
     } else if (isTikTok) {
       document.documentElement.classList.add('ua-tiktok');
+    }
+    
+    // 인앱 브라우저에서 뒤로가기 시 스크롤 복원 비활성화
+    if (isInstagram || isTikTok) {
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
     }
   }, []);
 
