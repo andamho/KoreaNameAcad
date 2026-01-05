@@ -1021,7 +1021,11 @@ html.ua-tiktok .review-section-title {
 .ig-shell .kna-value-badge,
 html.ua-instagram .kna-value-badge,
 html.ua-tiktok .kna-value-badge {
-  margin-top: 0.12em !important;
+  margin-top: 0.25em !important;
+  height: 1.5em !important;
+  width: 1.5em !important;
+  font-size: 0.85em !important;
+  line-height: 1 !important;
 }
 
 /* Hero 섹션 축소 - transform 유지 (스크롤 복원 훅으로 해결) */
