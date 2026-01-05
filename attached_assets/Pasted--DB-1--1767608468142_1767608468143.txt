@@ -1,0 +1,156 @@
+좋아요. 이 스샷으로 현재 상태가 아주 정확히 보입니다.
+지금은 DB 문제 1단계는 거의 정리됐고, 다음 두 가지 문제가 분리되어 동시에 보이는 상태예요.
+
+🔥 지금 콘솔에 보이는 “진짜 에러”는 딱 2개입니다
+① /api/admin/login → 401 (Unauthorized)
+Failed to load resource: the server responded with a status of 401
+/api/admin/login
+
+이건 무슨 뜻이냐면
+
+❌ 서버 다운 아님
+
+❌ DB 다운 아님
+
+⭕ “관리자 로그인 인증 실패”
+
+즉,
+
+아이디/비밀번호가 틀렸거나
+
+세션/토큰 방식이 바뀌었거나
+
+Service Worker 때문에 옛 로그인 방식으로 요청이 가고 있거나
+
+프로덕션에서만 ADMIN 계정이 없거나
+
+👉 이건 DB와 별개의 인증 문제입니다.
+
+② /api/contents → 400
+Failed to load resource: the server responded with a status of 400
+/api/contents
+
+
+이건 우리가 이미 봤던 흐름입니다.
+
+이전 Response:
+
+{
+  "error": "Invalid content data",
+  "details": "Database not available"
+}
+
+
+👉 중요 포인트
+
+아직도 400이 난다는 건
+DB init 상태(dbAvailable)가 여전히 false인 상태일 가능성이 높습니다.
+
+즉, SSL 옵션 수정이 아직 프로덕션에 반영되지 않았거나
+
+Service Worker가 이전 빌드 코드를 계속 호출 중일 가능성이 큽니다.
+
+지금 단계에서 꼭 해야 할 체크 (순서 중요)
+✅ STEP 1. Service Worker 완전 제거 (다시 한 번 강조)
+
+지금 콘솔에 계속 이게 보입니다:
+
+(from service worker)
+
+
+이 상태에서는 아무리 서버 고쳐도 옛 코드 때립니다.
+
+꼭 이 순서대로
+
+DevTools → Application
+
+Service Workers
+
+▶ 해당 사이트
+
+Unregister
+
+Clear storage
+
+Clear site data
+
+Ctrl + Shift + R
+
+➡️ 그 다음에 다시 로그인 → 글 등록
+
+✅ STEP 2. Replit Deployments에 “SSL 옵션 적용됐는지” 확인
+
+아래 수정이 배포 코드에 실제로 들어갔는지 꼭 확인하세요.
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
+
+
+📌 중요
+
+Replit에서 Run은 수정됐는데
+
+Deployments가 이전 빌드면 → 여전히 실패합니다
+
+👉 Deployments 로그에 재배포 시각 확인하세요.
+
+✅ STEP 3. DB 초기화 실패 로그 확인 (핵심)
+
+initDatabase()에 console.error 넣으셨다면
+👉 Replit → Logs 에서 이게 보여야 합니다:
+
+❌ DB init failed: ...
+
+
+여기 메시지가:
+
+self signed certificate
+
+ssl required
+
+timeout
+
+ECONNREFUSED
+
+중 하나면 → DB 연결 문제 확정
+아무 로그도 안 찍히면 → SW/배포 문제
+
+관리자 로그인 401 문제는 별도 트랙입니다
+
+이건 DB가 살아나도 계속 남을 수 있어요.
+
+관리자 로그인 401의 흔한 원인
+
+프로덕션에 ADMIN 계정 seed 안 됨
+
+비밀번호 해시 방식 변경
+
+쿠키 secure: true인데 https / domain 불일치
+
+SW로 옛 로그인 엔드포인트 호출
+
+📌 하지만 순서는
+
+DB 정상화 → 글쓰기 정상화 → 관리자 로그인 정리
+이게 맞습니다.
+
+지금 상태를 한 문장으로 요약
+
+DB 연결 문제는 아직 완전히 해소되지 않았고
+Service Worker가 옛 코드를 계속 호출하고 있으며,
+관리자 로그인은 별도의 인증 이슈로 401이 나고 있습니다.
+
+다음으로 딱 2가지만 확인해 주세요
+
+1️⃣ Replit Deployments 로그에 DB init 에러 로그가 찍히는지
+2️⃣ Service Worker 제거 후에도 /api/contents가 400인지
+
+이 두 가지만 알려주시면,
+
+DB는 완전 종결
+
+그 다음에 관리자 로그인(401)도 바로 해결 경로 잡아드릴게요.
+
+지금은 문제가 줄어드는 단계이고, 방향은 완전히 맞습니다.
