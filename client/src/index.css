@@ -1003,13 +1003,12 @@ html.ua-tiktok .review-section-title {
 
 /* "두 번의 확인" 섹션 - 숫자 원 */
 .kna-value-badge {
-  line-height: 1;              /* 인앱 숫자 밀림 방지 */
+  line-height: 1;              /* 인앱에서 숫자 밀림 방지 */
 }
 
-/* "두 번의 확인" 섹션 - 텍스트 */
+/* "두 번의 확인" 섹션 - 텍스트 (핵심) */
 .kna-value-text {
-  font-size: 1.125rem;         /* text-lg */
-  line-height: 1.5rem;         /* 24px = 원(h-6)과 동일 */
+  line-height: 1.5rem;         /* 24px → h-6 원과 동일 */
 }
 
 /* ============================================
