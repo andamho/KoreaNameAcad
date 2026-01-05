@@ -1088,6 +1088,14 @@ html.ua-tiktok .review-section-title {
   padding-bottom: 0 !important;
 }
 
+/* 인앱 "두 번의 확인" 섹션: 숫자원 첫째 줄 정렬 보정 */
+.ig-shell .kna-value-badge,
+html.ua-instagram .kna-value-badge,
+html.ua-tiktok .kna-value-badge {
+  margin-top: 0.15em !important;
+  align-self: flex-start !important;
+}
+
 /* 비용 섹션 캐릭터 컨테이너: 고정 마진으로 통일 */
 .ig-shell .ig-pricing-char-container {
   margin-top: 0 !important;
