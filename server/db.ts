@@ -14,12 +14,16 @@ let db: ReturnType<typeof drizzle> | null = null;
 try {
   if (process.env.DATABASE_URL) {
     const pool = new Pool({ 
-      connectionString: process.env.DATABASE_URL
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
     });
     db = drizzle(pool, { schema });
+    console.log("Database pool created successfully");
   }
 } catch (error) {
-  console.error("Failed to initialize database:", error);
+  console.error("❌ Failed to initialize database:", error);
 }
 
 export { db };

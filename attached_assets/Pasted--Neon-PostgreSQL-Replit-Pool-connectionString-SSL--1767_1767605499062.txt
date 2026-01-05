@@ -1,0 +1,136 @@
+결론 (확정에 가까움)
+
+Neon(PostgreSQL) + Replit 환경에서 Pool({ connectionString })만 사용하면
+프로덕션에서 SSL 설정 문제로 연결 테스트 쿼리가 실패 →
+dbAvailable = false →
+Database not available 반환 → 400
+
+지금 구조(initDatabase()에서 select().limit(1))는 맞는 접근인데,
+Neon은 SSL 옵션을 명시하지 않으면 배포 환경에서 실패하는 경우가 매우 흔합니다.
+
+지금 코드에서 실제로 벌어지는 일
+
+프로덕션에서 흐름이 이렇게 됩니다:
+
+/api/contents 요청
+
+ensureDbReady() 호출
+
+initDatabase() 실행
+
+여기서 👇
+
+await db.select().from(nameStories).limit(1);
+
+
+→ Neon SSL handshake 실패
+
+예외 발생
+
+this.dbAvailable 이 false 유지
+
+서버가:
+
+{ "error": "Invalid content data", "details": "Database not available" }
+
+
+반환
+
+👉 그래서 Payload가 정상인데도 항상 400이 난 겁니다.
+
+즉시 적용해야 할 핵심 수정 (중요)
+1️⃣ server/db.ts – Neon용 SSL 옵션 추가
+
+Neon은 무조건 SSL 명시를 권장합니다.
+
+❌ 현재
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+✅ 수정 (이거 안 하면 프로덕션에서 터집니다)
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
+
+
+📌 Neon + Replit 조합에서는 사실상 필수입니다.
+
+2️⃣ 초기화 실패 원인을 “삼키고 있음” → 로그 반드시 남기기
+
+지금 initDatabase()는 실패해도 이유를 못 봅니다.
+
+❌ 현재
+await db.select().from(nameStories).limit(1);
+this.dbAvailable = true;
+
+✅ 꼭 이렇게 바꾸세요
+private async initDatabase() {
+  try {
+    const { db } = await import("./db");
+    await db.select().from(nameStories).limit(1);
+    this.dbAvailable = true;
+  } catch (err) {
+    console.error("❌ DB init failed:", err);
+    this.dbAvailable = false;
+  }
+}
+
+
+→ 배포 로그에서 Neon SSL / timeout / auth 에러가 바로 보이게 됩니다.
+
+3️⃣ 상태코드 수정 (권장, 필수는 아님)
+
+지금은 구조적으로 DB 문제를 400으로 돌리고 있어요.
+이건 디버깅을 어렵게 만듭니다.
+
+권장
+return res.status(503).json({
+  error: "Database not available",
+});
+
+4️⃣ Service Worker 정리 (한 번만)
+
+지금 콘솔에 계속 보이죠:
+
+(from service worker)
+
+
+DB 고쳐도 이거 남아있으면 옛 코드 계속 때립니다.
+
+한 번만 해주세요:
+
+DevTools → Application
+
+Service Workers → Unregister
+
+Clear storage → Clear site data
+
+Ctrl + Shift + R
+
+체크리스트 (이거 다 하면 99% 해결)
+
+ Pool에 ssl: { rejectUnauthorized: false } 추가
+
+ initDatabase()에 console.error 추가
+
+ Service Worker 제거 후 하드 리로드
+
+ Replit Deployments 로그 확인
+
+질문에 대한 답
+
+배포 후 프로덕션에서 테스트해 보셨나요?
+
+👉 지금 상태에서는 정상 작동하지 않습니다.
+하지만 위 SSL 옵션 한 줄만 추가하면,
+글 등록은 바로 정상 작동할 가능성이 매우 높습니다.
+
+다음 액션
+
+지금 바로 이 줄만 추가해서 재배포해 보세요:
+
+ssl: { rejectUnauthorized: false }

@@ -181,16 +181,17 @@ export class DatabaseStorage implements IStorage {
     try {
       const { db } = await import("./db");
       if (!db) {
-        console.warn("Database not initialized, using memory storage");
+        console.warn("⚠️ Database not initialized, using memory storage");
         this.dbAvailable = false;
         return;
       }
       this.db = db;
+      console.log("Testing database connection...");
       await db.select().from(nameStories).limit(1);
       this.dbAvailable = true;
-      console.log("Database connection established successfully");
+      console.log("✅ Database connection established successfully");
     } catch (error) {
-      console.error("Database connection failed, using memory storage for name stories:", error);
+      console.error("❌ DB init failed:", error);
       this.dbAvailable = false;
     }
   }
