@@ -1001,6 +1001,12 @@ html.ua-tiktok .review-section-title {
   }
 }
 
+/* "두 번의 확인" 섹션 숫자원 정렬 - 모든 환경 */
+.kna-value-badge {
+  margin-top: 0.15em;
+  align-self: flex-start;
+}
+
 /* ============================================
    인앱 브라우저 (Instagram/TikTok) 섹션 간격 조정
    - .ig-shell 래퍼 클래스 사용으로 네비게이션 후에도 유지
