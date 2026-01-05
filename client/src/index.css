@@ -1001,17 +1001,15 @@ html.ua-tiktok .review-section-title {
   }
 }
 
-/* "두 번의 확인" 섹션 숫자원 정렬 - 모든 환경 */
+/* "두 번의 확인" 섹션 - 숫자 원 */
 .kna-value-badge {
-  margin-top: 2px;
-  align-self: flex-start;
+  line-height: 1;              /* 인앱 숫자 밀림 방지 */
 }
 
-/* 인앱: 텍스트 인플레이션 시에도 고정 오프셋 유지 */
-.ig-shell .kna-value-badge,
-html.ua-instagram .kna-value-badge,
-html.ua-tiktok .kna-value-badge {
-  margin-top: 2px !important;
+/* "두 번의 확인" 섹션 - 텍스트 */
+.kna-value-text {
+  font-size: 1.125rem;         /* text-lg */
+  line-height: 1.5rem;         /* 24px = 원(h-6)과 동일 */
 }
 
 /* ============================================
