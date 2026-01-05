@@ -344,19 +344,25 @@ export class DatabaseStorage implements IStorage {
 
   async getAllContents(category?: ContentCategory): Promise<Content[]> {
     const ready = await this.ensureDbReady();
+    console.log("getAllContents - DB ready:", ready, "category:", category);
     if (ready) {
       try {
         if (category) {
-          return await this.db.select().from(contents)
+          const result = await this.db.select().from(contents)
             .where(eq(contents.category, category))
             .orderBy(desc(contents.createdAt));
+          console.log("getAllContents - query returned", result.length, "items");
+          return result;
         }
-        return await this.db.select().from(contents).orderBy(desc(contents.createdAt));
+        const result = await this.db.select().from(contents).orderBy(desc(contents.createdAt));
+        console.log("getAllContents - query returned", result.length, "items");
+        return result;
       } catch (error) {
         console.error("Database query failed:", error);
         return [];
       }
     }
+    console.log("getAllContents - DB not ready, returning empty array");
     return [];
   }
 

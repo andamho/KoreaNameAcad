@@ -188,6 +188,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid category", received: category });
       }
       const contents = await storage.getAllContents(category as ContentCategory | undefined);
+      console.log("GET /api/contents - returned", contents.length, "items");
       return res.json(contents);
     } catch (error) {
       console.error("Error fetching contents:", error);
