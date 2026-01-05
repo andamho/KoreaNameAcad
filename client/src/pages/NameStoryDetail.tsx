@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import type { NameStory } from "@shared/schema";
+import type { Content } from "@shared/schema";
 
 function formatDate(dateValue: string | Date) {
   const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
@@ -26,10 +26,10 @@ export default function NameStoryDetail() {
   const params = useParams();
   const id = params.id;
 
-  const { data: story, isLoading, error } = useQuery<NameStory>({
-    queryKey: ["/api/name-stories", id],
+  const { data: story, isLoading, error } = useQuery<Content>({
+    queryKey: ["/api/contents", "detail", id],
     queryFn: async () => {
-      const res = await fetch(`/api/name-stories/${id}`);
+      const res = await fetch(`/api/contents/${id}`);
       if (!res.ok) throw new Error("Not found");
       return res.json();
     },

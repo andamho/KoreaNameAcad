@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import type { NameStory } from "@shared/schema";
+import type { Content } from "@shared/schema";
 import storiesCharacterImage from "@assets/KakaoTalk_20251226_141747822_1766726282057.png";
 import { useEffect } from "react";
 
@@ -14,7 +14,7 @@ function formatDate(dateValue: string | Date) {
   return `${date.getFullYear()}. ${String(date.getMonth() + 1).padStart(2, '0')}. ${String(date.getDate()).padStart(2, '0')}.`;
 }
 
-function StoryCard({ story }: { story: NameStory }) {
+function StoryCard({ story }: { story: Content }) {
   return (
     <Link href={`/name-stories/${story.id}`}>
       <Card 
@@ -23,7 +23,7 @@ function StoryCard({ story }: { story: NameStory }) {
       >
         <div className="relative aspect-square overflow-hidden">
           <img
-            src={story.thumbnail}
+            src={story.thumbnail || "/placeholder-thumbnail.jpg"}
             alt={story.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
@@ -68,8 +68,13 @@ function StorySkeleton() {
 }
 
 export default function NameStories() {
-  const { data: stories, isLoading, error } = useQuery<NameStory[]>({
-    queryKey: ["/api/name-stories"],
+  const { data: stories, isLoading, error } = useQuery<Content[]>({
+    queryKey: ["/api/contents", "nameStory"],
+    queryFn: async () => {
+      const response = await fetch("/api/contents?category=nameStory");
+      if (!response.ok) throw new Error("Failed to fetch stories");
+      return response.json();
+    },
   });
 
   useEffect(() => {
