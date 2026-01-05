@@ -1,6 +1,6 @@
 import { type User, type InsertUser, type Consultation, type InsertConsultation, type NameStory, type InsertNameStory, nameStories, type Content, type InsertContent, type ContentCategory, contents } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -187,8 +187,9 @@ export class DatabaseStorage implements IStorage {
         return;
       }
       this.db = db;
-      console.log("🔍 Testing database connection with query...");
-      await db.select().from(nameStories).limit(1);
+      console.log("🔍 Testing database connection with SELECT 1...");
+      // Use simple SELECT 1 instead of table query to avoid schema/migration issues
+      await db.execute(sql`SELECT 1`);
       this.dbAvailable = true;
       console.log("✅ Database connection established successfully");
     } catch (error: any) {
