@@ -1,13 +1,30 @@
-import { MessageCircle, FileText, Star, DollarSign, BookOpen } from "lucide-react";
+import { MessageCircle, FileText, Star, DollarSign, BookOpen, PenSquare, Lock, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
+import { useAdmin } from "@/contexts/AdminContext";
+import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import logoImage from "@assets/file_000000009b2c7206ad0a70c0142cb99a_1766915164756.png";
 
 // 인앱 브라우저용 작은 base64 로고 (836 bytes) - HTML에서 미리 로드
 const LOGO_TINY = (typeof window !== 'undefined' && (window as any).__LOGO_TINY) || 
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACABAMAAAAxEHz4AAAAIVBMVEVHcExW1ttY1ttS1dtV1dtT1dta19z5/v6n6eyE4OXT9PZkEfEhAAAABnRSTlMAruEddUD/GPw7AAACzElEQVRo3u2XzXLaMBDHyVDuCW2554tz00nuTUNzZkimdxiyY/UBIqMHsCU/AAgeoDI8ZWTZgE1ssrJPnep/IRD2x+5K3o9Wy8nJycnJyekf0t3gTGvwVNO8fd8Ho4sv3+rY33Zhp/MaTtz2IafxQzN7gMkPO/tODw40HloBfsI7XdnY30CJPjcJwASBP8wRlOoS7UC/HIB24TtUCJmFdq8KMMYBPkGlcLfpdzXgGhVBvxqASuORCHAxjI4BMFehdwwwtb5FUhSf6o+TcAIg8vZ5gsQkQV9DFWwtuIh8yefZO49hkvAIsGDGhEi+jJjyl1yk79UM4AWTQ48yAYRzIRWbE8W45NoLqWiAuM3mGq0ojYngisb6p0lEWSznEaXrOSKLnSTWtf62L1Sc5U9GTIbafpXkZoi5hyqWGxqH2+QBYRGNRcQwd/EETAhMSD+ck422WW3mhIU6H3Sd/O8UVUySELj2IMnbH6oBXIcQAx6gz0+lgHUGYPGSo56GFBDq70sDYClAaKKPAqTVxNOWKYAGKUB/EKBqSlaOiIxMCIy+piHEIjuTF2Q9I8J4MFMs9UBujxQLAG4ArwsaGQC3BkDqgUepAQAWsC9onvEgyWMBcI3uSqkHsDgAXKIBmQeeJeDk0AMdQwFwiu4KXhiQTZw8TLqWCXRn6OwBC3/752K2q5If1oN9YyOcZpePUB7g6/q+r/Awc2HhS4sO/7iPQdC/5jXnAKI15cYTvkrqO1E+t2mOueZMRKgJIZOBTXvO90YplB8xnmtuk6Fdd5a6NwhuOSUVZjQuxa41YueD4oTCC/aoCaU45ZEao+ao4ZTWfE6snpKmOPvybcFmY6galvELw00zB6pcmFqsn2UHYbf4ldyFr3Z787u978pyfz5c3M7t9s6E0G1mrwn3u9Iyqbf/t5+7BnFx9tCqq7vnweDXU8vJycnJycnpv9IbR7jl9lsqExQAAAAASUVORK5CYII=';
+
+// 카테고리 옵션
+const categoryOptions = [
+  { value: "nameStory", label: "재미있는 이야기" },
+  { value: "expert", label: "전문가 과정" },
+  { value: "announcement", label: "공지사항" },
+  { value: "review", label: "후기" },
+];
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -15,6 +32,27 @@ export function Navbar() {
   const [, setLocation] = useLocation();
   const [logoLoaded, setLogoLoaded] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  
+  // Admin state
+  const { isAdmin, login, logout } = useAdmin();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Login dialog
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [loginPassword, setLoginPassword] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  
+  // Write dialog
+  const [showWriteDialog, setShowWriteDialog] = useState(false);
+  const [writeForm, setWriteForm] = useState({
+    category: "nameStory" as string,
+    title: "",
+    thumbnail: "",
+    content: "",
+    isVideo: false,
+    videoUrl: "",
+  });
 
   // Close menu on ESC key
   useEffect(() => {
@@ -26,6 +64,73 @@ export function Navbar() {
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, [menuOpen]);
+  
+  // Login handler
+  const handleLogin = async () => {
+    if (!loginPassword.trim()) {
+      toast({ title: "비밀번호를 입력해주세요.", variant: "destructive" });
+      return;
+    }
+    setIsLoggingIn(true);
+    const success = await login(loginPassword);
+    setIsLoggingIn(false);
+    if (success) {
+      setShowLoginDialog(false);
+      setLoginPassword("");
+      toast({ title: "관리자로 로그인되었습니다." });
+    } else {
+      toast({ title: "비밀번호가 틀렸습니다.", variant: "destructive" });
+    }
+  };
+  
+  // Logout handler
+  const handleLogout = () => {
+    logout();
+    toast({ title: "로그아웃되었습니다." });
+    setMenuOpen(false);
+  };
+  
+  // Create content mutation
+  const createContentMutation = useMutation({
+    mutationFn: async (data: typeof writeForm) => {
+      const token = localStorage.getItem("kna_admin_token");
+      const response = await fetch("/api/contents", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Failed to create content");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/contents", data.category] });
+      setShowWriteDialog(false);
+      setWriteForm({
+        category: "nameStory",
+        title: "",
+        thumbnail: "",
+        content: "",
+        isVideo: false,
+        videoUrl: "",
+      });
+      toast({ title: "콘텐츠가 등록되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "등록에 실패했습니다.", variant: "destructive" });
+    },
+  });
+  
+  const handleWriteSubmit = () => {
+    if (!writeForm.title.trim() || !writeForm.content.trim()) {
+      toast({ title: "제목과 내용을 입력해주세요.", variant: "destructive" });
+      return;
+    }
+    createContentMutation.mutate(writeForm);
+  };
 
   const goToHome = () => {
     // 인앱 브라우저에서는 해당 경로로 이동
@@ -124,6 +229,17 @@ export function Navbar() {
             </div>
 
             <div className="flex items-center gap-1 sm:gap-3">
+              {isAdmin && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowWriteDialog(true)}
+                  data-testid="button-write"
+                  className="text-primary hover:bg-primary/10"
+                >
+                  <PenSquare className="h-5 w-5" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 onClick={() => {
@@ -192,11 +308,174 @@ export function Navbar() {
                     </button>
                   )
                 ))}
+                
+                {/* 관리자 로그인/로그아웃 */}
+                <div className="border-t border-border mt-4 pt-4">
+                  {isAdmin ? (
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-4 p-4 rounded-lg hover-elevate active-elevate-2 group text-left"
+                      data-testid="button-admin-logout"
+                    >
+                      <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-muted/80 transition-colors">
+                        <LogOut className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-semibold text-foreground">로그아웃</div>
+                        <div className="text-sm text-muted-foreground">관리자 모드 종료</div>
+                      </div>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setShowLoginDialog(true);
+                      }}
+                      className="w-full flex items-center gap-4 p-4 rounded-lg hover-elevate active-elevate-2 group text-left"
+                      data-testid="button-admin-login-menu"
+                    >
+                      <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-muted/80 transition-colors">
+                        <Lock className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-semibold text-foreground">관리자</div>
+                        <div className="text-sm text-muted-foreground">관리자 로그인</div>
+                      </div>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </>
       )}
+      
+      {/* 관리자 로그인 다이얼로그 */}
+      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5" />
+              관리자 로그인
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="admin-password">비밀번호</Label>
+              <Input
+                id="admin-password"
+                type="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                placeholder="비밀번호를 입력하세요"
+                data-testid="input-admin-password"
+              />
+            </div>
+            <Button 
+              onClick={handleLogin} 
+              disabled={isLoggingIn}
+              className="w-full"
+              data-testid="button-admin-login-submit"
+            >
+              {isLoggingIn ? "로그인 중..." : "로그인"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* 글쓰기 다이얼로그 */}
+      <Dialog open={showWriteDialog} onOpenChange={setShowWriteDialog}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <PenSquare className="w-5 h-5" />
+              새 글 작성
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="write-category">카테고리</Label>
+              <Select 
+                value={writeForm.category} 
+                onValueChange={(value) => setWriteForm(prev => ({ ...prev, category: value }))}
+              >
+                <SelectTrigger data-testid="select-write-category">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categoryOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="write-title">제목</Label>
+              <Input
+                id="write-title"
+                value={writeForm.title}
+                onChange={(e) => setWriteForm(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="제목을 입력하세요"
+                data-testid="input-write-title"
+              />
+            </div>
+            <div>
+              <Label htmlFor="write-thumbnail">썸네일 이미지 URL (선택)</Label>
+              <Input
+                id="write-thumbnail"
+                value={writeForm.thumbnail}
+                onChange={(e) => setWriteForm(prev => ({ ...prev, thumbnail: e.target.value }))}
+                placeholder="https://example.com/image.jpg"
+                data-testid="input-write-thumbnail"
+              />
+            </div>
+            <div>
+              <Label htmlFor="write-content">내용</Label>
+              <Textarea
+                id="write-content"
+                value={writeForm.content}
+                onChange={(e) => setWriteForm(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="내용을 입력하세요"
+                rows={6}
+                data-testid="input-write-content"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="write-isVideo"
+                checked={writeForm.isVideo}
+                onChange={(e) => setWriteForm(prev => ({ ...prev, isVideo: e.target.checked }))}
+                className="h-4 w-4"
+                data-testid="checkbox-write-isvideo"
+              />
+              <Label htmlFor="write-isVideo" className="cursor-pointer">동영상 콘텐츠</Label>
+            </div>
+            {writeForm.isVideo && (
+              <div>
+                <Label htmlFor="write-videoUrl">YouTube URL</Label>
+                <Input
+                  id="write-videoUrl"
+                  value={writeForm.videoUrl}
+                  onChange={(e) => setWriteForm(prev => ({ ...prev, videoUrl: e.target.value }))}
+                  placeholder="https://youtube.com/watch?v=..."
+                  data-testid="input-write-videourl"
+                />
+              </div>
+            )}
+            <Button 
+              onClick={handleWriteSubmit}
+              disabled={createContentMutation.isPending}
+              className="w-full"
+              data-testid="button-write-submit"
+            >
+              {createContentMutation.isPending ? "등록 중..." : "등록하기"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
       {/* Spacer for fixed navbar */}
       <div className="h-[80px]" />
     </>

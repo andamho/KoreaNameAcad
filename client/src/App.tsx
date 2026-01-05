@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
+import { AdminProvider } from "@/contexts/AdminContext";
 import Home from "@/pages/Home";
 import InstagramHome from "@/pages/InstagramHome";
 import TikTokHome from "@/pages/TikTokHome";
@@ -135,10 +136,12 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <AdminProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </AdminProvider>
     </QueryClientProvider>
   );
 }
