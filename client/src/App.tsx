@@ -20,7 +20,10 @@ import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import Notice from "@/pages/Notice";
 import ExpertCourse from "@/pages/ExpertCourse";
+import ContentDetail from "@/pages/ContentDetail";
 import NotFound from "@/pages/not-found";
+
+const ExpertContentDetail = ContentDetail;
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
 import reviewsCharacterImage from "@assets/KakaoTalk_20251226_140721227_1766725962281.png";
@@ -65,7 +68,13 @@ function Router() {
       <Route path="/terms" component={Terms}/>
       <Route path="/privacy" component={Privacy}/>
       <Route path="/notice" component={Notice}/>
+      <Route path="/notice/:id">
+        {() => <ExpertContentDetail backPath="/notice" backLabel="공지사항 목록" />}
+      </Route>
       <Route path="/expert-course" component={ExpertCourse}/>
+      <Route path="/expert-course/:id">
+        {() => <ExpertContentDetail backPath="/expert-course" backLabel="전문가 과정 목록" />}
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
