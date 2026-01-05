@@ -164,13 +164,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Content CMS routes (unified content management)
+  // Legacy category mapping for cached frontend compatibility
+  const legacyCategoryMap: Record<string, ContentCategory> = {
+    "name-stories": "nameStory",
+    "name-story": "nameStory",
+    "namestory": "nameStory",
+    "announcements": "announcement",
+    "reviews": "review",
+  };
+
   app.get("/api/contents", async (req, res) => {
     try {
-      const category = req.query.category as ContentCategory | undefined;
-      if (category && !contentCategoryEnum.safeParse(category).success) {
-        return res.status(400).json({ error: "Invalid category" });
+      let category = req.query.category as string | undefined;
+      
+      // Map legacy category values to current format
+      if (category && legacyCategoryMap[category.toLowerCase()]) {
+        category = legacyCategoryMap[category.toLowerCase()];
       }
-      const contents = await storage.getAllContents(category);
+      
+      console.log("GET /api/contents - category:", category);
+      if (category && !contentCategoryEnum.safeParse(category).success) {
+        console.log("Invalid category received:", category);
+        return res.status(400).json({ error: "Invalid category", received: category });
+      }
+      const contents = await storage.getAllContents(category as ContentCategory | undefined);
       return res.json(contents);
     } catch (error) {
       console.error("Error fetching contents:", error);
