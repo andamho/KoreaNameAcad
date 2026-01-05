@@ -85,11 +85,19 @@ Preferred communication style: Simple, everyday language.
 - POST `/api/consultations` - Create new consultation requests (automatically sends email notification)
 - GET `/api/consultations` - Retrieve all consultations
 - GET `/api/consultations/:id` - Retrieve specific consultation by ID
-- POST `/api/name-stories` - Create new name story (title, thumbnail, content, isVideo, videoUrl)
-- GET `/api/name-stories` - Retrieve all name stories (sorted by date descending)
-- GET `/api/name-stories/:id` - Retrieve specific name story by ID
-- PUT `/api/name-stories/:id` - Update name story
-- DELETE `/api/name-stories/:id` - Delete name story
+
+**Unified CMS API (Contents)**
+- GET `/api/contents?category={category}` - List contents filtered by category (nameStory, expert, announcement, review)
+- GET `/api/contents/:id` - Retrieve specific content by ID
+- POST `/api/contents` - Create new content (requires Bearer token auth)
+- PUT `/api/contents/:id` - Update content (requires Bearer token auth)
+- DELETE `/api/contents/:id` - Delete content (requires Bearer token auth)
+
+**Admin Authentication**
+- POST `/api/admin/login` - Admin login with password, returns token
+- POST `/api/admin/verify` - Verify admin token validity
+- Token stored in localStorage as `kna_admin_token`
+- Environment variable: `ADMIN_PASSWORD` (managed via Replit Secrets)
 
 **Email Notification System**
 - Resend integration for transactional emails
@@ -102,7 +110,7 @@ Preferred communication style: Simple, everyday language.
 - User model with username/password authentication structure
 - Consultation model supporting both name analysis and naming requests
 - Complex consultation data including multiple people, name changes, and file attachments
-- NameStory model for blog content (id, title, thumbnail, content, videoUrl, isVideo, createdAt, updatedAt)
+- Content model (unified CMS): id, category (nameStory|expert|announcement|review), title, thumbnail, content, videoUrl, isVideo, createdAt, updatedAt
 
 **Note:** Currently using MemStorage (in-memory). Data is lost on server restart. For persistent storage, PostgreSQL database migration is required.
 
