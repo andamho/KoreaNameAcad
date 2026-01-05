@@ -49,6 +49,10 @@ const INLINE_IG_STYLES = `
   html.ua-instagram .ig-tt-dialog [class*="text-sm"] {
     font-size: 12px !important;
   }
+  .ig-shell .kna-value-badge {
+    margin-top: 0.15em !important;
+    align-self: flex-start !important;
+  }
 `;
 
 export default function InstagramHome() {
