@@ -193,12 +193,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/contents", requireAdmin, async (req, res) => {
     try {
+      console.log("Content create request body:", JSON.stringify(req.body, null, 2));
       const validatedData = insertContentSchema.parse(req.body);
       const content = await storage.createContent(validatedData);
       return res.json(content);
     } catch (error: any) {
       console.error("Error creating content:", error);
-      return res.status(400).json({ error: "Invalid content data", details: error?.message });
+      console.error("Validation errors:", error?.errors || error?.issues);
+      return res.status(400).json({ error: "Invalid content data", details: error?.errors || error?.issues || error?.message });
     }
   });
 
