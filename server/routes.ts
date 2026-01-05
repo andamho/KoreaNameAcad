@@ -24,13 +24,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/login", async (req, res) => {
     try {
       const { password } = req.body;
-      const adminPassword = process.env.ADMIN_PASSWORD;
+      const adminPassword = process.env.ADMIN_PASSWORD?.trim();
+      const inputPassword = password?.trim();
+      
+      console.log("Admin login attempt - password configured:", !!adminPassword, "input provided:", !!inputPassword);
       
       if (!adminPassword) {
         return res.status(500).json({ error: "Admin password not configured" });
       }
       
-      if (password === adminPassword) {
+      if (inputPassword === adminPassword) {
         // 토큰 생성 및 저장
         const token = crypto.randomBytes(32).toString("hex");
         validTokens.add(token);
