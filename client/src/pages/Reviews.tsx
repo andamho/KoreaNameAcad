@@ -1,13 +1,150 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
-import { Star, Quote, Download, Heart, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Star, Quote, Download, Heart, Clock, Plus, Lock, LogOut } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import reviewsCharacterImage from "@assets/KakaoTalk_20251226_140721227_1766725962281.png";
+
+// 후기 타입 정의
+interface Testimonial {
+  name: string;
+  service: string;
+  content: string;
+  rating: number;
+  date: string;
+}
+
+// 로컬스토리지 키
+const ADMIN_TOKEN_KEY = "kna_admin_token";
 
 export default function Reviews() {
   const statsRef = useRef<HTMLDivElement>(null);
   const [animated, setAnimated] = useState(false);
+  const { toast } = useToast();
+  
+  // 관리자 상태
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [loginPassword, setLoginPassword] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  
+  // 후기 작성 상태
+  const [showWriteDialog, setShowWriteDialog] = useState(false);
+  const [reviewForm, setReviewForm] = useState({
+    name: "",
+    service: "이름분석" as "이름분석" | "개명",
+    content: "",
+    date: new Date().toISOString().slice(0, 7).replace("-", "."),
+  });
+  
+  // 추가된 후기 (세션 동안만 유지, 새로고침하면 사라짐)
+  const [addedAnalysisReviews, setAddedAnalysisReviews] = useState<Testimonial[]>([]);
+  const [addedNameChangeReviews, setAddedNameChangeReviews] = useState<Testimonial[]>([]);
+  
+  // 관리자 토큰 검증
+  useEffect(() => {
+    const verifyAdminToken = async () => {
+      const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+      if (!token) return;
+      
+      try {
+        const response = await fetch("/api/admin/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+        const data = await response.json();
+        if (data.valid) {
+          setIsAdmin(true);
+        } else {
+          localStorage.removeItem(ADMIN_TOKEN_KEY);
+        }
+      } catch {
+        localStorage.removeItem(ADMIN_TOKEN_KEY);
+      }
+    };
+    
+    verifyAdminToken();
+  }, []);
+  
+  // 로그인 처리
+  const handleLogin = async () => {
+    if (!loginPassword.trim()) {
+      toast({ title: "비밀번호를 입력해주세요.", variant: "destructive" });
+      return;
+    }
+    
+    setIsLoggingIn(true);
+    try {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: loginPassword }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
+        setIsAdmin(true);
+        setShowLoginDialog(false);
+        setLoginPassword("");
+        toast({ title: "관리자로 로그인되었습니다." });
+      } else {
+        toast({ title: "비밀번호가 틀렸습니다.", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "로그인 중 오류가 발생했습니다.", variant: "destructive" });
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+  
+  // 로그아웃 처리
+  const handleLogout = () => {
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    setIsAdmin(false);
+    toast({ title: "로그아웃되었습니다." });
+  };
+  
+  // 후기 작성 처리
+  const handleWriteReview = () => {
+    if (!reviewForm.name.trim() || !reviewForm.content.trim()) {
+      toast({ title: "이름과 내용을 입력해주세요.", variant: "destructive" });
+      return;
+    }
+    
+    const newReview = {
+      name: reviewForm.name,
+      service: reviewForm.service,
+      content: reviewForm.content,
+      rating: 5,
+      date: reviewForm.date,
+    };
+    
+    if (reviewForm.service === "이름분석") {
+      setAddedAnalysisReviews(prev => [newReview, ...prev]);
+    } else {
+      setAddedNameChangeReviews(prev => [newReview, ...prev]);
+    }
+    
+    setShowWriteDialog(false);
+    setReviewForm({
+      name: "",
+      service: "이름분석",
+      content: "",
+      date: new Date().toISOString().slice(0, 7).replace("-", "."),
+    });
+    toast({ title: "후기가 추가되었습니다." });
+  };
+  
+  // 하드코딩된 후기 데이터 (함수 밖으로 이동)
 
   useEffect(() => {
     // User Agent로 인앱 브라우저 감지
@@ -292,9 +429,149 @@ export default function Reviews() {
     { value: "18년", label: "45만명 임상", icon: Clock, multiline: true }
   ];
 
+  // 합쳐진 후기 목록 (추가된 것 + 기존 것)
+  const allAnalysisTestimonials = [...addedAnalysisReviews, ...analysisTestimonials];
+  const allNameChangeTestimonials = [...addedNameChangeReviews, ...testimonials];
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      
+      {/* 관리자 로그인 다이얼로그 */}
+      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5" />
+              관리자 로그인
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="admin-password">비밀번호</Label>
+              <Input
+                id="admin-password"
+                type="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                placeholder="비밀번호를 입력하세요"
+                data-testid="input-admin-password"
+              />
+            </div>
+            <Button 
+              onClick={handleLogin} 
+              disabled={isLoggingIn}
+              className="w-full"
+              data-testid="button-admin-login"
+            >
+              {isLoggingIn ? "로그인 중..." : "로그인"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* 후기 작성 다이얼로그 */}
+      <Dialog open={showWriteDialog} onOpenChange={setShowWriteDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5" />
+              후기 작성
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="review-name">고객명 (예: 김○○)</Label>
+              <Input
+                id="review-name"
+                value={reviewForm.name}
+                onChange={(e) => setReviewForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="김○○"
+                data-testid="input-review-name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="review-service">서비스 종류</Label>
+              <Select 
+                value={reviewForm.service} 
+                onValueChange={(value: "이름분석" | "개명") => setReviewForm(prev => ({ ...prev, service: value }))}
+              >
+                <SelectTrigger data-testid="select-review-service">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="이름분석">이름분석</SelectItem>
+                  <SelectItem value="개명">개명</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="review-date">날짜 (예: 2025.01)</Label>
+              <Input
+                id="review-date"
+                value={reviewForm.date}
+                onChange={(e) => setReviewForm(prev => ({ ...prev, date: e.target.value }))}
+                placeholder="2025.01"
+                data-testid="input-review-date"
+              />
+            </div>
+            <div>
+              <Label htmlFor="review-content">후기 내용</Label>
+              <Textarea
+                id="review-content"
+                value={reviewForm.content}
+                onChange={(e) => setReviewForm(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="후기 내용을 입력하세요"
+                rows={4}
+                data-testid="input-review-content"
+              />
+            </div>
+            <Button 
+              onClick={handleWriteReview}
+              className="w-full"
+              data-testid="button-submit-review"
+            >
+              등록하기
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* 관리자 플로팅 버튼 */}
+      {isAdmin ? (
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+          <Button
+            onClick={() => setShowWriteDialog(true)}
+            className="rounded-full shadow-lg bg-gradient-to-r from-[#007C73] to-[#00B8A9] hover:opacity-90"
+            size="lg"
+            data-testid="button-write-review"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            후기 작성
+          </Button>
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            size="sm"
+            className="rounded-full"
+            data-testid="button-admin-logout"
+          >
+            <LogOut className="w-4 h-4 mr-1" />
+            로그아웃
+          </Button>
+        </div>
+      ) : (
+        <Button
+          onClick={() => setShowLoginDialog(true)}
+          variant="ghost"
+          size="icon"
+          className="fixed bottom-6 right-6 z-50 opacity-20 hover:opacity-100 transition-opacity"
+          data-testid="button-admin-login-trigger"
+        >
+          <Lock className="w-4 h-4" />
+        </Button>
+      )}
       
       {/* Hero Section with character on left */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#0f766e] to-[#4fd1c5] dark:from-[#0a5850] dark:to-[#3ba89e] py-16 md:py-24">
@@ -366,7 +643,7 @@ export default function Reviews() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {analysisTestimonials.map((testimonial, index) => (
+            {allAnalysisTestimonials.map((testimonial, index) => (
               <Card
                 key={index}
                 className="p-6 hover-elevate relative"
@@ -417,7 +694,7 @@ export default function Reviews() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, index) => (
+            {allNameChangeTestimonials.map((testimonial, index) => (
               <Card
                 key={index}
                 className="p-6 hover-elevate relative"

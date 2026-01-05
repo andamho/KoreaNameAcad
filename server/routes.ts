@@ -3,8 +3,48 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertConsultationSchema, insertNameStorySchema } from "@shared/schema";
 import { sendConsultationNotification } from "./email";
+import crypto from "crypto";
+
+// 간단한 토큰 저장소 (메모리 기반)
+const validTokens = new Set<string>();
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // 관리자 인증 API
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { password } = req.body;
+      const adminPassword = process.env.ADMIN_PASSWORD;
+      
+      if (!adminPassword) {
+        return res.status(500).json({ error: "Admin password not configured" });
+      }
+      
+      if (password === adminPassword) {
+        // 토큰 생성 및 저장
+        const token = crypto.randomBytes(32).toString("hex");
+        validTokens.add(token);
+        return res.json({ success: true, token });
+      }
+      
+      return res.status(401).json({ error: "Invalid password" });
+    } catch (error) {
+      console.error("Admin login error:", error);
+      return res.status(500).json({ error: "Login failed" });
+    }
+  });
+  
+  // 토큰 검증 API
+  app.post("/api/admin/verify", async (req, res) => {
+    try {
+      const { token } = req.body;
+      if (token && validTokens.has(token)) {
+        return res.json({ valid: true });
+      }
+      return res.json({ valid: false });
+    } catch (error) {
+      return res.json({ valid: false });
+    }
+  });
   // Consultation routes
   app.post("/api/consultations", async (req, res, next) => {
     try {
