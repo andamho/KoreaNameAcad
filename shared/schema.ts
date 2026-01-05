@@ -74,3 +74,29 @@ export const insertNameStorySchema = createInsertSchema(nameStories).omit({
 
 export type InsertNameStory = z.infer<typeof insertNameStorySchema>;
 export type NameStory = typeof nameStories.$inferSelect;
+
+// Content categories for CMS
+export const contentCategoryEnum = z.enum(["nameStory", "expert", "announcement", "review"]);
+export type ContentCategory = z.infer<typeof contentCategoryEnum>;
+
+// Contents table for unified CMS
+export const contents = pgTable("contents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  category: text("category").notNull(), // nameStory, expert, announcement, review
+  title: text("title").notNull(),
+  thumbnail: text("thumbnail"),
+  content: text("content").notNull(),
+  videoUrl: text("video_url"),
+  isVideo: boolean("is_video").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertContentSchema = createInsertSchema(contents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertContent = z.infer<typeof insertContentSchema>;
+export type Content = typeof contents.$inferSelect;

@@ -1,12 +1,23 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertConsultationSchema, insertNameStorySchema } from "@shared/schema";
+import { insertConsultationSchema, insertNameStorySchema, insertContentSchema, contentCategoryEnum, type ContentCategory } from "@shared/schema";
 import { sendConsultationNotification } from "./email";
 import crypto from "crypto";
 
 // 간단한 토큰 저장소 (메모리 기반)
 const validTokens = new Set<string>();
+
+// Admin verification middleware
+function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  
+  if (!token || !validTokens.has(token)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  next();
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // 관리자 인증 API
@@ -146,6 +157,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting name story:", error);
       return res.status(500).json({ error: "Failed to delete name story" });
+    }
+  });
+
+  // Content CMS routes (unified content management)
+  app.get("/api/contents", async (req, res) => {
+    try {
+      const category = req.query.category as ContentCategory | undefined;
+      if (category && !contentCategoryEnum.safeParse(category).success) {
+        return res.status(400).json({ error: "Invalid category" });
+      }
+      const contents = await storage.getAllContents(category);
+      return res.json(contents);
+    } catch (error) {
+      console.error("Error fetching contents:", error);
+      return res.status(500).json({ error: "Failed to fetch contents" });
+    }
+  });
+
+  app.get("/api/contents/:id", async (req, res) => {
+    try {
+      const content = await storage.getContent(req.params.id);
+      if (!content) {
+        return res.status(404).json({ error: "Content not found" });
+      }
+      return res.json(content);
+    } catch (error) {
+      console.error("Error fetching content:", error);
+      return res.status(500).json({ error: "Failed to fetch content" });
+    }
+  });
+
+  app.post("/api/contents", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertContentSchema.parse(req.body);
+      const content = await storage.createContent(validatedData);
+      return res.json(content);
+    } catch (error: any) {
+      console.error("Error creating content:", error);
+      return res.status(400).json({ error: "Invalid content data", details: error?.message });
+    }
+  });
+
+  app.put("/api/contents/:id", requireAdmin, async (req, res) => {
+    try {
+      const content = await storage.updateContent(req.params.id, req.body);
+      if (!content) {
+        return res.status(404).json({ error: "Content not found" });
+      }
+      return res.json(content);
+    } catch (error) {
+      console.error("Error updating content:", error);
+      return res.status(500).json({ error: "Failed to update content" });
+    }
+  });
+
+  app.delete("/api/contents/:id", requireAdmin, async (req, res) => {
+    try {
+      const deleted = await storage.deleteContent(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Content not found" });
+      }
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting content:", error);
+      return res.status(500).json({ error: "Failed to delete content" });
     }
   });
 

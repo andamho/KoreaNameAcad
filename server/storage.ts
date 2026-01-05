@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Consultation, type InsertConsultation, type NameStory, type InsertNameStory, nameStories } from "@shared/schema";
+import { type User, type InsertUser, type Consultation, type InsertConsultation, type NameStory, type InsertNameStory, nameStories, type Content, type InsertContent, type ContentCategory, contents } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { eq, desc } from "drizzle-orm";
 
@@ -16,17 +16,26 @@ export interface IStorage {
   getNameStory(id: string): Promise<NameStory | undefined>;
   updateNameStory(id: string, story: Partial<InsertNameStory>): Promise<NameStory | undefined>;
   deleteNameStory(id: string): Promise<boolean>;
+  
+  // Content CMS methods
+  createContent(content: InsertContent): Promise<Content>;
+  getAllContents(category?: ContentCategory): Promise<Content[]>;
+  getContent(id: string): Promise<Content | undefined>;
+  updateContent(id: string, content: Partial<InsertContent>): Promise<Content | undefined>;
+  deleteContent(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private consultations: Map<string, Consultation>;
   private nameStoriesMap: Map<string, NameStory>;
+  private contentsMap: Map<string, Content>;
 
   constructor() {
     this.users = new Map();
     this.consultations = new Map();
     this.nameStoriesMap = new Map();
+    this.contentsMap = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -105,6 +114,53 @@ export class MemStorage implements IStorage {
 
   async deleteNameStory(id: string): Promise<boolean> {
     return this.nameStoriesMap.delete(id);
+  }
+
+  // Content CMS methods
+  async createContent(insertContent: InsertContent): Promise<Content> {
+    const id = randomUUID();
+    const now = new Date();
+    const content: Content = {
+      id,
+      category: insertContent.category,
+      title: insertContent.title,
+      thumbnail: insertContent.thumbnail ?? null,
+      content: insertContent.content,
+      videoUrl: insertContent.videoUrl ?? null,
+      isVideo: insertContent.isVideo ?? false,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.contentsMap.set(id, content);
+    return content;
+  }
+
+  async getAllContents(category?: ContentCategory): Promise<Content[]> {
+    let items = Array.from(this.contentsMap.values());
+    if (category) {
+      items = items.filter(c => c.category === category);
+    }
+    return items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getContent(id: string): Promise<Content | undefined> {
+    return this.contentsMap.get(id);
+  }
+
+  async updateContent(id: string, updateData: Partial<InsertContent>): Promise<Content | undefined> {
+    const existing = this.contentsMap.get(id);
+    if (!existing) return undefined;
+    const updated: Content = {
+      ...existing,
+      ...updateData,
+      updatedAt: new Date(),
+    };
+    this.contentsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteContent(id: string): Promise<boolean> {
+    return this.contentsMap.delete(id);
   }
 }
 
@@ -237,6 +293,86 @@ export class DatabaseStorage implements IStorage {
     if (this.dbAvailable && this.db) {
       try {
         const result = await this.db.delete(nameStories).where(eq(nameStories.id, id)).returning();
+        return result.length > 0;
+      } catch (error) {
+        console.error("Database delete failed:", error);
+        return false;
+      }
+    }
+    return false;
+  }
+
+  // Content CMS methods
+  async createContent(insertContent: InsertContent): Promise<Content> {
+    if (this.dbAvailable && this.db) {
+      try {
+        const [content] = await this.db.insert(contents).values({
+          category: insertContent.category,
+          title: insertContent.title,
+          thumbnail: insertContent.thumbnail,
+          content: insertContent.content,
+          videoUrl: insertContent.videoUrl,
+          isVideo: insertContent.isVideo ?? false,
+        }).returning();
+        return content;
+      } catch (error) {
+        console.error("Database insert failed:", error);
+        throw error;
+      }
+    }
+    throw new Error("Database not available");
+  }
+
+  async getAllContents(category?: ContentCategory): Promise<Content[]> {
+    if (this.dbAvailable && this.db) {
+      try {
+        if (category) {
+          return await this.db.select().from(contents)
+            .where(eq(contents.category, category))
+            .orderBy(desc(contents.createdAt));
+        }
+        return await this.db.select().from(contents).orderBy(desc(contents.createdAt));
+      } catch (error) {
+        console.error("Database query failed:", error);
+        return [];
+      }
+    }
+    return [];
+  }
+
+  async getContent(id: string): Promise<Content | undefined> {
+    if (this.dbAvailable && this.db) {
+      try {
+        const [content] = await this.db.select().from(contents).where(eq(contents.id, id));
+        return content;
+      } catch (error) {
+        console.error("Database query failed:", error);
+        return undefined;
+      }
+    }
+    return undefined;
+  }
+
+  async updateContent(id: string, updateData: Partial<InsertContent>): Promise<Content | undefined> {
+    if (this.dbAvailable && this.db) {
+      try {
+        const [updated] = await this.db.update(contents)
+          .set({ ...updateData, updatedAt: new Date() })
+          .where(eq(contents.id, id))
+          .returning();
+        return updated;
+      } catch (error) {
+        console.error("Database update failed:", error);
+        return undefined;
+      }
+    }
+    return undefined;
+  }
+
+  async deleteContent(id: string): Promise<boolean> {
+    if (this.dbAvailable && this.db) {
+      try {
+        const result = await this.db.delete(contents).where(eq(contents.id, id)).returning();
         return result.length > 0;
       } catch (error) {
         console.error("Database delete failed:", error);
