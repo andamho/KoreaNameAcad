@@ -1,9 +1,6 @@
-import { drizzle } from "drizzle-orm/neon-serverless";
-import { Pool, neonConfig } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import * as schema from "@shared/schema";
-import ws from "ws";
-
-neonConfig.webSocketConstructor = ws;
 
 console.log("🔍 DATABASE_URL exists?", !!process.env.DATABASE_URL);
 
@@ -15,7 +12,7 @@ let db: ReturnType<typeof drizzle> | null = null;
 
 try {
   if (process.env.DATABASE_URL) {
-    console.log("🔗 Creating database pool with SSL...");
+    console.log("🔗 Creating database pool with standard pg driver...");
     const pool = new Pool({ 
       connectionString: process.env.DATABASE_URL,
       ssl: {

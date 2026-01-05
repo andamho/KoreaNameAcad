@@ -1,0 +1,145 @@
+이제 원인이 100% 확정됐습니다.
+지금 로그 한 장으로 모든 퍼즐이 맞아떨어졌어요.
+
+🔴 핵심 원인 (결론)
+
+DB 문제가 아니라 → helium(WebSocket) DNS 네트워크 오류가 DB 초기화를 막고 있음
+
+로그의 결정적 한 줄 👇
+
+Error: getaddrinfo EAI_AGAIN helium
+_url: 'wss://helium/v2'
+code: 'EAI_AGAIN'
+
+
+그리고 이어서:
+
+Error creating content: Error: Database not available
+
+
+즉 흐름은 이렇습니다:
+
+서버 부팅/요청 중
+
+helium WebSocket 연결 시도 (wss://helium/v2)
+
+Replit 환경에서 DNS 조회 실패 (EAI_AGAIN)
+
+이 에러가 초기화 단계에서 예외를 발생
+
+DB init 로직까지 도달하지 못하거나 dbAvailable=false
+
+결과적으로 POST /api/contents → Database not available (400)
+
+🧠 왜 GET은 되고 POST만 안 됐나?
+
+아래 로그가 정확히 말해줍니다.
+
+GET /api/health 200 ... {"status":"unhealthy","database":{"available":false}}
+
+
+GET 조회는 DB를 직접 쓰지 않거나
+
+DB init 체크를 강하게 타지 않음
+
+반면,
+
+POST /api/contents는
+
+helium + DB init + validation을 모두 거침
+
+그래서 helium 에러에 먼저 막혀서 DB 불가로 판단
+
+❗ 중요한 사실
+
+Neon(PostgreSQL)은 정상입니다.
+curl GET 200, Response: [] 이미 증명됨.
+
+문제는:
+
+Replit에서 helium WebSocket DNS를 안정적으로 못 잡는 상황
+
+🔧 해결 전략 (정답 루트)
+✅ 1️⃣ helium 초기화가 DB 초기화를 막지 않게 분리
+
+지금 구조가 아마 이럴 겁니다:
+
+await initHelium();   // ❌ 여기서 EAI_AGAIN 터짐
+await initDatabase(); // 도달 못함
+
+
+👉 반드시 이렇게 바꿔야 합니다
+
+try {
+  await initHelium();
+} catch (e) {
+  console.error("⚠️ Helium unavailable, continuing without it:", e);
+}
+
+await initDatabase(); // ⭐ DB는 무조건 시도
+
+
+원칙
+
+helium = 선택적 서비스
+
+DB = 필수 서비스
+
+서로 절대 묶지 말 것
+
+✅ 2️⃣ POST /api/contents 경로에서 helium 사용 금지
+
+콘텐츠 생성에 helium이 직접 필요하지 않다면, 아예 제외하세요.
+
+// ❌ createContent 안에서 helium 접근
+await helium.send(...);
+
+// ✅ 분리
+if (ENABLE_HELIUM) {
+  helium.send(...).catch(console.error);
+}
+
+
+또는 환경변수로 제어:
+
+if (process.env.ENABLE_HELIUM === "true") {
+  initHelium();
+}
+
+
+👉 Replit 프로덕션에서는 기본 false 권장
+
+✅ 3️⃣ EAI_AGAIN은 “네트워크 일시 장애” → 재시도 로직 필요
+
+Replit/서버리스 환경에서 매우 흔함입니다.
+
+async function retry(fn, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try { return await fn(); }
+    catch (e) {
+      if (i === retries - 1) throw e;
+      await new Promise(r => setTimeout(r, 500));
+    }
+  }
+}
+
+
+하지만 ⚠️
+
+DB/핵심 API 경로에서는 retry조차 helium에 쓰지 않는 게 정답
+
+🧩 지금 상태 요약 (한 줄)
+
+Neon DB는 정상이고,
+Replit에서 helium WebSocket DNS 실패(EAI_AGAIN)가
+DB 초기화 흐름을 가로막아 Database not available로 오판되고 있다.
+
+✅ 이제 어떻게 될까?
+
+아래 2가지만 하면:
+
+helium 초기화를 DB와 완전히 분리
+
+POST /api/contents에서 helium 비활성화
+
+👉 글 작성 바로 정상 동작합니다.
