@@ -169,11 +169,12 @@ export class DatabaseStorage implements IStorage {
   private consultations: Map<string, Consultation>;
   private db: any;
   private dbAvailable: boolean = false;
+  private dbInitPromise: Promise<void>;
 
   constructor() {
     this.users = new Map();
     this.consultations = new Map();
-    this.initDatabase();
+    this.dbInitPromise = this.initDatabase();
   }
 
   private async initDatabase() {
@@ -192,6 +193,12 @@ export class DatabaseStorage implements IStorage {
       console.error("Database connection failed, using memory storage for name stories:", error);
       this.dbAvailable = false;
     }
+  }
+
+  // Ensure database is ready before any operation
+  private async ensureDbReady(): Promise<boolean> {
+    await this.dbInitPromise;
+    return this.dbAvailable && !!this.db;
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -230,7 +237,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createNameStory(insertStory: InsertNameStory): Promise<NameStory> {
-    if (this.dbAvailable && this.db) {
+    const ready = await this.ensureDbReady();
+    if (ready) {
       try {
         const [story] = await this.db.insert(nameStories).values({
           title: insertStory.title,
@@ -249,7 +257,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllNameStories(): Promise<NameStory[]> {
-    if (this.dbAvailable && this.db) {
+    const ready = await this.ensureDbReady();
+    if (ready) {
       try {
         return await this.db.select().from(nameStories).orderBy(desc(nameStories.createdAt));
       } catch (error) {
@@ -261,7 +270,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getNameStory(id: string): Promise<NameStory | undefined> {
-    if (this.dbAvailable && this.db) {
+    const ready = await this.ensureDbReady();
+    if (ready) {
       try {
         const [story] = await this.db.select().from(nameStories).where(eq(nameStories.id, id));
         return story;
@@ -274,7 +284,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateNameStory(id: string, updateData: Partial<InsertNameStory>): Promise<NameStory | undefined> {
-    if (this.dbAvailable && this.db) {
+    const ready = await this.ensureDbReady();
+    if (ready) {
       try {
         const [updated] = await this.db.update(nameStories)
           .set({ ...updateData, updatedAt: new Date() })
@@ -290,7 +301,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteNameStory(id: string): Promise<boolean> {
-    if (this.dbAvailable && this.db) {
+    const ready = await this.ensureDbReady();
+    if (ready) {
       try {
         const result = await this.db.delete(nameStories).where(eq(nameStories.id, id)).returning();
         return result.length > 0;
@@ -304,7 +316,8 @@ export class DatabaseStorage implements IStorage {
 
   // Content CMS methods
   async createContent(insertContent: InsertContent): Promise<Content> {
-    if (this.dbAvailable && this.db) {
+    const ready = await this.ensureDbReady();
+    if (ready) {
       try {
         const [content] = await this.db.insert(contents).values({
           category: insertContent.category,
@@ -324,7 +337,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllContents(category?: ContentCategory): Promise<Content[]> {
-    if (this.dbAvailable && this.db) {
+    const ready = await this.ensureDbReady();
+    if (ready) {
       try {
         if (category) {
           return await this.db.select().from(contents)
@@ -341,7 +355,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getContent(id: string): Promise<Content | undefined> {
-    if (this.dbAvailable && this.db) {
+    const ready = await this.ensureDbReady();
+    if (ready) {
       try {
         const [content] = await this.db.select().from(contents).where(eq(contents.id, id));
         return content;
@@ -354,7 +369,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateContent(id: string, updateData: Partial<InsertContent>): Promise<Content | undefined> {
-    if (this.dbAvailable && this.db) {
+    const ready = await this.ensureDbReady();
+    if (ready) {
       try {
         const [updated] = await this.db.update(contents)
           .set({ ...updateData, updatedAt: new Date() })
@@ -370,7 +386,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteContent(id: string): Promise<boolean> {
-    if (this.dbAvailable && this.db) {
+    const ready = await this.ensureDbReady();
+    if (ready) {
       try {
         const result = await this.db.delete(contents).where(eq(contents.id, id)).returning();
         return result.length > 0;
