@@ -1001,12 +1001,6 @@ html.ua-tiktok .review-section-title {
   }
 }
 
-/* "두 번의 확인" 섹션 숫자원 정렬 */
-.kna-value-badge {
-  margin-top: 2px;
-  align-self: flex-start;
-}
-
 /* ============================================
    인앱 브라우저 (Instagram/TikTok) 섹션 간격 조정
    - .ig-shell 래퍼 클래스 사용으로 네비게이션 후에도 유지
@@ -1015,17 +1009,6 @@ html.ua-tiktok .review-section-title {
 /* ig-shell 기본 설정 */
 .ig-shell {
   /* 상단 패딩 없음 - 인앱 홈화면에서는 navbar spacer 사용 */
-}
-
-/* 인앱 "두 번의 확인" 섹션: 숫자원 정렬 보정 */
-.ig-shell .kna-value-badge,
-html.ua-instagram .kna-value-badge,
-html.ua-tiktok .kna-value-badge {
-  margin-top: 0.25em !important;
-  height: 1.5em !important;
-  width: 1.5em !important;
-  font-size: 0.85em !important;
-  line-height: 1 !important;
 }
 
 /* Hero 섹션 축소 - transform 유지 (스크롤 복원 훅으로 해결) */
