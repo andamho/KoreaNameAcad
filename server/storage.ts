@@ -170,6 +170,7 @@ export class DatabaseStorage implements IStorage {
   private db: any;
   private dbAvailable: boolean = false;
   private dbInitPromise: Promise<void>;
+  private dbInitError: string | null = null;
 
   constructor() {
     this.users = new Map();
@@ -177,12 +178,19 @@ export class DatabaseStorage implements IStorage {
     this.dbInitPromise = this.initDatabase();
   }
 
+  // Expose DB status for health check
+  async getDbStatus(): Promise<{ available: boolean; error: string | null }> {
+    await this.dbInitPromise;
+    return { available: this.dbAvailable, error: this.dbInitError };
+  }
+
   private async initDatabase() {
     try {
       console.log("📦 Importing database module...");
       const { db } = await import("./db");
       if (!db) {
-        console.error("❌ Database module returned null - DATABASE_URL may be missing");
+        this.dbInitError = "Database module returned null - DATABASE_URL may be missing";
+        console.error("❌", this.dbInitError);
         this.dbAvailable = false;
         return;
       }
@@ -191,8 +199,10 @@ export class DatabaseStorage implements IStorage {
       // Use simple SELECT 1 instead of table query to avoid schema/migration issues
       await db.execute(sql`SELECT 1`);
       this.dbAvailable = true;
+      this.dbInitError = null;
       console.log("✅ Database connection established successfully");
     } catch (error: any) {
+      this.dbInitError = `${error?.name}: ${error?.message}`;
       console.error("❌ DB init failed:");
       console.error("   Error name:", error?.name);
       console.error("   Error message:", error?.message);

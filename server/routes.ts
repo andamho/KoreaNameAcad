@@ -20,6 +20,33 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint - shows DB status for debugging
+  app.get("/api/health", async (req, res) => {
+    try {
+      // Check if storage has getDbStatus method (DatabaseStorage)
+      if ('getDbStatus' in storage && typeof (storage as any).getDbStatus === 'function') {
+        const dbStatus = await (storage as any).getDbStatus();
+        return res.json({
+          status: dbStatus.available ? "healthy" : "unhealthy",
+          database: dbStatus,
+          timestamp: new Date().toISOString(),
+        });
+      }
+      // MemStorage fallback
+      return res.json({
+        status: "healthy",
+        database: { available: false, error: "Using in-memory storage" },
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        status: "error",
+        error: error?.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
   // 관리자 인증 API
   app.post("/api/admin/login", async (req, res) => {
     try {
