@@ -437,142 +437,6 @@ export default function Reviews() {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      {/* 관리자 로그인 다이얼로그 */}
-      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Lock className="w-5 h-5" />
-              관리자 로그인
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="admin-password">비밀번호</Label>
-              <Input
-                id="admin-password"
-                type="password"
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                placeholder="비밀번호를 입력하세요"
-                data-testid="input-admin-password"
-              />
-            </div>
-            <Button 
-              onClick={handleLogin} 
-              disabled={isLoggingIn}
-              className="w-full"
-              data-testid="button-admin-login"
-            >
-              {isLoggingIn ? "로그인 중..." : "로그인"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-      
-      {/* 후기 작성 다이얼로그 */}
-      <Dialog open={showWriteDialog} onOpenChange={setShowWriteDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Plus className="w-5 h-5" />
-              후기 작성
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="review-name">고객명 (예: 김○○)</Label>
-              <Input
-                id="review-name"
-                value={reviewForm.name}
-                onChange={(e) => setReviewForm(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="김○○"
-                data-testid="input-review-name"
-              />
-            </div>
-            <div>
-              <Label htmlFor="review-service">서비스 종류</Label>
-              <Select 
-                value={reviewForm.service} 
-                onValueChange={(value: "이름분석" | "개명") => setReviewForm(prev => ({ ...prev, service: value }))}
-              >
-                <SelectTrigger data-testid="select-review-service">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="이름분석">이름분석</SelectItem>
-                  <SelectItem value="개명">개명</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="review-date">날짜 (예: 2025.01)</Label>
-              <Input
-                id="review-date"
-                value={reviewForm.date}
-                onChange={(e) => setReviewForm(prev => ({ ...prev, date: e.target.value }))}
-                placeholder="2025.01"
-                data-testid="input-review-date"
-              />
-            </div>
-            <div>
-              <Label htmlFor="review-content">후기 내용</Label>
-              <Textarea
-                id="review-content"
-                value={reviewForm.content}
-                onChange={(e) => setReviewForm(prev => ({ ...prev, content: e.target.value }))}
-                placeholder="후기 내용을 입력하세요"
-                rows={4}
-                data-testid="input-review-content"
-              />
-            </div>
-            <Button 
-              onClick={handleWriteReview}
-              className="w-full"
-              data-testid="button-submit-review"
-            >
-              등록하기
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-      
-      {/* 관리자 플로팅 버튼 */}
-      {isAdmin ? (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
-          <Button
-            onClick={() => setShowWriteDialog(true)}
-            className="rounded-full shadow-lg bg-gradient-to-r from-[#007C73] to-[#00B8A9] hover:opacity-90"
-            size="lg"
-            data-testid="button-write-review"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            후기 작성
-          </Button>
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            size="sm"
-            className="rounded-full"
-            data-testid="button-admin-logout"
-          >
-            <LogOut className="w-4 h-4 mr-1" />
-            로그아웃
-          </Button>
-        </div>
-      ) : (
-        <Button
-          onClick={() => setShowLoginDialog(true)}
-          variant="ghost"
-          size="icon"
-          className="fixed bottom-6 right-6 z-50 opacity-20 hover:opacity-100 transition-opacity"
-          data-testid="button-admin-login-trigger"
-        >
-          <Lock className="w-4 h-4" />
-        </Button>
-      )}
-      
       {/* Hero Section with character on left */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#0f766e] to-[#4fd1c5] dark:from-[#0a5850] dark:to-[#3ba89e] py-16 md:py-24">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTR2NGg0di00em0wLThoLTR2NGg0di00em04IDhoLTR2NGg4di00em0tOCA4aC00djRoNHYtNHptOCAwac00djRoNHYtNHptMC04aC00djRoNHYtNHptOC04aC00djRoNHYtNHptMCA4aC00djRoNHYtNHptLTggMGgtNHY0aDR2LTR6bTggOGgtNHY0aDR2LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
@@ -748,6 +612,142 @@ export default function Reviews() {
       </section>
 
       <Footer />
+      
+      {/* 관리자 로그인 다이얼로그 */}
+      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5" />
+              관리자 로그인
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="admin-password">비밀번호</Label>
+              <Input
+                id="admin-password"
+                type="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                placeholder="비밀번호를 입력하세요"
+                data-testid="input-admin-password"
+              />
+            </div>
+            <Button 
+              onClick={handleLogin} 
+              disabled={isLoggingIn}
+              className="w-full"
+              data-testid="button-admin-login"
+            >
+              {isLoggingIn ? "로그인 중..." : "로그인"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* 후기 작성 다이얼로그 */}
+      <Dialog open={showWriteDialog} onOpenChange={setShowWriteDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5" />
+              후기 작성
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="review-name">고객명 (예: 김○○)</Label>
+              <Input
+                id="review-name"
+                value={reviewForm.name}
+                onChange={(e) => setReviewForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="김○○"
+                data-testid="input-review-name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="review-service">서비스 종류</Label>
+              <Select 
+                value={reviewForm.service} 
+                onValueChange={(value: "이름분석" | "개명") => setReviewForm(prev => ({ ...prev, service: value }))}
+              >
+                <SelectTrigger data-testid="select-review-service">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="이름분석">이름분석</SelectItem>
+                  <SelectItem value="개명">개명</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="review-date">날짜 (예: 2025.01)</Label>
+              <Input
+                id="review-date"
+                value={reviewForm.date}
+                onChange={(e) => setReviewForm(prev => ({ ...prev, date: e.target.value }))}
+                placeholder="2025.01"
+                data-testid="input-review-date"
+              />
+            </div>
+            <div>
+              <Label htmlFor="review-content">후기 내용</Label>
+              <Textarea
+                id="review-content"
+                value={reviewForm.content}
+                onChange={(e) => setReviewForm(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="후기 내용을 입력하세요"
+                rows={4}
+                data-testid="input-review-content"
+              />
+            </div>
+            <Button 
+              onClick={handleWriteReview}
+              className="w-full"
+              data-testid="button-submit-review"
+            >
+              등록하기
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* 관리자 플로팅 버튼 */}
+      {isAdmin ? (
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+          <Button
+            onClick={() => setShowWriteDialog(true)}
+            className="rounded-full shadow-lg bg-gradient-to-r from-[#007C73] to-[#00B8A9] hover:opacity-90"
+            size="lg"
+            data-testid="button-write-review"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            후기 작성
+          </Button>
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            size="sm"
+            className="rounded-full"
+            data-testid="button-admin-logout"
+          >
+            <LogOut className="w-4 h-4 mr-1" />
+            로그아웃
+          </Button>
+        </div>
+      ) : (
+        <Button
+          onClick={() => setShowLoginDialog(true)}
+          variant="ghost"
+          size="icon"
+          className="fixed bottom-6 right-6 z-50 opacity-20 hover:opacity-100 transition-opacity"
+          data-testid="button-admin-login-trigger"
+        >
+          <Lock className="w-4 h-4" />
+        </Button>
+      )}
     </div>
   );
 }
