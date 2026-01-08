@@ -71,11 +71,9 @@ export default function KnaIntroBlock() {
                   <span className="kna-shine">이름은 희망입니다.</span>
                 </span>
               </p>
-            </div>
-
-            {/* SNS 팔로워 (모바일에서는 후기 다음) */}
-            <div className="order-3 md:col-span-2">
-              <p className="text-base text-gray-700 dark:text-muted-foreground flex items-start gap-2">
+              
+              {/* SNS 팔로워 - 우측 영역 하단에 좌측 정렬 */}
+              <p className="!mt-8 text-base text-gray-700 dark:text-muted-foreground flex items-start gap-2">
                 <Star className="md:hidden h-5 w-5 text-yellow-500 mt-0.5 fill-current" />
                 <span className="hidden md:inline text-[#0f766e] dark:text-[#58C4C4] mt-0.5">⭐</span>
                 <span>
