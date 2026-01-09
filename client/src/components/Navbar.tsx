@@ -151,13 +151,13 @@ export function Navbar() {
     } else {
       setLocation("/");
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo(0, 0);
     setMenuOpen(false);
   };
 
   const goToPage = (path: string) => {
     setLocation(path);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo(0, 0);
     setMenuOpen(false);
   };
 
