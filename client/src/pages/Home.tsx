@@ -531,35 +531,35 @@ export default function Home() {
             <div className="mt-16" data-testid="process-flow">
               <h3 className="tiffany mb-10 text-center text-[25px] font-semibold sm:text-3xl md:text-4xl">진행 과정</h3>
               
-              <div className="bg-white dark:bg-slate-800/50 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8">
-                <h3 className="text-[21px] md:text-2xl font-bold mb-2 text-foreground">
+              <div className="bg-neutral-900 rounded-2xl shadow-sm border border-white/10 p-6 md:p-8">
+                <h3 className="text-[21px] md:text-2xl font-bold mb-2 text-white">
                   이름상담
                 </h3>
-                <p className="text-base text-muted-foreground mb-6">
+                <p className="text-base text-white/70 mb-6">
                   예약부터 상담까지, 단계별로 명확하게 안내드립니다.
                 </p>
 
                 <div className="relative">
-                  <div className="absolute left-[16px] md:left-[18px] top-2 h-[calc(100%-8px)] w-px bg-slate-200 dark:bg-slate-600" />
+                  <div className="absolute left-[16px] md:left-[18px] top-2 h-[calc(100%-8px)] w-px bg-white/20" />
 
                   <ol className="space-y-3 md:space-y-4">
                     {/* Step 01 */}
                     <li
-                      className="group relative rounded-2xl border bg-white dark:bg-slate-800 p-4 md:p-5 shadow-sm transition md:hover:shadow-md border-slate-200 dark:border-slate-600"
+                      className="group relative rounded-2xl border bg-neutral-800 p-4 md:p-5 shadow-sm transition md:hover:shadow-md border-white/10"
                       data-testid="process-step-1"
                     >
                       <div className="flex items-start gap-3 md:gap-4">
-                        <div className="relative z-10 flex h-8 w-8 md:h-9 md:w-9 flex-none items-center justify-center rounded-full border bg-white dark:bg-slate-800 text-[#56D5DB] border-[#56D5DB]/40 text-sm font-bold">
+                        <div className="relative z-10 flex h-8 w-8 md:h-9 md:w-9 flex-none items-center justify-center rounded-full border bg-neutral-800 text-[#56D5DB] border-[#56D5DB]/40 text-sm font-bold">
                           01
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-                            <p className="text-lg font-semibold text-foreground">상담 일정 예약</p>
+                            <p className="text-lg font-semibold text-white">상담 일정 예약</p>
                           </div>
                           <ul className="mt-3 space-y-1.5 md:space-y-2">
                             <li className="flex items-start gap-3">
                               <span className="mt-0.5 inline-block w-px flex-none h-4 bg-[#56D5DB]/60" />
-                              <p className="text-base leading-relaxed text-muted-foreground">신청서 접수 및 입금 확인 후 예약 확정</p>
+                              <p className="text-base leading-relaxed text-white/70">신청서 접수 및 입금 확인 후 예약 확정</p>
                             </li>
                           </ul>
                         </div>
@@ -568,7 +568,7 @@ export default function Home() {
 
                     {/* Step 02 - Core */}
                     <li
-                      className="group relative rounded-2xl border bg-white dark:bg-slate-800 p-4 md:p-5 shadow-sm transition md:hover:shadow-[0_0_0_3px_rgba(86,213,219,0.15)] border-[#56D5DB]/30 bg-[#56D5DB]/[0.06] dark:bg-[#56D5DB]/10 shadow-md"
+                      className="group relative rounded-2xl border bg-[#56D5DB]/10 p-4 md:p-5 shadow-md transition md:hover:shadow-[0_0_0_3px_rgba(86,213,219,0.15)] border-[#56D5DB]/30"
                       data-testid="process-step-2"
                     >
                       <div className="flex items-start gap-3 md:gap-4">
@@ -577,15 +577,15 @@ export default function Home() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-                            <span className="inline-flex items-center rounded-full bg-[#56D5DB]/15 px-2.5 py-1 text-[11px] font-semibold text-[#0b7f82] dark:text-[#58C4C4]">
+                            <span className="inline-flex items-center rounded-full bg-[#56D5DB]/20 px-2.5 py-1 text-[11px] font-semibold text-[#58C4C4]">
                               핵심 상담 과정
                             </span>
-                            <p className="text-lg font-semibold text-foreground">이름분석표(PDF) 발송</p>
+                            <p className="text-lg font-semibold text-white">이름분석표(PDF) 발송</p>
                           </div>
                           <ul className="mt-3 space-y-1.5 md:space-y-2">
                             <li className="flex items-start gap-3">
                               <span className="mt-0.5 inline-block w-px flex-none h-5 bg-[#56D5DB]" />
-                              <p className="text-base leading-relaxed text-muted-foreground">상담 시작 직전 발송</p>
+                              <p className="text-base leading-relaxed text-white/70">상담 시작 직전 발송</p>
                             </li>
                           </ul>
                         </div>
@@ -594,7 +594,7 @@ export default function Home() {
 
                     {/* Step 03 - Core */}
                     <li
-                      className="group relative rounded-2xl border bg-white dark:bg-slate-800 p-4 md:p-5 shadow-sm transition md:hover:shadow-[0_0_0_3px_rgba(86,213,219,0.15)] border-[#56D5DB]/30 bg-[#56D5DB]/[0.06] dark:bg-[#56D5DB]/10 shadow-md"
+                      className="group relative rounded-2xl border bg-[#56D5DB]/10 p-4 md:p-5 shadow-md transition md:hover:shadow-[0_0_0_3px_rgba(86,213,219,0.15)] border-[#56D5DB]/30"
                       data-testid="process-step-3"
                     >
                       <div className="flex items-start gap-3 md:gap-4">
@@ -603,15 +603,15 @@ export default function Home() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-                            <span className="inline-flex items-center rounded-full bg-[#56D5DB]/15 px-2.5 py-1 text-[11px] font-semibold text-[#0b7f82] dark:text-[#58C4C4]">
+                            <span className="inline-flex items-center rounded-full bg-[#56D5DB]/20 px-2.5 py-1 text-[11px] font-semibold text-[#58C4C4]">
                               핵심 상담 과정
                             </span>
-                            <p className="text-lg font-semibold text-foreground">1:1 전화 상담 진행</p>
+                            <p className="text-lg font-semibold text-white">1:1 전화 상담 진행</p>
                           </div>
                           <ul className="mt-3 space-y-1.5 md:space-y-2">
                             <li className="flex items-start gap-3">
                               <span className="mt-0.5 inline-block w-px flex-none h-5 bg-[#56D5DB]" />
-                              <p className="text-base leading-relaxed text-muted-foreground">분석표를 토대로 심층 상담</p>
+                              <p className="text-base leading-relaxed text-white/70">분석표를 토대로 심층 상담</p>
                             </li>
                           </ul>
                         </div>
