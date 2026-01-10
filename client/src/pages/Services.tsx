@@ -81,21 +81,23 @@ export default function Services() {
   
   const nameConsultationSteps = [
     {
-      n: 1,
+      no: "01",
       title: "상담 일정 예약",
-      desc: "신청서 접수 및 입금 확인 후 예약 확정"
+      bullets: ["신청서 접수 및 입금 확인 후 예약 확정"],
     },
     { 
-      n: 2, 
+      no: "02", 
       title: "이름분석표 발송", 
-      desc: "상담 시작 직전 발송" 
+      bullets: ["상담 시작 직전 발송"],
     },
     { 
-      n: 3, 
+      no: "03", 
       title: "1:1 전화 상담 진행", 
-      desc: "분석표를 토대로 심층 상담" 
+      bullets: ["분석표를 토대로 심층 상담"],
     }
   ];
+
+  const isConsultCore = (idx: number) => idx === 2; // 03번이 핵심
 
   const renameSteps = [
     {
@@ -231,29 +233,75 @@ export default function Services() {
           <div className="grid md:grid-cols-2 gap-10">
             {/* 이름상담 진행과정 */}
             <div className="bg-white dark:bg-slate-800/50 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8" data-testid="card-process-consultation">
-              <h3 className="text-[21px] md:text-2xl font-bold mb-6">
+              <h3 className="text-[21px] md:text-2xl font-bold mb-2">
                 이름상담
               </h3>
+              <p className="text-base text-muted-foreground mb-6">
+                예약부터 상담까지, 단계별로 명확하게 안내드립니다.
+              </p>
 
-              <ol className="space-y-6">
-                {nameConsultationSteps.map((s) => (
-                  <li key={s.n} className="flex items-start gap-4" data-testid={`process-consultation-step-${s.n}`}>
-                    <div className="flex h-[24px] w-[24px] mt-[3px] shrink-0 items-center justify-center rounded-full text-white bg-[#0f766e] dark:bg-[#58C4C4] text-sm font-semibold">
-                      {s.n}
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-lg md:text-lg font-semibold">
-                        {s.title}
-                      </div>
-                      {s.desc && (
-                        <div className="text-base md:text-base text-muted-foreground mt-1">
-                          → {s.desc}
+              <div className="relative">
+                <div className="absolute left-[16px] md:left-[18px] top-2 h-[calc(100%-8px)] w-px bg-slate-200 dark:bg-slate-600" />
+
+                <ol className="space-y-3 md:space-y-4">
+                  {nameConsultationSteps.map((s, idx) => (
+                    <li
+                      key={s.no}
+                      className={`group relative rounded-2xl border bg-white dark:bg-slate-800 p-4 md:p-5 shadow-sm transition ${
+                        isConsultCore(idx)
+                          ? "md:hover:shadow-[0_0_0_3px_rgba(86,213,219,0.15)]"
+                          : "md:hover:shadow-md"
+                      } ${
+                        idx === 2
+                          ? "border-[#56D5DB]/30 bg-[#56D5DB]/[0.06] dark:bg-[#56D5DB]/10 shadow-md"
+                          : "border-slate-200 dark:border-slate-600"
+                      }`}
+                      data-testid={`process-consultation-step-${idx + 1}`}
+                    >
+                      <div className="flex items-start gap-3 md:gap-4">
+                        <div
+                          className={`relative z-10 flex h-8 w-8 md:h-9 md:w-9 flex-none items-center justify-center rounded-full border text-sm font-bold ${
+                            isConsultCore(idx)
+                              ? "bg-[#56D5DB] text-white border-[#56D5DB]"
+                              : "bg-white dark:bg-slate-800 text-[#56D5DB] border-[#56D5DB]/40"
+                          }`}
+                        >
+                          {s.no}
                         </div>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ol>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
+                            {isConsultCore(idx) && (
+                              <span className="inline-flex items-center rounded-full bg-[#56D5DB]/15 px-2.5 py-1 text-[11px] font-semibold text-[#0b7f82] dark:text-[#58C4C4]">
+                                핵심 상담 과정
+                              </span>
+                            )}
+                            <p className="text-lg font-semibold text-foreground">{s.title}</p>
+                            <span className="text-xs font-semibold text-muted-foreground">
+                              {idx + 1}/{nameConsultationSteps.length}
+                            </span>
+                          </div>
+
+                          <ul className="mt-3 space-y-1.5 md:space-y-2">
+                            {s.bullets.map((b, i) => (
+                              <li key={i} className="flex items-start gap-3">
+                                <span
+                                  className={`mt-0.5 inline-block w-px flex-none ${
+                                    isConsultCore(idx)
+                                      ? "h-5 bg-[#56D5DB]"
+                                      : "h-4 bg-[#56D5DB]/60"
+                                  }`}
+                                />
+                                <p className="text-base leading-relaxed text-muted-foreground">{b}</p>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             </div>
 
             {/* 개명 진행 과정 */}
