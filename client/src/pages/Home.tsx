@@ -529,6 +529,8 @@ export default function Home() {
 
             {/* 진행 과정 */}
             <div className="mt-16" data-testid="process-flow">
+              <h3 className="tiffany mb-10 text-center text-[25px] font-semibold sm:text-3xl md:text-4xl">진행 과정</h3>
+              
               <div className="bg-white dark:bg-slate-800/50 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8">
                 <h3 className="text-[21px] md:text-2xl font-bold mb-2 text-foreground">
                   이름상담
