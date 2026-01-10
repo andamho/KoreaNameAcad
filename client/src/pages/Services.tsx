@@ -63,6 +63,9 @@ export default function Services() {
           html.${className} [data-testid="text-process-title"] {
             font-size: clamp(20px, 5vw, 24px) !important;
           }
+          html.${className} button {
+            font-size: 13px !important;
+          }
         `;
         document.head.appendChild(style);
       }
