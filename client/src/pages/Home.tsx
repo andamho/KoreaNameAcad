@@ -547,7 +547,7 @@ export default function Home() {
                     <span className="text-sm md:text-base font-bold text-white dark:text-neutral-950">2</span>
                   </div>
                   <div className="flex-1">
-                    <h5 className="text-lg md:text-lg font-semibold text-white">이름분석표 발송</h5>
+                    <h5 className="text-lg md:text-lg font-semibold text-white">이름분석표(PDF) 발송</h5>
                     <p className="text-base md:text-base text-white/70">→ 상담 시작 직전 발송</p>
                   </div>
                 </div>

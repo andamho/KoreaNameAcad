@@ -401,7 +401,7 @@ export default function DetailInfo() {
                   </p>
                   <p className="mt-4">
                     📃 예약 시간 전에<br />
-                    이름분석표 발송 → 전화 상담 진행
+                    이름분석표(PDF) 발송 → 전화 상담 진행
                   </p>
                 </div>
               </div>
