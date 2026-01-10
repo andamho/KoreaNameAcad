@@ -98,34 +98,44 @@ export default function Services() {
   ];
 
   const renameSteps = [
-    { n: 1, title: "개명 비용 결제" },
-    { n: 2, title: "맞춤 작명 착수" },
     {
-      n: 3,
-      title: "희망사항 제출(10가지)",
-      desc: "결제 후 1주일 이내"
+      no: "01",
+      title: "개명 비용 결제 및 맞춤 작명 착수",
+      bullets: [
+        "결제 완료 즉시, 기존 이름의 운과 상담 내용을 바탕으로 맞춤 작명에 착수",
+      ],
     },
-    { 
-      n: 4, 
-      title: "정밀 작명 및 검토", 
-      desc: "희망사항 반영 (개인 약 1개월 / 가족 2개월 소요)" 
+    {
+      no: "02",
+      title: "희망사항 제출 (최대 10가지)",
+      bullets: ["결제 후 1주 이내 제출"],
     },
-    { 
-      n: 5, 
-      title: "새 이름 제안 및 심층 전화상담", 
-      desc: "완성된 이름(평균 3개) 제시 및 이름운 직접 설명" 
+    {
+      no: "03",
+      title: "정밀 작명 및 검토",
+      bullets: [
+        "희망사항을 반영한 심층 작명",
+        "개인 약 1개월 / 가족 약 2개월 소요",
+      ],
     },
-    { 
-      n: 6, 
-      title: "한글이름 최종 선택", 
-      desc: "제안된 후보 중 고객 직접 선택" 
+    {
+      no: "04",
+      title: "새 이름 제안 및 심층 전화 상담",
+      bullets: ["완성된 이름 평균 3개 제안", "이름운 직접 상세 설명"],
     },
-    { 
-      n: 7, 
+    {
+      no: "05",
+      title: "한글 이름 최종 선택",
+      bullets: ["제안된 후보 중 고객 직접 선택"],
+    },
+    {
+      no: "06",
       title: "작명서(PDF) 발송",
-      desc: "선택된 이름의 한자 및 해설이 포함된 작명장" 
-    }
+      bullets: ["선택된 이름의 한자 및 상세 해설이 포함된 작명서 제공"],
+    },
   ];
+
+  const isRenameCore = (idx: number) => idx >= 1 && idx <= 3; // 02~04
 
   return (
     <div className="min-h-screen bg-background">
@@ -248,31 +258,82 @@ export default function Services() {
 
             {/* 개명 진행 과정 */}
             <div className="bg-white dark:bg-slate-800/50 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8" data-testid="card-process-rename">
-              <h3 className="text-[21px] md:text-2xl font-bold mb-6">
+              <h3 className="text-[21px] md:text-2xl font-bold mb-2">
                 개명
               </h3>
+              <p className="text-base text-muted-foreground mb-6">
+                결제부터 작명서 발송까지, 단계별로 명확하게 안내드립니다.
+              </p>
 
-              <ol className="space-y-6">
-                {renameSteps.map((s) => (
-                  <li key={s.n} className="flex items-start gap-4" data-testid={`process-rename-step-${s.n}`}>
-                    <div className="flex h-[24px] w-[24px] mt-[3px] shrink-0 items-center justify-center rounded-full text-white bg-[#0f766e] dark:bg-[#58C4C4] text-sm font-semibold">
-                      {s.n}
-                    </div>
-                    <div className="flex-1">
-                      <div className={`text-lg md:text-lg font-semibold ${[3, 4, 5].includes(s.n) ? 'text-[#0d9488]' : ''}`}>
-                        {s.title}
-                      </div>
-                      {s.desc && (
-                        <div className="text-base md:text-base text-muted-foreground mt-1">
-                          → {s.n === 4 ? (
-                            <>희망사항 반영 <span className="font-bold text-[#0d9488]">(개인 약 1개월 / 가족 2개월 소요)</span></>
-                          ) : s.desc}
+              <div className="relative">
+                <div className="absolute left-[16px] md:left-[18px] top-2 h-[calc(100%-8px)] w-px bg-slate-200 dark:bg-slate-600" />
+
+                <ol className="space-y-3 md:space-y-4">
+                  {renameSteps.map((s, idx) => (
+                    <li
+                      key={s.no}
+                      className={`group relative rounded-2xl border bg-white dark:bg-slate-800 p-4 md:p-5 shadow-sm transition ${
+                        isRenameCore(idx)
+                          ? "md:hover:shadow-[0_0_0_3px_rgba(86,213,219,0.15)]"
+                          : "md:hover:shadow-md"
+                      } ${
+                        idx === 2
+                          ? "border-[#56D5DB]/30 bg-[#56D5DB]/[0.06] dark:bg-[#56D5DB]/10 shadow-md"
+                          : "border-slate-200 dark:border-slate-600"
+                      }`}
+                      data-testid={`process-rename-step-${idx + 1}`}
+                    >
+                      <div className="flex items-start gap-3 md:gap-4">
+                        <div
+                          className={`relative z-10 flex h-8 w-8 md:h-9 md:w-9 flex-none items-center justify-center rounded-full border text-sm font-bold ${
+                            isRenameCore(idx)
+                              ? "bg-[#56D5DB] text-white border-[#56D5DB]"
+                              : "bg-white dark:bg-slate-800 text-[#56D5DB] border-[#56D5DB]/40"
+                          }`}
+                        >
+                          {s.no}
                         </div>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ol>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
+                            {isRenameCore(idx) && (
+                              <span className="inline-flex items-center rounded-full bg-[#56D5DB]/15 px-2.5 py-1 text-[11px] font-semibold text-[#0b7f82] dark:text-[#58C4C4]">
+                                핵심 작명 과정
+                              </span>
+                            )}
+                            <p className="text-lg font-semibold text-foreground">{s.title}</p>
+                            <span className="text-xs font-semibold text-muted-foreground">
+                              {idx + 1}/{renameSteps.length}
+                            </span>
+                          </div>
+
+                          <ul className="mt-3 space-y-1.5 md:space-y-2">
+                            {s.bullets.map((b, i) => (
+                              <li key={i} className="flex items-start gap-3">
+                                <span
+                                  className={`mt-0.5 inline-block w-px flex-none ${
+                                    isRenameCore(idx)
+                                      ? "h-5 bg-[#56D5DB]"
+                                      : "h-4 bg-[#56D5DB]/60"
+                                  }`}
+                                />
+                                <p className="text-base leading-relaxed text-muted-foreground">{b}</p>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              <div className="mt-6 md:mt-8 rounded-2xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 p-4 md:p-5">
+                <p className="text-base font-semibold text-foreground">안내</p>
+                <p className="mt-1 text-base leading-relaxed text-muted-foreground">
+                  진행 기간은 제출 내용 및 검토 범위에 따라 일부 변동될 수 있습니다.
+                </p>
+              </div>
             </div>
           </div>
         </div>

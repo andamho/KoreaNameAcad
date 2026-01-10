@@ -1,0 +1,123 @@
+export default function RenamingProcess() {
+  const steps = [
+    {
+      no: "01",
+      title: "개명 비용 결제 및 맞춤 작명 착수",
+      bullets: [
+        "결제 완료 즉시, 기존 이름의 운과 상담 내용을 바탕으로 맞춤 작명에 착수",
+      ],
+    },
+    {
+      no: "02",
+      title: "희망사항 제출 (최대 10가지)",
+      bullets: ["결제 후 1주 이내 제출"],
+    },
+    {
+      no: "03",
+      title: "정밀 작명 및 검토",
+      bullets: [
+        "희망사항을 반영한 심층 작명",
+        "개인 약 1개월 / 가족 약 2개월 소요",
+      ],
+    },
+    {
+      no: "04",
+      title: "새 이름 제안 및 심층 전화 상담",
+      bullets: ["완성된 이름 평균 3개 제안", "이름운 직접 상세 설명"],
+    },
+    {
+      no: "05",
+      title: "한글 이름 최종 선택",
+      bullets: ["제안된 후보 중 고객 직접 선택"],
+    },
+    {
+      no: "06",
+      title: "작명서(PDF) 발송",
+      bullets: ["선택된 이름의 한자 및 상세 해설이 포함된 작명서 제공"],
+    },
+  ];
+
+  const isCore = (idx) => idx >= 1 && idx <= 3; // 02~04
+
+  return (
+    <section className="w-full bg-white">
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
+        <header className="mb-8">
+          
+          <h2 className="mt-3 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">개명</h2>
+          <p className="mt-2 text-[13px] leading-relaxed text-slate-600 sm:text-sm sm:text-sm">
+            결제부터 작명서 발송까지, 단계별로 명확하게 안내드립니다.
+          </p>
+        </header>
+
+        <div className="relative">
+          <div className="absolute left-[16px] top-2 sm:left-[18px] h-[calc(100%-8px)] w-px bg-slate-200" />
+
+          <ol className="space-y-3 sm:space-y-4">
+            {steps.map((s, idx) => (
+              <li
+                key={s.no}
+                className={`group relative rounded-2xl border bg-white p-4 shadow-sm transition sm:p-5 ${
+                  isCore(idx) ? "sm:hover:shadow-[0_0_0_3px_rgba(86,213,219,0.15)]" : "sm:hover:shadow-md"
+                } ${
+                  idx === 2
+                    ? "border-[#56D5DB]/30 bg-[#56D5DB]/[0.06] shadow-md"
+                    : "border-slate-200"
+                }`}
+              >
+                
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div
+                    className={`relative z-10 flex h-8 w-8 sm:h-9 sm:w-9 flex-none items-center justify-center rounded-full border text-sm font-bold ${
+                      isCore(idx)
+                        ? "bg-[#56D5DB] text-white border-[#56D5DB]"
+                        : "bg-white text-[#56D5DB] border-[#56D5DB]/40"
+                    }`}
+                  >
+                    {s.no}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
+                      {isCore(idx) && (
+                        <span className="inline-flex items-center rounded-full bg-[#56D5DB]/15 px-2.5 py-1 text-[11px] font-semibold text-[#0b7f82]">
+                          핵심 작명 과정
+                        </span>
+                      )}
+                      <p className="text-[15px] font-semibold text-slate-900 sm:text-base">{s.title}</p>
+                      <span className="text-xs font-semibold text-slate-400">
+                        {idx + 1}/{steps.length}
+                      </span>
+                    </div>
+
+                    <ul className="mt-3 space-y-1.5 sm:space-y-2">
+                      {s.bullets.map((b, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <span
+                            className={`mt-0.5 inline-block w-px flex-none ${
+                              isCore(idx)
+                                ? "h-5 bg-[#56D5DB]"
+                                : "h-4 bg-[#56D5DB]/60"
+                            }`}
+                          />
+                          <p className="text-sm leading-relaxed text-slate-600">{b}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <footer className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:mt-8 sm:p-5">
+          <p className="text-sm font-semibold text-slate-900">안내</p>
+          <p className="mt-1 text-sm leading-relaxed text-slate-600">
+            진행 기간은 제출 내용 및 검토 범위에 따라 일부 변동될 수 있습니다.
+          </p>
+        </footer>
+      </div>
+    </section>
+  );
+}
