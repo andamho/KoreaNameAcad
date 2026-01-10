@@ -249,12 +249,8 @@ export default function Services() {
                       key={s.no}
                       className={`group relative rounded-2xl border bg-white dark:bg-slate-800 p-4 md:p-5 shadow-sm transition ${
                         isConsultCore(idx)
-                          ? "md:hover:shadow-[0_0_0_3px_rgba(86,213,219,0.15)]"
-                          : "md:hover:shadow-md"
-                      } ${
-                        idx === 2
-                          ? "border-[#56D5DB]/30 bg-[#56D5DB]/[0.06] dark:bg-[#56D5DB]/10 shadow-md"
-                          : "border-slate-200 dark:border-slate-600"
+                          ? "md:hover:shadow-[0_0_0_3px_rgba(86,213,219,0.15)] border-[#56D5DB]/30 bg-[#56D5DB]/[0.06] dark:bg-[#56D5DB]/10 shadow-md"
+                          : "md:hover:shadow-md border-slate-200 dark:border-slate-600"
                       }`}
                       data-testid={`process-consultation-step-${idx + 1}`}
                     >
