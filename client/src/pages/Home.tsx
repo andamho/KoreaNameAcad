@@ -540,8 +540,6 @@ export default function Home() {
                 </p>
 
                 <div className="relative">
-                  <div className="absolute left-[16px] md:left-[18px] top-2 h-[calc(100%-8px)] w-px bg-white/20" />
-
                   <ol className="space-y-3 md:space-y-4">
                     {/* Step 01 */}
                     <li
