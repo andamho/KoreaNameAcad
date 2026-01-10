@@ -97,7 +97,7 @@ export default function Services() {
     }
   ];
 
-  const isConsultCore = (idx: number) => idx === 2; // 03번이 핵심
+  const isConsultCore = (idx: number) => idx === 1 || idx === 2; // 02, 03번이 핵심
 
   const renameSteps = [
     {
