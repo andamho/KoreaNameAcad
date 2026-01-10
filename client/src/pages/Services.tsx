@@ -179,7 +179,7 @@ export default function Services() {
                 el.scrollIntoView({ behavior: "instant" });
               }
             }}
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#56D5DB] px-6 py-2.5 text-base font-semibold text-white hover:bg-[#4ac5cb] transition"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#56D5DB] px-5 py-2 text-base font-semibold text-white hover:bg-[#4ac5cb] transition"
             data-testid="button-view-process"
           >
             진행과정 보기 ↓
