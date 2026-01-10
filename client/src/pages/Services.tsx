@@ -273,9 +273,6 @@ export default function Services() {
                               </span>
                             )}
                             <p className="text-lg font-semibold text-foreground">{s.title}</p>
-                            <span className="text-xs font-semibold text-muted-foreground">
-                              {idx + 1}/{nameConsultationSteps.length}
-                            </span>
                           </div>
 
                           <ul className="mt-3 space-y-1.5 md:space-y-2">
@@ -346,9 +343,6 @@ export default function Services() {
                               </span>
                             )}
                             <p className="text-lg font-semibold text-foreground">{s.title}</p>
-                            <span className="text-xs font-semibold text-muted-foreground">
-                              {idx + 1}/{renameSteps.length}
-                            </span>
                           </div>
 
                           <ul className="mt-3 space-y-1.5 md:space-y-2">
