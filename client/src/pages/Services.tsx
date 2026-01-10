@@ -87,7 +87,7 @@ export default function Services() {
     },
     { 
       no: "02", 
-      title: "이름분석표 발송", 
+      title: "이름분석표(PDF) 발송", 
       bullets: ["상담 시작 직전 발송"],
     },
     { 
