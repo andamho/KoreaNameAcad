@@ -67,10 +67,10 @@ export function NameAnalysisPhone() {
           height: 580px;
           max-width: 85vw;
           max-height: 70vh;
-          border-radius: 36px;
+          border-radius: 30px;
           position: relative;
           background: linear-gradient(135deg, #b2fef7 0%, #81D8D0 50%, #4db6ac 100%);
-          padding: 6px;
+          padding: 6px !important;
           box-shadow: 
             0 30px 60px -20px rgba(50, 50, 93, 0.25), 
             0 15px 30px -20px rgba(0, 0, 0, 0.3),
@@ -90,7 +90,8 @@ export function NameAnalysisPhone() {
         /* 데스크톱에서는 12px 테두리 유지 */
         @media (min-width: 768px) {
           .name-phone {
-            padding: 12px;
+            padding: 12px !important;
+            border-radius: 36px;
           }
         }
         
