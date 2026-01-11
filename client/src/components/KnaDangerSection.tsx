@@ -75,7 +75,7 @@ function QA({ q, a }: { q: string; a: React.ReactNode }) {
 
 function Note({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-border bg-white dark:bg-card p-4 shadow-sm">
+    <div className="rounded-xl border border-gray-200 dark:border-border bg-white dark:bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:ring-1 hover:ring-orange-300/60 dark:hover:ring-orange-500/40">
       <h4 className="text-[21px] md:text-[22px] font-semibold break-keep">{title}</h4>
       <p className="mt-2 text-lg md:text-lg text-gray-700 dark:text-muted-foreground">{children}</p>
     </div>

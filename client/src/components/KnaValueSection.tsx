@@ -48,7 +48,7 @@ export default function KnaValueSection() {
           />
         </div>
 
-        <section className="mt-12 rounded-2xl border border-[#56D5DB] bg-[#56D5DB] p-6 shadow-lg shadow-[#56D5DB]/40">
+        <section className="mt-12 rounded-2xl border border-[#56D5DB] bg-[#56D5DB] p-6 shadow-lg shadow-[#56D5DB]/40 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#56D5DB]/50">
           <h3 className="text-[21px] md:text-[22px] font-bold tracking-tight text-white break-keep flex items-center gap-2">
             <span className="animate-pulse-scale-white"><LockIcon className="h-6 w-6 md:h-7 md:w-7 flex-shrink-0" /></span>
             <span className="md:whitespace-nowrap">두 번의 확인, 평생의 안심</span>
