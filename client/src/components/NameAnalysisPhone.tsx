@@ -7,23 +7,45 @@ export function NameAnalysisPhone() {
     const phone = phoneRef.current;
     if (!phone) return;
 
-    // 터치하면 정면으로 멈춤, 손가락 떼면 자동으로 틀어지면서 스크롤 재개
+    let isTouching = false;
+
+    // 터치 시작: 정면으로 멈춤
     const handleTouchStart = () => {
+      isTouching = true;
       phone.classList.add("touch-active");
     };
 
-    const handleTouchEnd = () => {
-      phone.classList.remove("touch-active");
+    // 터치 종료: 틀어지면서 스크롤 재개
+    const clearTouchActive = () => {
+      if (isTouching) {
+        isTouching = false;
+        phone.classList.remove("touch-active");
+      }
     };
 
+    // 폰 요소에 터치 시작 이벤트
     phone.addEventListener("touchstart", handleTouchStart, { passive: true });
-    phone.addEventListener("touchend", handleTouchEnd);
-    phone.addEventListener("touchcancel", handleTouchEnd);
+    
+    // 문서 전체에 터치 종료 이벤트 (iOS에서 요소 밖에서 종료되는 경우 대응)
+    document.addEventListener("touchend", clearTouchActive);
+    document.addEventListener("touchcancel", clearTouchActive);
+    
+    // 롱프레스 메뉴 등 대응
+    document.addEventListener("contextmenu", clearTouchActive);
+    
+    // 마우스 이벤트 대응 (데스크톱 호환)
+    phone.addEventListener("mousedown", () => {
+      isTouching = true;
+      phone.classList.add("touch-active");
+    });
+    document.addEventListener("mouseup", clearTouchActive);
 
     return () => {
       phone.removeEventListener("touchstart", handleTouchStart);
-      phone.removeEventListener("touchend", handleTouchEnd);
-      phone.removeEventListener("touchcancel", handleTouchEnd);
+      document.removeEventListener("touchend", clearTouchActive);
+      document.removeEventListener("touchcancel", clearTouchActive);
+      document.removeEventListener("contextmenu", clearTouchActive);
+      document.removeEventListener("mouseup", clearTouchActive);
     };
   }, []);
 
