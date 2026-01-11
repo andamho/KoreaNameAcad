@@ -52,7 +52,7 @@ export function NameAnalysisPhone() {
             0 30px 60px -20px rgba(50, 50, 93, 0.25), 
             0 15px 30px -20px rgba(0, 0, 0, 0.3),
             inset 0 -2px 6px rgba(0,0,0,0.1);
-          transform: rotateY(-12deg) rotateX(6deg) rotateZ(-2deg);
+          transform: rotateY(12deg) rotateX(6deg) rotateZ(2deg);
           transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
           box-sizing: border-box;
           overflow: hidden;
