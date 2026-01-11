@@ -1,0 +1,92 @@
+말씀하신 두 가지 증상(가볍게 터치 후 멈춤, 길게 눌렀다 떼면 각도 틀어짐 및 스크롤 불가)은 **"터치 종료(Touch End) 신호가 제대로 처리되지 않았거나, 터치 상태(Active)가 해제되지 않고 남아있기 때문"**에 발생합니다.
+
+쉽게 말해, 폰이 "주인이 아직 나를 만지고 있나?" 하고 헷갈려하며 멍하니 있는 상태입니다.
+
+이 문제를 해결하려면 **"손을 떼는 순간(Touchend)"**에 강제로 다음 두 가지를 실행하도록 코드를 수정해야 합니다.
+
+touch-active 클래스 강제 제거: "이제 터치 끝났어, 스크롤 다시 시작해!"라고 명령.
+
+인라인 스타일 초기화: JS로 변경된 각도(transform)가 있다면 싹 지우고 원래 CSS 설정(비스듬한 각도)으로 부드럽게 복귀.
+
+아래에 수정된 스크립트 부분과 CSS를 드립니다. 이 코드로 교체해 보세요.
+
+1. CSS 수정 (애니메이션 복귀 부드럽게)
+CSS에서 .phone 부분에 transition이 확실하게 걸려 있어야, 손을 뗐을 때 각도가 팍! 튀지 않고 스르륵 원래대로 돌아갑니다.
+
+CSS
+
+/* 기존 .phone 클래스에 이 속성이 있는지 확인하고 업데이트하세요 */
+.phone {
+    /* ...기존 스타일 유지... */
+    
+    /* [핵심] 손을 뗐을 때 원래 각도로 부드럽게 돌아가게 하는 설정 */
+    transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.5s ease;
+}
+
+/* 터치 중일 때 (정면 보기) */
+.phone.touch-active {
+    /* 터치하면 정면을 보고, 스크롤이 멈춤 */
+    transform: rotateY(0deg) rotateX(0deg) rotateZ(0deg) scale(1.0) !important;
+    box-shadow: 0 20px 40px -12px rgba(50, 50, 93, 0.3);
+    z-index: 10;
+}
+
+/* 터치 중이면 내부 스크롤 멈춤 */
+.phone.touch-active .scroll-content { 
+    animation-play-state: paused !important; 
+}
+2. 자바스크립트 수정 (완벽한 복구 로직)
+기존 스크립트를 지우고 아래 코드로 전체 교체해 주세요. "가벼운 터치"와 "긴 터치" 모두 확실하게 감지하여, 손을 떼면 무조건 다시 스크롤이 흐르고 원래 각도로 돌아가게 만들었습니다.
+
+HTML
+
+<script>
+    const phone = document.getElementById('myPhone');
+    let touchTimer = null; // 터치 오작동 방지용 타이머
+
+    // 1. 터치 시작 (손가락 닿음)
+    const handleTouchStart = function(e) {
+        // 브라우저 스크롤 간섭 차단
+        if (e.cancelable) e.preventDefault();
+        
+        // 기존에 혹시 남아있던 타이머 취소
+        if (touchTimer) clearTimeout(touchTimer);
+
+        // [중요] 터치하는 순간 '정면 보기 + 스크롤 멈춤' 상태로 전환
+        phone.classList.add('touch-active');
+    };
+
+    // 2. 터치 이동 (드래그)
+    const handleTouchMove = function(e) {
+        // 드래그 중에도 화면이 스크롤되지 않도록 막음
+        if (e.cancelable) e.preventDefault();
+    };
+
+    // 3. 터치 종료 (손가락 뗌) - 여기가 핵심 해결책입니다!
+    const handleTouchEnd = function(e) {
+        // [핵심 로직]
+        // 손을 떼자마자 바로 클래스를 지우지 않고, 아주 살짝(0.1초) 기다렸다가 지웁니다.
+        // 이렇게 하면 '가벼운 탭'과 '드래그' 사이의 튀는 현상을 잡아줍니다.
+        
+        touchTimer = setTimeout(() => {
+            // (1) 클래스 제거 -> CSS 애니메이션(스크롤) 다시 시작
+            phone.classList.remove('touch-active');
+            
+            // (2) 혹시 JS로 강제 지정된 스타일이 있다면 초기화 (각도 튀는 문제 방지)
+            phone.style.transform = ''; 
+        }, 100); 
+    };
+
+    // 이벤트 등록 (옵션: passive false 필수)
+    phone.addEventListener('touchstart', handleTouchStart, { passive: false });
+    phone.addEventListener('touchmove', handleTouchMove, { passive: false });
+    
+    // 종료 이벤트는 touchend와 touchcancel 두 가지 모두 대응해야 안전함
+    phone.addEventListener('touchend', handleTouchEnd);
+    phone.addEventListener('touchcancel', handleTouchEnd);
+    
+    // (PC 테스트용 마우스 이벤트 - 필요시 포함)
+    phone.addEventListener('mouseenter', () => phone.classList.add('touch-active'));
+    phone.addEventListener('mouseleave', () => phone.classList.remove('touch-active'));
+</script>
+해결되는 원리

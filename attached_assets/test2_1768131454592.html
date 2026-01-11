@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hong Gil Dong Interactive (Final Fix)</title>
+    <style>
+        /* --- 1. Global Setup --- */
+        :root {
+            --bg-color: #f6f9fc;
+            --text-main: #0a2540;
+            --text-sub: #525f7f;
+            --c-excellent: #5e72e4; --c-great: #11cdef; --c-good: #2dce89;
+            --c-peak: #00d4ff; --c-risk: #fb6340; --c-danger: #f5365c;
+            --tag-bg-opacity: 0.1;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; min-height: 100dvh;
+            background: var(--bg-color);
+            background-image: radial-gradient(#e3e8ee 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .scene { 
+            perspective: 5000px;
+            display: flex; justify-content: center; align-items: center;
+            width: 100%; height: 100%;
+        }
+
+        /* --- 2. Phone Logic --- */
+        .phone {
+            width: 270px; height: 560px;
+            max-width: 85vw; max-height: 80vh;
+            border-radius: 32px;
+            position: relative;
+            background: linear-gradient(135deg, #b2fef7 0%, #81D8D0 50%, #4db6ac 100%); /* 티파니 블루 계열 */
+            padding: 10px;
+            box-shadow: 0 30px 60px -20px rgba(50, 50, 93, 0.25), 0 15px 30px -20px rgba(0, 0, 0, 0.3), inset 0 -2px 6px rgba(0,0,0,0.1);
+            
+            /* [기본 상태] 약간 비스듬한 각도 */
+            transform: rotateY(-12deg) rotateX(6deg) rotateZ(-2deg);
+            
+            /* [핵심] 손을 뗐을 때 부드럽게 돌아가도록 transition 설정 */
+            transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.5s ease;
+            
+            box-sizing: border-box; overflow: hidden; will-change: transform; cursor: pointer;
+            
+            /* [핵심] 브라우저 기본 터치(스크롤/줌) 차단 -> JS로 제어권 가져옴 */
+            touch-action: none !important;
+            -webkit-user-select: none; user-select: none;
+        }
+
+        /* --- 터치 중(Active)일 때 스타일 --- */
+        .phone.touch-active {
+            /* 정면 보기 */
+            transform: rotateY(0deg) rotateX(0deg) rotateZ(0deg) scale(1.0) !important;
+            box-shadow: 0 20px 40px -12px rgba(50, 50, 93, 0.3);
+            z-index: 10;
+        }
+
+        /* 터치 중이면 스크롤 애니메이션 멈춤 (CSS로 제어) */
+        .phone.touch-active .scroll-content { 
+            animation-play-state: paused !important; 
+        }
+
+        /* --- 3. Content Scroll --- */
+        .screen {
+            height: 100%; width: 100%;
+            background: #f8f9fe; border-radius: 24px;
+            position: relative; overflow: hidden;
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+            pointer-events: none; /* 내부 요소 터치 방지 (부모인 phone이 다 받음) */
+        }
+
+        .scroll-content {
+            padding: 30px 12px 30px 12px;
+            /* 기본은 흐르는 상태 */
+            animation: autoScroll 30s linear infinite; 
+        }
+
+        @keyframes autoScroll {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-55%); } 
+        }
+
+        /* --- 4. Content Styles (기존 유지) --- */
+        .header { text-align: center; margin-bottom: 20px; }
+        .super-tag { display: inline-block; background: #e9ecef; color: var(--text-sub); font-size: 9px; font-weight: 700; padding: 4px 8px; border-radius: 12px; margin-bottom: 6px; }
+        .name-title { font-size: 24px; font-weight: 900; color: var(--text-main); margin: 0 0 5px 0; letter-spacing: -1px; }
+        .element-info { font-size: 12px; color: var(--text-sub); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .dot { width: 6px; height: 6px; background: #fb6340; border-radius: 50%; box-shadow: 0 0 8px rgba(251, 99, 64, 0.5); }
+        .section-title { font-size: 11px; font-weight: 800; color: #8898aa; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px 0; text-align: center; }
+
+        .card { background: #fff; border-radius: 16px; box-shadow: 0 5px 10px rgba(50, 50, 93, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08); margin-bottom: 12px; overflow: hidden; display: flex; flex-direction: column; }
+        .card-header { background: #fff; padding: 8px 0 0 0; font-size: 10px; font-weight: 700; color: var(--text-sub); text-align: center; position: relative; z-index: 2; }
+        .card-body { display: flex; position: relative; padding: 4px 0; }
+        .half { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 10px; position: relative; overflow: hidden; min-height: 80px; }
+        .half.left { align-items: flex-end; text-align: right; padding-right: 8px; }
+        .half.right { align-items: flex-start; text-align: left; padding-left: 8px; }
+        .divider { width: 1px; background: #e9ecef; position: relative; z-index: 2; margin: 6px 0; }
+
+        .half::before { position: absolute; top: 50%; transform: translateY(-50%); font-size: 55px; font-weight: 900; color: #000; opacity: 0.04; pointer-events: none; z-index: 0; white-space: nowrap; font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+        .half.left::before { right: 5px; left: auto; }
+        .half.right::before { left: 5px; right: auto; }
+
+        .wm-hong::before { content: '홍'; } .wm-gil::before { content: '길'; } .wm-dong::before { content: '동'; }
+        .wm-h-hong::before { content: '洪'; } .wm-h-gil::before { content: '吉'; } .wm-h-dong::before { content: '童'; }
+
+        .val-num, .val-text, .desc-text, .tag, .like-badge { position: relative; z-index: 1; }
+        .val-num { font-size: 22px; font-weight: 900; color: var(--text-main); line-height: 1; margin-bottom: 3px; letter-spacing: -1px; }
+        .val-text { font-size: 13px; font-weight: 800; color: var(--text-main); margin-bottom: 3px; letter-spacing: -0.5px; }
+        .desc-text { font-size: 10px; color: var(--text-sub); margin-bottom: 5px; line-height: 1.4; font-weight: 600; }
+        .like-badge { font-size: 9px; color: var(--text-sub); background: #f6f9fc; padding: 2px 5px; border-radius: 4px; display: inline-block; font-weight: 600; }
+        .tag { font-size: 8px; font-weight: 800; text-transform: uppercase; padding: 2px 5px; border-radius: 6px; margin-bottom: 5px; }
+
+        .t-excellent { color: var(--c-excellent); background: rgba(94, 114, 228, var(--tag-bg-opacity)); }
+        .t-great { color: var(--c-great); background: rgba(17, 205, 239, var(--tag-bg-opacity)); }
+        .t-good { color: var(--c-good); background: rgba(45, 206, 137, var(--tag-bg-opacity)); }
+        .t-peak { color: var(--c-peak); background: rgba(0, 212, 255, var(--tag-bg-opacity)); }
+        .t-risk { color: var(--c-risk); background: rgba(251, 99, 64, var(--tag-bg-opacity)); }
+        .t-danger { color: var(--c-danger); background: rgba(245, 54, 92, var(--tag-bg-opacity)); }
+        .c-risk { color: var(--c-risk); } .c-danger { color: var(--c-danger); } .c-peak { color: var(--c-peak); }
+
+    </style>
+</head>
+<body>
+
+<div class="scene">
+    <div class="phone" id="myPhone">
+        <div class="screen">
+            <div class="scroll-content" id="scrollContent">
+                
+                <div class="header">
+                    <span class="super-tag">SUPERHERO DNA</span>
+                    <h1 class="name-title">홍길동</h1>
+                    <div class="element-info">
+                        <span class="dot"></span>
+                        토/목 -> <strong>화 (상생 & 상극)</strong>
+                    </div>
+                </div>
+
+                <div class="section-title">NAME ANALYSIS (수리운)</div>
+                <div class="card">
+                    <div class="card-header">~19세 (초년)</div>
+                    <div class="card-body">
+                        <div class="half left wm-hong">
+                            <span class="tag t-excellent">Excellent</span>
+                            <div class="val-num">11</div>
+                            <div class="desc-text">인기순조</div>
+                            <span class="like-badge">Like 유재석</span>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="half right wm-h-hong">
+                            <span class="tag t-risk">Risk</span>
+                            <div class="val-num c-risk">19</div>
+                            <div class="desc-text">고독비참</div>
+                            <span class="like-badge">내면의 고독</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">20~39세 (청년)</div>
+                    <div class="card-body">
+                        <div class="half left wm-gil">
+                            <span class="tag t-great">Great</span>
+                            <div class="val-num">13</div>
+                            <div class="desc-text">학습창조</div>
+                            <span class="like-badge">Like 삼성</span>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="half right wm-h-gil">
+                            <span class="tag t-good">Good</span>
+                            <div class="val-num">16</div>
+                            <div class="desc-text">인자배려</div>
+                            <span class="like-badge">Like 이정재</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">40~59세 (중년)</div>
+                    <div class="card-body">
+                        <div class="half left wm-dong">
+                            <span class="tag t-danger">Danger</span>
+                            <div class="val-num c-danger">14</div>
+                            <div class="desc-text">이산파멸</div>
+                            <span class="like-badge">Like 전쟁</span>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="half right wm-h-dong">
+                            <span class="tag t-peak">Peak</span>
+                            <div class="val-num c-peak">23</div>
+                            <div class="desc-text">일약출세</div>
+                            <span class="like-badge">Like Hero</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">60세~ (말년)</div>
+                    <div class="card-body">
+                        <div class="half left">
+                            <span class="tag t-risk">Risk</span>
+                            <div class="val-num c-risk">19</div>
+                            <div class="desc-text">고독비참</div>
+                            <span class="like-badge">총운</span>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="half right">
+                            <span class="tag t-power">Power</span>
+                            <div class="val-num" style="color:var(--c-excellent)">29</div>
+                            <div class="desc-text">권력재물</div>
+                            <span class="like-badge">Like 배민</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="height: 100px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const phone = document.getElementById('myPhone');
+    let touchTimer = null;
+
+    // 1. 터치 시작 (Touch Start)
+    const handleTouchStart = function(e) {
+        // 타이머 초기화 (연타 오류 방지)
+        if (touchTimer) {
+            clearTimeout(touchTimer);
+            touchTimer = null;
+        }
+
+        // 스크롤 등 브라우저 기본 동작 차단 (중요!)
+        if (e.cancelable) e.preventDefault();
+        
+        // CSS 클래스 추가 -> 정면 보기 & 스크롤 PAUSED
+        phone.classList.add('touch-active');
+    };
+
+    // 2. 터치 이동 (Touch Move)
+    const handleTouchMove = function(e) {
+        if (e.cancelable) e.preventDefault();
+        // 드래그 중에는 아무것도 하지 않고 active 상태 유지
+    };
+
+    // 3. 터치 종료 (Touch End & Cancel)
+    const handleTouchEnd = function(e) {
+        // [문제 해결의 핵심]
+        // 즉시 제거하면 '탭(Tap)' 시 깜빡거릴 수 있으므로 아주 짧은 지연(50ms)을 줍니다.
+        touchTimer = setTimeout(() => {
+            // (1) active 클래스 제거 -> CSS 규칙에 의해 스크롤 애니메이션이 다시 RUNNING됨
+            phone.classList.remove('touch-active');
+            
+            // (2) 강제로 스타일 초기화 -> 각도가 CSS transition에 의해 부드럽게 원래대로(-12deg) 복귀됨
+            phone.style.transform = ''; 
+        }, 50);
+    };
+
+    // 이벤트 리스너 등록 (passive: false 필수)
+    phone.addEventListener('touchstart', handleTouchStart, { passive: false });
+    phone.addEventListener('touchmove', handleTouchMove, { passive: false });
+    
+    // 손을 떼거나(end), 시스템에 의해 터치가 취소될 때(cancel) 모두 대응
+    phone.addEventListener('touchend', handleTouchEnd);
+    phone.addEventListener('touchcancel', handleTouchEnd);
+
+    // (PC 마우스 대응)
+    phone.addEventListener('mousedown', handleTouchStart);
+    window.addEventListener('mouseup', handleTouchEnd);
+</script>
+
+</body>
+</html>

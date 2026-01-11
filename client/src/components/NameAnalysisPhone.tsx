@@ -7,88 +7,62 @@ export function NameAnalysisPhone() {
     const phone = phoneRef.current;
     if (!phone) return;
 
-    let isTouching = false;
-    let safetyTimeout: ReturnType<typeof setTimeout> | null = null;
-
-    // 터치 활성화 해제
-    const clearTouchActive = () => {
-      if (safetyTimeout) {
-        clearTimeout(safetyTimeout);
-        safetyTimeout = null;
-      }
-      isTouching = false;
-      phone.classList.remove("touch-active");
-    };
+    let touchTimer: ReturnType<typeof setTimeout> | null = null;
 
     // 터치 시작: 정면으로 멈춤
     const handleTouchStart = () => {
-      isTouching = true;
+      // 기존 타이머 취소
+      if (touchTimer) {
+        clearTimeout(touchTimer);
+        touchTimer = null;
+      }
+      // 터치하는 순간 '정면 보기 + 스크롤 멈춤' 상태로 전환
       phone.classList.add("touch-active");
-      
-      // 안전장치: 3초 후 자동 해제 (인앱 브라우저 대응)
-      if (safetyTimeout) clearTimeout(safetyTimeout);
-      safetyTimeout = setTimeout(() => {
-        if (phone.classList.contains("touch-active")) {
-          clearTouchActive();
-        }
-      }, 3000);
     };
 
-    // 터치 종료
+    // 터치 종료: 100ms 후 원래 상태로 복귀
     const handleTouchEnd = () => {
-      if (isTouching) {
-        clearTouchActive();
+      // 100ms 후에 클래스 제거 (가벼운 탭과 드래그 사이 튀는 현상 방지)
+      touchTimer = setTimeout(() => {
+        // (1) 클래스 제거 -> CSS 애니메이션(스크롤) 다시 시작
+        phone.classList.remove("touch-active");
+        // (2) JS로 강제 지정된 스타일 초기화 (각도 튀는 문제 방지)
+        phone.style.transform = '';
+      }, 100);
+    };
+
+    // 스크롤 시 터치 해제 (페이지 스크롤 시 즉시 해제)
+    const handleScroll = () => {
+      if (phone.classList.contains("touch-active")) {
+        if (touchTimer) {
+          clearTimeout(touchTimer);
+          touchTimer = null;
+        }
+        phone.classList.remove("touch-active");
+        phone.style.transform = '';
       }
     };
 
-    // 터치 이벤트
+    // 터치 이벤트 등록
     phone.addEventListener("touchstart", handleTouchStart, { passive: true });
-    phone.addEventListener("touchend", handleTouchEnd);
-    phone.addEventListener("touchcancel", handleTouchEnd);
+    phone.addEventListener("touchend", handleTouchEnd, { passive: true });
+    phone.addEventListener("touchcancel", handleTouchEnd, { passive: true });
     
-    // 문서 레벨 이벤트 (iOS 대응)
-    document.addEventListener("touchend", handleTouchEnd);
-    document.addEventListener("touchcancel", handleTouchEnd);
-    
-    // 포인터 이벤트 (모던 브라우저용)
-    phone.addEventListener("pointerdown", () => {
-      isTouching = true;
-      phone.classList.add("touch-active");
-      if (safetyTimeout) clearTimeout(safetyTimeout);
-      safetyTimeout = setTimeout(clearTouchActive, 3000);
-    });
-    document.addEventListener("pointerup", handleTouchEnd);
-    document.addEventListener("pointercancel", handleTouchEnd);
-    
-    // 롱프레스 메뉴 대응
-    document.addEventListener("contextmenu", clearTouchActive);
-    
-    // 마우스 이벤트 (데스크톱 호환)
-    phone.addEventListener("mousedown", () => {
-      isTouching = true;
-      phone.classList.add("touch-active");
-    });
-    document.addEventListener("mouseup", handleTouchEnd);
-    
-    // 스크롤 시 터치 해제 (스와이프 대응)
-    const handleScroll = () => {
-      if (isTouching) {
-        clearTouchActive();
-      }
-    };
+    // 스크롤 이벤트 (페이지 스크롤 시 터치 해제)
     window.addEventListener("scroll", handleScroll, { passive: true });
+    
+    // PC 테스트용 마우스 이벤트
+    phone.addEventListener("mouseenter", () => phone.classList.add("touch-active"));
+    phone.addEventListener("mouseleave", () => {
+      phone.classList.remove("touch-active");
+      phone.style.transform = '';
+    });
 
     return () => {
-      if (safetyTimeout) clearTimeout(safetyTimeout);
+      if (touchTimer) clearTimeout(touchTimer);
       phone.removeEventListener("touchstart", handleTouchStart);
       phone.removeEventListener("touchend", handleTouchEnd);
       phone.removeEventListener("touchcancel", handleTouchEnd);
-      document.removeEventListener("touchend", handleTouchEnd);
-      document.removeEventListener("touchcancel", handleTouchEnd);
-      document.removeEventListener("pointerup", handleTouchEnd);
-      document.removeEventListener("pointercancel", handleTouchEnd);
-      document.removeEventListener("contextmenu", clearTouchActive);
-      document.removeEventListener("mouseup", handleTouchEnd);
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
@@ -113,7 +87,7 @@ export function NameAnalysisPhone() {
             0 15px 30px -20px rgba(0, 0, 0, 0.3),
             inset 0 -2px 6px rgba(0,0,0,0.1);
           transform: rotateY(-12deg) rotateX(6deg) rotateZ(-2deg);
-          transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.5s ease;
           box-sizing: border-box;
           overflow: hidden;
           will-change: transform;
