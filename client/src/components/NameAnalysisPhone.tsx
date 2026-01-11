@@ -70,7 +70,7 @@ export function NameAnalysisPhone() {
           border-radius: 36px;
           position: relative;
           background: linear-gradient(135deg, #b2fef7 0%, #81D8D0 50%, #4db6ac 100%);
-          padding: 12px;
+          padding: 6px;
           box-shadow: 
             0 30px 60px -20px rgba(50, 50, 93, 0.25), 
             0 15px 30px -20px rgba(0, 0, 0, 0.3),
@@ -85,6 +85,13 @@ export function NameAnalysisPhone() {
           -webkit-user-select: none;
           user-select: none;
           -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* 데스크톱에서는 12px 테두리 유지 */
+        @media (min-width: 768px) {
+          .name-phone {
+            padding: 12px;
+          }
         }
         
         @media (hover: hover) {
