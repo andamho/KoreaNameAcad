@@ -437,7 +437,7 @@ export default function Home() {
       </Dialog>
 
       <Dialog open={analysisDetailOpen} onOpenChange={(open) => { if (!open) closeAnalysisDetail(); }}>
-        <DialogContent className="w-full h-full max-w-full max-h-full overflow-y-auto overflow-x-hidden bg-neutral-950 text-white border-white/20 !p-0 inset-0 !translate-x-0 !translate-y-0 rounded-none">
+        <DialogContent className="z-[210] w-full h-full max-w-full max-h-full overflow-y-auto overflow-x-hidden bg-neutral-950 text-white border-white/20 !p-0 inset-0 !translate-x-0 !translate-y-0 rounded-none">
           <DialogHeader className="sr-only">
             <DialogTitle>이름분석 운명상담 안내</DialogTitle>
           </DialogHeader>
