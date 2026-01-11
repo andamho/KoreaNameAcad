@@ -1,30 +1,36 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function NameAnalysisPhone() {
   const phoneRef = useRef<HTMLDivElement>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     const phone = phoneRef.current;
     if (!phone) return;
 
-    const handleTouchStart = () => {
-      phone.classList.add("touch-active");
+    // 토글 동작: 탭하면 상태 전환
+    const handleTap = (e: Event) => {
+      e.preventDefault();
+      setIsPaused(prev => !prev);
     };
 
-    const handleTouchEnd = () => {
-      phone.classList.remove("touch-active");
-    };
-
-    phone.addEventListener("touchstart", handleTouchStart, { passive: true });
-    phone.addEventListener("touchend", handleTouchEnd);
-    phone.addEventListener("touchcancel", handleTouchEnd);
+    phone.addEventListener("click", handleTap);
 
     return () => {
-      phone.removeEventListener("touchstart", handleTouchStart);
-      phone.removeEventListener("touchend", handleTouchEnd);
-      phone.removeEventListener("touchcancel", handleTouchEnd);
+      phone.removeEventListener("click", handleTap);
     };
   }, []);
+
+  useEffect(() => {
+    const phone = phoneRef.current;
+    if (!phone) return;
+
+    if (isPaused) {
+      phone.classList.add("touch-active");
+    } else {
+      phone.classList.remove("touch-active");
+    }
+  }, [isPaused]);
 
   return (
     <section className="name-analysis-phone-section py-16 md:py-24 flex items-center justify-center bg-[#f6f9fc] dark:bg-slate-900" style={{ 
