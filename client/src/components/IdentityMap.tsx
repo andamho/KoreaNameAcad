@@ -186,8 +186,8 @@ export default function IdentityMap() {
         <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">여권이름</div>
       </div>
 
-      {/* n3: 차량번호 */}
-      <div className="id-node absolute top-[12%] md:top-[18%] left-[75%] md:left-[78%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n3" style={{ "--c": "#2ed573", animationDelay: "1s" } as React.CSSProperties}>
+      {/* n3: 차량번호 - 중심에 가깝게 */}
+      <div className="id-node absolute top-[18%] md:top-[25%] left-[75%] md:left-[72%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n3" style={{ "--c": "#2ed573", animationDelay: "1s" } as React.CSSProperties}>
         <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-9 h-9 md:w-10 md:h-10" style={{ backgroundColor: "#2ed573", boxShadow: "0 0 20px #2ed573" }}>
           <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-[22px] md:h-[22px]" style={{ strokeWidth: 2.2 }}>
             <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
@@ -244,8 +244,8 @@ export default function IdentityMap() {
         <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold whitespace-nowrap">사업자명</div>
       </div>
 
-      {/* n9: 이메일주소 - 비대칭, 조금 내리고 선 짧게 */}
-      <div className="id-node absolute top-[18%] md:top-[25%] left-[22%] md:left-[28%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n9" style={{ "--c": "#a29bfe", animationDelay: "4s" } as React.CSSProperties}>
+      {/* n9: 이메일주소 - 더 멀리 */}
+      <div className="id-node absolute top-[12%] md:top-[18%] left-[22%] md:left-[22%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n9" style={{ "--c": "#a29bfe", animationDelay: "4s" } as React.CSSProperties}>
         <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-9 h-9 md:w-10 md:h-10" style={{ backgroundColor: "#a29bfe", boxShadow: "0 0 20px #a29bfe" }}>
           <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-[22px] md:h-[22px]" style={{ strokeWidth: 2.2 }}>
             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
