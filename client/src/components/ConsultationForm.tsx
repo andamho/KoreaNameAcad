@@ -279,9 +279,10 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               <button
                 type="button"
                 onClick={openFamilyPolicyDialog}
-                className="inline-flex items-center gap-1.5 font-semibold text-[#0f766e] dark:text-[#58C4C4] hover:underline"
+                className="inline-flex items-center gap-1 font-semibold transition-colors duration-200 hover:opacity-80"
+                style={{ color: '#58C4C4' }}
                 data-testid="button-family-policy-form"
-              >자세히 보기 →</button>
+              >자세히 보기 <span className="text-lg">›</span></button>
             </p>
           </div>
         )}
