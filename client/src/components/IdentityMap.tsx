@@ -1,15 +1,43 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function IdentityMap() {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const animationRef = useRef<number | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // IntersectionObserver로 화면에 보일 때만 초기화
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    
+    observer.observe(containerRef.current);
+    
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
-    if (!containerRef.current || !svgRef.current) return;
+    if (!containerRef.current || !svgRef.current || !isVisible) return;
 
     const svg = svgRef.current;
     const container = containerRef.current;
+
+    // 약간의 지연 후 초기화 (레이아웃 완료 보장)
+    const initTimeout = setTimeout(() => {
+      createElements();
+      updateLines();
+    }, 100);
 
     function createElements() {
       svg.innerHTML = '';
@@ -82,9 +110,6 @@ export default function IdentityMap() {
       animationRef.current = requestAnimationFrame(updateLines);
     }
 
-    createElements();
-    updateLines();
-
     let resizeTimer: NodeJS.Timeout;
     const handleResize = () => {
       clearTimeout(resizeTimer);
@@ -96,12 +121,13 @@ export default function IdentityMap() {
     window.addEventListener('resize', handleResize);
 
     return () => {
+      clearTimeout(initTimeout);
       window.removeEventListener('resize', handleResize);
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, []);
+  }, [isVisible]);
 
   return (
     <div
