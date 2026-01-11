@@ -7,43 +7,36 @@ export function NameAnalysisPhone() {
     const phone = phoneRef.current;
     if (!phone) return;
 
-    const handleTouchStart = (e: TouchEvent) => {
-      if (e.cancelable) e.preventDefault();
+    const handleTouchStart = () => {
       phone.classList.add("touch-active");
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.cancelable) e.preventDefault();
     };
 
     const handleTouchEnd = () => {
       phone.classList.remove("touch-active");
     };
 
-    phone.addEventListener("touchstart", handleTouchStart, { passive: false });
-    phone.addEventListener("touchmove", handleTouchMove, { passive: false });
+    phone.addEventListener("touchstart", handleTouchStart, { passive: true });
     phone.addEventListener("touchend", handleTouchEnd);
     phone.addEventListener("touchcancel", handleTouchEnd);
 
     return () => {
       phone.removeEventListener("touchstart", handleTouchStart);
-      phone.removeEventListener("touchmove", handleTouchMove);
       phone.removeEventListener("touchend", handleTouchEnd);
       phone.removeEventListener("touchcancel", handleTouchEnd);
     };
   }, []);
 
   return (
-    <section className="name-analysis-phone-section min-h-screen flex items-center justify-center bg-[#f6f9fc] dark:bg-slate-900" style={{ 
+    <section className="name-analysis-phone-section py-16 md:py-24 flex items-center justify-center bg-[#f6f9fc] dark:bg-slate-900" style={{ 
       backgroundImage: "radial-gradient(#e3e8ee 1px, transparent 1px)",
       backgroundSize: "20px 20px"
     }}>
       <style>{`
         .name-phone {
-          width: 320px;
-          height: 660px;
-          max-width: 90vw;
-          max-height: 85vh;
+          width: 280px;
+          height: 580px;
+          max-width: 85vw;
+          max-height: 70vh;
           border-radius: 36px;
           position: relative;
           background: linear-gradient(135deg, #b2fef7 0%, #81D8D0 50%, #4db6ac 100%);
@@ -58,7 +51,7 @@ export function NameAnalysisPhone() {
           overflow: hidden;
           will-change: transform;
           cursor: pointer;
-          touch-action: none;
+          touch-action: pan-y;
           -webkit-user-select: none;
           user-select: none;
         }
