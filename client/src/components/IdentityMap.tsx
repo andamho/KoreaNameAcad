@@ -230,7 +230,7 @@ export default function IdentityMap() {
             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold whitespace-nowrap">인스타<br className="md:hidden"/>명</div>
+        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold whitespace-nowrap">인스타명</div>
       </div>
 
       {/* n8: 사업자명 - 모바일에서 오른쪽 위로 분리 */}
@@ -241,7 +241,7 @@ export default function IdentityMap() {
             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold whitespace-nowrap">사업자<br className="md:hidden"/>명</div>
+        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold whitespace-nowrap">사업자명</div>
       </div>
 
       {/* n9: 이메일주소 */}
