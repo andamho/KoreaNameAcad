@@ -36,27 +36,24 @@ export function ServiceCard({
         {description}
       </p>
       
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
+      <div className="flex items-center gap-3 flex-wrap">
+        <button
           onClick={onClick}
           data-testid={`button-service-${title}`}
-          className="justify-start px-0 hover:text-primary text-lg flex-shrink-0"
-          style={{ color: '#58C4C4' }}
+          className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full font-semibold text-base bg-[#56D5DB] text-white shadow-sm transition-all duration-200 hover:bg-[#4ac5cb] hover:shadow-md active:scale-[0.98]"
         >
-          {buttonText} →
-        </Button>
+          {buttonText} <span className="text-lg">›</span>
+        </button>
         
         {secondaryButtonText && onSecondaryClick && (
-          <Button
-            variant="ghost"
+          <button
             onClick={onSecondaryClick}
             data-testid={`button-service-secondary-${title}`}
-            className="justify-start px-0 hover:text-primary text-lg flex-shrink-0"
+            className="inline-flex items-center gap-1 font-semibold text-base transition-colors duration-200 hover:opacity-80"
             style={{ color: '#58C4C4' }}
           >
-            {secondaryButtonText} →
-          </Button>
+            {secondaryButtonText} <span className="text-lg">→</span>
+          </button>
         )}
       </div>
     </Card>

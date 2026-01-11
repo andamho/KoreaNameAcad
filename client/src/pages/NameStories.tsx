@@ -159,10 +159,11 @@ export default function NameStories() {
                 href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=10&tab=1#contentslist_block"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full font-bold text-lg bg-white/20 backdrop-blur-sm border border-white/30 text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:bg-white/30 active:scale-[0.98]"
+                className="inline-flex items-center gap-1.5 px-6 py-3 rounded-full font-semibold text-base bg-[#56D5DB] text-white shadow-sm transition-all duration-200 hover:bg-[#4ac5cb] hover:shadow-md active:scale-[0.98]"
                 data-testid="link-blog-stories"
               >
                 <span>자세히 보기</span>
+                <span className="text-lg">›</span>
               </a>
             </div>
           </div>
