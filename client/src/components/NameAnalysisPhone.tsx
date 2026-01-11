@@ -8,44 +8,88 @@ export function NameAnalysisPhone() {
     if (!phone) return;
 
     let isTouching = false;
+    let safetyTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    // 터치 활성화 해제
+    const clearTouchActive = () => {
+      if (safetyTimeout) {
+        clearTimeout(safetyTimeout);
+        safetyTimeout = null;
+      }
+      isTouching = false;
+      phone.classList.remove("touch-active");
+    };
 
     // 터치 시작: 정면으로 멈춤
     const handleTouchStart = () => {
       isTouching = true;
       phone.classList.add("touch-active");
+      
+      // 안전장치: 3초 후 자동 해제 (인앱 브라우저 대응)
+      if (safetyTimeout) clearTimeout(safetyTimeout);
+      safetyTimeout = setTimeout(() => {
+        if (phone.classList.contains("touch-active")) {
+          clearTouchActive();
+        }
+      }, 3000);
     };
 
-    // 터치 종료: 틀어지면서 스크롤 재개
-    const clearTouchActive = () => {
+    // 터치 종료
+    const handleTouchEnd = () => {
       if (isTouching) {
-        isTouching = false;
-        phone.classList.remove("touch-active");
+        clearTouchActive();
       }
     };
 
-    // 폰 요소에 터치 시작 이벤트
+    // 터치 이벤트
     phone.addEventListener("touchstart", handleTouchStart, { passive: true });
+    phone.addEventListener("touchend", handleTouchEnd);
+    phone.addEventListener("touchcancel", handleTouchEnd);
     
-    // 문서 전체에 터치 종료 이벤트 (iOS에서 요소 밖에서 종료되는 경우 대응)
-    document.addEventListener("touchend", clearTouchActive);
-    document.addEventListener("touchcancel", clearTouchActive);
+    // 문서 레벨 이벤트 (iOS 대응)
+    document.addEventListener("touchend", handleTouchEnd);
+    document.addEventListener("touchcancel", handleTouchEnd);
     
-    // 롱프레스 메뉴 등 대응
+    // 포인터 이벤트 (모던 브라우저용)
+    phone.addEventListener("pointerdown", () => {
+      isTouching = true;
+      phone.classList.add("touch-active");
+      if (safetyTimeout) clearTimeout(safetyTimeout);
+      safetyTimeout = setTimeout(clearTouchActive, 3000);
+    });
+    document.addEventListener("pointerup", handleTouchEnd);
+    document.addEventListener("pointercancel", handleTouchEnd);
+    
+    // 롱프레스 메뉴 대응
     document.addEventListener("contextmenu", clearTouchActive);
     
-    // 마우스 이벤트 대응 (데스크톱 호환)
+    // 마우스 이벤트 (데스크톱 호환)
     phone.addEventListener("mousedown", () => {
       isTouching = true;
       phone.classList.add("touch-active");
     });
-    document.addEventListener("mouseup", clearTouchActive);
+    document.addEventListener("mouseup", handleTouchEnd);
+    
+    // 스크롤 시 터치 해제 (스와이프 대응)
+    const handleScroll = () => {
+      if (isTouching) {
+        clearTouchActive();
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
+      if (safetyTimeout) clearTimeout(safetyTimeout);
       phone.removeEventListener("touchstart", handleTouchStart);
-      document.removeEventListener("touchend", clearTouchActive);
-      document.removeEventListener("touchcancel", clearTouchActive);
+      phone.removeEventListener("touchend", handleTouchEnd);
+      phone.removeEventListener("touchcancel", handleTouchEnd);
+      document.removeEventListener("touchend", handleTouchEnd);
+      document.removeEventListener("touchcancel", handleTouchEnd);
+      document.removeEventListener("pointerup", handleTouchEnd);
+      document.removeEventListener("pointercancel", handleTouchEnd);
       document.removeEventListener("contextmenu", clearTouchActive);
-      document.removeEventListener("mouseup", clearTouchActive);
+      document.removeEventListener("mouseup", handleTouchEnd);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -74,9 +118,10 @@ export function NameAnalysisPhone() {
           overflow: hidden;
           will-change: transform;
           cursor: pointer;
-          touch-action: pan-y;
+          touch-action: manipulation;
           -webkit-user-select: none;
           user-select: none;
+          -webkit-tap-highlight-color: transparent;
         }
         
         @media (hover: hover) {
@@ -90,13 +135,15 @@ export function NameAnalysisPhone() {
           }
         }
         
-        .name-phone.touch-active {
+        .name-phone.touch-active,
+        .name-phone:active {
           transform: rotateY(0deg) rotateX(0deg) rotateZ(0deg) scale(1.0) !important;
           box-shadow: 0 20px 40px -12px rgba(50, 50, 93, 0.3);
           z-index: 10;
         }
         
-        .name-phone.touch-active .phone-scroll-content {
+        .name-phone.touch-active .phone-scroll-content,
+        .name-phone:active .phone-scroll-content {
           animation-play-state: paused !important;
         }
         
