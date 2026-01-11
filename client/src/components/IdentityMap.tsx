@@ -106,7 +106,7 @@ export default function IdentityMap() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full aspect-square max-w-[400px] mx-auto"
+      className="relative w-full aspect-square max-w-[500px] lg:max-w-none mx-auto"
       style={{ background: "radial-gradient(circle at 50% 50%, #0d1b35 0%, #050a15 100%)", borderRadius: "1.5rem" }}
     >
       <div className="id-center-wrapper absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100]">

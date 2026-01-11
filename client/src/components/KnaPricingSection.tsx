@@ -89,9 +89,9 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
           )}
           
           {/* Desktop: 2 columns (cards left, identity map right) / Mobile: stack */}
-          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
-            {/* Pricing Cards - Left on desktop */}
-            <div className="relative w-full lg:flex-1">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-stretch">
+            {/* Pricing Cards - Left on desktop, 40% smaller */}
+            <div className="relative w-full lg:w-[360px] lg:flex-shrink-0 lg:text-sm lg:scale-[0.85] lg:origin-top-left">
               {/* 장식용 코너 점들 */}
               <div className="absolute -left-3 -top-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
               <div className="absolute -right-3 -top-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
@@ -114,7 +114,7 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
             </div>
             
             {/* Identity Map - Right on desktop, bottom on mobile */}
-            <div className="w-full lg:w-[400px] lg:flex-shrink-0 order-last">
+            <div className="w-full lg:flex-1 lg:min-w-[450px] order-last">
               <IdentityMap />
             </div>
           </div>
