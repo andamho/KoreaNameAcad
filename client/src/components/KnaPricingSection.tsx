@@ -1,5 +1,6 @@
 import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_1766729101276.png";
 import { Gem, Clock, Settings } from "lucide-react";
+import IdentityMap from "./IdentityMap";
 
 const pricingData = {
   sections: [
@@ -73,7 +74,7 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
         <div aria-hidden className="pointer-events-none absolute inset-0">
           <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-[#7fe1d3]/20 dark:bg-[#58C4C4]/20 blur-3xl" />
         </div>
-        <div className={`kna-pricing-inner relative max-w-5xl mx-auto px-6 lg:px-8 ${showHero ? 'pt-8 sm:pt-10' : 'pt-[174px] sm:pt-[190px]'}`}>
+        <div className={`kna-pricing-inner relative max-w-6xl mx-auto px-6 lg:px-8 ${showHero ? 'pt-8 sm:pt-10' : 'pt-[174px] sm:pt-[190px]'}`}>
           {/* Section header - only shown when Hero is NOT displayed */}
           {!showHero && (
             <div className="text-center mb-12">
@@ -86,26 +87,36 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
               <p className="text-[18px] md:text-xl text-muted-foreground" data-testid="text-pricing-policy-section">모든 비용은 이름연구협회 규정에 따릅니다</p>
             </div>
           )}
-          <div className="relative mx-auto w-full max-w-4xl">
-          {/* 장식용 코너 점들 */}
-          <div className="absolute -left-3 -top-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
-          <div className="absolute -right-3 -top-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
-          <div className="absolute -left-3 -bottom-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
-          <div className="absolute -right-3 -bottom-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
           
-          <div className="rounded-3xl border border-border bg-card shadow-xl p-6 sm:p-8">
-            <div className="space-y-8">
-              {pricingData.sections.map((section, sectionIdx) => (
-                <PricingTable
-                  key={sectionIdx}
-                  sectionIndex={sectionIdx}
-                  heading={section.heading}
-                  columns={section.columns}
-                  rows={section.rows}
-                />
-              ))}
+          {/* Desktop: 2 columns (cards left, identity map right) / Mobile: stack */}
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
+            {/* Pricing Cards - Left on desktop */}
+            <div className="relative w-full lg:flex-1">
+              {/* 장식용 코너 점들 */}
+              <div className="absolute -left-3 -top-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
+              <div className="absolute -right-3 -top-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
+              <div className="absolute -left-3 -bottom-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
+              <div className="absolute -right-3 -bottom-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
+              
+              <div className="rounded-3xl border border-border bg-card shadow-xl p-6 sm:p-8">
+                <div className="space-y-8">
+                  {pricingData.sections.map((section, sectionIdx) => (
+                    <PricingTable
+                      key={sectionIdx}
+                      sectionIndex={sectionIdx}
+                      heading={section.heading}
+                      columns={section.columns}
+                      rows={section.rows}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
+            
+            {/* Identity Map - Right on desktop, bottom on mobile */}
+            <div className="w-full lg:w-[400px] lg:flex-shrink-0 order-last">
+              <IdentityMap />
+            </div>
           </div>
         </div>
       </section>

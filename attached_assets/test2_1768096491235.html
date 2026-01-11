@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Identity Map - Ultra Smooth</title>
+  <style>
+    /* 기본 설정 */
+    body, html {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      overflow: hidden; background-color: #050a15;
+      font-family: 'Pretendard', -apple-system, sans-serif;
+    }
+
+    .bg {
+      position: fixed; width: 100vw; height: 100vh;
+      background: radial-gradient(circle at 50% 50%, #0d1b35 0%, #050a15 100%);
+      z-index: -1;
+    }
+
+    .container {
+      position: relative; width: 100vw; height: 100vh;
+      display: flex; justify-content: center; align-items: center;
+    }
+
+    /* ================= 중앙 허브 ================= */
+    .center-wrapper {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 100;
+    }
+
+    .human-icon {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      display: flex; justify-content: center; align-items: center;
+      background-color: #635bff;
+      animation: hub-color 8s linear infinite, hub-breath 3s ease-in-out infinite;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .human-icon svg {
+      width: 45px; height: 45px;
+      fill: white;
+    }
+
+    @keyframes hub-breath {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(99, 91, 255, 0.6); }
+      50% { transform: scale(1.08); box-shadow: 0 0 70px rgba(99, 91, 255, 0.9); }
+    }
+
+    @keyframes hub-color {
+      0% { background-color: #635bff; border-color: rgba(255,255,255,0.3); }
+      50% { background-color: #ff4757; border-color: rgba(255,71,87,0.5); }
+      100% { background-color: #635bff; border-color: rgba(255,255,255,0.3); }
+    }
+
+    /* ================= 노드 공통 스타일 ================= */
+    .node {
+      position: absolute; display: flex; flex-direction: column;
+      align-items: center; z-index: 50;
+      /* 둥둥 떠다니는 애니메이션 */
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(-50%, -50%); }
+      50% { transform: translate(-50%, calc(-50% - 12px)); }
+    }
+
+    .icon-box {
+      border-radius: 16px; display: flex; justify-content: center; align-items: center;
+      margin-bottom: 6px; box-shadow: 0 0 20px var(--c);
+      background-color: var(--c);
+      width: var(--size); height: var(--size);
+    }
+
+    .icon-box svg { 
+      stroke: white; fill: none; stroke-width: 2.2; 
+      width: calc(var(--size) * 0.55); height: calc(var(--size) * 0.55); 
+    }
+
+    .label {
+      color: #adbdcc; font-size: 0.85rem; font-weight: 600;
+      text-align: center; text-shadow: 0 2px 2px rgba(0,0,0,0.8);
+      white-space: nowrap;
+    }
+
+    /* ================= 홍길동 (이름 노드) ================= */
+    .name-text {
+      color: #fff; font-weight: 900; letter-spacing: -0.02em; font-size: 1.8rem;
+      padding: 10px 18px; border-radius: 18px;
+      background: #ff3b4f;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      box-shadow: 0 0 30px rgba(255, 59, 79, 0.5);
+      white-space: nowrap; text-align: center;
+    }
+    .name-sub {
+      margin-top: 6px; color: #adbdcc; font-size: 0.85rem; font-weight: 600; text-align: center;
+    }
+
+    /* ================= [데스크탑] 배치 ================= */
+    /* 1순위: 홍길동 (가장 굵음 5px) */
+    #n1 { top: 36%; left: 50%; --c: #ff4757; animation-delay: 0s; } 
+    
+    /* 2순위: 전화번호 (4px) */
+    #n2 { top: 55%; left: 38%; --c: #ffa502; --size: 55px; animation-delay: 0.5s; } 
+    
+    /* 3순위: 여권이름 (3px) */
+    #n4 { top: 40%; left: 65%; --c: #1e90ff; --size: 50px; animation-delay: 1.5s; } 
+
+    /* 나머지 (1px) */
+    #n3 { top: 20%; left: 75%; --c: #2ed573; --size: 45px; animation-delay: 1s; } 
+    #n5 { top: 75%; left: 30%; --c: #70a1ff; --size: 45px; animation-delay: 2s; } 
+    #n6 { top: 82%; left: 55%; --c: #ff6b81; --size: 45px; animation-delay: 2.5s; } 
+    #n7 { top: 70%; left: 75%; --c: #eccc68; --size: 45px; animation-delay: 3s; } 
+    #n8 { top: 50%; left: 85%; --c: #7bed9f; --size: 45px; animation-delay: 3.5s; } 
+    #n9 { top: 15%; left: 40%; --c: #a29bfe; --size: 45px; animation-delay: 4s; } 
+
+    /* ================= SVG 라인 ================= */
+    svg.canvas {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%; pointer-events: none; z-index: 10;
+    }
+    /* 선 스타일: 투명도를 조금 높여 선명하게 */
+    .energy-line { fill: none; stroke-opacity: 0.6; stroke-linecap: round; } 
+    .particle { filter: blur(2px); }
+
+    /* ================= [모바일] 최적화 ================= */
+    @media (max-width: 480px){
+      .human-icon { width: 70px; height: 70px; }
+      .name-text { font-size: 1.4rem; padding: 8px 14px; }
+      .label { font-size: 0.75rem; }
+
+      #n2 { --size: 50px; } 
+      #n3, #n4, #n5, #n6, #n7, #n8, #n9 { --size: 40px; }
+
+      #n1 { top: 36%; left: 50%; } 
+      #n2 { top: 54%; left: 22%; } 
+      
+      #n9 { top: 12%; left: 25%; }
+      #n3 { top: 15%; left: 80%; }
+      #n4 { top: 38%; left: 82%; }
+      #n8 { top: 58%; left: 82%; }
+      #n7 { top: 75%; left: 80%; }
+      #n6 { top: 83%; left: 60%; } 
+      #n5 { top: 78%; left: 20%; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+  <div class="container">
+
+    <div class="center-wrapper">
+      <div class="human-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+    </div>
+
+    <div class="node" id="n1">
+      <div class="name-text anchor">홍길동</div>
+      <div class="name-sub">이름</div>
+    </div>
+
+    <div class="node" id="n2">
+      <div class="icon-box anchor">
+        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </div>
+      <div class="label">전화번호</div>
+    </div>
+
+    <div class="node" id="n4">
+        <div class="icon-box anchor"><svg viewBox="0 0 24 24"><path d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M10 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M14 18v-2a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v2"/></svg></div>
+        <div class="label">여권이름</div>
+    </div>
+
+    <div class="node" id="n3"><div class="icon-box anchor"><svg viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></div><div class="label">차량번호</div></div>
+    <div class="node" id="n5"><div class="icon-box anchor"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></div><div class="label">아이디</div></div>
+    <div class="node" id="n6"><div class="icon-box anchor"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3-3.5 3.5z"/></svg></div><div class="label">비밀번호</div></div>
+    <div class="node" id="n7"><div class="icon-box anchor"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></div><div class="label">인스타명</div></div>
+    <div class="node" id="n8"><div class="icon-box anchor"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="label">사업자명</div></div>
+    <div class="node" id="n9"><div class="icon-box anchor"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div class="label">이메일주소</div></div>
+
+    <svg class="canvas" id="svgCanvas"></svg>
+  </div>
+
+  <script>
+    // 1. 초기화 함수 (최초 1회만 실행해서 SVG 요소 생성)
+    function createElements() {
+      const svg = document.getElementById('svgCanvas');
+      svg.innerHTML = ''; // 초기화
+
+      const hubElement = document.querySelector('.center-wrapper');
+      
+      document.querySelectorAll('.node').forEach((node, i) => {
+        const style = getComputedStyle(node);
+        const color = style.getPropertyValue('--c').trim() || '#ffffff';
+        
+        // --- 굵기 설정 ---
+        let lineWidth = 1;
+        if (node.id === 'n1') lineWidth = 5;       // 홍길동
+        else if (node.id === 'n2') lineWidth = 4;  // 전화번호
+        else if (node.id === 'n4') lineWidth = 3;  // 여권이름
+
+        // 1) Path 생성 (선)
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("id", `line-${i}`); // ID 부여
+        path.setAttribute("class", "energy-line");
+        path.setAttribute("stroke", color);
+        path.setAttribute("stroke-width", lineWidth);
+        path.setAttribute("fill", "none");
+        svg.appendChild(path);
+
+        // 2) Circle 생성 (빛의 입자)
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        let particleRadius = lineWidth === 1 ? 3 : (lineWidth + 1.5);
+        circle.setAttribute("r", particleRadius);
+        circle.setAttribute("fill", color);
+        circle.setAttribute("class", "particle");
+
+        // 3) 애니메이션 (mpath 사용 -> 경로가 바뀌어도 안 끊김)
+        const animateMotion = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
+        // 시간: 3초 ~ 6초 랜덤 (아주 천천히)
+        animateMotion.setAttribute("dur", (3 + Math.random() * 3) + "s"); 
+        animateMotion.setAttribute("repeatCount", "indefinite");
+        
+        // mpath 태그로 선(path)을 참조
+        const mpath = document.createElementNS("http://www.w3.org/2000/svg", "mpath");
+        mpath.setAttribute("href", `#line-${i}`);
+        
+        animateMotion.appendChild(mpath);
+        circle.appendChild(animateMotion);
+        svg.appendChild(circle);
+      });
+    }
+
+    // 2. 업데이트 함수 (매 프레임마다 선의 좌표만 갱신)
+    function updateLines() {
+      const hubElement = document.querySelector('.center-wrapper');
+      const hubRect = hubElement.getBoundingClientRect();
+      const hX = hubRect.left + hubRect.width / 2;
+      const hY = hubRect.top + hubRect.height / 2;
+
+      document.querySelectorAll('.node').forEach((node, i) => {
+        const anchorEl = node.querySelector('.anchor') || node;
+        const aRect = anchorEl.getBoundingClientRect();
+        const nX = aRect.left + aRect.width / 2;
+        const nY = aRect.top + aRect.height / 2;
+
+        // 곡선 계산
+        const cpX = (nX + hX) / 2 + (Math.sin(i) * 20);
+        const cpY = (nY + hY) / 2 + (Math.cos(i) * 20);
+        const d = `M ${nX} ${nY} Q ${cpX} ${cpY} ${hX} ${hY}`;
+
+        // 기존 Path의 d 속성만 변경 (삭제X, 재생성X)
+        const path = document.getElementById(`line-${i}`);
+        if (path) {
+          path.setAttribute("d", d);
+        }
+      });
+
+      requestAnimationFrame(updateLines);
+    }
+
+    // 실행
+    window.addEventListener('load', () => {
+      createElements(); // 1번 실행
+      updateLines();    // 무한 반복 (좌표 업데이트)
+    });
+
+    // 리사이즈 시에는 다시 생성 (좌표계가 달라지므로)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        createElements();
+      }, 100);
+    });
+  </script>
+</body>
+</html>
