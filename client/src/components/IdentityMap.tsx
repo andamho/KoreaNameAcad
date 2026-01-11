@@ -234,7 +234,7 @@ export default function IdentityMap() {
       </div>
 
       {/* n8: 사업자명 - 전화번호와 대칭 위치, 동일 크기 */}
-      <div className="id-node absolute top-[48%] md:top-[55%] left-[88%] md:left-[65%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n8" style={{ "--c": "#7bed9f", animationDelay: "3.5s" } as React.CSSProperties}>
+      <div className="id-node absolute top-[48%] md:top-[55%] left-[88%] md:left-[72%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n8" style={{ "--c": "#7bed9f", animationDelay: "3.5s" } as React.CSSProperties}>
         <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-10 h-10 md:w-12 md:h-12" style={{ backgroundColor: "#7bed9f", boxShadow: "0 0 20px #7bed9f" }}>
           <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-[22px] md:h-[22px]" style={{ strokeWidth: 2.2 }}>
             <rect x="2" y="7" width="20" height="14" rx="2"/>
@@ -244,8 +244,8 @@ export default function IdentityMap() {
         <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold whitespace-nowrap">사업자명</div>
       </div>
 
-      {/* n9: 이메일주소 */}
-      <div className="id-node absolute top-[12%] md:top-[15%] left-[28%] md:left-[35%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n9" style={{ "--c": "#a29bfe", animationDelay: "4s" } as React.CSSProperties}>
+      {/* n9: 이메일주소 - 차량번호와 대칭 위치 */}
+      <div className="id-node absolute top-[12%] md:top-[18%] left-[25%] md:left-[22%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n9" style={{ "--c": "#a29bfe", animationDelay: "4s" } as React.CSSProperties}>
         <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-9 h-9 md:w-10 md:h-10" style={{ backgroundColor: "#a29bfe", boxShadow: "0 0 20px #a29bfe" }}>
           <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-[22px] md:h-[22px]" style={{ strokeWidth: 2.2 }}>
             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
