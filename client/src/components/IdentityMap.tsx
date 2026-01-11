@@ -85,17 +85,25 @@ export default function IdentityMap() {
       const hubElement = container.querySelector('.id-center-wrapper');
       if (!hubElement) return;
 
+      // zoom 값 감지 (CSS zoom 속성으로 인한 좌표 오차 보정)
+      const computedStyle = getComputedStyle(container);
+      const zoom = parseFloat(computedStyle.zoom) || 1;
+
       const containerRect = container.getBoundingClientRect();
       const hubRect = hubElement.getBoundingClientRect();
-      const hX = hubRect.left - containerRect.left + hubRect.width / 2;
-      const hY = hubRect.top - containerRect.top + hubRect.height / 2;
+      
+      // zoom으로 나눠서 실제 SVG 좌표계로 변환
+      const hX = (hubRect.left - containerRect.left + hubRect.width / 2) / zoom;
+      const hY = (hubRect.top - containerRect.top + hubRect.height / 2) / zoom;
 
       const nodes = container.querySelectorAll('.id-node');
       nodes.forEach((node, i) => {
         const anchorEl = node.querySelector('.anchor') || node;
         const aRect = anchorEl.getBoundingClientRect();
-        const nX = aRect.left - containerRect.left + aRect.width / 2;
-        const nY = aRect.top - containerRect.top + aRect.height / 2;
+        
+        // zoom으로 나눠서 실제 SVG 좌표계로 변환
+        const nX = (aRect.left - containerRect.left + aRect.width / 2) / zoom;
+        const nY = (aRect.top - containerRect.top + aRect.height / 2) / zoom;
 
         const cpX = (nX + hX) / 2 + (Math.sin(i) * 20);
         const cpY = (nY + hY) / 2 + (Math.cos(i) * 20);
