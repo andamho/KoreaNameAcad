@@ -1,36 +1,31 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export function NameAnalysisPhone() {
   const phoneRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     const phone = phoneRef.current;
     if (!phone) return;
 
-    // 토글 동작: 탭하면 상태 전환
-    const handleTap = (e: Event) => {
-      e.preventDefault();
-      setIsPaused(prev => !prev);
+    // 터치하면 정면으로 멈춤, 손가락 떼면 자동으로 틀어지면서 스크롤 재개
+    const handleTouchStart = () => {
+      phone.classList.add("touch-active");
     };
 
-    phone.addEventListener("click", handleTap);
+    const handleTouchEnd = () => {
+      phone.classList.remove("touch-active");
+    };
+
+    phone.addEventListener("touchstart", handleTouchStart, { passive: true });
+    phone.addEventListener("touchend", handleTouchEnd);
+    phone.addEventListener("touchcancel", handleTouchEnd);
 
     return () => {
-      phone.removeEventListener("click", handleTap);
+      phone.removeEventListener("touchstart", handleTouchStart);
+      phone.removeEventListener("touchend", handleTouchEnd);
+      phone.removeEventListener("touchcancel", handleTouchEnd);
     };
   }, []);
-
-  useEffect(() => {
-    const phone = phoneRef.current;
-    if (!phone) return;
-
-    if (isPaused) {
-      phone.classList.add("touch-active");
-    } else {
-      phone.classList.remove("touch-active");
-    }
-  }, [isPaused]);
 
   return (
     <section className="name-analysis-phone-section py-16 md:py-24 flex items-center justify-center bg-[#f6f9fc] dark:bg-slate-900" style={{ 
