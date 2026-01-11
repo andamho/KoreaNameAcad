@@ -261,6 +261,43 @@ export function NameAnalysisPhone() {
         .c-danger { color: #f5365c; }
         .c-peak { color: #00d4ff; }
         .c-excellent { color: #5e72e4; }
+        
+        /* 인앱 브라우저 82% 스케일링 */
+        html.ua-instagram .phone-name-title,
+        html.ua-tiktok .phone-name-title { font-size: 23px !important; }
+        
+        html.ua-instagram .phone-val-num,
+        html.ua-tiktok .phone-val-num { font-size: 21px !important; }
+        
+        html.ua-instagram .phone-val-text,
+        html.ua-tiktok .phone-val-text { font-size: 12px !important; }
+        
+        html.ua-instagram .phone-element-info,
+        html.ua-tiktok .phone-element-info { font-size: 11px !important; }
+        
+        html.ua-instagram .phone-section-title,
+        html.ua-tiktok .phone-section-title { font-size: 10px !important; }
+        
+        html.ua-instagram .phone-card-header,
+        html.ua-tiktok .phone-card-header { font-size: 9px !important; }
+        
+        html.ua-instagram .phone-desc-text,
+        html.ua-tiktok .phone-desc-text { font-size: 9px !important; }
+        
+        html.ua-instagram .phone-super-tag,
+        html.ua-tiktok .phone-super-tag { font-size: 8px !important; }
+        
+        html.ua-instagram .phone-like-badge,
+        html.ua-tiktok .phone-like-badge { font-size: 8px !important; }
+        
+        html.ua-instagram .phone-tag,
+        html.ua-tiktok .phone-tag { font-size: 8px !important; }
+        
+        html.ua-instagram .name-phone,
+        html.ua-tiktok .name-phone {
+          width: 230px !important;
+          height: 476px !important;
+        }
       `}</style>
       
       <div style={{ perspective: "5000px" }}>
