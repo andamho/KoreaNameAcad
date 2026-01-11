@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ServiceCard } from "@/components/ServiceCard";
+import { NameAnalysisPhone } from "@/components/NameAnalysisPhone";
 import { Search, Star, Flower, Baby, Building } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
@@ -168,6 +169,9 @@ export default function Services() {
           </div>
         </div>
       </section>
+
+      {/* 3D Name Analysis Phone */}
+      <NameAnalysisPhone />
 
       {/* Professional Services */}
       <section className="py-16 md:py-24 bg-muted/30">
