@@ -121,11 +121,16 @@ export function NameAnalysisPhone() {
         .phone-screen {
           height: 100%;
           width: 100%;
-          background: #f8f9fe;
-          border-radius: 26px;
+          /* Glassmorphism 유리 효과 */
+          background: rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          /* 유리 테두리 */
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
+          border-radius: 24px;
           position: relative;
           overflow: hidden;
-          -webkit-mask-image: -webkit-radial-gradient(white, black);
           pointer-events: none;
         }
         
@@ -184,19 +189,25 @@ export function NameAnalysisPhone() {
         }
         
         .phone-card {
-          background: #fff;
-          border-radius: 18px;
-          box-shadow: 0 5px 10px rgba(50, 50, 93, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08);
-          margin-bottom: 14px;
+          /* Glassmorphism 카드 효과 */
+          background: rgba(255, 255, 255, 0.65);
+          backdrop-filter: blur(5px);
+          -webkit-backdrop-filter: blur(5px);
+          border: 1px solid rgba(255, 255, 255, 0.5);
+          border-radius: 16px;
+          box-shadow: 0 5px 10px rgba(50, 50, 93, 0.05);
+          margin-bottom: 12px;
           overflow: hidden;
         }
         .phone-card-header {
-          background: #fff;
-          padding: 10px 0 0 0;
-          font-size: 11px;
+          background: transparent;
+          padding: 8px 0 0 0;
+          font-size: 10px;
           font-weight: 700;
           color: #525f7f;
           text-align: center;
+          position: relative;
+          z-index: 2;
         }
         .phone-card-body {
           display: flex;
