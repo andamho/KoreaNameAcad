@@ -89,16 +89,17 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
           )}
           
           {/* Desktop: 2 columns (cards left, identity map right) / Mobile: stack */}
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 lg:items-stretch">
-            {/* Pricing Cards - Left on desktop */}
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-0 lg:items-stretch">
+            {/* Pricing Cards - Left on desktop (Glassmorphism style) */}
             <div className="relative w-full lg:w-[380px] lg:flex-shrink-0">
-              {/* 장식용 코너 점들 */}
-              <div className="absolute -left-3 -top-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
-              <div className="absolute -right-3 -top-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
-              <div className="absolute -left-3 -bottom-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
-              <div className="absolute -right-3 -bottom-3 h-3 w-3 rounded-full bg-[#0f766e] dark:bg-[#58C4C4] shadow-sm" aria-hidden="true" />
-              
-              <div className="rounded-3xl border border-border bg-card shadow-xl p-4 sm:p-5 h-full">
+              <div 
+                className="rounded-3xl lg:rounded-r-none p-4 sm:p-5 h-full border border-white/10 lg:border-r-0"
+                style={{ 
+                  background: "rgba(20, 22, 30, 0.9)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)"
+                }}
+              >
                 <div className="space-y-4">
                   {pricingData.sections.map((section, sectionIdx) => (
                     <PricingTable
@@ -153,28 +154,29 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
   return (
     <div className="space-y-2">
       <h3 
-        className="inline-flex items-center gap-2 rounded-lg bg-[#e0f5f2] dark:bg-[#0f766e]/20 px-3 py-1.5 text-base lg:text-lg font-semibold text-[#0f766e] dark:text-[#58C4C4]"
+        className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-base lg:text-lg font-semibold text-[#5ce1e6]"
+        style={{ background: "rgba(92, 225, 230, 0.1)" }}
         data-testid={`heading-${headingId}`}
       >
         {getIcon()}
         {heading}
       </h3>
       
-      <div className="overflow-hidden rounded-xl border border-border">
+      <div className="overflow-hidden rounded-xl border border-white/10">
         {/* 테이블 헤더 */}
-        <div className="grid grid-cols-12 bg-muted/80 dark:bg-muted/40 text-sm lg:text-base font-semibold text-muted-foreground">
+        <div className="grid grid-cols-12 text-sm lg:text-base font-semibold text-white/60" style={{ background: "rgba(255, 255, 255, 0.05)" }}>
           <div className="col-span-6 sm:col-span-8 px-3 py-2">{columns[0]}</div>
           <div className="col-span-6 sm:col-span-4 px-3 py-2 text-right">{columns[1]}</div>
         </div>
         
         {/* 테이블 바디 */}
-        <div className="divide-y divide-border bg-card">
+        <div className="divide-y divide-white/10">
           {rows.map((row, i) => {
             // 이름궁합, 인스타명, 반려동물, 이름감명은 모바일에서 줄바꿈 방지
             const noBreakItems = ["이름궁합(연인)", "인스타명(감명)", "반려동물(감명)"];
             const nameClass = noBreakItems.includes(row.name) 
-              ? "col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-snug whitespace-nowrap"
-              : "col-span-6 sm:col-span-8 pr-2 text-muted-foreground leading-snug";
+              ? "col-span-6 sm:col-span-8 pr-2 text-white/70 leading-snug whitespace-nowrap"
+              : "col-span-6 sm:col-span-8 pr-2 text-white/70 leading-snug";
             
             // 이름감명은 특별 처리 (모바일에서 괄호 부분 작게)
             const isNameReview = row.name === "이름감명 (타작명소 이름)";
@@ -182,7 +184,7 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
             return (
               <div 
                 key={i} 
-                className="grid grid-cols-12 px-3 py-2 hover-elevate text-sm lg:text-base"
+                className="grid grid-cols-12 px-3 py-2 text-sm lg:text-base transition-colors hover:bg-white/5"
                 data-testid={`pricing-row-${sectionIndex}-${i}`}
               >
                 <div className={nameClass}>
@@ -195,7 +197,7 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
                     row.name
                   )}
                 </div>
-                <div className="col-span-6 sm:col-span-4 text-right font-semibold text-foreground break-words">{row.price}</div>
+                <div className="col-span-6 sm:col-span-4 text-right font-semibold text-white break-words">{row.price}</div>
               </div>
             );
           })}
