@@ -1,70 +1,60 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function NameAnalysisPhone() {
   const phoneRef = useRef<HTMLDivElement>(null);
   const [isTouchActive, setIsTouchActive] = useState(false);
-  const touchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // 터치 해제 함수
-  const clearTouch = useCallback(() => {
-    if (touchTimerRef.current) {
-      clearTimeout(touchTimerRef.current);
-      touchTimerRef.current = null;
-    }
-    setIsTouchActive(false);
-  }, []);
-
-  // 터치 시작
-  const handleTouchStart = useCallback(() => {
-    if (touchTimerRef.current) {
-      clearTimeout(touchTimerRef.current);
-      touchTimerRef.current = null;
-    }
-    setIsTouchActive(true);
-  }, []);
-
-  // 터치 종료 (100ms 후 복귀)
-  const handleTouchEnd = useCallback(() => {
-    touchTimerRef.current = setTimeout(() => {
-      setIsTouchActive(false);
-    }, 100);
-  }, []);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const phone = phoneRef.current;
     if (!phone) return;
 
-    // 스크롤 시 터치 즉시 해제
-    const handleScroll = () => {
-      clearTouch();
+    // 1. 터치 시작 - passive: false로 브라우저 개입 차단
+    const handleTouchStart = (e: TouchEvent) => {
+      // 브라우저 스크롤/줌 등 개입 차단 (폰 요소에서만)
+      if (e.cancelable) e.preventDefault();
+      
+      // 기존 타이머 클리어
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      
+      setIsTouchActive(true);
     };
 
-    // 터치 이벤트 (폰 요소)
-    phone.addEventListener("touchstart", handleTouchStart, { passive: true });
-    phone.addEventListener("touchend", handleTouchEnd, { passive: true });
-    phone.addEventListener("touchcancel", handleTouchEnd, { passive: true });
-    
-    // document 레벨 터치 종료 (인앱 브라우저 대응)
-    document.addEventListener("touchend", handleTouchEnd, { passive: true });
-    document.addEventListener("touchcancel", handleTouchEnd, { passive: true });
-    document.addEventListener("pointerup", handleTouchEnd, { passive: true });
-    document.addEventListener("pointercancel", handleTouchEnd, { passive: true });
-    
-    // 스크롤 이벤트
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    // 2. 터치 이동 - 드래그 중 스크롤 방지
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.cancelable) e.preventDefault();
+    };
 
+    // 3. 터치 종료 (End & Cancel)
+    const handleTouchEnd = () => {
+      // 즉시 해제 시 깜빡임 방지를 위한 미세 딜레이
+      timerRef.current = setTimeout(() => {
+        setIsTouchActive(false);
+        
+        // [안전장치] 강제로 스타일 초기화 (혹시 모를 JS style 잔여물 제거)
+        if (phone) phone.style.transform = '';
+      }, 50);
+    };
+
+    // [중요] React 합성 이벤트 대신 Native Event를 passive: false로 등록
+    // 이렇게 해야 모바일 브라우저의 스크롤 개입을 확실히 막을 수 있음
+    phone.addEventListener('touchstart', handleTouchStart, { passive: false });
+    phone.addEventListener('touchmove', handleTouchMove, { passive: false });
+    phone.addEventListener('touchend', handleTouchEnd);
+    phone.addEventListener('touchcancel', handleTouchEnd);
+
+    // 클린업 (컴포넌트 언마운트 시 이벤트 제거)
     return () => {
-      if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
-      phone.removeEventListener("touchstart", handleTouchStart);
-      phone.removeEventListener("touchend", handleTouchEnd);
-      phone.removeEventListener("touchcancel", handleTouchEnd);
-      document.removeEventListener("touchend", handleTouchEnd);
-      document.removeEventListener("touchcancel", handleTouchEnd);
-      document.removeEventListener("pointerup", handleTouchEnd);
-      document.removeEventListener("pointercancel", handleTouchEnd);
-      window.removeEventListener("scroll", handleScroll);
+      phone.removeEventListener('touchstart', handleTouchStart);
+      phone.removeEventListener('touchmove', handleTouchMove);
+      phone.removeEventListener('touchend', handleTouchEnd);
+      phone.removeEventListener('touchcancel', handleTouchEnd);
+      if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [handleTouchStart, handleTouchEnd, clearTouch]);
+  }, []);
 
   return (
     <section className="name-analysis-phone-section py-16 md:py-24 flex items-center justify-center bg-[#f6f9fc] dark:bg-slate-900" style={{ 
@@ -344,7 +334,13 @@ export function NameAnalysisPhone() {
       `}</style>
       
       <div style={{ perspective: "5000px" }}>
-        <div className={`name-phone ${isTouchActive ? 'touch-active' : ''}`} ref={phoneRef} data-testid="name-analysis-phone">
+        <div 
+          ref={phoneRef}
+          className={`name-phone ${isTouchActive ? 'touch-active' : ''}`}
+          data-testid="name-analysis-phone"
+          onMouseEnter={() => setIsTouchActive(true)}
+          onMouseLeave={() => setIsTouchActive(false)}
+        >
           <div className="phone-screen">
             <div className="phone-scroll-content">
               <div className="phone-header">
