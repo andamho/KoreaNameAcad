@@ -20,6 +20,13 @@
     -webkit-touch-callout: none;
     outline: none;
   }
+  
+  /* 네비바 높이(80px) + 여유(20px) 스크롤 오프셋 */
+  section[id],
+  div[id],
+  [data-scroll-target] {
+    scroll-margin-top: 100px;
+  }
 }
 
 /* 고려대학교 볼드체 폰트 */
