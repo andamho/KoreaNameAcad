@@ -67,6 +67,11 @@ export default function Services() {
           html.${className} button {
             font-size: 13px !important;
           }
+          /* 핵심 상담/작명 과정 뱃지 - 82% 적용 (11px × 0.82 = 9px) */
+          html.${className} [data-testid^="process-consultation-step"] .text-\\[11px\\],
+          html.${className} [data-testid^="process-rename-step"] .text-\\[11px\\] {
+            font-size: 9px !important;
+          }
         `;
         document.head.appendChild(style);
       }

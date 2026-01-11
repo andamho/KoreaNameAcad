@@ -1219,10 +1219,3 @@ html.ua-tiktok .legal-page-content {
   zoom: 0.82 !important;
 }
 
-/* 서비스 페이지 진행과정 섹션 - 인앱 82% 스케일 */
-html.ua-instagram [data-testid="card-process-consultation"],
-html.ua-tiktok [data-testid="card-process-consultation"],
-html.ua-instagram [data-testid="card-process-rename"],
-html.ua-tiktok [data-testid="card-process-rename"] {
-  zoom: 0.82 !important;
-}
