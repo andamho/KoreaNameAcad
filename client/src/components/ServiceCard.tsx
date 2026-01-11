@@ -52,7 +52,7 @@ export function ServiceCard({
             className="inline-flex items-center gap-1 font-semibold text-base transition-colors duration-200 hover:opacity-80"
             style={{ color: '#58C4C4' }}
           >
-            {secondaryButtonText} <span className="text-lg">→</span>
+            {secondaryButtonText} <span className="text-lg">›</span>
           </button>
         )}
       </div>
