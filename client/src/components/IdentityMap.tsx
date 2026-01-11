@@ -124,92 +124,101 @@ export default function IdentityMap() {
         </div>
       </div>
 
-      <div className="id-node absolute top-[36%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n1" style={{ "--c": "#ff4757", animationDelay: "0s" } as React.CSSProperties}>
-        <div className="anchor text-white font-black text-lg md:text-xl px-3 md:px-4 py-2 rounded-2xl whitespace-nowrap" style={{ background: "#ff3b4f", boxShadow: "0 0 30px rgba(255, 59, 79, 0.5)", border: "1.5px solid rgba(255,255,255,0.25)" }}>홍길동</div>
-        <div className="mt-1 text-[#adbdcc] text-xs font-semibold">이름</div>
+      {/* n1: 홍길동 - 모바일에서 더 위로 */}
+      <div className="id-node absolute top-[28%] md:top-[36%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n1" style={{ "--c": "#ff4757", animationDelay: "0s" } as React.CSSProperties}>
+        <div className="anchor text-white font-black text-base md:text-xl px-3 md:px-4 py-1.5 md:py-2 rounded-2xl whitespace-nowrap" style={{ background: "#ff3b4f", boxShadow: "0 0 30px rgba(255, 59, 79, 0.5)", border: "1.5px solid rgba(255,255,255,0.25)" }}>홍길동</div>
+        <div className="mt-1 text-[#adbdcc] text-[10px] md:text-xs font-semibold">이름</div>
       </div>
 
-      <div className="id-node absolute top-[55%] left-[28%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n2" style={{ "--c": "#ffa502", "--size": "48px", animationDelay: "0.5s" } as React.CSSProperties}>
-        <div className="anchor rounded-2xl flex justify-center items-center mb-1" style={{ width: "var(--size)", height: "var(--size)", backgroundColor: "var(--c)", boxShadow: "0 0 20px var(--c)" }}>
-          <svg viewBox="0 0 24 24" className="stroke-white fill-none" style={{ strokeWidth: 2.2, width: "calc(var(--size) * 0.55)", height: "calc(var(--size) * 0.55)" }}>
+      {/* n2: 전화번호 - 모바일에서 더 왼쪽 위로 */}
+      <div className="id-node absolute top-[48%] md:top-[55%] left-[12%] md:left-[28%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n2" style={{ "--c": "#ffa502", animationDelay: "0.5s" } as React.CSSProperties}>
+        <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-10 h-10 md:w-12 md:h-12" style={{ backgroundColor: "#ffa502", boxShadow: "0 0 20px #ffa502" }}>
+          <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-6 md:h-6" style={{ strokeWidth: 2.2 }}>
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-xs font-semibold">전화번호</div>
+        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">전화번호</div>
       </div>
 
-      <div className="id-node absolute top-[40%] left-[72%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n4" style={{ "--c": "#1e90ff", "--size": "44px", animationDelay: "1.5s" } as React.CSSProperties}>
-        <div className="anchor rounded-2xl flex justify-center items-center mb-1" style={{ width: "var(--size)", height: "var(--size)", backgroundColor: "var(--c)", boxShadow: "0 0 20px var(--c)" }}>
-          <svg viewBox="0 0 24 24" className="stroke-white fill-none" style={{ strokeWidth: 2.2, width: "calc(var(--size) * 0.55)", height: "calc(var(--size) * 0.55)" }}>
+      {/* n4: 여권이름 */}
+      <div className="id-node absolute top-[35%] md:top-[40%] left-[82%] md:left-[72%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n4" style={{ "--c": "#1e90ff", animationDelay: "1.5s" } as React.CSSProperties}>
+        <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-9 h-9 md:w-11 md:h-11" style={{ backgroundColor: "#1e90ff", boxShadow: "0 0 20px #1e90ff" }}>
+          <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-6 md:h-6" style={{ strokeWidth: 2.2 }}>
             <path d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/>
             <path d="M10 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
             <path d="M14 18v-2a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v2"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-xs font-semibold">여권이름</div>
+        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">여권이름</div>
       </div>
 
-      <div className="id-node absolute top-[18%] left-[78%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n3" style={{ "--c": "#2ed573", "--size": "40px", animationDelay: "1s" } as React.CSSProperties}>
-        <div className="anchor rounded-2xl flex justify-center items-center mb-1" style={{ width: "var(--size)", height: "var(--size)", backgroundColor: "var(--c)", boxShadow: "0 0 20px var(--c)" }}>
-          <svg viewBox="0 0 24 24" className="stroke-white fill-none" style={{ strokeWidth: 2.2, width: "calc(var(--size) * 0.55)", height: "calc(var(--size) * 0.55)" }}>
+      {/* n3: 차량번호 */}
+      <div className="id-node absolute top-[12%] md:top-[18%] left-[75%] md:left-[78%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n3" style={{ "--c": "#2ed573", animationDelay: "1s" } as React.CSSProperties}>
+        <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-9 h-9 md:w-10 md:h-10" style={{ backgroundColor: "#2ed573", boxShadow: "0 0 20px #2ed573" }}>
+          <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-[22px] md:h-[22px]" style={{ strokeWidth: 2.2 }}>
             <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
             <circle cx="7" cy="17" r="2"/>
             <path d="M9 17h6"/>
             <circle cx="17" cy="17" r="2"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-xs font-semibold">차량번호</div>
+        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">차량번호</div>
       </div>
 
-      <div className="id-node absolute top-[75%] left-[22%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n5" style={{ "--c": "#70a1ff", "--size": "40px", animationDelay: "2s" } as React.CSSProperties}>
-        <div className="anchor rounded-2xl flex justify-center items-center mb-1" style={{ width: "var(--size)", height: "var(--size)", backgroundColor: "var(--c)", boxShadow: "0 0 20px var(--c)" }}>
-          <svg viewBox="0 0 24 24" className="stroke-white fill-none" style={{ strokeWidth: 2.2, width: "calc(var(--size) * 0.55)", height: "calc(var(--size) * 0.55)" }}>
+      {/* n5: 아이디 - 모바일에서 더 아래 왼쪽으로 */}
+      <div className="id-node absolute top-[72%] md:top-[75%] left-[10%] md:left-[22%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n5" style={{ "--c": "#70a1ff", animationDelay: "2s" } as React.CSSProperties}>
+        <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-9 h-9 md:w-10 md:h-10" style={{ backgroundColor: "#70a1ff", boxShadow: "0 0 20px #70a1ff" }}>
+          <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-[22px] md:h-[22px]" style={{ strokeWidth: 2.2 }}>
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             <path d="M12 8v4"/>
             <path d="M12 16h.01"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-xs font-semibold">아이디</div>
+        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">아이디</div>
       </div>
 
-      <div className="id-node absolute top-[82%] left-[50%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n6" style={{ "--c": "#ff6b81", "--size": "40px", animationDelay: "2.5s" } as React.CSSProperties}>
-        <div className="anchor rounded-2xl flex justify-center items-center mb-1" style={{ width: "var(--size)", height: "var(--size)", backgroundColor: "var(--c)", boxShadow: "0 0 20px var(--c)" }}>
-          <svg viewBox="0 0 24 24" className="stroke-white fill-none" style={{ strokeWidth: 2.2, width: "calc(var(--size) * 0.55)", height: "calc(var(--size) * 0.55)" }}>
+      {/* n6: 비밀번호 */}
+      <div className="id-node absolute top-[88%] md:top-[82%] left-[50%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n6" style={{ "--c": "#ff6b81", animationDelay: "2.5s" } as React.CSSProperties}>
+        <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-9 h-9 md:w-10 md:h-10" style={{ backgroundColor: "#ff6b81", boxShadow: "0 0 20px #ff6b81" }}>
+          <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-[22px] md:h-[22px]" style={{ strokeWidth: 2.2 }}>
             <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3-3.5 3.5z"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-xs font-semibold">비밀번호</div>
+        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">비밀번호</div>
       </div>
 
-      <div className="id-node absolute top-[68%] left-[78%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n7" style={{ "--c": "#eccc68", "--size": "40px", animationDelay: "3s" } as React.CSSProperties}>
-        <div className="anchor rounded-2xl flex justify-center items-center mb-1" style={{ width: "var(--size)", height: "var(--size)", backgroundColor: "var(--c)", boxShadow: "0 0 20px var(--c)" }}>
-          <svg viewBox="0 0 24 24" className="stroke-white fill-none" style={{ strokeWidth: 2.2, width: "calc(var(--size) * 0.55)", height: "calc(var(--size) * 0.55)" }}>
+      {/* n7: 인스타명 - 모바일에서 오른쪽 아래로 */}
+      <div className="id-node absolute top-[72%] md:top-[68%] left-[88%] md:left-[78%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n7" style={{ "--c": "#eccc68", animationDelay: "3s" } as React.CSSProperties}>
+        <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-9 h-9 md:w-10 md:h-10" style={{ backgroundColor: "#eccc68", boxShadow: "0 0 20px #eccc68" }}>
+          <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-[22px] md:h-[22px]" style={{ strokeWidth: 2.2 }}>
             <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-xs font-semibold">인스타명</div>
+        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">인스타명</div>
       </div>
 
-      <div className="id-node absolute top-[55%] left-[88%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n8" style={{ "--c": "#7bed9f", "--size": "40px", animationDelay: "3.5s" } as React.CSSProperties}>
-        <div className="anchor rounded-2xl flex justify-center items-center mb-1" style={{ width: "var(--size)", height: "var(--size)", backgroundColor: "var(--c)", boxShadow: "0 0 20px var(--c)" }}>
-          <svg viewBox="0 0 24 24" className="stroke-white fill-none" style={{ strokeWidth: 2.2, width: "calc(var(--size) * 0.55)", height: "calc(var(--size) * 0.55)" }}>
+      {/* n8: 사업자명 - 모바일에서 오른쪽 위로 분리 */}
+      <div className="id-node absolute top-[52%] md:top-[55%] left-[92%] md:left-[88%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n8" style={{ "--c": "#7bed9f", animationDelay: "3.5s" } as React.CSSProperties}>
+        <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-9 h-9 md:w-10 md:h-10" style={{ backgroundColor: "#7bed9f", boxShadow: "0 0 20px #7bed9f" }}>
+          <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-[22px] md:h-[22px]" style={{ strokeWidth: 2.2 }}>
             <rect x="2" y="7" width="20" height="14" rx="2"/>
             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-xs font-semibold">사업자명</div>
+        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">사업자명</div>
       </div>
 
-      <div className="id-node absolute top-[15%] left-[35%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n9" style={{ "--c": "#a29bfe", "--size": "40px", animationDelay: "4s" } as React.CSSProperties}>
-        <div className="anchor rounded-2xl flex justify-center items-center mb-1" style={{ width: "var(--size)", height: "var(--size)", backgroundColor: "var(--c)", boxShadow: "0 0 20px var(--c)" }}>
-          <svg viewBox="0 0 24 24" className="stroke-white fill-none" style={{ strokeWidth: 2.2, width: "calc(var(--size) * 0.55)", height: "calc(var(--size) * 0.55)" }}>
+      {/* n9: 이메일주소 */}
+      <div className="id-node absolute top-[12%] md:top-[15%] left-[28%] md:left-[35%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50" id="n9" style={{ "--c": "#a29bfe", animationDelay: "4s" } as React.CSSProperties}>
+        <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-9 h-9 md:w-10 md:h-10" style={{ backgroundColor: "#a29bfe", boxShadow: "0 0 20px #a29bfe" }}>
+          <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-[22px] md:h-[22px]" style={{ strokeWidth: 2.2 }}>
             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
             <polyline points="22,6 12,13 2,6"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-xs font-semibold">이메일주소</div>
+        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">이메일주소</div>
       </div>
 
       <svg ref={svgRef} className="absolute top-0 left-0 w-full h-full pointer-events-none z-10"></svg>
