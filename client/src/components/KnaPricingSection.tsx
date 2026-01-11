@@ -88,12 +88,12 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
             </div>
           )}
           
-          {/* Desktop: 2 columns (cards left, identity map right) / Mobile: stack */}
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-0 lg:items-stretch">
+          {/* Desktop: 2 columns (cards left, identity map right) / Mobile: stack seamlessly */}
+          <div className="flex flex-col lg:flex-row gap-0 lg:items-stretch">
             {/* Pricing Cards - Left on desktop (Glassmorphism style) */}
             <div className="relative w-full lg:w-[380px] lg:flex-shrink-0">
               <div 
-                className="rounded-3xl lg:rounded-r-none p-4 sm:p-5 h-full border border-white/10 lg:border-r-0"
+                className="rounded-3xl rounded-b-none lg:rounded-b-3xl lg:rounded-r-none p-4 sm:p-5 h-full border border-white/10 border-b-0 lg:border-b lg:border-r-0"
                 style={{ 
                   background: "rgba(20, 22, 30, 0.9)",
                   backdropFilter: "blur(20px)",
