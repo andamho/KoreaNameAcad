@@ -221,8 +221,8 @@ export default function IdentityMap() {
         <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">비밀번호</div>
       </div>
 
-      {/* n7: 인스타명 - 모바일에서 오른쪽 아래로 */}
-      <div className="id-node absolute top-[72%] md:top-[68%] left-[88%] md:left-[78%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n7" style={{ "--c": "#eccc68", animationDelay: "3s" } as React.CSSProperties}>
+      {/* n7: 인스타명 - 모바일에서 더 아래로 */}
+      <div className="id-node absolute top-[78%] md:top-[68%] left-[88%] md:left-[78%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n7" style={{ "--c": "#eccc68", animationDelay: "3s" } as React.CSSProperties}>
         <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-9 h-9 md:w-10 md:h-10" style={{ backgroundColor: "#eccc68", boxShadow: "0 0 20px #eccc68" }}>
           <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-[22px] md:h-[22px]" style={{ strokeWidth: 2.2 }}>
             <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
@@ -233,8 +233,8 @@ export default function IdentityMap() {
         <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold whitespace-nowrap">인스타명</div>
       </div>
 
-      {/* n8: 사업자명 - 전화번호와 대칭 위치, 동일 크기 */}
-      <div className="id-node absolute top-[48%] md:top-[55%] left-[88%] md:left-[72%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n8" style={{ "--c": "#7bed9f", animationDelay: "3.5s" } as React.CSSProperties}>
+      {/* n8: 사업자명 - 모바일에서 더 아래로 */}
+      <div className="id-node absolute top-[55%] md:top-[55%] left-[88%] md:left-[72%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n8" style={{ "--c": "#7bed9f", animationDelay: "3.5s" } as React.CSSProperties}>
         <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-10 h-10 md:w-12 md:h-12" style={{ backgroundColor: "#7bed9f", boxShadow: "0 0 20px #7bed9f" }}>
           <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-[22px] md:h-[22px]" style={{ strokeWidth: 2.2 }}>
             <rect x="2" y="7" width="20" height="14" rx="2"/>
