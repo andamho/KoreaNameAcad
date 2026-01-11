@@ -72,6 +72,11 @@ export default function Services() {
           html.${className} [data-testid^="process-rename-step"] .text-\\[11px\\] {
             font-size: 9px !important;
           }
+          /* 서비스 카드 버튼들 - 82% 적용 */
+          html.${className} [data-testid^="button-service-"] {
+            font-size: 11px !important;
+            padding: 3px 13px !important;
+          }
         `;
         document.head.appendChild(style);
       }
