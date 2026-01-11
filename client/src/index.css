@@ -1043,15 +1043,36 @@ html.ua-tiktok .review-section-title {
 }
 
 /* 모든 섹션을 zoom으로 축소 (레이아웃 크기도 변경) */
+/* 주의: .kna-pricing-inner는 IdentityMap SVG 좌표 문제로 zoom 제외 → font-size로 대체 */
 .ig-shell .kna-danger-section > div,
 .ig-shell .kna-value-section > div,
 .ig-shell .kna-intro-block > div,
 .ig-shell .kna-steps-inner,
 .ig-shell .kna-myth-truth-inner,
 .ig-shell .kna-video-inner,
-.ig-shell .kna-pricing-inner,
 .ig-shell .kna-footer > div {
   zoom: 0.82 !important;
+}
+
+/* 비용 섹션: zoom 대신 font-size 조정 (IdentityMap SVG 호환) */
+.ig-shell .kna-pricing-inner {
+  font-size: 14px !important;
+}
+.ig-shell .kna-pricing-inner h2,
+.ig-shell .kna-pricing-inner h3 {
+  font-size: clamp(16px, 4vw, 20px) !important;
+}
+.ig-shell .kna-pricing-inner .text-lg {
+  font-size: 14px !important;
+}
+.ig-shell .kna-pricing-inner .text-xl {
+  font-size: 15px !important;
+}
+.ig-shell .kna-pricing-inner .text-2xl {
+  font-size: 16px !important;
+}
+.ig-shell .kna-pricing-inner .text-3xl {
+  font-size: 18px !important;
 }
 
 /* 캐릭터가 있는 섹션: 상단 패딩 213px 적용 */
