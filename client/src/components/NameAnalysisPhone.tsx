@@ -43,10 +43,19 @@ export function NameAnalysisPhone() {
       }
     };
 
-    // 터치 이벤트 등록
+    // 터치 이벤트 등록 (폰 요소)
     phone.addEventListener("touchstart", handleTouchStart, { passive: true });
     phone.addEventListener("touchend", handleTouchEnd, { passive: true });
     phone.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+    
+    // document 레벨 터치 종료 이벤트 (인스타그램 WebView 대응)
+    // 인앱 브라우저에서는 touchend가 document로 버블링될 수 있음
+    document.addEventListener("touchend", handleTouchEnd, { passive: true });
+    document.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+    
+    // 포인터 이벤트 폴백 (모던 브라우저)
+    document.addEventListener("pointerup", handleTouchEnd, { passive: true });
+    document.addEventListener("pointercancel", handleTouchEnd, { passive: true });
     
     // 스크롤 이벤트 (페이지 스크롤 시 터치 해제)
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -63,6 +72,10 @@ export function NameAnalysisPhone() {
       phone.removeEventListener("touchstart", handleTouchStart);
       phone.removeEventListener("touchend", handleTouchEnd);
       phone.removeEventListener("touchcancel", handleTouchEnd);
+      document.removeEventListener("touchend", handleTouchEnd);
+      document.removeEventListener("touchcancel", handleTouchEnd);
+      document.removeEventListener("pointerup", handleTouchEnd);
+      document.removeEventListener("pointercancel", handleTouchEnd);
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
