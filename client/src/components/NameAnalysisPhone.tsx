@@ -1,77 +1,60 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 export function NameAnalysisPhone() {
   const phoneRef = useRef<HTMLDivElement>(null);
+  const [isTouchActive, setIsTouchActive] = useState(false);
+  const touchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 터치 해제 함수
+  const clearTouch = useCallback(() => {
+    if (touchTimerRef.current) {
+      clearTimeout(touchTimerRef.current);
+      touchTimerRef.current = null;
+    }
+    setIsTouchActive(false);
+  }, []);
+
+  // 터치 시작
+  const handleTouchStart = useCallback(() => {
+    if (touchTimerRef.current) {
+      clearTimeout(touchTimerRef.current);
+      touchTimerRef.current = null;
+    }
+    setIsTouchActive(true);
+  }, []);
+
+  // 터치 종료 (100ms 후 복귀)
+  const handleTouchEnd = useCallback(() => {
+    touchTimerRef.current = setTimeout(() => {
+      setIsTouchActive(false);
+    }, 100);
+  }, []);
 
   useEffect(() => {
     const phone = phoneRef.current;
     if (!phone) return;
 
-    let touchTimer: ReturnType<typeof setTimeout> | null = null;
-
-    // 터치 시작: 정면으로 멈춤
-    const handleTouchStart = () => {
-      console.log('[Phone] touchstart - adding touch-active');
-      // 기존 타이머 취소
-      if (touchTimer) {
-        clearTimeout(touchTimer);
-        touchTimer = null;
-      }
-      // 터치하는 순간 '정면 보기 + 스크롤 멈춤' 상태로 전환
-      phone.classList.add("touch-active");
-    };
-
-    // 터치 종료: 100ms 후 원래 상태로 복귀
-    const handleTouchEnd = () => {
-      console.log('[Phone] touchend - scheduling removal');
-      // 100ms 후에 클래스 제거 (가벼운 탭과 드래그 사이 튀는 현상 방지)
-      touchTimer = setTimeout(() => {
-        console.log('[Phone] removing touch-active');
-        // (1) 클래스 제거 -> CSS 애니메이션(스크롤) 다시 시작
-        phone.classList.remove("touch-active");
-        // (2) JS로 강제 지정된 스타일 초기화 (각도 튀는 문제 방지)
-        phone.style.transform = '';
-      }, 100);
-    };
-
-    // 스크롤 시 터치 해제 (페이지 스크롤 시 즉시 해제)
+    // 스크롤 시 터치 즉시 해제
     const handleScroll = () => {
-      if (phone.classList.contains("touch-active")) {
-        if (touchTimer) {
-          clearTimeout(touchTimer);
-          touchTimer = null;
-        }
-        phone.classList.remove("touch-active");
-        phone.style.transform = '';
-      }
+      clearTouch();
     };
 
-    // 터치 이벤트 등록 (폰 요소)
+    // 터치 이벤트 (폰 요소)
     phone.addEventListener("touchstart", handleTouchStart, { passive: true });
     phone.addEventListener("touchend", handleTouchEnd, { passive: true });
     phone.addEventListener("touchcancel", handleTouchEnd, { passive: true });
     
-    // document 레벨 터치 종료 이벤트 (인스타그램 WebView 대응)
-    // 인앱 브라우저에서는 touchend가 document로 버블링될 수 있음
+    // document 레벨 터치 종료 (인앱 브라우저 대응)
     document.addEventListener("touchend", handleTouchEnd, { passive: true });
     document.addEventListener("touchcancel", handleTouchEnd, { passive: true });
-    
-    // 포인터 이벤트 폴백 (모던 브라우저)
     document.addEventListener("pointerup", handleTouchEnd, { passive: true });
     document.addEventListener("pointercancel", handleTouchEnd, { passive: true });
     
-    // 스크롤 이벤트 (페이지 스크롤 시 터치 해제)
+    // 스크롤 이벤트
     window.addEventListener("scroll", handleScroll, { passive: true });
-    
-    // PC 테스트용 마우스 이벤트
-    phone.addEventListener("mouseenter", () => phone.classList.add("touch-active"));
-    phone.addEventListener("mouseleave", () => {
-      phone.classList.remove("touch-active");
-      phone.style.transform = '';
-    });
 
     return () => {
-      if (touchTimer) clearTimeout(touchTimer);
+      if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
       phone.removeEventListener("touchstart", handleTouchStart);
       phone.removeEventListener("touchend", handleTouchEnd);
       phone.removeEventListener("touchcancel", handleTouchEnd);
@@ -81,7 +64,7 @@ export function NameAnalysisPhone() {
       document.removeEventListener("pointercancel", handleTouchEnd);
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [handleTouchStart, handleTouchEnd, clearTouch]);
 
   return (
     <section className="name-analysis-phone-section py-16 md:py-24 flex items-center justify-center bg-[#f6f9fc] dark:bg-slate-900" style={{ 
@@ -361,7 +344,7 @@ export function NameAnalysisPhone() {
       `}</style>
       
       <div style={{ perspective: "5000px" }}>
-        <div className="name-phone" ref={phoneRef} data-testid="name-analysis-phone">
+        <div className={`name-phone ${isTouchActive ? 'touch-active' : ''}`} ref={phoneRef} data-testid="name-analysis-phone">
           <div className="phone-screen">
             <div className="phone-scroll-content">
               <div className="phone-header">
