@@ -40,7 +40,11 @@ export function ServiceCard({
         <button
           onClick={onClick}
           data-testid={`button-service-${title}`}
-          className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full font-semibold text-sm bg-[#56D5DB] text-white shadow-sm transition-all duration-200 hover:bg-[#4ac5cb] hover:shadow-md active:scale-[0.98]"
+          className={`inline-flex items-center gap-1.5 px-4 py-1 rounded-full font-semibold text-sm shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98] ${
+            buttonText === "자세히 보기" 
+              ? "bg-[#F1FAEE] text-[#0b7f82] hover:bg-[#e5f4e0]" 
+              : "bg-[#56D5DB] text-white hover:bg-[#4ac5cb]"
+          }`}
         >
           {buttonText} <span className="text-base">›</span>
         </button>
