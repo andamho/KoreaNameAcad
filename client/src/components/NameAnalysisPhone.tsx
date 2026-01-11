@@ -11,6 +11,7 @@ export function NameAnalysisPhone() {
 
     // 터치 시작: 정면으로 멈춤
     const handleTouchStart = () => {
+      console.log('[Phone] touchstart - adding touch-active');
       // 기존 타이머 취소
       if (touchTimer) {
         clearTimeout(touchTimer);
@@ -22,8 +23,10 @@ export function NameAnalysisPhone() {
 
     // 터치 종료: 100ms 후 원래 상태로 복귀
     const handleTouchEnd = () => {
+      console.log('[Phone] touchend - scheduling removal');
       // 100ms 후에 클래스 제거 (가벼운 탭과 드래그 사이 튀는 현상 방지)
       touchTimer = setTimeout(() => {
+        console.log('[Phone] removing touch-active');
         // (1) 클래스 제거 -> CSS 애니메이션(스크롤) 다시 시작
         phone.classList.remove("touch-active");
         // (2) JS로 강제 지정된 스타일 초기화 (각도 튀는 문제 방지)
