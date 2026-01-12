@@ -36,7 +36,7 @@ export function Hero() {
         
         {/* Falling flower petals animation */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(11)].map((_, i) => (
+          {[...Array(7)].map((_, i) => (
             <div
               key={i}
               className="absolute animate-fall-petal"
