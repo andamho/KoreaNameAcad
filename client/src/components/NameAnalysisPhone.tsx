@@ -133,6 +133,11 @@ export function NameAnalysisPhone() {
         .phone-scroll-content {
           padding: 30px 14px;
           animation: phoneAutoScroll 30s linear infinite;
+          -webkit-transform: translateZ(0);
+          transform: translateZ(0);
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+          will-change: transform;
         }
         
         @keyframes phoneAutoScroll {
