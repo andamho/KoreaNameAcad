@@ -7,10 +7,10 @@ export default function KnaIntroBlock() {
     <>
       {/* SECTION 1: 상단 소개 (사선 처리) */}
       <section 
-        className="kna-intro-block relative overflow-hidden text-white"
+        className="kna-intro-block relative overflow-hidden text-white z-10"
         style={{
           background: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)',
-          clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 85%)',
+          clipPath: 'polygon(0 0, 100% 0, 100% 85%, 0 100%)',
           paddingBottom: '180px',
         }}
       >
@@ -95,11 +95,11 @@ export default function KnaIntroBlock() {
 
       {/* SECTION 2: 운명 카드 (하단) */}
       <section 
-        className="relative text-white"
+        className="relative text-white z-0"
         style={{
           background: '#0f2027',
-          marginTop: '-100px',
-          paddingTop: '130px',
+          marginTop: '-200px',
+          paddingTop: '230px',
           paddingBottom: '80px',
         }}
       >
