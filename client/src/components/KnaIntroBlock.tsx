@@ -65,28 +65,38 @@ export default function KnaIntroBlock() {
 
             {/* Right: 실제 후기 박스 */}
             <div className="order-1 md:order-2 mt-8">
-              <div className="relative rounded-2xl bg-white/95 p-10 pt-14 pb-14 shadow-2xl text-gray-800">
+              <div className="relative rounded-2xl bg-white/95 p-8 pt-16 pb-16 shadow-2xl text-gray-800">
                 {/* 전구 아이콘 */}
-                <div className="absolute -top-9 left-1/2 -translate-x-1/2 w-[70px] h-[70px] rounded-full bg-[#2FB5B5] flex items-center justify-center shadow-lg border-4 border-white z-10">
-                  <Lightbulb size={32} weight="fill" color="white" />
+                <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#56D5DB] flex items-center justify-center shadow-lg border-4 border-white z-10">
+                  <Lightbulb size={24} weight="fill" color="white" />
                 </div>
                 
-                {/* 큰 따옴표 - 상단 */}
-                <div className="absolute top-10 left-7 text-[#8FD8D8] text-[80px] leading-none font-serif select-none" aria-hidden="true">
-                  "
-                </div>
+                {/* 큰 따옴표 - 상단 (SVG) */}
+                <svg 
+                  className="absolute top-8 left-5 w-8 h-8 text-[#56D5DB] opacity-80"
+                  viewBox="0 0 24 24" 
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                </svg>
                 
-                {/* 후기 리스트 */}
-                <div className="space-y-3 relative z-10 mt-5 mb-5">
+                {/* 후기 리스트 - 중앙 정렬 */}
+                <div className="space-y-3 relative z-10 flex flex-col justify-center">
                   <Testimonial quote="내 삶을 조종한 건 이름이었다니!" />
                   <Testimonial quote="개명 전후, 정말 이름대로 살아왔네요." />
                   <Testimonial quote="개명 후 6년, 세상에서 가장 행복한 사람" />
                 </div>
                 
-                {/* 큰 따옴표 - 하단 */}
-                <div className="absolute bottom-2 right-7 text-[#8FD8D8] text-[80px] leading-none font-serif select-none" aria-hidden="true">
-                  "
-                </div>
+                {/* 큰 따옴표 - 하단 (SVG) */}
+                <svg 
+                  className="absolute bottom-8 right-5 w-8 h-8 text-[#56D5DB] opacity-80"
+                  viewBox="0 0 24 24" 
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.57-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z"/>
+                </svg>
               </div>
             </div>
           </div>
