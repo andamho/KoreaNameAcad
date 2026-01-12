@@ -7,11 +7,9 @@ export default function KnaIntroBlock() {
     <>
       {/* SECTION 1: 상단 소개 (사선 처리) */}
       <section 
-        className="kna-intro-block relative overflow-hidden text-white z-10"
+        className="kna-intro-block kna-intro-top relative overflow-hidden text-white z-10"
         style={{
           background: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)',
-          clipPath: 'polygon(0 0, 100% 0, 100% 92%, 0 100%)',
-          paddingBottom: '220px',
         }}
       >
         <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -129,12 +127,9 @@ export default function KnaIntroBlock() {
 
       {/* SECTION 2: 운명 카드 (하단) */}
       <section 
-        className="relative text-white z-0"
+        className="kna-intro-bottom relative text-white z-0"
         style={{
           background: '#0f2027',
-          marginTop: '-350px',
-          paddingTop: '380px',
-          paddingBottom: '80px',
         }}
       >
 
