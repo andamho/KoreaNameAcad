@@ -144,7 +144,7 @@ export function NameAnalysisPhone() {
         
         @keyframes phoneAutoScroll {
           0%, 10% { transform: translateY(0); }
-          45%, 55% { transform: translateY(-55%); }
+          45%, 55% { transform: translateY(-70%); }
           90%, 100% { transform: translateY(0); }
         }
         
