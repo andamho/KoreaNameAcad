@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>섹션 리디자인 미리보기 (세로 + 우측 비주얼)</title>
+  <style>
+    :root{
+      --bg: #f6f7f7;
+      --ink: #111827;
+      --muted: #6b7280;
+      --line: rgba(17,24,39,.10);
+      --line2: rgba(17,24,39,.08);
+      --shadow: 0 18px 55px rgba(17,24,39,.07);
+      --shadow-soft: 0 10px 30px rgba(17,24,39,.06);
+      --radius: 22px;
+      --radius-sm: 16px;
+      --accent: #18a999; /* 세련된 teal */
+      --warn: #f97316;   /* 경고 오렌지 */
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--ink);
+      background:
+        radial-gradient(900px 520px at 50% -120px, rgba(24,169,153,.10), transparent 55%),
+        radial-gradient(900px 520px at 50% 120%, rgba(249,115,22,.08), transparent 60%),
+        var(--bg);
+    }
+
+    .wrap{
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+
+    /* Page title */
+    .page-title{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 12px;
+      margin: 6px 0 28px;
+      padding: 10px 0;
+    }
+    .page-title .badge{
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(249,115,22,.12);
+      display:grid;
+      place-items:center;
+      box-shadow: 0 12px 30px rgba(249,115,22,.10);
+      border: 1px solid rgba(249,115,22,.25);
+    }
+    .page-title h1{
+      font-size: clamp(22px, 2.4vw, 34px);
+      letter-spacing: -0.02em;
+      margin:0;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    /* Frames */
+    .frame{
+      background: rgba(255,255,255,.78);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(17,24,39,.09);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin: 18px 0;
+    }
+
+    .frame--accent{
+      background: linear-gradient(180deg, rgba(24,169,153,.07), rgba(255,255,255,.86));
+    }
+
+    .frame--warn{
+      background: linear-gradient(180deg, rgba(249,115,22,.08), rgba(255,255,255,.86));
+    }
+
+    .frame-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 14px;
+      padding: 18px 22px;
+    }
+
+    .kicker{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .kicker .chip{
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display:grid;
+      place-items:center;
+      border: 1px solid rgba(17,24,39,.10);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow-soft);
+      flex: none;
+    }
+
+    .kicker .label{
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin:0;
+      white-space: nowrap;
+    }
+
+    .rule{
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(17,24,39,.12), transparent);
+      margin: 0 22px;
+    }
+
+    /* New layout: left vertical content + right visual */
+    .frame-body{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 0;
+      padding: 18px 22px 22px;
+      align-items: stretch;
+    }
+
+    .stack{
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(17,24,39,.06);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .stack-item{
+      display:flex;
+      gap: 0;
+      align-items:flex-start;
+      padding: 18px 18px;
+    }
+
+    .stack-item > div{
+      width:100%;
+    }
+
+    .stack-item h3{
+      margin: 0 0 10px;
+      font-size: 19px;
+      letter-spacing: -0.025em;
+      line-height: 1.35;
+      font-weight: 900;
+    }
+      display:flex;
+      gap: 14px;
+      align-items:flex-start;
+      padding: 18px 18px;
+    }
+
+    .stack-item + .stack-item{
+      border-top: 1px solid var(--line2);
+    }
+
+    /* item-icon 제거: 소제목을 텍스트 이미지처럼 사용 */
+
+    .stack-item h3{
+      margin: 0 0 8px;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+      line-height: 1.35;
+      font-weight: 900;
+    }
+
+    .stack-item p{
+      margin:0;
+      font-size: 14px;
+      line-height: 1.75;
+      letter-spacing: -0.01em;
+      color: var(--muted);
+    }
+
+    /* Right visual panel */
+    .visual{
+      position: relative;
+      margin-left: 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(17,24,39,.06);
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+      background: transparent;
+      display:flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 100%;
+    }
+
+    .visual::before{
+      content:"";
+      position:absolute;
+      inset:-60px;
+      background:
+        radial-gradient(280px 220px at 30% 25%, rgba(24,169,153,.18), transparent 60%),
+        radial-gradient(320px 260px at 70% 70%, rgba(249,115,22,.14), transparent 62%),
+        radial-gradient(220px 180px at 80% 18%, rgba(17,24,39,.06), transparent 60%);
+      filter: blur(0px);
+      pointer-events:none;
+    }
+
+    .visual-inner{
+      position: relative;
+      padding: 20px;
+      display:grid;
+      place-items:center;
+      height: 100%;
+    }
+
+    .visual-card{
+      /* 카드 프레임 제거: 순수 번개만 강조 */
+      width: auto;
+      border-radius: 0;
+      border: none;
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
+    }
+
+    .visual-title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      margin: 0 0 10px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .visual-title .dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 10px 22px rgba(24,169,153,.25);
+    }
+
+    .visual-title.warn .dot{
+      background: var(--warn);
+      box-shadow: 0 10px 22px rgba(249,115,22,.25);
+    }
+
+    .visual-svg{
+      width: 100%;
+      height: auto;
+      margin-top: 10px;
+      opacity: .96;
+    }
+
+    /* Lightning animation */
+    .lightning-stage{
+      display:grid;
+      place-items:center;
+      min-height: 260px;
+    }
+
+    .warning-stage{
+      display:grid;
+      place-items:center;
+      min-height: 260px;
+    }
+
+    .bolt-wrap{
+      width: 140px;
+      height: 140px;
+      border-radius: 28px;
+      display:grid;
+      place-items:center;
+      /* 기본(하단 포함): 정적 무대 */
+      background: rgba(249,115,22,.08);
+      border: 1px solid rgba(249,115,22,.18);
+      position: relative;
+      isolation: isolate;
+    }
+
+    /* 이름(번개) 전용: 색 전환 + 파동(겹파동 3겹) */
+    .bolt-wrap--ripple{
+      background-color: var(--warn);
+      border: none;
+      animation: bgSwap 6.8s ease-in-out infinite;
+      will-change: background-color;
+    }
+
+    /* 번개 섹션만: 은은한 글로우 */
+    .bolt-wrap--ripple::after{
+      content:"";
+      position:absolute;
+      inset:-28px;
+      border-radius: 52px;
+      background: radial-gradient(closest-side, rgba(249,115,22,.20), transparent 70%);
+      filter: blur(10px);
+      opacity: .55;
+      z-index: -2;
+      animation: glowSwap 6.8s ease-in-out infinite;
+      will-change: opacity;
+      pointer-events: none;
+    }
+
+    /* 겹파동(3겹): 실제 요소로 구현 */
+    .bolt-wrap--ripple .ripple{
+      position:absolute;
+      top:50%; left:50%;
+      transform: translate(-50%, -50%);
+      width: 90px;
+      height: 90px;
+      border-radius: 28px;
+      opacity: .35;
+      z-index: -1;
+      pointer-events: none;
+      background: radial-gradient(circle at center,
+        rgba(249,115,22,.22),
+        rgba(249,115,22,.10) 42%,
+        rgba(249,115,22,.00) 72%
+      );
+      animation: rippleAnim 6.8s infinite ease-out;
+      will-change: width, height, opacity, border-radius;
+    }
+    .bolt-wrap--ripple .ripple.r1{ animation-delay: 0s; }
+    .bolt-wrap--ripple .ripple.r2{ animation-delay: 2.2667s; }
+    .bolt-wrap--ripple .ripple.r3{ animation-delay: 4.5334s; }
+
+    /* SVG 아이콘 컬러 제어 */
+    .bolt{
+      width: 72px;
+      height: 72px;
+      color: #ffffff;
+      animation: boltSwap 6.8s ease-in-out infinite;
+      will-change: color, filter;
+    }
+    .bolt path{ stroke: currentColor; stroke-width: 2.5; stroke-linejoin: round; }
+
+    /* 하단(이러시면 안됩니다) 우측은 정적 유지 */
+    .warn-ico{
+      width: 78px;
+      height: 78px;
+      color: var(--warn);
+    }
+    .warn-ico path{ stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+    @keyframes bgSwap{
+      0%, 30%{ background-color: var(--warn); }
+      70%, 100%{ background-color: transparent; }
+    }
+
+    @keyframes glowSwap{
+      0%, 30%{ opacity: .62; }
+      70%, 100%{ opacity: .22; }
+    }
+
+    @keyframes rippleAnim{
+      0%{
+        width: 90px;
+        height: 90px;
+        opacity: .35;
+        border-radius: 28px;
+      }
+      100%{
+        width: 300px;
+        height: 300px;
+        opacity: 0;
+        border-radius: 50%;
+      }
+    }
+      100%{
+        width: 260px;
+        height: 260px;
+        opacity: 0;
+        border-radius: 50%; /* 완전 원형 */
+      }
+    }
+
+    @keyframes boltSwap{
+      /* 주황 배경 구간: 흰 아이콘 */
+      0%, 30%{
+        color: #ffffff;
+        filter: drop-shadow(0 10px 26px rgba(249,115,22,.55));
+      }
+      /* 배경이 사라지는 동안: 아이콘은 서서히 주황으로 */
+      30%, 70%{
+        color: var(--warn);
+        filter: drop-shadow(0 10px 26px rgba(249,115,22,.35));
+      }
+      /* 투명 배경 구간: 주황 아이콘 */
+      70%, 100%{
+        color: var(--warn);
+        filter: drop-shadow(0 10px 26px rgba(249,115,22,.28));
+      }
+    }
+
+    
+
+    .em-warn{ color: var(--warn); font-weight: 800; }
+
+    /* Icon stroke colors */
+    .svg-accent path{ stroke: var(--accent); }
+    .svg-warn path{ stroke: var(--warn); }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .frame-body{ grid-template-columns: 1fr; }
+      .visual{ margin-left: 0; margin-top: 14px; min-height: 220px; }
+      .lightning-stage, .warning-stage{ min-height: 220px; }
+    }
+
+    @media (max-width: 420px){
+      .wrap{ padding: 28px 14px 56px; }
+      .stack-item{ padding: 16px 14px; }
+      .stack-item h3{ font-size: 17px; }
+      .bolt-wrap{ width: 124px; height: 124px; border-radius: 26px; }
+      .bolt{ width: 66px; height: 66px; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .bolt-wrap--ripple,
+      .bolt,
+      .bolt-wrap--ripple .ripple,
+      .bolt-wrap--ripple::after{
+        animation: none !important;
+      }
+    }
+
+    .hint{
+      margin-top: 18px;
+      color: rgba(17,24,39,.55);
+      font-size: 13px;
+      text-align:center;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="page-title" aria-label="섹션 타이틀">
+      <div class="badge" aria-hidden="true">
+        <!-- warning triangle -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" class="svg-warn" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 3.5L22 20.5H2L12 3.5Z" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M12 9V13" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12 17H12.01" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h1>이름, 모르면 위험합니다</h1>
+    </header>
+
+    <!-- Frame 1: 좌측 세로 + 우측 비주얼 -->
+    <section class="frame frame--accent" aria-label="이름은 힘이 셉니다">
+      <div class="frame-head">
+        <div class="kicker">
+          <div class="chip" aria-hidden="true">
+            <!-- bolt -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="svg-accent" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 2L3 14H11L9 22L21 10H13L13 2Z" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <p class="label">이름은 힘이 셉니다</p>
+        </div>
+      </div>
+      <div class="rule" aria-hidden="true"></div>
+
+      <div class="frame-body">
+        <!-- Left: vertical stack -->
+        <div class="stack" aria-label="상단 내용(세로)">
+          <article class="stack-item">
+            <div>
+              <h3>이름이 맑아야 인생이 맑다</h3>
+              <p>
+                운칠기삼(運七技三), 운이 70%입니다.<br/>
+                이름의 강력한 운을 모른 채,<br/>
+                <span class="em-warn">30%</span>의 노력만으로는<br/>
+                <span class="em-warn">인생이 바뀌지 않습니다.</span>
+              </p>
+            </div>
+          </article>
+
+          <article class="stack-item">
+            <div>
+              <h3>안 좋은 이름에 바람 잘 날 없다</h3>
+              <p>
+                이름은 단순한 호칭이 아닙니다.<br/>
+                한 번 어긋나면,<br/>
+                <span class="em-warn">평생을 따라다니며 영향을 줍니다.</span>
+              </p>
+            </div>
+          </article>
+
+          <article class="stack-item">
+            <div>
+              <h3>가족은 운명공동체</h3>
+              <p>
+                이름의 흐름은 개인에서 끝나지 않습니다.<br/>
+                선택 하나가,
+                <span class="em-warn">가족 전체의 운에 파장을 일으킵니다.</span>
+              </p>
+            </div>
+          </article>
+        </div>
+
+        <!-- Right: visual representation (abstract, image-like) -->
+        <aside class="visual" aria-label="상단 비주얼">
+          <div class="visual-inner">
+            <div class="visual-card lightning-stage">
+              <div class="bolt-wrap bolt-wrap--ripple">
+                <span class="ripple r1" aria-hidden="true"></span>
+                <span class="ripple r2" aria-hidden="true"></span>
+                <span class="ripple r3" aria-hidden="true"></span>
+                <svg class="bolt" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M13 2L3 14H11L9 22L21 10H13L13 2Z" />
+                </svg>
+              </div>
+              
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Frame 2: 좌측 세로 + 우측 비주얼 -->
+    <section class="frame frame--warn" aria-label="이러시면 안됩니다">
+      <div class="frame-head">
+        <div class="kicker">
+          <div class="chip" aria-hidden="true">
+            <!-- stop icon -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="svg-warn" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 3h10l4 4v10l-4 4H7l-4-4V7l4-4Z" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <p class="label">이러시면 안됩니다</p>
+        </div>
+      </div>
+      <div class="rule" aria-hidden="true"></div>
+
+      <div class="frame-body">
+        <!-- Left: vertical stack -->
+        <div class="stack" aria-label="하단 내용(세로)">
+          <article class="stack-item">
+            <div>
+              <h3>"비용을 먼저 물어보시나요?"</h3>
+              <p>
+                이름은 생각보다 훨씬 막강합니다.<br/>
+                비용만 아끼려다,<br/>
+                <span class="em-warn">더 비싼 대가를 치릅니다.</span>
+              </p>
+            </div>
+          </article>
+
+          <article class="stack-item">
+            <div>
+              <h3>"사주 기반 작명소를 찾으시나요?"</h3>
+              <p>
+                그곳은 한글이름 작명이론이 없습니다.<br/>
+                한글 이름의 운이 무너져,<br/>
+                <span class="em-warn">삶이 흔들립니다.</span>
+              </p>
+            </div>
+          </article>
+
+          <article class="stack-item">
+            <div>
+              <h3>"후기도 안살펴보시나요?"</h3>
+              <p>
+                검증 없는 작명,<br/>
+                <span class="em-warn">고생은 결국 본인의 몫입니다.</span>
+              </p>
+            </div>
+          </article>
+        </div>
+
+        <!-- Right: visual representation (warning-like) -->
+        <aside class="visual" aria-label="하단 비주얼">
+          <div class="visual-inner">
+            <div class="visual-card warning-stage">
+              <div class="bolt-wrap" aria-hidden="true">
+                <!-- stop icon (octagon) -->
+                <svg class="warn-ico" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7 3h10l4 4v10l-4 4H7l-4-4V7l4-4Z" />
+                  <path d="M9 9l6 6" />
+                  <path d="M15 9l-6 6" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <p class="hint">※ 미리보기용 단일 HTML입니다. 실제 프로젝트에선 각 &lt;section class=&quot;frame&quot;&gt; 블록만 복사해 붙이면 됩니다.</p>
+  </main>
+</body>
+</html>
