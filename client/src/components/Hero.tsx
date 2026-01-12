@@ -28,26 +28,33 @@ export function Hero() {
         <img 
           src={heroImage} 
           alt="배경" 
-          className="w-full h-full object-cover object-[55%] md:object-[98%] animate-sway-flower"
+          className="w-full h-full object-cover object-[55%] md:object-[98%]"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-background/40 to-transparent dark:from-background/85 dark:via-background/55 dark:to-transparent" />
         {/* Bottom gradient to hide danger section character */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-background to-transparent" />
         
-        {/* Rising light particles animation */}
+        {/* Falling flower petals animation */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(12)].map((_, i) => (
+          {[...Array(15)].map((_, i) => (
             <div
               key={i}
-              className="absolute rounded-full bg-white/60 dark:bg-[#56D5DB]/40 blur-sm animate-rise-light"
+              className="absolute animate-fall-petal"
               style={{
-                left: `${8 + i * 8}%`,
-                width: `${4 + (i % 3) * 2}px`,
-                height: `${4 + (i % 3) * 2}px`,
-                animationDelay: `${i * 0.5}s`,
-                animationDuration: `${4 + (i % 4)}s`,
+                left: `${5 + (i * 7) % 90}%`,
+                top: `-${10 + (i % 5) * 5}%`,
+                animationDelay: `${i * 0.8 + Math.random() * 2}s`,
+                animationDuration: `${8 + (i % 5) * 2}s`,
               }}
-            />
+            >
+              <div 
+                className="w-3 h-4 rounded-full bg-gradient-to-br from-pink-200/70 to-pink-300/50 dark:from-pink-300/50 dark:to-pink-400/30"
+                style={{
+                  transform: `rotate(${30 + i * 25}deg) scale(${0.6 + (i % 4) * 0.2})`,
+                  borderRadius: '50% 50% 50% 0',
+                }}
+              />
+            </div>
           ))}
         </div>
       </div>
