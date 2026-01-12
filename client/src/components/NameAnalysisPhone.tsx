@@ -128,6 +128,9 @@ export function NameAnalysisPhone() {
           position: relative;
           overflow: hidden;
           pointer-events: none;
+          -webkit-transform: translateZ(0);
+          transform: translateZ(0);
+          will-change: contents;
         }
         
         .phone-scroll-content {
