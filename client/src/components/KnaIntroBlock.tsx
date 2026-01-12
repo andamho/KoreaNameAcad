@@ -5,7 +5,7 @@ import { useState } from "react";
 export default function KnaIntroBlock() {
   return (
     <>
-      {/* SECTION 1: 상단 소개 (사선 처리) */}
+      {/* SECTION 1: 상단 소개 (사선 처리) - CSS가 반응형 clip-path 처리 */}
       <section 
         className="kna-intro-block kna-intro-top relative overflow-hidden text-white"
         style={{
@@ -125,9 +125,9 @@ export default function KnaIntroBlock() {
         </div>
       </section>
 
-      {/* SECTION 2: 운명 카드 (하단) */}
+      {/* SECTION 2: 운명 카드 (하단) - CSS가 반응형 여백 처리 */}
       <section 
-        className="kna-intro-bottom relative text-white z-0"
+        className="kna-intro-bottom relative text-white"
         style={{
           background: '#0f2027',
         }}
