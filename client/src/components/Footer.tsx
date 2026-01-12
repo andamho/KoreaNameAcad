@@ -111,7 +111,7 @@ export function Footer() {
               setLocation('/services');
               window.scrollTo(0, 0);
             }}
-            className="px-6 py-1.5 bg-white text-black font-semibold rounded-full text-base hover:bg-gray-200 transition-colors flex items-center gap-1"
+            className="px-5 py-1 bg-white text-black font-semibold rounded-full text-sm hover:bg-gray-200 transition-colors flex items-center gap-1"
             data-testid="button-footer-apply"
           >
             지금 신청 <span className="ml-1">›</span>
