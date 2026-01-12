@@ -185,13 +185,10 @@ export function NameAnalysisPhone() {
         }
         
         .phone-card {
-          /* Glassmorphism 카드 효과 */
-          background: rgba(255, 255, 255, 0.65);
-          backdrop-filter: blur(5px);
-          -webkit-backdrop-filter: blur(5px);
-          border: 1px solid rgba(255, 255, 255, 0.5);
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
           border-radius: 16px;
-          box-shadow: 0 5px 10px rgba(50, 50, 93, 0.05);
+          box-shadow: 0 2px 8px rgba(50, 50, 93, 0.08);
           margin-bottom: 12px;
           overflow: hidden;
         }
