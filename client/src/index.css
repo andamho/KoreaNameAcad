@@ -1114,32 +1114,32 @@ html.ua-tiktok .review-section-title {
 
 /* ============================================
    인앱 브라우저 (Instagram/TikTok) 섹션 간격 조정
-   - .ig-shell 래퍼 클래스 사용으로 네비게이션 후에도 유지
+   - html.ua-instagram, html.ua-tiktok 셀렉터 사용
    ============================================ */
 
-/* ig-shell 기본 설정 */
-.ig-shell {
-  /* 상단 패딩 없음 - 인앱 홈화면에서는 navbar spacer 사용 */
-}
-
 /* 인앱: kna-intro-top/bottom 82% 축소 */
-.ig-shell .kna-intro-top > div,
-.ig-shell .kna-intro-bottom > div {
+html.ua-instagram .kna-intro-top > div,
+html.ua-tiktok .kna-intro-top > div,
+html.ua-instagram .kna-intro-bottom > div,
+html.ua-tiktok .kna-intro-bottom > div {
   zoom: 0.82 !important;
 }
 
 /* 인앱: kna-intro-top은 상단 패딩 최소화 */
-.ig-shell .kna-intro-top > div {
+html.ua-instagram .kna-intro-top > div,
+html.ua-tiktok .kna-intro-top > div {
   padding-top: 12px !important;
 }
 
 /* 인앱: kna-intro-bottom 여백 조정 (겹침 방지) */
-.ig-shell .kna-intro-bottom {
+html.ua-instagram .kna-intro-bottom,
+html.ua-tiktok .kna-intro-bottom {
   margin-top: -170px !important;
   padding-top: 260px !important;
 }
 
-.ig-shell .kna-intro-bottom > div {
+html.ua-instagram .kna-intro-bottom > div,
+html.ua-tiktok .kna-intro-bottom > div {
   padding-top: 0 !important;
 }
 
@@ -1197,10 +1197,19 @@ html.ua-tiktok .review-section-title {
   font-size: 18px !important;
 }
 
-/* 캐릭터가 있는 섹션: 상단 패딩 213px 적용 */
+/* 캐릭터가 있는 섹션: 상단 패딩 213px 적용 (kna-intro-block 제외 - 별도 규칙) */
+html.ua-instagram .kna-danger-section > div,
+html.ua-tiktok .kna-danger-section > div,
+html.ua-instagram .kna-value-section > div,
+html.ua-tiktok .kna-value-section > div,
+html.ua-instagram .kna-steps-inner,
+html.ua-tiktok .kna-steps-inner,
+html.ua-instagram .kna-myth-truth-inner,
+html.ua-tiktok .kna-myth-truth-inner,
+html.ua-instagram .kna-pricing-inner,
+html.ua-tiktok .kna-pricing-inner,
 .ig-shell .kna-danger-section > div,
 .ig-shell .kna-value-section > div,
-.ig-shell .kna-intro-block > div,
 .ig-shell .kna-steps-inner,
 .ig-shell .kna-myth-truth-inner,
 .ig-shell .kna-pricing-inner {
