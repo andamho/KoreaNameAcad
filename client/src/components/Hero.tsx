@@ -107,7 +107,7 @@ export function Hero() {
                 window.scrollTo(0, 0);
               }}
               data-testid="button-apply-now"
-              className="px-6 py-3 bg-black text-white font-semibold rounded-full text-base hover:bg-gray-800 transition-colors flex items-center gap-1"
+              className="px-6 py-2 bg-black text-white font-semibold rounded-full text-base hover:bg-gray-800 transition-colors flex items-center gap-1"
             >
               지금 신청 <span className="ml-1">›</span>
             </button>
