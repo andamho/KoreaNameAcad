@@ -1020,6 +1020,26 @@ html.ua-tiktok .review-section-title {
   animation: rise-light 5s ease-in-out infinite;
 }
 
+/* 꽃잎 살살 흔들리는 애니메이션 */
+@keyframes sway-flower {
+  0%, 100% {
+    transform: scale(1.02) translate(0, 0);
+  }
+  25% {
+    transform: scale(1.02) translate(0.3%, 0.15%);
+  }
+  50% {
+    transform: scale(1.02) translate(0, 0.25%);
+  }
+  75% {
+    transform: scale(1.02) translate(-0.3%, 0.1%);
+  }
+}
+
+.animate-sway-flower {
+  animation: sway-flower 8s ease-in-out infinite;
+}
+
 /* 푸터용 kna-highlight (즉시 표시, 딜레이 없음) */
 .kna-footer-highlight {
   opacity: 1 !important;

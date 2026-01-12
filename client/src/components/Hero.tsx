@@ -28,7 +28,7 @@ export function Hero() {
         <img 
           src={heroImage} 
           alt="배경" 
-          className="w-full h-full object-cover object-[55%] md:object-[98%]"
+          className="w-full h-full object-cover object-[55%] md:object-[98%] animate-sway-flower"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-background/40 to-transparent dark:from-background/85 dark:via-background/55 dark:to-transparent" />
         {/* Bottom gradient to hide danger section character */}
