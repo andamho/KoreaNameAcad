@@ -106,25 +106,13 @@ export function Hero() {
             </button>
             <button
               onClick={() => {
-                const consultSection = document.getElementById('consult');
-                if (consultSection) {
-                  consultSection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              data-testid="button-consult"
-              className="text-black dark:text-gray-900 font-semibold text-base hover:opacity-70 transition-opacity flex items-center gap-1"
-            >
-              상담 <span>›</span>
-            </button>
-            <button
-              onClick={() => {
                 setLocation('/reviews');
                 window.scrollTo(0, 0);
               }}
               data-testid="button-reviews"
               className="text-black dark:text-gray-900 font-semibold text-base hover:opacity-70 transition-opacity flex items-center gap-1"
             >
-              개명후기 <span>›</span>
+              상담·개명 후기 <span>›</span>
             </button>
           </div>
         </div>
