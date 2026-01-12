@@ -1128,15 +1128,15 @@ html.ua-tiktok .review-section-title {
   zoom: 0.82 !important;
 }
 
-/* 인앱: kna-intro-top은 상단 패딩 제거 (213px override) */
+/* 인앱: kna-intro-top은 상단 패딩 최소화 */
 .ig-shell .kna-intro-top > div {
-  padding-top: 24px !important;
+  padding-top: 12px !important;
 }
 
-/* 인앱: kna-intro-bottom 여백 조정 */
+/* 인앱: kna-intro-bottom 여백 조정 (겹침 방지) */
 .ig-shell .kna-intro-bottom {
-  margin-top: -200px !important;
-  padding-top: 280px !important;
+  margin-top: -170px !important;
+  padding-top: 260px !important;
 }
 
 .ig-shell .kna-intro-bottom > div {
