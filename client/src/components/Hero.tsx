@@ -82,7 +82,7 @@ export function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative h-full flex items-center justify-center">
         <div className="text-center max-w-4xl mx-auto space-y-8 hero-wrap">
           <div>
-            <h1 className="font-bold tracking-tight break-keep text-center hero-title" style={{fontSize: h1FontSize, lineHeight: '1.42', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center'}} aria-label="고달픈 인생 이름 하나로 이유를 찾고 운이 술술 풀리는 새 이름으로, 인생역전하세요.">
+            <h1 className="font-bold tracking-tight break-keep text-center hero-title" style={{fontSize: h1FontSize, lineHeight: '1.2', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.15em'}} aria-label="고달픈 인생 이름 하나로 이유를 찾고 운이 술술 풀리는 새 이름으로, 인생역전하세요.">
               <span className="text-gray-900 dark:text-white">고달픈 인생</span>
               <span className="text-gray-900 dark:text-white" style={{whiteSpace: 'nowrap'}}>이름 하나로 이유를 찾고</span>
               <span className="kna-highlight">
