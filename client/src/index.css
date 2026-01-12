@@ -998,6 +998,28 @@ html.ua-tiktok .review-section-title {
   animation: pulse-glow-footer 4s ease-in-out infinite;
 }
 
+/* 밝은 빛 올라가는 애니메이션 */
+@keyframes rise-light {
+  0% {
+    bottom: -10%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    bottom: 110%;
+    opacity: 0;
+  }
+}
+
+.animate-rise-light {
+  animation: rise-light 5s ease-in-out infinite;
+}
+
 /* 푸터용 kna-highlight (즉시 표시, 딜레이 없음) */
 .kna-footer-highlight {
   opacity: 1 !important;

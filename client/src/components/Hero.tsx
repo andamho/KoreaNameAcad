@@ -33,6 +33,23 @@ export function Hero() {
         <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-background/40 to-transparent dark:from-background/85 dark:via-background/55 dark:to-transparent" />
         {/* Bottom gradient to hide danger section character */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-background to-transparent" />
+        
+        {/* Rising light particles animation */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(12)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full bg-white/60 dark:bg-[#56D5DB]/40 blur-sm animate-rise-light"
+              style={{
+                left: `${8 + i * 8}%`,
+                width: `${4 + (i % 3) * 2}px`,
+                height: `${4 + (i % 3) * 2}px`,
+                animationDelay: `${i * 0.5}s`,
+                animationDuration: `${4 + (i % 4)}s`,
+              }}
+            />
+          ))}
+        </div>
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
