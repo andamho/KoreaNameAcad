@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한국이름학교 최종 리뉴얼 (수정완료)</title>
+<style>
+    /* 폰트 설정 */
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body { 
+        font-family: 'Pretendard', sans-serif; 
+        line-height: 1.6; 
+        color: white; 
+        background-color: #0f2027; /* 기본 배경색 */
+    }
+
+    /* =========================================
+       SECTION 1: 상단 소개 (사선 처리됨)
+       ========================================= */
+    .intro-section {
+        position: relative;
+        /* 상단 배경: 약간 더 밝은 네이비 그라데이션 */
+        background: linear-gradient(135deg, #141E30 0%, #243B55 100%);
+        padding: 100px 0 180px; /* 사선 공간 확보 */
+        
+        /* 사선 마스킹 (왼쪽 아래가 길고 오른쪽이 짧은 형태) */
+        clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+        z-index: 2; /* 하단 섹션보다 위에 위치 */
+    }
+
+    .container {
+        max-width: 1100px;
+        width: 100%;
+        padding: 0 20px;
+        margin: 0 auto;
+    }
+
+    /* 최상단 타이틀 */
+    .top-header {
+        text-align: center;
+        margin-bottom: 80px;
+    }
+    .top-header h2 {
+        font-size: 36px;
+        font-weight: 800;
+        margin-bottom: 15px;
+        color: #2FB5B5;
+    }
+    .top-header p {
+        font-size: 20px;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 400;
+    }
+
+    /* 소개 그리드 레이아웃 */
+    .intro-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 80px;
+        align-items: center;
+    }
+
+    /* 좌측 텍스트 스타일 */
+    /* Introduction 삭제로 인해 별도 스타일 불필요 */
+    
+    .main-desc {
+        font-size: 20px; font-weight: 400; margin-bottom: 40px; line-height: 1.8; color: rgba(255,255,255,0.9);
+    }
+    .main-desc strong {
+        font-weight: 800; color: white; font-size: 22px;
+        border-bottom: 2px solid rgba(47, 181, 181, 0.5);
+    }
+
+    /* 슬로건 영역 */
+    .message-group {
+        border-left: 4px solid #2FB5B5; padding-left: 25px; margin-bottom: 40px;
+    }
+    .slogan { 
+        font-size: 24px; 
+        font-weight: 700; 
+        color: rgba(255,255,255,0.95); 
+        margin-bottom: 10px; 
+        letter-spacing: -0.5px; 
+    }
+    
+    /* 폰트 크기 24px로 통일 */
+    .hope-text { 
+        font-size: 24px; 
+        font-weight: 800; 
+        color: #2FB5B5; 
+        margin-top: 15px;
+        line-height: 1.4;
+    }
+
+    .social-proof {
+        display: flex; align-items: center; gap: 10px;
+        font-size: 15px; color: rgba(255,255,255,0.8); 
+        background: rgba(255,255,255,0.1); padding: 15px 20px; border-radius: 12px;
+        backdrop-filter: blur(5px); width: fit-content;
+    }
+    .social-bold { font-weight: 700; color: white; }
+
+
+    /* 우측 후기 박스 */
+    .review-box-wrapper { position: relative; margin-top: 30px; }
+    .review-box {
+        background-color: rgba(255, 255, 255, 0.95); /* 흰색 배경 */
+        border-radius: 20px; 
+        padding: 50px 40px;
+        position: relative; 
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        color: #333;
+    }
+
+    /* 전구 아이콘 */
+    .bulb-icon-wrapper {
+        position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
+        width: 70px; height: 70px; background: #2FB5B5; border-radius: 50%;
+        border: 4px solid #fff; display: flex; justify-content: center; align-items: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1); z-index: 10;
+    }
+    .bulb-svg { width: 32px; height: 32px; fill: white; }
+
+    /* 큰 따옴표 */
+    .quote-mark-big {
+        font-family: serif; color: #8FD8D8; font-size: 80px; line-height: 0; position: absolute;
+    }
+    .quote-left { top: 40px; left: 30px; }
+    .quote-right { bottom: 10px; right: 30px; }
+
+    /* 후기 리스트 */
+    .review-list { margin-top: 20px; margin-bottom: 20px; position: relative; z-index: 2; }
+    .review-item {
+        background: white; border: 1px solid #eee; padding: 18px 20px; border-radius: 12px; 
+        margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); font-size: 16px; font-weight: 600;
+        color: #444; transition: transform 0.2s;
+    }
+    .review-item:hover { transform: translateX(5px); border-color: #2FB5B5; color: #2FB5B5; }
+
+
+    /* =========================================
+       SECTION 2: 운명 카드 (하단, 배경이 깔리는 곳)
+       ========================================= */
+    .fate-card-section {
+        /* 하단 배경: 상단보다 더 깊고 어두운 색상 */
+        background: #0f2027; 
+        padding-top: 80px; 
+        padding-bottom: 120px;
+        margin-top: -100px; /* 상단 섹션 밑으로 살짝 들어가게 겹침 */
+        position: relative;
+        z-index: 1;
+    }
+    /* 카드 배경 빛 효과 */
+    .fate-card-section::before {
+        content: ''; position: absolute; top: -20%; left: 50%; transform: translateX(-50%);
+        width: 80%; height: 80%;
+        background: radial-gradient(circle, rgba(47,181,181,0.15) 0%, rgba(0,0,0,0) 70%);
+        pointer-events: none;
+    }
+
+    .fate-section-header { text-align: center; margin-bottom: 60px; padding-top: 50px;}
+    .fate-section-header h3 { font-size: 32px; font-weight: 800; margin-bottom: 15px; }
+    .fate-section-header p { color: rgba(255,255,255,0.7); font-size: 16px; }
+
+    .cards-container {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; perspective: 1000px;
+    }
+    .card-item { background-color: transparent; height: 440px; cursor: pointer; }
+    .card-inner {
+        position: relative; width: 100%; height: 100%; text-align: center;
+        transition: transform 0.8s; transform-style: preserve-3d;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.3); border-radius: 20px;
+    }
+    .card-item:hover .card-inner { transform: rotateY(180deg); }
+    
+    .card-front, .card-back {
+        position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+        border-radius: 20px; padding: 40px 25px;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+    }
+    .card-front {
+        /* 유리 질감 효과 */
+        background: rgba(255, 255, 255, 0.08); 
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1); color: white;
+    }
+    .card-back {
+        background: white; color: #333; transform: rotateY(180deg); border: 4px solid #2FB5B5;
+    }
+    
+    .card-icon-front { font-size: 50px; margin-bottom: 30px; opacity: 0.9; }
+    .card-question { font-size: 22px; font-weight: 700; line-height: 1.4; margin-bottom: 20px; word-break: keep-all; }
+    .front-hint { font-size: 14px; color: #2FB5B5; margin-top: auto; opacity: 0.9; animation: bounce 2s infinite; font-weight: 600;}
+    
+    .card-icon-back { font-size: 40px; margin-bottom: 20px; color: #2FB5B5; }
+    .card-answer-title { font-size: 22px; font-weight: 800; color: #111; margin-bottom: 15px; word-break: keep-all; }
+    .card-answer-text { font-size: 16px; color: #555; line-height: 1.6; word-break: keep-all; letter-spacing: -0.5px; }
+    .highlight { color: #2FB5B5; font-weight: 700; }
+
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+    /* 반응형 */
+    @media (max-width: 900px) {
+        .intro-section { clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%); padding-bottom: 120px; }
+        .fate-card-section { margin-top: -80px; }
+        
+        .intro-grid { grid-template-columns: 1fr; gap: 60px; text-align: center; }
+        .message-group { border-left: none; padding-left: 0; border-top: 4px solid #2FB5B5; padding-top: 20px; }
+        .social-proof { margin: 0 auto; }
+        .cards-container { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
+        .card-item { height: 380px; }
+        .top-header h2 { font-size: 28px; }
+    }
+</style>
+</head>
+<body>
+
+    <section class="intro-section">
+        <div class="container">
+            
+            <div class="top-header">
+                <h2>열심히 노력하며 살아가지만</h2>
+                <p>삶이 뜻대로 풀리지 않아 답답하신 마음을 잘 압니다</p>
+            </div>
+
+            <div class="intro-grid">
+                <div class="text-content">
+                    <p class="main-desc">
+                        한국이름학교는<br>
+                        <strong>18년간 45만 명</strong>의 임상 경험을 바탕으로,<br>
+                        사주 없이 <strong>한글·한자 이름만으로</strong><br>
+                        <strong>80% 이상의 정확도</strong>를 갖춘<br>
+                        운명상담을 제공합니다.
+                    </p>
+                    <div class="message-group">
+                        <h3 class="slogan">이름대로 삽니다.</h3>
+                        <h3 class="slogan">이름을 바꾸면, 삶이 바뀝니다.</h3>
+                        <p class="hope-text">이름은 희망입니다.</p>
+                    </div>
+                    <div class="social-proof">
+                        <span style="color: #FFD700; font-size: 18px;">⭐</span>
+                        <p>이미 SNS 팔로워 <span class="social-bold">5만 명</span>이 관심을 가지고 있습니다.<br><span style="font-size: 13px; color: rgba(255,255,255,0.7);">(200만 뷰 이상 조회수 다수)</span></p>
+                    </div>
+                </div>
+
+                <div class="review-box-wrapper">
+                    <div class="review-box">
+                        <div class="bulb-icon-wrapper">
+                            <svg class="bulb-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2C8.13 2 5 5.13 5 9C5 11.38 6.19 13.47 8 14.74V17C8 17.55 8.45 18 9 18H15C15.55 18 16 17.55 16 17V14.74C17.81 13.47 19 11.38 19 9C19 5.13 15.87 2 12 2ZM9 21C9 21.55 9.45 22 10 22H14C14.55 22 15 21.55 15 21V20H9V21Z" fill="white"/>
+                            </svg>
+                        </div>
+                        
+                        <div class="quote-mark-big quote-left">“</div>
+                        <div class="quote-mark-big quote-right">”</div>
+
+                        <div class="review-list">
+                            <div class="review-item">"내 삶을 조종한 건 이름이었다니!"</div>
+                            <div class="review-item">"개명 전후, 정말 이름대로 살아왔네요."</div>
+                            <div class="review-item">"개명 후 6년, 세상에서 가장 행복한 사람"</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="fate-card-section">
+        <div class="container">
+            <div class="fate-section-header">
+                <h3>내 삶, 어디가 막혀 있을까요?</h3>
+                <p>카드를 뒤집어 내 이름 속에 숨겨진 운명의 비밀을 확인해보세요.</p>
+            </div>
+
+            <div class="cards-container">
+                <div class="card-item">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="card-icon-front">💰</div>
+                            <h3 class="card-question">"아무리 열심히 일해도<br>통장이 자꾸 비어가나요?"</h3>
+                            <p class="front-hint">👆 마우스를 올려 해답 보기</p>
+                        </div>
+                        <div class="card-back">
+                            <div class="card-icon-back">🔑</div>
+                            <h3 class="card-answer-title">새는 재물운을 막으세요</h3>
+                            <p class="card-answer-text">
+                                이름에 재물운이 약하거나<br>재물이 새어나가는 운을 가지고 있습니다.<br><br>
+                                당신에게 맞는 <span class="highlight">부(富)의 기운</span>을 채워<br>돈이 모이는 구조로 바꿔 드립니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-item">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="card-icon-front">💔</div>
+                            <h3 class="card-question">"믿었던 사람에게 상처받고<br>늘 혼자라고 느끼시나요?"</h3>
+                            <p class="front-hint">👆 마우스를 올려 해답 보기</p>
+                        </div>
+                        <div class="card-back">
+                            <div class="card-icon-back">🤝</div>
+                            <h3 class="card-answer-title">고독한 기운을 푸세요</h3>
+                            <p class="card-answer-text">
+                                이름 속 강한 고독운이<br>사람을 밀어낼 수 있습니다.<br><br>
+                                부족한 <span class="highlight">인복과 인기운</span>을 보완하면<br>귀인이 찾아오기 시작합니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-item">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="card-icon-front">🧭</div>
+                            <h3 class="card-question">"이유 없이 불안하고<br>앞길이 막막하신가요?"</h3>
+                            <p class="front-hint">👆 마우스를 올려 해답 보기</p>
+                        </div>
+                        <div class="card-back">
+                            <div class="card-icon-back">🌟</div>
+                            <h3 class="card-answer-title">나만의 길을 찾으세요</h3>
+                            <p class="card-answer-text">
+                                나와 맞지 않는 이름은 삶을 혼란스럽게 합니다.<br><br>
+                                기존의 이름운과 희망 사항까지 반영한<br><span class="highlight">딱 맞는 맞춤 이름</span>으로<br>삶의 명확한 방향을 찾아드립니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>
