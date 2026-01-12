@@ -1106,9 +1106,9 @@ html.ua-tiktok .review-section-title {
 /* 하단 섹션 (운명 카드) - 데스크톱: 사선 각도에 맞춰 조정 */
 @media (min-width: 768px) {
   .kna-intro-bottom {
-    margin-top: -480px;
-    padding-top: 520px;
-    padding-bottom: 80px;
+    margin-top: -520px;
+    padding-top: 540px;
+    padding-bottom: 140px;
   }
 }
 
