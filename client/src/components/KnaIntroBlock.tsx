@@ -137,18 +137,6 @@ export default function KnaIntroBlock() {
           paddingBottom: '80px',
         }}
       >
-        {/* 배경 빛 효과 */}
-        <div 
-          className="absolute pointer-events-none"
-          style={{
-            top: '-20%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '80%',
-            height: '80%',
-            background: 'radial-gradient(circle, rgba(47,181,181,0.15) 0%, rgba(0,0,0,0) 70%)',
-          }}
-        />
 
         <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
           <header className="text-center mb-14">
@@ -241,7 +229,8 @@ function FateCard({
             "{question}"
           </h3>
           <p className="text-sm text-[#2FB5B5] font-semibold mt-auto animate-bounce">
-            👆 마우스를 올려 해답 보기
+            <span className="hidden md:inline">👆 마우스를 올려 해답 보기</span>
+            <span className="md:hidden">👆 터치해서 해답 보기</span>
           </p>
         </div>
         
