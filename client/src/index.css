@@ -1149,6 +1149,13 @@ html.ua-tiktok .kna-intro-bottom > div {
   padding-top: 0 !important;
 }
 
+/* 모바일 전용: 히어로 콘텐츠 상단 여백 보정 (80px 패딩으로 인한 불균형 해소) */
+@media (max-width: 767px) {
+  .hero-wrap {
+    margin-top: -40px;
+  }
+}
+
 /* 데스크탑 전용: 히어로 폰트 20% 증가 */
 @media (min-width: 768px) {
   .hero-title {
