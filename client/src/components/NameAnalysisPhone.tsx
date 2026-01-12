@@ -57,7 +57,7 @@ export function NameAnalysisPhone() {
   }, []);
 
   return (
-    <section className="name-analysis-phone-section py-16 md:py-24 flex items-center justify-center bg-[#f6f9fc] dark:bg-slate-900" style={{ 
+    <section className="name-analysis-phone-section py-16 md:py-24 flex items-center justify-center bg-white md:bg-[#f6f9fc] dark:bg-slate-900" style={{ 
       backgroundImage: "radial-gradient(#e3e8ee 1px, transparent 1px)",
       backgroundSize: "20px 20px"
     }}>
