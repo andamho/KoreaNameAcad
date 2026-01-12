@@ -1091,8 +1091,8 @@ html.ua-tiktok .review-section-title {
 /* 상단 섹션 (사선 처리) - 데스크톱: 더 큰 각도 */
 @media (min-width: 768px) {
   .kna-intro-top {
-    clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
-    padding-bottom: 200px;
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%);
+    padding-bottom: 280px;
   }
 }
 
