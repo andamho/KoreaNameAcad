@@ -1,5 +1,5 @@
 import { SiInstagram, SiYoutube, SiTiktok } from 'react-icons/si';
-import { MessageCircle, ChevronDown, Send } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useState } from 'react';
 
@@ -104,28 +104,24 @@ export function Footer() {
           </p>
         </div>
 
-        {/* CTA 버튼 영역 */}
-        <div className="flex items-center justify-center gap-3 sm:gap-4 my-12">
+        {/* CTA 버튼 영역 - 히어로 섹션 스타일 */}
+        <div className="flex items-center justify-center gap-6 my-12">
           <button
             onClick={() => {
               setLocation('/services');
               window.scrollTo(0, 0);
             }}
-            className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-md bg-[#56D5DB] text-black font-medium text-sm border-2 border-[#56D5DB] hover:bg-[#3bc4ca] transition-colors whitespace-nowrap"
-            style={{ minWidth: '140px' }}
+            className="px-6 py-2 bg-white text-black font-semibold rounded-full text-base hover:bg-gray-200 transition-colors flex items-center gap-1"
             data-testid="button-footer-apply"
           >
-            <Send className="w-4 h-4 flex-shrink-0" />
-            <span>지금 신청</span>
+            지금 신청 <span className="ml-1">›</span>
           </button>
           <button
             onClick={handleKakaoClick}
-            className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-md bg-white text-black font-medium text-sm border-2 border-[#56D5DB] hover:bg-[#56D5DB] hover:text-white transition-colors whitespace-nowrap"
-            style={{ minWidth: '140px' }}
+            className="text-white font-semibold text-base hover:opacity-70 transition-opacity flex items-center gap-1"
             data-testid="button-footer-kakao"
           >
-            <MessageCircle className="w-4 h-4 flex-shrink-0" />
-            <span>카톡 실시간 상담</span>
+            카톡 실시간 상담 <span>›</span>
           </button>
         </div>
 
