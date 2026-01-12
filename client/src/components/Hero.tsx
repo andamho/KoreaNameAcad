@@ -93,30 +93,39 @@ export function Hero() {
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button
-              variant="outline"
-              size="lg"
+          <div className="flex flex-row items-center justify-center gap-6">
+            <button
+              onClick={() => {
+                setLocation('/services');
+                window.scrollTo(0, 0);
+              }}
+              data-testid="button-apply-now"
+              className="px-6 py-3 bg-black text-white font-semibold rounded-full text-base hover:bg-gray-800 transition-colors flex items-center gap-1"
+            >
+              지금 신청 <span className="ml-1">›</span>
+            </button>
+            <button
+              onClick={() => {
+                const consultSection = document.getElementById('consult');
+                if (consultSection) {
+                  consultSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              data-testid="button-consult"
+              className="text-black dark:text-gray-900 font-semibold text-base hover:opacity-70 transition-opacity flex items-center gap-1"
+            >
+              상담 <span>›</span>
+            </button>
+            <button
               onClick={() => {
                 setLocation('/reviews');
                 window.scrollTo(0, 0);
               }}
               data-testid="button-reviews"
-              className="min-w-[200px] bg-background/50 backdrop-blur-sm text-lg"
+              className="text-black dark:text-gray-900 font-semibold text-base hover:opacity-70 transition-opacity flex items-center gap-1"
             >
-              상담·개명 후기
-            </Button>
-            <Button
-              size="lg"
-              onClick={() => {
-                setLocation('/services');
-                window.scrollTo(0, 0);
-              }}
-              data-testid="button-consultation"
-              className="min-w-[200px] text-lg"
-            >
-              지금 신청
-            </Button>
+              개명후기 <span>›</span>
+            </button>
           </div>
         </div>
       </div>
