@@ -118,7 +118,7 @@ export function Footer() {
           </button>
           <button
             onClick={handleKakaoClick}
-            className="text-white font-semibold text-base hover:opacity-70 transition-opacity flex items-center gap-1"
+            className="text-white font-semibold text-sm hover:opacity-70 transition-opacity flex items-center gap-1"
             data-testid="button-footer-kakao"
           >
             카톡 실시간 상담 <span>›</span>
