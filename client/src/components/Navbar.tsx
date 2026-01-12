@@ -31,6 +31,7 @@ export function Navbar() {
   const [hasBeenOpened, setHasBeenOpened] = useState(false);
   const [, setLocation] = useLocation();
   const [logoLoaded, setLogoLoaded] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   
   // Admin state
@@ -64,6 +65,16 @@ export function Navbar() {
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, [menuOpen]);
+  
+  // Scroll listener for navbar transparency
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial check
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   // Login handler
   const handleLogin = async () => {
@@ -196,7 +207,7 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="kna-navbar fixed top-0 left-0 right-0 z-[200] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <nav className={`kna-navbar fixed top-0 left-0 right-0 z-[200] transition-all duration-300 ${scrolled ? 'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm' : 'bg-transparent'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:max-w-none lg:px-12">
           <div className="flex items-center justify-between h-[80px]">
             <div className="flex items-center gap-2">

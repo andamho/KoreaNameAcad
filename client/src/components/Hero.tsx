@@ -9,28 +9,30 @@ export function Hero() {
   const isInstagram = location === '/ig';
   const isTikTok = location === '/tt';
   
-  // 폰트 크기 결정 (더 보수적으로)
+  // 폰트 크기 결정 (전체화면에 맞게 확대)
   const h1FontSize = isInstagram 
-    ? 'clamp(26px, 5.4vw, 34px)' 
+    ? 'clamp(28px, 6vw, 38px)' 
     : isTikTok 
-    ? 'clamp(26px, 5.4vw, 34px)'
-    : 'clamp(28px, 6.2vw, 40px)';
+    ? 'clamp(28px, 6vw, 38px)'
+    : 'clamp(34px, 7.5vw, 52px)';
     
   const pFontSize = isInstagram 
-    ? 'clamp(17px, 3.6vw, 21px)' 
+    ? 'clamp(18px, 4vw, 23px)' 
     : isTikTok 
-    ? 'clamp(17px, 3.6vw, 21px)'
-    : 'clamp(18px, 4.2vw, 24px)';
+    ? 'clamp(18px, 4vw, 23px)'
+    : 'clamp(20px, 4.8vw, 28px)';
 
   return (
-    <section id="home" className="relative py-20 md:py-32 overflow-hidden">
+    <section id="home" className="relative min-h-screen overflow-hidden flex items-center justify-center z-10" style={{ marginTop: '-80px', paddingTop: '80px' }}>
       <div className="absolute inset-0">
         <img 
           src={heroImage} 
           alt="배경" 
           className="w-full h-full object-cover object-[55%] md:object-[98%]"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/50 to-transparent dark:from-background/90 dark:via-background/60 dark:to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-background/40 to-transparent dark:from-background/85 dark:via-background/55 dark:to-transparent" />
+        {/* Bottom gradient to hide danger section character */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-background to-transparent" />
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
