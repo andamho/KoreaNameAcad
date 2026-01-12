@@ -143,8 +143,9 @@ export function NameAnalysisPhone() {
         }
         
         @keyframes phoneAutoScroll {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(-55%); }
+          0%, 10% { transform: translateY(0); }
+          45%, 55% { transform: translateY(-55%); }
+          90%, 100% { transform: translateY(0); }
         }
         
         .phone-header { text-align: center; margin-bottom: 20px; }
