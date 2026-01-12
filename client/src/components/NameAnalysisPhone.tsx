@@ -122,15 +122,14 @@ export function NameAnalysisPhone() {
           height: 100%;
           width: 100%;
           background: white;
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
           border: 1px solid rgba(255, 255, 255, 0.3);
           box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
           border-radius: 24px;
           position: relative;
           overflow: hidden;
           pointer-events: none;
-          -webkit-transform: translateZ(0);
-          transform: translateZ(0);
-          will-change: contents;
         }
         
         .phone-scroll-content {
