@@ -10,7 +10,7 @@ export default function KnaIntroBlock() {
         className="kna-intro-block relative overflow-hidden text-white"
         style={{
           background: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)',
-          clipPath: 'polygon(0 0, 100% 0, 100% 85%, 0 100%)',
+          clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 85%)',
           paddingBottom: '180px',
         }}
       >
