@@ -41,10 +41,10 @@ export function Hero() {
               key={i}
               className="absolute animate-fall-petal"
               style={{
-                left: `${5 + (i * 7) % 90}%`,
-                top: `-${10 + (i % 5) * 5}%`,
-                animationDelay: `${i * 0.8 + Math.random() * 2}s`,
-                animationDuration: `${8 + (i % 5) * 2}s`,
+                left: `${8 + i * 13}%`,
+                top: `-${8 + (i % 3) * 4}%`,
+                animationDelay: `${i * 1.2}s`,
+                animationDuration: `${9 + (i % 4) * 2}s`,
               }}
             >
               <div 
