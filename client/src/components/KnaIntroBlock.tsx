@@ -10,8 +10,8 @@ export default function KnaIntroBlock() {
         className="kna-intro-block relative overflow-hidden text-white z-10"
         style={{
           background: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)',
-          clipPath: 'polygon(0 0, 100% 0, 100% 85%, 0 100%)',
-          paddingBottom: '180px',
+          clipPath: 'polygon(0 0, 100% 0, 100% 92%, 0 100%)',
+          paddingBottom: '220px',
         }}
       >
         <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -132,8 +132,8 @@ export default function KnaIntroBlock() {
         className="relative text-white z-0"
         style={{
           background: '#0f2027',
-          marginTop: '-200px',
-          paddingTop: '230px',
+          marginTop: '-350px',
+          paddingTop: '380px',
           paddingBottom: '80px',
         }}
       >
