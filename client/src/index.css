@@ -1122,6 +1122,17 @@ html.ua-tiktok .review-section-title {
   /* 상단 패딩 없음 - 인앱 홈화면에서는 navbar spacer 사용 */
 }
 
+/* 인앱: kna-intro-top은 상단 패딩 제거 (두 번의 확인 섹션과 겹침 방지) */
+.ig-shell .kna-intro-top {
+  padding-top: 0 !important;
+}
+
+/* 인앱: kna-intro-bottom 상단 여백 조정 */
+.ig-shell .kna-intro-bottom {
+  margin-top: -200px !important;
+  padding-top: 280px !important;
+}
+
 /* Hero 섹션 축소 - transform 유지 (스크롤 복원 훅으로 해결) */
 .ig-shell .hero-wrap {
   max-width: 640px;
