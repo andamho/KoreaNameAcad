@@ -1149,6 +1149,16 @@ html.ua-tiktok .kna-intro-bottom > div {
   padding-top: 0 !important;
 }
 
+/* 데스크탑 전용: 히어로 폰트 20% 증가 */
+@media (min-width: 768px) {
+  .hero-title {
+    font-size: clamp(41px, 9vw, 62px) !important;
+  }
+  .hero-sub {
+    font-size: clamp(24px, 5.76vw, 34px) !important;
+  }
+}
+
 /* Hero 섹션 축소 - transform 유지 (스크롤 복원 훅으로 해결) */
 .ig-shell .hero-wrap {
   max-width: 640px;

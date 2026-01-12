@@ -10,17 +10,24 @@ export function Hero() {
   const isTikTok = location === '/tt';
   
   // 폰트 크기 결정 (전체화면에 맞게 확대)
+  // 데스크탑: 20% 증가 (52px → 62px, 34px → 41px)
+  // 모바일: 기존 유지 (34px ~ 52px)
   const h1FontSize = isInstagram 
     ? 'clamp(28px, 6vw, 38px)' 
     : isTikTok 
     ? 'clamp(28px, 6vw, 38px)'
     : 'clamp(34px, 7.5vw, 52px)';
+  
+  // 데스크탑 전용 20% 증가된 폰트 크기
+  const h1FontSizeDesktop = 'clamp(41px, 9vw, 62px)';
     
   const pFontSize = isInstagram 
     ? 'clamp(18px, 4vw, 23px)' 
     : isTikTok 
     ? 'clamp(18px, 4vw, 23px)'
     : 'clamp(20px, 4.8vw, 28px)';
+  
+  const pFontSizeDesktop = 'clamp(24px, 5.76vw, 34px)';
 
   return (
     <section id="home" className="relative min-h-screen overflow-hidden flex items-center justify-center z-10" style={{ marginTop: '-80px', paddingTop: '80px' }}>
