@@ -64,8 +64,8 @@ export default function KnaIntroBlock() {
             </div>
 
             {/* 2. 후기 박스 (모바일 두번째) */}
-            <div className="order-2 md:order-2">
-              <div className="relative rounded-2xl bg-white/95 p-8 pt-16 pb-16 shadow-2xl text-gray-800">
+            <div className="order-2 md:order-2 my-6 md:my-0">
+              <div className="relative rounded-2xl bg-white/95 p-8 pt-20 pb-20 shadow-2xl text-gray-800">
                 {/* 전구 아이콘 */}
                 <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#56D5DB] flex items-center justify-center shadow-lg border-4 border-white z-10">
                   <Lightbulb size={24} weight="fill" color="white" />
