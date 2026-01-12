@@ -1125,10 +1125,16 @@ html.ua-tiktok .kna-intro-bottom > div {
   zoom: 0.82 !important;
 }
 
-/* 인앱: kna-intro-top은 상단 패딩 최소화 */
+/* 인앱: kna-intro-top 상단 패딩 (하단 섹션과 동일한 여백) */
 html.ua-instagram .kna-intro-top > div,
 html.ua-tiktok .kna-intro-top > div {
-  padding-top: 12px !important;
+  padding-top: 48px !important;
+}
+
+/* 인앱: kna-value-section 하단 여백 축소 */
+html.ua-instagram .kna-value-section,
+html.ua-tiktok .kna-value-section {
+  padding-bottom: 24px !important;
 }
 
 /* 인앱: kna-intro-bottom 여백 조정 (겹침 방지) */
