@@ -121,11 +121,7 @@ export function NameAnalysisPhone() {
         .phone-screen {
           height: 100%;
           width: 100%;
-          /* Glassmorphism 유리 효과 */
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          /* 유리 테두리 */
+          background: white;
           border: 1px solid rgba(255, 255, 255, 0.3);
           box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
           border-radius: 24px;
