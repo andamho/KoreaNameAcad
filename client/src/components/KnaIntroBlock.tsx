@@ -29,10 +29,10 @@ export default function KnaIntroBlock() {
             </p>
           </header>
 
-          <div className="grid items-center gap-12 md:gap-16 lg:gap-20 md:grid-cols-2 max-w-6xl mx-auto">
-            {/* Left: 신뢰 문구 + 슬로건 + SNS */}
-            <div className="order-2 md:order-1 text-center md:text-left">
-              <p className="text-lg md:text-xl leading-[1.8] text-white/90 mb-10">
+          <div className="grid items-center gap-8 md:gap-16 lg:gap-20 md:grid-cols-2 max-w-6xl mx-auto">
+            {/* 1. 신뢰 문구 (모바일 첫번째) */}
+            <div className="order-1 md:order-1 text-center md:text-left">
+              <p className="text-lg md:text-xl leading-[1.8] text-white/90 md:mb-10">
                 한국이름학교는<br />
                 <strong className="text-white text-[22px] border-b-2 border-[#2FB5B5]/50">18년간 45만 명</strong>의 임상 경험을 바탕으로,<br />
                 사주 없이 <strong className="text-white text-[22px] border-b-2 border-[#2FB5B5]/50">한글·한자 이름만으로</strong><br />
@@ -40,8 +40,8 @@ export default function KnaIntroBlock() {
                 운명상담을 제공합니다.
               </p>
               
-              {/* 슬로건 영역 */}
-              <div className="border-l-4 border-[#56D5DB] pl-6 mb-10 text-left">
+              {/* 슬로건 영역 - 데스크톱에서만 보임 */}
+              <div className="hidden md:block border-l-4 border-[#56D5DB] pl-6 mb-10 text-left">
                 <p className="text-2xl font-bold text-white/95 mb-2 break-keep tracking-tight">
                   이름대로 삽니다.
                 </p>
@@ -53,8 +53,8 @@ export default function KnaIntroBlock() {
                 </p>
               </div>
               
-              {/* SNS 팔로워 */}
-              <div className="inline-flex items-start gap-3 bg-white/10 backdrop-blur-sm px-5 py-4 rounded-xl">
+              {/* SNS 팔로워 - 데스크톱에서만 보임 */}
+              <div className="hidden md:inline-flex items-start gap-3 bg-white/10 backdrop-blur-sm px-5 py-4 rounded-xl">
                 <span className="text-yellow-400 text-lg">⭐</span>
                 <p className="text-[15px] text-white/80 text-left">
                   이미 SNS 팔로워 <b className="text-white">5만 명</b>이 관심을 가지고 있습니다.<br />
@@ -63,8 +63,8 @@ export default function KnaIntroBlock() {
               </div>
             </div>
 
-            {/* Right: 실제 후기 박스 */}
-            <div className="order-1 md:order-2 mt-8">
+            {/* 2. 후기 박스 (모바일 두번째) */}
+            <div className="order-2 md:order-2">
               <div className="relative rounded-2xl bg-white/95 p-8 pt-16 pb-16 shadow-2xl text-gray-800">
                 {/* 전구 아이콘 */}
                 <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#56D5DB] flex items-center justify-center shadow-lg border-4 border-white z-10">
@@ -97,6 +97,30 @@ export default function KnaIntroBlock() {
                 >
                   <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.57-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z"/>
                 </svg>
+              </div>
+            </div>
+
+            {/* 3. 슬로건 영역 - 모바일에서만 보임 */}
+            <div className="order-3 md:hidden border-l-4 border-[#56D5DB] pl-6 text-left">
+              <p className="text-2xl font-bold text-white/95 mb-2 break-keep tracking-tight">
+                이름대로 삽니다.
+              </p>
+              <p className="text-2xl font-bold text-white/95 mb-4 break-keep tracking-tight">
+                이름을 바꾸면, 삶이 바뀝니다.
+              </p>
+              <p className="text-2xl font-extrabold text-[#56D5DB] break-keep leading-snug">
+                이름은 희망입니다.
+              </p>
+            </div>
+
+            {/* 4. SNS 팔로워 - 모바일에서만 보임 */}
+            <div className="order-4 md:hidden flex justify-center">
+              <div className="inline-flex items-start gap-3 bg-white/10 backdrop-blur-sm px-5 py-4 rounded-xl">
+                <span className="text-yellow-400 text-lg">⭐</span>
+                <p className="text-[15px] text-white/80 text-left">
+                  이미 SNS 팔로워 <b className="text-white">5만 명</b>이 관심을 가지고 있습니다.<br />
+                  <span className="text-[13px] text-white/60">(200만 뷰 이상 조회수 다수)</span>
+                </p>
               </div>
             </div>
           </div>
