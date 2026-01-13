@@ -78,7 +78,7 @@ const StepCard = forwardRef<HTMLElement, StepCardProps>(
             <span className={`inline-flex items-center text-xs font-bold text-gray-700 dark:text-gray-300 transition duration-300 ${
               isScrollActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
             }`}>
-              {footerNext} <span className="ml-1">→</span>
+              {footerNext}
             </span>
           </div>
         )}
@@ -226,7 +226,7 @@ export default function KnaStepsSection() {
               title="운명 상담"
               desc="고달픈 인생의 이유를 이름 분석 운명 상담을 통해 명확히 찾아드립니다."
               footerLabel="핵심: 원인 규명"
-              footerNext="다음: 인생 역전"
+              footerNext="다음: 인생 역전 >"
               isScrollActive={activeCards.has(2)}
             />
             
