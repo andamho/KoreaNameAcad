@@ -37,6 +37,18 @@ export default function KnaDangerSection() {
                 이름은 자신뿐만 아니라,<br/>
                 <span className="text-orange-500 font-bold">가족 전체에 영향을 미칩니다.</span>
               </StackItem>
+              
+              {/* Mobile icon with ripple animation - equal spacing from text and card bottom */}
+              <div className="md:hidden flex items-center justify-center pt-[30px] pb-[26px]">
+                <div className="relative w-[120px] h-[120px] rounded-[28px] grid place-items-center bg-gray-50 shadow-[0_10px_30px_rgba(0,0,0,0.03)]" style={{ isolation: 'isolate' }}>
+                  <span className="ripple r1" />
+                  <span className="ripple r2" />
+                  <span className="ripple r3" />
+                  <svg className="w-[56px] h-[56px] text-orange-500 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinejoin="round">
+                    <path d="M13 2L3 14H11L9 22L21 10H13L13 2Z"/>
+                  </svg>
+                </div>
+              </div>
             </div>
             
             {/* Right icon area with gray background - ripple animation (Desktop) */}
@@ -50,18 +62,6 @@ export default function KnaDangerSection() {
                 </svg>
               </div>
             </aside>
-          </div>
-          
-          {/* Mobile icon with ripple animation - 220px ripple + 30px padding each side = 280px */}
-          <div className="md:hidden flex items-center justify-center h-[280px]">
-            <div className="relative w-[120px] h-[120px] rounded-[28px] grid place-items-center bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)]" style={{ isolation: 'isolate' }}>
-              <span className="ripple r1" />
-              <span className="ripple r2" />
-              <span className="ripple r3" />
-              <svg className="w-[56px] h-[56px] text-orange-500 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinejoin="round">
-                <path d="M13 2L3 14H11L9 22L21 10H13L13 2Z"/>
-              </svg>
-            </div>
           </div>
         </div>
 
@@ -95,6 +95,16 @@ export default function KnaDangerSection() {
                 검증 없는 작명,<br/>
                 <span className="text-orange-500 font-bold">고생은 결국 본인의 몫입니다.</span>
               </StackItem>
+              
+              {/* Mobile icon with color swap animation - equal spacing from text and card bottom */}
+              <div className="md:hidden flex items-center justify-center pt-[30px] pb-[26px]">
+                <div className="relative w-[120px] h-[120px] rounded-[28px] grid place-items-center warn-wrap-animate">
+                  <svg className="w-[56px] h-[56px] warn-ico-animate" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M7 3h10l4 4v10l-4 4H7l-4-4V7l4-4Z" />
+                    <path d="M9 9l6 6M15 9l-6 6" />
+                  </svg>
+                </div>
+              </div>
             </div>
             
             {/* Right icon area with gray background - color swap animation (Desktop) */}
@@ -106,16 +116,6 @@ export default function KnaDangerSection() {
                 </svg>
               </div>
             </aside>
-          </div>
-          
-          {/* Mobile icon with color swap animation - 120px icon + 30px padding each side = 180px */}
-          <div className="md:hidden flex items-center justify-center h-[180px]">
-            <div className="relative w-[120px] h-[120px] rounded-[28px] grid place-items-center warn-wrap-animate">
-              <svg className="w-[56px] h-[56px] warn-ico-animate" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M7 3h10l4 4v10l-4 4H7l-4-4V7l4-4Z" />
-                <path d="M9 9l6 6M15 9l-6 6" />
-              </svg>
-            </div>
           </div>
         </div>
 
