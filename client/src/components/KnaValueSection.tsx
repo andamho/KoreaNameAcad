@@ -58,7 +58,7 @@ const nodes: Node[] = [
   {
     key: "trust",
     title: "신뢰의 증거",
-    body: "전국 최다 후기로 검증된 만족도를 확인하세요",
+    body: "전국 최다 후기로\n검증된 만족도를 확인하세요",
     angle: 0,
     icon: <ShieldIcon className={iconProps} />,
     mobileIcon: <ShieldIcon className={mobileIconProps} />,
@@ -68,7 +68,7 @@ const nodes: Node[] = [
   {
     key: "root",
     title: "근본 원인\n발견",
-    body: "반복되는 어려움의 이유를 이름에서 명확히 찾아드립니다.",
+    body: "반복되는 어려움의 이유를\n이름에서 명확히 찾아드립니다",
     angle: 300,
     icon: <SearchIcon className={iconProps} />,
     mobileIcon: <SearchIcon className={mobileIconProps} />,
@@ -78,7 +78,7 @@ const nodes: Node[] = [
   {
     key: "match",
     title: "이름 · 삶\n일치 증명",
-    body: "이름대로 살고 있음을 구체적으로 보여드립니다.",
+    body: "이름대로 살고 있음을\n구체적으로 보여드립니다.",
     angle: 60,
     icon: <Scale className={iconProps} strokeWidth={1.5} />,
     mobileIcon: <Scale className={mobileIconProps} strokeWidth={1.5} />,
@@ -108,7 +108,7 @@ const nodes: Node[] = [
   {
     key: "talent",
     title: "강점과 재능 발견",
-    body: "당신이 몰랐던 본연의 장점을 알려드립니다.",
+    body: "미처 몰랐던 본연의 장점을 알려드립니다.",
     angle: 180,
     icon: <SparkIcon className={iconProps} />,
     mobileIcon: <SparkIcon className={mobileIconProps} />,
@@ -272,7 +272,7 @@ function MobileCenterLogo() {
 
 export default function KnaValueSection() {
   const radius = 300;
-  const [showLogo, setShowLogo] = useState(true);
+  const [showLogo, setShowLogo] = useState(false);
 
   return (
     <section className="kna-value-section relative overflow-hidden bg-white dark:bg-background text-gray-900 dark:text-foreground">
