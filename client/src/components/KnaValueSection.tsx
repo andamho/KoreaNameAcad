@@ -142,7 +142,7 @@ function CircleNode({ node, radius }: { node: Node; radius: number }) {
         <div className="rounded-full border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-[6px] shadow-lg group-hover:border-[#18a999] transition-colors">
           <div className="w-32 h-32 md:w-44 md:h-44 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 shadow-md flex flex-col items-center justify-center p-4 text-center">
             <div className="mb-2">{node.icon}</div>
-            <span className="text-gray-900 dark:text-foreground font-bold text-[16px] md:text-[19px] leading-tight whitespace-pre-line tracking-tight">
+            <span className="text-gray-900 dark:text-foreground font-semibold text-[21px] md:text-[22px] leading-tight whitespace-pre-line tracking-tight">
               {node.title}
             </span>
           </div>
@@ -152,7 +152,7 @@ function CircleNode({ node, radius }: { node: Node; radius: number }) {
       <div
         className={`hidden lg:flex absolute flex-col w-[300px] ${textPosClass} ${textAlignClass} transition-transform duration-300 group-hover:scale-105`}
       >
-        <div className="text-gray-700 dark:text-muted-foreground text-[16px] md:text-[17px] leading-relaxed whitespace-pre-line font-medium break-keep">
+        <div className="text-gray-700 dark:text-muted-foreground text-lg leading-relaxed whitespace-pre-line break-keep">
           {node.body}
         </div>
       </div>
@@ -193,18 +193,18 @@ function MobileCircleItem({ node }: { node: Node }) {
       >
         <div className="mb-2">{node.mobileIcon}</div>
         <span 
-          className={`text-gray-900 dark:text-foreground font-bold leading-tight whitespace-pre-line tracking-tight transition-all duration-500 text-center ${
-            isVisible ? 'text-[19px]' : 'text-[17px]'
+          className={`text-gray-900 dark:text-foreground font-semibold leading-tight whitespace-pre-line tracking-tight transition-all duration-500 text-center ${
+            isVisible ? 'text-[22px]' : 'text-[21px]'
           }`}
         >
           {node.title}
         </span>
       </div>
       <p 
-        className={`leading-relaxed break-keep max-w-[320px] transition-all duration-500 ${
+        className={`leading-relaxed break-keep max-w-[320px] transition-all duration-500 text-lg ${
           isVisible 
-            ? 'text-[19px] text-gray-800 dark:text-gray-200 font-medium' 
-            : 'text-[17px] text-gray-600 dark:text-muted-foreground'
+            ? 'text-gray-800 dark:text-gray-200' 
+            : 'text-gray-600 dark:text-muted-foreground'
         }`}
       >
         {node.body}
