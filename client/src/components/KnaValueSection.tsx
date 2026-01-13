@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { Scale, Link2, Lock } from "lucide-react";
+import { Scale, Link2, Lock, AlertTriangle, Users, DollarSign, FileQuestion, MessageCircleQuestion } from "lucide-react";
 import logoImage from "@assets/file_000000009b2c7206ad0a70c0142cb99a_1766915164756.png";
 
-// 기존 아이콘 컴포넌트들
 function ShieldIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden>
@@ -119,6 +118,66 @@ const nodes: Node[] = [
   },
 ];
 
+type MobileCard = {
+  key: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  highlight?: boolean;
+};
+
+const mobileCards: MobileCard[] = [
+  {
+    key: "clear",
+    title: "이름이 맑아야 인생이 맑다",
+    description: "운칠기삼(運七技三), 운이 70%입니다. 이름의 강력한 운을 모른 채, 30%의 노력만으로는 인생이 바뀌지 않습니다.",
+    icon: <SparkIcon className="w-8 h-8 text-[#2dd4bf]" />,
+  },
+  {
+    key: "badName",
+    title: "안 좋은 이름에 바람 잘 날 없다",
+    description: "안좋은 이름은,\n평생을 따라 다니며 괴롭힙니다.",
+    icon: <AlertTriangle className="w-8 h-8 text-[#2dd4bf]" strokeWidth={1.5} />,
+  },
+  {
+    key: "family",
+    title: "가족은 운명공동체",
+    description: "이름은 자신뿐만 아니라,\n가족 전체에 영향을 미칩니다.",
+    icon: <Users className="w-8 h-8 text-[#2dd4bf]" strokeWidth={1.5} />,
+  },
+  {
+    key: "warning",
+    title: "이러시면 안됩니다",
+    description: "",
+    icon: null,
+    highlight: true,
+  },
+];
+
+type WarningItem = {
+  key: string;
+  question: string;
+  warning: string;
+};
+
+const warningItems: WarningItem[] = [
+  {
+    key: "cost",
+    question: '"비용을 먼저 물어보시나요?"',
+    warning: "이름은 생각보다 훨씬 막강합니다.\n비용만 아끼려다,\n더 비싼 대가를 치릅니다.",
+  },
+  {
+    key: "saju",
+    question: '"사주 기반 작명소를 찾으시나요?"',
+    warning: "그곳은 한글이름 작명이론이 없습니다.\n한글 이름의 운이 무너지면,\n삶이 흔들립니다.",
+  },
+  {
+    key: "review",
+    question: '"후기도 안살펴보시나요?"',
+    warning: "검증 없는 작명,\n고생은 결국 본인의 몫입니다.",
+  },
+];
+
 function CircleNode({ node, radius }: { node: Node; radius: number }) {
   const x = Math.sin((node.angle * Math.PI) / 180) * radius;
   const y = -Math.cos((node.angle * Math.PI) / 180) * radius;
@@ -162,6 +221,46 @@ function CircleNode({ node, radius }: { node: Node; radius: number }) {
   );
 }
 
+function MobileValueCard({ card }: { card: MobileCard }) {
+  if (card.highlight) {
+    return (
+      <div className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-2xl p-6 border border-red-200/50 dark:border-red-700/50">
+        <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-6 text-center">
+          {card.title}
+        </h3>
+        <div className="space-y-5">
+          {warningItems.map((item) => (
+            <div key={item.key} className="bg-white/80 dark:bg-gray-800/80 rounded-xl p-4">
+              <p className="text-[17px] font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                {item.question}
+              </p>
+              <p className="text-[15px] text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line break-keep">
+                {item.warning}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+      <div className="flex items-center gap-4 mb-4">
+        <div className="w-14 h-14 rounded-full bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
+          {card.icon}
+        </div>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-foreground break-keep">
+          {card.title}
+        </h3>
+      </div>
+      <p className="text-[15px] text-gray-600 dark:text-muted-foreground leading-relaxed whitespace-pre-line break-keep pl-[72px]">
+        {card.description}
+      </p>
+    </div>
+  );
+}
+
 export default function KnaValueSection() {
   const radius = 300;
   const [showLogo, setShowLogo] = useState(false);
@@ -175,7 +274,7 @@ export default function KnaValueSection() {
 
       <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-24 lg:px-8">
         {/* 헤더 */}
-        <header className="relative z-40 text-center mb-24">
+        <header className="relative z-40 text-center mb-16 lg:mb-24">
           <h2 className="text-[#18a999] text-[25px] sm:text-3xl md:text-4xl font-extrabold tracking-tight">
             알면 알수록, 한국이름학교
           </h2>
@@ -184,8 +283,15 @@ export default function KnaValueSection() {
           </p>
         </header>
 
-        {/* 원형 다이어그램 */}
-        <div className="relative w-full h-[600px] md:h-[800px] flex items-center justify-center">
+        {/* 모바일 레이아웃 (lg 미만) */}
+        <div className="lg:hidden space-y-4 mb-16">
+          {mobileCards.map((card) => (
+            <MobileValueCard key={card.key} card={card} />
+          ))}
+        </div>
+
+        {/* 데스크톱 원형 다이어그램 (lg 이상) */}
+        <div className="hidden lg:flex relative w-full h-[800px] items-center justify-center">
           {/* 연결선 SVG */}
           <svg className="absolute inset-0 w-full h-full z-10 pointer-events-none opacity-30">
             <g stroke="#94A3B8" strokeWidth="1.5" strokeDasharray="6 6">
@@ -245,10 +351,10 @@ export default function KnaValueSection() {
         </div>
 
         {/* 두 번의 확인, 평생의 안심 */}
-        <div className="mt-24">
+        <div className="mt-8 lg:mt-24">
           {/* 섹션 타이틀 영역 */}
           <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-foreground flex items-center justify-center gap-2">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-foreground flex items-center justify-center gap-2 flex-wrap">
               <Lock size={28} className="text-[#2dd4bf]" strokeWidth={2.5} />
               <span>두 번의 확인으로 완성되는 <span className="text-[#2dd4bf]">평생의 안심</span></span>
             </h2>
@@ -288,6 +394,27 @@ export default function KnaValueSection() {
                   이름 속에 담긴 운명의 흐름을<br/>
                   정밀하게 분석하여 증명합니다.
                 </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 한국이름학교 중앙 강조 (모바일) */}
+          <div className="lg:hidden mt-10 flex justify-center">
+            <div 
+              className="relative w-40 h-40 rounded-full bg-white dark:bg-gray-800 border-2 border-[#2dd4bf]/30 shadow-lg flex items-center justify-center cursor-pointer overflow-hidden"
+              onClick={() => setShowLogo(!showLogo)}
+            >
+              <div className={`absolute inset-0 z-10 transition-opacity duration-300 ease-in-out flex items-center justify-center bg-white dark:bg-gray-800 rounded-full ${showLogo ? 'opacity-100' : 'opacity-0'}`}>
+                <img
+                  src={logoImage}
+                  alt="한국이름학교 로고"
+                  className="w-[140%] h-[140%] object-cover rounded-full"
+                />
+              </div>
+              <div className={`flex flex-col items-center justify-center transition-opacity duration-300 ${showLogo ? 'opacity-0' : 'opacity-100'}`}>
+                <span className="text-[20px] font-black text-[#18a999] tracking-tight">한국이름학교</span>
+                <div className="w-8 h-[2px] bg-[#18a999]/40 my-2 rounded-full" />
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.3em]">Identity</p>
               </div>
             </div>
           </div>
