@@ -52,17 +52,15 @@ export default function KnaDangerSection() {
             </aside>
           </div>
           
-          {/* Mobile icon with ripple animation - 220px wrapper for ripple expansion */}
-          <div className="md:hidden flex justify-center">
-            <div className="w-[220px] h-[220px] flex items-center justify-center my-4">
-              <div className="relative w-[120px] h-[120px] rounded-[28px] grid place-items-center bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)]" style={{ isolation: 'isolate' }}>
-                <span className="ripple r1" />
-                <span className="ripple r2" />
-                <span className="ripple r3" />
-                <svg className="w-[56px] h-[56px] text-orange-500 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinejoin="round">
-                  <path d="M13 2L3 14H11L9 22L21 10H13L13 2Z"/>
-                </svg>
-              </div>
+          {/* Mobile icon with ripple animation */}
+          <div className="md:hidden flex items-center justify-center h-[180px]">
+            <div className="relative w-[120px] h-[120px] rounded-[28px] grid place-items-center bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)]" style={{ isolation: 'isolate' }}>
+              <span className="ripple r1" />
+              <span className="ripple r2" />
+              <span className="ripple r3" />
+              <svg className="w-[56px] h-[56px] text-orange-500 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinejoin="round">
+                <path d="M13 2L3 14H11L9 22L21 10H13L13 2Z"/>
+              </svg>
             </div>
           </div>
         </div>
@@ -110,15 +108,13 @@ export default function KnaDangerSection() {
             </aside>
           </div>
           
-          {/* Mobile icon with color swap animation - same 220px wrapper as Frame 1 */}
-          <div className="md:hidden flex justify-center">
-            <div className="w-[220px] h-[220px] flex items-center justify-center my-4">
-              <div className="w-[120px] h-[120px] rounded-[28px] grid place-items-center warn-wrap-animate">
-                <svg className="w-[56px] h-[56px] warn-ico-animate" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M7 3h10l4 4v10l-4 4H7l-4-4V7l4-4Z" />
-                  <path d="M9 9l6 6M15 9l-6 6" />
-                </svg>
-              </div>
+          {/* Mobile icon with color swap animation - same height as Frame 1 */}
+          <div className="md:hidden flex items-center justify-center h-[180px]">
+            <div className="relative w-[120px] h-[120px] rounded-[28px] grid place-items-center warn-wrap-animate">
+              <svg className="w-[56px] h-[56px] warn-ico-animate" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 3h10l4 4v10l-4 4H7l-4-4V7l4-4Z" />
+                <path d="M9 9l6 6M15 9l-6 6" />
+              </svg>
             </div>
           </div>
         </div>
