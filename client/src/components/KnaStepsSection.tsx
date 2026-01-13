@@ -167,11 +167,15 @@ export default function KnaStepsSection() {
         </header>
 
         <div className="relative">
-          <div className="absolute inset-0 hidden lg:block pointer-events-none -z-10">
-            <div className="absolute left-6 w-[calc(50%-1.5rem)] top-[66%] h-px bg-gray-300 dark:bg-gray-600" />
-            <div className="absolute right-6 w-[calc(50%-1.5rem)] top-[33%] h-px bg-gray-300 dark:bg-gray-600" />
+          {/* 데스크톱: 카드 사이 짧은 연결선 */}
+          <div className="absolute inset-0 hidden lg:flex items-center pointer-events-none -z-10">
+            {/* 카드1-카드2 사이 연결선 */}
+            <div className="absolute left-[calc(33.333%-8px)] w-4 top-1/2 h-px bg-gray-300 dark:bg-gray-600" />
+            {/* 카드2-카드3 사이 연결선 */}
+            <div className="absolute left-[calc(66.666%-8px)] w-4 top-1/2 h-px bg-gray-300 dark:bg-gray-600" />
           </div>
 
+          {/* 모바일: 세로 점선 */}
           <div className="absolute left-6 top-6 bottom-6 w-px border-l-2 border-dotted border-gray-200 dark:border-gray-700 lg:hidden -z-10" />
 
           <div className="grid gap-8 lg:grid-cols-3 lg:gap-4">
