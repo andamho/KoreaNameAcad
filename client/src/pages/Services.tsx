@@ -9,6 +9,11 @@ import { useEffect } from "react";
 export default function Services() {
   const [, setLocation] = useLocation();
   
+  // 페이지 진입 시 스크롤 맨 위로 이동
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   useEffect(() => {
     // User Agent로 인앱 브라우저 감지
     const userAgent = navigator.userAgent || '';
