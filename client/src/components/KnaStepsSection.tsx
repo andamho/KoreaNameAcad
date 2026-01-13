@@ -94,34 +94,51 @@ export default function KnaStepsSection() {
   const cardsRef = useRef<(HTMLElement | null)[]>([]);
 
   useEffect(() => {
-    const isMobile = window.innerWidth < 1024;
-    if (!isMobile) return;
+    const mediaQuery = window.matchMedia("(max-width: 1023px)");
+    let observer: IntersectionObserver | null = null;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const step = Number(entry.target.getAttribute("data-step"));
-          if (step === 2 || step === 3) {
-            setActiveCards((prev) => {
-              const next = new Set(prev);
-              if (entry.isIntersecting) {
-                next.add(step);
-              } else {
-                next.delete(step);
+    const setupObserver = () => {
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
+
+      if (mediaQuery.matches) {
+        observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              const step = Number(entry.target.getAttribute("data-step"));
+              if (step === 2 || step === 3) {
+                setActiveCards((prev) => {
+                  const next = new Set(prev);
+                  if (entry.isIntersecting) {
+                    next.add(step);
+                  } else {
+                    next.delete(step);
+                  }
+                  return next;
+                });
               }
-              return next;
             });
-          }
+          },
+          { threshold: [0, 0.3], rootMargin: "-20% 0px -30% 0px" }
+        );
+
+        cardsRef.current.forEach((card) => {
+          if (card && observer) observer.observe(card);
         });
-      },
-      { threshold: [0, 0.3] }
-    );
+      } else {
+        setActiveCards(new Set());
+      }
+    };
 
-    cardsRef.current.forEach((card) => {
-      if (card) observer.observe(card);
-    });
+    setupObserver();
+    mediaQuery.addEventListener("change", setupObserver);
 
-    return () => observer.disconnect();
+    return () => {
+      mediaQuery.removeEventListener("change", setupObserver);
+      if (observer) observer.disconnect();
+    };
   }, []);
 
   return (
