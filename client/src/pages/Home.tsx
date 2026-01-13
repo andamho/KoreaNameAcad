@@ -315,16 +315,7 @@ export default function Home() {
 
       {/* 동영상 섹션 with overlay butterfly character */}
       <div className="relative">
-        <img 
-          src={butterflyCharacterImage}
-          alt="나비 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] md:top-[48px] lg:hidden"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%)'
-          }}
-        />
+        {/* 나비 캐릭터 제거됨 */}
         <section className="kna-video-section pt-24 pb-24 lg:pt-48 lg:pb-48 lg:min-h-screen lg:flex lg:flex-col lg:justify-center">
           <div className="max-w-md mx-auto px-4 sm:px-6 lg:max-w-none lg:px-0 lg:flex lg:flex-col lg:items-center lg:justify-center lg:h-full">
             <video 
