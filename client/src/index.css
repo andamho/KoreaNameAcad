@@ -1166,17 +1166,14 @@ html.ua-tiktok .kna-intro-bottom > div {
   zoom: 0.82 !important;
 }
 
-/* 인앱: kna-intro-top 상단 패딩 (하단 섹션과 동일한 여백) */
+/* 인앱: kna-intro-top 상단 패딩 (96px 통일) */
 html.ua-instagram .kna-intro-top > div,
-html.ua-tiktok .kna-intro-top > div {
-  padding-top: 48px !important;
+html.ua-tiktok .kna-intro-top > div,
+.ig-shell .kna-intro-top > div {
+  padding-top: 96px !important;
 }
 
-/* 인앱: kna-value-section 하단 여백 축소 */
-html.ua-instagram .kna-value-section,
-html.ua-tiktok .kna-value-section {
-  padding-bottom: 24px !important;
-}
+/* 인앱: kna-value-section - 상하 패딩은 위 통일 규칙에서 적용됨 */
 
 /* 인앱: kna-intro-bottom 여백 조정 (겹침 방지) */
 html.ua-instagram .kna-intro-bottom,
@@ -1272,7 +1269,8 @@ html.ua-tiktok .kna-intro-bottom > div {
   font-size: 18px !important;
 }
 
-/* 캐릭터가 있는 섹션: 상단 패딩 213px 적용 (kna-intro-block, kna-value-section 제외) */
+/* 인앱 모든 섹션 상하 패딩 통일 (3단계 섹션 기준: pt-24 pb-24 = 96px) */
+/* 캐릭터 제거로 213px 불필요 → 96px 통일 */
 html.ua-instagram .kna-danger-section > div,
 html.ua-tiktok .kna-danger-section > div,
 html.ua-instagram .kna-steps-inner,
@@ -1281,18 +1279,15 @@ html.ua-instagram .kna-myth-truth-inner,
 html.ua-tiktok .kna-myth-truth-inner,
 html.ua-instagram .kna-pricing-inner,
 html.ua-tiktok .kna-pricing-inner,
+html.ua-instagram .kna-value-section > div,
+html.ua-tiktok .kna-value-section > div,
 .ig-shell .kna-danger-section > div,
 .ig-shell .kna-steps-inner,
 .ig-shell .kna-myth-truth-inner,
-.ig-shell .kna-pricing-inner {
-  padding-top: 213px !important;
-}
-
-/* kna-value-section: 캐릭터 없음 - 일반 패딩 적용 */
-html.ua-instagram .kna-value-section > div,
-html.ua-tiktok .kna-value-section > div,
+.ig-shell .kna-pricing-inner,
 .ig-shell .kna-value-section > div {
-  padding-top: 48px !important;
+  padding-top: 96px !important;
+  padding-bottom: 96px !important;
 }
 
 /* kna-value-section: 인앱 원형 다이어그램 높이 조정 */
@@ -1303,9 +1298,12 @@ html.ua-tiktok .kna-value-section > div,
   height: 600px !important;
 }
 
-/* 영상 섹션: 패딩 줄여서 캐릭터와 영상 간격 맞춤 */
-.ig-shell .kna-video-inner {
-  padding-top: 160px !important;
+/* 영상 섹션: 상하 패딩 96px 통일 */
+.ig-shell .kna-video-inner,
+html.ua-instagram .kna-video-inner,
+html.ua-tiktok .kna-video-inner {
+  padding-top: 96px !important;
+  padding-bottom: 96px !important;
 }
 
 /* 섹션 overflow 숨김 */
@@ -1327,30 +1325,14 @@ html.ua-tiktok .kna-value-section > div,
   display: none !important;
 }
 
-.ig-shell .kna-danger-section > div:last-child,
-.ig-shell .kna-intro-block > div:last-child,
-.ig-shell .kna-steps-inner,
-.ig-shell .kna-myth-truth-inner,
-.ig-shell .kna-video-inner,
-.ig-shell .kna-pricing-inner {
-  padding-bottom: 0 !important;
-}
-
-/* kna-value-section: 하단 패딩 조정 (두 번의 확인 섹션 여백) */
-.ig-shell .kna-value-section > div:last-child {
-  padding-bottom: 24px !important;
-}
+/* 하단 패딩 제거 규칙 삭제 - 이제 모든 섹션 상하 96px 통일 */
 
 /* 비용 섹션 캐릭터 컨테이너: 고정 마진으로 통일 */
 .ig-shell .ig-pricing-char-container {
   margin-top: 0 !important;
 }
 
-/* 비용 섹션 하단 여백 15% 줄임 */
-.ig-shell .kna-pricing-section,
-.ig-shell .kna-pricing-section-hero {
-  padding-bottom: 54px !important; /* 64px × 0.85 = 54px */
-}
+/* 비용 섹션 하단 여백 - 통일 규칙 적용으로 제거 */
 
 /* 비용 페이지 히어로 → 카드 간격 축소 */
 .ig-shell .kna-pricing-section-hero .kna-pricing-inner,
