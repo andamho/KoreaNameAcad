@@ -21,7 +21,6 @@ import {
 import analysisExampleImage from "@assets/hongildong-analysis.jpg";
 import newYearImage from "@assets/newYearPopup_optimized.jpg";
 import characterImage from "@assets/KakaoTalk_20251226_135549799_1766724973553.png";
-import dangerCharacterImage from "@assets/KakaoTalk_20251226_152419337_1766730274782.png";
 import effortCharacterImage from "@assets/KakaoTalk_20251226_152116391_1766730095506.png";
 import stepsCharacterImage from "@assets/KakaoTalk_20251226_164036756_1766734877281.png";
 import guideCharacterImage from "@assets/KakaoTalk_20251226_151729031_1766729868877.png";
@@ -293,20 +292,7 @@ export default function Home() {
       
       <Hero />
 
-      {/* KnaDangerSection with overlay danger character */}
-      <div className="relative">
-        <img 
-          src={dangerCharacterImage}
-          alt="위험 경고 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] sm:top-[40px]"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%)'
-          }}
-        />
-        <KnaDangerSection />
-      </div>
+      <KnaDangerSection />
 
       {/* KnaValueSection with overlay character */}
       <div className="relative">

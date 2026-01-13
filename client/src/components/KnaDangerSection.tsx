@@ -22,31 +22,20 @@ export default function KnaDangerSection() {
             </h3>
           </div>
           
-          <div className="grid md:grid-cols-[1.2fr_0.8fr]">
-            <div className="p-5 md:p-6 bg-white dark:bg-card">
-              <StackItem title="이름이 맑아야 인생이 맑다">
-                운칠기삼(運七技三), 운이 70%입니다.<br/>
-                이름의 강력한 운을 모른 채,<br/>
-                <span className="text-orange-500 font-bold">30%의 노력만으로는 인생이 바뀌지 않습니다.</span>
-              </StackItem>
-              <StackItem title="안 좋은 이름에 바람 잘 날 없다">
-                안좋은 이름은,<br/>
-                <span className="text-orange-500 font-bold">평생을 따라 다니며 괴롭힙니다.</span>
-              </StackItem>
-              <StackItem title="가족은 운명공동체" isLast>
-                이름은 자신뿐만 아니라,<br/>
-                <span className="text-orange-500 font-bold">가족 전체에 영향을 미칩니다.</span>
-              </StackItem>
-            </div>
-            
-            <aside className="hidden md:flex items-center justify-center bg-gray-50 dark:bg-muted/30 border-t md:border-t-0 md:border-l border-gray-200 dark:border-border min-h-[200px]">
-              <div className="relative w-[140px] h-[140px] flex items-center justify-center">
-                <span className="ripple-animation absolute w-[90px] h-[90px] rounded-[36px] bg-orange-400/45" style={{ animationDelay: '0s' }} />
-                <span className="ripple-animation absolute w-[90px] h-[90px] rounded-[36px] bg-orange-400/45" style={{ animationDelay: '1s' }} />
-                <span className="ripple-animation absolute w-[90px] h-[90px] rounded-[36px] bg-orange-400/45" style={{ animationDelay: '2s' }} />
-                <Zap className="w-[72px] h-[72px] text-orange-500" strokeWidth={2.5} />
-              </div>
-            </aside>
+          <div className="p-5 md:p-6 bg-white dark:bg-card">
+            <StackItem title="이름이 맑아야 인생이 맑다">
+              운칠기삼(運七技三), 운이 70%입니다.<br/>
+              이름의 강력한 운을 모른 채,<br/>
+              <span className="text-orange-500 font-bold">30%의 노력만으로는 인생이 바뀌지 않습니다.</span>
+            </StackItem>
+            <StackItem title="안 좋은 이름에 바람 잘 날 없다">
+              안좋은 이름은,<br/>
+              <span className="text-orange-500 font-bold">평생을 따라 다니며 괴롭힙니다.</span>
+            </StackItem>
+            <StackItem title="가족은 운명공동체" isLast>
+              이름은 자신뿐만 아니라,<br/>
+              <span className="text-orange-500 font-bold">가족 전체에 영향을 미칩니다.</span>
+            </StackItem>
           </div>
         </div>
 
@@ -61,58 +50,25 @@ export default function KnaDangerSection() {
             </h3>
           </div>
           
-          <div className="grid md:grid-cols-[1.2fr_0.8fr]">
-            <div className="p-5 md:p-6 bg-white dark:bg-card">
-              <StackItem title={`"비용을 먼저 물어보시나요?"`}>
-                이름은 생각보다 훨씬 막강합니다.<br/>
-                비용만 아끼려다,<br/>
-                <span className="text-orange-500 font-bold">더 비싼 대가를 치릅니다.</span>
-              </StackItem>
-              <StackItem title={`"사주 기반 작명소를 찾으시나요?"`}>
-                그곳은 한글이름 작명이론이 없습니다.<br/>
-                한글 이름의 운이 무너지면,<br/>
-                <span className="text-orange-500 font-bold">삶이 흔들립니다.</span>
-              </StackItem>
-              <StackItem title={`"후기도 안살펴보시나요?"`} isLast>
-                검증 없는 작명,<br/>
-                <span className="text-orange-500 font-bold">고생은 결국 본인의 몫입니다.</span>
-              </StackItem>
-            </div>
-            
-            <aside className="hidden md:flex items-center justify-center bg-gray-50 dark:bg-muted/30 border-t md:border-t-0 md:border-l border-gray-200 dark:border-border min-h-[200px]">
-              <div className="w-[140px] h-[140px] flex items-center justify-center warn-bg-animate rounded-[36px]">
-                <OctagonX className="w-[78px] h-[78px] warn-icon-animate" strokeWidth={2.5} />
-              </div>
-            </aside>
+          <div className="p-5 md:p-6 bg-white dark:bg-card">
+            <StackItem title={`"비용을 먼저 물어보시나요?"`}>
+              이름은 생각보다 훨씬 막강합니다.<br/>
+              비용만 아끼려다,<br/>
+              <span className="text-orange-500 font-bold">더 비싼 대가를 치릅니다.</span>
+            </StackItem>
+            <StackItem title={`"사주 기반 작명소를 찾으시나요?"`}>
+              그곳은 한글이름 작명이론이 없습니다.<br/>
+              한글 이름의 운이 무너지면,<br/>
+              <span className="text-orange-500 font-bold">삶이 흔들립니다.</span>
+            </StackItem>
+            <StackItem title={`"후기도 안살펴보시나요?"`} isLast>
+              검증 없는 작명,<br/>
+              <span className="text-orange-500 font-bold">고생은 결국 본인의 몫입니다.</span>
+            </StackItem>
           </div>
         </div>
 
       </div>
-
-      <style>{`
-        @keyframes rippleAnim {
-          0% { width: 90px; height: 90px; opacity: 0.9; border-radius: 36px; }
-          100% { width: 220px; height: 220px; opacity: 0; border-radius: 50%; }
-        }
-        .ripple-animation {
-          animation: rippleAnim 3s infinite ease-out;
-        }
-        
-        @keyframes warnBgSwap {
-          0%, 100% { background-color: #f97316; }
-          50% { background-color: transparent; }
-        }
-        @keyframes warnIconSwap {
-          0%, 100% { color: white; }
-          50% { color: #f97316; }
-        }
-        .warn-bg-animate {
-          animation: warnBgSwap 6s ease-in-out infinite;
-        }
-        .warn-icon-animate {
-          animation: warnIconSwap 6s ease-in-out infinite;
-        }
-      `}</style>
     </section>
   );
 }
