@@ -175,7 +175,7 @@ export default function KnaStepsSection() {
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-6 pt-24 pb-24 lg:px-8">
+      <div className="kna-steps-inner relative mx-auto max-w-6xl px-6 pt-24 pb-24 lg:px-8">
         <header className="mx-auto max-w-2xl text-center mb-12 sm:mb-16">
           <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400">3-Step Flow</p>
           <h2 className="mt-4 text-[25px] sm:text-3xl md:text-4xl font-extrabold tracking-tight text-[#18a999]">
@@ -210,8 +210,8 @@ export default function KnaStepsSection() {
               isActive
               footer={
                 <>
-                  <a href="#consultation" className="flex w-full items-center justify-center rounded-lg bg-gray-900 dark:bg-white px-4 py-2.5 text-sm font-semibold text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
-                    일정 예약하기
+                  <a href="/services" className="flex w-full items-center justify-center rounded-lg bg-gray-900 dark:bg-white px-4 py-2.5 text-sm font-semibold text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
+                    지금 신청
                     <span className="ml-2">→</span>
                   </a>
                   <p className="mt-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400">예상 소요: 1–2분</p>
@@ -245,7 +245,7 @@ export default function KnaStepsSection() {
           <div className="mt-8 lg:hidden">
             <div className="mx-auto flex max-w-sm items-center gap-3 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-card px-5 py-2.5 text-sm text-gray-700 dark:text-gray-300 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#18a999] text-white text-[10px] font-bold">!</span>
-              <span className="font-semibold">위의 [일정 예약하기] 버튼을 눌러주세요</span>
+              <span className="font-semibold">위의 [지금 신청] 버튼을 눌러주세요</span>
             </div>
           </div>
         </div>
