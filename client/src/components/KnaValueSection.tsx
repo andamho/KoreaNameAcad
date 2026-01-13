@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Scale, Link2 } from "lucide-react";
 import logoImage from "@assets/file_000000009b2c7206ad0a70c0142cb99a_1766915164756.png";
 
@@ -164,6 +164,7 @@ function CircleNode({ node, radius }: { node: Node; radius: number }) {
 
 export default function KnaValueSection() {
   const radius = 300;
+  const [showLogo, setShowLogo] = useState(false);
 
   return (
     <section className="kna-value-section relative overflow-hidden bg-white dark:bg-background text-gray-900 dark:text-foreground">
@@ -207,18 +208,22 @@ export default function KnaValueSection() {
           {/* 중앙 한국이름학교 */}
           <div className="z-30 relative">
             <div className="rounded-full border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-[8px] shadow-xl">
-              <div className="group w-48 h-48 md:w-56 md:h-56 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 shadow-md relative flex items-center justify-center cursor-pointer overflow-hidden transition-transform duration-300 hover:scale-105 active:scale-95">
-                {/* 로고 레이어 (호버 시 보임) */}
-                <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out flex items-center justify-center bg-white dark:bg-gray-800 rounded-full">
+              <div 
+                className="group w-48 h-48 md:w-56 md:h-56 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 shadow-md relative flex items-center justify-center cursor-pointer overflow-hidden transition-transform duration-300 hover:scale-105 active:scale-95"
+                onClick={() => setShowLogo(!showLogo)}
+                onTouchEnd={(e) => { e.preventDefault(); setShowLogo(!showLogo); }}
+              >
+                {/* 로고 레이어 (호버 또는 클릭 시 보임) */}
+                <div className={`absolute inset-0 z-10 transition-opacity duration-300 ease-in-out flex items-center justify-center bg-white dark:bg-gray-800 rounded-full ${showLogo ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                   <img
                     src={logoImage}
                     alt="한국이름학교 로고"
-                    className="w-[85%] h-[85%] object-contain"
+                    className="w-full h-full object-cover rounded-full"
                   />
                 </div>
 
-                {/* 텍스트 레이어 (기본 보임, 호버 시 숨김) */}
-                <div className="flex flex-col items-center justify-center opacity-100 group-hover:opacity-0 transition-opacity duration-300 ease-in-out">
+                {/* 텍스트 레이어 (기본 보임, 호버 또는 클릭 시 숨김) */}
+                <div className={`flex flex-col items-center justify-center transition-opacity duration-300 ease-in-out ${showLogo ? 'opacity-0' : 'opacity-100 group-hover:opacity-0'}`}>
                   <h3 className="text-[26px] md:text-[32px] font-black tracking-tighter text-[#18a999] mb-2 select-none">
                     한국이름학교
                   </h3>
