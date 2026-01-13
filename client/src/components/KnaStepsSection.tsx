@@ -1,6 +1,6 @@
 export default function KnaStepsSection() {
   return (
-    <section id="services" className="kna-steps-section relative overflow-hidden pb-16 md:pb-24 bg-background">
+    <section id="services" className="kna-steps-section relative overflow-hidden pb-24 bg-background">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-[#7fe1d3]/20 dark:bg-[#58C4C4]/20 blur-3xl" />
       </div>

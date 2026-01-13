@@ -17,7 +17,7 @@ export default function KnaIntroBlock() {
           <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-[#2FB5B5]/10 blur-3xl" />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-8 lg:px-8">
+        <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-24 lg:px-8">
           <header className="mx-auto max-w-3xl text-center mb-16">
             <h2 className="text-[#56D5DB] text-[28px] font-extrabold leading-tight sm:text-3xl md:text-4xl break-keep">
               열심히 노력하며 살아가지만

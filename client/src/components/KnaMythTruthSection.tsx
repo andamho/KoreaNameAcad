@@ -51,7 +51,7 @@ export default function KnaMythTruthSection() {
   ];
 
   return (
-    <section className="kna-myth-truth-section relative overflow-hidden pb-16 md:pb-24 bg-muted/30">
+    <section className="kna-myth-truth-section relative overflow-hidden pb-24 bg-muted/30">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#7fe1d3]/20 dark:bg-[#58C4C4]/20 blur-3xl" />
       </div>
