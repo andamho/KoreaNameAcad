@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>최종 섹션 리디자인 (타이틀 컬러 변경)</title>
+  <style>
+    :root{
+      --bg: #f3f4f6;
+      --frame-bg: #ffffff;
+      --ink: #111827;
+      --muted: #4b5563;
+      --line: #e5e7eb;
+      --warn: #f97316;
+      --accent: #18a999; /* 티파니 블루 (Accent Color) */
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--ink);
+      background-color: var(--bg);
+    }
+
+    .wrap{
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+
+    .page-title{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin: 6px 0 32px;
+    }
+
+    .page-title h1{
+      font-size: clamp(22px, 2.4vw, 34px);
+      letter-spacing: -0.02em;
+      margin:0;
+      font-weight: 800;
+      color: var(--accent); /* 타이틀 색상을 티파니 블루로 변경 */
+    }
+
+    .frame{
+      background: var(--frame-bg);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      margin: 24px 0;
+    }
+
+    .frame-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 14px;
+      padding: 20px 24px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .kicker{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+    }
+
+    .kicker .chip{
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      background: var(--warn);
+      flex: none;
+    }
+
+    .kicker .label{
+      font-size: 22px; 
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin:0;
+      color: var(--ink);
+    }
+
+    .frame-body{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      padding: 0;
+    }
+
+    .stack{
+      padding: 24px;
+      background: #ffffff;
+    }
+
+    .stack-item{
+      padding: 20px 0;
+    }
+
+    .stack-item + .stack-item{
+      border-top: 1px solid var(--line);
+    }
+
+    .stack-item h3{
+      margin: 0 0 12px;
+      font-size: 19px;
+      font-weight: 900;
+    }
+
+    .stack-item p{
+      margin:0;
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--muted);
+      position: relative;
+      padding-left: 14px; 
+    }
+
+    .stack-item p::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 5px; 
+      width: 3px;
+      height: 15px; 
+      background-color: var(--warn);
+      border-radius: 2px;
+    }
+
+    .visual{
+      background: #f9fafb;
+      display:flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .bolt-wrap{
+      width: 140px;
+      height: 140px;
+      border-radius: 36px;
+      display:grid;
+      place-items:center;
+      background: transparent;
+      position: relative;
+      isolation: isolate;
+    }
+
+    .bolt-wrap--ripple{
+      background: #ffffff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+    }
+
+    .bolt-wrap--ripple .ripple{
+      position:absolute;
+      top:50%; left:50%;
+      transform: translate(-50%, -50%);
+      width: 90px;
+      height: 90px;
+      border-radius: 36px;
+      background: rgba(249,115,22,.45);
+      animation: rippleAnim 3s infinite ease-out;
+      z-index: -1;
+    }
+    .bolt-wrap--ripple .ripple.r1{ animation-delay: 0s; }
+    .bolt-wrap--ripple .ripple.r2{ animation-delay: 1s; }
+    .bolt-wrap--ripple .ripple.r3{ animation-delay: 2s; }
+
+    @keyframes rippleAnim{
+      0%{ width: 90px; height: 90px; opacity: .9; border-radius: 36px; }
+      100%{ width: 220px; height: 220px; opacity: 0; border-radius: 50%; }
+    }
+
+    @keyframes warnBgSwap { 
+      0%, 100% { background-color: var(--warn); } 
+      50% { background-color: transparent; } 
+    }
+    @keyframes warnIconSwap { 
+      0%, 100% { color: #ffffff; } 
+      50% { color: var(--warn); } 
+    }
+
+    .warn-wrap--animate { animation: warnBgSwap 6s ease-in-out infinite; }
+    .warn-ico--animate { animation: warnIconSwap 6s ease-in-out infinite; }
+
+    .bolt{ width: 72px; height: 72px; color: var(--warn); }
+    .warn-ico{ width: 78px; height: 78px; }
+
+    .em-warn{ color: var(--warn); font-weight: 800; display: inline-block; }
+
+    @media (max-width: 980px){
+      .frame-body{ grid-template-columns: 1fr; }
+      .visual{ border-top: 1px solid var(--line); min-height: 260px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="page-title">
+      <h1>이름, 모르면 위험합니다</h1>
+    </header>
+
+    <section class="frame">
+      <div class="frame-head">
+        <div class="kicker">
+          <div class="chip">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round">
+              <path d="M13 2L3 14H11L9 22L21 10H13L13 2Z"/>
+            </svg>
+          </div>
+          <p class="label">이름은 힘이 셉니다</p>
+        </div>
+      </div>
+      <div class="frame-body">
+        <div class="stack">
+          <article class="stack-item">
+            <h3>이름이 맑아야 인생이 맑다</h3>
+            <p>운칠기삼(運七技三), 운이 70%입니다.<br/>이름의 강력한 운을 모른 채,<br/><span class="em-warn">30%의 노력만으로는 인생이 바뀌지 않습니다.</span></p>
+          </article>
+          <article class="stack-item">
+            <h3>안 좋은 이름에 바람 잘 날 없다</h3>
+            <p>안좋은 이름은,<br/><span class="em-warn">평생을 따라 다니며 괴롭힙니다.</span></p>
+          </article>
+          <article class="stack-item">
+            <h3>가족은 운명공동체</h3>
+            <p>이름은 자신뿐만 아니라,<br/><span class="em-warn">가족 전체에 영향을 미칩니다.</span></p>
+          </article>
+        </div>
+        <aside class="visual">
+          <div class="bolt-wrap bolt-wrap--ripple">
+            <span class="ripple r1"></span><span class="ripple r2"></span><span class="ripple r3"></span>
+            <svg class="bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><path d="M13 2L3 14H11L9 22L21 10H13L13 2Z"/></svg>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="frame">
+      <div class="frame-head">
+        <div class="kicker">
+          <div class="chip">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 3h10l4 4v10l-4 4H7l-4-4V7l4-4Z" />
+              <path d="M9 9l6 6M15 9l-6 6" />
+            </svg>
+          </div>
+          <p class="label">이러시면 안됩니다</p>
+        </div>
+      </div>
+      <div class="frame-body">
+        <div class="stack">
+          <article class="stack-item">
+            <h3>"비용을 먼저 물어보시나요?"</h3>
+            <p>이름은 생각보다 훨씬 막강합니다.<br/>비용만 아끼려다,<br/><span class="em-warn">더 비싼 대가를 치릅니다.</span></p>
+          </article>
+          <article class="stack-item">
+            <h3>"사주 기반 작명소를 찾으시나요?"</h3>
+            <p>그곳은 한글이름 작명이론이 없습니다.<br/>한글 이름의 운이 무너지면,<br/><span class="em-warn">삶이 흔들립니다.</span></p>
+          </article>
+          <article class="stack-item">
+            <h3>"후기도 안살펴보시나요?"</h3>
+            <p>검증 없는 작명,<br/><span class="em-warn">고생은 결국 본인의 몫입니다.</span></p>
+          </article>
+        </div>
+        <aside class="visual">
+          <div class="bolt-wrap warn-wrap--animate">
+            <svg class="warn-ico warn-ico--animate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 3h10l4 4v10l-4 4H7l-4-4V7l4-4Z" />
+              <path d="M9 9l6 6M15 9l-6 6" />
+            </svg>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

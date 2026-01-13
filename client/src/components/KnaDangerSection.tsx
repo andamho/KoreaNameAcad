@@ -1,83 +1,132 @@
-import { AlertTriangle, Zap, OctagonAlert } from "lucide-react";
+import { Zap, OctagonX } from "lucide-react";
 
 export default function KnaDangerSection() {
   return (
-    <section className="kna-danger-section relative overflow-hidden bg-white dark:bg-background text-gray-900 dark:text-foreground">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#7fe1d3]/25 dark:bg-[#58C4C4]/25 blur-3xl" />
-        <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-[#0f766e]/10 dark:bg-[#45B8B8]/10 blur-3xl" />
-      </div>
-
-      <div className="relative mx-auto max-w-6xl px-6 pt-[174px] pb-16 sm:pt-[190px] sm:pb-20 lg:px-8">
-        <header className="mx-auto max-w-3xl text-center">
-          <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl flex items-center justify-center gap-3">
-            <AlertTriangle className="hidden md:flex h-[39px] w-[39px] sm:h-[42px] sm:w-[42px] md:h-[50px] md:w-[50px] flex-shrink-0 fill-orange-600 dark:fill-orange-500 stroke-white dark:stroke-white" strokeWidth={2.7} strokeLinecap="round" strokeLinejoin="round" />
-            <span>이름, 모르면 위험합니다</span>
+    <section className="kna-danger-section relative overflow-hidden bg-gray-100 dark:bg-background">
+      <div className="relative mx-auto max-w-[1120px] px-5 py-10 md:py-16">
+        
+        <header className="flex items-center justify-center mb-6 md:mb-8">
+          <h2 className="text-[#18a999] text-[22px] md:text-[28px] font-extrabold tracking-tight">
+            이름, 모르면 위험합니다
           </h2>
         </header>
 
-        <section aria-labelledby="power-title" className="mt-10">
-          <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-600 dark:bg-orange-500 flex-shrink-0 animate-pulse-glow">
-              <Zap className="h-6 w-6 fill-orange-600 dark:fill-orange-500 stroke-white dark:stroke-white" strokeWidth={2.5} />
+        {/* Frame 1: 이름은 힘이 셉니다 */}
+        <div className="frame bg-white dark:bg-card border border-gray-200 dark:border-border rounded-3xl shadow-lg overflow-hidden mb-6">
+          <div className="flex items-center gap-3 px-5 py-4 md:px-6 md:py-5 bg-white dark:bg-card border-b border-gray-200 dark:border-border">
+            <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0 animate-pulse-glow">
+              <Zap className="w-5 h-5 fill-orange-500 stroke-white" strokeWidth={2.5} />
             </div>
-            <h3 id="power-title" className="text-[21px] md:text-[22px] font-semibold">이름은 힘이 셉니다</h3>
+            <h3 className="text-[18px] md:text-[20px] font-extrabold text-gray-900 dark:text-foreground tracking-tight">
+              이름은 힘이 셉니다
+            </h3>
           </div>
-          <div className="mt-4 grid gap-4 md:grid-cols-3">
-            <Note title="이름이 맑아야 인생이 맑다">
-              운칠기삼(運七技三), 운이 70%입니다. 이름의 강력한 운을 모른 채, <span className="text-orange-600 dark:text-orange-400">30%의 노력만으로는 인생이 바뀌지 않습니다.</span>
-            </Note>
-            <Note title="안 좋은 이름에 바람 잘 날 없다">
-              안좋은 이름은,<br/><span className="text-orange-600 dark:text-orange-400">평생을 따라 다니며 괴롭힙니다.</span>
-            </Note>
-            <Note title="가족은 운명공동체">
-              이름은 자신뿐만 아니라,<br/><span className="text-orange-600 dark:text-orange-400">가족 전체에 영향을 미칩니다.</span>
-            </Note>
+          
+          <div className="grid md:grid-cols-[1.2fr_0.8fr]">
+            <div className="p-5 md:p-6 bg-white dark:bg-card">
+              <StackItem title="이름이 맑아야 인생이 맑다">
+                운칠기삼(運七技三), 운이 70%입니다.<br/>
+                이름의 강력한 운을 모른 채,<br/>
+                <span className="text-orange-500 font-bold">30%의 노력만으로는 인생이 바뀌지 않습니다.</span>
+              </StackItem>
+              <StackItem title="안 좋은 이름에 바람 잘 날 없다">
+                안좋은 이름은,<br/>
+                <span className="text-orange-500 font-bold">평생을 따라 다니며 괴롭힙니다.</span>
+              </StackItem>
+              <StackItem title="가족은 운명공동체" isLast>
+                이름은 자신뿐만 아니라,<br/>
+                <span className="text-orange-500 font-bold">가족 전체에 영향을 미칩니다.</span>
+              </StackItem>
+            </div>
+            
+            <aside className="hidden md:flex items-center justify-center bg-gray-50 dark:bg-muted/30 border-t md:border-t-0 md:border-l border-gray-200 dark:border-border min-h-[200px]">
+              <div className="relative w-[140px] h-[140px] flex items-center justify-center">
+                <span className="ripple-animation absolute w-[90px] h-[90px] rounded-[36px] bg-orange-400/45" style={{ animationDelay: '0s' }} />
+                <span className="ripple-animation absolute w-[90px] h-[90px] rounded-[36px] bg-orange-400/45" style={{ animationDelay: '1s' }} />
+                <span className="ripple-animation absolute w-[90px] h-[90px] rounded-[36px] bg-orange-400/45" style={{ animationDelay: '2s' }} />
+                <Zap className="w-[72px] h-[72px] text-orange-500" strokeWidth={2.5} />
+              </div>
+            </aside>
           </div>
-        </section>
+        </div>
 
-        <section aria-labelledby="danger-title" className="mt-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-600 dark:bg-orange-500 flex-shrink-0 animate-pulse-glow">
-              <OctagonAlert className="h-5 w-5 fill-orange-600 dark:fill-orange-500 stroke-white dark:stroke-white" strokeWidth={2.5} />
+        {/* Frame 2: 이러시면 안됩니다 */}
+        <div className="frame bg-white dark:bg-card border border-gray-200 dark:border-border rounded-3xl shadow-lg overflow-hidden">
+          <div className="flex items-center gap-3 px-5 py-4 md:px-6 md:py-5 bg-white dark:bg-card border-b border-gray-200 dark:border-border">
+            <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0 animate-pulse-glow">
+              <OctagonX className="w-5 h-5 stroke-white" strokeWidth={2.5} />
             </div>
-            <h3 id="danger-title" className="text-[21px] md:text-[22px] font-semibold">이러시면 안됩니다</h3>
+            <h3 className="text-[18px] md:text-[20px] font-extrabold text-gray-900 dark:text-foreground tracking-tight">
+              이러시면 안됩니다
+            </h3>
           </div>
-          <div className="mt-4 grid gap-6 md:grid-cols-3">
-            <QA
-              q="비용을 먼저 물어보시나요?"
-              a={<>이름은 생각보다 훨씬 막강합니다.<br/>비용만 아끼려다,<br/><span className="text-orange-600 dark:text-orange-400">더 비싼 대가를 치릅니다.</span></>}
-            />
-            <QA
-              q="사주 기반 작명소를 찾으시나요?"
-              a={<>그곳은 한글이름 작명이론이 없습니다.<br/>한글 이름의 운이 무너지면,<br/><span className="text-orange-600 dark:text-orange-400">삶이 흔들립니다.</span></>}
-            />
-            <QA
-              q="후기도 안살펴보시나요?"
-              a={<>검증 없는 작명,<br/><span className="text-orange-600 dark:text-orange-400">고생은 결국 본인의 몫입니다.</span></>}
-            />
+          
+          <div className="grid md:grid-cols-[1.2fr_0.8fr]">
+            <div className="p-5 md:p-6 bg-white dark:bg-card">
+              <StackItem title={`"비용을 먼저 물어보시나요?"`}>
+                이름은 생각보다 훨씬 막강합니다.<br/>
+                비용만 아끼려다,<br/>
+                <span className="text-orange-500 font-bold">더 비싼 대가를 치릅니다.</span>
+              </StackItem>
+              <StackItem title={`"사주 기반 작명소를 찾으시나요?"`}>
+                그곳은 한글이름 작명이론이 없습니다.<br/>
+                한글 이름의 운이 무너지면,<br/>
+                <span className="text-orange-500 font-bold">삶이 흔들립니다.</span>
+              </StackItem>
+              <StackItem title={`"후기도 안살펴보시나요?"`} isLast>
+                검증 없는 작명,<br/>
+                <span className="text-orange-500 font-bold">고생은 결국 본인의 몫입니다.</span>
+              </StackItem>
+            </div>
+            
+            <aside className="hidden md:flex items-center justify-center bg-gray-50 dark:bg-muted/30 border-t md:border-t-0 md:border-l border-gray-200 dark:border-border min-h-[200px]">
+              <div className="w-[140px] h-[140px] flex items-center justify-center warn-bg-animate rounded-[36px]">
+                <OctagonX className="w-[78px] h-[78px] warn-icon-animate" strokeWidth={2.5} />
+              </div>
+            </aside>
           </div>
-        </section>
+        </div>
 
       </div>
+
+      <style>{`
+        @keyframes rippleAnim {
+          0% { width: 90px; height: 90px; opacity: 0.9; border-radius: 36px; }
+          100% { width: 220px; height: 220px; opacity: 0; border-radius: 50%; }
+        }
+        .ripple-animation {
+          animation: rippleAnim 3s infinite ease-out;
+        }
+        
+        @keyframes warnBgSwap {
+          0%, 100% { background-color: #f97316; }
+          50% { background-color: transparent; }
+        }
+        @keyframes warnIconSwap {
+          0%, 100% { color: white; }
+          50% { color: #f97316; }
+        }
+        .warn-bg-animate {
+          animation: warnBgSwap 6s ease-in-out infinite;
+        }
+        .warn-icon-animate {
+          animation: warnIconSwap 6s ease-in-out infinite;
+        }
+      `}</style>
     </section>
   );
 }
 
-function QA({ q, a }: { q: string; a: React.ReactNode }) {
+function StackItem({ title, children, isLast = false }: { title: string; children: React.ReactNode; isLast?: boolean }) {
   return (
-    <article className="group relative rounded-2xl border border-gray-200 dark:border-border bg-orange-50/50 dark:bg-orange-950/10 p-6 shadow-sm ring-1 ring-transparent transition hover:-translate-y-0.5 hover:shadow-md">
-      <p className="text-[21px] md:text-[22px] font-semibold text-gray-900 dark:text-foreground break-keep">"{q}"</p>
-      <p className="mt-2 text-lg md:text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">{a}</p>
+    <article className={`py-4 md:py-5 ${!isLast ? 'border-b border-gray-200 dark:border-border' : ''}`}>
+      <h4 className="text-[16px] md:text-[17px] font-black text-gray-900 dark:text-foreground mb-2 break-keep">
+        {title}
+      </h4>
+      <p className="text-[14px] md:text-[15px] leading-[1.65] text-gray-600 dark:text-muted-foreground relative pl-3.5 break-keep">
+        <span className="absolute left-0 top-[5px] w-[3px] h-[15px] bg-orange-500 rounded-sm" />
+        {children}
+      </p>
     </article>
-  );
-}
-
-function Note({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-gray-200 dark:border-border bg-white dark:bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:ring-1 hover:ring-orange-300/60 dark:hover:ring-orange-500/40">
-      <h4 className="text-[21px] md:text-[22px] font-semibold break-keep">{title}</h4>
-      <p className="mt-2 text-lg md:text-lg text-gray-700 dark:text-muted-foreground">{children}</p>
-    </div>
   );
 }
