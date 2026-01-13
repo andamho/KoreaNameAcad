@@ -294,20 +294,7 @@ export default function Home() {
 
       <KnaValueSection />
 
-      {/* KnaIntroBlock with overlay effort character */}
-      <div className="relative">
-        <img 
-          src={effortCharacterImage}
-          alt="노력하는 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] sm:top-[40px]"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%)'
-          }}
-        />
-        <KnaIntroBlock />
-      </div>
+      <KnaIntroBlock />
 
       <KnaStepsSection />
 
