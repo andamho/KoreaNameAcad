@@ -1,4 +1,5 @@
 import { Calendar, MapPin, Star } from "lucide-react";
+import { Link } from "wouter";
 import { forwardRef, useEffect, useRef, useState } from "react";
 
 interface StepCardProps {
@@ -210,10 +211,10 @@ export default function KnaStepsSection() {
               isActive
               footer={
                 <>
-                  <a href="/services" className="flex w-full items-center justify-center rounded-lg bg-gray-900 dark:bg-white px-4 py-2.5 text-sm font-semibold text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
+                  <Link to="/services" className="flex w-full items-center justify-center rounded-lg bg-gray-900 dark:bg-white px-4 py-2.5 text-sm font-semibold text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
                     지금 신청
                     <span className="ml-2">&gt;</span>
-                  </a>
+                  </Link>
                   <p className="mt-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400">예상 소요: 1–2분</p>
                 </>
               }
