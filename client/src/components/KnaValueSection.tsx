@@ -218,7 +218,7 @@ export default function KnaValueSection() {
                   <img
                     src={logoImage}
                     alt="한국이름학교 로고"
-                    className="w-full h-full object-cover rounded-full"
+                    className="w-[150%] h-[150%] object-cover rounded-full"
                   />
                 </div>
 
