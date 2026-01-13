@@ -1,4 +1,4 @@
-import { Zap, Ban } from "lucide-react";
+import { Zap } from "lucide-react";
 
 export default function KnaDangerSection() {
   return (
@@ -22,7 +22,7 @@ export default function KnaDangerSection() {
             </h3>
           </div>
           
-          <div className="md:grid md:grid-cols-[1fr,280px]">
+          <div className="md:grid md:grid-cols-[1.2fr,0.8fr]">
             <div className="p-6 bg-white dark:bg-card">
               <StackItem title="이름이 맑아야 인생이 맑다">
                 운칠기삼(運七技三), 운이 70%입니다.<br/>
@@ -39,27 +39,35 @@ export default function KnaDangerSection() {
               </StackItem>
             </div>
             
-            {/* Right icon area with gray background */}
-            <div className="hidden md:flex items-center justify-center bg-gray-50 dark:bg-muted/30">
-              <div className="w-32 h-32 rounded-3xl bg-orange-500 flex items-center justify-center shadow-lg animate-pulse-glow">
-                <Zap className="w-16 h-16 fill-white stroke-white" strokeWidth={1.5} />
+            {/* Right icon area with gray background - ripple animation */}
+            <aside className="hidden md:flex items-center justify-center bg-gray-50 dark:bg-muted/30">
+              <div className="relative w-[140px] h-[140px] rounded-[36px] grid place-items-center bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)]" style={{ isolation: 'isolate' }}>
+                <span className="ripple r1" />
+                <span className="ripple r2" />
+                <span className="ripple r3" />
+                <svg className="w-[72px] h-[72px] text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinejoin="round">
+                  <path d="M13 2L3 14H11L9 22L21 10H13L13 2Z"/>
+                </svg>
               </div>
-            </div>
+            </aside>
           </div>
         </div>
 
         {/* Frame 2: 이러시면 안됩니다 */}
         <div className="frame bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 px-6 py-5 bg-white dark:bg-card border-b border-gray-200 dark:border-border">
-            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0">
-              <Ban className="w-6 h-6 stroke-white" strokeWidth={2.5} />
+            <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 3h10l4 4v10l-4 4H7l-4-4V7l4-4Z" />
+                <path d="M9 9l6 6M15 9l-6 6" />
+              </svg>
             </div>
             <h3 className="text-[23px] md:text-[24px] font-bold text-gray-900 dark:text-foreground tracking-tight">
               이러시면 안됩니다
             </h3>
           </div>
           
-          <div className="md:grid md:grid-cols-[1fr,280px]">
+          <div className="md:grid md:grid-cols-[1.2fr,0.8fr]">
             <div className="p-6 bg-white dark:bg-card">
               <StackItem title={`"비용을 먼저 물어보시나요?"`}>
                 이름은 생각보다 훨씬 막강합니다.<br/>
@@ -77,12 +85,15 @@ export default function KnaDangerSection() {
               </StackItem>
             </div>
             
-            {/* Right icon area with gray background */}
-            <div className="hidden md:flex items-center justify-center bg-gray-50 dark:bg-muted/30">
-              <div className="w-32 h-32 rounded-3xl bg-orange-500 flex items-center justify-center shadow-lg animate-pulse-glow">
-                <Ban className="w-16 h-16 stroke-white" strokeWidth={1.5} />
+            {/* Right icon area with gray background - color swap animation */}
+            <aside className="hidden md:flex items-center justify-center bg-gray-50 dark:bg-muted/30">
+              <div className="w-[140px] h-[140px] rounded-[36px] grid place-items-center warn-wrap-animate">
+                <svg className="w-[78px] h-[78px] warn-ico-animate" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 3h10l4 4v10l-4 4H7l-4-4V7l4-4Z" />
+                  <path d="M9 9l6 6M15 9l-6 6" />
+                </svg>
               </div>
-            </div>
+            </aside>
           </div>
         </div>
 
