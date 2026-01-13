@@ -88,7 +88,7 @@ const nodes: Node[] = [
   {
     key: "rename",
     title: "개명 전·후\n삶 증명",
-    body: "개명하셨다면 전·후 이름대로 살았다는 걸 증명해드립니다.",
+    body: "개명하셨다면 전·후 이름대로\n살았다는 걸 증명해드립니다.",
     angle: 240,
     icon: <Link2 className={iconProps} strokeWidth={1.5} />,
     mobileIcon: <Link2 className={mobileIconProps} strokeWidth={1.5} />,
@@ -98,7 +98,7 @@ const nodes: Node[] = [
   {
     key: "family",
     title: "가족 이해\n향상",
-    body: "이름을 통해 서로의 장점과 문제의 뿌리를 알아 관계가 개선됩니다.",
+    body: "이름을 통해 서로의 장점과\n문제의 뿌리를 알아 관계가 개선됩니다.",
     angle: 120,
     icon: <FamilyIcon className={iconProps} />,
     mobileIcon: <FamilyIcon className={mobileIconProps} />,
