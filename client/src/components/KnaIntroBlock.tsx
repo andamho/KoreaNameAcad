@@ -133,7 +133,7 @@ export default function KnaIntroBlock() {
         }}
       >
 
-        <div className="relative mx-auto max-w-7xl px-6 lg:px-8 pt-24 pb-24 lg:pt-48 lg:pb-48">
+        <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
           <header className="text-center mb-14">
             <h3 className="text-[28px] md:text-[32px] font-extrabold text-white mb-4 break-keep">
               내 삶, 어디가 막혀 있을까요?
