@@ -14,7 +14,7 @@ export default function KnaDangerSection() {
         {/* Frame 1: 이름은 힘이 셉니다 */}
         <div className="frame bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl shadow-sm overflow-hidden mb-16">
           <div className="flex items-center gap-3 px-6 py-5 bg-white dark:bg-card border-b border-gray-200 dark:border-border">
-            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0 animate-pulse-glow">
+            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0">
               <Zap className="w-6 h-6 fill-orange-500 stroke-white" strokeWidth={2.5} />
             </div>
             <h3 className="text-[23px] md:text-[24px] font-bold text-gray-900 dark:text-foreground tracking-tight">
@@ -41,7 +41,7 @@ export default function KnaDangerSection() {
             
             {/* Right icon area with gray background */}
             <div className="hidden md:flex items-center justify-center bg-gray-50 dark:bg-muted/30">
-              <div className="w-32 h-32 rounded-3xl bg-orange-500 flex items-center justify-center shadow-lg">
+              <div className="w-32 h-32 rounded-3xl bg-orange-500 flex items-center justify-center shadow-lg animate-pulse-glow">
                 <Zap className="w-16 h-16 fill-white stroke-white" strokeWidth={1.5} />
               </div>
             </div>
@@ -51,7 +51,7 @@ export default function KnaDangerSection() {
         {/* Frame 2: 이러시면 안됩니다 */}
         <div className="frame bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 px-6 py-5 bg-white dark:bg-card border-b border-gray-200 dark:border-border">
-            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0 animate-pulse-glow">
+            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0">
               <Ban className="w-6 h-6 stroke-white" strokeWidth={2.5} />
             </div>
             <h3 className="text-[23px] md:text-[24px] font-bold text-gray-900 dark:text-foreground tracking-tight">
@@ -79,7 +79,7 @@ export default function KnaDangerSection() {
             
             {/* Right icon area with gray background */}
             <div className="hidden md:flex items-center justify-center bg-gray-50 dark:bg-muted/30">
-              <div className="w-32 h-32 rounded-3xl bg-orange-500 flex items-center justify-center shadow-lg">
+              <div className="w-32 h-32 rounded-3xl bg-orange-500 flex items-center justify-center shadow-lg animate-pulse-glow">
                 <Ban className="w-16 h-16 stroke-white" strokeWidth={1.5} />
               </div>
             </div>
