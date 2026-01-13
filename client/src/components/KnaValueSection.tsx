@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Scale, Link2, Lock, AlertTriangle, Users, DollarSign, FileQuestion, MessageCircleQuestion } from "lucide-react";
+import { Scale, Link2, Lock } from "lucide-react";
 import logoImage from "@assets/file_000000009b2c7206ad0a70c0142cb99a_1766915164756.png";
 
 function ShieldIcon({ className }: { className?: string }) {
@@ -40,16 +40,8 @@ function FamilyIcon({ className }: { className?: string }) {
   );
 }
 
-function LockIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden>
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" fill="white" stroke="white" strokeWidth="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 const iconProps = "w-10 h-10 text-gray-700 dark:text-gray-300 mb-3";
+const mobileIconProps = "w-8 h-8 text-[#18a999]";
 
 type Node = {
   key: string;
@@ -57,124 +49,71 @@ type Node = {
   body: string;
   angle: number;
   icon: React.ReactNode;
+  mobileIcon: React.ReactNode;
   textSide: "right" | "left";
   textAlign: "left" | "right";
 };
 
 const nodes: Node[] = [
   {
-    key: "top",
+    key: "trust",
     title: "신뢰의 증거",
-    body: "전국 최다 후기로 검증된\n만족도를 확인하세요.",
+    body: "전국 최다 후기로 검증된 만족도를 확인하세요",
     angle: 0,
     icon: <ShieldIcon className={iconProps} />,
+    mobileIcon: <ShieldIcon className={mobileIconProps} />,
     textSide: "right",
     textAlign: "left",
   },
   {
-    key: "topRight",
-    title: "이름 · 삶\n일치 증명",
-    body: "이름대로 살고 있음을\n구체적으로 보여드립니다.",
-    angle: 60,
-    icon: <Scale className={iconProps} strokeWidth={1.5} />,
-    textSide: "right",
-    textAlign: "left",
-  },
-  {
-    key: "bottomRight",
-    title: "가족 이해 향상",
-    body: "이름을 통해 서로의 장점과 문제의\n뿌리를 알아 관계가 개선됩니다.",
-    angle: 120,
-    icon: <FamilyIcon className={iconProps} />,
-    textSide: "right",
-    textAlign: "left",
-  },
-  {
-    key: "bottom",
-    title: "강점과 재능 발견",
-    body: "당신이 몰랐던 본연의\n장점을 알려드립니다.",
-    angle: 180,
-    icon: <SparkIcon className={iconProps} />,
-    textSide: "right",
-    textAlign: "left",
-  },
-  {
-    key: "bottomLeft",
-    title: "개명 전·후\n삶 증명",
-    body: "개명하셨다면 전·후 이름대로\n살았다는 걸 증명해드립니다.",
-    angle: 240,
-    icon: <Link2 className={iconProps} strokeWidth={1.5} />,
-    textSide: "left",
-    textAlign: "right",
-  },
-  {
-    key: "topLeft",
+    key: "root",
     title: "근본 원인 발견",
-    body: "반복되는 어려움의 이유를\n이름에서 명확히 찾아드립니다.",
+    body: "반복되는 어려움의 이유를 이름에서 명확히 찾아드립니다.",
     angle: 300,
     icon: <SearchIcon className={iconProps} />,
+    mobileIcon: <SearchIcon className={mobileIconProps} />,
     textSide: "left",
     textAlign: "right",
   },
-];
-
-type MobileCard = {
-  key: string;
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  highlight?: boolean;
-};
-
-const mobileCards: MobileCard[] = [
   {
-    key: "clear",
-    title: "이름이 맑아야 인생이 맑다",
-    description: "운칠기삼(運七技三), 운이 70%입니다. 이름의 강력한 운을 모른 채, 30%의 노력만으로는 인생이 바뀌지 않습니다.",
-    icon: <SparkIcon className="w-8 h-8 text-[#2dd4bf]" />,
+    key: "match",
+    title: "이름 · 삶\n일치 증명",
+    body: "이름대로 살고 있음을 구체적으로 보여드립니다.",
+    angle: 60,
+    icon: <Scale className={iconProps} strokeWidth={1.5} />,
+    mobileIcon: <Scale className={mobileIconProps} strokeWidth={1.5} />,
+    textSide: "right",
+    textAlign: "left",
   },
   {
-    key: "badName",
-    title: "안 좋은 이름에 바람 잘 날 없다",
-    description: "안좋은 이름은,\n평생을 따라 다니며 괴롭힙니다.",
-    icon: <AlertTriangle className="w-8 h-8 text-[#2dd4bf]" strokeWidth={1.5} />,
+    key: "rename",
+    title: "개명 전·후\n삶 증명",
+    body: "개명하셨다면 전·후 이름대로 살았다는 걸 증명해드립니다.",
+    angle: 240,
+    icon: <Link2 className={iconProps} strokeWidth={1.5} />,
+    mobileIcon: <Link2 className={mobileIconProps} strokeWidth={1.5} />,
+    textSide: "left",
+    textAlign: "right",
   },
   {
     key: "family",
-    title: "가족은 운명공동체",
-    description: "이름은 자신뿐만 아니라,\n가족 전체에 영향을 미칩니다.",
-    icon: <Users className="w-8 h-8 text-[#2dd4bf]" strokeWidth={1.5} />,
+    title: "가족 이해 향상",
+    body: "이름을 통해 서로의 장점과 문제의 뿌리를 알아 관계가 개선됩니다.",
+    angle: 120,
+    icon: <FamilyIcon className={iconProps} />,
+    mobileIcon: <FamilyIcon className={mobileIconProps} />,
+    textSide: "right",
+    textAlign: "left",
   },
   {
-    key: "warning",
-    title: "이러시면 안됩니다",
-    description: "",
-    icon: null,
-    highlight: true,
-  },
-];
-
-type WarningItem = {
-  key: string;
-  question: string;
-  warning: string;
-};
-
-const warningItems: WarningItem[] = [
-  {
-    key: "cost",
-    question: '"비용을 먼저 물어보시나요?"',
-    warning: "이름은 생각보다 훨씬 막강합니다.\n비용만 아끼려다,\n더 비싼 대가를 치릅니다.",
-  },
-  {
-    key: "saju",
-    question: '"사주 기반 작명소를 찾으시나요?"',
-    warning: "그곳은 한글이름 작명이론이 없습니다.\n한글 이름의 운이 무너지면,\n삶이 흔들립니다.",
-  },
-  {
-    key: "review",
-    question: '"후기도 안살펴보시나요?"',
-    warning: "검증 없는 작명,\n고생은 결국 본인의 몫입니다.",
+    key: "talent",
+    title: "강점과 재능 발견",
+    body: "당신이 몰랐던 본연의 장점을 알려드립니다.",
+    angle: 180,
+    icon: <SparkIcon className={iconProps} />,
+    mobileIcon: <SparkIcon className={mobileIconProps} />,
+    textSide: "right",
+    textAlign: "left",
   },
 ];
 
@@ -221,41 +160,17 @@ function CircleNode({ node, radius }: { node: Node; radius: number }) {
   );
 }
 
-function MobileValueCard({ card }: { card: MobileCard }) {
-  if (card.highlight) {
-    return (
-      <div className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-2xl p-6 border border-red-200/50 dark:border-red-700/50">
-        <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-6 text-center">
-          {card.title}
-        </h3>
-        <div className="space-y-5">
-          {warningItems.map((item) => (
-            <div key={item.key} className="bg-white/80 dark:bg-gray-800/80 rounded-xl p-4">
-              <p className="text-[17px] font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                {item.question}
-              </p>
-              <p className="text-[15px] text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line break-keep">
-                {item.warning}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
+function MobileCircleItem({ node }: { node: Node }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-      <div className="flex items-center gap-4 mb-4">
-        <div className="w-14 h-14 rounded-full bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
-          {card.icon}
-        </div>
-        <h3 className="text-lg font-bold text-gray-900 dark:text-foreground break-keep">
-          {card.title}
-        </h3>
+    <div className="flex flex-col items-center text-center">
+      <div className="w-28 h-28 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 shadow-lg flex flex-col items-center justify-center p-3 mb-4">
+        <div className="mb-2">{node.mobileIcon}</div>
+        <span className="text-gray-900 dark:text-foreground font-bold text-[14px] leading-tight whitespace-pre-line tracking-tight">
+          {node.title.replace('\n', ' ')}
+        </span>
       </div>
-      <p className="text-[15px] text-gray-600 dark:text-muted-foreground leading-relaxed whitespace-pre-line break-keep pl-[72px]">
-        {card.description}
+      <p className="text-[15px] text-gray-600 dark:text-muted-foreground leading-relaxed break-keep max-w-[280px]">
+        {node.body}
       </p>
     </div>
   );
@@ -283,10 +198,10 @@ export default function KnaValueSection() {
           </p>
         </header>
 
-        {/* 모바일 레이아웃 (lg 미만) */}
-        <div className="lg:hidden space-y-4 mb-16">
-          {mobileCards.map((card) => (
-            <MobileValueCard key={card.key} card={card} />
+        {/* 모바일 레이아웃: 세로 원형 배치 (lg 미만) */}
+        <div className="lg:hidden space-y-10 mb-16">
+          {nodes.map((node) => (
+            <MobileCircleItem key={node.key} node={node} />
           ))}
         </div>
 
@@ -319,7 +234,7 @@ export default function KnaValueSection() {
                 onClick={() => setShowLogo(!showLogo)}
                 onTouchEnd={(e) => { e.preventDefault(); setShowLogo(!showLogo); }}
               >
-                {/* 로고 레이어 (호버 또는 클릭 시 보임) */}
+                {/* 로고 레이어 */}
                 <div className={`absolute inset-0 z-10 transition-opacity duration-300 ease-in-out flex items-center justify-center bg-white dark:bg-gray-800 rounded-full ${showLogo ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                   <img
                     src={logoImage}
@@ -328,7 +243,7 @@ export default function KnaValueSection() {
                   />
                 </div>
 
-                {/* 텍스트 레이어 (기본 보임, 호버 또는 클릭 시 숨김) */}
+                {/* 텍스트 레이어 */}
                 <div className={`flex flex-col items-center justify-center transition-opacity duration-300 ease-in-out ${showLogo ? 'opacity-0' : 'opacity-100 group-hover:opacity-0'}`}>
                   <h3 className="text-[26px] md:text-[32px] font-black tracking-tighter text-[#18a999] mb-2 select-none">
                     한국이름학교
@@ -363,9 +278,9 @@ export default function KnaValueSection() {
             </p>
           </div>
 
-          {/* 카드 분할 영역 (Grid Layout) */}
+          {/* 카드 분할 영역 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* 좌측 카드: STEP 01 */}
+            {/* STEP 01 */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 shadow-[0_10px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_rgba(45,212,191,0.15)] transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex flex-col items-center text-center">
                 <span className="text-[15px] md:text-[16px] font-bold tracking-widest mb-4 px-4 py-2 rounded-full bg-teal-50 dark:bg-teal-900/30 text-[#2dd4bf]">
@@ -381,7 +296,7 @@ export default function KnaValueSection() {
               </div>
             </div>
 
-            {/* 우측 카드: STEP 02 */}
+            {/* STEP 02 */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 shadow-[0_10px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_rgba(45,212,191,0.15)] transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex flex-col items-center text-center">
                 <span className="text-[15px] md:text-[16px] font-bold tracking-widest mb-4 px-4 py-2 rounded-full bg-teal-50 dark:bg-teal-900/30 text-[#2dd4bf]">
@@ -398,10 +313,10 @@ export default function KnaValueSection() {
             </div>
           </div>
 
-          {/* 한국이름학교 중앙 강조 (모바일) */}
-          <div className="lg:hidden mt-10 flex justify-center">
+          {/* 한국이름학교 중앙 원형 (모바일) */}
+          <div className="lg:hidden mt-12 flex justify-center">
             <div 
-              className="relative w-40 h-40 rounded-full bg-white dark:bg-gray-800 border-2 border-[#2dd4bf]/30 shadow-lg flex items-center justify-center cursor-pointer overflow-hidden"
+              className="relative w-36 h-36 rounded-full bg-white dark:bg-gray-800 border-2 border-[#2dd4bf]/30 shadow-lg flex items-center justify-center cursor-pointer overflow-hidden"
               onClick={() => setShowLogo(!showLogo)}
             >
               <div className={`absolute inset-0 z-10 transition-opacity duration-300 ease-in-out flex items-center justify-center bg-white dark:bg-gray-800 rounded-full ${showLogo ? 'opacity-100' : 'opacity-0'}`}>
@@ -412,9 +327,9 @@ export default function KnaValueSection() {
                 />
               </div>
               <div className={`flex flex-col items-center justify-center transition-opacity duration-300 ${showLogo ? 'opacity-0' : 'opacity-100'}`}>
-                <span className="text-[20px] font-black text-[#18a999] tracking-tight">한국이름학교</span>
-                <div className="w-8 h-[2px] bg-[#18a999]/40 my-2 rounded-full" />
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.3em]">Identity</p>
+                <span className="text-[18px] font-black text-[#18a999] tracking-tight">한국이름학교</span>
+                <div className="w-8 h-[2px] bg-[#18a999]/40 my-1.5 rounded-full" />
+                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.3em]">Identity</p>
               </div>
             </div>
           </div>
