@@ -58,7 +58,7 @@ export default function KnaMythTruthSection() {
           <span className="text-[13px] font-bold tracking-wider uppercase text-gray-500 dark:text-gray-400 mb-3 block">
             Naming & Destiny FAQ
           </span>
-          <h2 className="text-[26px] sm:text-[32px] md:text-[36px] font-bold leading-tight text-[#0ABAB5] dark:text-[#58C4C4] tracking-tight">
+          <h2 className="text-[25px] sm:text-3xl md:text-4xl font-extrabold leading-tight text-[#18a999] dark:text-[#58C4C4] tracking-tight">
             운명의 방향을 바꾸는 선택,<br />개명에 대한 모든 것
           </h2>
         </header>

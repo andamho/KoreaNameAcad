@@ -19,7 +19,7 @@ export default function KnaIntroBlock() {
 
         <div className="relative mx-auto max-w-6xl px-6 pt-24 pb-24 lg:pt-48 lg:pb-48 lg:px-8">
           <header className="text-left mb-16">
-            <h2 className="text-[#56D5DB] text-[28px] font-extrabold leading-tight sm:text-3xl md:text-4xl break-keep">
+            <h2 className="text-[#18a999] text-[25px] font-extrabold leading-tight sm:text-3xl md:text-4xl break-keep">
               열심히 노력하며 살아가지만
             </h2>
             <p className="mt-4 text-lg md:text-xl text-white/90 break-keep">
