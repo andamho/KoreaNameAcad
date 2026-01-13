@@ -88,10 +88,10 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
             </div>
           )}
           
-          {/* Desktop: 2 columns (cards left, identity map right) / Mobile: stack seamlessly */}
-          <div className="flex flex-col lg:grid lg:grid-cols-[1.1fr,0.9fr] gap-0 lg:items-stretch">
-            {/* Pricing Cards - Left on desktop (Glassmorphism style) */}
-            <div className="relative w-full lg:min-w-[380px] lg:max-w-[480px]">
+          {/* Desktop: 2 columns (cards left fixed, identity map right fills rest) / Mobile: stack seamlessly */}
+          <div className="flex flex-col lg:flex-row gap-0 lg:items-stretch">
+            {/* Pricing Cards - Left on desktop (Glassmorphism style) - fixed width */}
+            <div className="relative w-full lg:w-[420px] lg:flex-shrink-0">
               <div 
                 className="rounded-3xl rounded-b-none lg:rounded-b-3xl lg:rounded-r-none p-4 sm:p-5 h-full border border-white/10 border-b-0 lg:border-b lg:border-r-0"
                 style={{ 
@@ -114,8 +114,8 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
               </div>
             </div>
             
-            {/* Identity Map - Right on desktop, bottom on mobile */}
-            <div className="w-full order-last flex items-stretch">
+            {/* Identity Map - Right on desktop, bottom on mobile - fills remaining space */}
+            <div className="w-full lg:flex-1 order-last flex items-stretch">
               <div className="w-full">
                 <IdentityMap />
               </div>
