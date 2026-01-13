@@ -1,0 +1,72 @@
+import React from 'react';
+import { Lock } from 'lucide-react'; // 자물쇠 아이콘 (lucide-react 라이브러리 예시)
+// *아이콘 라이브러리가 없다면 svg 코드로 대체 가능합니다.
+
+const VerificationSection = () => {
+  // 티파니 블루 색상 코드 (상단 이미지와 유사한 민트 컬러)
+  const mainColor = "#2dd4bf"; // Tailwind의 teal-400과 유사, 필요시 hex 수정
+
+  return (
+    <section className="w-full py-16 bg-white flex justify-center items-center">
+      <div className="max-w-4xl w-full px-4">
+        
+        {/* --- 1. 섹션 타이틀 영역 --- */}
+        <div className="text-center mb-10">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center justify-center gap-2">
+            {/* 자물쇠 아이콘: 신뢰감 상징 */}
+            <Lock size={28} color={mainColor} strokeWidth={2.5} />
+            <span>두 번의 확인으로 완성되는 <span style={{ color: mainColor }}>평생의 안심</span></span>
+          </h2>
+          <p className="mt-3 text-gray-500 text-sm md:text-base">
+            철저한 검증 시스템으로 이름에 대한 확신을 드립니다.
+          </p>
+        </div>
+
+        {/* --- 2. 카드 분할 영역 (Grid Layout) --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          {/* [좌측 카드: STEP 01] */}
+          <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_rgba(45,212,191,0.15)] transition-all duration-300 transform hover:-translate-y-1">
+            <div className="flex flex-col items-center text-center">
+              <span 
+                className="text-xs font-bold tracking-widest mb-3 px-3 py-1 rounded-full bg-teal-50"
+                style={{ color: mainColor }}
+              >
+                STEP 01
+              </span>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                상담·개명 후기 기반<br/>1차 검증
+              </h3>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                실제 고객들의 데이터를 바탕으로<br/>
+                검증된 만족도를 확인합니다.
+              </p>
+            </div>
+          </div>
+
+          {/* [우측 카드: STEP 02] */}
+          <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_rgba(45,212,191,0.15)] transition-all duration-300 transform hover:-translate-y-1">
+            <div className="flex flex-col items-center text-center">
+              <span 
+                className="text-xs font-bold tracking-widest mb-3 px-3 py-1 rounded-full bg-teal-50"
+                style={{ color: mainColor }}
+              >
+                STEP 02
+              </span>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                이름만으로 운명상담 통해<br/>2차 검증
+              </h3>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                이름 속에 담긴 운명의 흐름을<br/>
+                정밀하게 분석하여 증명합니다.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default VerificationSection;

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Scale, Link2 } from "lucide-react";
+import { Scale, Link2, Lock } from "lucide-react";
 import logoImage from "@assets/file_000000009b2c7206ad0a70c0142cb99a_1766915164756.png";
 
 // 기존 아이콘 컴포넌트들
@@ -244,33 +244,54 @@ export default function KnaValueSection() {
           </div>
         </div>
 
-        {/* 두 번의 확인, 평생의 안심 - 기존 유지 */}
-        <section className="mt-12 rounded-2xl border border-[#56D5DB] bg-[#56D5DB] p-6 shadow-lg shadow-[#56D5DB]/40 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#56D5DB]/50">
-          <h3 className="text-[21px] md:text-[22px] font-bold tracking-tight text-white break-keep flex items-center gap-2">
-            <span className="animate-pulse-scale-white">
-              <LockIcon className="h-6 w-6 md:h-7 md:w-7 flex-shrink-0" />
-            </span>
-            <span className="md:whitespace-nowrap">두 번의 확인, 평생의 안심</span>
-          </h3>
-          <ul className="mt-4 space-y-3">
-            <li className="flex items-start gap-3">
-              <span className="kna-value-badge inline-flex h-6 w-6 flex-none items-center justify-center rounded-full border-2 border-white text-sm font-bold text-white">
-                1
-              </span>
-              <span className="kna-value-text text-lg text-white">
-                상담·개명 후기 기반 1차 검증
-              </span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="kna-value-badge inline-flex h-6 w-6 flex-none items-center justify-center rounded-full border-2 border-white text-sm font-bold text-white">
-                2
-              </span>
-              <span className="kna-value-text text-lg text-white">
-                이름만으로 운명상담 통해 2차 검증
-              </span>
-            </li>
-          </ul>
-        </section>
+        {/* 두 번의 확인, 평생의 안심 */}
+        <div className="mt-12">
+          {/* 섹션 타이틀 영역 */}
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-foreground flex items-center justify-center gap-2">
+              <Lock size={28} className="text-[#2dd4bf]" strokeWidth={2.5} />
+              <span>두 번의 확인으로 완성되는 <span className="text-[#2dd4bf]">평생의 안심</span></span>
+            </h2>
+            <p className="mt-3 text-gray-500 dark:text-muted-foreground text-sm md:text-base">
+              철저한 검증 시스템으로 이름에 대한 확신을 드립니다.
+            </p>
+          </div>
+
+          {/* 카드 분할 영역 (Grid Layout) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 좌측 카드: STEP 01 */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 shadow-[0_10px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_rgba(45,212,191,0.15)] transition-all duration-300 transform hover:-translate-y-1">
+              <div className="flex flex-col items-center text-center">
+                <span className="text-xs font-bold tracking-widest mb-3 px-3 py-1 rounded-full bg-teal-50 dark:bg-teal-900/30 text-[#2dd4bf]">
+                  STEP 01
+                </span>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-foreground mb-2">
+                  상담·개명 후기 기반<br/>1차 검증
+                </h3>
+                <p className="text-gray-500 dark:text-muted-foreground text-sm leading-relaxed">
+                  실제 고객들의 데이터를 바탕으로<br/>
+                  검증된 만족도를 확인합니다.
+                </p>
+              </div>
+            </div>
+
+            {/* 우측 카드: STEP 02 */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 shadow-[0_10px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_rgba(45,212,191,0.15)] transition-all duration-300 transform hover:-translate-y-1">
+              <div className="flex flex-col items-center text-center">
+                <span className="text-xs font-bold tracking-widest mb-3 px-3 py-1 rounded-full bg-teal-50 dark:bg-teal-900/30 text-[#2dd4bf]">
+                  STEP 02
+                </span>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-foreground mb-2">
+                  이름만으로 운명상담 통해<br/>2차 검증
+                </h3>
+                <p className="text-gray-500 dark:text-muted-foreground text-sm leading-relaxed">
+                  이름 속에 담긴 운명의 흐름을<br/>
+                  정밀하게 분석하여 증명합니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
