@@ -238,10 +238,10 @@ function MobileCenterLogo({ showLogo, setShowLogo }: { showLogo: boolean; setSho
   return (
     <div ref={ref} className="flex justify-center">
       <div 
-        className={`relative w-40 h-40 rounded-full bg-white dark:bg-gray-800 border-[3px] shadow-lg flex items-center justify-center cursor-pointer overflow-hidden transition-all duration-500 ${
+        className={`relative w-40 h-40 rounded-full bg-white dark:bg-gray-800 border-[3px] border-gray-200 dark:border-gray-600 shadow-lg flex items-center justify-center cursor-pointer overflow-hidden transition-all duration-500 ${
           isVisible 
-            ? 'border-[#18a999] scale-110 shadow-[0_0_30px_rgba(24,169,153,0.3)]' 
-            : 'border-[#2dd4bf]/30 scale-100'
+            ? 'scale-110 shadow-[0_0_30px_rgba(0,0,0,0.1)]' 
+            : 'scale-100'
         }`}
         onClick={() => setShowLogo(!showLogo)}
       >
