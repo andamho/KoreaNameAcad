@@ -437,11 +437,10 @@ html.ua-tiktok .ig-tt-dialog button {
   font-size: 12px !important;
 }
 
-/* 자세히 보기 버튼 높이 25% 줄임 (py-1 → py-0.5) */
+/* 자세히 보기 버튼 82% 축소 (px-3 py-1 → px-2.5 py-0.5) */
 html.ua-instagram .ig-tt-dialog button[data-testid="button-family-policy-form"],
 html.ua-tiktok .ig-tt-dialog button[data-testid="button-family-policy-form"] {
-  padding-top: 3px !important;
-  padding-bottom: 3px !important;
+  padding: 3px 10px !important;
 }
 
 /* input, textarea, select - 13px */
