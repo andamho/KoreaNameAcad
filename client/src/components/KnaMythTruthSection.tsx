@@ -63,13 +63,23 @@ export default function KnaMythTruthSection() {
           </h2>
         </header>
 
-        <ul className="space-y-3 border-t border-gray-200 dark:border-border">
-          {items.map((it, i) => (
-            <AccordionItem key={i} q={it.q} data-testid={`accordion-item-${i}`}>
-              {it.a}
-            </AccordionItem>
-          ))}
-        </ul>
+        <div className="relative">
+          {/* 배경 FAQ 텍스트 */}
+          <span 
+            className="absolute top-1/2 right-0 -translate-y-1/2 text-[120px] md:text-[180px] lg:text-[220px] font-black text-gray-100 dark:text-gray-800/50 select-none pointer-events-none tracking-tighter"
+            aria-hidden="true"
+          >
+            FAQ
+          </span>
+          
+          <ul className="relative z-10 space-y-3 border-t border-gray-200 dark:border-border">
+            {items.map((it, i) => (
+              <AccordionItem key={i} q={it.q} data-testid={`accordion-item-${i}`}>
+                {it.a}
+              </AccordionItem>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   );
