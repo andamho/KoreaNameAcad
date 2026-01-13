@@ -87,7 +87,7 @@ function AccordionItem({ q, children, ...props }: { q: string; children: React.R
         aria-expanded={open ? "true" : "false"}
         data-testid={`button-accordion-${q.substring(0, 10)}`}
       >
-        <span className="text-[18px] md:text-[20px] font-semibold text-gray-900 dark:text-foreground break-keep tracking-tight group-hover:text-[#0ABAB5] dark:group-hover:text-[#58C4C4] transition-colors">{q}</span>
+        <span className="text-[21px] md:text-[22px] font-semibold text-gray-900 dark:text-foreground break-keep tracking-tight group-hover:text-[#0ABAB5] dark:group-hover:text-[#58C4C4] transition-colors">{q}</span>
         <span 
           className={`relative w-5 h-5 flex-shrink-0 transition-transform duration-300 ${open ? "rotate-45" : ""}`}
           aria-hidden="true"
@@ -99,7 +99,7 @@ function AccordionItem({ q, children, ...props }: { q: string; children: React.R
       <div 
         className={`overflow-hidden transition-all duration-300 ease-out ${open ? "max-h-96 pb-6" : "max-h-0"}`}
       >
-        <div className="text-[16px] md:text-[17px] leading-relaxed text-gray-600 dark:text-muted-foreground pr-5">
+        <div className="text-lg leading-relaxed text-gray-600 dark:text-muted-foreground pr-5">
           {children}
         </div>
       </div>
