@@ -175,7 +175,7 @@ export default function KnaValueSection() {
 
       <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-24 lg:px-8">
         {/* 헤더 */}
-        <header className="relative z-40 text-center mb-8">
+        <header className="relative z-40 text-center mb-24">
           <h2 className="text-[#18a999] text-[25px] sm:text-3xl md:text-4xl font-extrabold tracking-tight">
             알면 알수록, 한국이름학교
           </h2>
@@ -245,7 +245,7 @@ export default function KnaValueSection() {
         </div>
 
         {/* 두 번의 확인, 평생의 안심 */}
-        <div className="mt-12">
+        <div className="mt-24">
           {/* 섹션 타이틀 영역 */}
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-foreground flex items-center justify-center gap-2">
