@@ -22,12 +22,12 @@ export function Hero() {
   const h1FontSizeDesktop = 'clamp(41px, 9vw, 62px)';
     
   const pFontSize = isInstagram 
-    ? 'clamp(18px, 4vw, 23px)' 
+    ? 'clamp(14px, 3.2vw, 18px)' 
     : isTikTok 
-    ? 'clamp(18px, 4vw, 23px)'
-    : 'clamp(20px, 4.8vw, 28px)';
+    ? 'clamp(14px, 3.2vw, 18px)'
+    : 'clamp(16px, 3.8vw, 22px)';
   
-  const pFontSizeDesktop = 'clamp(24px, 5.76vw, 34px)';
+  const pFontSizeDesktop = 'clamp(19px, 4.6vw, 27px)';
 
   return (
     <section id="home" className="relative min-h-screen overflow-hidden flex items-center justify-center z-10" style={{ marginTop: '-80px', paddingTop: '80px' }}>
