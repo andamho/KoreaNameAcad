@@ -52,8 +52,8 @@ export default function KnaDangerSection() {
             </aside>
           </div>
           
-          {/* Mobile icon with ripple animation - ripple max 220px, need 50px extra margin */}
-          <div className="md:hidden flex justify-center pt-[70px] pb-[70px]">
+          {/* Mobile icon with ripple animation - ripple max 220px, equal top/bottom spacing */}
+          <div className="md:hidden flex justify-center py-[60px]">
             <div className="relative w-[120px] h-[120px] rounded-[28px] grid place-items-center bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)]" style={{ isolation: 'isolate' }}>
               <span className="ripple r1" />
               <span className="ripple r2" />
@@ -108,8 +108,8 @@ export default function KnaDangerSection() {
             </aside>
           </div>
           
-          {/* Mobile icon with color swap animation - match vertical center spacing with Frame 1 */}
-          <div className="md:hidden flex justify-center pt-[10px] pb-[10px]">
+          {/* Mobile icon with color swap animation - same spacing as Frame 1 */}
+          <div className="md:hidden flex justify-center py-[60px]">
             <div className="w-[120px] h-[120px] rounded-[28px] grid place-items-center warn-wrap-animate">
               <svg className="w-[60px] h-[60px] warn-ico-animate" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M7 3h10l4 4v10l-4 4H7l-4-4V7l4-4Z" />
