@@ -74,7 +74,7 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
         <div aria-hidden className="pointer-events-none absolute inset-0">
           <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-[#7fe1d3]/20 dark:bg-[#58C4C4]/20 blur-3xl" />
         </div>
-        <div className={`kna-pricing-inner relative max-w-6xl mx-auto px-6 lg:px-8 ${showHero ? 'pt-8 sm:pt-10' : 'pt-[174px] sm:pt-[190px]'}`}>
+        <div className={`kna-pricing-inner relative max-w-7xl mx-auto px-6 lg:px-8 ${showHero ? 'pt-8 sm:pt-10' : 'pt-[174px] sm:pt-[190px]'}`}>
           {/* Section header - only shown when Hero is NOT displayed */}
           {!showHero && (
             <div className="text-center mb-12">
@@ -89,9 +89,9 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
           )}
           
           {/* Desktop: 2 columns (cards left, identity map right) / Mobile: stack seamlessly */}
-          <div className="flex flex-col lg:flex-row gap-0 lg:items-stretch">
+          <div className="flex flex-col lg:grid lg:grid-cols-[1.1fr,0.9fr] gap-0 lg:items-stretch">
             {/* Pricing Cards - Left on desktop (Glassmorphism style) */}
-            <div className="relative w-full lg:w-[380px] lg:flex-shrink-0">
+            <div className="relative w-full lg:min-w-[380px] lg:max-w-[480px]">
               <div 
                 className="rounded-3xl rounded-b-none lg:rounded-b-3xl lg:rounded-r-none p-4 sm:p-5 h-full border border-white/10 border-b-0 lg:border-b lg:border-r-0"
                 style={{ 
@@ -115,7 +115,7 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
             </div>
             
             {/* Identity Map - Right on desktop, bottom on mobile */}
-            <div className="w-full lg:flex-1 lg:min-w-[400px] order-last flex items-stretch">
+            <div className="w-full order-last flex items-stretch">
               <div className="w-full">
                 <IdentityMap />
               </div>
