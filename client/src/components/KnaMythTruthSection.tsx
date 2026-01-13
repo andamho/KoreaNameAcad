@@ -51,11 +51,8 @@ export default function KnaMythTruthSection() {
   ];
 
   return (
-    <section className="kna-myth-truth-section relative overflow-hidden pb-24 bg-muted/30">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#7fe1d3]/20 dark:bg-[#58C4C4]/20 blur-3xl" />
-      </div>
-      <div className="kna-myth-truth-inner relative max-w-5xl mx-auto px-6 lg:px-8 pt-[174px] sm:pt-[190px]">
+    <section className="kna-myth-truth-section relative overflow-hidden bg-white dark:bg-background">
+      <div className="kna-myth-truth-inner relative max-w-6xl mx-auto px-6 lg:px-8 pt-24 pb-24 lg:pt-48 lg:pb-48">
         <header className="text-left mb-10">
           <span className="text-[13px] font-bold tracking-wider uppercase text-gray-500 dark:text-gray-400 mb-3 block">
             Naming & Destiny FAQ

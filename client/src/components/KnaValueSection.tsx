@@ -281,14 +281,14 @@ export default function KnaValueSection() {
         <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-[#0f766e]/10 dark:bg-[#45B8B8]/10 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-24 lg:px-8">
+      <div className="relative mx-auto max-w-6xl px-6 pt-24 pb-24 lg:pt-48 lg:pb-48 lg:px-8">
         {/* 헤더 */}
-        <header className="relative z-40 text-center mb-16 lg:mb-24">
+        <header className="relative z-40 text-left mb-16 lg:mb-24">
           <h2 className="text-[#18a999] text-[25px] sm:text-3xl md:text-4xl font-extrabold tracking-tight">
             알면 알수록, 한국이름학교
           </h2>
           <p className="mt-3 text-lg text-gray-700 dark:text-muted-foreground">
-            전국 최다 후기로 검증된,<br className="md:hidden" /> 가장 신뢰받는 이름 분석
+            전국 최다 후기로 검증된, 가장 신뢰받는 이름 분석
           </p>
         </header>
 
