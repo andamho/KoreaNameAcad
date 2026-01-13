@@ -1133,7 +1133,7 @@ html.ua-tiktok .review-section-title {
 @media (min-width: 768px) {
   .kna-intro-top {
     clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%);
-    padding-bottom: 280px;
+    padding-bottom: 380px;
   }
 }
 
