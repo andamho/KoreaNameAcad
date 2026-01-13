@@ -12,11 +12,12 @@ export function Hero() {
   // 폰트 크기 결정 (전체화면에 맞게 확대)
   // 데스크탑: 20% 증가 (52px → 62px, 34px → 41px)
   // 모바일: 기존 유지 (34px ~ 52px)
+  // 모바일: 10% 축소 (34px → 31px, 52px → 47px)
   const h1FontSize = isInstagram 
-    ? 'clamp(28px, 6vw, 38px)' 
+    ? 'clamp(25px, 5.4vw, 34px)' 
     : isTikTok 
-    ? 'clamp(28px, 6vw, 38px)'
-    : 'clamp(34px, 7.5vw, 52px)';
+    ? 'clamp(25px, 5.4vw, 34px)'
+    : 'clamp(31px, 6.8vw, 47px)';
   
   // 데스크탑 전용 20% 증가된 폰트 크기
   const h1FontSizeDesktop = 'clamp(41px, 9vw, 62px)';
