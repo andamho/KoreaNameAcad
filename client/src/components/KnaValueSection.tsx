@@ -357,6 +357,11 @@ export default function KnaValueSection() {
           </div>
         </div>
 
+        {/* 한국이름학교 중앙 원형 (모바일) - 두 번의 확인 위에 배치 */}
+        <div className="lg:hidden mt-8 mb-12">
+          <MobileCenterLogo showLogo={showLogo} setShowLogo={setShowLogo} />
+        </div>
+
         {/* 두 번의 확인, 평생의 안심 */}
         <div className="mt-8 lg:mt-24">
           {/* 섹션 타이틀 영역 */}
@@ -405,10 +410,6 @@ export default function KnaValueSection() {
             </div>
           </div>
 
-          {/* 한국이름학교 중앙 원형 (모바일) */}
-          <div className="lg:hidden mt-12">
-            <MobileCenterLogo showLogo={showLogo} setShowLogo={setShowLogo} />
-          </div>
         </div>
       </div>
     </section>
