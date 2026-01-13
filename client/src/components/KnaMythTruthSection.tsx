@@ -56,13 +56,16 @@ export default function KnaMythTruthSection() {
         <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#7fe1d3]/20 dark:bg-[#58C4C4]/20 blur-3xl" />
       </div>
       <div className="kna-myth-truth-inner relative max-w-5xl mx-auto px-6 lg:px-8 pt-[174px] sm:pt-[190px]">
-        <header className="text-center">
-          <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
-            개명 완벽 가이드
+        <header className="text-left mb-10">
+          <span className="text-[13px] font-bold tracking-wider uppercase text-gray-500 dark:text-gray-400 mb-3 block">
+            Naming & Destiny FAQ
+          </span>
+          <h2 className="text-[26px] sm:text-[32px] md:text-[36px] font-bold leading-tight text-[#0ABAB5] dark:text-[#58C4C4] tracking-tight">
+            운명의 방향을 바꾸는 선택,<br />개명에 대한 모든 것
           </h2>
         </header>
 
-        <ul className="mt-10 space-y-3">
+        <ul className="space-y-3 border-t border-gray-200 dark:border-border">
           {items.map((it, i) => (
             <AccordionItem key={i} q={it.q} data-testid={`accordion-item-${i}`}>
               {it.a}
@@ -78,31 +81,30 @@ function AccordionItem({ q, children, ...props }: { q: string; children: React.R
   const [open, setOpen] = useState(false);
   
   return (
-    <li className="rounded-2xl border border-gray-200 dark:border-border bg-white dark:bg-card p-4 shadow-sm transition hover:shadow-md" {...props}>
+    <li className="border-b border-gray-200 dark:border-border" {...props}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-3 text-left"
+        className="flex w-full items-center justify-between gap-3 text-left py-6 group"
         aria-expanded={open ? "true" : "false"}
         data-testid={`button-accordion-${q.substring(0, 10)}`}
       >
-        <span className="text-[21px] md:text-[22px] font-semibold text-gray-900 dark:text-foreground break-keep">{q}</span>
+        <span className="text-[18px] md:text-[20px] font-semibold text-gray-900 dark:text-foreground break-keep tracking-tight group-hover:text-[#0ABAB5] dark:group-hover:text-[#58C4C4] transition-colors">{q}</span>
         <span 
-          className={`inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full transition-colors ${
-            open 
-              ? "bg-[#0f766e] dark:bg-[#58C4C4] text-white" 
-              : "bg-[#7fe1d3]/40 dark:bg-[#58C4C4]/40 text-[#0f766e] dark:text-[#58C4C4]"
-          }`} 
+          className={`relative w-5 h-5 flex-shrink-0 transition-transform duration-300 ${open ? "rotate-45" : ""}`}
           aria-hidden="true"
         >
-          {open ? "−" : "+"}
+          <span className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-0.5 rounded-sm transition-colors ${open ? "bg-gray-900 dark:bg-foreground" : "bg-[#0ABAB5] dark:bg-[#58C4C4]"}`} />
+          <span className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-3.5 rounded-sm transition-colors ${open ? "bg-gray-900 dark:bg-foreground" : "bg-[#0ABAB5] dark:bg-[#58C4C4]"}`} />
         </span>
       </button>
-      {open && (
-        <div className="mt-3 border-t border-dashed border-gray-200 dark:border-border pt-3 text-lg md:text-lg leading-relaxed text-gray-700 dark:text-muted-foreground">
+      <div 
+        className={`overflow-hidden transition-all duration-300 ease-out ${open ? "max-h-96 pb-6" : "max-h-0"}`}
+      >
+        <div className="text-[16px] md:text-[17px] leading-relaxed text-gray-600 dark:text-muted-foreground pr-5">
           {children}
         </div>
-      )}
+      </div>
     </li>
   );
 }
