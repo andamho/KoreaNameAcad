@@ -140,7 +140,7 @@ export default function IdentityMap() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full aspect-[1/1.3] max-w-[500px] lg:max-w-none lg:aspect-auto lg:h-full lg:min-h-[400px] mx-auto rounded-3xl rounded-t-none lg:rounded-l-none lg:rounded-tr-3xl overflow-hidden"
+      className="relative w-full aspect-[1/1.56] max-w-[500px] lg:max-w-none lg:aspect-auto lg:h-full lg:min-h-[400px] mx-auto rounded-3xl rounded-t-none lg:rounded-l-none lg:rounded-tr-3xl overflow-hidden flex items-center justify-center"
       style={{ background: "radial-gradient(circle at 50% 50%, #0d1b35 0%, #050a15 100%)" }}
     >
       <div className="id-center-wrapper absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
