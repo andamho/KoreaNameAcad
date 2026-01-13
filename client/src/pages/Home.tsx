@@ -23,8 +23,6 @@ import newYearImage from "@assets/newYearPopup_optimized.jpg";
 import characterImage from "@assets/KakaoTalk_20251226_135549799_1766724973553.png";
 import effortCharacterImage from "@assets/KakaoTalk_20251226_152116391_1766730095506.png";
 import stepsCharacterImage from "@assets/KakaoTalk_20251226_164036756_1766734877281.png";
-import guideCharacterImage from "@assets/KakaoTalk_20251226_151729031_1766729868877.png";
-import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_1766729101276.png";
 import butterflyCharacterImage from "@assets/KakaoTalk_20251226_134433821_1766724285654.png";
 
 export default function Home() {
@@ -313,20 +311,7 @@ export default function Home() {
 
       <KnaStepsSection />
 
-      {/* KnaMythTruthSection with overlay guide character */}
-      <div className="relative">
-        <img 
-          src={guideCharacterImage}
-          alt="개명 가이드 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] md:top-[48px]"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%)'
-          }}
-        />
-        <KnaMythTruthSection />
-      </div>
+      <KnaMythTruthSection />
 
       {/* 동영상 섹션 with overlay butterfly character */}
       <div className="relative">
@@ -370,20 +355,7 @@ export default function Home() {
         </section>
       </div>
 
-      {/* KnaPricingSection with overlay pricing character */}
-      <div className="relative">
-        <img 
-          src={pricingCharacterImage}
-          alt="비용 안내 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] sm:top-[40px]"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%)'
-          }}
-        />
-        <KnaPricingSection />
-      </div>
+      <KnaPricingSection />
 
       <Footer />
 
