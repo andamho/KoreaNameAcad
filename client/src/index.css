@@ -1235,13 +1235,11 @@ html.ua-tiktok .kna-intro-bottom > div {
   font-size: 14px !important;
 }
 
-/* IdentityMap 전체 82% 축소 (Tailwind CSS 변수 방식) */
+/* IdentityMap 전체 82% 축소 (zoom 방식) */
 .ig-shell .identity-map-inner,
 html.ua-instagram .identity-map-inner,
 html.ua-tiktok .identity-map-inner {
-  --tw-scale-x: 0.82 !important;
-  --tw-scale-y: 0.82 !important;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) scale(var(--tw-scale-x), var(--tw-scale-y)) !important;
+  zoom: 0.82 !important;
 }
 .ig-shell .kna-pricing-inner h2,
 .ig-shell .kna-pricing-inner h3 {

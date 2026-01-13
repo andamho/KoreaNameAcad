@@ -5,6 +5,7 @@ import { NameAnalysisPhone } from "@/components/NameAnalysisPhone";
 import { Search, Star, Flower, Baby, Building } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
+import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
 
 export default function Services() {
   const [, setLocation] = useLocation();
@@ -165,8 +166,13 @@ export default function Services() {
       <section className="relative overflow-hidden bg-gradient-to-br from-[#0f766e] to-[#4fd1c5] dark:from-[#0a5850] dark:to-[#3ba89e] py-16 md:py-24">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTR2NGg0di00em0wLThoLTR2NGg0di00em04IDhoLTR2NGg0di00em0tOCA4aC00djRoNHYtNHptOCAwaC00djRoNHYtNHptMC04aC00djRoNHYtNHptOC04aC00djRoNHYtNHptMCA4aC00djRoNHYtNHptLTggMGgtNHY0aDR2LTR6bTggOGgtNHY0aDR2LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-center">
-            <div className="text-center">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
+            <img 
+              src={servicesCharacterImage}
+              alt="서비스 안내 캐릭터"
+              className="w-auto h-40 md:h-56 flex-shrink-0"
+            />
+            <div className="text-center md:text-left">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6" data-testid="text-services-title">
                 전문적인 이름 서비스
               </h1>
