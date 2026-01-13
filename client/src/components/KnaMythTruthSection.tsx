@@ -66,7 +66,7 @@ export default function KnaMythTruthSection() {
         <div className="relative">
           {/* 배경 FAQ 텍스트 */}
           <span 
-            className="absolute -top-[5%] -right-[5%] text-[50vw] md:text-[30vw] font-black text-gray-200/80 dark:text-gray-700/30 select-none pointer-events-none leading-none -rotate-[15deg]"
+            className="absolute top-[15%] right-[-10%] text-[50vw] md:text-[35vw] font-black text-gray-100 dark:text-gray-800/20 select-none pointer-events-none leading-none -rotate-[15deg]"
             aria-hidden="true"
           >
             FAQ
