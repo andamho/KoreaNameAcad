@@ -1,18 +1,18 @@
-import { Zap, OctagonX } from "lucide-react";
+import { Zap, Ban } from "lucide-react";
 
 export default function KnaDangerSection() {
   return (
     <section className="kna-danger-section relative overflow-hidden bg-gray-100 dark:bg-background">
-      <div className="relative mx-auto max-w-7xl px-6 py-10 md:py-16 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-16 lg:px-8">
         
-        <header className="flex items-center justify-center mb-8 md:mb-10">
+        <header className="flex items-center justify-center mb-16">
           <h2 className="text-[#18a999] text-[25px] sm:text-3xl md:text-4xl font-extrabold tracking-tight">
             이름, 모르면 위험합니다
           </h2>
         </header>
 
         {/* Frame 1: 이름은 힘이 셉니다 */}
-        <div className="frame bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div className="frame bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl shadow-sm overflow-hidden mb-16">
           <div className="flex items-center gap-3 px-6 py-5 bg-white dark:bg-card border-b border-gray-200 dark:border-border">
             <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0 animate-pulse-glow">
               <Zap className="w-6 h-6 fill-orange-500 stroke-white" strokeWidth={2.5} />
@@ -22,7 +22,7 @@ export default function KnaDangerSection() {
             </h3>
           </div>
           
-          <div className="md:grid md:grid-cols-[1fr,auto]">
+          <div className="md:grid md:grid-cols-[1fr,280px]">
             <div className="p-6 bg-white dark:bg-card">
               <StackItem title="이름이 맑아야 인생이 맑다">
                 운칠기삼(運七技三), 운이 70%입니다.<br/>
@@ -39,8 +39,8 @@ export default function KnaDangerSection() {
               </StackItem>
             </div>
             
-            {/* Right icon area */}
-            <div className="hidden md:flex items-center justify-center p-8">
+            {/* Right icon area with gray background */}
+            <div className="hidden md:flex items-center justify-center bg-gray-50 dark:bg-muted/30">
               <div className="w-32 h-32 rounded-3xl bg-orange-500 flex items-center justify-center shadow-lg">
                 <Zap className="w-16 h-16 fill-white stroke-white" strokeWidth={1.5} />
               </div>
@@ -52,14 +52,14 @@ export default function KnaDangerSection() {
         <div className="frame bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 px-6 py-5 bg-white dark:bg-card border-b border-gray-200 dark:border-border">
             <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0 animate-pulse-glow">
-              <OctagonX className="w-6 h-6 stroke-white" strokeWidth={2.5} />
+              <Ban className="w-6 h-6 stroke-white" strokeWidth={2.5} />
             </div>
             <h3 className="text-[23px] md:text-[24px] font-bold text-gray-900 dark:text-foreground tracking-tight">
               이러시면 안됩니다
             </h3>
           </div>
           
-          <div className="md:grid md:grid-cols-[1fr,auto]">
+          <div className="md:grid md:grid-cols-[1fr,280px]">
             <div className="p-6 bg-white dark:bg-card">
               <StackItem title={`"비용을 먼저 물어보시나요?"`}>
                 이름은 생각보다 훨씬 막강합니다.<br/>
@@ -77,10 +77,10 @@ export default function KnaDangerSection() {
               </StackItem>
             </div>
             
-            {/* Right icon area */}
-            <div className="hidden md:flex items-center justify-center p-8">
+            {/* Right icon area with gray background */}
+            <div className="hidden md:flex items-center justify-center bg-gray-50 dark:bg-muted/30">
               <div className="w-32 h-32 rounded-3xl bg-orange-500 flex items-center justify-center shadow-lg">
-                <OctagonX className="w-16 h-16 stroke-white" strokeWidth={1.5} />
+                <Ban className="w-16 h-16 stroke-white" strokeWidth={1.5} />
               </div>
             </div>
           </div>
