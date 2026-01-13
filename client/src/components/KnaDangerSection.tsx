@@ -52,13 +52,13 @@ export default function KnaDangerSection() {
             </aside>
           </div>
           
-          {/* Mobile icon with ripple animation - ripple max 220px, equal top/bottom spacing */}
-          <div className="md:hidden flex justify-center py-[60px]">
-            <div className="relative w-[120px] h-[120px] rounded-[28px] grid place-items-center bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)]" style={{ isolation: 'isolate' }}>
+          {/* Mobile icon with ripple animation - clipped with overflow-hidden */}
+          <div className="md:hidden flex justify-center py-[24px]">
+            <div className="relative w-[120px] h-[120px] rounded-[28px] grid place-items-center bg-orange-100 overflow-hidden" style={{ isolation: 'isolate' }}>
               <span className="ripple r1" />
               <span className="ripple r2" />
               <span className="ripple r3" />
-              <svg className="w-[56px] h-[56px] text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinejoin="round">
+              <svg className="w-[56px] h-[56px] text-orange-500 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinejoin="round">
                 <path d="M13 2L3 14H11L9 22L21 10H13L13 2Z"/>
               </svg>
             </div>
@@ -109,9 +109,9 @@ export default function KnaDangerSection() {
           </div>
           
           {/* Mobile icon with color swap animation - same spacing as Frame 1 */}
-          <div className="md:hidden flex justify-center py-[60px]">
+          <div className="md:hidden flex justify-center py-[24px]">
             <div className="w-[120px] h-[120px] rounded-[28px] grid place-items-center warn-wrap-animate">
-              <svg className="w-[60px] h-[60px] warn-ico-animate" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+              <svg className="w-[56px] h-[56px] warn-ico-animate" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M7 3h10l4 4v10l-4 4H7l-4-4V7l4-4Z" />
                 <path d="M9 9l6 6M15 9l-6 6" />
               </svg>
