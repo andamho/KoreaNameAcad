@@ -3,7 +3,7 @@ import { Zap } from "lucide-react";
 export default function KnaDangerSection() {
   return (
     <section className="kna-danger-section relative overflow-hidden bg-gray-100 dark:bg-background">
-      <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-16 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-24 lg:px-8">
         
         <header className="flex items-center justify-center mb-16">
           <h2 className="text-[#18a999] text-[25px] sm:text-3xl md:text-4xl font-extrabold tracking-tight">
