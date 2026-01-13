@@ -1,6 +1,131 @@
 import { Calendar, MapPin, Star } from "lucide-react";
+import { forwardRef, useEffect, useRef, useState } from "react";
+
+interface StepCardProps {
+  step: number;
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  badge?: string;
+  isActive?: boolean;
+  isScrollActive?: boolean;
+  footer?: React.ReactNode;
+  footerLabel?: string;
+  footerNext?: string;
+}
+
+const StepCard = forwardRef<HTMLElement, StepCardProps>(
+  ({ step, icon, title, desc, badge, isActive, isScrollActive, footer, footerLabel, footerNext }, ref) => {
+    const isHighlighted = isActive || isScrollActive;
+    const isDimmed = !isActive && !isScrollActive;
+    
+    const baseClasses = "group relative flex flex-col rounded-2xl border p-6 transition duration-300";
+    const stateClasses = isActive
+      ? "border-gray-200 dark:border-gray-700 bg-white dark:bg-card shadow-sm hover:shadow-lg hover:-translate-y-1"
+      : isScrollActive
+        ? "border-gray-200 dark:border-gray-700 bg-white dark:bg-card shadow-md -translate-y-1"
+        : "border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-card/60 backdrop-blur shadow-sm hover:bg-white dark:hover:bg-card hover:shadow-md hover:-translate-y-1";
+
+    return (
+      <article 
+        ref={ref} 
+        data-step={step} 
+        className={`${baseClasses} ${stateClasses}`}
+        style={{ opacity: isDimmed ? 0.5 : 1 }}
+      >
+        <div className={`pointer-events-none absolute inset-0 rounded-2xl ring-1 transition duration-300 ${
+          isScrollActive ? "ring-[#18a999]/30" : "ring-transparent group-hover:ring-[#18a999]/30"
+        }`} />
+
+        <div className="flex items-center gap-4">
+          <span className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition duration-300 ${
+            isHighlighted 
+              ? "bg-[#18a999]/10 text-[#18a999] ring-1 ring-[#18a999]/20"
+              : "bg-white dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 text-gray-300 dark:text-gray-500 group-hover:bg-[#18a999]/10 group-hover:text-[#18a999] group-hover:ring-[#18a999]/20"
+          }`}>
+            {icon}
+          </span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className={`text-xs font-bold tracking-wide transition duration-300 ${
+                isHighlighted ? "text-[#18a999]" : "text-gray-300 dark:text-gray-500 group-hover:text-[#18a999]"
+              }`}>
+                STEP 0{step}
+              </span>
+              {badge && (
+                <span className="inline-flex items-center rounded-full bg-gray-900 dark:bg-white px-2 py-0.5 text-[11px] font-bold text-white dark:text-gray-900">
+                  {badge}
+                </span>
+              )}
+            </div>
+            <h3 className="mt-1 text-[21px] md:text-[22px] font-semibold tracking-tight text-gray-900 dark:text-foreground">{title}</h3>
+          </div>
+        </div>
+
+        <p className={`mt-4 flex-grow text-lg leading-relaxed transition duration-300 ${
+          isHighlighted 
+            ? "text-gray-700 dark:text-muted-foreground" 
+            : "text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-muted-foreground"
+        }`}>
+          {desc}
+        </p>
+
+        {footer ? (
+          <div className="mt-6 border-t border-gray-100 dark:border-gray-700 pt-5 relative z-10">
+            {footer}
+          </div>
+        ) : (
+          <div className="mt-6 flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-5">
+            <span className="text-xs font-medium text-gray-400 dark:text-gray-500">{footerLabel}</span>
+            <span className={`inline-flex items-center text-xs font-bold text-gray-700 dark:text-gray-300 transition duration-300 ${
+              isScrollActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            }`}>
+              {footerNext} <span className="ml-1">→</span>
+            </span>
+          </div>
+        )}
+      </article>
+    );
+  }
+);
+
+StepCard.displayName = "StepCard";
 
 export default function KnaStepsSection() {
+  const [activeCards, setActiveCards] = useState<Set<number>>(new Set());
+  const cardsRef = useRef<(HTMLElement | null)[]>([]);
+
+  useEffect(() => {
+    const isMobile = window.innerWidth < 1024;
+    if (!isMobile) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const step = Number(entry.target.getAttribute("data-step"));
+          if (step === 2 || step === 3) {
+            setActiveCards((prev) => {
+              const next = new Set(prev);
+              if (entry.isIntersecting) {
+                next.add(step);
+              } else {
+                next.delete(step);
+              }
+              return next;
+            });
+          }
+        });
+      },
+      { threshold: [0, 0.3] }
+    );
+
+    cardsRef.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <section id="services" className="kna-steps-section relative isolate overflow-hidden bg-white dark:bg-background">
       <div className="absolute inset-0 -z-10">
@@ -53,6 +178,7 @@ export default function KnaStepsSection() {
 
           <div className="grid gap-8 lg:grid-cols-3 lg:gap-4">
             <StepCard
+              ref={(el) => { cardsRef.current[0] = el; }}
               step={1}
               icon={<Calendar className="h-6 w-6" />}
               title="일정 예약"
@@ -71,21 +197,25 @@ export default function KnaStepsSection() {
             />
             
             <StepCard
+              ref={(el) => { cardsRef.current[1] = el; }}
               step={2}
               icon={<MapPin className="h-6 w-6" />}
               title="운명 상담"
               desc="고달픈 인생의 이유를 이름 분석 운명 상담을 통해 명확히 찾아드립니다."
               footerLabel="핵심: 원인 규명"
               footerNext="다음: 인생 역전"
+              isScrollActive={activeCards.has(2)}
             />
             
             <StepCard
+              ref={(el) => { cardsRef.current[2] = el; }}
               step={3}
               icon={<Star className="h-6 w-6" />}
               title="인생 역전"
               desc="운명상담의 정확도 체험 후, 운이 술술 풀리는 새 이름으로 인생을 역전시켜 드립니다."
               footerLabel="결과: 방향 전환"
               footerNext="완료 ✓"
+              isScrollActive={activeCards.has(3)}
             />
           </div>
 
@@ -98,76 +228,5 @@ export default function KnaStepsSection() {
         </div>
       </div>
     </section>
-  );
-}
-
-interface StepCardProps {
-  step: number;
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
-  badge?: string;
-  isActive?: boolean;
-  footer?: React.ReactNode;
-  footerLabel?: string;
-  footerNext?: string;
-}
-
-function StepCard({ step, icon, title, desc, badge, isActive, footer, footerLabel, footerNext }: StepCardProps) {
-  const baseClasses = "group relative flex flex-col rounded-2xl border p-6 shadow-sm transition duration-300";
-  const activeClasses = isActive
-    ? "border-gray-200 dark:border-gray-700 bg-white dark:bg-card hover:shadow-lg hover:-translate-y-1"
-    : "border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-card/60 backdrop-blur opacity-50 hover:bg-white dark:hover:bg-card hover:opacity-100 hover:shadow-md hover:-translate-y-1";
-
-  return (
-    <article data-step={step} className={`${baseClasses} ${activeClasses}`}>
-      <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-transparent transition duration-300 group-hover:ring-[#18a999]/30" />
-
-      <div className="flex items-center gap-4">
-        <span className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition duration-300 ${
-          isActive 
-            ? "bg-[#18a999]/10 text-[#18a999] ring-1 ring-[#18a999]/20"
-            : "bg-white dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 text-gray-300 dark:text-gray-500 group-hover:bg-[#18a999]/10 group-hover:text-[#18a999] group-hover:ring-[#18a999]/20"
-        }`}>
-          {icon}
-        </span>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-bold tracking-wide transition duration-300 ${
-              isActive ? "text-[#18a999]" : "text-gray-300 dark:text-gray-500 group-hover:text-[#18a999]"
-            }`}>
-              STEP 0{step}
-            </span>
-            {badge && (
-              <span className="inline-flex items-center rounded-full bg-gray-900 dark:bg-white px-2 py-0.5 text-[11px] font-bold text-white dark:text-gray-900">
-                {badge}
-              </span>
-            )}
-          </div>
-          <h3 className="mt-1 text-[21px] md:text-[22px] font-semibold tracking-tight text-gray-900 dark:text-foreground">{title}</h3>
-        </div>
-      </div>
-
-      <p className={`mt-4 flex-grow text-lg leading-relaxed transition duration-300 ${
-        isActive 
-          ? "text-gray-700 dark:text-muted-foreground" 
-          : "text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-muted-foreground"
-      }`}>
-        {desc}
-      </p>
-
-      {footer ? (
-        <div className="mt-6 border-t border-gray-100 dark:border-gray-700 pt-5 relative z-10">
-          {footer}
-        </div>
-      ) : (
-        <div className="mt-6 flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-5">
-          <span className="text-xs font-medium text-gray-400 dark:text-gray-500">{footerLabel}</span>
-          <span className="inline-flex items-center text-xs font-bold text-gray-700 dark:text-gray-300 opacity-0 transition duration-300 group-hover:opacity-100">
-            {footerNext} <span className="ml-1">→</span>
-          </span>
-        </div>
-      )}
-    </article>
   );
 }
