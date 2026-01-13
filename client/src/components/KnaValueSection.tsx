@@ -67,7 +67,7 @@ const nodes: Node[] = [
   },
   {
     key: "root",
-    title: "근본 원인 발견",
+    title: "근본 원인\n발견",
     body: "반복되는 어려움의 이유를 이름에서 명확히 찾아드립니다.",
     angle: 300,
     icon: <SearchIcon className={iconProps} />,
@@ -97,7 +97,7 @@ const nodes: Node[] = [
   },
   {
     key: "family",
-    title: "가족 이해 향상",
+    title: "가족 이해\n향상",
     body: "이름을 통해 서로의 장점과 문제의 뿌리를 알아 관계가 개선됩니다.",
     angle: 120,
     icon: <FamilyIcon className={iconProps} />,
@@ -193,11 +193,11 @@ function MobileCircleItem({ node }: { node: Node }) {
       >
         <div className="mb-2">{node.mobileIcon}</div>
         <span 
-          className={`text-gray-900 dark:text-foreground font-bold leading-tight whitespace-pre-line tracking-tight transition-all duration-500 ${
+          className={`text-gray-900 dark:text-foreground font-bold leading-tight whitespace-pre-line tracking-tight transition-all duration-500 text-center ${
             isVisible ? 'text-[19px]' : 'text-[17px]'
           }`}
         >
-          {node.title.replace('\n', ' ')}
+          {node.title}
         </span>
       </div>
       <p 
@@ -270,7 +270,7 @@ function MobileCenterLogo({ showLogo, setShowLogo }: { showLogo: boolean; setSho
 
 export default function KnaValueSection() {
   const radius = 300;
-  const [showLogo, setShowLogo] = useState(false);
+  const [showLogo, setShowLogo] = useState(true);
 
   return (
     <section className="kna-value-section relative overflow-hidden bg-white dark:bg-background text-gray-900 dark:text-foreground">

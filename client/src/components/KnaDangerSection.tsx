@@ -39,7 +39,7 @@ export default function KnaDangerSection() {
               </StackItem>
             </div>
             
-            {/* Right icon area with gray background - ripple animation */}
+            {/* Right icon area with gray background - ripple animation (Desktop) */}
             <aside className="hidden md:flex items-center justify-center bg-gray-50 dark:bg-muted/30">
               <div className="relative w-[140px] h-[140px] rounded-[36px] grid place-items-center bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)]" style={{ isolation: 'isolate' }}>
                 <span className="ripple r1" />
@@ -50,6 +50,18 @@ export default function KnaDangerSection() {
                 </svg>
               </div>
             </aside>
+          </div>
+          
+          {/* Mobile icon with ripple animation */}
+          <div className="md:hidden flex justify-center py-6">
+            <div className="relative w-[120px] h-[120px] rounded-[28px] grid place-items-center bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)]" style={{ isolation: 'isolate' }}>
+              <span className="ripple r1" />
+              <span className="ripple r2" />
+              <span className="ripple r3" />
+              <svg className="w-[56px] h-[56px] text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinejoin="round">
+                <path d="M13 2L3 14H11L9 22L21 10H13L13 2Z"/>
+              </svg>
+            </div>
           </div>
         </div>
 
@@ -85,7 +97,7 @@ export default function KnaDangerSection() {
               </StackItem>
             </div>
             
-            {/* Right icon area with gray background - color swap animation */}
+            {/* Right icon area with gray background - color swap animation (Desktop) */}
             <aside className="hidden md:flex items-center justify-center bg-gray-50 dark:bg-muted/30">
               <div className="w-[140px] h-[140px] rounded-[36px] grid place-items-center warn-wrap-animate">
                 <svg className="w-[78px] h-[78px] warn-ico-animate" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
@@ -94,6 +106,16 @@ export default function KnaDangerSection() {
                 </svg>
               </div>
             </aside>
+          </div>
+          
+          {/* Mobile icon with color swap animation */}
+          <div className="md:hidden flex justify-center py-6">
+            <div className="w-[120px] h-[120px] rounded-[28px] grid place-items-center warn-wrap-animate">
+              <svg className="w-[60px] h-[60px] warn-ico-animate" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 3h10l4 4v10l-4 4H7l-4-4V7l4-4Z" />
+                <path d="M9 9l6 6M15 9l-6 6" />
+              </svg>
+            </div>
           </div>
         </div>
 
