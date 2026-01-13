@@ -50,7 +50,7 @@ function LockIcon({ className }: { className?: string }) {
   );
 }
 
-const iconProps = "w-8 h-8 text-gray-700 dark:text-gray-300 mb-2";
+const iconProps = "w-10 h-10 text-gray-700 dark:text-gray-300 mb-3";
 
 type Node = {
   key: string;
@@ -125,8 +125,8 @@ function CircleNode({ node, radius }: { node: Node; radius: number }) {
 
   const textPosClass =
     node.textSide === "right"
-      ? "left-[115%] top-1/2 -translate-y-1/2 origin-left"
-      : "right-[115%] top-1/2 -translate-y-1/2 origin-right";
+      ? "left-[110%] top-1/2 -translate-y-1/2 origin-left"
+      : "right-[110%] top-1/2 -translate-y-1/2 origin-right";
 
   const textAlignClass =
     node.textAlign === "left" ? "text-left items-start" : "text-right items-end";
@@ -141,10 +141,10 @@ function CircleNode({ node, radius }: { node: Node; radius: number }) {
       }}
     >
       <div className="relative transition-transform duration-300 group-hover:scale-110">
-        <div className="rounded-full border-[1.5px] border-white/60 bg-white/10 p-[6px] shadow-[0_0_25px_rgba(255,255,255,0.4)] group-hover:border-white transition-colors">
-          <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border-[3px] border-white/90 dark:border-gray-700 shadow-[inset_0_4px_20px_rgba(255,255,255,1),0_5px_15px_rgba(0,0,0,0.03)] dark:shadow-[inset_0_4px_20px_rgba(0,0,0,0.3),0_5px_15px_rgba(0,0,0,0.2)] flex flex-col items-center justify-center p-3 text-center">
-            <div className="mb-1 drop-shadow-sm">{node.icon}</div>
-            <span className="text-gray-900 dark:text-foreground font-bold text-[14px] md:text-[16px] leading-tight whitespace-pre-line tracking-tight drop-shadow-sm">
+        <div className="rounded-full border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-[6px] shadow-lg group-hover:border-[#18a999] transition-colors">
+          <div className="w-32 h-32 md:w-44 md:h-44 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 shadow-md flex flex-col items-center justify-center p-4 text-center">
+            <div className="mb-2">{node.icon}</div>
+            <span className="text-gray-900 dark:text-foreground font-bold text-[16px] md:text-[19px] leading-tight whitespace-pre-line tracking-tight">
               {node.title}
             </span>
           </div>
@@ -152,9 +152,9 @@ function CircleNode({ node, radius }: { node: Node; radius: number }) {
       </div>
 
       <div
-        className={`hidden md:flex absolute flex-col w-[280px] ${textPosClass} ${textAlignClass} transition-transform duration-300 group-hover:scale-110`}
+        className={`hidden lg:flex absolute flex-col w-[300px] ${textPosClass} ${textAlignClass} transition-transform duration-300 group-hover:scale-105`}
       >
-        <div className="text-gray-700 dark:text-muted-foreground text-[14px] md:text-[15px] leading-relaxed whitespace-pre-line font-medium break-keep drop-shadow-sm">
+        <div className="text-gray-700 dark:text-muted-foreground text-[16px] md:text-[17px] leading-relaxed whitespace-pre-line font-medium break-keep">
           {node.body}
         </div>
       </div>
@@ -163,7 +163,7 @@ function CircleNode({ node, radius }: { node: Node; radius: number }) {
 }
 
 export default function KnaValueSection() {
-  const radius = 220;
+  const radius = 300;
 
   return (
     <section className="kna-value-section relative overflow-hidden bg-white dark:bg-background text-gray-900 dark:text-foreground">
@@ -172,7 +172,7 @@ export default function KnaValueSection() {
         <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-[#0f766e]/10 dark:bg-[#45B8B8]/10 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-6 pt-[174px] pb-24 sm:pt-[190px] lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-24 lg:px-8">
         {/* 헤더 */}
         <header className="relative z-40 text-center mb-8">
           <h2 className="text-[#18a999] text-[25px] sm:text-3xl md:text-4xl font-extrabold tracking-tight">
@@ -184,7 +184,7 @@ export default function KnaValueSection() {
         </header>
 
         {/* 원형 다이어그램 */}
-        <div className="relative w-full h-[550px] md:h-[650px] flex items-center justify-center">
+        <div className="relative w-full h-[600px] md:h-[800px] flex items-center justify-center">
           {/* 연결선 SVG */}
           <svg className="absolute inset-0 w-full h-full z-10 pointer-events-none opacity-30">
             <g stroke="#94A3B8" strokeWidth="1.5" strokeDasharray="6 6">
@@ -206,8 +206,8 @@ export default function KnaValueSection() {
 
           {/* 중앙 한국이름학교 */}
           <div className="z-30 relative">
-            <div className="rounded-full border-[1.5px] border-white/60 bg-white/10 p-[8px] shadow-[0_0_30px_rgba(255,255,255,0.5)]">
-              <div className="group w-40 h-40 md:w-48 md:h-48 rounded-full bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border-[3px] border-white/90 dark:border-gray-700 shadow-[inset_0_4px_20px_rgba(255,255,255,1),0_10px_30px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_4px_20px_rgba(0,0,0,0.3),0_10px_30px_rgba(0,0,0,0.2)] relative flex items-center justify-center cursor-pointer overflow-hidden transition-transform duration-300 hover:scale-105 active:scale-95">
+            <div className="rounded-full border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-[8px] shadow-xl">
+              <div className="group w-48 h-48 md:w-56 md:h-56 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 shadow-md relative flex items-center justify-center cursor-pointer overflow-hidden transition-transform duration-300 hover:scale-105 active:scale-95">
                 {/* 로고 레이어 (호버 시 보임) */}
                 <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out flex items-center justify-center bg-white dark:bg-gray-800 rounded-full">
                   <img
@@ -219,11 +219,11 @@ export default function KnaValueSection() {
 
                 {/* 텍스트 레이어 (기본 보임, 호버 시 숨김) */}
                 <div className="flex flex-col items-center justify-center opacity-100 group-hover:opacity-0 transition-opacity duration-300 ease-in-out">
-                  <h3 className="text-[22px] md:text-[26px] font-black tracking-tighter text-[#18a999] mb-2 drop-shadow-sm select-none">
+                  <h3 className="text-[26px] md:text-[32px] font-black tracking-tighter text-[#18a999] mb-2 select-none">
                     한국이름학교
                   </h3>
-                  <div className="w-8 h-[3px] bg-[#18a999]/40 my-2 rounded-full" />
-                  <p className="text-[11px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-[0.4em] select-none">
+                  <div className="w-10 h-[3px] bg-[#18a999]/40 my-2 rounded-full" />
+                  <p className="text-[12px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-[0.4em] select-none">
                     Identity
                   </p>
                 </div>

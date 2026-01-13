@@ -294,20 +294,7 @@ export default function Home() {
 
       <KnaDangerSection />
 
-      {/* KnaValueSection with overlay character */}
-      <div className="relative">
-        <img 
-          src={characterImage}
-          alt="한국이름학교 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] sm:top-[40px]"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%)'
-          }}
-        />
-        <KnaValueSection />
-      </div>
+      <KnaValueSection />
 
       {/* KnaIntroBlock with overlay effort character */}
       <div className="relative">
