@@ -92,54 +92,58 @@ StepCard.displayName = "StepCard";
 export default function KnaStepsSection() {
   const [activeCards, setActiveCards] = useState<Set<number>>(new Set());
   const cardsRef = useRef<(HTMLElement | null)[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
 
+  // 모바일 감지
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 1023px)");
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // 모바일에서만 스크롤 기반 활성화
+  useEffect(() => {
+    if (!isMobile) {
+      setActiveCards(new Set());
+      return;
+    }
+
     let observer: IntersectionObserver | null = null;
 
-    const setupObserver = () => {
-      if (observer) {
-        observer.disconnect();
-        observer = null;
-      }
+    // DOM이 완전히 렌더링된 후 observer 설정
+    const timeoutId = setTimeout(() => {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const step = Number(entry.target.getAttribute("data-step"));
+            if (step === 2 || step === 3) {
+              setActiveCards((prev) => {
+                const next = new Set(prev);
+                // 35% 이상 보일 때만 활성화
+                if (entry.intersectionRatio >= 0.35) {
+                  next.add(step);
+                } else {
+                  next.delete(step);
+                }
+                return next;
+              });
+            }
+          });
+        },
+        { threshold: [0, 0.2, 0.35, 0.5], rootMargin: "-15% 0px -25% 0px" }
+      );
 
-      if (mediaQuery.matches) {
-        observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              const step = Number(entry.target.getAttribute("data-step"));
-              if (step === 2 || step === 3) {
-                setActiveCards((prev) => {
-                  const next = new Set(prev);
-                  if (entry.isIntersecting) {
-                    next.add(step);
-                  } else {
-                    next.delete(step);
-                  }
-                  return next;
-                });
-              }
-            });
-          },
-          { threshold: [0, 0.3], rootMargin: "-20% 0px -30% 0px" }
-        );
-
-        cardsRef.current.forEach((card) => {
-          if (card && observer) observer.observe(card);
-        });
-      } else {
-        setActiveCards(new Set());
-      }
-    };
-
-    setupObserver();
-    mediaQuery.addEventListener("change", setupObserver);
+      cardsRef.current.forEach((card) => {
+        if (card) observer!.observe(card);
+      });
+    }, 100);
 
     return () => {
-      mediaQuery.removeEventListener("change", setupObserver);
+      clearTimeout(timeoutId);
       if (observer) observer.disconnect();
     };
-  }, []);
+  }, [isMobile]);
 
   return (
     <section id="services" className="kna-steps-section relative isolate overflow-hidden bg-white dark:bg-background">
