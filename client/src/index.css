@@ -1244,6 +1244,17 @@ html.ua-tiktok .kna-intro-bottom > div {
 .ig-shell .kna-pricing-inner {
   font-size: 14px !important;
 }
+
+/* IdentityMap 내부 텍스트 82% 축소 */
+.ig-shell .identity-map-inner .id-node {
+  transform: translate(-50%, -50%) scale(0.82) !important;
+}
+.ig-shell .identity-map-inner .id-center-wrapper {
+  transform: translate(-50%, -50%) scale(0.82) !important;
+}
+.ig-shell .identity-map-inner .anchor {
+  font-size: 13px !important;
+}
 .ig-shell .kna-pricing-inner h2,
 .ig-shell .kna-pricing-inner h3 {
   font-size: clamp(16px, 4vw, 20px) !important;

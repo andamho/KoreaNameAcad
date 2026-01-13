@@ -145,7 +145,7 @@ export default function IdentityMap() {
       {/* 내부 래퍼 - 원래 비율 유지하면서 상하 중앙 정렬 */}
       <div
         ref={containerRef}
-        className="relative w-full aspect-[1/1.3] lg:aspect-auto lg:h-full"
+        className="identity-map-inner relative w-full aspect-[1/1.3] lg:aspect-auto lg:h-full"
       >
       <div className="id-center-wrapper absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
         <div 
