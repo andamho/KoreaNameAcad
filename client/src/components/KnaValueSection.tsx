@@ -213,7 +213,7 @@ function MobileCircleItem({ node }: { node: Node }) {
   );
 }
 
-function MobileCenterLogo({ showLogo, setShowLogo }: { showLogo: boolean; setShowLogo: (v: boolean) => void }) {
+function MobileCenterLogo() {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -238,21 +238,23 @@ function MobileCenterLogo({ showLogo, setShowLogo }: { showLogo: boolean; setSho
   return (
     <div ref={ref} className="flex justify-center">
       <div 
-        className={`relative w-40 h-40 rounded-full bg-white dark:bg-gray-800 border-[3px] border-gray-200 dark:border-gray-600 shadow-lg flex items-center justify-center cursor-pointer overflow-hidden transition-all duration-500 ${
+        className={`relative w-40 h-40 rounded-full bg-white dark:bg-gray-800 border-[3px] border-gray-200 dark:border-gray-600 shadow-lg flex items-center justify-center overflow-hidden transition-all duration-500 ${
           isVisible 
             ? 'scale-110 shadow-[0_0_30px_rgba(0,0,0,0.1)]' 
             : 'scale-100'
         }`}
-        onClick={() => setShowLogo(!showLogo)}
       >
-        <div className={`absolute inset-0 z-10 transition-opacity duration-300 ease-in-out flex items-center justify-center bg-white dark:bg-gray-800 rounded-full ${showLogo ? 'opacity-100' : 'opacity-0'}`}>
+        {/* 로고 배경 레이어 - 스크롤 시 은은하게 나타남 */}
+        <div className={`absolute inset-0 z-0 transition-opacity duration-700 ease-in-out flex items-center justify-center rounded-full ${isVisible ? 'opacity-25' : 'opacity-0'}`}>
           <img
             src={logoImage}
             alt="한국이름학교 로고"
             className="w-[140%] h-[140%] object-cover rounded-full"
           />
         </div>
-        <div className={`flex flex-col items-center justify-center transition-opacity duration-300 ${showLogo ? 'opacity-0' : 'opacity-100'}`}>
+        
+        {/* 텍스트 레이어 - 항상 표시 */}
+        <div className="relative z-10 flex flex-col items-center justify-center">
           <span 
             className={`font-black text-[#18a999] tracking-tight transition-all duration-500 ${
               isVisible ? 'text-[22px]' : 'text-[18px]'
@@ -359,7 +361,7 @@ export default function KnaValueSection() {
 
         {/* 한국이름학교 중앙 원형 (모바일) - 두 번의 확인 위에 배치 */}
         <div className="lg:hidden mt-8 mb-12">
-          <MobileCenterLogo showLogo={showLogo} setShowLogo={setShowLogo} />
+          <MobileCenterLogo />
         </div>
 
         {/* 두 번의 확인, 평생의 안심 */}
