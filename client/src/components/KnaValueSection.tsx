@@ -360,12 +360,12 @@ export default function KnaValueSection() {
         </div>
 
         {/* 한국이름학교 중앙 원형 (모바일) - 두 번의 확인 위에 배치 */}
-        <div className="lg:hidden mt-8 mb-12">
+        <div className="lg:hidden mb-12">
           <MobileCenterLogo />
         </div>
 
         {/* 두 번의 확인, 평생의 안심 */}
-        <div className="mt-8 lg:mt-24">
+        <div className="mt-12 lg:mt-24">
           {/* 섹션 타이틀 영역 */}
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-foreground flex items-center justify-center gap-2 flex-wrap">
