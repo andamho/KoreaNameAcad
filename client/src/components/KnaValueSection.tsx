@@ -1,5 +1,6 @@
 import React from "react";
-import { Equal, Link2 } from "lucide-react";
+import { Scale, Link2 } from "lucide-react";
+import logoImage from "@assets/file_000000009b2c7206ad0a70c0142cb99a_1766915164756.png";
 
 export default function KnaValueSection() {
   return (
@@ -9,10 +10,19 @@ export default function KnaValueSection() {
         <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-[#0f766e]/10 dark:bg-[#45B8B8]/10 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-6 pt-[174px] pb-16 sm:pt-[190px] sm:pb-20 lg:px-8">
-        <header className="mx-auto max-w-3xl text-center">
-          <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">알면 알수록, 한국이름학교</h2>
-          <p className="mt-3 text-lg text-muted-foreground">전국 최다 후기로 검증된,<br className="md:hidden" /> 가장 신뢰받는 이름 분석</p>
+      <div className="relative mx-auto max-w-7xl px-6 pt-[174px] pb-24 sm:pt-[190px] lg:px-8">
+        <header className="mx-auto max-w-3xl text-center mb-16">
+          <h2 className="text-[#18a999] text-[25px] sm:text-3xl md:text-4xl font-extrabold tracking-tight">
+            알면 알수록, <span className="group relative inline-block cursor-pointer">
+              <span className="group-hover:opacity-0 transition-opacity duration-300">한국이름학교</span>
+              <img 
+                src={logoImage} 
+                alt="한국이름학교 로고" 
+                className="absolute inset-0 w-auto h-[1.2em] mx-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 object-contain"
+              />
+            </span>
+          </h2>
+          <p className="mt-3 text-lg text-gray-700 dark:text-muted-foreground">전국 최다 후기로 검증된,<br className="md:hidden" /> 가장 신뢰받는 이름 분석</p>
         </header>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -27,7 +37,7 @@ export default function KnaValueSection() {
             desc="반복되는 어려움의 이유를 이름에서 명확히 찾아드립니다."
           />
           <ValueCard
-            icon={<Equal className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
+            icon={<Scale className="h-6 w-6 flex-shrink-0 text-[#0f766e] dark:text-[#58C4C4]" />}
             title="이름 · 삶 일치 증명"
             desc="이름대로 살고 있음을 구체적으로 보여드립니다."
           />

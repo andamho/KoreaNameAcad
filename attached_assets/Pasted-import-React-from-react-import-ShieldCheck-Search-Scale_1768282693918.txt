@@ -1,0 +1,221 @@
+import React from "react";
+import { 
+  ShieldCheck, 
+  Search, 
+  Scale, 
+  RefreshCw, 
+  Users 
+} from "lucide-react";
+
+// 커스텀 아이콘 등 기존 코드 유지...
+const StarburstIcon = ({ className }: { className?: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2.5" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M12 2v4" />
+    <path d="M12 18v4" />
+    <path d="M4.93 4.93l2.83 2.83" />
+    <path d="M16.24 16.24l2.83 2.83" />
+    <path d="M2 12h4" />
+    <path d="M18 12h4" />
+    <path d="M4.93 19.07l2.83-2.83" />
+    <path d="M16.24 7.76l2.83-2.83" />
+  </svg>
+);
+
+const iconProps = { size: 32, strokeWidth: 1.5, className: "text-slate-700/80 mb-2" };
+
+type Node = {
+  key: string;
+  title: string;
+  body: string;
+  angle: number; 
+  icon: React.ReactNode;
+  textSide: "right" | "left";
+  textAlign: "left" | "right";
+};
+
+const nodes: Node[] = [
+  {
+    key: "top",
+    title: "신뢰의 증거",
+    body: "전국 최다 후기로 검증된\n만족도를 확인하세요.",
+    angle: 0,
+    icon: <ShieldCheck {...iconProps} />,
+    textSide: "right",
+    textAlign: "left",
+  },
+  {
+    key: "topRight",
+    title: "이름 · 삶\n일치 증명",
+    body: "이름대로 살고 있음을\n구체적으로 보여드립니다.",
+    angle: 60,
+    icon: <Scale {...iconProps} />,
+    textSide: "right",
+    textAlign: "left",
+  },
+  {
+    key: "bottomRight",
+    title: "가족 이해 향상",
+    body: "이름을 통해 서로의 장점과 문제의\n뿌리를 알아 관계가 개선됩니다.",
+    angle: 120,
+    icon: <Users {...iconProps} />,
+    textSide: "right",
+    textAlign: "left",
+  },
+  {
+    key: "bottom",
+    title: "강점과 재능 발견",
+    body: "당신이 몰랐던 본연의\n장점을 알려드립니다.",
+    angle: 180,
+    icon: <StarburstIcon className={iconProps.className} />,
+    textSide: "right",
+    textAlign: "left",
+  },
+  {
+    key: "bottomLeft",
+    title: "개명 전·후\n삶 증명",
+    body: "개명하셨다면 전·후 이름대로\n살았다는 걸 증명해드립니다.",
+    angle: 240,
+    icon: <RefreshCw {...iconProps} />,
+    textSide: "left",
+    textAlign: "right",
+  },
+  {
+    key: "topLeft",
+    title: "근본 원인 발견",
+    body: "반복되는 어려움의 이유를\n이름에서 명확히 찾아드립니다.",
+    angle: 300,
+    icon: <Search {...iconProps} />,
+    textSide: "left",
+    textAlign: "right",
+  },
+];
+
+function CircleNode({ node, radius }: { node: Node, radius: number }) {
+  const x = Math.sin((node.angle * Math.PI) / 180) * radius;
+  const y = -Math.cos((node.angle * Math.PI) / 180) * radius;
+
+  const textPosClass = node.textSide === "right" 
+    ? "left-[115%] top-1/2 -translate-y-1/2 origin-left" 
+    : "right-[115%] top-1/2 -translate-y-1/2 origin-right";
+
+  const textAlignClass = node.textAlign === "left" ? "text-left items-start" : "text-right items-end";
+
+  return (
+    <div 
+      className="absolute z-20 group cursor-pointer" 
+      style={{ 
+        left: `calc(50% + ${x}px)`, 
+        top: `calc(50% + ${y}px)`,
+        transform: "translate(-50%, -50%)"
+      }}
+    >
+      <div className="relative transition-transform duration-300 group-hover:scale-110">
+        <div className="rounded-full border-[1.5px] border-white/60 bg-white/10 p-[8px] shadow-[0_0_25px_rgba(255,255,255,0.4)] group-hover:border-white transition-colors">
+          <div className="w-32 h-32 md:w-44 md:h-44 rounded-full bg-gradient-to-b from-[#EEF2FF] via-[#F3E8FF] to-[#FCE7F3] border-[3px] border-white/90 shadow-[inset_0_4px_20px_rgba(255,255,255,1),0_5px_15px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center p-4 text-center">
+            <div className="mb-2 drop-shadow-sm">
+              {node.icon}
+            </div>
+            <span className="text-black font-bold text-[16px] md:text-[19px] leading-tight whitespace-pre-line tracking-tight drop-shadow-sm">
+              {node.title}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div className={`hidden md:flex absolute flex-col w-[300px] ${textPosClass} ${textAlignClass} transition-transform duration-300 group-hover:scale-110`}>
+        <div className="text-black text-[14px] md:text-[16px] leading-relaxed whitespace-pre-line font-medium break-keep drop-shadow-sm">
+          {node.body}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function NameSchoolDiagram() {
+  const radius = 280;
+  // [수정] useState 제거 (CSS hover로 대체하여 더 가볍게 구현)
+
+  return (
+    <div className="min-h-screen flex flex-col items-center bg-gradient-to-br from-indigo-50/60 via-purple-50/60 to-pink-50/60 overflow-hidden font-sans">
+      
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.8),transparent)] pointer-events-none" />
+
+      <div className="relative z-40 text-center pt-12 pb-4 px-4 mt-8 md:mt-12">
+        <h1 className="text-3xl md:text-5xl font-extrabold text-[#0ABAB5] mb-3 drop-shadow-sm">
+          알면 알수록, 한국이름학교
+        </h1>
+        <p className="text-lg md:text-2xl font-bold text-black break-keep">
+          전국 최다 후기로 검증된, 가장 신뢰받는 이름 분석
+        </p>
+      </div>
+
+      <section className="relative w-full max-w-7xl px-6 lg:px-8 h-[800px] flex items-center justify-center">
+        
+        <svg className="absolute inset-0 w-full h-full z-10 pointer-events-none opacity-30">
+           <g stroke="#94A3B8" strokeWidth="1.5" strokeDasharray="6 6">
+             {nodes.map((node, i) => {
+                 const x = Math.sin((node.angle * Math.PI) / 180) * radius;
+                 const y = -Math.cos((node.angle * Math.PI) / 180) * radius;
+                 return (
+                    <line
+                      key={`line-${i}`}
+                      x1="50%" y1="50%" 
+                      x2={`calc(50% + ${x*0.72}px)`} y2={`calc(50% + ${y*0.72}px)`} 
+                    />
+                 );
+             })}
+           </g>
+        </svg>
+
+        {/* 중앙 Identity */}
+        <div className="z-30 relative">
+            <div className="rounded-full border-[1.5px] border-white/60 bg-white/10 p-[8px] shadow-[0_0_30px_rgba(255,255,255,0.5)]">
+                {/* [수정 핵심]
+                  - 'group' 클래스 추가: 자식 요소들이 hover 상태를 공유
+                  - cursor-pointer 추가
+                  - onClick/useState 제거 -> CSS로 처리
+                */}
+                <div className="group w-52 h-52 rounded-full bg-gradient-to-b from-white to-indigo-50 border-[3px] border-white/90 shadow-[inset_0_4px_20px_rgba(255,255,255,1),0_10px_30px_rgba(0,0,0,0.05)] relative flex items-center justify-center cursor-pointer overflow-hidden transition-transform duration-300 hover:scale-105 active:scale-95">
+                    
+                    {/* 1. 로고 레이어 (기본: 숨김 -> 호버 시: 보임) */}
+                    <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out flex items-center justify-center bg-white">
+                       <img 
+                          // [중요] 실제 로고 파일 경로를 여기에 넣어주세요
+                          src="/logo_final.png" 
+                          alt="한국이름학교 로고" 
+                          className="w-full h-full object-cover"
+                        />
+                    </div>
+
+                    {/* 2. 텍스트 레이어 (기본: 보임 -> 호버 시: 숨김) */}
+                    <div className="flex flex-col items-center justify-center opacity-100 group-hover:opacity-0 transition-opacity duration-300 ease-in-out">
+                        <h2 className="text-[26px] font-black tracking-tighter text-[#0ABAB5] mb-2 drop-shadow-sm select-none">
+                        한국이름학교
+                        </h2>
+                        <div className="w-8 h-[3px] bg-[#0ABAB5]/40 my-2 rounded-full" />
+                        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-[0.4em] select-none">Identity</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div className="absolute inset-0 w-full h-full">
+          {nodes.map((node) => (
+            <CircleNode key={node.key} node={node} radius={radius} />
+          ))}
+        </div>
+
+      </section>
+    </div>
+  );
+}
