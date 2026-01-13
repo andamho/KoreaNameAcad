@@ -1166,14 +1166,7 @@ html.ua-tiktok .kna-intro-bottom > div {
   zoom: 0.82 !important;
 }
 
-/* 인앱: kna-intro-top 상단 패딩 (96px 통일) */
-html.ua-instagram .kna-intro-top > div,
-html.ua-tiktok .kna-intro-top > div,
-.ig-shell .kna-intro-top > div {
-  padding-top: 96px !important;
-}
-
-/* 인앱: kna-value-section - 상하 패딩은 위 통일 규칙에서 적용됨 */
+/* 인앱: kna-intro-top, kna-value-section - 상하 패딩은 아래 통일 규칙에서 적용됨 */
 
 /* 인앱: kna-intro-bottom 여백 조정 (겹침 방지) */
 html.ua-instagram .kna-intro-bottom,
@@ -1242,15 +1235,13 @@ html.ua-tiktok .kna-intro-bottom > div {
   font-size: 14px !important;
 }
 
-/* IdentityMap 내부 텍스트 82% 축소 */
-.ig-shell .identity-map-inner .id-node {
-  transform: translate(-50%, -50%) scale(0.82) !important;
-}
-.ig-shell .identity-map-inner .id-center-wrapper {
-  transform: translate(-50%, -50%) scale(0.82) !important;
-}
-.ig-shell .identity-map-inner .anchor {
-  font-size: 13px !important;
+/* IdentityMap 전체 82% 축소 (Tailwind CSS 변수 방식) */
+.ig-shell .identity-map-inner,
+html.ua-instagram .identity-map-inner,
+html.ua-tiktok .identity-map-inner {
+  --tw-scale-x: 0.82 !important;
+  --tw-scale-y: 0.82 !important;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) scale(var(--tw-scale-x), var(--tw-scale-y)) !important;
 }
 .ig-shell .kna-pricing-inner h2,
 .ig-shell .kna-pricing-inner h3 {
@@ -1281,11 +1272,17 @@ html.ua-instagram .kna-pricing-inner,
 html.ua-tiktok .kna-pricing-inner,
 html.ua-instagram .kna-value-section > div,
 html.ua-tiktok .kna-value-section > div,
+html.ua-instagram .kna-intro-top > div,
+html.ua-tiktok .kna-intro-top > div,
+html.ua-instagram .kna-video-inner,
+html.ua-tiktok .kna-video-inner,
 .ig-shell .kna-danger-section > div,
 .ig-shell .kna-steps-inner,
 .ig-shell .kna-myth-truth-inner,
 .ig-shell .kna-pricing-inner,
-.ig-shell .kna-value-section > div {
+.ig-shell .kna-value-section > div,
+.ig-shell .kna-intro-top > div,
+.ig-shell .kna-video-inner {
   padding-top: 96px !important;
   padding-bottom: 96px !important;
 }
@@ -1298,13 +1295,7 @@ html.ua-tiktok .kna-value-section > div,
   height: 600px !important;
 }
 
-/* 영상 섹션: 상하 패딩 96px 통일 */
-.ig-shell .kna-video-inner,
-html.ua-instagram .kna-video-inner,
-html.ua-tiktok .kna-video-inner {
-  padding-top: 96px !important;
-  padding-bottom: 96px !important;
-}
+/* 영상 섹션: 상하 패딩은 통일 규칙에서 적용됨 */
 
 /* 섹션 overflow 숨김 */
 .ig-shell .kna-danger-section,
