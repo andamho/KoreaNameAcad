@@ -17,21 +17,19 @@ interface StepCardProps {
 const StepCard = forwardRef<HTMLElement, StepCardProps>(
   ({ step, icon, title, desc, badge, isActive, isScrollActive, footer, footerLabel, footerNext }, ref) => {
     const isHighlighted = isActive || isScrollActive;
-    const isDimmed = !isActive && !isScrollActive;
     
     const baseClasses = "group relative flex flex-col rounded-2xl border p-6 transition duration-300";
     const stateClasses = isActive
-      ? "border-gray-200 dark:border-gray-700 bg-white dark:bg-card shadow-sm hover:shadow-lg hover:-translate-y-1"
+      ? "border-gray-200 dark:border-gray-700 bg-white dark:bg-card shadow-sm hover:shadow-lg hover:-translate-y-1 opacity-100"
       : isScrollActive
-        ? "border-gray-200 dark:border-gray-700 bg-white dark:bg-card shadow-md -translate-y-1"
-        : "border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-card/60 backdrop-blur shadow-sm hover:bg-white dark:hover:bg-card hover:shadow-md hover:-translate-y-1";
+        ? "border-gray-200 dark:border-gray-700 bg-white dark:bg-card shadow-md -translate-y-1 opacity-100"
+        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-card shadow-sm opacity-50 hover:opacity-100 hover:shadow-md hover:-translate-y-1";
 
     return (
       <article 
         ref={ref} 
         data-step={step} 
         className={`${baseClasses} ${stateClasses}`}
-        style={{ opacity: isDimmed ? 0.5 : 1 }}
       >
         <div className={`pointer-events-none absolute inset-0 rounded-2xl ring-1 transition duration-300 ${
           isScrollActive ? "ring-[#18a999]/30" : "ring-transparent group-hover:ring-[#18a999]/30"
