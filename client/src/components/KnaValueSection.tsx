@@ -46,6 +46,7 @@ const mobileIconProps = "w-10 h-10 text-[#18a999]";
 type Node = {
   key: string;
   title: string;
+  mobileTitle?: string;
   body: string;
   angle: number;
   icon: React.ReactNode;
@@ -108,6 +109,7 @@ const nodes: Node[] = [
   {
     key: "talent",
     title: "강점과 재능 발견",
+    mobileTitle: "강점·재능\n발견",
     body: "미처 몰랐던 본연의 장점을 알려드립니다.",
     angle: 180,
     icon: <SparkIcon className={iconProps} />,
@@ -197,7 +199,7 @@ function MobileCircleItem({ node }: { node: Node }) {
             isVisible ? 'text-[22px]' : 'text-[21px]'
           }`}
         >
-          {node.title}
+          {node.mobileTitle || node.title}
         </span>
       </div>
       <p 
