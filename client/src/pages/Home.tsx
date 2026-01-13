@@ -311,20 +311,7 @@ export default function Home() {
         <KnaIntroBlock />
       </div>
 
-      {/* KnaStepsSection with overlay steps character */}
-      <div className="relative">
-        <img 
-          src={stepsCharacterImage}
-          alt="3단계 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] md:top-[48px]"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%)'
-          }}
-        />
-        <KnaStepsSection />
-      </div>
+      <KnaStepsSection />
 
       {/* KnaMythTruthSection with overlay guide character */}
       <div className="relative">
