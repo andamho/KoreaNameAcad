@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Scale, Link2, Lock } from "lucide-react";
 import logoImage from "@assets/file_000000009b2c7206ad0a70c0142cb99a_1766915164756.png";
 
@@ -41,7 +41,7 @@ function FamilyIcon({ className }: { className?: string }) {
 }
 
 const iconProps = "w-10 h-10 text-gray-700 dark:text-gray-300 mb-3";
-const mobileIconProps = "w-8 h-8 text-[#18a999]";
+const mobileIconProps = "w-10 h-10 text-[#18a999]";
 
 type Node = {
   key: string;
@@ -161,17 +161,109 @@ function CircleNode({ node, radius }: { node: Node; radius: number }) {
 }
 
 function MobileCircleItem({ node }: { node: Node }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      {
+        threshold: 0.6,
+        rootMargin: "-10% 0px -30% 0px",
+      }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="flex flex-col items-center text-center">
-      <div className="w-28 h-28 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 shadow-lg flex flex-col items-center justify-center p-3 mb-4">
+    <div ref={ref} className="flex flex-col items-center text-center transition-all duration-500">
+      <div 
+        className={`w-32 h-32 rounded-full bg-white dark:bg-gray-800 border-[3px] shadow-lg flex flex-col items-center justify-center p-4 mb-5 transition-all duration-500 ${
+          isVisible 
+            ? 'border-[#18a999] scale-110 shadow-[0_0_30px_rgba(24,169,153,0.3)]' 
+            : 'border-gray-200 dark:border-gray-600 scale-100'
+        }`}
+      >
         <div className="mb-2">{node.mobileIcon}</div>
-        <span className="text-gray-900 dark:text-foreground font-bold text-[14px] leading-tight whitespace-pre-line tracking-tight">
+        <span 
+          className={`text-gray-900 dark:text-foreground font-bold leading-tight whitespace-pre-line tracking-tight transition-all duration-500 ${
+            isVisible ? 'text-[19px]' : 'text-[17px]'
+          }`}
+        >
           {node.title.replace('\n', ' ')}
         </span>
       </div>
-      <p className="text-[15px] text-gray-600 dark:text-muted-foreground leading-relaxed break-keep max-w-[280px]">
+      <p 
+        className={`leading-relaxed break-keep max-w-[320px] transition-all duration-500 ${
+          isVisible 
+            ? 'text-[19px] text-gray-800 dark:text-gray-200 font-medium' 
+            : 'text-[17px] text-gray-600 dark:text-muted-foreground'
+        }`}
+      >
         {node.body}
       </p>
+    </div>
+  );
+}
+
+function MobileCenterLogo({ showLogo, setShowLogo }: { showLogo: boolean; setShowLogo: (v: boolean) => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      {
+        threshold: 0.6,
+        rootMargin: "-10% 0px -30% 0px",
+      }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className="flex justify-center">
+      <div 
+        className={`relative w-40 h-40 rounded-full bg-white dark:bg-gray-800 border-[3px] shadow-lg flex items-center justify-center cursor-pointer overflow-hidden transition-all duration-500 ${
+          isVisible 
+            ? 'border-[#18a999] scale-110 shadow-[0_0_30px_rgba(24,169,153,0.3)]' 
+            : 'border-[#2dd4bf]/30 scale-100'
+        }`}
+        onClick={() => setShowLogo(!showLogo)}
+      >
+        <div className={`absolute inset-0 z-10 transition-opacity duration-300 ease-in-out flex items-center justify-center bg-white dark:bg-gray-800 rounded-full ${showLogo ? 'opacity-100' : 'opacity-0'}`}>
+          <img
+            src={logoImage}
+            alt="한국이름학교 로고"
+            className="w-[140%] h-[140%] object-cover rounded-full"
+          />
+        </div>
+        <div className={`flex flex-col items-center justify-center transition-opacity duration-300 ${showLogo ? 'opacity-0' : 'opacity-100'}`}>
+          <span 
+            className={`font-black text-[#18a999] tracking-tight transition-all duration-500 ${
+              isVisible ? 'text-[22px]' : 'text-[18px]'
+            }`}
+          >
+            한국이름학교
+          </span>
+          <div className="w-8 h-[2px] bg-[#18a999]/40 my-1.5 rounded-full" />
+          <p className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.3em]">Identity</p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -199,7 +291,7 @@ export default function KnaValueSection() {
         </header>
 
         {/* 모바일 레이아웃: 세로 원형 배치 (lg 미만) */}
-        <div className="lg:hidden space-y-10 mb-16">
+        <div className="lg:hidden space-y-12 mb-16">
           {nodes.map((node) => (
             <MobileCircleItem key={node.key} node={node} />
           ))}
@@ -271,7 +363,7 @@ export default function KnaValueSection() {
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-foreground flex items-center justify-center gap-2 flex-wrap">
               <Lock size={28} className="text-[#2dd4bf]" strokeWidth={2.5} />
-              <span>두 번의 확인으로 완성되는 <span className="text-[#2dd4bf]">평생의 안심</span></span>
+              <span>두 번의 확인, <span className="text-[#2dd4bf]">평생의 안심</span></span>
             </h2>
             <p className="mt-3 text-gray-500 dark:text-muted-foreground text-sm md:text-base">
               철저한 검증 시스템으로 이름에 대한 확신을 드립니다.
@@ -314,24 +406,8 @@ export default function KnaValueSection() {
           </div>
 
           {/* 한국이름학교 중앙 원형 (모바일) */}
-          <div className="lg:hidden mt-12 flex justify-center">
-            <div 
-              className="relative w-36 h-36 rounded-full bg-white dark:bg-gray-800 border-2 border-[#2dd4bf]/30 shadow-lg flex items-center justify-center cursor-pointer overflow-hidden"
-              onClick={() => setShowLogo(!showLogo)}
-            >
-              <div className={`absolute inset-0 z-10 transition-opacity duration-300 ease-in-out flex items-center justify-center bg-white dark:bg-gray-800 rounded-full ${showLogo ? 'opacity-100' : 'opacity-0'}`}>
-                <img
-                  src={logoImage}
-                  alt="한국이름학교 로고"
-                  className="w-[140%] h-[140%] object-cover rounded-full"
-                />
-              </div>
-              <div className={`flex flex-col items-center justify-center transition-opacity duration-300 ${showLogo ? 'opacity-0' : 'opacity-100'}`}>
-                <span className="text-[18px] font-black text-[#18a999] tracking-tight">한국이름학교</span>
-                <div className="w-8 h-[2px] bg-[#18a999]/40 my-1.5 rounded-full" />
-                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.3em]">Identity</p>
-              </div>
-            </div>
+          <div className="lg:hidden mt-12">
+            <MobileCenterLogo showLogo={showLogo} setShowLogo={setShowLogo} />
           </div>
         </div>
       </div>
