@@ -468,93 +468,18 @@ export default function InstagramHome() {
       
       <Hero />
 
-      {/* KnaDangerSection with overlay warning character */}
+      <KnaDangerSection />
+
+      <KnaValueSection />
+
+      <KnaIntroBlock />
+
+      <KnaStepsSection />
+
+      <KnaMythTruthSection />
+
+      {/* 동영상 섹션 */}
       <div className="relative">
-        <img 
-          src={dangerCharacterImage}
-          alt="경고 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] sm:top-[40px]"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%)'
-          }}
-        />
-        <KnaDangerSection />
-      </div>
-
-      {/* KnaValueSection with overlay character */}
-      <div className="relative">
-        <img 
-          src={characterImage}
-          alt="한국이름학교 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] sm:top-[40px]"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%)'
-          }}
-        />
-        <KnaValueSection />
-      </div>
-
-      {/* KnaIntroBlock with overlay sad character */}
-      <div className="relative">
-        <img 
-          src={effortCharacterImage}
-          alt="힘든 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] sm:top-[40px]"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%)'
-          }}
-        />
-        <KnaIntroBlock />
-      </div>
-
-      {/* KnaStepsSection with overlay happy character */}
-      <div className="relative">
-        <img 
-          src={stepsCharacterImage}
-          alt="행복한 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] md:top-[48px]"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%)'
-          }}
-        />
-        <KnaStepsSection />
-      </div>
-
-      {/* KnaMythTruthSection with overlay pray character */}
-      <div className="relative ig-myth-char-container">
-        <img 
-          src={guideCharacterImage}
-          alt="기도하는 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] md:top-[48px]"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%)'
-          }}
-        />
-        <KnaMythTruthSection />
-      </div>
-
-      {/* 동영상 섹션 with overlay butterfly character */}
-      <div className="relative ig-video-char-container">
-        <img 
-          src={butterflyCharacterImage}
-          alt="나비 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] md:top-[48px]"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%)'
-          }}
-        />
         <section className="kna-video-section pb-16 md:pb-24">
           <div className="kna-video-inner max-w-md mx-auto px-4 sm:px-6 pt-[174px] sm:pt-[190px]">
             <video 
@@ -584,20 +509,7 @@ export default function InstagramHome() {
           </div>
         </section>
 
-      {/* KnaPricingSection with overlay shrug character */}
-      <div className="relative ig-pricing-char-container">
-        <img 
-          src={pricingCharacterImage}
-          alt="어깨 으쓱 캐릭터"
-          className="absolute left-1/2 z-10 top-[32px] sm:top-[40px]"
-          style={{ 
-            width: 'auto', 
-            height: '110px',
-            transform: 'translateX(-50%)'
-          }}
-        />
-        <KnaPricingSection />
-      </div>
+      <KnaPricingSection />
 
       <Footer />
       </div>
