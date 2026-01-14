@@ -1572,3 +1572,9 @@ html.ua-tiktok .core-process-badge {
   font-size: 9px !important; /* 11px × 0.82 = 9px */
 }
 
+/* 인앱 페이지 버튼 82% 축소 (다이얼로그 외부) */
+html.ua-instagram button:not(.ig-tt-dialog button),
+html.ua-tiktok button:not(.ig-tt-dialog button) {
+  font-size: 82% !important;
+}
+
