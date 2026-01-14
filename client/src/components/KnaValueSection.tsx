@@ -382,7 +382,7 @@ export default function KnaValueSection() {
             {/* STEP 01 */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 shadow-[0_10px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_rgba(45,212,191,0.15)] transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex flex-col items-center text-center">
-                <span className="text-[15px] md:text-[16px] font-bold tracking-widest mb-4 px-4 py-2 rounded-full bg-teal-50 dark:bg-teal-900/30 text-[#2dd4bf]">
+                <span className="step-label text-[15px] md:text-[16px] font-bold tracking-widest mb-4 px-4 py-2 rounded-full bg-teal-50 dark:bg-teal-900/30 text-[#2dd4bf]">
                   STEP 01
                 </span>
                 <h3 className="text-[21px] md:text-[22px] font-semibold text-gray-900 dark:text-foreground mb-3 break-keep">
@@ -398,7 +398,7 @@ export default function KnaValueSection() {
             {/* STEP 02 */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 shadow-[0_10px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_rgba(45,212,191,0.15)] transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex flex-col items-center text-center">
-                <span className="text-[15px] md:text-[16px] font-bold tracking-widest mb-4 px-4 py-2 rounded-full bg-teal-50 dark:bg-teal-900/30 text-[#2dd4bf]">
+                <span className="step-label text-[15px] md:text-[16px] font-bold tracking-widest mb-4 px-4 py-2 rounded-full bg-teal-50 dark:bg-teal-900/30 text-[#2dd4bf]">
                   STEP 02
                 </span>
                 <h3 className="text-[21px] md:text-[22px] font-semibold text-gray-900 dark:text-foreground mb-3 break-keep">

@@ -661,7 +661,7 @@ export default function Services() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-                            <span className="inline-flex items-center rounded-full bg-[#56D5DB]/20 px-2.5 py-1 text-[11px] font-semibold text-[#58C4C4]">
+                            <span className="core-process-badge inline-flex items-center rounded-full bg-[#56D5DB]/20 px-2.5 py-1 text-[11px] font-semibold text-[#58C4C4]">
                               핵심 상담 과정
                             </span>
                             <p className="text-lg font-semibold text-white">이름분석표(PDF) 발송</p>
@@ -687,7 +687,7 @@ export default function Services() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-                            <span className="inline-flex items-center rounded-full bg-[#56D5DB]/20 px-2.5 py-1 text-[11px] font-semibold text-[#58C4C4]">
+                            <span className="core-process-badge inline-flex items-center rounded-full bg-[#56D5DB]/20 px-2.5 py-1 text-[11px] font-semibold text-[#58C4C4]">
                               핵심 상담 과정
                             </span>
                             <p className="text-lg font-semibold text-white">1:1 전화 상담 진행</p>

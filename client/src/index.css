@@ -1560,3 +1560,15 @@ html.ua-tiktok .legal-page-content {
   zoom: 0.82 !important;
 }
 
+/* 인앱 STEP 01/02 라벨 82% 축소 */
+html.ua-instagram .step-label,
+html.ua-tiktok .step-label {
+  font-size: 12.3px !important; /* 15px × 0.82 = 12.3px */
+}
+
+/* 인앱 핵심 상담 과정 뱃지 82% 축소 */
+html.ua-instagram .core-process-badge,
+html.ua-tiktok .core-process-badge {
+  font-size: 9px !important; /* 11px × 0.82 = 9px */
+}
+
