@@ -10,9 +10,26 @@ import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725
 export default function Services() {
   const [, setLocation] = useLocation();
   
-  // 페이지 진입 시 스크롤 맨 위로 이동
+  // 페이지 진입 시 스크롤 처리 (모달에서 돌아올 때는 카드 영역으로)
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const params = new URLSearchParams(window.location.search);
+    const restore = params.get('restore');
+    
+    if (restore === 'cards') {
+      // URL에서 restore 파라미터 제거 (깔끔하게)
+      window.history.replaceState(null, "", "/services");
+      // 카드 영역으로 스크롤 (약간 위쪽으로 보이게)
+      setTimeout(() => {
+        const cardsSection = document.querySelector('[data-testid="card-service-0"]');
+        if (cardsSection) {
+          const rect = cardsSection.getBoundingClientRect();
+          const scrollTop = window.pageYOffset + rect.top - 150; // 150px 위쪽 여백
+          window.scrollTo({ top: scrollTop, behavior: 'instant' });
+        }
+      }, 50);
+    } else {
+      window.scrollTo(0, 0);
+    }
   }, []);
   
   useEffect(() => {

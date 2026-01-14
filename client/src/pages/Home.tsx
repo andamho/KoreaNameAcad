@@ -178,10 +178,11 @@ export default function Home() {
       if (analysisDetailOpenRef.current && modalState !== "analysisDetail") {
         isClosingFromBackButton.current = true;
         setAnalysisDetailOpen(false);
-        // referrer 페이지로 이동
+        // referrer 페이지로 이동 (스크롤 위치 복원용 파라미터 추가)
         if (fromPage) {
           setTimeout(() => {
-            setLocation(fromPage);
+            const restoreUrl = fromPage.includes('?') ? `${fromPage}&restore=cards` : `${fromPage}?restore=cards`;
+            setLocation(restoreUrl);
             // referrer 정보 초기화 (한 번 사용 후 삭제)
             referrerPage.current = null;
           }, 0);
@@ -191,10 +192,11 @@ export default function Home() {
       else if (dialogOpenRef.current && modalState !== "consultation" && modalState !== "familyPolicy") {
         isClosingFromBackButton.current = true;
         setDialogOpen(false);
-        // referrer 페이지로 이동
+        // referrer 페이지로 이동 (스크롤 위치 복원용 파라미터 추가)
         if (fromPage) {
           setTimeout(() => {
-            setLocation(fromPage);
+            const restoreUrl = fromPage.includes('?') ? `${fromPage}&restore=cards` : `${fromPage}?restore=cards`;
+            setLocation(restoreUrl);
             // referrer 정보 초기화 (한 번 사용 후 삭제)
             referrerPage.current = null;
           }, 0);
@@ -224,10 +226,11 @@ export default function Home() {
       const fromPage = window.history.state?.from || referrerPage.current;
       window.history.replaceState(null, "", window.location.pathname);
       
-      // referrer 페이지로 이동
+      // referrer 페이지로 이동 (스크롤 위치 복원용 파라미터 추가)
       if (fromPage) {
         setTimeout(() => {
-          setLocation(fromPage);
+          const restoreUrl = fromPage.includes('?') ? `${fromPage}&restore=cards` : `${fromPage}?restore=cards`;
+          setLocation(restoreUrl);
           referrerPage.current = null;
         }, 0);
       } else {
@@ -251,10 +254,11 @@ export default function Home() {
       const fromPage = window.history.state?.from || referrerPage.current;
       window.history.replaceState(null, "", window.location.pathname);
       
-      // referrer 페이지로 이동
+      // referrer 페이지로 이동 (스크롤 위치 복원용 파라미터 추가)
       if (fromPage) {
         setTimeout(() => {
-          setLocation(fromPage);
+          const restoreUrl = fromPage.includes('?') ? `${fromPage}&restore=cards` : `${fromPage}?restore=cards`;
+          setLocation(restoreUrl);
           referrerPage.current = null;
         }, 0);
       } else {
