@@ -1338,11 +1338,15 @@ html.ua-tiktok .kna-video-inner,
 /* ================================================
    KnaValueSection - 모바일 원형 다이어그램
    주의: .kna-value-section > div 에 zoom: 0.82 이미 적용됨!
-   원 크기는 zoom으로 이미 82% 축소되므로 추가 조정 불필요
    ================================================ */
-/* 원 크기 오버라이드 제거 - zoom이 자동으로 82% 축소함 */
-/* MobileCircleItem 원: 128px × 0.82 = 105px (자동) */
-/* MobileCenterLogo 원: 160px × 0.82 = 131px (자동) */
+/* MobileCircleItem 원: 128px × 0.82 = 105px (자동 - 변경 불필요) */
+/* MobileCenterLogo 원: 160px → zoom 보정하여 195px로 설정 (렌더링 ~160px) */
+.ig-shell .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"],
+html.ua-instagram .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"],
+html.ua-tiktok .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"] {
+  width: 195px !important;
+  height: 195px !important;
+}
 /* 원 내부 텍스트: text-[21px]/text-[22px] → 14px (10% 추가 축소) */
 .ig-shell .kna-value-section [class*="text-[21px]"],
 .ig-shell .kna-value-section [class*="text-[22px]"],
