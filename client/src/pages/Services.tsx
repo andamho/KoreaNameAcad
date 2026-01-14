@@ -279,7 +279,7 @@ export default function Services() {
 
       {/* Professional Services */}
       <section className="py-16 md:py-24 bg-muted/30">
-        <div className="text-center mb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-left mb-12">
           <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400 mb-2">PREMIUM SERVICES</p>
           <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
             진단부터 작명까지, 통합 이름 솔루션
@@ -352,8 +352,9 @@ export default function Services() {
       {/* Process Section */}
       <section id="process-section" className="py-16 md:py-24 bg-slate-50 dark:bg-slate-900/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="mt-4 bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl" data-testid="text-process-title">
+          <div className="text-left mb-12">
+            <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400 mb-2">HOW IT WORKS</p>
+            <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl" data-testid="text-process-title">
               진행 과정
             </h2>
           </div>
