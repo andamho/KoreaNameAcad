@@ -7,7 +7,7 @@ export default function KnaIntroBlock() {
     <>
       {/* SECTION 1: 상단 소개 (사선 처리) */}
       <section 
-        className="kna-intro-block kna-intro-top relative overflow-hidden text-white"
+        className="kna-intro-block kna-intro-top relative overflow-hidden text-white z-10"
         style={{
           background: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)',
         }}
