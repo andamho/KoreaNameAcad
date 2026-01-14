@@ -1361,11 +1361,11 @@ html.ua-tiktok .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded
   height: 195px !important;
 }
 /* 원 내부 텍스트: 스크롤 애니메이션 유지 (작음→큼) */
-/* text-[21px] (스크롤 전/STEP 타이틀): 19px */
+/* text-[21px] (스크롤 전): 17px (10% 축소: 19 × 0.9 ≈ 17) */
 .ig-shell .kna-value-section [class*="text-[21px]"],
 html.ua-instagram .kna-value-section [class*="text-[21px]"],
 html.ua-tiktok .kna-value-section [class*="text-[21px]"] {
-  font-size: 19px !important;
+  font-size: 17px !important;
 }
 /* text-[22px] (스크롤 후): 21px (더 큼) */
 .ig-shell .kna-value-section [class*="text-[22px]"],
