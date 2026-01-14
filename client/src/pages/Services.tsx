@@ -2,13 +2,26 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ServiceCard } from "@/components/ServiceCard";
 import { NameAnalysisPhone } from "@/components/NameAnalysisPhone";
+import { ConsultationForm } from "@/components/ConsultationForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Star, Flower, Baby, Building } from "lucide-react";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
 
 export default function Services() {
   const [, setLocation] = useLocation();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
+  
+  const openDialog = (type: "analysis" | "naming") => {
+    setDialogType(type);
+    setDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setDialogOpen(false);
+  };
   
   // 페이지 진입 시 스크롤 처리 (모달에서 돌아올 때는 카드 영역으로)
   useEffect(() => {
@@ -231,7 +244,7 @@ export default function Services() {
               title="이름분석"
               description="현재 이름에 들어있는 16가지운을 전문적으로 분석해드립니다."
               buttonText="신청하기"
-              onClick={() => setLocation("/?open=analysis&from=/services")}
+              onClick={() => openDialog("analysis")}
               secondaryButtonText="자세히 보기"
               onSecondaryClick={() => setLocation("/?detail=analysis&from=/services")}
               data-testid="card-service-0"
@@ -241,7 +254,7 @@ export default function Services() {
               title="이름감명"
               description="타 작명소에서 받은 이름의 적합도를 점검해드립니다"
               buttonText="신청하기"
-              onClick={() => setLocation("/?open=naming&from=/services")}
+              onClick={() => openDialog("naming")}
               data-testid="card-service-1"
             />
             <ServiceCard
@@ -429,6 +442,19 @@ export default function Services() {
       </section>
 
       <Footer />
+
+      {/* 상담 신청 모달 */}
+      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) closeDialog(); }}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
+          <DialogHeader className="sr-only">
+            <DialogTitle>{dialogType === "analysis" ? "이름분석 상담 신청" : "이름감명 상담 신청"}</DialogTitle>
+          </DialogHeader>
+          <ConsultationForm 
+            type={dialogType}
+            onSuccess={closeDialog}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
