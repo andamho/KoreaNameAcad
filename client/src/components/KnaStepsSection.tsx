@@ -212,11 +212,8 @@ export default function KnaStepsSection() {
               footer={
                 <>
                   <div className="flex items-center justify-center gap-4">
-                    <Link to="/reviews" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-white px-4 py-1.5 text-sm font-medium text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
-                      1차 검증 후기 <span className="ml-1">›</span>
-                    </Link>
-                    <Link to="/services" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition">
-                      2차 검증 지금 신청 <span className="ml-0.5">›</span>
+                    <Link to="/services" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-white px-4 py-1.5 text-sm font-medium text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
+                      지금 신청 <span className="ml-1">›</span>
                     </Link>
                   </div>
                   <p className="mt-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400">예상 소요: 1–2분</p>
