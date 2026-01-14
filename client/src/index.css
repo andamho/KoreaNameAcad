@@ -1141,23 +1141,23 @@ html.ua-tiktok .review-section-title {
 
 /* 상단 섹션 (사선 처리) - 모바일 */
 .kna-intro-top {
-  clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%);
-  padding-bottom: 180px;
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%) !important;
+  padding-bottom: 220px !important;
 }
 
 /* 상단 섹션 (사선 처리) - 데스크톱: 더 큰 각도 */
 @media (min-width: 768px) {
   .kna-intro-top {
-    clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%);
-    padding-bottom: 280px;
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%) !important;
+    padding-bottom: 280px !important;
   }
 }
 
 /* 하단 섹션 (운명 카드) - 모바일 */
 .kna-intro-bottom {
-  margin-top: -300px;
-  padding-top: 380px;
-  padding-bottom: 80px;
+  margin-top: -350px !important;
+  padding-top: 420px !important;
+  padding-bottom: 80px !important;
 }
 
 /* 하단 섹션 (운명 카드) - 데스크톱: 사선 각도에 맞춰 조정 */
