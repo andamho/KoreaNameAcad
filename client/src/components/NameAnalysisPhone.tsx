@@ -1,6 +1,43 @@
+import { useEffect, useRef, useState } from "react";
+
 export function NameAnalysisPhone() {
-  // 모바일에서는 터치 효과 없이 폰 기울기 유지, 애니메이션 항상 실행
-  // 데스크톱에서만 hover 시 폰이 반듯해지고 애니메이션 일시정지
+  const phoneRef = useRef<HTMLDivElement>(null);
+  const [isTouchActive, setIsTouchActive] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const phone = phoneRef.current;
+    if (!phone) return;
+
+    // 터치 시작 - 폰 각도 반듯하게, 페이지 스크롤은 허용
+    const handleTouchStart = () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      setIsTouchActive(true);
+    };
+
+    // 터치 종료
+    const handleTouchEnd = () => {
+      timerRef.current = setTimeout(() => {
+        setIsTouchActive(false);
+        if (phone) phone.style.transform = '';
+      }, 50);
+    };
+
+    // passive: true로 페이지 스크롤 허용
+    phone.addEventListener('touchstart', handleTouchStart, { passive: true });
+    phone.addEventListener('touchend', handleTouchEnd);
+    phone.addEventListener('touchcancel', handleTouchEnd);
+
+    return () => {
+      phone.removeEventListener('touchstart', handleTouchStart);
+      phone.removeEventListener('touchend', handleTouchEnd);
+      phone.removeEventListener('touchcancel', handleTouchEnd);
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   return (
     <section className="name-analysis-phone-section py-16 md:py-24 flex items-center justify-center bg-white md:bg-[#f6f9fc] dark:bg-slate-900" style={{ 
@@ -64,6 +101,12 @@ export function NameAnalysisPhone() {
           }
         }
         
+        /* 모바일 터치 시 폰 각도 반듯하게 */
+        .name-phone.touch-active {
+          transform: rotateY(0deg) rotateX(0deg) rotateZ(0deg) scale(1.0) !important;
+          box-shadow: 0 20px 40px -12px rgba(50, 50, 93, 0.3);
+          z-index: 10;
+        }
         
         .phone-screen {
           height: 100%;
@@ -312,7 +355,8 @@ export function NameAnalysisPhone() {
       
       <div style={{ perspective: "5000px" }}>
         <div 
-          className="name-phone"
+          ref={phoneRef}
+          className={`name-phone ${isTouchActive ? 'touch-active' : ''}`}
           data-testid="name-analysis-phone"
         >
           <div className="phone-screen">
