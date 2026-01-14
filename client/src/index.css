@@ -1410,18 +1410,18 @@ html.ua-tiktok .kna-value-section [class*="text-lg"] {
   font-size: 16px !important;
 }
 
-/* 영상 섹션: 아래 패딩을 다른 섹션과 통일 (64px → 96px) */
+/* 영상 섹션: 인앱에서 캐릭터가 숨겨져 있으므로 패딩 통일 */
+/* 다른 섹션들: pt-24 pb-24 = 96px 통일 */
+/* 영상 inner 위 패딩: 174px → 96px (캐릭터 공간 제거) */
+.ig-shell .kna-video-inner,
+html.ua-instagram .kna-video-inner,
+html.ua-tiktok .kna-video-inner {
+  padding-top: 96px !important;
+}
+/* 영상 섹션 아래 패딩: 64px → 96px */
 .ig-shell .kna-video-section,
 html.ua-instagram .kna-video-section,
 html.ua-tiktok .kna-video-section {
-  padding-bottom: 96px !important;
-}
-
-/* 비용시간 섹션: 위 패딩을 다른 섹션과 통일 */
-.ig-shell .kna-pricing-section .kna-pricing-inner,
-html.ua-instagram .kna-pricing-section .kna-pricing-inner,
-html.ua-tiktok .kna-pricing-section .kna-pricing-inner {
-  padding-top: 96px !important;
   padding-bottom: 96px !important;
 }
 
