@@ -69,7 +69,7 @@ export function Navbar() {
   // Scroll listener for navbar transparency
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      setScrolled(window.scrollY > 5);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // Initial check
