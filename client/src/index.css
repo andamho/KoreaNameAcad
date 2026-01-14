@@ -1335,6 +1335,53 @@ html.ua-tiktok .kna-video-inner,
   height: 600px !important;
 }
 
+/* ================================================
+   KnaValueSection 82% 축소 - 모바일 원형 다이어그램
+   속성 선택자 사용 (더 안정적)
+   ================================================ */
+/* MobileCircleItem 원: w-32 h-32 (128px) → 105px */
+.ig-shell .kna-value-section [class*="w-32"][class*="h-32"][class*="rounded-full"],
+html.ua-instagram .kna-value-section [class*="w-32"][class*="h-32"][class*="rounded-full"],
+html.ua-tiktok .kna-value-section [class*="w-32"][class*="h-32"][class*="rounded-full"] {
+  width: 105px !important;
+  height: 105px !important;
+}
+/* MobileCenterLogo 원: w-40 h-40 (160px) → 131px */
+.ig-shell .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"],
+html.ua-instagram .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"],
+html.ua-tiktok .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"] {
+  width: 131px !important;
+  height: 131px !important;
+}
+/* 원 내부 텍스트: text-[21px]/text-[22px] → 17px */
+.ig-shell .kna-value-section [class*="text-[21px]"],
+.ig-shell .kna-value-section [class*="text-[22px]"],
+html.ua-instagram .kna-value-section [class*="text-[21px]"],
+html.ua-instagram .kna-value-section [class*="text-[22px]"],
+html.ua-tiktok .kna-value-section [class*="text-[21px]"],
+html.ua-tiktok .kna-value-section [class*="text-[22px]"] {
+  font-size: 17px !important;
+}
+/* 원 내부 아이콘: w-10 h-10 (40px) → 33px */
+.ig-shell .kna-value-section [class*="w-10"][class*="h-10"],
+html.ua-instagram .kna-value-section [class*="w-10"][class*="h-10"],
+html.ua-tiktok .kna-value-section [class*="w-10"][class*="h-10"] {
+  width: 33px !important;
+  height: 33px !important;
+}
+/* 한국이름학교 중앙 로고 텍스트: text-[18px] → 15px */
+.ig-shell .kna-value-section [class*="text-[18px]"],
+html.ua-instagram .kna-value-section [class*="text-[18px]"],
+html.ua-tiktok .kna-value-section [class*="text-[18px]"] {
+  font-size: 15px !important;
+}
+/* 본문 설명 텍스트: text-lg (18px) → 15px */
+.ig-shell .kna-value-section [class*="text-lg"],
+html.ua-instagram .kna-value-section [class*="text-lg"],
+html.ua-tiktok .kna-value-section [class*="text-lg"] {
+  font-size: 15px !important;
+}
+
 /* 영상 섹션: 상하 패딩은 통일 규칙에서 적용됨 */
 
 /* 섹션 overflow 숨김 */
