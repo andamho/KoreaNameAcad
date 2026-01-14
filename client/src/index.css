@@ -1180,6 +1180,13 @@ html.ua-tiktok .kna-intro-bottom > div {
   padding-top: 0 !important;
 }
 
+/* 인앱: 운명카드 높이 보정 (zoom 0.82 보정: 420px / 0.82 = 512px) */
+html.ua-instagram .kna-intro-bottom .h-\[420px\],
+html.ua-tiktok .kna-intro-bottom .h-\[420px\],
+.ig-shell .kna-intro-bottom .h-\[420px\] {
+  height: 512px !important;
+}
+
 /* 모바일 전용: 히어로 콘텐츠 상단 여백 보정 (80px 패딩으로 인한 불균형 해소) */
 @media (max-width: 767px) {
   .hero-wrap {
