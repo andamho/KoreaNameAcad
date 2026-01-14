@@ -1235,11 +1235,53 @@ html.ua-tiktok .kna-intro-bottom > div {
   font-size: 14px !important;
 }
 
-/* IdentityMap 전체 82% 축소 (zoom 방식) */
-.ig-shell .identity-map-inner,
-html.ua-instagram .identity-map-inner,
-html.ua-tiktok .identity-map-inner {
-  zoom: 0.82 !important;
+/* IdentityMap 82% 축소 - 개별 요소 크기 조정 */
+/* 중앙 원 크기: w-16 h-16 (64px) → 52px */
+.ig-shell .identity-map-inner .id-center-wrapper > div,
+html.ua-instagram .identity-map-inner .id-center-wrapper > div,
+html.ua-tiktok .identity-map-inner .id-center-wrapper > div {
+  width: 52px !important;
+  height: 52px !important;
+}
+/* 중앙 원 아이콘: w-9 h-9 (36px) → 30px */
+.ig-shell .identity-map-inner .id-center-wrapper svg,
+html.ua-instagram .identity-map-inner .id-center-wrapper svg,
+html.ua-tiktok .identity-map-inner .id-center-wrapper svg {
+  width: 30px !important;
+  height: 30px !important;
+}
+/* 노드 원 크기: w-10 h-10 (40px) → 33px, w-9 h-9 (36px) → 30px */
+.ig-shell .identity-map-inner .id-node .anchor,
+html.ua-instagram .identity-map-inner .id-node .anchor,
+html.ua-tiktok .identity-map-inner .id-node .anchor {
+  width: 33px !important;
+  height: 33px !important;
+  min-width: 33px !important;
+  min-height: 33px !important;
+}
+/* 노드 아이콘: w-5 h-5 (20px) → 16px */
+.ig-shell .identity-map-inner .id-node .anchor svg,
+html.ua-instagram .identity-map-inner .id-node .anchor svg,
+html.ua-tiktok .identity-map-inner .id-node .anchor svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+/* 홍길동 이름 뱃지: text-base (16px) → 13px */
+.ig-shell .identity-map-inner #n1 .anchor,
+html.ua-instagram .identity-map-inner #n1 .anchor,
+html.ua-tiktok .identity-map-inner #n1 .anchor {
+  font-size: 13px !important;
+  padding: 6px 10px !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  min-height: auto !important;
+}
+/* 노드 라벨: text-[10px] (10px) → 8px */
+.ig-shell .identity-map-inner .id-node > div:last-child,
+html.ua-instagram .identity-map-inner .id-node > div:last-child,
+html.ua-tiktok .identity-map-inner .id-node > div:last-child {
+  font-size: 8px !important;
 }
 .ig-shell .kna-pricing-inner h2,
 .ig-shell .kna-pricing-inner h3 {
