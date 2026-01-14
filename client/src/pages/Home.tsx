@@ -10,7 +10,7 @@ import KnaMythTruthSection from "@/components/KnaMythTruthSection";
 import KnaPricingSection from "@/components/KnaPricingSection";
 import { Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Card } from "@/components/ui/card";
 import {
   Dialog,
@@ -332,6 +332,16 @@ export default function Home() {
               <p className="text-xs md:text-sm text-muted-foreground mt-1">
                 한국이름학교 | 와츠유어네임 이름연구협회
               </p>
+              
+              {/* 버튼 영역 */}
+              <div className="flex items-center justify-start gap-4 mt-6">
+                <Link to="/services" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-white px-4 py-1.5 text-sm font-medium text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
+                  지금 신청 <span className="ml-1">›</span>
+                </Link>
+                <Link to="/reviews" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition">
+                  상담·개명 후기 <span className="ml-0.5">›</span>
+                </Link>
+              </div>
             </div>
           </div>
         </section>
