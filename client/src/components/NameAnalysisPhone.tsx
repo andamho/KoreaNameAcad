@@ -76,12 +76,22 @@ export function NameAnalysisPhone() {
           -webkit-tap-highlight-color: transparent;
         }
         
-        /* 데스크톱에서는 12px 테두리 유지 */
+        /* 데스크톱에서는 12px 테두리 유지 + 내용 10% 확대 */
         @media (min-width: 768px) {
           .name-phone {
             padding: 12px !important;
             border-radius: 36px;
           }
+          .phone-name-title { font-size: 31px; }
+          .phone-element-info { font-size: 14px; }
+          .phone-section-title { font-size: 13px; }
+          .phone-card-header { font-size: 11px; }
+          .phone-val-num { font-size: 29px; }
+          .phone-val-text { font-size: 17px; }
+          .phone-desc-text { font-size: 12px; }
+          .phone-super-tag { font-size: 11px; }
+          .phone-like-badge { font-size: 11px; }
+          .phone-tag { font-size: 10px; }
         }
         
         @media (hover: hover) {
