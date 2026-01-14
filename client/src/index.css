@@ -58,13 +58,6 @@
   right: 0 !important;
 }
 
-/* 모든 섹션은 내비바보다 낮은 z-index */
-section,
-.min-h-screen > section,
-[class*="relative overflow-hidden"] {
-  z-index: 1 !important;
-}
-
 .kna-navbar button,
 .kna-navbar button:active,
 .kna-navbar button:focus,
