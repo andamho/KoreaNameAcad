@@ -49,6 +49,12 @@
 
 /* 햄버거 메뉴 애니메이션 - 숨 고르기형 */
 /* 네비바 버튼 터치 하이라이트 완전 제거 */
+/* 네비바 z-index 강제 적용 - 모든 섹션 위에 표시 */
+.kna-navbar {
+  z-index: 9999 !important;
+  isolation: isolate;
+}
+
 .kna-navbar button,
 .kna-navbar button:active,
 .kna-navbar button:focus,
