@@ -31,7 +31,7 @@ export function Hero() {
   const pFontSizeDesktop = 'clamp(19px, 4.6vw, 27px)';
 
   return (
-    <section id="home" className="relative min-h-screen overflow-hidden flex items-center justify-center z-10" style={{ marginTop: '-80px', paddingTop: '80px' }}>
+    <section id="home" className="relative min-h-screen overflow-hidden flex items-center justify-center" style={{ marginTop: '-80px', paddingTop: '80px' }}>
       <div className="absolute inset-0">
         <img 
           src={heroImage} 
