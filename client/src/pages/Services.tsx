@@ -19,6 +19,7 @@ export default function Services() {
   const dialogOpenRef = useRef(false);
   const analysisDetailOpenRef = useRef(false);
   const isClosingFromBackButton = useRef(false);
+  const scrollBeforeProcess = useRef<number | null>(null);
 
   // ref를 state와 동기화
   useEffect(() => {
@@ -31,13 +32,16 @@ export default function Services() {
 
   // 뒤로 가기 버튼 처리
   useEffect(() => {
-    const handlePopState = () => {
+    const handlePopState = (event: PopStateEvent) => {
       if (analysisDetailOpenRef.current) {
         isClosingFromBackButton.current = true;
         setAnalysisDetailOpen(false);
       } else if (dialogOpenRef.current) {
         isClosingFromBackButton.current = true;
         setDialogOpen(false);
+      } else if (event.state?.scrollPosition !== undefined) {
+        // 진행과정 보기에서 뒤로 가기 - 저장된 스크롤 위치로 복원
+        window.scrollTo({ top: event.state.scrollPosition, behavior: "instant" });
       }
     };
 
@@ -275,6 +279,10 @@ export default function Services() {
           </h2>
           <button
             onClick={() => {
+              // 현재 스크롤 위치 저장 후 히스토리 추가
+              const currentScroll = window.scrollY;
+              window.history.pushState({ scrollPosition: currentScroll }, "");
+              
               const el = document.getElementById("process-section");
               if (el) {
                 el.scrollIntoView({ behavior: "instant" });
