@@ -1346,7 +1346,13 @@ html.ua-tiktok .kna-video-inner,
    KnaValueSection - 모바일 원형 다이어그램
    주의: .kna-value-section > div 에 zoom: 0.82 이미 적용됨!
    ================================================ */
-/* MobileCircleItem 원: 128px × 0.82 = 105px (자동 - 변경 불필요) */
+/* MobileCircleItem 원: 128px → zoom 보정 165px (렌더링 ~135px) */
+.ig-shell .kna-value-section [class*="w-32"][class*="h-32"][class*="rounded-full"],
+html.ua-instagram .kna-value-section [class*="w-32"][class*="h-32"][class*="rounded-full"],
+html.ua-tiktok .kna-value-section [class*="w-32"][class*="h-32"][class*="rounded-full"] {
+  width: 165px !important;
+  height: 165px !important;
+}
 /* MobileCenterLogo 원: 160px → zoom 보정하여 195px로 설정 (렌더링 ~160px) */
 .ig-shell .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"],
 html.ua-instagram .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"],
