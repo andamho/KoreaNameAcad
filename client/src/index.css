@@ -1410,7 +1410,20 @@ html.ua-tiktok .kna-value-section [class*="text-lg"] {
   font-size: 16px !important;
 }
 
-/* 영상 섹션: 상하 패딩은 통일 규칙에서 적용됨 */
+/* 영상 섹션: 아래 패딩을 다른 섹션과 통일 (64px → 96px) */
+.ig-shell .kna-video-section,
+html.ua-instagram .kna-video-section,
+html.ua-tiktok .kna-video-section {
+  padding-bottom: 96px !important;
+}
+
+/* 비용시간 섹션: 위 패딩을 다른 섹션과 통일 */
+.ig-shell .kna-pricing-section .kna-pricing-inner,
+html.ua-instagram .kna-pricing-section .kna-pricing-inner,
+html.ua-tiktok .kna-pricing-section .kna-pricing-inner {
+  padding-top: 96px !important;
+  padding-bottom: 96px !important;
+}
 
 /* 섹션 overflow 숨김 */
 .ig-shell .kna-danger-section,
