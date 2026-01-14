@@ -30,31 +30,7 @@ export default function Home() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
   const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
-  const [showChristmasPopup, setShowChristmasPopup] = useState(() => {
-    // 뒤로가기/앞으로가기로 온 경우 팝업 표시 안 함
-    const navigationType = (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming)?.type;
-    if (navigationType === 'back_forward') {
-      return false;
-    }
-    
-    // URL 파라미터가 있으면 (다른 페이지에서 온 경우) 팝업 표시 안 함
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('open') || params.get('detail') || params.get('from')) {
-      return false;
-    }
-    
-    // 세션에서 이미 본 경우 다시 표시 안 함
-    try {
-      return !sessionStorage.getItem('christmasPopupShown');
-    } catch {
-      // 인앱 브라우저에서 sessionStorage 사용 불가시에도 최초 한번만 표시
-      // history.state로 이미 본 경우 체크
-      if (window.history.state?.popupShown) {
-        return false;
-      }
-      return true;
-    }
-  });
+  const [showChristmasPopup, setShowChristmasPopup] = useState(false); // 팝업 비활성화
   const isClosingFromBackButton = useRef(false);
   const dialogOpenRef = useRef(false);
   const analysisDetailOpenRef = useRef(false);
