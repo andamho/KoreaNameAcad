@@ -1,9 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { useState, useEffect } from "react";
 import heroImage from "@assets/ChatGPT Image 2025년 10월 8일 오후 09_34_23_1759926875782.png";
 
 export function Hero() {
   const [location, setLocation] = useLocation();
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
+  // 이미지 프리로드
+  useEffect(() => {
+    const img = new Image();
+    img.src = heroImage;
+    img.onload = () => setImageLoaded(true);
+    // 이미 캐시된 경우
+    if (img.complete) setImageLoaded(true);
+  }, []);
   
   // 인앱 브라우저 전용 페이지 감지
   const isInstagram = location === '/ig';
@@ -36,7 +47,8 @@ export function Hero() {
         <img 
           src={heroImage} 
           alt="배경" 
-          className="w-full h-full object-cover object-[55%] md:object-[98%]"
+          className={`w-full h-full object-cover object-[55%] md:object-[98%] transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+          style={{ willChange: 'opacity' }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-background/40 to-transparent dark:from-background/85 dark:via-background/55 dark:to-transparent" />
         {/* Bottom gradient to hide danger section character */}
