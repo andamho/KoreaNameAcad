@@ -292,6 +292,22 @@ export function NameAnalysisPhone() {
           width: 230px !important;
           height: 476px !important;
         }
+        
+        /* 모바일 안내 문구 */
+        .phone-hint {
+          display: block;
+          text-align: center;
+          margin-top: 16px;
+          font-size: 13px;
+          color: #8898aa;
+        }
+        @media (min-width: 768px) {
+          .phone-hint { display: none; }
+        }
+        html.ua-instagram .phone-hint,
+        html.ua-tiktok .phone-hint {
+          font-size: 11px !important;
+        }
       `}</style>
       
       <div style={{ perspective: "5000px" }}>
@@ -451,6 +467,7 @@ export function NameAnalysisPhone() {
             </div>
           </div>
         </div>
+        <p className="phone-hint">폰 밖을 터치하면 다시 움직여요</p>
       </div>
     </section>
   );
