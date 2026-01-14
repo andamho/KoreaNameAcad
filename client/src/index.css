@@ -553,6 +553,13 @@ html.ua-tiktok .review-section-title {
   }
 }
 
+/* 인앱 브라우저 섹션 서브타이틀 크기 조정 (82% 적용) */
+/* text-sm (14px) × 0.82 = 약 11.5px → 12px 사용 */
+html.ua-instagram .text-sm.tracking-wide,
+html.ua-tiktok .text-sm.tracking-wide {
+  font-size: 12px !important;
+}
+
 /* LIGHT MODE */
 :root {
   --button-outline: rgba(0,0,0, .10);
