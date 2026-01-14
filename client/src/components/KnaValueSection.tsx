@@ -246,22 +246,18 @@ function MobileCenterLogo() {
             : 'scale-100'
         }`}
       >
-        {/* 로고 배경 레이어 - 스크롤 시 은은하게 나타남 */}
-        <div className={`absolute inset-0 z-0 transition-opacity duration-700 ease-in-out flex items-center justify-center rounded-full ${isVisible ? 'opacity-25' : 'opacity-0'}`}>
+        {/* 로고 레이어 - 스크롤 시 선명하게 나타남 (데스크탑과 동일) */}
+        <div className={`absolute inset-0 z-10 transition-opacity duration-500 ease-in-out flex items-center justify-center bg-white dark:bg-gray-800 rounded-full ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
           <img
             src={logoImage}
             alt="한국이름학교 로고"
-            className="w-[140%] h-[140%] object-cover rounded-full"
+            className="w-[150%] h-[150%] object-cover rounded-full"
           />
         </div>
         
-        {/* 텍스트 레이어 - 항상 표시 */}
-        <div className="relative z-10 flex flex-col items-center justify-center">
-          <span 
-            className={`font-black text-[#18a999] tracking-tight transition-all duration-500 ${
-              isVisible ? 'text-[22px]' : 'text-[18px]'
-            }`}
-          >
+        {/* 텍스트 레이어 - 스크롤 전에만 표시 */}
+        <div className={`flex flex-col items-center justify-center transition-opacity duration-500 ease-in-out ${isVisible ? 'opacity-0' : 'opacity-100'}`}>
+          <span className="font-black text-[#18a999] tracking-tight text-[18px]">
             한국이름학교
           </span>
           <div className="w-8 h-[2px] bg-[#18a999]/40 my-1.5 rounded-full" />
