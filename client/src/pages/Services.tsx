@@ -33,10 +33,16 @@ export default function Services() {
   // 뒤로 가기 버튼 처리
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
+      const modalState = event.state?.modal;
+      
       if (analysisDetailOpenRef.current) {
         isClosingFromBackButton.current = true;
         setAnalysisDetailOpen(false);
       } else if (dialogOpenRef.current) {
+        // consultation 또는 familyPolicy 상태면 닫지 않음 (내부 다이얼로그 전환)
+        if (modalState === "consultation" || modalState === "familyPolicy") {
+          return;
+        }
         isClosingFromBackButton.current = true;
         setDialogOpen(false);
       } else if (event.state?.scrollPosition !== undefined) {
