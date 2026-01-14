@@ -413,11 +413,11 @@ export default function KnaValueSection() {
 
           {/* 버튼 영역 */}
           <div className="flex items-center gap-4 mt-10">
-            <Link to="/reviews" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-white px-4 py-1.5 text-sm font-medium text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
-              1차 검증 후기 <span className="ml-1">›</span>
+            <Link to="/reviews" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition">
+              1차 후기 보기 <span className="ml-0.5">›</span>
             </Link>
-            <Link to="/services" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition">
-              2차 검증 지금 신청 <span className="ml-0.5">›</span>
+            <Link to="/services" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-white px-4 py-1.5 text-sm font-medium text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
+              2차 지금 신청 <span className="ml-1">›</span>
             </Link>
           </div>
 
