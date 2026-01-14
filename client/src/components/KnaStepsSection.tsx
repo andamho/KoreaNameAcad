@@ -178,7 +178,7 @@ export default function KnaStepsSection() {
 
       <div className="kna-steps-inner relative mx-auto max-w-6xl px-6 pt-24 pb-24 lg:pt-48 lg:pb-48 lg:px-8">
         <header className="text-left mb-12 sm:mb-16">
-          <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400">HOW IT WORKS</p>
+          <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400">3-Step Flow</p>
           <h2 className="mt-4 text-[25px] sm:text-3xl md:text-4xl font-extrabold tracking-tight text-[#18a999]">
             복잡한 인생 문제,<br />
             올바른 시작은 하나면 충분합니다
