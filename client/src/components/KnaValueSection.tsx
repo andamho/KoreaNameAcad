@@ -110,7 +110,7 @@ const nodes: Node[] = [
     key: "talent",
     title: "강점과 재능 발견",
     mobileTitle: "강점·재능\n발견",
-    body: "미처 몰랐던 본연의 장점을 알려드립니다.",
+    body: "미처 몰랐던\n본연의 장점을 알려드립니다.",
     angle: 180,
     icon: <SparkIcon className={iconProps} />,
     mobileIcon: <SparkIcon className={mobileIconProps} />,
