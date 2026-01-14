@@ -1337,37 +1337,38 @@ html.ua-tiktok .kna-video-inner,
 
 /* ================================================
    KnaValueSection 82% 축소 - 모바일 원형 다이어그램
-   속성 선택자 사용 (더 안정적)
+   원 크기 + padding 모두 조정해야 콘텐츠 영역 유지됨
    ================================================ */
-/* MobileCircleItem 원: w-32 h-32 (128px) → 105px */
+/* MobileCircleItem 원: w-32 h-32 (128px) → 115px (padding 축소 보정) */
 .ig-shell .kna-value-section [class*="w-32"][class*="h-32"][class*="rounded-full"],
 html.ua-instagram .kna-value-section [class*="w-32"][class*="h-32"][class*="rounded-full"],
 html.ua-tiktok .kna-value-section [class*="w-32"][class*="h-32"][class*="rounded-full"] {
-  width: 105px !important;
-  height: 105px !important;
+  width: 115px !important;
+  height: 115px !important;
+  padding: 10px !important;
 }
-/* MobileCenterLogo 원: w-40 h-40 (160px) → 131px */
+/* MobileCenterLogo 원: w-40 h-40 (160px) → 140px */
 .ig-shell .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"],
 html.ua-instagram .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"],
 html.ua-tiktok .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"] {
-  width: 131px !important;
-  height: 131px !important;
+  width: 140px !important;
+  height: 140px !important;
 }
-/* 원 내부 텍스트: text-[21px]/text-[22px] → 17px */
+/* 원 내부 텍스트: text-[21px]/text-[22px] → 16px */
 .ig-shell .kna-value-section [class*="text-[21px]"],
 .ig-shell .kna-value-section [class*="text-[22px]"],
 html.ua-instagram .kna-value-section [class*="text-[21px]"],
 html.ua-instagram .kna-value-section [class*="text-[22px]"],
 html.ua-tiktok .kna-value-section [class*="text-[21px]"],
 html.ua-tiktok .kna-value-section [class*="text-[22px]"] {
-  font-size: 17px !important;
+  font-size: 16px !important;
 }
-/* 원 내부 아이콘: w-10 h-10 (40px) → 33px */
+/* 원 내부 아이콘: w-10 h-10 (40px) → 30px */
 .ig-shell .kna-value-section [class*="w-10"][class*="h-10"],
 html.ua-instagram .kna-value-section [class*="w-10"][class*="h-10"],
 html.ua-tiktok .kna-value-section [class*="w-10"][class*="h-10"] {
-  width: 33px !important;
-  height: 33px !important;
+  width: 30px !important;
+  height: 30px !important;
 }
 /* 한국이름학교 중앙 로고 텍스트: text-[18px] → 15px */
 .ig-shell .kna-value-section [class*="text-[18px]"],
