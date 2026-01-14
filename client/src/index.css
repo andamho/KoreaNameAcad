@@ -1412,11 +1412,19 @@ html.ua-tiktok .kna-value-section [class*="text-lg"] {
 
 /* 비용 섹션 하단 여백 - 통일 규칙 적용으로 제거 */
 
-/* 비용 페이지 히어로 → 카드 간격 축소 */
+/* 비용 페이지 히어로 → 상하 패딩 일치 */
+/* 상단: 섹션 pt-16(64px) + inner pt-16(16px) = 80px */
+/* 하단: 섹션 pb-64(64px) + inner pb-16(16px) = 80px */
 .ig-shell .kna-pricing-section-hero .kna-pricing-inner,
 html.ua-instagram .kna-pricing-section-hero .kna-pricing-inner,
 html.ua-tiktok .kna-pricing-section-hero .kna-pricing-inner {
   padding-top: 16px !important;
+  padding-bottom: 16px !important;
+}
+.ig-shell .kna-pricing-section-hero,
+html.ua-instagram .kna-pricing-section-hero,
+html.ua-tiktok .kna-pricing-section-hero {
+  padding-bottom: 64px !important;
 }
 
 /* 푸터 조정 - zoom 사용으로 음수 마진 불필요 */
