@@ -1354,14 +1354,14 @@ html.ua-tiktok .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded
   width: 140px !important;
   height: 140px !important;
 }
-/* 원 내부 텍스트: text-[21px]/text-[22px] → 16px */
+/* 원 내부 텍스트: text-[21px]/text-[22px] → 14px (10% 추가 축소) */
 .ig-shell .kna-value-section [class*="text-[21px]"],
 .ig-shell .kna-value-section [class*="text-[22px]"],
 html.ua-instagram .kna-value-section [class*="text-[21px]"],
 html.ua-instagram .kna-value-section [class*="text-[22px]"],
 html.ua-tiktok .kna-value-section [class*="text-[21px]"],
 html.ua-tiktok .kna-value-section [class*="text-[22px]"] {
-  font-size: 16px !important;
+  font-size: 14px !important;
 }
 /* 원 내부 아이콘: w-10 h-10 (40px) → 30px */
 .ig-shell .kna-value-section [class*="w-10"][class*="h-10"],
