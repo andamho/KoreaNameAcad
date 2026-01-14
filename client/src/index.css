@@ -1363,11 +1363,19 @@ html.ua-tiktok .kna-value-section [class*="w-10"][class*="h-10"] {
   width: 30px !important;
   height: 30px !important;
 }
-/* 한국이름학교 중앙 로고 텍스트: text-[18px] → 15px */
+/* 한국이름학교 중앙 로고 텍스트: text-[18px] → 18px (유지, 한국이름학교가 더 커야 함) */
 .ig-shell .kna-value-section [class*="text-[18px]"],
 html.ua-instagram .kna-value-section [class*="text-[18px]"],
 html.ua-tiktok .kna-value-section [class*="text-[18px]"] {
-  font-size: 15px !important;
+  font-size: 18px !important;
+}
+/* Identity 텍스트: text-[9px] → 9px 고정 (브라우저 자동 확대 방지) */
+.ig-shell .kna-value-section [class*="text-[9px]"],
+html.ua-instagram .kna-value-section [class*="text-[9px]"],
+html.ua-tiktok .kna-value-section [class*="text-[9px]"] {
+  font-size: 9px !important;
+  -webkit-text-size-adjust: none !important;
+  text-size-adjust: none !important;
 }
 /* 본문 설명 텍스트: text-lg (18px) → 15px */
 .ig-shell .kna-value-section [class*="text-lg"],
