@@ -9,11 +9,8 @@ export function NameAnalysisPhone() {
     const phone = phoneRef.current;
     if (!phone) return;
 
-    // 1. 터치 시작 - passive: false로 브라우저 개입 차단
-    const handleTouchStart = (e: TouchEvent) => {
-      // 브라우저 스크롤/줌 등 개입 차단 (폰 요소에서만)
-      if (e.cancelable) e.preventDefault();
-      
+    // 1. 터치 시작 - 페이지 스크롤은 허용, 폰 각도만 반듯하게
+    const handleTouchStart = () => {
       // 기존 타이머 클리어
       if (timerRef.current) {
         clearTimeout(timerRef.current);
@@ -23,12 +20,7 @@ export function NameAnalysisPhone() {
       setIsTouchActive(true);
     };
 
-    // 2. 터치 이동 - 드래그 중 스크롤 방지
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.cancelable) e.preventDefault();
-    };
-
-    // 3. 터치 종료 (End & Cancel)
+    // 2. 터치 종료 (End & Cancel)
     const handleTouchEnd = () => {
       // 즉시 해제 시 깜빡임 방지를 위한 미세 딜레이
       timerRef.current = setTimeout(() => {
@@ -39,17 +31,14 @@ export function NameAnalysisPhone() {
       }, 50);
     };
 
-    // [중요] React 합성 이벤트 대신 Native Event를 passive: false로 등록
-    // 이렇게 해야 모바일 브라우저의 스크롤 개입을 확실히 막을 수 있음
-    phone.addEventListener('touchstart', handleTouchStart, { passive: false });
-    phone.addEventListener('touchmove', handleTouchMove, { passive: false });
+    // passive: true로 등록하여 페이지 스크롤을 방해하지 않음
+    phone.addEventListener('touchstart', handleTouchStart, { passive: true });
     phone.addEventListener('touchend', handleTouchEnd);
     phone.addEventListener('touchcancel', handleTouchEnd);
 
     // 클린업 (컴포넌트 언마운트 시 이벤트 제거)
     return () => {
       phone.removeEventListener('touchstart', handleTouchStart);
-      phone.removeEventListener('touchmove', handleTouchMove);
       phone.removeEventListener('touchend', handleTouchEnd);
       phone.removeEventListener('touchcancel', handleTouchEnd);
       if (timerRef.current) clearTimeout(timerRef.current);
