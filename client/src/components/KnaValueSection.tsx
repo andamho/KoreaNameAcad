@@ -203,10 +203,10 @@ function MobileCircleItem({ node }: { node: Node }) {
         </span>
       </div>
       <p 
-        className={`leading-relaxed break-keep max-w-[320px] transition-all duration-500 text-lg ${
+        className={`leading-relaxed break-keep max-w-[320px] transition-all duration-500 text-lg origin-top ${
           isVisible 
-            ? 'text-gray-800 dark:text-gray-200' 
-            : 'text-gray-600 dark:text-muted-foreground'
+            ? 'text-gray-800 dark:text-gray-200 scale-105' 
+            : 'text-gray-600 dark:text-muted-foreground scale-100'
         }`}
       >
         {node.body}
