@@ -101,16 +101,16 @@ export function Hero() {
             </p>
           </div>
           
-          <div className="flex flex-row items-center justify-center gap-6">
+          <div className="flex flex-row items-center justify-center gap-4">
             <button
               onClick={() => {
                 setLocation('/services');
                 window.scrollTo(0, 0);
               }}
               data-testid="button-apply-now"
-              className="px-6 py-2 bg-black text-white font-semibold rounded-full text-base hover:bg-gray-800 transition-colors flex items-center gap-1"
+              className="px-4 py-1.5 bg-black text-white font-medium rounded-full text-sm hover:bg-gray-800 transition-colors flex items-center gap-0.5"
             >
-              지금 신청 <span className="ml-1">›</span>
+              지금 신청 <span>›</span>
             </button>
             <button
               onClick={() => {
@@ -118,7 +118,7 @@ export function Hero() {
                 window.scrollTo(0, 0);
               }}
               data-testid="button-reviews"
-              className="text-black dark:text-gray-900 font-semibold text-base hover:opacity-70 transition-opacity flex items-center gap-1"
+              className="text-black dark:text-gray-900 font-medium text-sm hover:opacity-70 transition-opacity flex items-center gap-0.5"
             >
               상담·개명 후기 <span>›</span>
             </button>
