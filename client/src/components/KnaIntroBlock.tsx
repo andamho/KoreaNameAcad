@@ -1,6 +1,7 @@
 import { Star } from "lucide-react";
 import { Lightbulb } from "@phosphor-icons/react";
 import { useState } from "react";
+import { Link } from "wouter";
 
 export default function KnaIntroBlock() {
   return (
@@ -121,6 +122,16 @@ export default function KnaIntroBlock() {
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* 버튼 영역 */}
+          <div className="flex items-center gap-4 mt-10">
+            <Link to="/services" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center justify-center rounded-full bg-gray-900 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-gray-800">
+              지금 신청 <span className="ml-1">›</span>
+            </Link>
+            <Link to="/reviews" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center justify-center rounded-full bg-white px-4 py-1.5 text-sm font-medium text-gray-900 transition hover:bg-gray-100">
+              상담·개명 후기 <span className="ml-1">›</span>
+            </Link>
           </div>
         </div>
       </section>
