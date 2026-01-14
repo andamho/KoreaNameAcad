@@ -521,11 +521,11 @@ export default function Services() {
 
       {/* 이름분석 자세히 보기 모달 */}
       <Dialog open={analysisDetailOpen} onOpenChange={(open) => { if (!open) closeAnalysisDetail(); }}>
-        <DialogContent className="z-[210] w-full h-full max-w-full max-h-full overflow-y-auto overflow-x-hidden bg-neutral-950 text-white border-white/20 !p-0 inset-0 !translate-x-0 !translate-y-0 rounded-none" aria-describedby={undefined}>
+        <DialogContent className="z-[10001] w-full h-full max-w-full max-h-full overflow-y-auto overflow-x-hidden bg-neutral-950 text-white border-white/20 !p-0 inset-0 !translate-x-0 !translate-y-0 rounded-none" aria-describedby={undefined}>
           <DialogHeader className="sr-only">
             <DialogTitle>이름분석 운명상담 안내</DialogTitle>
           </DialogHeader>
-          <div className="px-6 py-8" data-testid="name-analysis-root">
+          <div className="px-6 pt-20 pb-8" data-testid="name-analysis-root">
             <style>{`
               .glass { background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); border: 1px solid rgba(255,255,255,0.12); }
               .tiffany { color: #81D8D0; }

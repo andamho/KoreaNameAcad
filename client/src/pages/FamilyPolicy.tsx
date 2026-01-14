@@ -144,7 +144,7 @@ export default function FamilyPolicy() {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="py-16 md:py-24">
+      <div className="pt-24 pb-16 md:pt-28 md:pb-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="space-y-8">
             <Card className="p-6 md:p-8 space-y-6">
