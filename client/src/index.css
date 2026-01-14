@@ -1411,18 +1411,26 @@ html.ua-tiktok .kna-value-section [class*="text-lg"] {
 }
 
 /* 영상 섹션: 인앱에서 캐릭터가 숨겨져 있으므로 패딩 통일 */
-/* 다른 섹션들: pt-24 pb-24 = 96px 통일 */
-/* 영상 inner 위 패딩: 174px → 96px (캐릭터 공간 제거) */
+/* 다른 섹션들: pt-24 pb-24 = 96px × zoom 0.82 = 79px 시각적 */
+/* 영상 inner 위 패딩: zoom 적용되므로 96px → 79px 시각적 */
 .ig-shell .kna-video-inner,
 html.ua-instagram .kna-video-inner,
 html.ua-tiktok .kna-video-inner {
   padding-top: 96px !important;
+  padding-bottom: 0 !important;
 }
-/* 영상 섹션 아래 패딩: 64px → 96px */
+/* 영상 섹션 아래 패딩: zoom 미적용이므로 79px 직접 설정 */
 .ig-shell .kna-video-section,
 html.ua-instagram .kna-video-section,
 html.ua-tiktok .kna-video-section {
-  padding-bottom: 96px !important;
+  padding-bottom: 79px !important;
+}
+/* 비용 섹션: zoom 미적용이므로 79px 직접 설정 */
+.ig-shell .kna-pricing-section .kna-pricing-inner,
+html.ua-instagram .kna-pricing-section .kna-pricing-inner,
+html.ua-tiktok .kna-pricing-section .kna-pricing-inner {
+  padding-top: 79px !important;
+  padding-bottom: 79px !important;
 }
 
 /* 섹션 overflow 숨김 */
