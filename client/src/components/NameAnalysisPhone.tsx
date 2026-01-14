@@ -114,11 +114,6 @@ export function NameAnalysisPhone() {
           z-index: 10;
         }
         
-        .name-phone.touch-active .phone-scroll-content,
-        .name-phone:active .phone-scroll-content {
-          animation-play-state: paused !important;
-        }
-        
         .phone-screen {
           height: 100%;
           width: 100%;
