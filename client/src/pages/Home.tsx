@@ -332,13 +332,6 @@ export default function Home() {
               <p className="text-xs md:text-sm text-muted-foreground mt-1">
                 한국이름학교 | 와츠유어네임 이름연구협회
               </p>
-              
-              {/* 버튼 영역 */}
-              <div className="flex items-center justify-start gap-4 mt-6">
-                <Link to="/reviews" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-white px-4 py-1.5 text-sm font-medium text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
-                  후기 보기 <span className="ml-1">›</span>
-                </Link>
-              </div>
             </div>
           </div>
         </section>
