@@ -126,11 +126,11 @@ export default function KnaIntroBlock() {
 
           {/* 버튼 영역 */}
           <div className="flex items-center gap-4 mt-10">
-            <Link to="/services" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center justify-center rounded-full bg-gray-900 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-gray-800">
-              지금 신청 <span className="ml-1">›</span>
+            <Link to="/reviews" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center justify-center rounded-full bg-gray-900 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-gray-800">
+              1차 검증 후기 <span className="ml-1">›</span>
             </Link>
-            <Link to="/reviews" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition">
-              상담·개명 후기 <span className="ml-0.5">›</span>
+            <Link to="/services" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition">
+              2차 검증 지금 신청 <span className="ml-0.5">›</span>
             </Link>
           </div>
         </div>
