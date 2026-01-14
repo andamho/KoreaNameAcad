@@ -6,7 +6,7 @@ import { ConsultationForm } from "@/components/ConsultationForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Star, Flower, Baby, Building, Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin } from "lucide-react";
 import { useLocation } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
 
 export default function Services() {
@@ -15,21 +15,61 @@ export default function Services() {
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
   const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
   
+  // 뒤로 가기 버튼 처리를 위한 ref
+  const dialogOpenRef = useRef(false);
+  const analysisDetailOpenRef = useRef(false);
+  const isClosingFromBackButton = useRef(false);
+
+  // ref를 state와 동기화
+  useEffect(() => {
+    dialogOpenRef.current = dialogOpen;
+  }, [dialogOpen]);
+
+  useEffect(() => {
+    analysisDetailOpenRef.current = analysisDetailOpen;
+  }, [analysisDetailOpen]);
+
+  // 뒤로 가기 버튼 처리
+  useEffect(() => {
+    const handlePopState = () => {
+      if (analysisDetailOpenRef.current) {
+        isClosingFromBackButton.current = true;
+        setAnalysisDetailOpen(false);
+      } else if (dialogOpenRef.current) {
+        isClosingFromBackButton.current = true;
+        setDialogOpen(false);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+  
   const openDialog = (type: "analysis" | "naming") => {
     setDialogType(type);
     setDialogOpen(true);
+    window.history.pushState({ modal: "consultation" }, "");
   };
 
   const closeDialog = () => {
     setDialogOpen(false);
+    if (!isClosingFromBackButton.current) {
+      window.history.back();
+    }
+    isClosingFromBackButton.current = false;
   };
 
   const openAnalysisDetail = () => {
     setAnalysisDetailOpen(true);
+    window.history.pushState({ modal: "analysisDetail" }, "");
   };
 
   const closeAnalysisDetail = () => {
     setAnalysisDetailOpen(false);
+    if (!isClosingFromBackButton.current) {
+      window.history.back();
+    }
+    isClosingFromBackButton.current = false;
   };
   
   // 페이지 진입 시 스크롤 처리 (모달에서 돌아올 때는 카드 영역으로)
