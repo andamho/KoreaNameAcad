@@ -211,10 +211,14 @@ export default function KnaStepsSection() {
               isActive
               footer={
                 <>
-                  <Link to="/services" className="flex w-full items-center justify-center rounded-lg bg-gray-900 dark:bg-white px-4 py-2.5 text-sm font-semibold text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
-                    지금 신청
-                    <span className="ml-2">&gt;</span>
-                  </Link>
+                  <div className="flex items-center justify-center gap-4">
+                    <Link to="/services" className="inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-white px-4 py-1.5 text-sm font-medium text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
+                      지금 신청 <span className="ml-1">›</span>
+                    </Link>
+                    <Link to="/reviews" className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition">
+                      상담·개명 후기 <span className="ml-0.5">›</span>
+                    </Link>
+                  </div>
                   <p className="mt-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400">예상 소요: 1–2분</p>
                 </>
               }
