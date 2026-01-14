@@ -76,11 +76,13 @@ export function NameAnalysisPhone() {
           -webkit-tap-highlight-color: transparent;
         }
         
-        /* 데스크톱에서는 12px 테두리 유지 + 내용 10% 확대 */
+        /* 데스크톱에서는 12px 테두리 유지 + 폰 10% 확대 + 내용 10% 확대 */
         @media (min-width: 768px) {
           .name-phone {
+            width: 308px;
+            height: 638px;
             padding: 12px !important;
-            border-radius: 36px;
+            border-radius: 40px;
           }
           .phone-name-title { font-size: 31px; }
           .phone-element-info { font-size: 14px; }
