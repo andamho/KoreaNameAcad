@@ -1,49 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-
 export function NameAnalysisPhone() {
-  const phoneRef = useRef<HTMLDivElement>(null);
-  const [isTouchActive, setIsTouchActive] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    const phone = phoneRef.current;
-    if (!phone) return;
-
-    // 1. 터치 시작 - 페이지 스크롤은 허용, 폰 각도만 반듯하게
-    const handleTouchStart = () => {
-      // 기존 타이머 클리어
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-      
-      setIsTouchActive(true);
-    };
-
-    // 2. 터치 종료 (End & Cancel)
-    const handleTouchEnd = () => {
-      // 즉시 해제 시 깜빡임 방지를 위한 미세 딜레이
-      timerRef.current = setTimeout(() => {
-        setIsTouchActive(false);
-        
-        // [안전장치] 강제로 스타일 초기화 (혹시 모를 JS style 잔여물 제거)
-        if (phone) phone.style.transform = '';
-      }, 50);
-    };
-
-    // passive: true로 등록하여 페이지 스크롤을 방해하지 않음
-    phone.addEventListener('touchstart', handleTouchStart, { passive: true });
-    phone.addEventListener('touchend', handleTouchEnd);
-    phone.addEventListener('touchcancel', handleTouchEnd);
-
-    // 클린업 (컴포넌트 언마운트 시 이벤트 제거)
-    return () => {
-      phone.removeEventListener('touchstart', handleTouchStart);
-      phone.removeEventListener('touchend', handleTouchEnd);
-      phone.removeEventListener('touchcancel', handleTouchEnd);
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
+  // 모바일에서는 터치 효과 없이 폰 기울기 유지, 애니메이션 항상 실행
+  // 데스크톱에서만 hover 시 폰이 반듯해지고 애니메이션 일시정지
 
   return (
     <section className="name-analysis-phone-section py-16 md:py-24 flex items-center justify-center bg-white md:bg-[#f6f9fc] dark:bg-slate-900" style={{ 
@@ -107,12 +64,6 @@ export function NameAnalysisPhone() {
           }
         }
         
-        .name-phone.touch-active,
-        .name-phone:active {
-          transform: rotateY(0deg) rotateX(0deg) rotateZ(0deg) scale(1.0) !important;
-          box-shadow: 0 20px 40px -12px rgba(50, 50, 93, 0.3);
-          z-index: 10;
-        }
         
         .phone-screen {
           height: 100%;
@@ -345,11 +296,8 @@ export function NameAnalysisPhone() {
       
       <div style={{ perspective: "5000px" }}>
         <div 
-          ref={phoneRef}
-          className={`name-phone ${isTouchActive ? 'touch-active' : ''}`}
+          className="name-phone"
           data-testid="name-analysis-phone"
-          onMouseEnter={() => setIsTouchActive(true)}
-          onMouseLeave={() => setIsTouchActive(false)}
         >
           <div className="phone-screen">
             <div className="phone-scroll-content">
