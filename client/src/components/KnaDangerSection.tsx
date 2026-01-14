@@ -7,6 +7,7 @@ export default function KnaDangerSection() {
       <div className="relative mx-auto max-w-6xl px-6 pt-24 pb-24 lg:pt-48 lg:pb-48 lg:px-8">
         
         <header className="text-left mb-16">
+          <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400 mb-2">THE POWER OF NAMES</p>
           <h2 className="text-[#18a999] text-[25px] sm:text-3xl md:text-4xl font-extrabold tracking-tight">
             이름, 모르면 위험합니다
           </h2>

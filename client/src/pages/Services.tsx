@@ -280,6 +280,7 @@ export default function Services() {
       {/* Professional Services */}
       <section className="py-16 md:py-24 bg-muted/30">
         <div className="text-center mb-12">
+          <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400 mb-2">PREMIUM SERVICES</p>
           <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
             진단부터 작명까지, 통합 이름 솔루션
           </h2>

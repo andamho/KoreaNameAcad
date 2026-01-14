@@ -149,6 +149,7 @@ export default function NameStories() {
             />
             {/* Title, description, and button as one unit */}
             <div className="text-center md:text-left order-2 md:order-1">
+              <p className="text-sm font-medium tracking-wide text-white/70 mb-2">NAMING STORIES</p>
               <h1 className="text-[22px] md:text-5xl lg:text-6xl font-extrabold text-white mb-4" data-testid="text-stories-title">
                 흥미진진 이름이야기
               </h1>

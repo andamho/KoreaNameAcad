@@ -448,6 +448,7 @@ export default function Reviews() {
               className="w-auto h-40 md:h-56 flex-shrink-0"
             />
             <div className="text-center md:text-left">
+              <p className="text-sm font-medium tracking-wide text-white/70 mb-2">CLIENT VOICES</p>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6" data-testid="text-reviews-title">
                 고객 후기
               </h1>

@@ -283,6 +283,7 @@ export default function KnaValueSection() {
       <div className="relative mx-auto max-w-6xl px-6 pt-24 pb-24 lg:pt-48 lg:pb-48 lg:px-8">
         {/* 헤더 */}
         <header className="relative z-10 text-left mb-16 lg:mb-24">
+          <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400 mb-2">WHY CHOOSE US</p>
           <h2 className="text-[#18a999] text-[25px] sm:text-3xl md:text-4xl font-extrabold tracking-tight">
             알면 알수록, 한국이름학교
           </h2>
