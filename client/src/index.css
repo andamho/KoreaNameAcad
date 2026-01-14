@@ -52,7 +52,17 @@
 /* 네비바 z-index 강제 적용 - 모든 섹션 위에 표시 */
 .kna-navbar {
   z-index: 9999 !important;
-  isolation: isolate;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+}
+
+/* 모든 섹션은 내비바보다 낮은 z-index */
+section,
+.min-h-screen > section,
+[class*="relative overflow-hidden"] {
+  z-index: 1 !important;
 }
 
 .kna-navbar button,
