@@ -649,7 +649,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
       {/* 등본상 가족 상담 원칙 다이얼로그 */}
       <Dialog open={familyPolicyDialogOpen} onOpenChange={(open) => { if (!open) closeFamilyPolicyDialog(); }}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-neutral-950 border-[#81D8D0]/30">
+        <DialogContent className="z-[10002] max-w-5xl max-h-[90vh] overflow-y-auto bg-neutral-950 border-[#81D8D0]/30">
           <DialogHeader>
             <DialogTitle className="text-[25px] sm:text-3xl md:text-4xl font-semibold text-center text-[#81D8D0]">
               등본상 가족 상담 원칙
