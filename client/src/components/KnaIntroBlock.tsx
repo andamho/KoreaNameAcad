@@ -130,7 +130,7 @@ export default function KnaIntroBlock() {
               지금 신청 <span className="ml-1">›</span>
             </Link>
             <Link to="/reviews" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition">
-              상담·개명 후기 <span className="ml-0.5">›</span>
+              후기 보기 <span className="ml-0.5">›</span>
             </Link>
           </div>
         </div>

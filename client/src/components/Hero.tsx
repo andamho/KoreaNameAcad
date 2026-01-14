@@ -132,7 +132,7 @@ export function Hero() {
               data-testid="button-reviews"
               className="text-black dark:text-gray-900 font-medium text-sm hover:opacity-70 transition-opacity flex items-center gap-0.5"
             >
-              상담·개명 후기 <span>›</span>
+              후기 보기 <span>›</span>
             </button>
           </div>
         </div>
