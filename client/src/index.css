@@ -1832,10 +1832,16 @@ html.ua-tiktok .family-policy-sheet h4,
   }
 }
 
-/* 고정 연결선 - 애니메이션 끝난 후 2초 동안 서서히 나타남 */
+/* 고정 연결선 - 데스크톱: 애니메이션 끝난 후 나타남, 모바일: 더 빨리 */
 .family-static-lines {
   opacity: 0;
   animation: family-static-fadein 2s ease-out 10s forwards;
+}
+
+@media (max-width: 767px) {
+  .family-static-lines {
+    animation: family-static-fadein 2s ease-out 5s forwards;
+  }
 }
 
 @keyframes family-static-fadein {
@@ -1843,35 +1849,25 @@ html.ua-tiktok .family-policy-sheet h4,
   100% { opacity: 1; }
 }
 
-/* 모바일용 선 애니메이션 - 짧은 경로에 맞게 조정 */
+/* 모바일용 선 애니메이션 - 간단한 페이드인 */
 .family-stripe-path-mobile {
   fill: none;
   stroke-width: 2px;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
-  stroke-dasharray: 500 500;
-  stroke-dashoffset: 500;
-  animation: family-line-mobile 10s ease-in-out forwards;
+  opacity: 0;
+  animation: family-line-mobile 3s ease-out 1s forwards;
 }
 
 @keyframes family-line-mobile {
-  0%, 27% { stroke-dashoffset: 500; opacity: 0; }
-  30% { stroke-dashoffset: 500; opacity: 1; }
-  50% { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 1; }
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 /* 모바일용 두번째 선 (딜레이) */
 .family-stripe-path-mobile.family-delay-bottom {
-  animation: family-line-mobile-second 10s ease-in-out forwards !important;
-}
-
-@keyframes family-line-mobile-second {
-  0%, 67% { stroke-dashoffset: 500; opacity: 0; }
-  70% { stroke-dashoffset: 500; opacity: 1; }
-  90% { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 1; }
+  animation: family-line-mobile 3s ease-out 4s forwards !important;
 }
 
 /* 인앱 페이지 버튼 82% 축소 (다이얼로그 외부) */
