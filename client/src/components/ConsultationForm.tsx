@@ -692,9 +692,9 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           <div className="px-6 py-8 sm:px-8">
             <div className="flex flex-col">
               
-              {/* 상단 2개 카드 - 결혼, 자녀 */}
+              {/* 상단 2개 카드 - 결혼, 자녀 (테두리 애니메이션 추가) */}
               <div className="grid gap-6 md:grid-cols-2 z-10 relative">
-                <article className="group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                <article className="family-card-top group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
                       <Heart className="h-5 w-5" />
@@ -713,7 +713,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   </div>
                 </article>
 
-                <article className="group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                <article className="family-card-top group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
                       <Smile className="h-5 w-5" />
@@ -777,7 +777,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   </div>
                 </article>
 
-                <article className="group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                <article className="family-card-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
                       <Zap className="h-5 w-5" />
