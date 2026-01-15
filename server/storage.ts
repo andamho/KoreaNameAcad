@@ -128,6 +128,7 @@ export class MemStorage implements IStorage {
       content: insertContent.content,
       videoUrl: insertContent.videoUrl ?? null,
       isVideo: insertContent.isVideo ?? false,
+      isDraft: insertContent.isDraft ?? false,
       createdAt: now,
       updatedAt: now,
     };
@@ -342,6 +343,7 @@ export class DatabaseStorage implements IStorage {
           content: insertContent.content,
           videoUrl: insertContent.videoUrl,
           isVideo: insertContent.isVideo ?? false,
+          isDraft: insertContent.isDraft ?? false,
         }).returning();
         return content;
       } catch (error) {
