@@ -10,7 +10,7 @@ import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Heart, Baby, Shuffle, X, FileText, BookOpenText } from "lucide-react";
+import { Heart, Smile, LifeBuoy, Zap, X, FileText, BookOpenText } from "lucide-react";
 // 로고는 public 폴더에서 preload되어 빠르게 로드됨
 const formLogoImage = "/form-logo.png";
 
@@ -657,197 +657,238 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           <SheetHeader className="sr-only">
             <SheetTitle>등본상 가족 상담 원칙</SheetTitle>
           </SheetHeader>
+
+          {/* SVG Gradients for line animations */}
+          <svg className="absolute w-0 h-0">
+            <defs>
+              <linearGradient id="grad-aurora-1" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#56D5DB" />
+                <stop offset="100%" stopColor="#7F5AF0" />
+              </linearGradient>
+              <linearGradient id="grad-aurora-2" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4361EE" />
+                <stop offset="100%" stopColor="#F72585" />
+              </linearGradient>
+            </defs>
+          </svg>
           
           {/* Fixed Header */}
-          <div className="sticky top-0 z-10 px-6 py-6 sm:px-8 bg-[#0A0D11]/95 backdrop-blur flex items-start justify-between">
+          <div className="sticky top-0 z-10 px-6 py-6 sm:px-8 bg-[#0A0D11]/95 backdrop-blur flex items-start justify-between border-b border-white/5">
             <div>
               <h1 className="text-[22px] sm:text-[26px] font-bold text-[#56D5DB] tracking-tight">
                 등본상 가족 상담 원칙
               </h1>
-              <p className="mt-2 text-[17px] leading-relaxed text-white/65">
+              <p className="mt-3 text-[15px] font-semibold tracking-tight text-white/85">
                 가족은 운명 공동체로, 서로 이름운의 영향을 강하게 주고 받습니다.
               </p>
             </div>
             <SheetClose className="group -mr-2 ml-4 p-2 rounded-md text-white/40 hover:text-white focus:outline-none transition-colors">
               <span className="sr-only">닫기</span>
-              <X className="h-6 w-6 group-hover:rotate-90 transition-transform duration-300" />
+              <X className="h-8 w-8 group-hover:rotate-90 transition-transform duration-300" />
             </SheetClose>
           </div>
 
           {/* Scrollable Content */}
-          <div className="px-6 py-8 sm:px-8 space-y-10">
-            
-            {/* 3개 카드 */}
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-6">
-              {/* 결혼 카드 */}
-              <div className="group">
-                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
-                  <Heart className="h-6 w-6" />
-                </div>
-                <h3 className="text-[19px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
-                  결혼, 혼의 연결
-                </h3>
-                <p className="mt-2 text-[17px] leading-relaxed text-white/65">
-                  '결혼'은 본래 '혼(魂)을 연결한다'는 뜻에서 유래했습니다. 일심동체처럼 몸과 마음이 강력히 연결됩니다.
-                </p>
-              </div>
-
-              {/* 자녀 카드 */}
-              <div className="group">
-                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
-                  <Baby className="h-6 w-6" />
-                </div>
-                <h3 className="text-[19px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
-                  자녀, 혈육
-                </h3>
-                <p className="mt-2 text-[17px] leading-relaxed text-white/65">
-                  혈육은 피로 연결되고 살로 이어진 관계입니다. 분리된 듯 보이나 결코 분리될 수 없는 특별한 연대입니다.
-                </p>
-              </div>
-
-              {/* 이름운 카드 */}
-              <div className="group">
-                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
-                  <Shuffle className="h-6 w-6" />
-                </div>
-                <h3 className="text-[19px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
-                  이름운, 서로에게 영향
-                </h3>
-                <p className="mt-2 text-[17px] leading-relaxed text-white/65">
-                  부부의 이름운은 결혼과 함께 상호작용합니다. 자녀와 부모의 운도 서로 깊은 영향을 주고받습니다.
-                </p>
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="h-px bg-white/10"></div>
-
-            {/* 상세 내용 섹션 */}
-            <div className="grid gap-12 lg:grid-cols-2">
-              {/* 좌측: 글자 에너지 */}
-              <div>
-                <h2 className="text-[24px] sm:text-[26px] font-semibold tracking-tight text-[#56D5DB] mb-6">
-                  이름의 힘
-                </h2>
-                <div className="space-y-8 pl-1">
-                  <div className="group">
-                    <h3 className="text-[19px] font-bold text-white mb-1.5">'소리'보다 '글자'가 강합니다</h3>
-                    <p className="text-[17px] leading-relaxed text-white/65">
-                      이름에는 소리 에너지도 있지만, 그보다 훨씬 강력한 것이 바로 글자 에너지입니다. 소리에너지는 뱉어내는 순간 사라지지만, 글자에너지는 폐기하기 전까지 계속 존재합니다.
+          <div className="px-6 py-8 sm:px-8">
+            <div className="flex flex-col">
+              
+              {/* 상단 2개 카드 - 결혼, 자녀 */}
+              <div className="grid gap-6 md:grid-cols-2 z-10 relative">
+                <article className="group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <Heart className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-[16px] font-bold text-white">결혼, 혼의 연결</h3>
+                      <p className="mt-1 text-[13px] text-white/60">
+                        · '결혼'은 본래 '혼(魂)을 연결한다'는 뜻에서 유래
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-white/10">
+                    <p className="text-[14px] leading-relaxed text-[#56D5DB]/90 font-medium">
+                      - 일심동체처럼 몸과 마음이 강력히 연결
                     </p>
                   </div>
-                  <div className="group">
-                    <h3 className="text-[19px] font-bold text-white mb-1.5">등본상 가족의 연결</h3>
-                    <p className="text-[17px] leading-relaxed text-white/65">
-                      법적 에너지권 안에서 글자 에너지로 깊게 연결된 등본상 가족은 더욱 긴밀한 관계를 가지며 상당한 영향을 미칩니다.
+                </article>
+
+                <article className="group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <Smile className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-[16px] font-bold text-white">자녀, 혈육</h3>
+                      <p className="mt-1 text-[13px] text-white/60">
+                        · 혈육: 피로 연결되고 살로 이어진 관계
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-white/10">
+                    <p className="text-[14px] leading-relaxed text-[#56D5DB]/90 font-medium">
+                      - 분리된 듯 보이나 결코 분리될 수 없는 특별한 연대
+                    </p>
+                  </div>
+                </article>
+              </div>
+
+              {/* 첫번째 선 연결 애니메이션 */}
+              <div className="relative h-20 w-full overflow-visible pointer-events-none">
+                <svg className="absolute inset-0 w-full h-full" width="100%" height="100%" preserveAspectRatio="none">
+                  <line x1="25%" y1="0" x2="25%" y2="100%" className="family-stripe-path" stroke="url(#grad-aurora-1)" />
+                  <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
+                    <path d="M 75 0 V 30 Q 75 40 65 40 H 45 Q 35 40 35 50 V 100" className="family-stripe-path family-delay-top" stroke="url(#grad-aurora-1)" />
+                  </svg>
+                </svg>
+              </div>
+
+              {/* 중단 2개 카드 - 이름운, 에너지의 원리 */}
+              <div className="grid gap-6 md:grid-cols-2 z-10 relative">
+                <article className="family-card-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <LifeBuoy className="h-5 w-5" />
+                    </div>
+                    <div className="w-full">
+                      <h3 className="text-[16px] font-bold text-white">이름운, 서로에게 영향</h3>
+                      <div className="mt-2 space-y-1 text-[13px] text-white/60">
+                        <div className="flex justify-between px-1 border-b border-white/5 py-1"><span>남편</span> <span>↔</span> <span>아내</span></div>
+                        <div className="flex justify-between px-1 border-b border-white/5 py-1"><span>부모</span> <span>↔</span> <span>자녀</span></div>
+                        <div className="flex justify-between px-1 py-1"><span>자녀</span> <span>↔</span> <span>자녀</span></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-white/10 space-y-2">
+                    <p className="text-[14px] text-[#56D5DB]/90 font-medium">
+                      - 부부의 이름운은 결혼과 함께 상호작용
+                    </p>
+                    <p className="text-[14px] text-[#56D5DB]/90 font-medium">
+                      - 자녀의 초년운 ↔ 부모의 중년운에 영향
+                    </p>
+                  </div>
+                </article>
+
+                <article className="group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <Zap className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-[16px] font-bold text-white">에너지의 원리</h3>
+                      <p className="mt-1 text-[13px] text-white/60">
+                        이름은 '소리'보다 '글자'가 강합니다
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-white/10">
+                    <p className="text-[14px] leading-relaxed text-[#56D5DB]/90 font-medium">
+                      소리 에너지는 말하는 순간 사라지지만, 글자 에너지는 폐기하기 전까지 계속 존재합니다.
+                    </p>
+                  </div>
+                </article>
+              </div>
+
+              {/* 두번째 선 연결 애니메이션 */}
+              <div className="relative h-20 w-full overflow-visible pointer-events-none">
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <path d="M 25 0 V 45 Q 25 50 30 50 H 45 Q 50 50 50 55 V 100" className="family-stripe-path family-delay-bottom" stroke="url(#grad-aurora-2)" />
+                  <path d="M 75 0 V 45 Q 75 50 70 50 H 55 Q 50 50 50 55 V 100" className="family-stripe-path family-delay-bottom" stroke="url(#grad-aurora-2)" />
+                </svg>
+              </div>
+
+              {/* 결론 카드 */}
+              <article className="family-card-bot rounded-2xl border-2 border-[#56D5DB]/30 bg-[#56D5DB]/[0.05] p-8 relative overflow-hidden shadow-[0_0_40px_-10px_rgba(86,213,219,0.15)] z-10">
+                <div className="absolute inset-0 bg-gradient-to-b from-[#56D5DB]/5 to-transparent"></div>
+                <div className="relative text-left">
+                  <div className="inline-block rounded-full border border-[#56D5DB]/30 bg-[#56D5DB]/[0.15] px-3 py-1 text-[12px] font-bold text-[#56D5DB] mb-3">
+                    핵심 결론
+                  </div>
+                  <h2 className="text-[22px] font-bold text-white mb-2">등본상 가족 상담 원칙</h2>
+                  <h3 className="text-[18px] font-bold text-[#56D5DB] mb-4">
+                    등본상 가족은 더 깊게 연결됩니다
+                  </h3>
+                  <p className="text-[16px] leading-relaxed text-white/80 mb-6">
+                    법적 에너지권 안에서 글자 에너지로 깊게 연결된 등본상 가족은<br className="hidden sm:block" /> 
+                    더욱 긴밀하며 상당한 영향을 미칩니다.
+                  </p>
+                  <div className="rounded-xl bg-[#0A0D11] border border-[#56D5DB]/30 p-5 shadow-inner">
+                    <p className="text-[16px] font-bold text-[#56D5DB] text-center leading-relaxed">
+                      "그래서 등본상 가족 전체의 이름분석을 진행하셔야<br className="hidden sm:block" /> 정확한 운명상담이 가능합니다."
                     </p>
                   </div>
                 </div>
-              </div>
+              </article>
 
-              {/* 우측: 진행 과정 */}
-              <div>
-                <h2 className="text-[24px] sm:text-[26px] font-semibold tracking-tight text-[#56D5DB] mb-6">
-                  운명의 상호작용
-                </h2>
-                <div className="space-y-5">
-                  <div className="flex items-start gap-5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-[#56D5DB]">01</div>
-                    <div className="pt-0.5 w-full">
-                      <div className="text-[19px] font-semibold text-white mb-1">남편 ↔ 아내</div>
-                      <div className="flex gap-3">
-                        <div className="mt-1.5 h-[15px] w-[3px] shrink-0 rounded-full bg-[#56D5DB]"></div>
-                        <div className="text-[17px] leading-relaxed text-white/60">
-                          부부의 이름운이 결혼과 함께 서로에게 영향을 미칩니다.
+              {/* 추천 글 섹션 */}
+              <div className="mt-16 border-t border-white/10 pt-10">
+                <h3 className="text-[18px] font-bold text-white mb-6 flex items-center gap-2">
+                  <span className="inline-block w-1 h-5 bg-[#56D5DB] rounded-full"></span>
+                  같이 보시면 좋은 글
+                </h3>
+                {showCardHint && (
+                  <div className="flex justify-center mb-4 animate-in fade-in duration-300">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/80 border border-[#56D5DB]/30">
+                      <span className="w-2 h-2 rounded-full bg-[#56D5DB]"></span>
+                      <span className="text-sm text-white">카드를 <span className="text-[#56D5DB] font-semibold">터치</span>하면 전체 내용을 볼 수 있어요.</span>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="grid gap-4">
+                  <a 
+                    href="https://blog.naver.com/whats_ur_name_777/223450662435" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block group rounded-xl bg-[#0A0D11] border border-white/10 p-5 hover:border-[#56D5DB]/50 transition-all shadow-md"
+                    data-testid="link-blog-1"
+                  >
+                    <div className="flex items-start gap-4">
+                      <span className="text-3xl filter grayscale group-hover:grayscale-0 transition-all">🤦‍♀️</span>
+                      <div className="flex-1">
+                        <h4 className="text-[15px] font-bold text-white group-hover:text-[#56D5DB] transition-colors leading-snug">
+                          "아빠가 바람이 났습니다" <br className="sm:hidden" />
+                          <span className="text-white/50 font-normal text-[13px] sm:ml-2">엄마 이름 때문에</span>
+                        </h4>
+                        <p className="mt-2 text-[13px] text-white/60 leading-relaxed line-clamp-2">
+                          아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습니다...
+                        </p>
+                        <div className="mt-3 flex items-center text-[12px] font-bold text-[#56D5DB]/90 opacity-80 group-hover:opacity-100">
+                          터치해서 전체 내용 보기
+                          <svg className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#56D5DB] text-sm font-bold text-white">02</div>
-                    <div className="pt-0.5 w-full">
-                      <div className="text-[19px] font-semibold text-white mb-1">부모 ↔ 자녀</div>
-                      <div className="flex gap-3">
-                        <div className="mt-1.5 h-[15px] w-[3px] shrink-0 rounded-full bg-[#56D5DB]"></div>
-                        <div className="text-[17px] leading-relaxed text-white/60">
-                          자녀의 초년운은 부모의 중년운에, 부모의 중년운은 자녀의 초년운에 영향을 줍니다.
+                  </a>
+
+                  <a 
+                    href="https://blog.naver.com/whats_ur_name_777/223924993144" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block group rounded-xl bg-[#0A0D11] border border-white/10 p-5 hover:border-[#56D5DB]/50 transition-all shadow-md"
+                    data-testid="link-blog-2"
+                  >
+                    <div className="flex items-start gap-4">
+                      <span className="text-3xl filter grayscale group-hover:grayscale-0 transition-all">⚖️</span>
+                      <div className="flex-1">
+                        <h4 className="text-[15px] font-bold text-white group-hover:text-[#56D5DB] transition-colors leading-snug">
+                          개명한 이름 때문에 아빠가 돌아가시고...
+                        </h4>
+                        <p className="mt-2 text-[13px] text-white/60 leading-relaxed line-clamp-2">
+                          어느날 인스타로 디엠이 왔습니다. 너무 살기 힘들다며 죽고 싶다고까지 했습니다. 젊으신 분이 그러시면...
+                        </p>
+                        <div className="mt-3 flex items-center text-[12px] font-bold text-[#56D5DB]/90 opacity-80 group-hover:opacity-100">
+                          터치해서 전체 내용 보기
+                          <svg className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#56D5DB] text-sm font-bold text-white">03</div>
-                    <div className="pt-0.5 w-full">
-                      <div className="text-[19px] font-semibold text-white mb-1">자녀 ↔ 자녀</div>
-                      <div className="flex gap-3">
-                        <div className="mt-1.5 h-[15px] w-[3px] shrink-0 rounded-full bg-[#56D5DB]"></div>
-                        <div className="text-[17px] leading-relaxed text-white/60">
-                          형제자매 간에도 이름운이 서로 영향을 주고받습니다.
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  </a>
                 </div>
               </div>
+
             </div>
-
-            {/* Divider */}
-            <div className="h-px bg-white/10"></div>
-
-            {/* 하이라이트 CTA */}
-            <div className="rounded-2xl border border-[#56D5DB]/30 bg-[#56D5DB]/5 p-6">
-              <p className="text-[19px] sm:text-[21px] font-semibold leading-relaxed text-[#56D5DB] text-center">
-                정확한 이름분석 상담을 받으시려면,<br />
-                등본상 가족 전체의 이름 분석이 반드시 필요합니다.
-              </p>
-            </div>
-
-            {/* 추천 글 */}
-            <div>
-              <h2 className="text-[24px] sm:text-[26px] font-semibold tracking-tight text-[#56D5DB] mb-6 flex items-center gap-3">
-                <BookOpenText className="h-6 w-6" /> 같이 보시면 좋은 글
-              </h2>
-              {showCardHint && (
-                <div className="flex justify-center mb-4 animate-in fade-in duration-300">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/80 border border-[#56D5DB]/30">
-                    <span className="w-2 h-2 rounded-full bg-[#56D5DB]"></span>
-                    <span className="text-sm text-white">카드를 <span className="text-[#56D5DB] font-semibold">터치</span>하면 전체 내용을 볼 수 있어요.</span>
-                  </div>
-                </div>
-              )}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <a 
-                  href="https://blog.naver.com/whats_ur_name_777/223450662435" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="rounded-xl border border-white/10 bg-white/5 p-5 hover:bg-white/10 transition-colors cursor-pointer block"
-                  data-testid="link-blog-1"
-                >
-                  <h3 className="text-[17px] font-semibold leading-snug mb-2 text-white">
-                    "아빠가 바람이 났습니다" 엄마 이름 때문에
-                  </h3>
-                  <p className="text-[15px] text-white/60 leading-relaxed">
-                    아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다...
-                  </p>
-                </a>
-
-                <a 
-                  href="https://blog.naver.com/whats_ur_name_777/223924993144" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="rounded-xl border border-white/10 bg-white/5 p-5 hover:bg-white/10 transition-colors cursor-pointer block"
-                  data-testid="link-blog-2"
-                >
-                  <h3 className="text-[17px] font-semibold leading-snug mb-2 text-white">
-                    개명한 이름 때문에 아빠가 돌아가시고, 소송도 걸리고
-                  </h3>
-                  <p className="text-[15px] text-white/60 leading-relaxed">
-                    어느날 인스타로 디엠이 왔습니다. 너무 살기 힘들다며...
-                  </p>
-                </a>
-              </div>
-            </div>
-
+            <div className="h-24"></div>
           </div>
         </SheetContent>
       </Sheet>
