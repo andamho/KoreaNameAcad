@@ -4,7 +4,8 @@ import { ServiceCard } from "@/components/ServiceCard";
 import { NameAnalysisPhone } from "@/components/NameAnalysisPhone";
 import { ConsultationForm } from "@/components/ConsultationForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
+import { X } from "lucide-react";
 import { Search, Star, Flower, Baby, Building, Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect, useState, useRef } from "react";
@@ -533,13 +534,19 @@ export default function Services() {
           </SheetHeader>
           
           {/* Fixed Header */}
-          <div className="sticky top-0 z-10 px-6 py-6 sm:px-8 bg-[#0A0D11]/95 backdrop-blur">
-            <h1 className="text-xl sm:text-[24px] font-bold text-[#56D5DB] tracking-tight" data-testid="section-title">
-              이름분석 운명상담이란
-            </h1>
-            <p className="mt-2 text-[14px] sm:text-[15px] leading-relaxed text-white/65">
-              사주 없이 한글·한자 이름에 내재된 운명의 흐름을, 체계적으로 해석하는 전문 상담 서비스입니다.
-            </p>
+          <div className="sticky top-0 z-10 px-6 py-6 sm:px-8 bg-[#0A0D11]/95 backdrop-blur flex items-start justify-between">
+            <div>
+              <h1 className="text-xl sm:text-[24px] font-bold text-[#56D5DB] tracking-tight" data-testid="section-title">
+                이름분석 운명상담이란
+              </h1>
+              <p className="mt-2 text-[14px] sm:text-[15px] leading-relaxed text-white/65">
+                사주 없이 한글·한자 이름에 내재된 운명의 흐름을, 체계적으로 해석하는 전문 상담 서비스입니다.
+              </p>
+            </div>
+            <SheetClose className="group -mr-2 ml-4 p-2 rounded-md text-white/40 hover:text-white focus:outline-none transition-colors">
+              <span className="sr-only">닫기</span>
+              <X className="h-6 w-6 group-hover:rotate-90 transition-transform duration-300" />
+            </SheetClose>
           </div>
 
           {/* Scrollable Content */}
