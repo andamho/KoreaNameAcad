@@ -178,6 +178,19 @@ export default function KnaIntroBlock() {
               answer={<>나와 맞지 않는 이름은 삶을 혼란스럽게 합니다.<br/><br/>기존의 이름운과 희망 사항까지 반영한 <span className="text-[#2FB5B5] font-bold">딱 맞는 맞춤 이름</span>으로 삶의 명확한 방향을 찾아드립니다.</>}
             />
           </div>
+
+          {/* 혼자살팔자 확인 버튼 */}
+          <div className="flex justify-center mt-8">
+            <a 
+              href="https://blog.naver.com/whats_ur_name_777/223219400401"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center bg-black text-white px-6 py-3 rounded-lg text-base font-medium transition hover:bg-gray-900"
+              data-testid="link-honjasalparja"
+            >
+              혼자살팔자 확인하기 <span className="ml-1">›</span>
+            </a>
+          </div>
         </div>
       </section>
     </>
