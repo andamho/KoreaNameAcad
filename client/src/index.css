@@ -1643,68 +1643,75 @@ html.ua-tiktok .family-policy-sheet .text-\[17px\],
 
 /* ========================================
    등본상 가족 상담 원칙 - 선 연결 애니메이션
-   전체 타이밍 (10초 주기):
+   전체 타이밍 (25초 주기 = 10초 애니메이션 + 15초 휴식):
+   
+   애니메이션 구간: 0-40% (10초)
+   휴식 구간: 40-100% (15초)
    
    [상단 카드 - 결혼, 자녀]
-   - 10%: 테두리 ON
-   - 30%: 선 출발 → 테두리 사라지기 시작
-   - 50%: 테두리 OFF 완료
+   - 4%: 테두리 ON
+   - 12%: 선 출발 → 테두리 사라지기 시작
+   - 20%: 테두리 OFF 완료
    
    [첫번째 선]
-   - 30%: 출발
-   - 50%: 도착
-   - 51%: 사라지기 시작
-   - 71%: 사라짐 완료
+   - 12%: 출발
+   - 20%: 도착
+   - 20.4%: 사라지기 시작
+   - 28.4%: 사라짐 완료
    
    [중단 카드 - 이름운, 에너지원리]
-   - 50%: 첫번째 선 도착 → 테두리 즉시 ON
-   - 60%: 색상 변화하며 유지 (보라색으로)
-   - 70%: 두번째 선 출발 → 테두리 사라지기 시작
-   - 90%: 두번째 선 도착과 함께 테두리 OFF
+   - 20%: 첫번째 선 도착 → 테두리 즉시 ON
+   - 24%: 색상 변화하며 유지 (보라색으로)
+   - 28%: 두번째 선 출발 → 테두리 사라지기 시작
+   - 36%: 두번째 선 도착과 함께 테두리 OFF
    
    [두번째 선]
-   - 70%: 출발
-   - 90%: 도착
-   - 91%: 사라지기 시작
-   - 100%: 사이클 종료
+   - 28%: 출발
+   - 36%: 도착
+   - 36.4%: 사라지기 시작
+   - 40%: 사이클 종료
    
    [하단 카드 - 결론]
-   - 90%: 선 도착 → 테두리 즉시 ON
-   - 95%: 색상 변화 (핑크색으로)
-   - 100%→0%→10%: 다음 사이클로 이어져서 페이드 (20% = 2초, 다른 카드와 동일)
+   - 36%: 선 도착 → 테두리 즉시 ON
+   - 38%: 색상 변화 (핑크색으로)
+   - 40%: 사라지기 시작
+   - 44%: 완전 OFF
+   
+   [휴식]
+   - 44-100%: 모든 요소 OFF 상태 유지 (14초)
    ======================================== */
 
-/* 상단 카드 (결혼, 자녀) - 10%에 ON, 30%부터 사라지기 시작, 50%에 OFF */
+/* 상단 카드 (결혼, 자녀) - 4%에 ON, 12%부터 사라지기 시작, 20%에 OFF */
 .family-card-top {
-  animation: family-border-sync-top 10s ease-in-out infinite;
+  animation: family-border-sync-top 25s ease-in-out infinite;
 }
 
 @keyframes family-border-sync-top {
-  0%, 9% { 
+  0%, 3% { 
     border-color: rgba(255, 255, 255, 0.1); 
     box-shadow: none; 
   }
-  10% { 
+  4% { 
     border-color: #56D5DB;
     box-shadow: 0 0 15px rgba(86, 213, 219, 0.4);
   }
-  29% { 
+  11% { 
     border-color: #56D5DB;
     box-shadow: 0 0 15px rgba(86, 213, 219, 0.4);
   }
-  /* 30%: 선 출발 → 테두리 사라지기 시작 */
-  30% { 
+  /* 12%: 선 출발 → 테두리 사라지기 시작 */
+  12% { 
     border-color: #56D5DB;
     box-shadow: 0 0 10px rgba(86, 213, 219, 0.3);
   }
-  /* 50%: 선 도착과 함께 테두리 완전히 OFF */
-  50%, 100% { 
+  /* 20%: 선 도착과 함께 테두리 완전히 OFF, 휴식 구간까지 유지 */
+  20%, 100% { 
     border-color: rgba(255, 255, 255, 0.1); 
     box-shadow: none; 
   }
 }
 
-/* 첫번째 선 애니메이션 - 30% 출발, 50% 도착, 51% 사라지기 시작, 71% 완료 */
+/* 첫번째 선 애니메이션 - 12% 출발, 20% 도착, 20.4% 사라지기 시작, 28.4% 완료 */
 .family-stripe-path {
   fill: none;
   stroke-width: 2px;
@@ -1713,15 +1720,15 @@ html.ua-tiktok .family-policy-sheet .text-\[17px\],
   vector-effect: non-scaling-stroke;
   stroke-dasharray: 3000 3000;
   stroke-dashoffset: 3000;
-  animation: family-line-first 10s ease-in-out infinite;
+  animation: family-line-first 25s ease-in-out infinite;
 }
 
 @keyframes family-line-first {
-  0%, 29% { stroke-dashoffset: 3000; opacity: 0; }
-  30% { stroke-dashoffset: 3000; opacity: 1; filter: hue-rotate(0deg) brightness(1); }
-  50% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(0deg) brightness(1); }
-  51% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(90deg) brightness(1.3); }
-  71% { stroke-dashoffset: -3000; opacity: 0; }
+  0%, 11% { stroke-dashoffset: 3000; opacity: 0; }
+  12% { stroke-dashoffset: 3000; opacity: 1; filter: hue-rotate(0deg) brightness(1); }
+  20% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(0deg) brightness(1); }
+  20.4% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(90deg) brightness(1.3); }
+  28.4% { stroke-dashoffset: -3000; opacity: 0; }
   100% { stroke-dashoffset: -3000; opacity: 0; }
 }
 
@@ -1730,86 +1737,86 @@ html.ua-tiktok .family-policy-sheet .text-\[17px\],
   animation-delay: 0.3s; 
 }
 
-/* 중단 카드 (이름운, 에너지원리) - 50% ON, 70%까지 유지, 70% 선 출발과 함께 사라지기 시작 */
+/* 중단 카드 (이름운, 에너지원리) - 20% ON, 28%까지 유지, 28% 선 출발과 함께 사라지기 시작 */
 .family-card-mid {
-  animation: family-border-sync-mid 10s ease-in-out infinite;
+  animation: family-border-sync-mid 25s ease-in-out infinite;
 }
 
 @keyframes family-border-sync-mid {
-  0%, 49% { 
+  0%, 19% { 
     border-color: rgba(255, 255, 255, 0.1); 
     box-shadow: none; 
   }
-  /* 50%: 첫번째 선 도착 → 테두리 즉시 ON */
-  50% { 
+  /* 20%: 첫번째 선 도착 → 테두리 즉시 ON */
+  20% { 
     border-color: #56D5DB;
     box-shadow: 0 0 15px rgba(86, 213, 219, 0.4);
   }
-  /* 60%: 색상 변화하며 유지 */
-  60% { 
+  /* 24%: 색상 변화하며 유지 */
+  24% { 
     border-color: #7F5AF0;
     box-shadow: 0 0 20px rgba(127, 90, 240, 0.5);
   }
-  /* 69%: 두번째 선 출발 직전까지 유지 */
-  69% { 
+  /* 27%: 두번째 선 출발 직전까지 유지 */
+  27% { 
     border-color: #7F5AF0;
     box-shadow: 0 0 20px rgba(127, 90, 240, 0.5);
   }
-  /* 70%: 두번째 선 출발 → 테두리 사라지기 시작 */
-  70% { 
+  /* 28%: 두번째 선 출발 → 테두리 사라지기 시작 */
+  28% { 
     border-color: #7F5AF0;
     box-shadow: 0 0 15px rgba(127, 90, 240, 0.4);
   }
-  /* 90%: 두번째 선 도착과 함께 테두리 OFF */
-  90%, 100% { 
+  /* 36%: 두번째 선 도착과 함께 테두리 OFF, 휴식 구간까지 유지 */
+  36%, 100% { 
     border-color: rgba(255, 255, 255, 0.1); 
     box-shadow: none; 
   }
 }
 
-/* 하단 선 애니메이션 - 70% 출발, 90% 도착, 91% 사라지기 시작 */
+/* 하단 선 애니메이션 - 28% 출발, 36% 도착, 36.4% 사라지기 시작 */
 .family-delay-bottom { 
-  animation: family-line-second 10s ease-in-out infinite !important;
+  animation: family-line-second 25s ease-in-out infinite !important;
 }
 
 @keyframes family-line-second {
-  0%, 69% { stroke-dashoffset: 3000; opacity: 0; }
-  70% { stroke-dashoffset: 3000; opacity: 1; filter: hue-rotate(0deg) brightness(1); }
-  90% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(0deg) brightness(1); }
-  91% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(90deg) brightness(1.3); }
-  100% { stroke-dashoffset: -1000; opacity: 0; }
+  0%, 27% { stroke-dashoffset: 3000; opacity: 0; }
+  28% { stroke-dashoffset: 3000; opacity: 1; filter: hue-rotate(0deg) brightness(1); }
+  36% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(0deg) brightness(1); }
+  36.4% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(90deg) brightness(1.3); }
+  44% { stroke-dashoffset: -3000; opacity: 0; }
+  100% { stroke-dashoffset: -3000; opacity: 0; }
 }
 
-/* 결론 카드 (하단) - 90% ON, 다음 사이클 10%까지 유지 (20% = 2초, 다른 카드와 동일) */
+/* 결론 카드 (하단) - 36% ON, 40%까지 유지, 44%에 OFF (8% = 2초, 다른 카드와 동일) */
 .family-card-bot {
-  animation: family-border-sync-bot 10s ease-in-out infinite;
+  animation: family-border-sync-bot 25s ease-in-out infinite;
 }
 
 @keyframes family-border-sync-bot {
-  /* 0-9%: 이전 사이클에서 이어받아 사라지는 중 */
-  0% { 
-    border-color: #F72585;
-    box-shadow: 0 0 15px rgba(247, 37, 133, 0.4);
-  }
-  /* 10%: 완전히 OFF (20% 페이드, 다른 카드와 동일) */
-  10%, 89% { 
+  0%, 35% { 
     border-color: rgba(86, 213, 219, 0.3); 
     box-shadow: none;
   }
-  /* 90%: 선 도착 → 테두리 즉시 ON */
-  90% { 
+  /* 36%: 선 도착 → 테두리 즉시 ON */
+  36% { 
     border-color: #4361EE;
     box-shadow: 0 0 20px rgba(67, 97, 238, 0.5);
   }
-  /* 95%: 색상 변화 */
-  95% { 
+  /* 38%: 색상 변화 */
+  38% { 
     border-color: #F72585;
     box-shadow: 0 0 25px rgba(247, 37, 133, 0.6);
   }
-  /* 100%: 다음 사이클로 이어짐 (20% 유지를 위해) */
-  100% { 
+  /* 40%: 애니메이션 구간 종료 → 사라지기 시작 */
+  40% { 
     border-color: #F72585;
     box-shadow: 0 0 20px rgba(247, 37, 133, 0.5);
+  }
+  /* 44%: 완전히 OFF, 휴식 구간 시작 */
+  44%, 100% { 
+    border-color: rgba(86, 213, 219, 0.3); 
+    box-shadow: none;
   }
 }
 
