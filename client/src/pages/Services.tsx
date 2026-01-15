@@ -523,7 +523,7 @@ export default function Services() {
 
       {/* 이름분석 자세히 보기 모달 */}
       <Dialog open={analysisDetailOpen} onOpenChange={(open) => { if (!open) closeAnalysisDetail(); }}>
-        <DialogContent className="z-[10001] w-full h-full max-w-full max-h-full sm:!top-[80px] sm:!translate-y-0 sm:!h-[calc(100vh-80px)] overflow-y-auto overflow-x-hidden bg-[#0A0D11] text-white border-white/10 !p-0 inset-0 !translate-x-0 !translate-y-0 rounded-none" aria-describedby={undefined}>
+        <DialogContent className="z-[10001] fixed !top-0 !right-0 !left-auto !bottom-0 !translate-x-0 !translate-y-0 w-full sm:w-[min(100vw,672px)] h-full max-h-full overflow-y-auto overflow-x-hidden bg-[#0A0D11] text-white border-l border-white/10 !p-0 rounded-none sm:rounded-l-xl data-[state=open]:animate-in data-[state=open]:slide-in-from-right data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right" aria-describedby={undefined}>
           <DialogHeader className="sr-only">
             <DialogTitle>이름분석 운명상담 안내</DialogTitle>
           </DialogHeader>
