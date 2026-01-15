@@ -121,21 +121,12 @@ export default function NameStories() {
   const { isAdmin, token, isVerifying } = useAdmin();
   
   const { data: stories, isLoading, error } = useQuery<Content[]>({
-    queryKey: ["/api/contents", "nameStory", isAdmin, token],
+    queryKey: ["/api/contents", "nameStory"],
     queryFn: async () => {
-      const headers: Record<string, string> = {};
-      let url = "/api/contents?category=nameStory";
-      
-      if (isAdmin && token) {
-        headers["Authorization"] = `Bearer ${token}`;
-        url += "&includeDrafts=true";
-      }
-      
-      const response = await fetch(url, { headers });
+      const response = await fetch("/api/contents?category=nameStory");
       if (!response.ok) throw new Error("Failed to fetch stories");
       return response.json();
     },
-    enabled: !isVerifying,
   });
 
   useEffect(() => {
@@ -236,7 +227,7 @@ export default function NameStories() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
           {/* Story cards */}
-          {isLoading || isVerifying ? (
+          {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {Array.from({ length: 8 }).map((_, i) => (
                 <StorySkeleton key={i} />
