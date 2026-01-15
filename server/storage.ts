@@ -334,8 +334,10 @@ export class DatabaseStorage implements IStorage {
   // Content CMS methods
   async createContent(insertContent: InsertContent): Promise<Content> {
     const ready = await this.ensureDbReady();
+    console.log("createContent - DB ready:", ready);
     if (ready) {
       try {
+        console.log("createContent - Inserting:", JSON.stringify(insertContent));
         const [content] = await this.db.insert(contents).values({
           category: insertContent.category,
           title: insertContent.title,
@@ -345,6 +347,7 @@ export class DatabaseStorage implements IStorage {
           isVideo: insertContent.isVideo ?? false,
           isDraft: insertContent.isDraft ?? false,
         }).returning();
+        console.log("createContent - Inserted successfully:", content.id);
         return content;
       } catch (error) {
         console.error("Database insert failed:", error);
