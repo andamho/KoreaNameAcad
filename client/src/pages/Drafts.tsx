@@ -32,7 +32,7 @@ export default function Drafts() {
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   const { data: drafts, isLoading } = useQuery<Content[]>({
-    queryKey: ["/api/contents/drafts", token],
+    queryKey: ["/api/contents", "drafts", token],
     queryFn: async () => {
       if (!token) return [];
       const response = await fetch("/api/contents?includeDrafts=true", {

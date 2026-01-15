@@ -120,6 +120,7 @@ export function Navbar() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/contents"] });
       queryClient.invalidateQueries({ queryKey: ["/api/contents", data.category] });
+      queryClient.invalidateQueries({ queryKey: ["/api/contents", "drafts"] });
       setShowWriteDialog(false);
       setWriteForm({
         category: "review",
