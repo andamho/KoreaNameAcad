@@ -170,6 +170,18 @@ export default function KnaIntroBlock() {
               title="고독한 기운을 푸세요"
               answer={<>이름 속 강한 고독운이 사람을 밀어낼 수 있습니다.<br/><br/>부족한 <span className="text-[#2FB5B5] font-bold">인복과 인기운</span>을 보완하면 귀인이 찾아오기 시작합니다.</>}
             />
+            {/* 모바일 전용 버튼 - 두번째 카드 다음 */}
+            <div className="flex justify-center md:hidden">
+              <a 
+                href="https://blog.naver.com/whats_ur_name_777/223219400401"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-full bg-gray-900 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-gray-800"
+                data-testid="link-honjasalparja-mobile"
+              >
+                혼자살팔자 확인하기 <span className="ml-1">›</span>
+              </a>
+            </div>
             <FateCard 
               icon="🧭"
               question="이유 없이 불안하고 앞길이 막막하신가요?"
@@ -179,8 +191,8 @@ export default function KnaIntroBlock() {
             />
           </div>
 
-          {/* 혼자살팔자 확인 버튼 */}
-          <div className="flex justify-center mt-8">
+          {/* 혼자살팔자 확인 버튼 - 데스크톱 전용 */}
+          <div className="hidden md:flex justify-center mt-8">
             <a 
               href="https://blog.naver.com/whats_ur_name_777/223219400401"
               target="_blank"
