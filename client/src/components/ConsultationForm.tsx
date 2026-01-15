@@ -678,7 +678,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               <h1 className="text-[22px] sm:text-[26px] font-bold text-[#56D5DB] tracking-tight">
                 등본상 가족 상담 원칙
               </h1>
-              <p className="mt-3 text-[15px] font-semibold tracking-tight text-white/85">
+              <p className="mt-3 text-[17px] font-semibold tracking-tight text-white/85">
                 가족은 운명 공동체로, 서로 이름운의 영향을 강하게 주고 받습니다.
               </p>
             </div>
@@ -700,14 +700,14 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                       <Heart className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-[16px] font-bold text-white">결혼, 혼의 연결</h3>
-                      <p className="mt-1 text-[13px] text-white/60">
+                      <h3 className="text-[19px] font-bold text-white">결혼, 혼의 연결</h3>
+                      <p className="mt-1 text-[15px] text-white/60">
                         · '결혼'은 본래 '혼(魂)을 연결한다'는 뜻에서 유래
                       </p>
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10">
-                    <p className="text-[14px] leading-relaxed text-[#56D5DB]/90 font-medium">
+                    <p className="text-[17px] leading-relaxed text-[#56D5DB]/90 font-medium">
                       - 일심동체처럼 몸과 마음이 강력히 연결
                     </p>
                   </div>
@@ -719,14 +719,14 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                       <Smile className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-[16px] font-bold text-white">자녀, 혈육</h3>
-                      <p className="mt-1 text-[13px] text-white/60">
+                      <h3 className="text-[19px] font-bold text-white">자녀, 혈육</h3>
+                      <p className="mt-1 text-[15px] text-white/60">
                         · 혈육: 피로 연결되고 살로 이어진 관계
                       </p>
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10">
-                    <p className="text-[14px] leading-relaxed text-[#56D5DB]/90 font-medium">
+                    <p className="text-[17px] leading-relaxed text-[#56D5DB]/90 font-medium">
                       - 분리된 듯 보이나 결코 분리될 수 없는 특별한 연대
                     </p>
                   </div>
@@ -759,8 +759,8 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                       <LifeBuoy className="h-5 w-5" />
                     </div>
                     <div className="w-full">
-                      <h3 className="text-[16px] font-bold text-white">이름운, 서로에게 영향</h3>
-                      <div className="mt-2 space-y-1 text-[13px] text-white/60">
+                      <h3 className="text-[19px] font-bold text-white">이름운, 서로에게 영향</h3>
+                      <div className="mt-2 space-y-1 text-[15px] text-white/60">
                         <div className="flex justify-between px-1 border-b border-white/5 py-1"><span>남편</span> <span>↔</span> <span>아내</span></div>
                         <div className="flex justify-between px-1 border-b border-white/5 py-1"><span>부모</span> <span>↔</span> <span>자녀</span></div>
                         <div className="flex justify-between px-1 py-1"><span>자녀</span> <span>↔</span> <span>자녀</span></div>
@@ -768,10 +768,10 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10 space-y-2">
-                    <p className="text-[14px] text-[#56D5DB]/90 font-medium">
+                    <p className="text-[17px] text-[#56D5DB]/90 font-medium">
                       - 부부의 이름운은 결혼과 함께 상호작용
                     </p>
-                    <p className="text-[14px] text-[#56D5DB]/90 font-medium">
+                    <p className="text-[17px] text-[#56D5DB]/90 font-medium">
                       - 자녀의 초년운 ↔ 부모의 중년운에 영향
                     </p>
                   </div>
@@ -783,14 +783,14 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                       <Zap className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-[16px] font-bold text-white">에너지의 원리</h3>
-                      <p className="mt-1 text-[13px] text-white/60">
+                      <h3 className="text-[19px] font-bold text-white">에너지의 원리</h3>
+                      <p className="mt-1 text-[15px] text-white/60">
                         이름은 '소리'보다 '글자'가 강합니다
                       </p>
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10">
-                    <p className="text-[14px] leading-relaxed text-[#56D5DB]/90 font-medium">
+                    <p className="text-[17px] leading-relaxed text-[#56D5DB]/90 font-medium">
                       소리 에너지는 말하는 순간 사라지지만, 글자 에너지는 폐기하기 전까지 계속 존재합니다.
                     </p>
                   </div>
@@ -809,19 +809,19 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               <article className="family-card-bot rounded-2xl border-2 border-[#56D5DB]/30 bg-[#56D5DB]/[0.05] p-8 relative overflow-hidden shadow-[0_0_40px_-10px_rgba(86,213,219,0.15)] z-10">
                 <div className="absolute inset-0 bg-gradient-to-b from-[#56D5DB]/5 to-transparent"></div>
                 <div className="relative text-left">
-                  <div className="inline-block rounded-full border border-[#56D5DB]/30 bg-[#56D5DB]/[0.15] px-3 py-1 text-[12px] font-bold text-[#56D5DB] mb-3">
+                  <div className="inline-block rounded-full border border-[#56D5DB]/30 bg-[#56D5DB]/[0.15] px-3 py-1 text-[13px] font-bold text-[#56D5DB] mb-3">
                     핵심 결론
                   </div>
                   <h2 className="text-[22px] font-bold text-white mb-2">등본상 가족 상담 원칙</h2>
-                  <h3 className="text-[18px] font-bold text-[#56D5DB] mb-4">
+                  <h3 className="text-[19px] font-bold text-[#56D5DB] mb-4">
                     등본상 가족은 더 깊게 연결됩니다
                   </h3>
-                  <p className="text-[16px] leading-relaxed text-white/80 mb-6">
+                  <p className="text-[17px] leading-relaxed text-white/80 mb-6">
                     법적 에너지권 안에서 글자 에너지로 깊게 연결된 등본상 가족은<br className="hidden sm:block" /> 
                     더욱 긴밀하며 상당한 영향을 미칩니다.
                   </p>
                   <div className="rounded-xl bg-[#0A0D11] border border-[#56D5DB]/30 p-5 shadow-inner">
-                    <p className="text-[16px] font-bold text-[#56D5DB] text-center leading-relaxed">
+                    <p className="text-[17px] font-bold text-[#56D5DB] text-center leading-relaxed">
                       "그래서 등본상 가족 전체의 이름분석을 진행하셔야<br className="hidden sm:block" /> 정확한 운명상담이 가능합니다."
                     </p>
                   </div>
@@ -830,7 +830,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
               {/* 추천 글 섹션 */}
               <div className="mt-16 border-t border-white/10 pt-10">
-                <h3 className="text-[18px] font-bold text-white mb-6 flex items-center gap-2">
+                <h3 className="text-[19px] font-bold text-white mb-6 flex items-center gap-2">
                   <span className="inline-block w-1 h-5 bg-[#56D5DB] rounded-full"></span>
                   같이 보시면 좋은 글
                 </h3>
@@ -838,7 +838,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   <div className="flex justify-center mb-4 animate-in fade-in duration-300">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/80 border border-[#56D5DB]/30">
                       <span className="w-2 h-2 rounded-full bg-[#56D5DB]"></span>
-                      <span className="text-sm text-white">카드를 <span className="text-[#56D5DB] font-semibold">터치</span>하면 전체 내용을 볼 수 있어요.</span>
+                      <span className="text-[15px] text-white">카드를 <span className="text-[#56D5DB] font-semibold">터치</span>하면 전체 내용을 볼 수 있어요.</span>
                     </div>
                   </div>
                 )}
@@ -854,14 +854,14 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     <div className="flex items-start gap-4">
                       <span className="text-3xl filter grayscale group-hover:grayscale-0 transition-all">🤦‍♀️</span>
                       <div className="flex-1">
-                        <h4 className="text-[15px] font-bold text-white group-hover:text-[#56D5DB] transition-colors leading-snug">
+                        <h4 className="text-[17px] font-bold text-white group-hover:text-[#56D5DB] transition-colors leading-snug">
                           "아빠가 바람이 났습니다" <br className="sm:hidden" />
-                          <span className="text-white/50 font-normal text-[13px] sm:ml-2">엄마 이름 때문에</span>
+                          <span className="text-white/50 font-normal text-[15px] sm:ml-2">엄마 이름 때문에</span>
                         </h4>
-                        <p className="mt-2 text-[13px] text-white/60 leading-relaxed line-clamp-2">
+                        <p className="mt-2 text-[15px] text-white/60 leading-relaxed line-clamp-2">
                           아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습니다...
                         </p>
-                        <div className="mt-3 flex items-center text-[12px] font-bold text-[#56D5DB]/90 opacity-80 group-hover:opacity-100">
+                        <div className="mt-3 flex items-center text-[13px] font-bold text-[#56D5DB]/90 opacity-80 group-hover:opacity-100">
                           터치해서 전체 내용 보기
                           <svg className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                         </div>
@@ -879,13 +879,13 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     <div className="flex items-start gap-4">
                       <span className="text-3xl filter grayscale group-hover:grayscale-0 transition-all">⚖️</span>
                       <div className="flex-1">
-                        <h4 className="text-[15px] font-bold text-white group-hover:text-[#56D5DB] transition-colors leading-snug">
+                        <h4 className="text-[17px] font-bold text-white group-hover:text-[#56D5DB] transition-colors leading-snug">
                           개명한 이름 때문에 아빠가 돌아가시고...
                         </h4>
-                        <p className="mt-2 text-[13px] text-white/60 leading-relaxed line-clamp-2">
+                        <p className="mt-2 text-[15px] text-white/60 leading-relaxed line-clamp-2">
                           어느날 인스타로 디엠이 왔습니다. 너무 살기 힘들다며 죽고 싶다고까지 했습니다. 젊으신 분이 그러시면...
                         </p>
-                        <div className="mt-3 flex items-center text-[12px] font-bold text-[#56D5DB]/90 opacity-80 group-hover:opacity-100">
+                        <div className="mt-3 flex items-center text-[13px] font-bold text-[#56D5DB]/90 opacity-80 group-hover:opacity-100">
                           터치해서 전체 내용 보기
                           <svg className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                         </div>
