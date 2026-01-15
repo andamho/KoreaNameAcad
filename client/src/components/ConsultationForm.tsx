@@ -358,7 +358,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             </span>
           </Label>
           <p className="text-sm text-muted-foreground">
-            * 등본상 주소와 실제 거주지가 다른 분들은 예약상담시 꼭 말씀주세요.
+            · 등본상 주소와 실제 거주지가 다른 분들은 예약상담시 꼭 말씀주세요.
           </p>
           <Input
             id="registration-document"
