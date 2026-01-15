@@ -700,7 +700,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                       <Heart className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-[19px] font-bold text-white">결혼, 혼의 연결</h3>
+                      <h3 className="text-[19px] font-bold text-white">부부, 혼의 연결</h3>
                       <p className="mt-1 text-[15px] text-white/60">
                         · '결혼'은 본래 '혼(魂)을 연결한다'는 뜻에서 유래
                       </p>
