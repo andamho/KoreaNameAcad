@@ -694,6 +694,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               
               {/* 상단 2개 카드 - 결혼, 자녀 (테두리 애니메이션 추가) */}
               <div className="grid gap-6 md:grid-cols-2 z-10 relative">
+                {/* 부부 카드 */}
                 <article className="family-card-top group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
@@ -713,6 +714,14 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   </div>
                 </article>
 
+                {/* 모바일: 부부→이름운 연결선 */}
+                <div className="relative h-12 w-full md:hidden">
+                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M 50 0 V 100" fill="none" stroke="#56D5DB" strokeWidth="2" strokeLinecap="round" style={{ vectorEffect: 'non-scaling-stroke' }} />
+                  </svg>
+                </div>
+
+                {/* 자녀 카드 */}
                 <article className="family-card-top group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
@@ -779,6 +788,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
               {/* 중단 2개 카드 - 이름운, 에너지의 원리 */}
               <div className="grid gap-6 md:grid-cols-2 z-10 relative">
+                {/* 이름운 카드 */}
                 <article className="family-card-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
@@ -803,6 +813,14 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   </div>
                 </article>
 
+                {/* 모바일: 이름운→결론 연결선 */}
+                <div className="relative h-12 w-full md:hidden">
+                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M 50 0 V 100" fill="none" stroke="#7F5AF0" strokeWidth="2" strokeLinecap="round" style={{ vectorEffect: 'non-scaling-stroke' }} />
+                  </svg>
+                </div>
+
+                {/* 에너지 카드 */}
                 <article className="family-card-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
