@@ -13,10 +13,21 @@ interface ContentGridProps {
 }
 
 export function ContentGrid({ category, basePath, emptyMessage = "등록된 콘텐츠가 없습니다." }: ContentGridProps) {
+  const { isAdmin, token } = useAdmin();
+  
   const { data: contents, isLoading } = useQuery<Content[]>({
-    queryKey: ["/api/contents", category],
+    queryKey: ["/api/contents", category, isAdmin],
     queryFn: async () => {
-      const response = await fetch(`/api/contents?category=${category}`);
+      const headers: Record<string, string> = {};
+      let url = `/api/contents?category=${category}`;
+      
+      // 관리자일 경우 임시저장 콘텐츠도 포함
+      if (isAdmin && token) {
+        headers["Authorization"] = `Bearer ${token}`;
+        url += "&includeDrafts=true";
+      }
+      
+      const response = await fetch(url, { headers });
       if (!response.ok) throw new Error("Failed to fetch contents");
       return response.json();
     },
@@ -100,6 +111,13 @@ function ContentCard({ content, basePath }: ContentCardProps) {
           >
             <Trash2 className="w-3 h-3" />
           </button>
+        )}
+        
+        {/* 임시저장 배지 (관리자만 볼 수 있음) */}
+        {isAdmin && content.isDraft && (
+          <div className="absolute top-1 left-1 z-10 px-1.5 py-0.5 bg-yellow-500 text-white text-[10px] font-medium rounded">
+            임시
+          </div>
         )}
         
         {/* 썸네일 - 항상 표시 */}

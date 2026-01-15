@@ -203,18 +203,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/contents", async (req, res) => {
     try {
       let category = req.query.category as string | undefined;
+      const includeDrafts = req.query.includeDrafts === "true";
+      
+      // Check if user is admin (for showing drafts)
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+      const isAdmin = token && validTokens.has(token);
       
       // Map legacy category values to current format
       if (category && legacyCategoryMap[category.toLowerCase()]) {
         category = legacyCategoryMap[category.toLowerCase()];
       }
       
-      console.log("GET /api/contents - category:", category);
+      console.log("GET /api/contents - category:", category, "isAdmin:", isAdmin);
       if (category && !contentCategoryEnum.safeParse(category).success) {
         console.log("Invalid category received:", category);
         return res.status(400).json({ error: "Invalid category", received: category });
       }
-      const contents = await storage.getAllContents(category as ContentCategory | undefined);
+      let contents = await storage.getAllContents(category as ContentCategory | undefined);
+      
+      // Filter out drafts for non-admin users
+      if (!isAdmin || !includeDrafts) {
+        contents = contents.filter(c => !c.isDraft);
+      }
+      
       console.log("GET /api/contents - returned", contents.length, "items");
       return res.json(contents);
     } catch (error) {

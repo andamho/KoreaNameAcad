@@ -88,6 +88,7 @@ export const contents = pgTable("contents", {
   content: text("content").notNull(),
   videoUrl: text("video_url"),
   isVideo: boolean("is_video").default(false).notNull(),
+  isDraft: boolean("is_draft").default(false).notNull(), // 임시저장 여부
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
