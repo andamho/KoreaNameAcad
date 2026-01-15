@@ -239,7 +239,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/contents", requireAdmin, async (req, res) => {
     try {
       console.log("Content create request body:", JSON.stringify(req.body, null, 2));
-      const validatedData = insertContentSchema.parse(req.body);
+      // 빈 문자열을 null로 변환
+      const cleanedData = {
+        ...req.body,
+        thumbnail: req.body.thumbnail?.trim() || null,
+        videoUrl: req.body.videoUrl?.trim() || null,
+      };
+      const validatedData = insertContentSchema.parse(cleanedData);
       const content = await storage.createContent(validatedData);
       return res.json(content);
     } catch (error: any) {
