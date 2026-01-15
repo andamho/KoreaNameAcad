@@ -651,7 +651,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
       <Sheet open={familyPolicyDialogOpen} onOpenChange={(open) => { if (!open) closeFamilyPolicyDialog(); }}>
         <SheetContent 
           side="right"
-          className="family-policy-sheet z-[10002] w-full sm:max-w-[725px] sm:w-[725px] overflow-y-auto overflow-x-hidden bg-[#0A0D11] text-white border-l border-white/10 !p-0"
+          className="family-policy-sheet z-[10002] w-full sm:max-w-[725px] sm:w-[725px] overflow-hidden bg-[#0A0D11] text-white border-l border-white/10 !p-0 flex flex-col"
           aria-describedby={undefined}
         >
           <SheetHeader className="sr-only">
@@ -672,8 +672,8 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             </defs>
           </svg>
           
-          {/* Fixed Header */}
-          <div className="sticky top-0 z-10 px-6 py-6 sm:px-8 bg-[#0A0D11]/95 backdrop-blur flex items-start justify-between border-b border-white/5">
+          {/* Fixed Header - 고정 영역 */}
+          <div className="shrink-0 px-6 py-6 sm:px-8 bg-[#0A0D11] flex items-start justify-between border-b border-white/5">
             <div>
               <h1 className="text-[22px] sm:text-[26px] font-bold text-[#56D5DB] tracking-tight">
                 등본상 가족 상담 원칙
@@ -688,8 +688,8 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             </SheetClose>
           </div>
 
-          {/* Scrollable Content */}
-          <div className="px-6 py-8 sm:px-8">
+          {/* Scrollable Content - 스크롤 영역 */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-8 sm:px-8">
             <div className="flex flex-col">
               
               {/* 상단 2개 카드 - 결혼, 자녀 (테두리 애니메이션 추가) */}
