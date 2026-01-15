@@ -450,7 +450,7 @@ export function Navbar() {
                 <SelectTrigger data-testid="select-write-category">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="z-[9999]">
+                <SelectContent>
                   {categoryOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                   ))}
