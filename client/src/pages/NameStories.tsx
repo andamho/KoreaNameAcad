@@ -1,10 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Play, Calendar, MessageCircle } from "lucide-react";
+import { Play, Calendar, MessageCircle, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { useAdmin } from "@/contexts/AdminContext";
+import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Content } from "@shared/schema";
 import storiesCharacterImage from "@assets/KakaoTalk_20251226_141747822_1766726282057.png";
 import { useEffect } from "react";
@@ -15,19 +18,66 @@ function formatDate(dateValue: string | Date) {
 }
 
 function StoryCard({ story }: { story: Content }) {
+  const { isAdmin, token } = useAdmin();
+  const { toast } = useToast();
+  
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/contents/${story.id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Failed to delete");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contents", "nameStory"] });
+      toast({ title: "삭제되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "삭제 실패", variant: "destructive" });
+    },
+  });
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirm("정말 삭제하시겠습니까?")) {
+      deleteMutation.mutate();
+    }
+  };
+
   return (
     <Link href={`/name-stories/${story.id}`}>
       <Card 
-        className="group overflow-hidden hover-elevate active-elevate-2 cursor-pointer"
+        className="group overflow-hidden hover-elevate active-elevate-2 cursor-pointer relative"
         data-testid={`card-story-${story.id}`}
       >
+        {/* 관리자 삭제 버튼 */}
+        {isAdmin && (
+          <button
+            onClick={handleDelete}
+            className="absolute top-2 left-2 z-10 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-80 hover:opacity-100 transition-opacity"
+            data-testid={`button-delete-${story.id}`}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        )}
+        
+        {/* 임시저장 배지 */}
+        {isAdmin && story.isDraft && (
+          <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-yellow-500 text-white text-xs font-medium rounded">
+            임시
+          </div>
+        )}
+        
         <div className="relative aspect-square overflow-hidden">
           <img
             src={story.thumbnail || "/placeholder-thumbnail.jpg"}
             alt={story.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
-          {story.isVideo && (
+          {story.isVideo && !story.isDraft && (
             <div className="absolute top-2 right-2">
               <div className="w-8 h-8 bg-black/60 rounded-full flex items-center justify-center">
                 <Play className="w-4 h-4 text-white fill-white ml-0.5" />
@@ -68,13 +118,24 @@ function StorySkeleton() {
 }
 
 export default function NameStories() {
+  const { isAdmin, token, isVerifying } = useAdmin();
+  
   const { data: stories, isLoading, error } = useQuery<Content[]>({
-    queryKey: ["/api/contents", "nameStory"],
+    queryKey: ["/api/contents", "nameStory", isAdmin, token],
     queryFn: async () => {
-      const response = await fetch("/api/contents?category=nameStory");
+      const headers: Record<string, string> = {};
+      let url = "/api/contents?category=nameStory";
+      
+      if (isAdmin && token) {
+        headers["Authorization"] = `Bearer ${token}`;
+        url += "&includeDrafts=true";
+      }
+      
+      const response = await fetch(url, { headers });
       if (!response.ok) throw new Error("Failed to fetch stories");
       return response.json();
     },
+    enabled: !isVerifying,
   });
 
   useEffect(() => {
@@ -175,7 +236,7 @@ export default function NameStories() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
           {/* Story cards */}
-          {isLoading ? (
+          {isLoading || isVerifying ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {Array.from({ length: 8 }).map((_, i) => (
                 <StorySkeleton key={i} />
