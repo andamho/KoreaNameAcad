@@ -708,7 +708,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   </div>
                   <div className="pt-4 border-t border-white/10">
                     <p className="text-[17px] leading-relaxed text-[#56D5DB]/90 font-medium">
-                      - 일심동체처럼 몸과 마음이 강력히 연결
+                      일심동체처럼 몸과 마음이 강력히 연결
                     </p>
                   </div>
                 </article>
@@ -727,7 +727,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   </div>
                   <div className="pt-4 border-t border-white/10">
                     <p className="text-[17px] leading-relaxed text-[#56D5DB]/90 font-medium">
-                      - 분리된 듯 보이나 결코 분리될 수 없는 특별한 연대
+                      분리된 듯 보이나 결코 분리될 수 없는 특별한 연대
                     </p>
                   </div>
                 </article>
