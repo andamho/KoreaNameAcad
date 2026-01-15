@@ -813,7 +813,6 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   <div className="inline-block rounded-full border border-[#56D5DB]/30 bg-[#56D5DB]/[0.15] px-3 py-1 text-[13px] font-bold text-[#56D5DB] mb-3">
                     핵심 결론
                   </div>
-                  <h2 className="text-[22px] font-bold text-white mb-2">등본상 가족 상담 원칙</h2>
                   <h3 className="text-[19px] font-bold text-[#56D5DB] mb-4">
                     등본상 가족은 더 깊게 연결됩니다
                   </h3>
