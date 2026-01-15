@@ -763,20 +763,15 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     style={{ vectorEffect: 'non-scaling-stroke' }}
                   />
                 </svg>
-                {/* 모바일용 애니메이션 선 (md 미만) - 부부카드 중앙에서 시작 */}
+                {/* 모바일용 고정 연결선 (md 미만) - 즉시 표시 */}
                 <svg className="absolute inset-0 w-full h-full md:hidden" viewBox="0 0 100 100" preserveAspectRatio="none">
                   <path 
                     d="M 50 0 V 100" 
-                    className="family-stripe-path-mobile" 
-                    stroke="url(#grad-aurora-1)" 
-                  />
-                </svg>
-                {/* 모바일용 고정 연결선 (md 미만) */}
-                <svg className="absolute inset-0 w-full h-full family-static-lines md:hidden" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <path 
-                    d="M 50 0 V 100" 
-                    fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    stroke="url(#grad-aurora-1)" 
+                    fill="none" 
+                    stroke="#56D5DB"
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
                     style={{ vectorEffect: 'non-scaling-stroke' }}
                   />
                 </svg>
@@ -841,13 +836,9 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   <path d="M 25 0 V 45 Q 25 50 30 50 H 45 Q 50 50 50 55 V 100" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" stroke="url(#grad-aurora-2)" style={{ vectorEffect: 'non-scaling-stroke' }} />
                   <path d="M 75 0 V 45 Q 75 50 70 50 H 55 Q 50 50 50 55 V 100" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" stroke="url(#grad-aurora-2)" style={{ vectorEffect: 'non-scaling-stroke' }} />
                 </svg>
-                {/* 모바일용 애니메이션 선 (md 미만) - 이름운카드 중앙에서 결론카드로 */}
+                {/* 모바일용 고정 연결선 (md 미만) - 즉시 표시 */}
                 <svg className="absolute inset-0 w-full h-full md:hidden" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <path d="M 50 0 V 100" className="family-stripe-path-mobile family-delay-bottom" stroke="url(#grad-aurora-2)" />
-                </svg>
-                {/* 모바일용 고정 연결선 (md 미만) */}
-                <svg className="absolute inset-0 w-full h-full family-static-lines md:hidden" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <path d="M 50 0 V 100" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" stroke="url(#grad-aurora-2)" style={{ vectorEffect: 'non-scaling-stroke' }} />
+                  <path d="M 50 0 V 100" fill="none" stroke="#7F5AF0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ vectorEffect: 'non-scaling-stroke' }} />
                 </svg>
               </div>
 
