@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stripe Slide-over (Header Border Removed)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .kna-noise {
+      background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 18px 18px;
+      opacity: 0.18;
+      pointer-events: none;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+  </style>
+</head>
+
+<body class="min-h-screen bg-[#070A0D] text-white overflow-x-hidden font-sans antialiased">
+  
+  <div class="fixed inset-0 -z-10 bg-gradient-to-b from-[#06080B] via-[#070B10] to-[#06080B]"></div>
+  <div class="fixed inset-0 -z-10 kna-noise"></div>
+
+  <main class="mx-auto flex min-h-screen max-w-5xl items-center justify-center px-6">
+    <div class="w-full rounded-2xl border border-white/10 bg-[#0A0D11] p-6 sm:p-8 text-center">
+        <h1 class="text-xl font-bold mb-4">Stripe 스타일 다이얼로그 (헤더 선 삭제 완료)</h1>
+        <button
+            id="openBtn"
+            class="inline-flex items-center gap-2 rounded-full bg-white text-[#0B0E11] px-6 py-3 text-sm font-bold hover:bg-gray-100 transition"
+        >
+            다이얼로그 열기
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+        </button>
+    </div>
+  </main>
+
+  <div id="slideOver" class="relative z-50 hidden" role="dialog" aria-modal="true">
+    
+    <div id="backdrop" class="fixed inset-0 bg-black/80 transition-opacity opacity-0 duration-300 backdrop-blur-sm"></div>
+
+    <div class="fixed inset-0 overflow-hidden">
+      <div class="absolute inset-0 overflow-hidden">
+        <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0 sm:pl-16">
+          
+          <div 
+            id="panel"
+            class="pointer-events-auto w-screen max-w-2xl transform transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] translate-x-full"
+          >
+            <div class="flex h-full flex-col bg-[#0A0D11] shadow-2xl sm:border-l sm:border-white/10">
+              
+              <div class="flex-none px-6 py-6 sm:px-8 bg-[#0A0D11]/95 backdrop-blur z-10 flex items-start justify-between">
+                <div>
+                  <h1 class="text-xl sm:text-[24px] font-bold text-[#56D5DB] tracking-tight">
+                    이름분석 운명상담이란
+                  </h1>
+                  <p class="mt-2 text-[14px] sm:text-[15px] leading-relaxed text-white/65">
+                    사주 없이 한글·한자 이름에 내재된 운명의 흐름을, 체계적으로 해석하는 전문 상담 서비스입니다.
+                  </p>
+                </div>
+                <button id="closeBtn" type="button" class="group -mr-2 ml-4 p-2 rounded-md text-white/40 hover:text-white focus:outline-none">
+                  <span class="sr-only">닫기</span>
+                  <svg class="h-6 w-6 group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="flex-1 overflow-y-auto custom-scrollbar px-6 py-8 sm:px-8">
+                
+                <div class="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-6 mb-12">
+                  
+                  <div class="group">
+                    <div class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2l9 5-9 5-9-5 9-5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                        <path d="M3 12l9 5 9-5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                        <path d="M3 17l9 5 9-5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                    <h3 class="text-[15px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
+                      16가지 세부 운세<br/>종합 분석
+                    </h3>
+                    <p class="mt-2 text-[13px] leading-relaxed text-white/65">
+                      수리운·주역괘운의 세밀한 분석을 통해 인생의 총체적 방향을 진단합니다.
+                    </p>
+                  </div>
+
+                  <div class="group">
+                    <div class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                         <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                         <path d="M16.24 7.76L14.12 14.12L7.76 16.24L9.88 9.88L16.24 7.76Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                    <h3 class="text-[15px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
+                      7개 인생 시기별 운의<br/>흐름 파악
+                    </h3>
+                    <p class="mt-2 text-[13px] leading-relaxed text-white/65">
+                      초년·중년·말년 등 7개 시기를 분석하여 시기별 강점과 전환점을 명확히 제시합니다.
+                    </p>
+                  </div>
+
+                  <div class="group">
+                    <div class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/>
+                      </svg>
+                    </div>
+                    <h3 class="text-[15px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
+                      과거·현재·미래<br/>정밀 진단
+                    </h3>
+                    <p class="mt-2 text-[13px] leading-relaxed text-white/65">
+                      지나온 일, 현재 처한 상황, 다가올 운을 세밀히 파악합니다.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="my-10 h-px bg-white/10"></div>
+
+                <div class="grid gap-12 lg:grid-cols-2">
+                  
+                  <div>
+                    <h2 class="text-[20px] sm:text-[22px] font-semibold tracking-tight text-[#56D5DB] mb-6">
+                      상담 내용
+                    </h2>
+                    
+                    <div class="space-y-8 pl-1">
+                      <div class="group">
+                        <h3 class="text-[15px] font-bold text-white mb-1.5">고민 원인 분석</h3>
+                        <p class="text-[13px] leading-relaxed text-white/65">
+                             이름 분석 데이터를 바탕으로 현재 겪고 있는 문제의 근본 원인을 명확하게 진단합니다.
+                        </p>
+                      </div>
+
+                      <div class="group">
+                         <h3 class="text-[15px] font-bold text-white mb-1.5">타고난 강점과 자질</h3>
+                         <p class="text-[13px] leading-relaxed text-white/65">
+                                선천적 재능과 특징 그리고 성격적 특성을 구체적으로 분석합니다.
+                         </p>
+                      </div>
+
+                      <div class="group">
+                        <h3 class="text-[15px] font-bold text-white mb-1.5">인생 방향성</h3>
+                        <p class="text-[13px] leading-relaxed text-white/65">
+                               어떤 일을 할 때 성공하는지, 어떤 선택이 유리한지 명확히 제시합니다.
+                        </p>
+                     </div>
+
+                     <div class="group">
+                        <h3 class="text-[15px] font-bold text-white mb-1.5">주의해야 할 흉운</h3>
+                        <p class="text-[13px] leading-relaxed text-white/65">
+                               발전을 저해하는 장애 요소와 극복 방안을 제시합니다.
+                        </p>
+                     </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h2 class="text-[20px] sm:text-[22px] font-semibold tracking-tight text-[#56D5DB] mb-6">
+                      진행 과정
+                    </h2>
+                    
+                    <div class="space-y-8"> 
+                      <div class="flex items-start gap-5">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-[#56D5DB]">01</div>
+                        <div class="pt-0.5 w-full">
+                          <div class="text-[15px] font-bold text-white mb-1.5">상담 일정 예약</div>
+                          <div class="flex gap-3">
+                            <div class="mt-1.5 h-[13px] w-[3px] shrink-0 rounded-full bg-[#56D5DB]"></div>
+                            <div class="text-[13px] leading-relaxed text-white/60">
+                              신청서 접수 및 입금 확인 후 예약 확정
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="flex items-start gap-5">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#56D5DB] text-sm font-bold text-white">02</div>
+                        <div class="pt-0.5 w-full">
+                          <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                            <span class="rounded-full bg-[#56D5DB]/[0.15] px-2 py-0.5 text-[11px] font-bold text-[#56D5DB]">
+                              핵심 상담 과정
+                            </span>
+                          </div>
+                          <div class="text-[15px] font-bold text-white mb-1.5">이름분석표(PDF) 발송</div>
+                          <div class="flex gap-3">
+                            <div class="mt-1.5 h-[13px] w-[3px] shrink-0 rounded-full bg-[#56D5DB]"></div>
+                            <div class="text-[13px] leading-relaxed text-white/60">
+                              상담 시작 직전 발송
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="flex items-start gap-5">
+                         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#56D5DB] text-sm font-bold text-white">03</div>
+                        <div class="pt-0.5 w-full">
+                          <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                            <span class="rounded-full bg-[#56D5DB]/[0.15] px-2 py-0.5 text-[11px] font-bold text-[#56D5DB]">
+                              핵심 상담 과정
+                            </span>
+                          </div>
+                          <div class="text-[15px] font-bold text-white mb-1.5">1:1 전화 상담 진행</div>
+                          <div class="flex gap-3">
+                            <div class="mt-1.5 h-[13px] w-[3px] shrink-0 rounded-full bg-[#56D5DB]"></div>
+                            <div class="text-[13px] leading-relaxed text-white/60">
+                              분석표를 토대로 심층 상담
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="h-16"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const openBtn = document.getElementById('openBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    const slideOver = document.getElementById('slideOver');
+    const backdrop = document.getElementById('backdrop');
+    const panel = document.getElementById('panel');
+
+    let isOpen = false;
+
+    function openPanel() {
+      slideOver.classList.remove('hidden');
+      setTimeout(() => {
+        backdrop.classList.remove('opacity-0');
+        panel.classList.remove('translate-x-full');
+      }, 10);
+      document.body.style.overflow = 'hidden';
+      isOpen = true;
+    }
+
+    function closePanel() {
+      backdrop.classList.add('opacity-0');
+      panel.classList.add('translate-x-full');
+      setTimeout(() => {
+        slideOver.classList.add('hidden');
+        document.body.style.overflow = '';
+        isOpen = false;
+      }, 500);
+    }
+
+    openBtn.addEventListener('click', openPanel);
+    closeBtn.addEventListener('click', closePanel);
+    backdrop.addEventListener('click', closePanel);
+    window.addEventListener('keydown', (e) => { if(e.key === 'Escape' && isOpen) closePanel(); });
+  </script>
+</body>
+</html>

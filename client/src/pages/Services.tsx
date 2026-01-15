@@ -523,185 +523,155 @@ export default function Services() {
 
       {/* 이름분석 자세히 보기 모달 */}
       <Dialog open={analysisDetailOpen} onOpenChange={(open) => { if (!open) closeAnalysisDetail(); }}>
-        <DialogContent className="z-[10001] w-full h-full max-w-full max-h-full sm:!top-[80px] sm:!translate-y-0 sm:!h-[calc(100vh-80px)] overflow-y-auto overflow-x-hidden bg-neutral-950 text-white border-white/20 !p-0 inset-0 !translate-x-0 !translate-y-0 rounded-none" aria-describedby={undefined}>
+        <DialogContent className="z-[10001] w-full h-full max-w-full max-h-full sm:!top-[80px] sm:!translate-y-0 sm:!h-[calc(100vh-80px)] overflow-y-auto overflow-x-hidden bg-[#0A0D11] text-white border-white/10 !p-0 inset-0 !translate-x-0 !translate-y-0 rounded-none" aria-describedby={undefined}>
           <DialogHeader className="sr-only">
             <DialogTitle>이름분석 운명상담 안내</DialogTitle>
           </DialogHeader>
-          <div className="px-6 pt-20 pb-8" data-testid="name-analysis-root">
-            <style>{`
-              .glass { background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); border: 1px solid rgba(255,255,255,0.12); }
-              .tiffany { color: #81D8D0; }
-            `}</style>
+          
+          {/* Fixed Header */}
+          <div className="sticky top-0 z-10 px-6 py-6 sm:px-8 bg-[#0A0D11]/95 backdrop-blur">
+            <h1 className="text-xl sm:text-[24px] font-bold text-[#56D5DB] tracking-tight" data-testid="section-title">
+              이름분석 운명상담이란
+            </h1>
+            <p className="mt-2 text-[14px] sm:text-[15px] leading-relaxed text-white/65">
+              사주 없이 한글·한자 이름에 내재된 운명의 흐름을, 체계적으로 해석하는 전문 상담 서비스입니다.
+            </p>
+          </div>
 
-            {/* Header */}
-            <div className="text-center mb-10">
-              <h2 className="mb-8 text-[25px] font-semibold tiffany sm:text-3xl md:text-4xl break-keep" data-testid="section-title">
-                이름분석 운명상담이란
-              </h2>
-              <p className="text-white/80 text-base md:text-base leading-relaxed">
-                사주 없이 한글·한자 이름에 내재된 운명의 흐름을, 체계적으로 해석하는 전문 상담 서비스입니다.
-              </p>
-            </div>
-
-            {/* 분석 범위 */}
-            <div className="grid gap-6 md:grid-cols-3 mb-16" data-testid="analysis-scope">
-              <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-1">
-                <Layers className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">16가지 세부 운세<br />종합 분석</h3>
-                <p className="text-lg md:text-lg leading-relaxed text-white/70">
+          {/* Scrollable Content */}
+          <div className="px-6 py-8 sm:px-8" data-testid="name-analysis-root">
+            {/* 분석 범위 - 3 Cards */}
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-6 mb-12" data-testid="analysis-scope">
+              <div className="group" data-testid="scope-card-1">
+                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                  <Layers className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <h3 className="text-[15px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
+                  16가지 세부 운세<br />종합 분석
+                </h3>
+                <p className="mt-2 text-[13px] leading-relaxed text-white/65">
                   수리운·주역괘운의 세밀한 분석을 통해 인생의 총체적 방향을 진단합니다.
                 </p>
               </div>
-              <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-2">
-                <Compass className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">7개 인생 시기별 운의<br />흐름 파악</h3>
-                <p className="text-lg md:text-lg leading-relaxed text-white/70">
+              <div className="group" data-testid="scope-card-2">
+                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                  <Compass className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <h3 className="text-[15px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
+                  7개 인생 시기별 운의<br />흐름 파악
+                </h3>
+                <p className="mt-2 text-[13px] leading-relaxed text-white/65">
                   초년·중년·말년 등 7개 시기를 분석하여 시기별 강점과 전환점을 명확히 제시합니다.
                 </p>
               </div>
-              <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-3">
-                <Clock className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">과거·현재·미래<br />정밀 진단</h3>
-                <p className="text-lg md:text-lg leading-relaxed text-white/70">
+              <div className="group" data-testid="scope-card-3">
+                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                  <Clock className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <h3 className="text-[15px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
+                  과거·현재·미래<br />정밀 진단
+                </h3>
+                <p className="mt-2 text-[13px] leading-relaxed text-white/65">
                   지나온 일, 현재 처한 상황, 다가올 운을 세밀히 파악합니다.
                 </p>
               </div>
             </div>
 
-            {/* 상담 내용 */}
-            <div data-testid="consulting-content">
-              <h3 className="tiffany mb-10 text-center text-[25px] font-semibold sm:text-3xl md:text-4xl">상담 내용</h3>
-              <div className="space-y-10">
-                <div className="flex flex-col md:flex-row md:items-center md:gap-6" data-testid="content-item-1">
-                  <CheckCircle className="hidden md:block h-[22px] w-[22px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
-                  <div>
-                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold flex items-center gap-3">
-                      <CheckCircle className="h-[21px] w-[21px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
-                      타고난 강점과 자질
-                    </h4>
-                    <p className="text-lg md:text-lg leading-relaxed text-white/70">
-                      선천적 재능과 성격적 특성을 구체적으로 분석합니다.
+            {/* Divider */}
+            <div className="my-10 h-px bg-white/10"></div>
+
+            {/* Two Column Layout - 상담 내용 & 진행 과정 */}
+            <div className="grid gap-12 lg:grid-cols-2">
+              {/* 상담 내용 */}
+              <div data-testid="consulting-content">
+                <h2 className="text-[20px] sm:text-[22px] font-semibold tracking-tight text-[#56D5DB] mb-6">
+                  상담 내용
+                </h2>
+                <div className="space-y-8 pl-1">
+                  <div className="group" data-testid="content-item-0">
+                    <h3 className="text-[15px] font-bold text-white mb-1.5">고민 원인 분석</h3>
+                    <p className="text-[13px] leading-relaxed text-white/65">
+                      이름 분석 데이터를 바탕으로 현재 겪고 있는 문제의 근본 원인을 명확하게 진단합니다.
                     </p>
                   </div>
-                </div>
-
-                <div className="flex flex-col md:flex-row md:items-center md:gap-6" data-testid="content-item-2">
-                  <MapPin className="hidden md:block h-[22px] w-[22px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
-                  <div>
-                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold flex items-center gap-3">
-                      <MapPin className="h-[21px] w-[21px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
-                      인생 방향성
-                    </h4>
-                    <p className="text-lg md:text-lg leading-relaxed text-white/70">
+                  <div className="group" data-testid="content-item-1">
+                    <h3 className="text-[15px] font-bold text-white mb-1.5">타고난 강점과 자질</h3>
+                    <p className="text-[13px] leading-relaxed text-white/65">
+                      선천적 재능과 특징 그리고 성격적 특성을 구체적으로 분석합니다.
+                    </p>
+                  </div>
+                  <div className="group" data-testid="content-item-2">
+                    <h3 className="text-[15px] font-bold text-white mb-1.5">인생 방향성</h3>
+                    <p className="text-[13px] leading-relaxed text-white/65">
                       어떤 일을 할 때 성공하는지, 어떤 선택이 유리한지 명확히 제시합니다.
                     </p>
                   </div>
-                </div>
-
-                <div className="flex flex-col md:flex-row md:items-center md:gap-6" data-testid="content-item-3">
-                  <TriangleAlert className="hidden md:block h-[22px] w-[22px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
-                  <div>
-                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold flex items-center gap-3">
-                      <TriangleAlert className="h-[21px] w-[21px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
-                      주의해야 할 흉운
-                    </h4>
-                    <p className="text-lg md:text-lg leading-relaxed text-white/70">
+                  <div className="group" data-testid="content-item-3">
+                    <h3 className="text-[15px] font-bold text-white mb-1.5">주의해야 할 흉운</h3>
+                    <p className="text-[13px] leading-relaxed text-white/65">
                       발전을 저해하는 장애 요소와 극복 방안을 제시합니다.
                     </p>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* 진행 과정 */}
-            <div className="mt-16" data-testid="process-flow">
-              <h3 className="tiffany mb-10 text-center text-[25px] font-semibold sm:text-3xl md:text-4xl">진행 과정</h3>
-              
-              <div className="bg-neutral-900 rounded-2xl shadow-sm border border-white/10 p-6 md:p-8">
-                <h3 className="text-[21px] md:text-2xl font-bold mb-2 text-white">
-                  이름상담
-                </h3>
-                <p className="text-base text-white/70 mb-6">
-                  예약부터 상담까지, 단계별로 명확하게 안내드립니다.
-                </p>
-
-                <div className="relative">
-                  <ol className="space-y-3 md:space-y-4">
-                    {/* Step 01 */}
-                    <li
-                      className="group relative rounded-2xl border bg-neutral-800 p-4 md:p-5 shadow-sm transition md:hover:shadow-md border-white/10"
-                      data-testid="process-step-1"
-                    >
-                      <div className="flex items-start gap-3 md:gap-4">
-                        <div className="relative z-10 flex h-8 w-8 md:h-9 md:w-9 flex-none items-center justify-center rounded-full border bg-neutral-800 text-[#56D5DB] border-[#56D5DB]/40 text-sm font-bold">
-                          01
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-                            <p className="text-lg font-semibold text-white">상담 일정 예약</p>
-                          </div>
-                          <ul className="mt-3 space-y-1.5 md:space-y-2">
-                            <li className="flex items-start gap-3">
-                              <span className="mt-0.5 inline-block w-px flex-none h-4 bg-[#56D5DB]/60" />
-                              <p className="text-base leading-relaxed text-white/70">신청서 접수 및 입금 확인 후 예약 확정</p>
-                            </li>
-                          </ul>
+              {/* 진행 과정 */}
+              <div data-testid="process-flow">
+                <h2 className="text-[20px] sm:text-[22px] font-semibold tracking-tight text-[#56D5DB] mb-6">
+                  진행 과정
+                </h2>
+                <div className="space-y-8">
+                  {/* Step 01 */}
+                  <div className="flex items-start gap-5" data-testid="process-step-1">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-[#56D5DB]">01</div>
+                    <div className="pt-0.5 w-full">
+                      <div className="text-[15px] font-bold text-white mb-1.5">상담 일정 예약</div>
+                      <div className="flex gap-3">
+                        <div className="mt-1.5 h-[13px] w-[3px] shrink-0 rounded-full bg-[#56D5DB]"></div>
+                        <div className="text-[13px] leading-relaxed text-white/60">
+                          신청서 접수 및 입금 확인 후 예약 확정
                         </div>
                       </div>
-                    </li>
+                    </div>
+                  </div>
 
-                    {/* Step 02 - Core */}
-                    <li
-                      className="group relative rounded-2xl border bg-[#56D5DB]/10 p-4 md:p-5 shadow-md transition md:hover:shadow-[0_0_0_3px_rgba(86,213,219,0.15)] border-[#56D5DB]/30"
-                      data-testid="process-step-2"
-                    >
-                      <div className="flex items-start gap-3 md:gap-4">
-                        <div className="relative z-10 flex h-8 w-8 md:h-9 md:w-9 flex-none items-center justify-center rounded-full border bg-[#56D5DB] text-white border-[#56D5DB] text-sm font-bold">
-                          02
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-                            <span className="core-process-badge inline-flex items-center rounded-full bg-[#56D5DB]/20 px-2.5 py-1 text-[11px] font-semibold text-[#58C4C4]">
-                              핵심 상담 과정
-                            </span>
-                            <p className="text-lg font-semibold text-white">이름분석표(PDF) 발송</p>
-                          </div>
-                          <ul className="mt-3 space-y-1.5 md:space-y-2">
-                            <li className="flex items-start gap-3">
-                              <span className="mt-0.5 inline-block w-px flex-none h-5 bg-[#56D5DB]" />
-                              <p className="text-base leading-relaxed text-white/70">상담 시작 직전 발송</p>
-                            </li>
-                          </ul>
+                  {/* Step 02 - Core */}
+                  <div className="flex items-start gap-5" data-testid="process-step-2">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#56D5DB] text-sm font-bold text-white">02</div>
+                    <div className="pt-0.5 w-full">
+                      <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                        <span className="core-process-badge rounded-full bg-[#56D5DB]/[0.15] px-2 py-0.5 text-[11px] font-bold text-[#56D5DB]">
+                          핵심 상담 과정
+                        </span>
+                      </div>
+                      <div className="text-[15px] font-bold text-white mb-1.5">이름분석표(PDF) 발송</div>
+                      <div className="flex gap-3">
+                        <div className="mt-1.5 h-[13px] w-[3px] shrink-0 rounded-full bg-[#56D5DB]"></div>
+                        <div className="text-[13px] leading-relaxed text-white/60">
+                          상담 시작 직전 발송
                         </div>
                       </div>
-                    </li>
+                    </div>
+                  </div>
 
-                    {/* Step 03 - Core */}
-                    <li
-                      className="group relative rounded-2xl border bg-[#56D5DB]/10 p-4 md:p-5 shadow-md transition md:hover:shadow-[0_0_0_3px_rgba(86,213,219,0.15)] border-[#56D5DB]/30"
-                      data-testid="process-step-3"
-                    >
-                      <div className="flex items-start gap-3 md:gap-4">
-                        <div className="relative z-10 flex h-8 w-8 md:h-9 md:w-9 flex-none items-center justify-center rounded-full border bg-[#56D5DB] text-white border-[#56D5DB] text-sm font-bold">
-                          03
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-                            <span className="core-process-badge inline-flex items-center rounded-full bg-[#56D5DB]/20 px-2.5 py-1 text-[11px] font-semibold text-[#58C4C4]">
-                              핵심 상담 과정
-                            </span>
-                            <p className="text-lg font-semibold text-white">1:1 전화 상담 진행</p>
-                          </div>
-                          <ul className="mt-3 space-y-1.5 md:space-y-2">
-                            <li className="flex items-start gap-3">
-                              <span className="mt-0.5 inline-block w-px flex-none h-5 bg-[#56D5DB]" />
-                              <p className="text-base leading-relaxed text-white/70">분석표를 토대로 심층 상담</p>
-                            </li>
-                          </ul>
+                  {/* Step 03 - Core */}
+                  <div className="flex items-start gap-5" data-testid="process-step-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#56D5DB] text-sm font-bold text-white">03</div>
+                    <div className="pt-0.5 w-full">
+                      <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                        <span className="core-process-badge rounded-full bg-[#56D5DB]/[0.15] px-2 py-0.5 text-[11px] font-bold text-[#56D5DB]">
+                          핵심 상담 과정
+                        </span>
+                      </div>
+                      <div className="text-[15px] font-bold text-white mb-1.5">1:1 전화 상담 진행</div>
+                      <div className="flex gap-3">
+                        <div className="mt-1.5 h-[13px] w-[3px] shrink-0 rounded-full bg-[#56D5DB]"></div>
+                        <div className="text-[13px] leading-relaxed text-white/60">
+                          분석표를 토대로 심층 상담
                         </div>
                       </div>
-                    </li>
-                  </ol>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
