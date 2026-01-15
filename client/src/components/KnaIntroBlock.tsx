@@ -185,7 +185,7 @@ export default function KnaIntroBlock() {
               href="https://blog.naver.com/whats_ur_name_777/223219400401"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center bg-black text-white px-6 py-3 rounded-lg text-base font-medium transition hover:bg-gray-900"
+              className="inline-flex items-center justify-center rounded-full bg-gray-900 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-gray-800"
               data-testid="link-honjasalparja"
             >
               혼자살팔자 확인하기 <span className="ml-1">›</span>
