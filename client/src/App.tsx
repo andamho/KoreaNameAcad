@@ -21,6 +21,7 @@ import Privacy from "@/pages/Privacy";
 import Notice from "@/pages/Notice";
 import ExpertCourse from "@/pages/ExpertCourse";
 import ContentDetail from "@/pages/ContentDetail";
+import Drafts from "@/pages/Drafts";
 import NotFound from "@/pages/not-found";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
@@ -58,6 +59,7 @@ function Router() {
       <Route path="/detail-info" component={DetailInfo}/>
       <Route path="/family-policy" component={FamilyPolicy}/>
       <Route path="/admin" component={Admin}/>
+      <Route path="/drafts" component={Drafts}/>
       <Route path="/services" component={Services}/>
       <Route path="/reviews" component={Reviews}/>
       <Route path="/pricing" component={Pricing}/>

@@ -1,4 +1,4 @@
-import { MessageCircle, FileText, Star, DollarSign, BookOpen, PenSquare, Lock, LogOut, User } from "lucide-react";
+import { MessageCircle, FileText, Star, DollarSign, BookOpen, PenSquare, Lock, LogOut, User, FileEdit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect, useRef } from "react";
@@ -325,19 +325,53 @@ export function Navbar() {
                 {/* 관리자 로그인/로그아웃 */}
                 <div className="border-t border-border mt-4 pt-4">
                   {isAdmin ? (
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-4 p-4 rounded-lg hover-elevate active-elevate-2 group text-left"
-                      data-testid="button-admin-logout"
-                    >
-                      <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-muted/80 transition-colors">
-                        <LogOut className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-semibold text-foreground">로그아웃</div>
-                        <div className="text-sm text-muted-foreground">관리자 모드 종료</div>
-                      </div>
-                    </button>
+                    <>
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setShowWriteDialog(true);
+                        }}
+                        className="w-full flex items-center gap-4 p-4 rounded-lg hover-elevate active-elevate-2 group text-left"
+                        data-testid="button-write-menu"
+                      >
+                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                          <PenSquare className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-foreground">글쓰기</div>
+                          <div className="text-sm text-muted-foreground">새 콘텐츠 작성</div>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          goToPage('/drafts');
+                        }}
+                        className="w-full flex items-center gap-4 p-4 rounded-lg hover-elevate active-elevate-2 group text-left"
+                        data-testid="button-drafts-menu"
+                      >
+                        <div className="w-10 h-10 bg-yellow-500/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-yellow-500/20 transition-colors">
+                          <FileEdit className="h-5 w-5 text-yellow-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-foreground">임시저장함</div>
+                          <div className="text-sm text-muted-foreground">저장된 초안 관리</div>
+                        </div>
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-4 p-4 rounded-lg hover-elevate active-elevate-2 group text-left"
+                        data-testid="button-admin-logout"
+                      >
+                        <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-muted/80 transition-colors">
+                          <LogOut className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-foreground">로그아웃</div>
+                          <div className="text-sm text-muted-foreground">관리자 모드 종료</div>
+                        </div>
+                      </button>
+                    </>
                   ) : (
                     <button
                       onClick={() => {

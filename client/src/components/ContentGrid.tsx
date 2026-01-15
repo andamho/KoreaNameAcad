@@ -13,10 +13,10 @@ interface ContentGridProps {
 }
 
 export function ContentGrid({ category, basePath, emptyMessage = "등록된 콘텐츠가 없습니다." }: ContentGridProps) {
-  const { isAdmin, token } = useAdmin();
+  const { isAdmin, token, isVerifying } = useAdmin();
   
   const { data: contents, isLoading } = useQuery<Content[]>({
-    queryKey: ["/api/contents", category, isAdmin],
+    queryKey: ["/api/contents", category, isAdmin, token],
     queryFn: async () => {
       const headers: Record<string, string> = {};
       let url = `/api/contents?category=${category}`;
@@ -31,9 +31,10 @@ export function ContentGrid({ category, basePath, emptyMessage = "등록된 콘�
       if (!response.ok) throw new Error("Failed to fetch contents");
       return response.json();
     },
+    enabled: !isVerifying, // 토큰 검증 완료 후 쿼리 실행
   });
 
-  if (isLoading) {
+  if (isLoading || isVerifying) {
     return (
       <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4">
         {[...Array(8)].map((_, i) => (
