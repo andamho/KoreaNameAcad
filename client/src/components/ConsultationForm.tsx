@@ -791,7 +791,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   </div>
                   <div className="pt-4 border-t border-white/10">
                     <p className="text-[17px] leading-relaxed text-[#56D5DB]/90 font-medium">
-                      소리 에너지는 말하는 순간 사라지지만, 글자 에너지는 폐기하기 전까지 계속 존재합니다.
+                      이름에는 소리 에너지도 있지만, 그보다 훨씬 강력한 것이 바로 글자 에너지입니다. 소리 에너지는 말하는 순간 사라지지만, 글자 에너지는 폐기하기 전까지 계속 존재합니다.
                     </p>
                   </div>
                 </article>
