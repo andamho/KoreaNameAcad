@@ -1657,9 +1657,10 @@ html.ua-tiktok .family-policy-sheet .text-\[17px\],
    - 71%: 사라짐 완료
    
    [중단 카드 - 이름운, 에너지원리]
-   - 50%: 선 도착 → 테두리 즉시 ON
-   - 51%: 선 사라지기 시작 → 테두리 사라지기 시작
-   - 71%: 테두리 OFF 완료
+   - 50%: 첫번째 선 도착 → 테두리 즉시 ON
+   - 60%: 색상 변화하며 유지 (보라색으로)
+   - 70%: 두번째 선 출발 → 테두리 사라지기 시작
+   - 90%: 두번째 선 도착과 함께 테두리 OFF
    
    [두번째 선]
    - 70%: 출발
@@ -1729,7 +1730,7 @@ html.ua-tiktok .family-policy-sheet .text-\[17px\],
   animation-delay: 0.3s; 
 }
 
-/* 중단 카드 (이름운, 에너지원리) - 50% 즉시 ON, 51% 사라지기 시작, 71% OFF */
+/* 중단 카드 (이름운, 에너지원리) - 50% ON, 70%까지 유지, 70% 선 출발과 함께 사라지기 시작 */
 .family-card-mid {
   animation: family-border-sync-mid 10s ease-in-out infinite;
 }
@@ -1739,22 +1740,28 @@ html.ua-tiktok .family-policy-sheet .text-\[17px\],
     border-color: rgba(255, 255, 255, 0.1); 
     box-shadow: none; 
   }
-  /* 50%: 선 도착 → 테두리 즉시 ON */
+  /* 50%: 첫번째 선 도착 → 테두리 즉시 ON */
   50% { 
     border-color: #56D5DB;
     box-shadow: 0 0 15px rgba(86, 213, 219, 0.4);
   }
-  /* 51%: 선 사라지기 시작 → 테두리도 사라지기 시작 */
-  51% { 
-    border-color: #56D5DB;
-    box-shadow: 0 0 12px rgba(86, 213, 219, 0.35);
-  }
+  /* 60%: 색상 변화하며 유지 */
   60% { 
     border-color: #7F5AF0;
-    box-shadow: 0 0 10px rgba(127, 90, 240, 0.3);
+    box-shadow: 0 0 20px rgba(127, 90, 240, 0.5);
   }
-  /* 71%: 선 사라짐 완료 → 테두리 OFF */
-  71%, 100% { 
+  /* 69%: 두번째 선 출발 직전까지 유지 */
+  69% { 
+    border-color: #7F5AF0;
+    box-shadow: 0 0 20px rgba(127, 90, 240, 0.5);
+  }
+  /* 70%: 두번째 선 출발 → 테두리 사라지기 시작 */
+  70% { 
+    border-color: #7F5AF0;
+    box-shadow: 0 0 15px rgba(127, 90, 240, 0.4);
+  }
+  /* 90%: 두번째 선 도착과 함께 테두리 OFF */
+  90%, 100% { 
     border-color: rgba(255, 255, 255, 0.1); 
     box-shadow: none; 
   }
