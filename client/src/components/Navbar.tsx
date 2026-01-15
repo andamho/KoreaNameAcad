@@ -53,6 +53,7 @@ export function Navbar() {
     content: "",
     isVideo: false,
     videoUrl: "",
+    isDraft: false,
   });
 
   // Close menu on ESC key
@@ -127,20 +128,21 @@ export function Navbar() {
         content: "",
         isVideo: false,
         videoUrl: "",
+        isDraft: false,
       });
-      toast({ title: "콘텐츠가 등록되었습니다." });
+      toast({ title: data.isDraft ? "임시저장되었습니다." : "콘텐츠가 등록되었습니다." });
     },
     onError: () => {
       toast({ title: "등록에 실패했습니다.", variant: "destructive" });
     },
   });
   
-  const handleWriteSubmit = () => {
+  const handleWriteSubmit = (asDraft: boolean = false) => {
     if (!writeForm.title.trim() || !writeForm.content.trim()) {
       toast({ title: "제목과 내용을 입력해주세요.", variant: "destructive" });
       return;
     }
-    createContentMutation.mutate(writeForm);
+    createContentMutation.mutate({ ...writeForm, isDraft: asDraft });
   };
 
   const goToHome = () => {
@@ -475,14 +477,25 @@ export function Navbar() {
                 />
               </div>
             )}
-            <Button 
-              onClick={handleWriteSubmit}
-              disabled={createContentMutation.isPending}
-              className="w-full"
-              data-testid="button-write-submit"
-            >
-              {createContentMutation.isPending ? "등록 중..." : "등록하기"}
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => handleWriteSubmit(true)}
+                disabled={createContentMutation.isPending}
+                variant="outline"
+                className="flex-1"
+                data-testid="button-write-draft"
+              >
+                {createContentMutation.isPending ? "저장 중..." : "임시저장"}
+              </Button>
+              <Button 
+                onClick={() => handleWriteSubmit(false)}
+                disabled={createContentMutation.isPending}
+                className="flex-1"
+                data-testid="button-write-submit"
+              >
+                {createContentMutation.isPending ? "등록 중..." : "등록하기"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
