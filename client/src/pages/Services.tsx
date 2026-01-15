@@ -4,6 +4,7 @@ import { ServiceCard } from "@/components/ServiceCard";
 import { NameAnalysisPhone } from "@/components/NameAnalysisPhone";
 import { ConsultationForm } from "@/components/ConsultationForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Search, Star, Flower, Baby, Building, Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect, useState, useRef } from "react";
@@ -522,14 +523,14 @@ export default function Services() {
       </Dialog>
 
       {/* 이름분석 자세히 보기 모달 */}
-      <Dialog open={analysisDetailOpen} onOpenChange={(open) => { if (!open) closeAnalysisDetail(); }}>
-        <DialogContent 
-          className="z-[10001] fixed !top-0 !right-0 !left-auto !bottom-0 !translate-x-0 !translate-y-0 w-full sm:max-w-[725px] sm:w-[725px] h-full max-h-full overflow-y-auto overflow-x-hidden bg-[#0A0D11] text-white border-l border-white/10 !p-0 rounded-none sm:rounded-l-xl data-[state=open]:animate-in data-[state=open]:slide-in-from-right data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right"
-          style={{ "--tw-animate-duration": "500ms", animationTimingFunction: "cubic-bezier(0.25, 1, 0.5, 1)" } as React.CSSProperties}
+      <Sheet open={analysisDetailOpen} onOpenChange={(open) => { if (!open) closeAnalysisDetail(); }}>
+        <SheetContent 
+          side="right"
+          className="z-[10001] w-full sm:max-w-[725px] sm:w-[725px] overflow-y-auto overflow-x-hidden bg-[#0A0D11] text-white border-l border-white/10 !p-0"
           aria-describedby={undefined}>
-          <DialogHeader className="sr-only">
-            <DialogTitle>이름분석 운명상담 안내</DialogTitle>
-          </DialogHeader>
+          <SheetHeader className="sr-only">
+            <SheetTitle>이름분석 운명상담 안내</SheetTitle>
+          </SheetHeader>
           
           {/* Fixed Header */}
           <div className="sticky top-0 z-10 px-6 py-6 sm:px-8 bg-[#0A0D11]/95 backdrop-blur">
@@ -679,8 +680,8 @@ export default function Services() {
               </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
