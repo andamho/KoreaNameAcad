@@ -1693,11 +1693,16 @@ html.ua-tiktok .family-policy-sheet .text-\[17px\],
 }
 
 @keyframes family-line-first {
+  /* 0-30%: 대기 */
   0%, 29% { stroke-dashoffset: 3000; opacity: 0; }
+  /* 30%: 출발 */
   30% { stroke-dashoffset: 3000; opacity: 1; filter: hue-rotate(0deg) brightness(1); }
+  /* 50%: 도착 (20% = 2초 소요) */
   50% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(0deg) brightness(1); }
-  65% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(180deg) brightness(1.5); }
-  70% { stroke-dashoffset: -3000; opacity: 0; }
+  /* 51%: 잠시 유지 */
+  51% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(90deg) brightness(1.3); }
+  /* 71%: 사라짐 완료 (20% = 2초 소요, 출발과 동일) */
+  71% { stroke-dashoffset: -3000; opacity: 0; }
   100% { stroke-dashoffset: -3000; opacity: 0; }
 }
 
@@ -1740,11 +1745,16 @@ html.ua-tiktok .family-policy-sheet .text-\[17px\],
 }
 
 @keyframes family-line-second {
+  /* 0-70%: 대기 */
   0%, 69% { stroke-dashoffset: 3000; opacity: 0; }
+  /* 70%: 출발 */
   70% { stroke-dashoffset: 3000; opacity: 1; filter: hue-rotate(0deg) brightness(1); }
+  /* 90%: 도착 (20% = 2초 소요) */
   90% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(0deg) brightness(1); }
-  95% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(180deg) brightness(1.5); }
-  100% { stroke-dashoffset: -1500; opacity: 0; }
+  /* 91%: 잠시 유지 */
+  91% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(90deg) brightness(1.3); }
+  /* 100%: 사라짐 (9% ≈ 0.9초, 다음 사이클로 연결) */
+  100% { stroke-dashoffset: -1000; opacity: 0; }
 }
 
 /* 결론 카드 (하단) - 9초(90%)에 즉시 켜짐 */
