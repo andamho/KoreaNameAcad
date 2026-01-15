@@ -1843,6 +1843,37 @@ html.ua-tiktok .family-policy-sheet h4,
   100% { opacity: 1; }
 }
 
+/* 모바일용 선 애니메이션 - 짧은 경로에 맞게 조정 */
+.family-stripe-path-mobile {
+  fill: none;
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 500 500;
+  stroke-dashoffset: 500;
+  animation: family-line-mobile 10s ease-in-out forwards;
+}
+
+@keyframes family-line-mobile {
+  0%, 27% { stroke-dashoffset: 500; opacity: 0; }
+  30% { stroke-dashoffset: 500; opacity: 1; }
+  50% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
+}
+
+/* 모바일용 두번째 선 (딜레이) */
+.family-stripe-path-mobile.family-delay-bottom {
+  animation: family-line-mobile-second 10s ease-in-out forwards !important;
+}
+
+@keyframes family-line-mobile-second {
+  0%, 67% { stroke-dashoffset: 500; opacity: 0; }
+  70% { stroke-dashoffset: 500; opacity: 1; }
+  90% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
+}
+
 /* 인앱 페이지 버튼 82% 축소 (다이얼로그 외부) */
 html.ua-instagram button:not(.ig-tt-dialog button),
 html.ua-tiktok button:not(.ig-tt-dialog button) {

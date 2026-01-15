@@ -767,7 +767,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 <svg className="absolute inset-0 w-full h-full md:hidden" viewBox="0 0 100 100" preserveAspectRatio="none">
                   <path 
                     d="M 50 0 V 100" 
-                    className="family-stripe-path" 
+                    className="family-stripe-path-mobile" 
                     stroke="url(#grad-aurora-1)" 
                   />
                 </svg>
@@ -843,7 +843,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 </svg>
                 {/* 모바일용 애니메이션 선 (md 미만) - 이름운카드 중앙에서 결론카드로 */}
                 <svg className="absolute inset-0 w-full h-full md:hidden" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <path d="M 50 0 V 100" className="family-stripe-path family-delay-bottom" stroke="url(#grad-aurora-2)" />
+                  <path d="M 50 0 V 100" className="family-stripe-path-mobile family-delay-bottom" stroke="url(#grad-aurora-2)" />
                 </svg>
                 {/* 모바일용 고정 연결선 (md 미만) */}
                 <svg className="absolute inset-0 w-full h-full family-static-lines md:hidden" viewBox="0 0 100 100" preserveAspectRatio="none">
