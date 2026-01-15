@@ -16,25 +16,15 @@ export function ContentGrid({ category, basePath, emptyMessage = "등록된 콘�
   const { isAdmin, token, isVerifying } = useAdmin();
   
   const { data: contents, isLoading } = useQuery<Content[]>({
-    queryKey: ["/api/contents", category, isAdmin, token],
+    queryKey: ["/api/contents", category],
     queryFn: async () => {
-      const headers: Record<string, string> = {};
-      let url = `/api/contents?category=${category}`;
-      
-      // 관리자일 경우 임시저장 콘텐츠도 포함
-      if (isAdmin && token) {
-        headers["Authorization"] = `Bearer ${token}`;
-        url += "&includeDrafts=true";
-      }
-      
-      const response = await fetch(url, { headers });
+      const response = await fetch(`/api/contents?category=${category}`);
       if (!response.ok) throw new Error("Failed to fetch contents");
       return response.json();
     },
-    enabled: !isVerifying, // 토큰 검증 완료 후 쿼리 실행
   });
 
-  if (isLoading || isVerifying) {
+  if (isLoading) {
     return (
       <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4">
         {[...Array(8)].map((_, i) => (
