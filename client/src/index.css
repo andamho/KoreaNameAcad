@@ -1641,6 +1641,34 @@ html.ua-tiktok .family-policy-sheet .text-\[17px\],
   font-size: 17px !important;
 }
 
+html.ua-instagram .analysis-detail-sheet .text-\[15px\],
+html.ua-tiktok .analysis-detail-sheet .text-\[15px\],
+.ig-shell .analysis-detail-sheet .text-\[15px\],
+html.ua-instagram .family-policy-sheet .text-\[15px\],
+html.ua-tiktok .family-policy-sheet .text-\[15px\],
+.ig-shell .family-policy-sheet .text-\[15px\] {
+  font-size: 15px !important;
+}
+
+html.ua-instagram .analysis-detail-sheet .text-\[13px\],
+html.ua-tiktok .analysis-detail-sheet .text-\[13px\],
+.ig-shell .analysis-detail-sheet .text-\[13px\],
+html.ua-instagram .family-policy-sheet .text-\[13px\],
+html.ua-tiktok .family-policy-sheet .text-\[13px\],
+.ig-shell .family-policy-sheet .text-\[13px\] {
+  font-size: 13px !important;
+}
+
+/* h4 태그 (블로그 카드 제목 등) */
+html.ua-instagram .analysis-detail-sheet h4,
+html.ua-tiktok .analysis-detail-sheet h4,
+.ig-shell .analysis-detail-sheet h4,
+html.ua-instagram .family-policy-sheet h4,
+html.ua-tiktok .family-policy-sheet h4,
+.ig-shell .family-policy-sheet h4 {
+  font-size: 17px !important;
+}
+
 /* ========================================
    등본상 가족 상담 원칙 - 선 연결 애니메이션
    전체 타이밍 (25초 주기 = 10초 애니메이션 + 15초 휴식):
