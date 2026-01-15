@@ -12,18 +12,18 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const categoryLabels: Record<string, string> = {
-  nameStory: "재미있는 이야기",
-  expert: "전문가 과정",
-  announcement: "공지사항",
   review: "후기",
+  nameStory: "이름이야기",
+  announcement: "공지사항",
+  expert: "한국이름학교",
 };
 
 const categoryOptions = [
   { value: "all", label: "전체" },
-  { value: "nameStory", label: "재미있는 이야기" },
-  { value: "expert", label: "전문가 과정" },
-  { value: "announcement", label: "공지사항" },
   { value: "review", label: "후기" },
+  { value: "nameStory", label: "이름이야기" },
+  { value: "announcement", label: "공지사항" },
+  { value: "expert", label: "한국이름학교" },
 ];
 
 export default function Drafts() {

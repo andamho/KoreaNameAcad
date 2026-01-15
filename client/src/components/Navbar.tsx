@@ -20,10 +20,10 @@ const LOGO_TINY = (typeof window !== 'undefined' && (window as any).__LOGO_TINY)
 
 // 카테고리 옵션
 const categoryOptions = [
-  { value: "nameStory", label: "재미있는 이야기" },
-  { value: "expert", label: "전문가 과정" },
-  { value: "announcement", label: "공지사항" },
   { value: "review", label: "후기" },
+  { value: "nameStory", label: "이름이야기" },
+  { value: "announcement", label: "공지사항" },
+  { value: "expert", label: "한국이름학교" },
 ];
 
 export function Navbar() {
@@ -47,7 +47,7 @@ export function Navbar() {
   // Write dialog
   const [showWriteDialog, setShowWriteDialog] = useState(false);
   const [writeForm, setWriteForm] = useState({
-    category: "nameStory" as string,
+    category: "review" as string,
     title: "",
     thumbnail: "",
     content: "",
@@ -122,7 +122,7 @@ export function Navbar() {
       queryClient.invalidateQueries({ queryKey: ["/api/contents", data.category] });
       setShowWriteDialog(false);
       setWriteForm({
-        category: "nameStory",
+        category: "review",
         title: "",
         thumbnail: "",
         content: "",
