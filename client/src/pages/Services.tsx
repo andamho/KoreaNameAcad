@@ -536,10 +536,10 @@ export default function Services() {
           {/* Fixed Header */}
           <div className="sticky top-0 z-10 px-6 py-6 sm:px-8 bg-[#0A0D11]/95 backdrop-blur flex items-start justify-between">
             <div>
-              <h1 className="text-xl sm:text-[24px] font-bold text-[#56D5DB] tracking-tight" data-testid="section-title">
+              <h1 className="text-[22px] sm:text-[26px] font-bold text-[#56D5DB] tracking-tight" data-testid="section-title">
                 이름분석 운명상담이란
               </h1>
-              <p className="mt-2 text-[14px] sm:text-[17px] leading-relaxed text-white/65">
+              <p className="mt-2 text-[17px] leading-relaxed text-white/65">
                 사주 없이 한글·한자 이름에 내재된 운명의 흐름을, 체계적으로 해석하는 전문 상담 서비스입니다.
               </p>
             </div>
