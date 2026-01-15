@@ -357,6 +357,9 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               <span className="hidden md:inline">(</span>정확한 한자 확인을 위해 반드시 첨부 | 주민등록번호 및 주소는 가린 후 제출<span className="hidden md:inline">)</span>
             </span>
           </Label>
+          <p className="text-sm text-muted-foreground">
+            * 등본상 거주지와 실제 거주지가 다른 분들은 예약시 꼭 말씀주세요.
+          </p>
           <Input
             id="registration-document"
             type="file"
