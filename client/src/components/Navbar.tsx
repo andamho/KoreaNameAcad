@@ -1,10 +1,11 @@
-import { MessageCircle, FileText, Star, DollarSign, BookOpen, PenSquare, Lock, LogOut, User, FileEdit } from "lucide-react";
+import { MessageCircle, FileText, Star, DollarSign, BookOpen, PenSquare, Lock, LogOut, User, FileEdit, Upload, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useToast } from "@/hooks/use-toast";
+import { useUpload } from "@/hooks/use-upload";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,6 +56,29 @@ export function Navbar() {
     videoUrl: "",
     isDraft: false,
   });
+  
+  // Image upload
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadFile, isUploading } = useUpload({
+    onSuccess: (response) => {
+      setWriteForm(prev => ({ ...prev, thumbnail: response.objectPath }));
+      toast({ title: "이미지가 업로드되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
+    },
+  });
+  
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
+        return;
+      }
+      await uploadFile(file);
+    }
+  };
 
   // Close menu on ESC key
   useEffect(() => {
@@ -474,14 +498,61 @@ export function Navbar() {
               />
             </div>
             <div>
-              <Label htmlFor="write-thumbnail">썸네일 이미지 URL (선택)</Label>
-              <Input
-                id="write-thumbnail"
-                value={writeForm.thumbnail}
-                onChange={(e) => setWriteForm(prev => ({ ...prev, thumbnail: e.target.value }))}
-                placeholder="https://example.com/image.jpg"
-                data-testid="input-write-thumbnail"
-              />
+              <Label>썸네일 이미지 (선택)</Label>
+              <div className="flex gap-2 items-center">
+                <Input
+                  id="write-thumbnail"
+                  value={writeForm.thumbnail}
+                  onChange={(e) => setWriteForm(prev => ({ ...prev, thumbnail: e.target.value }))}
+                  placeholder="URL 직접 입력 또는 이미지 업로드"
+                  className="flex-1"
+                  data-testid="input-write-thumbnail"
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                  data-testid="input-write-thumbnail-file"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  data-testid="button-write-upload-thumbnail"
+                >
+                  {isUploading ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Upload className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+              {writeForm.thumbnail && (
+                <div className="mt-2 relative">
+                  <img 
+                    src={writeForm.thumbnail} 
+                    alt="썸네일 미리보기" 
+                    className="w-full h-32 object-cover rounded border"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-1 right-1 h-6 px-2 text-xs bg-background/80"
+                    onClick={() => setWriteForm(prev => ({ ...prev, thumbnail: "" }))}
+                    data-testid="button-write-remove-thumbnail"
+                  >
+                    삭제
+                  </Button>
+                </div>
+              )}
             </div>
             <div>
               <Label htmlFor="write-content">내용</Label>

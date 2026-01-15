@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertConsultationSchema, insertNameStorySchema, insertContentSchema, contentCategoryEnum, type ContentCategory } from "@shared/schema";
 import { sendConsultationNotification } from "./email";
 import crypto from "crypto";
+import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 
 // 간단한 토큰 저장소 (메모리 기반)
 const validTokens = new Set<string>();
@@ -292,6 +293,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ error: "Failed to delete content" });
     }
   });
+
+  // Register object storage routes for file uploads
+  registerObjectStorageRoutes(app);
 
   const httpServer = createServer(app);
 
