@@ -7,9 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Quote, Download, Heart, Clock, Plus, Lock, LogOut } from "lucide-react";
+import { Star, Quote, Download, Heart, Clock, Plus, Lock, LogOut, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useAdmin } from "@/contexts/AdminContext";
+import { queryClient } from "@/lib/queryClient";
+import type { Content } from "@shared/schema";
 import reviewsCharacterImage from "@assets/KakaoTalk_20251226_140721227_1766725962281.png";
 
 // 후기 타입 정의
@@ -28,14 +32,9 @@ export default function Reviews() {
   const statsRef = useRef<HTMLDivElement>(null);
   const [animated, setAnimated] = useState(false);
   const { toast } = useToast();
+  const { isAdmin, token } = useAdmin();
   
-  // 관리자 상태
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [loginPassword, setLoginPassword] = useState("");
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-  
-  // 후기 작성 상태
+  // 후기 작성 상태 (레거시 - 로컬 저장용)
   const [showWriteDialog, setShowWriteDialog] = useState(false);
   const [reviewForm, setReviewForm] = useState({
     name: "",
@@ -48,72 +47,44 @@ export default function Reviews() {
   const [addedAnalysisReviews, setAddedAnalysisReviews] = useState<Testimonial[]>([]);
   const [addedNameChangeReviews, setAddedNameChangeReviews] = useState<Testimonial[]>([]);
   
-  // 관리자 토큰 검증
-  useEffect(() => {
-    const verifyAdminToken = async () => {
-      const token = localStorage.getItem(ADMIN_TOKEN_KEY);
-      if (!token) return;
-      
-      try {
-        const response = await fetch("/api/admin/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-        });
-        const data = await response.json();
-        if (data.valid) {
-          setIsAdmin(true);
-        } else {
-          localStorage.removeItem(ADMIN_TOKEN_KEY);
-        }
-      } catch {
-        localStorage.removeItem(ADMIN_TOKEN_KEY);
-      }
-    };
-    
-    verifyAdminToken();
-  }, []);
+  // CMS 후기 가져오기
+  const { data: cmsReviews, isLoading: isLoadingReviews } = useQuery<Content[]>({
+    queryKey: ["/api/contents", "review"],
+    queryFn: async () => {
+      const response = await fetch("/api/contents?category=review");
+      if (!response.ok) throw new Error("Failed to fetch reviews");
+      return response.json();
+    },
+  });
   
-  // 로그인 처리
-  const handleLogin = async () => {
-    if (!loginPassword.trim()) {
-      toast({ title: "비밀번호를 입력해주세요.", variant: "destructive" });
-      return;
-    }
-    
-    setIsLoggingIn(true);
-    try {
-      const response = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: loginPassword }),
+  // CMS 후기 삭제
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/contents/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
       });
-      
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
-        setIsAdmin(true);
-        setShowLoginDialog(false);
-        setLoginPassword("");
-        toast({ title: "관리자로 로그인되었습니다." });
-      } else {
-        toast({ title: "비밀번호가 틀렸습니다.", variant: "destructive" });
-      }
-    } catch {
-      toast({ title: "로그인 중 오류가 발생했습니다.", variant: "destructive" });
-    } finally {
-      setIsLoggingIn(false);
+      if (!response.ok) throw new Error("Failed to delete");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contents", "review"] });
+      toast({ title: "삭제되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "삭제 실패", variant: "destructive" });
+    },
+  });
+  
+  const handleDeleteCmsReview = (id: string) => {
+    if (confirm("정말 삭제하시겠습니까?")) {
+      deleteMutation.mutate(id);
     }
   };
   
-  // 로그아웃 처리
-  const handleLogout = () => {
-    localStorage.removeItem(ADMIN_TOKEN_KEY);
-    setIsAdmin(false);
-    toast({ title: "로그아웃되었습니다." });
-  };
-  
-  // 후기 작성 처리
+  // 후기 작성 처리 (레거시)
   const handleWriteReview = () => {
     if (!reviewForm.name.trim() || !reviewForm.content.trim()) {
       toast({ title: "이름과 내용을 입력해주세요.", variant: "destructive" });
@@ -598,6 +569,61 @@ export default function Reviews() {
             ))}
           </div>
 
+          {/* CMS 후기 섹션 */}
+          {cmsReviews && cmsReviews.length > 0 && (
+            <div className="mt-16">
+              <h3 className="text-2xl font-bold text-center text-foreground mb-8">
+                최신 고객 후기
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {cmsReviews.map((review) => (
+                  <Card
+                    key={review.id}
+                    className="p-6 bg-card border border-border relative"
+                    data-testid={`cms-review-card-${review.id}`}
+                  >
+                    {/* 관리자 삭제 버튼 */}
+                    {isAdmin && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleDeleteCmsReview(review.id)}
+                        className="absolute top-2 right-2 text-red-500 hover:text-red-600 hover:bg-red-50"
+                        data-testid={`button-delete-cms-review-${review.id}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                    
+                    {/* 썸네일 */}
+                    {review.thumbnail && (
+                      <img
+                        src={review.thumbnail}
+                        alt={review.title}
+                        className="w-full h-40 object-cover rounded-lg mb-4"
+                      />
+                    )}
+                    
+                    {/* 제목 */}
+                    <h4 className="text-lg font-bold text-foreground mb-2">
+                      {review.title}
+                    </h4>
+                    
+                    {/* 내용 */}
+                    <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
+                      {review.content}
+                    </p>
+                    
+                    {/* 날짜 */}
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(review.createdAt).toLocaleDateString("ko-KR")}
+                    </p>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mt-12 text-center">
             <a
               href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=11&tab=1#contentslist_block"
@@ -615,41 +641,7 @@ export default function Reviews() {
 
       <Footer />
       
-      {/* 관리자 로그인 다이얼로그 */}
-      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Lock className="w-5 h-5" />
-              관리자 로그인
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="admin-password">비밀번호</Label>
-              <Input
-                id="admin-password"
-                type="password"
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                placeholder="비밀번호를 입력하세요"
-                data-testid="input-admin-password"
-              />
-            </div>
-            <Button 
-              onClick={handleLogin} 
-              disabled={isLoggingIn}
-              className="w-full"
-              data-testid="button-admin-login"
-            >
-              {isLoggingIn ? "로그인 중..." : "로그인"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-      
-      {/* 후기 작성 다이얼로그 */}
+      {/* 후기 작성 다이얼로그 (레거시) */}
       <Dialog open={showWriteDialog} onOpenChange={setShowWriteDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -716,8 +708,8 @@ export default function Reviews() {
         </DialogContent>
       </Dialog>
       
-      {/* 관리자 플로팅 버튼 */}
-      {isAdmin ? (
+      {/* 관리자 플로팅 버튼 - 레거시 로컬 후기 작성용 */}
+      {isAdmin && (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
           <Button
             onClick={() => setShowWriteDialog(true)}
@@ -728,27 +720,7 @@ export default function Reviews() {
             <Plus className="w-5 h-5 mr-2" />
             후기 작성
           </Button>
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            size="sm"
-            className="rounded-full"
-            data-testid="button-admin-logout"
-          >
-            <LogOut className="w-4 h-4 mr-1" />
-            로그아웃
-          </Button>
         </div>
-      ) : (
-        <Button
-          onClick={() => setShowLoginDialog(true)}
-          variant="ghost"
-          size="icon"
-          className="fixed bottom-6 right-6 z-50 opacity-20 hover:opacity-100 transition-opacity"
-          data-testid="button-admin-login-trigger"
-        >
-          <Lock className="w-4 h-4" />
-        </Button>
       )}
     </div>
   );
