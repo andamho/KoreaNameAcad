@@ -42,7 +42,7 @@ function FamilyIcon({ className }: { className?: string }) {
 }
 
 const iconProps = "w-10 h-10 text-gray-700 dark:text-gray-300 mb-3";
-const mobileIconProps = "w-10 h-10 text-[#18a999]";
+const mobileIconProps = "w-10 h-10 text-gray-700 dark:text-gray-300";
 
 type Node = {
   key: string;
@@ -142,7 +142,7 @@ function CircleNode({ node, radius }: { node: Node; radius: number }) {
       }}
     >
       <div className="relative transition-transform duration-300 group-hover:scale-110">
-        <div className="rounded-full border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-[6px] shadow-lg group-hover:border-[#18a999] transition-colors">
+        <div className="rounded-full border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-[6px] shadow-lg group-hover:border-[#7EE8E2] transition-colors">
           <div className="w-32 h-32 md:w-44 md:h-44 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 shadow-md flex flex-col items-center justify-center p-4 text-center">
             <div className="mb-2">{node.icon}</div>
             <span className="text-gray-900 dark:text-foreground font-semibold text-[21px] md:text-[22px] leading-tight whitespace-pre-line tracking-tight">
@@ -190,7 +190,7 @@ function MobileCircleItem({ node }: { node: Node }) {
       <div 
         className={`w-32 h-32 rounded-full bg-white dark:bg-gray-800 border-[3px] shadow-lg flex flex-col items-center justify-center p-4 mb-5 transition-all duration-500 ${
           isVisible 
-            ? 'border-[#18a999] scale-110 shadow-[0_0_30px_rgba(24,169,153,0.3)]' 
+            ? 'border-[#7EE8E2] scale-110 shadow-[0_0_30px_rgba(126,232,226,0.3)]' 
             : 'border-gray-200 dark:border-gray-600 scale-100'
         }`}
       >
