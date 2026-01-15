@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Trash2, Eye, FileEdit } from "lucide-react";
 import { Link } from "wouter";
+import { useState } from "react";
 import type { Content } from "@shared/schema";
 import { useAdmin } from "@/contexts/AdminContext";
 import { queryClient } from "@/lib/queryClient";
@@ -8,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const categoryLabels: Record<string, string> = {
   nameStory: "재미있는 이야기",
@@ -16,9 +18,18 @@ const categoryLabels: Record<string, string> = {
   review: "후기",
 };
 
+const categoryOptions = [
+  { value: "all", label: "전체" },
+  { value: "nameStory", label: "재미있는 이야기" },
+  { value: "expert", label: "전문가 과정" },
+  { value: "announcement", label: "공지사항" },
+  { value: "review", label: "후기" },
+];
+
 export default function Drafts() {
   const { isAdmin, token, isVerifying } = useAdmin();
   const { toast } = useToast();
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   const { data: drafts, isLoading } = useQuery<Content[]>({
     queryKey: ["/api/contents/drafts", token],
@@ -101,10 +112,22 @@ export default function Drafts() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-        <h1 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-          <FileEdit className="w-6 h-6" />
-          임시저장함
-        </h1>
+        <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <FileEdit className="w-6 h-6" />
+            임시저장함
+          </h1>
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-[180px]" data-testid="select-draft-category">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {categoryOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         {isLoading || isVerifying ? (
           <div className="space-y-4">
@@ -118,7 +141,9 @@ export default function Drafts() {
           </div>
         ) : (
           <div className="space-y-3">
-            {drafts.map((draft) => (
+            {drafts
+              .filter((draft) => selectedCategory === "all" || draft.category === selectedCategory)
+              .map((draft) => (
               <div
                 key={draft.id}
                 className="flex items-center gap-4 p-4 bg-card rounded-lg border"
