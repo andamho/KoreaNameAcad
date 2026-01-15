@@ -694,7 +694,6 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               
               {/* 상단 2개 카드 - 결혼, 자녀 (테두리 애니메이션 추가) */}
               <div className="grid gap-6 md:grid-cols-2 z-10 relative">
-                {/* 부부 카드 */}
                 <article className="family-card-top group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
@@ -714,14 +713,6 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   </div>
                 </article>
 
-                {/* 모바일: 부부→이름운 연결선 */}
-                <div className="relative h-12 w-full md:hidden">
-                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <path d="M 50 0 V 100" fill="none" stroke="#56D5DB" strokeWidth="2" strokeLinecap="round" style={{ vectorEffect: 'non-scaling-stroke' }} />
-                  </svg>
-                </div>
-
-                {/* 자녀 카드 */}
                 <article className="family-card-top group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
@@ -744,21 +735,23 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
               {/* 첫번째 선 연결 애니메이션 - 결혼→이름운(좌1/3), 자녀→이름운(우1/3) */}
               <div className="relative h-20 w-full overflow-visible pointer-events-none">
-                {/* 데스크톱용 애니메이션 선 (md 이상) */}
-                <svg className="absolute inset-0 w-full h-full hidden md:block" viewBox="0 0 100 100" preserveAspectRatio="none">
+                {/* 애니메이션 선 */}
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  {/* 결혼 카드(25%) → 이름운 카드 좌측 1/3 지점(16.7%) - 직선 + 꺾임부분만 라운드 */}
                   <path 
                     d="M 25 0 V 40 Q 25 45 20.85 45 H 16.7 Q 11.7 45 11.7 50 V 100" 
                     className="family-stripe-path" 
                     stroke="url(#grad-aurora-1)" 
                   />
+                  {/* 자녀 카드(75%) → 이름운 카드 우측 1/3 지점(33.3%) - 직선 + 꺾임부분만 라운드 */}
                   <path 
                     d="M 75 0 V 40 Q 75 45 70 45 H 38.3 Q 33.3 45 33.3 50 V 100" 
                     className="family-stripe-path family-delay-top" 
                     stroke="url(#grad-aurora-1)" 
                   />
                 </svg>
-                {/* 데스크톱용 고정 연결선 (md 이상) */}
-                <svg className="absolute inset-0 w-full h-full family-static-lines hidden md:block" viewBox="0 0 100 100" preserveAspectRatio="none">
+                {/* 고정 연결선 - 애니메이션 후 나타남 */}
+                <svg className="absolute inset-0 w-full h-full family-static-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
                   <path 
                     d="M 25 0 V 40 Q 25 45 20.85 45 H 16.7 Q 11.7 45 11.7 50 V 100" 
                     fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -769,18 +762,6 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     d="M 75 0 V 40 Q 75 45 70 45 H 38.3 Q 33.3 45 33.3 50 V 100" 
                     fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                     stroke="url(#grad-aurora-1)" 
-                    style={{ vectorEffect: 'non-scaling-stroke' }}
-                  />
-                </svg>
-                {/* 모바일용 고정 연결선 (md 미만) - 즉시 표시 */}
-                <svg className="absolute inset-0 w-full h-full md:hidden" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <path 
-                    d="M 50 0 V 100" 
-                    fill="none" 
-                    stroke="#56D5DB"
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
                     style={{ vectorEffect: 'non-scaling-stroke' }}
                   />
                 </svg>
@@ -788,7 +769,6 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
               {/* 중단 2개 카드 - 이름운, 에너지의 원리 */}
               <div className="grid gap-6 md:grid-cols-2 z-10 relative">
-                {/* 이름운 카드 */}
                 <article className="family-card-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
@@ -813,14 +793,6 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   </div>
                 </article>
 
-                {/* 모바일: 이름운→결론 연결선 */}
-                <div className="relative h-12 w-full md:hidden">
-                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <path d="M 50 0 V 100" fill="none" stroke="#7F5AF0" strokeWidth="2" strokeLinecap="round" style={{ vectorEffect: 'non-scaling-stroke' }} />
-                  </svg>
-                </div>
-
-                {/* 에너지 카드 */}
                 <article className="family-card-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
@@ -844,19 +816,14 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
               {/* 두번째 선 연결 애니메이션 */}
               <div className="relative h-20 w-full overflow-visible pointer-events-none">
-                {/* 데스크톱용 애니메이션 선 (md 이상) */}
-                <svg className="absolute inset-0 w-full h-full hidden md:block" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                   <path d="M 25 0 V 45 Q 25 50 30 50 H 45 Q 50 50 50 55 V 100" className="family-stripe-path family-delay-bottom" stroke="url(#grad-aurora-2)" />
                   <path d="M 75 0 V 45 Q 75 50 70 50 H 55 Q 50 50 50 55 V 100" className="family-stripe-path family-delay-bottom" stroke="url(#grad-aurora-2)" />
                 </svg>
-                {/* 데스크톱용 고정 연결선 (md 이상) */}
-                <svg className="absolute inset-0 w-full h-full family-static-lines hidden md:block" viewBox="0 0 100 100" preserveAspectRatio="none">
+                {/* 고정 연결선 - 애니메이션 후 나타남 */}
+                <svg className="absolute inset-0 w-full h-full family-static-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
                   <path d="M 25 0 V 45 Q 25 50 30 50 H 45 Q 50 50 50 55 V 100" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" stroke="url(#grad-aurora-2)" style={{ vectorEffect: 'non-scaling-stroke' }} />
                   <path d="M 75 0 V 45 Q 75 50 70 50 H 55 Q 50 50 50 55 V 100" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" stroke="url(#grad-aurora-2)" style={{ vectorEffect: 'non-scaling-stroke' }} />
-                </svg>
-                {/* 모바일용 고정 연결선 (md 미만) - 즉시 표시 */}
-                <svg className="absolute inset-0 w-full h-full md:hidden" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <path d="M 50 0 V 100" fill="none" stroke="#7F5AF0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ vectorEffect: 'non-scaling-stroke' }} />
                 </svg>
               </div>
 
