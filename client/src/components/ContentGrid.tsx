@@ -1,7 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
-import { Play } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Play, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 import type { Content } from "@shared/schema";
+import { useAdmin } from "@/contexts/AdminContext";
+import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface ContentGridProps {
   category: "nameStory" | "expert" | "announcement" | "review";
@@ -53,10 +56,52 @@ interface ContentCardProps {
 
 function ContentCard({ content, basePath }: ContentCardProps) {
   const thumbnailUrl = content.thumbnail || "/placeholder-thumbnail.jpg";
+  const { isAdmin, token } = useAdmin();
+  const { toast } = useToast();
+  
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/contents/${content.id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to delete");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/contents", content.category] });
+      toast({ title: "삭제되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "삭제 실패", variant: "destructive" });
+    },
+  });
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirm("정말 삭제하시겠습니까?")) {
+      deleteMutation.mutate();
+    }
+  };
   
   return (
     <Link href={`${basePath}/${content.id}`} data-testid={`content-card-${content.id}`}>
-      <div className="group cursor-pointer">
+      <div className="group cursor-pointer relative">
+        {/* 관리자 삭제 버튼 */}
+        {isAdmin && (
+          <button
+            onClick={handleDelete}
+            className="absolute top-1 right-1 z-10 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-80 hover:opacity-100 transition-opacity"
+            data-testid={`button-delete-${content.id}`}
+          >
+            <Trash2 className="w-3 h-3" />
+          </button>
+        )}
+        
         {/* 썸네일 - 항상 표시 */}
         <div className="relative aspect-square rounded-lg overflow-hidden bg-muted">
           <img
