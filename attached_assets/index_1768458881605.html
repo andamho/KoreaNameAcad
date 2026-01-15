@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>동본상 가족 상담 원칙 - Perfect Sync</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#56D5DB', 
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .kna-noise {
+      background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 18px 18px;
+      opacity: 0.18;
+      pointer-events: none;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(86, 213, 219, 0.2); border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(86, 213, 219, 0.4); }
+
+    /* --- 선 애니메이션 (10초 주기) --- */
+    .stripe-path {
+        fill: none;
+        stroke-width: 2px;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        vector-effect: non-scaling-stroke;
+        stroke-dasharray: 3000 3000; 
+        stroke-dashoffset: 3000;     
+        animation: slow-sequence 10s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+
+    @keyframes slow-sequence {
+        0% { stroke-dashoffset: 3000; opacity: 1; filter: hue-rotate(0deg) brightness(1); }
+        40% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(0deg) brightness(1); } 
+        60% { stroke-dashoffset: 0; opacity: 1; filter: hue-rotate(180deg) brightness(1.5); }
+        100% { stroke-dashoffset: -3000; opacity: 1; filter: hue-rotate(360deg) brightness(1); }
+    }
+
+    /* 선 딜레이 */
+    .delay-top-child { animation-delay: 0.5s; }
+    .delay-bottom { animation-delay: 4.0s; }
+
+    /* --- [카드 테두리 싱크 수정됨] --- 
+       핵심: 선 이동시간(Travel Time)을 고려하여 0%~8% 구간은 색상을 끄고 기다림.
+    */
+    
+    /* 1. 이름운 카드 (중단) */
+    .card-active-mid {
+        animation: border-sync-mid 10s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+        animation-delay: 0.5s; /* 선 출발 시간과 동일하게 시작 */
+    }
+    
+    @keyframes border-sync-mid {
+        /* [0% ~ 8%] 이동 중: 테두리 색상 없음 (기다림) */
+        0%, 8% { 
+            border-color: rgba(255, 255, 255, 0.1); 
+            box-shadow: none; 
+        }
+        /* [8% ~ 10%] 도착 순간: 빠르게 켜짐 (Impact) */
+        10% { 
+            border-color: #56D5DB; /* Cyan */
+            box-shadow: 0 0 15px rgba(86, 213, 219, 0.2);
+        }
+        /* [10% ~ 60%] 유지 구간: 색상 변화 및 유지 */
+        60% { 
+            border-color: #7F5AF0; /* Purple */
+            box-shadow: 0 0 20px rgba(127, 90, 240, 0.3);
+        }
+        /* [70%] 선 사라짐과 함께 꺼짐 */
+        70%, 100% { 
+            border-color: rgba(255, 255, 255, 0.1); 
+            box-shadow: none; 
+        }
+    }
+
+    /* 2. 결론 카드 (하단) */
+    .card-active-bot {
+        animation: border-sync-bot 10s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+        animation-delay: 4.0s; /* 하단 선 출발 시간과 동일 */
+    }
+
+    @keyframes border-sync-bot {
+        /* [0% ~ 8%] 이동 중: 기다림 */
+        0%, 8% { 
+            border-color: rgba(86, 213, 219, 0.3); 
+            box-shadow: none;
+        }
+        /* [10%] 도착 순간: 켜짐 */
+        10% { 
+            border-color: #4361EE; /* Blue */
+            box-shadow: 0 0 20px rgba(67, 97, 238, 0.3);
+        }
+        /* [60%] 유지 */
+        60% { 
+            border-color: #F72585; /* Pink */
+            box-shadow: 0 0 25px rgba(247, 37, 133, 0.4);
+        }
+        /* [70%] 꺼짐 */
+        70%, 100% { 
+            border-color: rgba(86, 213, 219, 0.3); 
+            box-shadow: none;
+        }
+    }
+
+    .svg-defs { position: absolute; width: 0; height: 0; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-[#070A0D] text-white overflow-x-hidden font-sans antialiased">
+  
+  <div class="fixed inset-0 -z-10 bg-gradient-to-b from-[#06080B] via-[#070B10] to-[#06080B]"></div>
+  <div class="fixed inset-0 -z-10 kna-noise"></div>
+
+  <svg class="svg-defs">
+    <defs>
+      <linearGradient id="grad-aurora-1" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#56D5DB" />
+        <stop offset="100%" stop-color="#7F5AF0" />
+      </linearGradient>
+      <linearGradient id="grad-aurora-2" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#4361EE" />
+        <stop offset="100%" stop-color="#F72585" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <main class="mx-auto flex min-h-screen max-w-5xl items-center justify-center px-6">
+    <div class="w-full rounded-2xl border border-white/10 bg-[#0A0D11] p-6 sm:p-8 text-center">
+        <h1 class="text-xl font-bold mb-4">동본상 가족 상담 원칙 (정확한 타이밍)</h1>
+        <button
+            id="openBtn"
+            class="inline-flex items-center gap-2 rounded-full bg-white text-[#0B0E11] px-6 py-3 text-sm font-bold hover:bg-gray-100 transition shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+        >
+            원칙 보기
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+        </button>
+    </div>
+  </main>
+
+  <div id="slideOver" class="relative z-50 hidden" role="dialog" aria-modal="true">
+    <div id="backdrop" class="fixed inset-0 bg-black/80 transition-opacity opacity-0 duration-300 backdrop-blur-sm"></div>
+
+    <div class="fixed inset-0 overflow-hidden">
+      <div class="absolute inset-0 overflow-hidden">
+        <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0 sm:pl-4 md:pl-16">
+          
+          <div id="panel" class="pointer-events-auto w-screen max-w-3xl transform transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] translate-x-full">
+            <div class="flex h-full flex-col bg-[#0A0D11] shadow-2xl sm:border-l sm:border-white/10">
+              
+              <div class="flex-none px-6 py-6 sm:px-8 border-b border-white/5 bg-[#0A0D11]/95 backdrop-blur z-20 flex items-start justify-between">
+                <div>
+                  <h1 class="text-xl sm:text-[26px] font-bold text-primary tracking-tight">
+                    동본상 가족 상담 원칙
+                  </h1>
+                  <p class="mt-3 text-[15px] font-semibold tracking-tight text-white/85">
+                    가족은 운명 공동체로, 서로 이름운의 영향을 강하게 주고 받습니다.
+                  </p>
+                </div>
+                <button id="closeBtn" type="button" class="group -mr-2 ml-4 p-2 rounded-md text-white/40 hover:text-white focus:outline-none">
+                  <span class="sr-only">닫기</span>
+                  <svg class="h-8 w-8 group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="flex-1 overflow-y-auto custom-scrollbar px-6 py-8 sm:px-8">
+                
+                <div class="flex flex-col">
+                  
+                  <div class="grid gap-6 md:grid-cols-2 z-10 relative">
+                    <article class="group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                      <div class="flex items-start gap-4 mb-4">
+                         <div class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                         </div>
+                         <div>
+                            <h3 class="text-[16px] font-bold text-white">결혼, 혼의 연결</h3>
+                            <p class="mt-1 text-[13px] text-white/60">
+                              · '결혼'은 본래 '혼(魂)을 연결한다'는 뜻에서 유래
+                            </p>
+                         </div>
+                      </div>
+                      <div class="pt-4 border-t border-white/10">
+                          <p class="text-[14px] leading-relaxed text-primary/90 font-medium">
+                              - 일심동체처럼 몸과 마음이 강력히 연결
+                          </p>
+                      </div>
+                    </article>
+
+                    <article class="group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                      <div class="flex items-start gap-4 mb-4">
+                         <div class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+                         </div>
+                         <div>
+                            <h3 class="text-[16px] font-bold text-white">자녀, 혈육</h3>
+                            <p class="mt-1 text-[13px] text-white/60">
+                              · 혈육: 피로 연결되고 살로 이어진 관계
+                            </p>
+                         </div>
+                      </div>
+                      <div class="pt-4 border-t border-white/10">
+                          <p class="text-[14px] leading-relaxed text-primary/90 font-medium">
+                              - 분리된 듯 보이나 결코 분리될 수 없는 특별한 연대
+                          </p>
+                      </div>
+                    </article>
+                  </div>
+
+                  <div class="relative h-20 w-full overflow-visible pointer-events-none">
+                    <svg class="absolute inset-0 w-full h-full" width="100%" height="100%" preserveAspectRatio="none">
+                      <line x1="25%" y1="0" x2="25%" y2="100%" class="stripe-path" stroke="url(#grad-aurora-1)" />
+                      <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
+                         <path d="M 75 0 V 30 Q 75 40 65 40 H 45 Q 35 40 35 50 V 100" class="stripe-path delay-top-child" stroke="url(#grad-aurora-1)" />
+                      </svg>
+                    </svg>
+                  </div>
+
+                  <div class="grid gap-6 md:grid-cols-2 z-10 relative">
+                    <article class="card-active-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                      <div class="flex items-start gap-4 mb-4">
+                         <div class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83M16.62 12l-5.74 9.94"/></svg>
+                         </div>
+                         <div class="w-full">
+                            <h3 class="text-[16px] font-bold text-white">이름운, 서로에게 영향</h3>
+                            <div class="mt-2 space-y-1 text-[13px] text-white/60">
+                              <div class="flex justify-between px-1 border-b border-white/5 py-1"><span>남편</span> <span>↔</span> <span>아내</span></div>
+                              <div class="flex justify-between px-1 border-b border-white/5 py-1"><span>부모</span> <span>↔</span> <span>자녀</span></div>
+                              <div class="flex justify-between px-1 py-1"><span>자녀</span> <span>↔</span> <span>자녀</span></div>
+                            </div>
+                         </div>
+                      </div>
+                      <div class="pt-4 border-t border-white/10 space-y-2">
+                          <p class="text-[14px] text-primary/90 font-medium">
+                              - 부부의 이름운은 결혼과 함께 상호작용
+                          </p>
+                          <p class="text-[14px] text-primary/90 font-medium">
+                              - 자녀의 초년운 ↔ 부모의 중년운에 영향
+                          </p>
+                      </div>
+                    </article>
+
+                    <article class="group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                       <div class="flex items-start gap-4 mb-4">
+                         <div class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                         </div>
+                         <div>
+                            <h3 class="text-[16px] font-bold text-white">에너지의 원리</h3>
+                            <p class="mt-1 text-[13px] text-white/60">
+                              이름은 ‘소리’보다 ‘글자’가 강합니다
+                            </p>
+                         </div>
+                      </div>
+                      <div class="pt-4 border-t border-white/10">
+                          <p class="text-[14px] leading-relaxed text-primary/90 font-medium">
+                              소리 에너지는 말하는 순간 사라지지만, 글자 에너지는 폐기하기 전까지 계속 존재합니다.
+                          </p>
+                      </div>
+                    </article>
+                  </div>
+
+                  <div class="relative h-20 w-full overflow-visible pointer-events-none">
+                    <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <path d="M 25 0 V 45 Q 25 50 30 50 H 45 Q 50 50 50 55 V 100" class="stripe-path delay-bottom" stroke="url(#grad-aurora-2)" />
+                      <path d="M 75 0 V 45 Q 75 50 70 50 H 55 Q 50 50 50 55 V 100" class="stripe-path delay-bottom" stroke="url(#grad-aurora-2)" />
+                    </svg>
+                  </div>
+
+                  <article class="card-active-bot rounded-2xl border-2 border-primary/30 bg-primary/[0.05] p-8 relative overflow-hidden shadow-[0_0_40px_-10px_rgba(86,213,219,0.15)] z-10">
+                    <div class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent"></div>
+                    <div class="relative text-left">
+                        <div class="inline-block rounded-full border border-primary/30 bg-primary/[0.15] px-3 py-1 text-[12px] font-bold text-primary mb-3">
+                            핵심 결론
+                        </div>
+                        <h2 class="text-[22px] font-bold text-white mb-2">등본상 가족 상담 원칙</h2>
+                        <h3 class="text-[18px] font-bold text-primary mb-4">
+                            동본상 가족은 더 깊게 연결됩니다
+                        </h3>
+                        <p class="text-[16px] leading-relaxed text-white/80 mb-6">
+                            법적 에너지권 안에서 글자 에너지로 깊게 연결된 등본상 가족은<br class="hidden sm:block"/> 
+                            더욱 긴밀하며 상당한 영향을 미칩니다.
+                        </p>
+                        <div class="rounded-xl bg-[#0A0D11] border border-primary/30 p-5 shadow-inner">
+                            <p class="text-[16px] font-bold text-primary text-center leading-relaxed">
+                                "그래서 등본상 가족 전체의 이름분석을 진행하셔야<br class="hidden sm:block"/> 정확한 운명상담이 가능합니다."
+                            </p>
+                        </div>
+                    </div>
+                  </article>
+
+                  <div class="mt-16 border-t border-white/10 pt-10">
+                    <h3 class="text-[18px] font-bold text-white mb-6 flex items-center gap-2">
+                        <span class="inline-block w-1 h-5 bg-primary rounded-full"></span>
+                        같이 보시면 좋은 글
+                    </h3>
+                    
+                    <div class="grid gap-4">
+                        <a href="#" class="block group rounded-xl bg-[#0A0D11] border border-white/10 p-5 hover:border-primary/50 transition-all shadow-md">
+                            <div class="flex items-start gap-4">
+                                <span class="text-3xl filter grayscale group-hover:grayscale-0 transition-all">🤦‍♀️</span>
+                                <div class="flex-1">
+                                    <h4 class="text-[15px] font-bold text-white group-hover:text-primary transition-colors leading-snug">
+                                        "아빠가 바람이 났습니다" <br class="sm:hidden"/>
+                                        <span class="text-white/50 font-normal text-[13px] sm:ml-2">엄마 이름 때문에</span>
+                                    </h4>
+                                    <p class="mt-2 text-[13px] text-white/60 leading-relaxed line-clamp-2">
+                                        아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습니다...
+                                    </p>
+                                    <div class="mt-3 flex items-center text-[12px] font-bold text-primary/90 opacity-80 group-hover:opacity-100">
+                                        터치해서 전체 내용 보기
+                                        <svg class="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+
+                        <a href="#" class="block group rounded-xl bg-[#0A0D11] border border-white/10 p-5 hover:border-primary/50 transition-all shadow-md">
+                            <div class="flex items-start gap-4">
+                                <span class="text-3xl filter grayscale group-hover:grayscale-0 transition-all">⚖️</span>
+                                <div class="flex-1">
+                                    <h4 class="text-[15px] font-bold text-white group-hover:text-primary transition-colors leading-snug">
+                                        개명한 이름 때문에 아빠가 돌아가시고...
+                                    </h4>
+                                    <p class="mt-2 text-[13px] text-white/60 leading-relaxed line-clamp-2">
+                                        어느날 인스타로 디엠이 왔습니다. 너무 살기 힘들다며 죽고 싶다고까지 했습니다. 젊으신 분이 그러시면...
+                                    </p>
+                                    <div class="mt-3 flex items-center text-[12px] font-bold text-primary/90 opacity-80 group-hover:opacity-100">
+                                        터치해서 전체 내용 보기
+                                        <svg class="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                  </div>
+
+                </div>
+                <div class="h-24"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const openBtn = document.getElementById('openBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    const slideOver = document.getElementById('slideOver');
+    const backdrop = document.getElementById('backdrop');
+    const panel = document.getElementById('panel');
+
+    function openPanel() {
+      slideOver.classList.remove('hidden');
+      setTimeout(() => {
+        backdrop.classList.remove('opacity-0');
+        panel.classList.remove('translate-x-full');
+      }, 20);
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePanel() {
+      backdrop.classList.add('opacity-0');
+      panel.classList.add('translate-x-full');
+      setTimeout(() => {
+        slideOver.classList.add('hidden');
+        document.body.style.overflow = '';
+      }, 500);
+    }
+
+    openBtn.addEventListener('click', openPanel);
+    closeBtn.addEventListener('click', closePanel);
+    backdrop.addEventListener('click', closePanel);
+  </script>
+</body>
+</html>

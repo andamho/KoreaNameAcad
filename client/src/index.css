@@ -1572,37 +1572,52 @@ html.ua-tiktok .core-process-badge {
   font-size: 9px !important; /* 11px × 0.82 = 9px */
 }
 
-/* 인앱 이름분석 자세히 보기 Sheet 모달 82% 스케일링 */
+/* 인앱 Sheet 모달 82% 스케일링 */
 /* zoom 속성이 모든 자식 요소(폰트, 패딩, 마진, 아이콘 등)를 자동으로 82% 축소 */
 html.ua-instagram .analysis-detail-sheet,
 html.ua-tiktok .analysis-detail-sheet,
-.ig-shell .analysis-detail-sheet {
+.ig-shell .analysis-detail-sheet,
+html.ua-instagram .family-policy-sheet,
+html.ua-tiktok .family-policy-sheet,
+.ig-shell .family-policy-sheet {
   zoom: 0.82 !important;
 }
 
 /* Sheet 모달 내부 글로벌 h1/p 규칙 무효화 - 원본 크기 유지 */
 html.ua-instagram .analysis-detail-sheet h1,
 html.ua-tiktok .analysis-detail-sheet h1,
-.ig-shell .analysis-detail-sheet h1 {
+.ig-shell .analysis-detail-sheet h1,
+html.ua-instagram .family-policy-sheet h1,
+html.ua-tiktok .family-policy-sheet h1,
+.ig-shell .family-policy-sheet h1 {
   font-size: 22px !important; /* 원본 text-[22px] */
   line-height: 1.2 !important;
 }
 
 html.ua-instagram .analysis-detail-sheet h2,
 html.ua-tiktok .analysis-detail-sheet h2,
-.ig-shell .analysis-detail-sheet h2 {
+.ig-shell .analysis-detail-sheet h2,
+html.ua-instagram .family-policy-sheet h2,
+html.ua-tiktok .family-policy-sheet h2,
+.ig-shell .family-policy-sheet h2 {
   font-size: 24px !important; /* 원본 text-[24px] */
 }
 
 html.ua-instagram .analysis-detail-sheet h3,
 html.ua-tiktok .analysis-detail-sheet h3,
-.ig-shell .analysis-detail-sheet h3 {
+.ig-shell .analysis-detail-sheet h3,
+html.ua-instagram .family-policy-sheet h3,
+html.ua-tiktok .family-policy-sheet h3,
+.ig-shell .family-policy-sheet h3 {
   font-size: 19px !important; /* 원본 text-[19px] */
 }
 
 html.ua-instagram .analysis-detail-sheet p,
 html.ua-tiktok .analysis-detail-sheet p,
-.ig-shell .analysis-detail-sheet p {
+.ig-shell .analysis-detail-sheet p,
+html.ua-instagram .family-policy-sheet p,
+html.ua-tiktok .family-policy-sheet p,
+.ig-shell .family-policy-sheet p {
   font-size: 17px !important; /* 원본 text-[17px] */
   line-height: 1.6 !important;
 }
@@ -1610,13 +1625,19 @@ html.ua-tiktok .analysis-detail-sheet p,
 /* Sheet 모달 스텝 제목/설명 (div 태그) - 일관된 크기 */
 html.ua-instagram .analysis-detail-sheet .text-\[19px\],
 html.ua-tiktok .analysis-detail-sheet .text-\[19px\],
-.ig-shell .analysis-detail-sheet .text-\[19px\] {
+.ig-shell .analysis-detail-sheet .text-\[19px\],
+html.ua-instagram .family-policy-sheet .text-\[19px\],
+html.ua-tiktok .family-policy-sheet .text-\[19px\],
+.ig-shell .family-policy-sheet .text-\[19px\] {
   font-size: 19px !important;
 }
 
 html.ua-instagram .analysis-detail-sheet .text-\[17px\],
 html.ua-tiktok .analysis-detail-sheet .text-\[17px\],
-.ig-shell .analysis-detail-sheet .text-\[17px\] {
+.ig-shell .analysis-detail-sheet .text-\[17px\],
+html.ua-instagram .family-policy-sheet .text-\[17px\],
+html.ua-tiktok .family-policy-sheet .text-\[17px\],
+.ig-shell .family-policy-sheet .text-\[17px\] {
   font-size: 17px !important;
 }
 
