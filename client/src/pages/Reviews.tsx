@@ -7,13 +7,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Quote, Download, Heart, Clock, Plus, Lock, LogOut, Trash2 } from "lucide-react";
+import { Star, Quote, Download, Heart, Clock, Plus, Lock, LogOut, Trash2, Pencil, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useUpload } from "@/hooks/use-upload";
 import { useAdmin } from "@/contexts/AdminContext";
 import { queryClient } from "@/lib/queryClient";
 import type { Content } from "@shared/schema";
+
+const categoryOptions = [
+  { value: "review", label: "후기" },
+  { value: "nameStory", label: "이름이야기" },
+  { value: "announcement", label: "공지사항" },
+  { value: "expert", label: "한국이름학교" },
+];
 import reviewsCharacterImage from "@assets/KakaoTalk_20251226_140721227_1766725962281.png";
 
 // 후기 타입 정의
@@ -27,6 +35,311 @@ interface Testimonial {
 
 // 로컬스토리지 키
 const ADMIN_TOKEN_KEY = "kna_admin_token";
+
+// CMS 후기 카드 컴포넌트 (수정 기능 포함)
+function CmsReviewCard({ review }: { review: Content }) {
+  const { isAdmin, token } = useAdmin();
+  const { toast } = useToast();
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editForm, setEditForm] = useState({
+    category: review.category,
+    title: review.title,
+    thumbnail: review.thumbnail || "",
+    content: review.content,
+    isVideo: review.isVideo,
+    videoUrl: review.videoUrl || "",
+  });
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadFile, isUploading } = useUpload({
+    onSuccess: (response) => {
+      setEditForm(prev => ({ ...prev, thumbnail: response.objectPath }));
+      toast({ title: "이미지가 업로드되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
+    },
+  });
+  
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
+        return;
+      }
+      await uploadFile(file);
+    }
+  };
+  
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/contents/${review.id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Failed to delete");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contents", "review"] });
+      toast({ title: "삭제되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "삭제 실패", variant: "destructive" });
+    },
+  });
+  
+  const updateMutation = useMutation({
+    mutationFn: async (data: typeof editForm) => {
+      const response = await fetch(`/api/contents/${review.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...data,
+          thumbnail: data.thumbnail?.trim() || null,
+          videoUrl: data.videoUrl?.trim() || null,
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to update");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contents", "review"] });
+      setShowEditDialog(false);
+      toast({ title: "수정되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "수정 실패", variant: "destructive" });
+    },
+  });
+  
+  const handleDelete = () => {
+    if (confirm("정말 삭제하시겠습니까?")) {
+      deleteMutation.mutate();
+    }
+  };
+  
+  const handleEdit = () => {
+    setEditForm({
+      category: review.category,
+      title: review.title,
+      thumbnail: review.thumbnail || "",
+      content: review.content,
+      isVideo: review.isVideo,
+      videoUrl: review.videoUrl || "",
+    });
+    setShowEditDialog(true);
+  };
+  
+  const handleEditSubmit = () => {
+    if (!editForm.title.trim() || !editForm.content.trim()) {
+      toast({ title: "제목과 내용을 입력해주세요.", variant: "destructive" });
+      return;
+    }
+    updateMutation.mutate(editForm);
+  };
+
+  return (
+    <>
+      <Card
+        className="p-6 bg-card border border-border relative"
+        data-testid={`cms-review-card-${review.id}`}
+      >
+        {/* 관리자 버튼들 */}
+        {isAdmin && (
+          <div className="absolute top-2 right-2 flex gap-1">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleEdit}
+              className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 h-8 w-8"
+              data-testid={`button-edit-cms-review-${review.id}`}
+            >
+              <Pencil className="w-4 h-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleDelete}
+              className="text-red-500 hover:text-red-600 hover:bg-red-50 h-8 w-8"
+              data-testid={`button-delete-cms-review-${review.id}`}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+        
+        {/* 썸네일 */}
+        {review.thumbnail && (
+          <img
+            src={review.thumbnail}
+            alt={review.title}
+            className="w-full h-40 object-cover rounded-lg mb-4"
+          />
+        )}
+        
+        {/* 제목 */}
+        <h4 className="text-lg font-bold text-foreground mb-2">
+          {review.title}
+        </h4>
+        
+        {/* 내용 */}
+        <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
+          {review.content}
+        </p>
+        
+        {/* 날짜 */}
+        <p className="text-xs text-muted-foreground">
+          {new Date(review.createdAt).toLocaleDateString("ko-KR")}
+        </p>
+      </Card>
+      
+      {/* 수정 다이얼로그 */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto z-[210]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="w-5 h-5" />
+              후기 수정
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-category">카테고리</Label>
+              <Select 
+                value={editForm.category} 
+                onValueChange={(value) => setEditForm(prev => ({ ...prev, category: value }))}
+              >
+                <SelectTrigger data-testid="select-edit-category">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[300]">
+                  {categoryOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="edit-title">제목</Label>
+              <Input
+                id="edit-title"
+                value={editForm.title}
+                onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="제목을 입력하세요"
+                data-testid="input-edit-title"
+              />
+            </div>
+            <div>
+              <Label>썸네일 이미지 (선택)</Label>
+              <div className="flex gap-2 items-center">
+                <Input
+                  value={editForm.thumbnail}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, thumbnail: e.target.value }))}
+                  placeholder="URL 직접 입력 또는 이미지 업로드"
+                  className="flex-1"
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <Upload className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+              {editForm.thumbnail && (
+                <div className="mt-2 relative">
+                  <img 
+                    src={editForm.thumbnail} 
+                    alt="썸네일 미리보기" 
+                    className="w-full h-32 object-cover rounded border"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-1 right-1 h-6 px-2 text-xs bg-background/80"
+                    onClick={() => setEditForm(prev => ({ ...prev, thumbnail: "" }))}
+                  >
+                    삭제
+                  </Button>
+                </div>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="edit-content">내용</Label>
+              <Textarea
+                id="edit-content"
+                value={editForm.content}
+                onChange={(e) => setEditForm(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="내용을 입력하세요"
+                rows={6}
+                data-testid="input-edit-content"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="edit-isVideo"
+                checked={editForm.isVideo}
+                onChange={(e) => setEditForm(prev => ({ ...prev, isVideo: e.target.checked }))}
+                className="h-4 w-4"
+              />
+              <Label htmlFor="edit-isVideo" className="cursor-pointer">동영상 콘텐츠</Label>
+            </div>
+            {editForm.isVideo && (
+              <div>
+                <Label htmlFor="edit-videoUrl">YouTube URL</Label>
+                <Input
+                  id="edit-videoUrl"
+                  value={editForm.videoUrl}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, videoUrl: e.target.value }))}
+                  placeholder="https://youtube.com/watch?v=..."
+                />
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setShowEditDialog(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                취소
+              </Button>
+              <Button 
+                onClick={handleEditSubmit}
+                disabled={updateMutation.isPending}
+                className="flex-1"
+              >
+                {updateMutation.isPending ? "저장 중..." : "저장하기"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
 
 export default function Reviews() {
   const statsRef = useRef<HTMLDivElement>(null);
@@ -56,33 +369,6 @@ export default function Reviews() {
       return response.json();
     },
   });
-  
-  // CMS 후기 삭제
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const response = await fetch(`/api/contents/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error("Failed to delete");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/contents", "review"] });
-      toast({ title: "삭제되었습니다." });
-    },
-    onError: () => {
-      toast({ title: "삭제 실패", variant: "destructive" });
-    },
-  });
-  
-  const handleDeleteCmsReview = (id: string) => {
-    if (confirm("정말 삭제하시겠습니까?")) {
-      deleteMutation.mutate(id);
-    }
-  };
   
   // 후기 작성 처리 (레거시)
   const handleWriteReview = () => {
@@ -577,48 +863,7 @@ export default function Reviews() {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {cmsReviews.map((review) => (
-                  <Card
-                    key={review.id}
-                    className="p-6 bg-card border border-border relative"
-                    data-testid={`cms-review-card-${review.id}`}
-                  >
-                    {/* 관리자 삭제 버튼 */}
-                    {isAdmin && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleDeleteCmsReview(review.id)}
-                        className="absolute top-2 right-2 text-red-500 hover:text-red-600 hover:bg-red-50"
-                        data-testid={`button-delete-cms-review-${review.id}`}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                    
-                    {/* 썸네일 */}
-                    {review.thumbnail && (
-                      <img
-                        src={review.thumbnail}
-                        alt={review.title}
-                        className="w-full h-40 object-cover rounded-lg mb-4"
-                      />
-                    )}
-                    
-                    {/* 제목 */}
-                    <h4 className="text-lg font-bold text-foreground mb-2">
-                      {review.title}
-                    </h4>
-                    
-                    {/* 내용 */}
-                    <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-                      {review.content}
-                    </p>
-                    
-                    {/* 날짜 */}
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(review.createdAt).toLocaleDateString("ko-KR")}
-                    </p>
-                  </Card>
+                  <CmsReviewCard key={review.id} review={review} />
                 ))}
               </div>
             </div>
