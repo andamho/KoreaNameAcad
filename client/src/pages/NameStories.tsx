@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Play, Calendar, MessageCircle, Trash2 } from "lucide-react";
+import { Play, Calendar, MessageCircle, Trash2, Pencil, Upload } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/Navbar";
@@ -8,9 +8,23 @@ import { Footer } from "@/components/Footer";
 import { useAdmin } from "@/contexts/AdminContext";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useUpload } from "@/hooks/use-upload";
 import type { Content } from "@shared/schema";
 import storiesCharacterImage from "@assets/KakaoTalk_20251226_141747822_1766726282057.png";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const categoryOptions = [
+  { value: "review", label: "후기" },
+  { value: "nameStory", label: "이름이야기" },
+  { value: "announcement", label: "공지사항" },
+  { value: "expert", label: "한국이름학교" },
+];
 
 function formatDate(dateValue: string | Date) {
   const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
@@ -20,6 +34,37 @@ function formatDate(dateValue: string | Date) {
 function StoryCard({ story }: { story: Content }) {
   const { isAdmin, token } = useAdmin();
   const { toast } = useToast();
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editForm, setEditForm] = useState({
+    category: story.category,
+    title: story.title,
+    thumbnail: story.thumbnail || "",
+    content: story.content,
+    isVideo: story.isVideo,
+    videoUrl: story.videoUrl || "",
+  });
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadFile, isUploading } = useUpload({
+    onSuccess: (response) => {
+      setEditForm(prev => ({ ...prev, thumbnail: response.objectPath }));
+      toast({ title: "이미지가 업로드되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
+    },
+  });
+  
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
+        return;
+      }
+      await uploadFile(file);
+    }
+  };
   
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -38,6 +83,33 @@ function StoryCard({ story }: { story: Content }) {
       toast({ title: "삭제 실패", variant: "destructive" });
     },
   });
+  
+  const updateMutation = useMutation({
+    mutationFn: async (data: typeof editForm) => {
+      const response = await fetch(`/api/contents/${story.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...data,
+          thumbnail: data.thumbnail?.trim() || null,
+          videoUrl: data.videoUrl?.trim() || null,
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to update");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contents", "nameStory"] });
+      setShowEditDialog(false);
+      toast({ title: "수정되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "수정 실패", variant: "destructive" });
+    },
+  });
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -46,22 +118,54 @@ function StoryCard({ story }: { story: Content }) {
       deleteMutation.mutate();
     }
   };
+  
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditForm({
+      category: story.category,
+      title: story.title,
+      thumbnail: story.thumbnail || "",
+      content: story.content,
+      isVideo: story.isVideo,
+      videoUrl: story.videoUrl || "",
+    });
+    setShowEditDialog(true);
+  };
+  
+  const handleEditSubmit = () => {
+    if (!editForm.title.trim() || !editForm.content.trim()) {
+      toast({ title: "제목과 내용을 입력해주세요.", variant: "destructive" });
+      return;
+    }
+    updateMutation.mutate(editForm);
+  };
 
   return (
+    <>
     <Link href={`/name-stories/${story.id}`}>
       <Card 
         className="group overflow-hidden hover-elevate active-elevate-2 cursor-pointer relative"
         data-testid={`card-story-${story.id}`}
       >
-        {/* 관리자 삭제 버튼 */}
+        {/* 관리자 버튼들 */}
         {isAdmin && (
-          <button
-            onClick={handleDelete}
-            className="absolute top-2 left-2 z-10 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-80 hover:opacity-100 transition-opacity"
-            data-testid={`button-delete-${story.id}`}
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+          <div className="absolute top-2 left-2 z-10 flex gap-1">
+            <button
+              onClick={handleEdit}
+              className="p-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full opacity-80 hover:opacity-100 transition-opacity"
+              data-testid={`button-edit-${story.id}`}
+            >
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={handleDelete}
+              className="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-80 hover:opacity-100 transition-opacity"
+              data-testid={`button-delete-${story.id}`}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
         )}
         
         {/* 임시저장 배지 */}
