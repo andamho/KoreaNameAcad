@@ -733,13 +733,21 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 </article>
               </div>
 
-              {/* 첫번째 선 연결 애니메이션 */}
+              {/* 첫번째 선 연결 애니메이션 - 결혼→이름운(좌1/3), 자녀→이름운(우1/3) */}
               <div className="relative h-20 w-full overflow-visible pointer-events-none">
-                <svg className="absolute inset-0 w-full h-full" width="100%" height="100%" preserveAspectRatio="none">
-                  <line x1="25%" y1="0" x2="25%" y2="100%" className="family-stripe-path" stroke="url(#grad-aurora-1)" />
-                  <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
-                    <path d="M 75 0 V 30 Q 75 40 65 40 H 45 Q 35 40 35 50 V 100" className="family-stripe-path family-delay-top" stroke="url(#grad-aurora-1)" />
-                  </svg>
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  {/* 결혼 카드(25%) → 이름운 카드 좌측 1/3 지점(16.7%) - 직선 + 꺾임부분만 라운드 */}
+                  <path 
+                    d="M 25 0 V 40 Q 25 45 20.85 45 H 16.7 Q 11.7 45 11.7 50 V 100" 
+                    className="family-stripe-path" 
+                    stroke="url(#grad-aurora-1)" 
+                  />
+                  {/* 자녀 카드(75%) → 이름운 카드 우측 1/3 지점(33.3%) - 직선 + 꺾임부분만 라운드 */}
+                  <path 
+                    d="M 75 0 V 40 Q 75 45 70 45 H 38.3 Q 33.3 45 33.3 50 V 100" 
+                    className="family-stripe-path family-delay-top" 
+                    stroke="url(#grad-aurora-1)" 
+                  />
                 </svg>
               </div>
 
