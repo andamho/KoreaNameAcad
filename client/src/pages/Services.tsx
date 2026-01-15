@@ -555,7 +555,7 @@ export default function Services() {
             <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-6 mb-12" data-testid="analysis-scope">
               <div className="group" data-testid="scope-card-1">
                 <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
-                  <Layers className="h-5 w-5" aria-hidden="true" />
+                  <Layers className="h-6 w-6" aria-hidden="true" />
                 </div>
                 <h3 className="text-[19px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
                   16가지 세부 운세<br />종합 분석
@@ -566,7 +566,7 @@ export default function Services() {
               </div>
               <div className="group" data-testid="scope-card-2">
                 <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
-                  <Compass className="h-5 w-5" aria-hidden="true" />
+                  <Compass className="h-6 w-6" aria-hidden="true" />
                 </div>
                 <h3 className="text-[19px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
                   7개 인생 시기별 운의<br />흐름 파악
@@ -577,7 +577,7 @@ export default function Services() {
               </div>
               <div className="group" data-testid="scope-card-3">
                 <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
-                  <Clock className="h-5 w-5" aria-hidden="true" />
+                  <Clock className="h-6 w-6" aria-hidden="true" />
                 </div>
                 <h3 className="text-[19px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
                   과거·현재·미래<br />정밀 진단
