@@ -130,7 +130,12 @@ export function Navbar() {
         videoUrl: "",
         isDraft: false,
       });
-      toast({ title: data.isDraft ? "임시저장되었습니다." : "콘텐츠가 등록되었습니다." });
+      if (data.isDraft) {
+        toast({ title: "임시저장되었습니다." });
+        setLocation("/drafts");
+      } else {
+        toast({ title: "콘텐츠가 등록되었습니다." });
+      }
     },
     onError: () => {
       toast({ title: "등록에 실패했습니다.", variant: "destructive" });
