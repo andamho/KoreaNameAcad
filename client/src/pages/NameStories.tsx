@@ -206,6 +206,149 @@ function StoryCard({ story }: { story: Content }) {
         </div>
       </Card>
     </Link>
+    
+    {/* 수정 다이얼로그 */}
+    <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto z-[210]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Pencil className="w-5 h-5" />
+            글 수정
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="edit-category">카테고리</Label>
+            <Select 
+              value={editForm.category} 
+              onValueChange={(value) => setEditForm(prev => ({ ...prev, category: value }))}
+            >
+              <SelectTrigger data-testid="select-edit-category">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-[300]">
+                {categoryOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="edit-title">제목</Label>
+            <Input
+              id="edit-title"
+              value={editForm.title}
+              onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+              placeholder="제목을 입력하세요"
+              data-testid="input-edit-title"
+            />
+          </div>
+          <div>
+            <Label>썸네일 이미지 (선택)</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                id="edit-thumbnail"
+                value={editForm.thumbnail}
+                onChange={(e) => setEditForm(prev => ({ ...prev, thumbnail: e.target.value }))}
+                placeholder="URL 직접 입력 또는 이미지 업로드"
+                className="flex-1"
+                data-testid="input-edit-thumbnail"
+              />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+              >
+                {isUploading ? (
+                  <span className="animate-spin">⏳</span>
+                ) : (
+                  <Upload className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+            {editForm.thumbnail && (
+              <div className="mt-2 relative">
+                <img 
+                  src={editForm.thumbnail} 
+                  alt="썸네일 미리보기" 
+                  className="w-full h-32 object-cover rounded border"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-1 right-1 h-6 px-2 text-xs bg-background/80"
+                  onClick={() => setEditForm(prev => ({ ...prev, thumbnail: "" }))}
+                >
+                  삭제
+                </Button>
+              </div>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="edit-content">내용</Label>
+            <Textarea
+              id="edit-content"
+              value={editForm.content}
+              onChange={(e) => setEditForm(prev => ({ ...prev, content: e.target.value }))}
+              placeholder="내용을 입력하세요"
+              rows={6}
+              data-testid="input-edit-content"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="edit-isVideo"
+              checked={editForm.isVideo}
+              onChange={(e) => setEditForm(prev => ({ ...prev, isVideo: e.target.checked }))}
+              className="h-4 w-4"
+            />
+            <Label htmlFor="edit-isVideo" className="cursor-pointer">동영상 콘텐츠</Label>
+          </div>
+          {editForm.isVideo && (
+            <div>
+              <Label htmlFor="edit-videoUrl">YouTube URL</Label>
+              <Input
+                id="edit-videoUrl"
+                value={editForm.videoUrl}
+                onChange={(e) => setEditForm(prev => ({ ...prev, videoUrl: e.target.value }))}
+                placeholder="https://youtube.com/watch?v=..."
+              />
+            </div>
+          )}
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setShowEditDialog(false)}
+              variant="outline"
+              className="flex-1"
+            >
+              취소
+            </Button>
+            <Button 
+              onClick={handleEditSubmit}
+              disabled={updateMutation.isPending}
+              className="flex-1"
+            >
+              {updateMutation.isPending ? "저장 중..." : "저장하기"}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
 
