@@ -769,10 +769,10 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   </div>
                   <div className="pt-4 border-t border-white/10 space-y-2">
                     <p className="text-[17px] text-[#56D5DB]/90 font-medium">
-                      - 부부의 이름운은 결혼과 함께 상호작용
+                      · 부부의 이름운은 결혼과 함께 상호작용
                     </p>
                     <p className="text-[17px] text-[#56D5DB]/90 font-medium">
-                      - 자녀의 초년운 ↔ 부모의 중년운에 영향
+                      · 자녀의 초년운 ↔ 부모의 중년운에 영향
                     </p>
                   </div>
                 </article>
@@ -791,7 +791,8 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   </div>
                   <div className="pt-4 border-t border-white/10">
                     <p className="text-[17px] leading-relaxed text-[#56D5DB]/90 font-medium">
-                      이름에는 소리 에너지도 있지만, 그보다 훨씬 강력한 것이 바로 글자 에너지입니다. 소리 에너지는 말하는 순간 사라지지만, 글자 에너지는 폐기하기 전까지 계속 존재합니다.
+                      · 이름에는 소리 에너지도 있지만, 그보다 훨씬 강력한 것이 바로 글자 에너지입니다.<br />
+                      · 소리 에너지는 말하는 순간 사라지지만, 글자 에너지는 폐기하기 전까지 계속 존재합니다.
                     </p>
                   </div>
                 </article>
