@@ -527,7 +527,7 @@ export default function Services() {
       <Sheet open={analysisDetailOpen} onOpenChange={(open) => { if (!open) closeAnalysisDetail(); }}>
         <SheetContent 
           side="right"
-          className="z-[10001] w-full sm:max-w-[725px] sm:w-[725px] overflow-y-auto overflow-x-hidden bg-[#0A0D11] text-white border-l border-white/10 !p-0"
+          className="analysis-detail-sheet z-[10001] w-full sm:max-w-[725px] sm:w-[725px] overflow-y-auto overflow-x-hidden bg-[#0A0D11] text-white border-l border-white/10 !p-0"
           aria-describedby={undefined}>
           <SheetHeader className="sr-only">
             <SheetTitle>이름분석 운명상담 안내</SheetTitle>
