@@ -57,7 +57,7 @@ export function Navbar() {
     isDraft: false,
   });
   
-  // Image upload
+  // Image upload for thumbnail
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadFile, isUploading } = useUpload({
     onSuccess: (response) => {
@@ -78,6 +78,31 @@ export function Navbar() {
       }
       await uploadFile(file);
     }
+  };
+  
+  // Image upload for content body
+  const contentImageInputRef = useRef<HTMLInputElement>(null);
+  const { uploadFile: uploadContentImage, isUploading: isUploadingContent } = useUpload({
+    onSuccess: (response) => {
+      const imageMarkdown = `\n![이미지](${response.objectPath})\n`;
+      setWriteForm(prev => ({ ...prev, content: prev.content + imageMarkdown }));
+      toast({ title: "본문에 이미지가 추가되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
+    },
+  });
+  
+  const handleContentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
+        return;
+      }
+      await uploadContentImage(file);
+    }
+    e.target.value = "";
   };
 
   // Close menu on ESC key
@@ -553,7 +578,30 @@ export function Navbar() {
               )}
             </div>
             <div>
-              <Label htmlFor="write-content">내용</Label>
+              <div className="flex items-center justify-between mb-1">
+                <Label htmlFor="write-content">내용</Label>
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={contentImageInputRef}
+                    onChange={handleContentImageUpload}
+                    className="hidden"
+                    data-testid="input-write-content-image"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => contentImageInputRef.current?.click()}
+                    disabled={isUploadingContent}
+                    data-testid="button-write-add-content-image"
+                  >
+                    <ImageIcon className="w-4 h-4 mr-1" />
+                    {isUploadingContent ? "업로드 중..." : "이미지 추가"}
+                  </Button>
+                </div>
+              </div>
               <Textarea
                 id="write-content"
                 value={writeForm.content}
