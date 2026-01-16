@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import type { Content } from "@shared/schema";
+import { useEffect } from "react";
 
 function formatDate(dateValue: string | Date) {
   const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
@@ -25,6 +26,11 @@ function getYouTubeEmbedUrl(url: string): string | null {
 export default function NameStoryDetail() {
   const params = useParams();
   const id = params.id;
+
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
   const { data: story, isLoading, error } = useQuery<Content>({
     queryKey: ["/api/contents", "detail", id],
