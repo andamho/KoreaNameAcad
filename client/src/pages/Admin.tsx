@@ -142,10 +142,22 @@ export default function Admin() {
       toast({ title: "제목, 썸네일, 내용을 모두 입력해주세요.", variant: "destructive" });
       return;
     }
+    
+    // 이미지를 content 맨 앞에 마크다운으로 추가
+    // 기존 content에서 이미지 마크다운 제거 후 새로 추가
+    let cleanContent = storyForm.content.replace(/!\[[^\]]*\]\([^)]+\)\n*/g, '').trim();
+    const imagesMarkdown = uploadedImages.map(img => `![이미지](${img})`).join('\n');
+    const finalContent = imagesMarkdown ? `${imagesMarkdown}\n\n${cleanContent}` : cleanContent;
+    
+    const submitData = {
+      ...storyForm,
+      content: finalContent,
+    };
+    
     if (editingStory) {
-      updateStoryMutation.mutate({ id: editingStory.id, data: storyForm });
+      updateStoryMutation.mutate({ id: editingStory.id, data: submitData });
     } else {
-      createStoryMutation.mutate(storyForm);
+      createStoryMutation.mutate(submitData);
     }
   };
 
