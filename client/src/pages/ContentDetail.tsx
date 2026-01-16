@@ -196,6 +196,28 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
                   </p>
                 );
               })}
+              
+              {/* 홍보 문구 (후기 페이지만) */}
+              {backPath === "/reviews" && (
+                <div className="mt-8 pt-6 border-t border-border text-center">
+                  <p className="text-foreground leading-relaxed mb-1">😩고달픈 인생,</p>
+                  <p className="text-foreground leading-relaxed mb-3">이름 하나로 이유와 해결책을!</p>
+                  <p className="text-foreground leading-relaxed mb-1">🔍한글.한자이름만으로 운명상담</p>
+                  <p className="text-foreground leading-relaxed mb-3">[정확도 80%👆]</p>
+                  <p className="text-foreground leading-relaxed mb-1">🌸운이 술술 풀리는 이름으로</p>
+                  <p className="text-foreground leading-relaxed mb-3">인생역전!</p>
+                  <p className="text-foreground leading-relaxed mb-1">🔮이름상담 및 작명 [신청방법]</p>
+                  <p className="text-foreground leading-relaxed mb-3">👇👇👇</p>
+                  <a 
+                    href="https://korea-name-acad.com/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    https://korea-name-acad.com/
+                  </a>
+                </div>
+              )}
             </div>
           </article>
         </div>
