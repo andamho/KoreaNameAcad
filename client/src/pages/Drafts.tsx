@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Trash2, Eye, FileEdit, Pencil, Upload } from "lucide-react";
+import { Trash2, Eye, FileEdit, Pencil, Upload, ImageIcon } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useRef } from "react";
 import type { Content } from "@shared/schema";
@@ -55,12 +55,26 @@ export default function Drafts() {
     videoUrl: "",
   });
   
-  // Image upload
+  // Uploaded images list (Naver Blog style)
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  
+  // Image upload (unified)
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadFile, isUploading } = useUpload({
     onSuccess: (response) => {
-      setEditForm(prev => ({ ...prev, thumbnail: response.objectPath }));
-      toast({ title: "이미지가 업로드되었습니다." });
+      const imageUrl = response.objectPath;
+      setUploadedImages(prev => {
+        const newImages = [...prev, imageUrl];
+        // First image automatically becomes thumbnail
+        if (newImages.length === 1 || !editForm.thumbnail) {
+          setEditForm(form => ({ ...form, thumbnail: imageUrl }));
+        }
+        return newImages;
+      });
+      // Add to content body
+      const imageMarkdown = `\n![이미지](${imageUrl})\n`;
+      setEditForm(prev => ({ ...prev, content: prev.content + imageMarkdown }));
+      toast({ title: "이미지가 추가되었습니다." });
     },
     onError: () => {
       toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
@@ -68,14 +82,24 @@ export default function Drafts() {
   });
   
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
-        return;
+    const files = e.target.files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith("image/")) {
+          toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
+          continue;
+        }
+        await uploadFile(file);
       }
-      await uploadFile(file);
     }
+    e.target.value = "";
+  };
+  
+  // Set selected image as thumbnail
+  const setAsThumbnail = (imageUrl: string) => {
+    setEditForm(prev => ({ ...prev, thumbnail: imageUrl }));
+    toast({ title: "대표 이미지가 변경되었습니다." });
   };
 
   const { data: drafts, isLoading } = useQuery<Content[]>({
@@ -183,6 +207,18 @@ export default function Drafts() {
       isVideo: draft.isVideo,
       videoUrl: draft.videoUrl || "",
     });
+    // Extract existing images from content
+    const imageRegex = /!\[[^\]]*\]\(([^)]+)\)/g;
+    const existingImages: string[] = [];
+    let match;
+    while ((match = imageRegex.exec(draft.content)) !== null) {
+      existingImages.push(match[1]);
+    }
+    // Include thumbnail if not already in content
+    if (draft.thumbnail && !existingImages.includes(draft.thumbnail)) {
+      existingImages.unshift(draft.thumbnail);
+    }
+    setUploadedImages(existingImages);
     setShowEditDialog(true);
   };
   
@@ -340,59 +376,55 @@ export default function Drafts() {
               />
             </div>
             <div>
-              <Label>썸네일 이미지 (선택)</Label>
-              <div className="flex gap-2 items-center">
-                <Input
-                  id="edit-thumbnail"
-                  value={editForm.thumbnail}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, thumbnail: e.target.value }))}
-                  placeholder="URL 직접 입력 또는 이미지 업로드"
-                  className="flex-1"
-                  data-testid="input-edit-draft-thumbnail"
-                />
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                  data-testid="input-edit-draft-thumbnail-file"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  data-testid="button-edit-draft-upload-thumbnail"
-                >
-                  {isUploading ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Upload className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-              {editForm.thumbnail && (
-                <div className="mt-2 relative">
-                  <img 
-                    src={editForm.thumbnail} 
-                    alt="썸네일 미리보기" 
-                    className="w-full h-32 object-cover rounded border"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
+              <div className="flex items-center justify-between mb-2">
+                <Label>이미지</Label>
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageUpload}
+                    data-testid="input-edit-draft-images"
                   />
                   <Button
                     type="button"
-                    variant="ghost"
                     size="sm"
-                    className="absolute top-1 right-1 h-6 px-2 text-xs bg-background/80"
-                    onClick={() => setEditForm(prev => ({ ...prev, thumbnail: "" }))}
-                    data-testid="button-edit-draft-remove-thumbnail"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    data-testid="button-edit-draft-upload-images"
                   >
-                    삭제
+                    <ImageIcon className="w-4 h-4 mr-1" />
+                    {isUploading ? "업로드 중..." : "이미지 추가"}
                   </Button>
+                </div>
+              </div>
+              {uploadedImages.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">클릭하여 대표 이미지 선택 (첫 번째 이미지가 기본 대표 이미지)</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {uploadedImages.map((img, idx) => (
+                      <div 
+                        key={idx} 
+                        className={`relative aspect-square cursor-pointer rounded overflow-hidden border-2 ${editForm.thumbnail === img ? 'border-primary ring-2 ring-primary' : 'border-transparent hover:border-muted-foreground/50'}`}
+                        onClick={() => setAsThumbnail(img)}
+                        data-testid={`edit-image-thumbnail-select-${idx}`}
+                      >
+                        <img 
+                          src={img} 
+                          alt={`이미지 ${idx + 1}`} 
+                          className="w-full h-full object-cover"
+                        />
+                        {editForm.thumbnail === img && (
+                          <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1 rounded">
+                            대표
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
