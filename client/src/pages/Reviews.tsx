@@ -192,7 +192,7 @@ function CmsReviewCard({ review }: { review: Content }) {
                 size="icon"
                 variant="ghost"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(); }}
-                className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 h-8 w-8"
+                className="text-blue-500"
                 data-testid={`button-edit-cms-review-${review.id}`}
               >
                 <Pencil className="w-4 h-4" />
@@ -201,7 +201,7 @@ function CmsReviewCard({ review }: { review: Content }) {
                 size="icon"
                 variant="ghost"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(); }}
-                className="text-red-500 hover:text-red-600 hover:bg-red-50 h-8 w-8"
+                className="text-red-500"
                 data-testid={`button-delete-cms-review-${review.id}`}
               >
                 <Trash2 className="w-4 h-4" />
