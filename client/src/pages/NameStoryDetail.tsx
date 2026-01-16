@@ -57,6 +57,10 @@ export default function NameStoryDetail() {
         }
         return newImages;
       });
+      // 자동으로 본문에 이미지 추가
+      const imageMarkdown = `\n![이미지](${imageUrl})\n`;
+      setEditForm(prev => ({ ...prev, content: prev.content + imageMarkdown }));
+      toast({ title: "이미지가 추가되었습니다." });
     },
     onError: () => {
       toast({ title: "이미지 업로드 실패", variant: "destructive" });
