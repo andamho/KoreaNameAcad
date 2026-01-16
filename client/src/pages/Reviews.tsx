@@ -151,6 +151,10 @@ function CmsReviewCard({ review }: { review: Content }) {
   };
   
   const handleEditSubmit = () => {
+    console.log("[CmsReviewCard] handleEditSubmit called");
+    console.log("[CmsReviewCard] uploadedImages:", uploadedImages);
+    console.log("[CmsReviewCard] editForm.thumbnail:", editForm.thumbnail);
+    
     if (!editForm.title.trim() || !editForm.content.trim()) {
       toast({ title: "제목과 내용을 입력해주세요.", variant: "destructive" });
       return;
@@ -162,8 +166,17 @@ function CmsReviewCard({ review }: { review: Content }) {
     const imagesMarkdown = uploadedImages.map(img => `![이미지](${img})`).join('\n');
     const finalContent = imagesMarkdown ? `${imagesMarkdown}\n\n${cleanContent}` : cleanContent;
     
+    console.log("[CmsReviewCard] cleanContent:", cleanContent.substring(0, 100));
+    console.log("[CmsReviewCard] imagesMarkdown:", imagesMarkdown);
+    console.log("[CmsReviewCard] finalContent:", finalContent.substring(0, 200));
+    
+    // 썸네일이 없으면 첫번째 이미지 사용
+    const finalThumbnail = editForm.thumbnail || uploadedImages[0] || "";
+    console.log("[CmsReviewCard] finalThumbnail:", finalThumbnail);
+    
     updateMutation.mutate({
       ...editForm,
+      thumbnail: finalThumbnail,
       content: finalContent,
     });
   };

@@ -148,6 +148,10 @@ function StoryCard({ story }: { story: Content }) {
   };
   
   const handleEditSubmit = () => {
+    console.log("[StoryCard] handleEditSubmit called");
+    console.log("[StoryCard] uploadedImages:", uploadedImages);
+    console.log("[StoryCard] editForm.thumbnail:", editForm.thumbnail);
+    
     if (!editForm.title.trim() || !editForm.content.trim()) {
       toast({ title: "제목과 내용을 입력해주세요.", variant: "destructive" });
       return;
@@ -159,8 +163,17 @@ function StoryCard({ story }: { story: Content }) {
     const imagesMarkdown = uploadedImages.map(img => `![이미지](${img})`).join('\n');
     const finalContent = imagesMarkdown ? `${imagesMarkdown}\n\n${cleanContent}` : cleanContent;
     
+    console.log("[StoryCard] cleanContent:", cleanContent.substring(0, 100));
+    console.log("[StoryCard] imagesMarkdown:", imagesMarkdown);
+    console.log("[StoryCard] finalContent:", finalContent.substring(0, 200));
+    
+    // 썸네일이 없으면 첫번째 이미지 사용
+    const finalThumbnail = editForm.thumbnail || uploadedImages[0] || "";
+    console.log("[StoryCard] finalThumbnail:", finalThumbnail);
+    
     updateMutation.mutate({
       ...editForm,
+      thumbnail: finalThumbnail,
       content: finalContent,
     });
   };
