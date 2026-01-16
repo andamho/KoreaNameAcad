@@ -10,7 +10,7 @@ import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Heart, Smile, LifeBuoy, Zap, X, FileText, BookOpenText } from "lucide-react";
+import { Heart, Baby, LifeBuoy, Zap, X, FileText, BookOpenText } from "lucide-react";
 // 로고는 public 폴더에서 preload되어 빠르게 로드됨
 const formLogoImage = "/form-logo.png";
 
@@ -719,7 +719,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 <article className="family-card-top group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
-                      <Smile className="h-5 w-5" />
+                      <Baby className="h-5 w-5" />
                     </div>
                     <div>
                       <h3 className="text-[19px] font-bold text-white">자녀, 혈육</h3>
