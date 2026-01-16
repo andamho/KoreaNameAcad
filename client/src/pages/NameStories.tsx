@@ -228,7 +228,8 @@ function StoryCard({ story }: { story: Content }) {
             </div>
           )}
         </div>
-        <div className="p-4">
+        {/* 제목/날짜 영역 - 모바일에서 숨김 */}
+        <div className="hidden sm:block p-4">
           <h3 className="text-base font-semibold text-foreground line-clamp-2 mb-2">
             {story.title}
           </h3>
