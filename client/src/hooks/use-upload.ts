@@ -168,10 +168,13 @@ export function useUpload(options: UseUploadOptions = {}) {
         setProgress(5);
         console.log("[useUpload] compressing image...");
         const compressedFile = await compressImage(file, maxWidth, maxHeight, quality);
+        console.log("[useUpload] compression done, file size:", compressedFile.size);
         
         setProgress(15);
         console.log("[useUpload] requesting upload URL...");
+        console.log("[useUpload] file details:", compressedFile.name, compressedFile.type, compressedFile.size);
         const uploadResponse = await requestUploadUrl(compressedFile);
+        console.log("[useUpload] requestUploadUrl succeeded");
         console.log("[useUpload] got upload URL:", uploadResponse.objectPath);
 
         setProgress(40);
