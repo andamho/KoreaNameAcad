@@ -815,7 +815,7 @@ export default function Reviews() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {allAnalysisTestimonials.map((testimonial, index) => (
               <Card
                 key={index}
@@ -866,7 +866,7 @@ export default function Reviews() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {allNameChangeTestimonials.map((testimonial, index) => (
               <Card
                 key={index}
