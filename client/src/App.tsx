@@ -62,6 +62,9 @@ function Router() {
       <Route path="/drafts" component={Drafts}/>
       <Route path="/services" component={Services}/>
       <Route path="/reviews" component={Reviews}/>
+      <Route path="/reviews/:id">
+        {(params) => <ContentDetail backPath="/reviews" backLabel="후기 목록" />}
+      </Route>
       <Route path="/pricing" component={Pricing}/>
       <Route path="/name-stories" component={NameStories}/>
       <Route path="/name-stories/:id" component={NameStoryDetail}/>

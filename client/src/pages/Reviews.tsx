@@ -23,7 +23,7 @@ const categoryOptions = [
   { value: "expert", label: "한국이름학교" },
 ];
 import reviewsCharacterImage from "@assets/KakaoTalk_20251226_140721227_1766725962281.png";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 
 // 후기 타입 정의
 interface Testimonial {
@@ -171,58 +171,60 @@ function CmsReviewCard({ review }: { review: Content }) {
 
   return (
     <>
-      <Card
-        className="p-6 bg-card border border-border relative"
-        data-testid={`cms-review-card-${review.id}`}
-      >
-        {/* 관리자 버튼들 */}
-        {isAdmin && (
-          <div className="absolute top-2 right-2 flex gap-1">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={handleEdit}
-              className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 h-8 w-8"
-              data-testid={`button-edit-cms-review-${review.id}`}
-            >
-              <Pencil className="w-4 h-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={handleDelete}
-              className="text-red-500 hover:text-red-600 hover:bg-red-50 h-8 w-8"
-              data-testid={`button-delete-cms-review-${review.id}`}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
-        
-        {/* 썸네일 */}
-        {review.thumbnail && (
-          <img
-            src={review.thumbnail}
-            alt={review.title}
-            className="w-full h-40 object-cover rounded-lg mb-4"
-          />
-        )}
-        
-        {/* 제목 */}
-        <h4 className="text-lg font-bold text-foreground mb-2">
-          {review.title}
-        </h4>
-        
-        {/* 내용 */}
-        <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-          {review.content}
-        </p>
-        
-        {/* 날짜 */}
-        <p className="text-xs text-muted-foreground">
-          {new Date(review.createdAt).toLocaleDateString("ko-KR")}
-        </p>
-      </Card>
+      <Link href={`/reviews/${review.id}`} className="block">
+        <Card
+          className="p-6 bg-card border border-border relative hover-elevate cursor-pointer"
+          data-testid={`cms-review-card-${review.id}`}
+        >
+          {/* 관리자 버튼들 */}
+          {isAdmin && (
+            <div className="absolute top-2 right-2 flex gap-1 z-10" onClick={(e) => e.preventDefault()}>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(); }}
+                className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 h-8 w-8"
+                data-testid={`button-edit-cms-review-${review.id}`}
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(); }}
+                className="text-red-500 hover:text-red-600 hover:bg-red-50 h-8 w-8"
+                data-testid={`button-delete-cms-review-${review.id}`}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+          
+          {/* 썸네일 */}
+          {review.thumbnail && (
+            <img
+              src={review.thumbnail}
+              alt={review.title}
+              className="w-full h-40 object-cover rounded-lg mb-4"
+            />
+          )}
+          
+          {/* 제목 */}
+          <h4 className="text-lg font-bold text-foreground mb-2">
+            {review.title}
+          </h4>
+          
+          {/* 내용 */}
+          <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
+            {review.content}
+          </p>
+          
+          {/* 날짜 */}
+          <p className="text-xs text-muted-foreground">
+            {new Date(review.createdAt).toLocaleDateString("ko-KR")}
+          </p>
+        </Card>
+      </Link>
       
       {/* 수정 다이얼로그 */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
