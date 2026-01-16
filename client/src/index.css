@@ -1922,3 +1922,33 @@ html.ua-tiktok .story-card .text-xs {
   font-size: 10px !important;
 }
 
+/* 상세 페이지 뒤로가기 버튼 ("< 후기 목록" 등) 82% */
+html.ua-instagram article + main span[style*="clamp"],
+html.ua-tiktok article + main span[style*="clamp"],
+html.ua-instagram main > div > div > a > span,
+html.ua-tiktok main > div > div > a > span {
+  font-size: 11px !important;
+}
+
+/* 자동문구 섹션 (프로모션) 82% */
+html.ua-instagram .kna-promo,
+html.ua-tiktok .kna-promo {
+  transform: scale(0.82);
+  transform-origin: top center;
+}
+
+html.ua-instagram .kna-promo .font-bold,
+html.ua-tiktok .kna-promo .font-bold {
+  font-size: clamp(15px, 3.5vw, 20px) !important;
+}
+
+html.ua-instagram .kna-promo .text-sm,
+html.ua-tiktok .kna-promo .text-sm {
+  font-size: 11px !important;
+}
+
+html.ua-instagram .kna-promo a,
+html.ua-tiktok .kna-promo a {
+  font-size: 11px !important;
+}
+

@@ -337,7 +337,7 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
               })}
               
               {backPath === "/reviews" && (
-                <div className="mt-8 rounded-2xl py-10 px-6 text-center relative overflow-hidden bg-white border border-gray-100">
+                <div className="kna-promo mt-8 rounded-2xl py-10 px-6 text-center relative overflow-hidden bg-white border border-gray-100">
                   <div className="relative z-10">
                     <div className="font-bold tracking-tight text-center" style={{ fontSize: 'clamp(18px, 4vw, 24px)', lineHeight: '1.35', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1em' }}>
                       <span className="text-gray-900">고달픈 인생</span>
