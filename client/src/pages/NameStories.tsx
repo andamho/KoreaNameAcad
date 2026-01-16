@@ -172,7 +172,17 @@ function StoryCard({ story }: { story: Content }) {
       toast({ title: "제목과 내용을 입력해주세요.", variant: "destructive" });
       return;
     }
-    updateMutation.mutate(editForm);
+    
+    // 이미지를 content 맨 앞에 마크다운으로 추가
+    // 기존 content에서 이미지 마크다운 제거 후 새로 추가
+    let cleanContent = editForm.content.replace(/!\[[^\]]*\]\([^)]+\)\n*/g, '').trim();
+    const imagesMarkdown = uploadedImages.map(img => `![이미지](${img})`).join('\n');
+    const finalContent = imagesMarkdown ? `${imagesMarkdown}\n\n${cleanContent}` : cleanContent;
+    
+    updateMutation.mutate({
+      ...editForm,
+      content: finalContent,
+    });
   };
 
   return (
