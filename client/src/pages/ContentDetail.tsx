@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
-import { ArrowLeft, Calendar, Share2, Play, Pencil, Upload } from "lucide-react";
+import { Calendar, Share2, Play, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -11,9 +11,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { ImageManager } from "@/components/ImageManager";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Content } from "@shared/schema";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 
 interface ContentDetailProps {
   backPath: string;
@@ -23,7 +24,6 @@ interface ContentDetailProps {
 export default function ContentDetail({ backPath, backLabel }: ContentDetailProps) {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -46,9 +46,6 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
         }
         return newImages;
       });
-      // 자동으로 본문에 이미지 추가
-      const imageMarkdown = `\n![이미지](${imageUrl})\n`;
-      setEditForm(prev => ({ ...prev, content: prev.content + imageMarkdown }));
       toast({ title: "이미지가 추가되었습니다." });
     },
     onError: () => {
@@ -166,31 +163,6 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
       setUploadedImages(images);
       setShowEditDialog(true);
     }
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    
-    for (const file of Array.from(files)) {
-      if (!file.type.startsWith("image/")) {
-        toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
-        continue;
-      }
-      await uploadFile(file);
-    }
-    
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-
-  const setAsThumbnail = (url: string) => {
-    setEditForm(prev => ({ ...prev, thumbnail: url }));
-  };
-
-  const insertImageToContent = (url: string) => {
-    const imageMarkdown = `\n![이미지](${url})\n`;
-    setEditForm(prev => ({ ...prev, content: prev.content + imageMarkdown }));
-    toast({ title: "이미지가 본문에 추가되었습니다." });
   };
 
   const handleUpdate = () => {
@@ -387,82 +359,14 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
                 placeholder="제목을 입력하세요"
               />
             </div>
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label>이미지</Label>
-                <div className="flex gap-2">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleImageUpload}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="h-8"
-                  >
-                    {isUploading ? "업로드 중..." : (
-                      <>
-                        <Upload className="w-4 h-4 mr-1" />
-                        이미지 추가
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-              {uploadedImages.length > 0 && (
-                <div className="grid grid-cols-4 gap-2 mt-2">
-                  {uploadedImages.map((img, idx) => (
-                    <div
-                      key={idx}
-                      className={`relative aspect-square rounded overflow-hidden cursor-pointer border-2 ${editForm.thumbnail === img ? 'border-primary' : 'border-transparent'}`}
-                      onClick={() => setAsThumbnail(img)}
-                    >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
-                      {editForm.thumbnail === img && (
-                        <div className="absolute top-0.5 left-0.5 bg-primary text-primary-foreground text-[10px] px-1 rounded">
-                          대표
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const newImages = uploadedImages.filter((_, i) => i !== idx);
-                          setUploadedImages(newImages);
-                          if (editForm.thumbnail === img) {
-                            setEditForm(prev => ({ ...prev, thumbnail: newImages[0] || "" }));
-                          }
-                        }}
-                      >
-                        ✕
-                      </button>
-                      <button
-                        type="button"
-                        className="absolute bottom-0.5 right-0.5 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-[10px] hover:bg-blue-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          insertImageToContent(img);
-                        }}
-                        title="본문에 추가"
-                      >
-                        +
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <p className="text-xs text-muted-foreground mt-1">
-                클릭하여 대표 이미지 선택, + 버튼으로 본문에 추가
-              </p>
-            </div>
+            <ImageManager
+              images={uploadedImages}
+              onImagesChange={setUploadedImages}
+              thumbnail={editForm.thumbnail}
+              onThumbnailChange={(thumb) => setEditForm(prev => ({ ...prev, thumbnail: thumb }))}
+              onUpload={uploadFile}
+              isUploading={isUploading}
+            />
             <div>
               <Label htmlFor="edit-content">내용</Label>
               <Textarea
