@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Scale, Link2, Lock } from "lucide-react";
 import { Link } from "wouter";
 import logoImage from "@assets/file_000000009b2c7206ad0a70c0142cb99a_1766915164756.png";
+import wingLogoImage from "@assets/KakaoTalk_20260116_215645320_1768568272743.jpg";
 import { clearScrollPosition } from "@/hooks/use-scroll-restore";
 
 function ShieldIcon({ className }: { className?: string }) {
