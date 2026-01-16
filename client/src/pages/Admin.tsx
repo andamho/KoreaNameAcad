@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,9 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Download, Plus, Pencil, Trash2 } from "lucide-react";
+import { Download, Plus, Pencil, Trash2, Upload } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useUpload } from "@/hooks/use-upload";
 import type { Consultation, NameStory, InsertNameStory } from "@shared/schema";
 
 export default function Admin() {
@@ -26,6 +27,31 @@ export default function Admin() {
     videoUrl: "",
     isVideo: false,
   });
+  
+  const contentImageInputRef = useRef<HTMLInputElement>(null);
+  
+  const { uploadFile: uploadContentImage, isUploading: isUploadingContent } = useUpload({
+    onSuccess: (response) => {
+      const imageMarkdown = `\n![이미지](${response.objectPath})\n`;
+      setStoryForm(prev => ({ ...prev, content: prev.content + imageMarkdown }));
+      toast({ title: "본문에 이미지가 추가되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
+    },
+  });
+  
+  const handleContentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
+        return;
+      }
+      await uploadContentImage(file);
+    }
+    e.target.value = "";
+  };
 
   const { data: consultations, isLoading: loadingConsultations } = useQuery<Consultation[]>({
     queryKey: ["/api/consultations"],
@@ -320,7 +346,30 @@ export default function Admin() {
                       </div>
                     )}
                     <div className="space-y-2">
-                      <Label htmlFor="content">내용 (HTML 지원)</Label>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="content">내용 (HTML 지원)</Label>
+                        <div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            ref={contentImageInputRef}
+                            onChange={handleContentImageUpload}
+                            className="hidden"
+                            data-testid="input-content-image"
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => contentImageInputRef.current?.click()}
+                            disabled={isUploadingContent}
+                            data-testid="button-add-content-image"
+                          >
+                            <Upload className="w-4 h-4 mr-1" />
+                            {isUploadingContent ? "업로드 중..." : "이미지 추가"}
+                          </Button>
+                        </div>
+                      </div>
                       <Textarea
                         id="content"
                         value={storyForm.content}
