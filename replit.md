@@ -112,6 +112,13 @@ Preferred communication style: Simple, everyday language.
 - Complex consultation data including multiple people, name changes, and file attachments
 - Content model (unified CMS): id, category (nameStory|expert|announcement|review), title, thumbnail, content, videoUrl, isVideo, createdAt, updatedAt
 
+**Content Body Image Embedding**
+- Admin can embed images in content body using the "이미지 추가" button
+- Images are stored in Object Storage and inserted as markdown: `![이미지](url)`
+- Detail pages parse and render markdown images using regex: `/^!\[([^\]]*)\]\(([^)]+)\)$/`
+- Only image-only lines are parsed (for security - no inline HTML injection)
+- Images that fail to load are hidden via onError handler
+
 **Note:** Currently using MemStorage (in-memory). Data is lost on server restart. For persistent storage, PostgreSQL database migration is required.
 
 ### Development Environment
