@@ -328,24 +328,33 @@ export default function NameStoryDetail() {
                   );
                 })}
                 
-                <div className="mt-8 pt-6 border-t border-border text-center">
-                  <p className="text-foreground leading-relaxed mb-1">😩고달픈 인생,</p>
-                  <p className="text-foreground leading-relaxed mb-3">이름 하나로 이유와 해결책을!</p>
-                  <p className="text-foreground leading-relaxed mb-1">🔍한글.한자이름만으로 운명상담</p>
-                  <p className="text-foreground leading-relaxed mb-3">[정확도 80%👆]</p>
-                  <p className="text-foreground leading-relaxed mb-1">🌸운이 술술 풀리는 이름으로</p>
-                  <p className="text-foreground leading-relaxed mb-3">인생역전!</p>
-                  <p className="text-foreground leading-relaxed mb-1">🔮이름상담 및 작명 [신청방법]</p>
-                  <p className="text-foreground leading-relaxed mb-4">👇👇👇</p>
-                  <a 
-                    href="https://korea-name-acad.com/services" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-block px-6 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition-opacity"
-                    style={{ backgroundColor: '#0ABAB5' }}
-                  >
-                    바로가기&gt;
-                  </a>
+                <div className="mt-8 rounded-2xl py-10 px-6 text-center relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #e8f4f3 0%, #d4ebe8 50%, #f5e6e0 100%)' }}>
+                  <div className="relative z-10">
+                    <p className="text-[#2d4a5e] text-xl md:text-2xl font-bold mb-2">고달픈 인생</p>
+                    <p className="text-[#2d4a5e] text-xl md:text-2xl font-bold mb-2">이름 하나로 이유를 찾고</p>
+                    <p className="text-[#0ABAB5] text-xl md:text-2xl font-bold mb-2">운이 술술 풀리는</p>
+                    <p className="text-[#2d4a5e] text-xl md:text-2xl font-bold mb-4">새 이름으로, <span className="font-extrabold">인생역전하세요.</span></p>
+                    <p className="text-[#5a7a8a] text-sm mb-1">한글·한자이름만으로 운명상담</p>
+                    <p className="text-[#5a7a8a] text-sm mb-6">[정확도 80% 이상]</p>
+                    <div className="flex justify-center gap-3">
+                      <a 
+                        href="https://korea-name-acad.com/services" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-block px-5 py-2.5 rounded-md text-white font-medium hover:opacity-90 transition-opacity text-sm"
+                        style={{ backgroundColor: '#2d3748' }}
+                      >
+                        지금 신청›
+                      </a>
+                      <a 
+                        href="/reviews"
+                        className="inline-block px-5 py-2.5 rounded-md font-medium hover:opacity-90 transition-opacity text-sm border"
+                        style={{ backgroundColor: 'white', color: '#2d3748', borderColor: '#d1d5db' }}
+                      >
+                        후기 보기›
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
             </Card>
