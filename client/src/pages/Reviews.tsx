@@ -200,13 +200,15 @@ function CmsReviewCard({ review }: { review: Content }) {
             </div>
           )}
           
-          {/* 썸네일 */}
+          {/* 썸네일 - 정사각형 (네이버 블로그 스타일) */}
           {review.thumbnail && (
-            <img
-              src={review.thumbnail}
-              alt={review.title}
-              className="w-full h-40 object-cover rounded-lg mb-4"
-            />
+            <div className="aspect-square w-full overflow-hidden rounded-lg mb-4">
+              <img
+                src={review.thumbnail}
+                alt={review.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
           )}
           
           {/* 제목 */}
