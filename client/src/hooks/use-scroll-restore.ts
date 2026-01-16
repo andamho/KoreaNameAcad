@@ -10,6 +10,14 @@ export function saveScrollPosition(key: string) {
   } catch {}
 }
 
+export function clearScrollPosition(key: string) {
+  try {
+    const positions = JSON.parse(sessionStorage.getItem(SCROLL_POSITIONS_KEY) || "{}");
+    delete positions[key];
+    sessionStorage.setItem(SCROLL_POSITIONS_KEY, JSON.stringify(positions));
+  } catch {}
+}
+
 export function restoreScrollPosition(key: string) {
   try {
     const positions = JSON.parse(sessionStorage.getItem(SCROLL_POSITIONS_KEY) || "{}");
@@ -20,8 +28,14 @@ export function restoreScrollPosition(key: string) {
       }, 100);
       delete positions[key];
       sessionStorage.setItem(SCROLL_POSITIONS_KEY, JSON.stringify(positions));
+    } else {
+      // No saved position - scroll to top
+      window.scrollTo(0, 0);
     }
-  } catch {}
+  } catch {
+    // On error, scroll to top
+    window.scrollTo(0, 0);
+  }
 }
 
 export function useScrollRestore(key: string) {

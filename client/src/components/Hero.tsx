@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import heroImage from "@assets/ChatGPT Image 2025년 10월 8일 오후 09_34_23_1759926875782.png";
+import { clearScrollPosition } from "@/hooks/use-scroll-restore";
 
 export function Hero() {
   const [location, setLocation] = useLocation();
@@ -122,7 +123,7 @@ export function Hero() {
               지금 신청 <span>›</span>
             </button>
             <button
-              onClick={() => setLocation('/reviews')}
+              onClick={() => { clearScrollPosition("/reviews"); setLocation('/reviews'); }}
               data-testid="button-reviews"
               className="text-black dark:text-gray-900 font-medium text-sm hover:opacity-70 transition-opacity flex items-center gap-0.5"
             >

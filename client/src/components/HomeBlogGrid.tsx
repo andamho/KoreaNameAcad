@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import type { Content } from "@shared/schema";
+import { clearScrollPosition } from "@/hooks/use-scroll-restore";
 
 const PLACEHOLDER_SVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23e5e7eb' width='400' height='400'/%3E%3Ctext fill='%239ca3af' font-family='sans-serif' font-size='14' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3E이미지 없음%3C/text%3E%3C/svg%3E`;
 
@@ -108,7 +109,7 @@ export function HomeBlogGrid() {
         </div>
 
         <div className="mt-6 md:mt-8 text-center">
-          <Link href="/reviews">
+          <Link href="/reviews" onClick={() => clearScrollPosition("/reviews")}>
             <span className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               더보기 →
             </span>

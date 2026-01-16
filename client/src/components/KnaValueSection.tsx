@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Scale, Link2, Lock } from "lucide-react";
 import { Link } from "wouter";
 import logoImage from "@assets/file_000000009b2c7206ad0a70c0142cb99a_1766915164756.png";
+import { clearScrollPosition } from "@/hooks/use-scroll-restore";
 
 function ShieldIcon({ className }: { className?: string }) {
   return (
@@ -414,7 +415,7 @@ export default function KnaValueSection() {
 
           {/* 버튼 영역 */}
           <div className="flex items-center gap-4 mt-10">
-            <Link to="/reviews" className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition">
+            <Link to="/reviews" onClick={() => clearScrollPosition("/reviews")} className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition">
               1차 후기 보기 <span className="ml-0.5">›</span>
             </Link>
             <Link to="/services" className="inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-white px-4 py-1.5 text-sm font-medium text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
