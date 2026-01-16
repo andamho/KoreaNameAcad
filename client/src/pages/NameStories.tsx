@@ -529,7 +529,7 @@ export default function NameStories() {
 
           {/* Story cards */}
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
               {Array.from({ length: 8 }).map((_, i) => (
                 <StorySkeleton key={i} />
               ))}
@@ -539,7 +539,7 @@ export default function NameStories() {
               <p className="text-muted-foreground">콘텐츠를 불러오는데 실패했습니다.</p>
             </div>
           ) : stories && stories.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
               {stories.map((story) => (
                 <StoryCard key={story.id} story={story} />
               ))}
