@@ -250,11 +250,11 @@ function MobileCenterLogo() {
         }`}
       >
         {/* 로고 레이어 - 스크롤 시 선명하게 나타남 (데스크탑과 동일) */}
-        <div className={`absolute inset-0 z-10 transition-opacity duration-500 ease-in-out flex items-center justify-center bg-white dark:bg-gray-800 rounded-full ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`absolute inset-0 z-10 transition-all duration-700 ease-out flex items-center justify-center bg-[#f0fdfa] dark:bg-gray-800 rounded-full ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
           <img
-            src={logoImage}
+            src={wingLogoImage}
             alt="한국이름학교 로고"
-            className="w-[150%] h-[150%] object-cover rounded-full"
+            className="w-[85%] h-[85%] object-contain"
           />
         </div>
         
@@ -331,11 +331,11 @@ export default function KnaValueSection() {
                 onTouchEnd={(e) => { e.preventDefault(); setShowLogo(!showLogo); }}
               >
                 {/* 로고 레이어 */}
-                <div className={`absolute inset-0 z-10 transition-opacity duration-300 ease-in-out flex items-center justify-center bg-white dark:bg-gray-800 rounded-full ${showLogo ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                <div className={`absolute inset-0 z-10 transition-all duration-500 ease-out flex items-center justify-center bg-[#f0fdfa] dark:bg-gray-800 rounded-full ${showLogo ? 'opacity-100 scale-100' : 'opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100'}`}>
                   <img
-                    src={logoImage}
+                    src={wingLogoImage}
                     alt="한국이름학교 로고"
-                    className="w-[150%] h-[150%] object-cover rounded-full"
+                    className="w-[85%] h-[85%] object-contain"
                   />
                 </div>
 
