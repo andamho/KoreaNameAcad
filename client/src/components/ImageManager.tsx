@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Upload, GripVertical, X } from "lucide-react";
+import { Upload, GripVertical, X, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
@@ -75,6 +75,15 @@ export function ImageManager({
     setDragOverIndex(null);
   };
 
+  const moveImage = (fromIndex: number, direction: 'up' | 'down') => {
+    const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
+    if (toIndex < 0 || toIndex >= images.length) return;
+    
+    const newImages = [...images];
+    [newImages[fromIndex], newImages[toIndex]] = [newImages[toIndex], newImages[fromIndex]];
+    onImagesChange(newImages);
+  };
+
   const removeImage = (index: number) => {
     const removedImage = images[index];
     const newImages = images.filter((_, i) => i !== index);
@@ -130,16 +139,34 @@ export function ImageManager({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, idx)}
               onDragEnd={handleDragEnd}
-              className={`relative aspect-square rounded overflow-hidden cursor-move border-2 transition-all ${
+              className={`relative aspect-square rounded overflow-hidden border-2 transition-all ${
                 thumbnail === img ? 'border-primary' : 'border-transparent'
               } ${dragOverIndex === idx ? 'ring-2 ring-blue-400 scale-105' : ''} ${
                 draggedIndex === idx ? 'opacity-50' : ''
               }`}
               onClick={() => setAsThumbnail(img)}
             >
-              <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-black/40 to-transparent z-10 flex items-start justify-between px-1 pt-0.5">
-                <GripVertical className="w-4 h-4 text-white/80" />
-                <span className="text-white/80 text-[10px]">{idx + 1}</span>
+              <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-black/50 to-transparent z-10 flex items-start justify-between px-0.5 pt-0.5">
+                <GripVertical className="w-4 h-4 text-white/80 hidden sm:block" />
+                <div className="flex gap-0.5 sm:hidden">
+                  <button
+                    type="button"
+                    className="w-5 h-5 bg-white/80 rounded flex items-center justify-center disabled:opacity-30"
+                    onClick={(e) => { e.stopPropagation(); moveImage(idx, 'up'); }}
+                    disabled={idx === 0}
+                  >
+                    <ChevronUp className="w-3 h-3 text-black" />
+                  </button>
+                  <button
+                    type="button"
+                    className="w-5 h-5 bg-white/80 rounded flex items-center justify-center disabled:opacity-30"
+                    onClick={(e) => { e.stopPropagation(); moveImage(idx, 'down'); }}
+                    disabled={idx === images.length - 1}
+                  >
+                    <ChevronDown className="w-3 h-3 text-black" />
+                  </button>
+                </div>
+                <span className="text-white/90 text-[10px] font-bold bg-black/40 px-1 rounded">{idx + 1}</span>
               </div>
               <img src={img} alt="" className="w-full h-full object-cover" />
               {thumbnail === img && (
@@ -163,7 +190,8 @@ export function ImageManager({
       )}
 
       <p className="text-xs text-muted-foreground">
-        드래그하여 순서 변경 / 클릭하여 대표 이미지 선택
+        <span className="hidden sm:inline">드래그 또는 </span>
+        화살표로 순서 변경 / 클릭하여 대표 이미지 선택
       </p>
     </div>
   );
