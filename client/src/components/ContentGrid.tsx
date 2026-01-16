@@ -7,6 +7,7 @@ import { useAdmin } from "@/contexts/AdminContext";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
+import { saveScrollPosition } from "@/hooks/use-scroll-restore";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -214,7 +215,7 @@ function ContentCard({ content, basePath }: ContentCardProps) {
   
   return (
     <>
-    <Link href={`${basePath}/${content.id}`} data-testid={`content-card-${content.id}`}>
+    <Link href={`${basePath}/${content.id}`} data-testid={`content-card-${content.id}`} onClick={() => saveScrollPosition(basePath)}>
       <div className="group cursor-pointer relative">
         {/* 관리자 버튼들 */}
         {isAdmin && (

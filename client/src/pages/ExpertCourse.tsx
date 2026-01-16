@@ -3,14 +3,11 @@ import { Footer } from "@/components/Footer";
 import { ContentGrid } from "@/components/ContentGrid";
 import { GraduationCap } from "lucide-react";
 import { useEffect } from "react";
+import { useScrollRestore } from "@/hooks/use-scroll-restore";
 
 export default function ExpertCourse() {
-  // 페이지 진입 시 스크롤 탑 (단, 뒤로가기가 아닌 경우에만)
-  useEffect(() => {
-    if (!window.history.state?.scrollY) {
-      window.scrollTo(0, 0);
-    }
-  }, []);
+  // 스크롤 위치 복원
+  useScrollRestore("/expert-course");
 
   useEffect(() => {
     const userAgent = navigator.userAgent || '';

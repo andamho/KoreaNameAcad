@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useScrollRestore, saveScrollPosition } from "@/hooks/use-scroll-restore";
 
 const categoryOptions = [
   { value: "review", label: "후기" },
@@ -168,7 +169,7 @@ function StoryCard({ story }: { story: Content }) {
 
   return (
     <>
-    <Link href={`/name-stories/${story.id}`}>
+    <Link href={`/name-stories/${story.id}`} onClick={() => saveScrollPosition("/name-stories")}>
       <Card 
         className="group overflow-hidden hover-elevate active-elevate-2 cursor-pointer relative story-card"
         data-testid={`card-story-${story.id}`}
@@ -418,12 +419,8 @@ function StorySkeleton() {
 export default function NameStories() {
   const { isAdmin, token, isVerifying } = useAdmin();
 
-  // 페이지 진입 시 스크롤 탑 (단, 뒤로가기가 아닌 경우에만)
-  useEffect(() => {
-    if (!window.history.state?.scrollY) {
-      window.scrollTo(0, 0);
-    }
-  }, []);
+  // 스크롤 위치 복원
+  useScrollRestore("/name-stories");
   
   const { data: stories, isLoading, error } = useQuery<Content[]>({
     queryKey: ["/api/contents", "nameStory"],

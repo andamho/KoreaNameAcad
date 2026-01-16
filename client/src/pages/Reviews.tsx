@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { useAdmin } from "@/contexts/AdminContext";
 import { queryClient } from "@/lib/queryClient";
+import { useScrollRestore, saveScrollPosition } from "@/hooks/use-scroll-restore";
 import type { Content } from "@shared/schema";
 
 const categoryOptions = [
@@ -171,7 +172,7 @@ function CmsReviewCard({ review }: { review: Content }) {
 
   return (
     <>
-      <Link href={`/reviews/${review.id}`} className="block">
+      <Link href={`/reviews/${review.id}`} className="block" onClick={() => saveScrollPosition("/reviews")}>
         <Card
           className="p-6 bg-card border border-border relative hover-elevate cursor-pointer"
           data-testid={`cms-review-card-${review.id}`}
@@ -393,12 +394,8 @@ export default function Reviews() {
   const { toast } = useToast();
   const { isAdmin, token } = useAdmin();
 
-  // 페이지 진입 시 스크롤 탑 (단, 뒤로가기가 아닌 경우에만)
-  useEffect(() => {
-    if (!window.history.state?.scrollY) {
-      window.scrollTo(0, 0);
-    }
-  }, []);
+  // 스크롤 위치 복원
+  useScrollRestore("/reviews");
   
   // 후기 작성 상태 (레거시 - 로컬 저장용)
   const [showWriteDialog, setShowWriteDialog] = useState(false);
