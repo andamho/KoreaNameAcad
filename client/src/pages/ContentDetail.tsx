@@ -345,16 +345,17 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
                       </span>
                       <span className="kna-highlight">
                         <span className="kna-shine">새 이름으로, 인생역전하세요.</span>
+                        <span className="kna-underline" aria-hidden="true" />
                       </span>
                     </div>
-                    <p className="text-muted-foreground text-sm mt-4 mb-1">한글·한자이름만으로 운명상담</p>
-                    <p className="text-muted-foreground text-sm mb-6">[정확도 80% 이상]</p>
+                    <p className="text-muted-foreground text-sm mt-4 mb-0">한글·한자이름만으로 운명상담</p>
+                    <p className="text-muted-foreground text-sm mb-5">[정확도 80% 이상]</p>
                     <div className="flex justify-center items-center gap-4">
                       <a 
                         href="https://korea-name-acad.com/services" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="px-4 py-1.5 bg-black text-white font-medium rounded-full text-sm hover:bg-gray-800 transition-colors flex items-center gap-0.5"
+                        className="px-4 py-1.5 bg-black text-white font-medium rounded-full text-sm hover:bg-gray-800 transition-colors flex items-center gap-0.5 no-underline"
                       >
                         지금 신청 <span>›</span>
                       </a>
