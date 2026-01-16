@@ -182,7 +182,7 @@ function CmsReviewCard({ review }: { review: Content }) {
     <>
       <Link href={`/reviews/${review.id}`} className="block" onClick={() => saveScrollPosition("/reviews")}>
         <Card
-          className="p-6 bg-card border border-border relative hover-elevate cursor-pointer"
+          className="p-0 sm:p-4 bg-card border border-border relative hover-elevate cursor-pointer overflow-hidden"
           data-testid={`cms-review-card-${review.id}`}
         >
           {/* 관리자 버튼들 */}
@@ -211,7 +211,7 @@ function CmsReviewCard({ review }: { review: Content }) {
           
           {/* 썸네일 - 정사각형 (네이버 블로그 스타일) */}
           {review.thumbnail && (
-            <div className="aspect-square w-full overflow-hidden rounded-lg mb-4">
+            <div className="aspect-square w-full overflow-hidden rounded-lg sm:mb-4">
               <img
                 src={review.thumbnail}
                 alt={review.title}
@@ -220,15 +220,15 @@ function CmsReviewCard({ review }: { review: Content }) {
             </div>
           )}
           
-          {/* 제목 */}
-          <h4 className="text-lg font-bold text-foreground mb-2">
-            {review.title}
-          </h4>
-          
-          {/* 날짜 */}
-          <p className="text-xs text-muted-foreground">
-            {new Date(review.createdAt).toLocaleDateString("ko-KR")}
-          </p>
+          {/* 제목/날짜 - 모바일에서 숨김 */}
+          <div className="hidden sm:block">
+            <h4 className="text-lg font-bold text-foreground mb-2">
+              {review.title}
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              {new Date(review.createdAt).toLocaleDateString("ko-KR")}
+            </p>
+          </div>
         </Card>
       </Link>
       
