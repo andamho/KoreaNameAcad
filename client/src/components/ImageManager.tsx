@@ -25,12 +25,21 @@ export function ImageManager({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("[ImageManager] handleFileChange triggered");
     const files = e.target.files;
+    console.log("[ImageManager] files:", files?.length);
     if (files) {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        console.log("[ImageManager] processing file:", file.name, file.type);
         if (file.type.startsWith("image/")) {
-          await onUpload(file);
+          console.log("[ImageManager] calling onUpload for:", file.name);
+          try {
+            await onUpload(file);
+            console.log("[ImageManager] onUpload completed for:", file.name);
+          } catch (err) {
+            console.error("[ImageManager] onUpload error:", err);
+          }
         }
       }
     }

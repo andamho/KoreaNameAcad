@@ -153,24 +153,33 @@ export function useUpload(options: UseUploadOptions = {}) {
 
   const uploadFile = useCallback(
     async (file: File): Promise<UploadResponse | null> => {
+      console.log("[useUpload] uploadFile called for:", file.name);
       setIsUploading(true);
       setError(null);
       setProgress(0);
 
       try {
         setProgress(5);
+        console.log("[useUpload] compressing image...");
         const compressedFile = await compressImage(file, maxWidth, maxHeight, quality);
         
         setProgress(15);
+        console.log("[useUpload] requesting upload URL...");
         const uploadResponse = await requestUploadUrl(compressedFile);
+        console.log("[useUpload] got upload URL:", uploadResponse.objectPath);
 
         setProgress(40);
+        console.log("[useUpload] uploading to presigned URL...");
         await uploadToPresignedUrl(compressedFile, uploadResponse.uploadURL);
+        console.log("[useUpload] upload complete!");
 
         setProgress(100);
+        console.log("[useUpload] calling onSuccess callback...");
         options.onSuccess?.(uploadResponse);
+        console.log("[useUpload] onSuccess callback completed");
         return uploadResponse;
       } catch (err) {
+        console.error("[useUpload] error:", err);
         const error = err instanceof Error ? err : new Error("Upload failed");
         setError(error);
         options.onError?.(error);
