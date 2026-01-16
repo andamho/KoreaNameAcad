@@ -66,8 +66,17 @@ function CmsReviewCard({ review }: { review: Content }) {
         console.log("[CmsReviewCard] prev uploadedImages:", prev);
         const newImages = [...prev, imageUrl];
         console.log("[CmsReviewCard] new uploadedImages:", newImages);
-        if (newImages.length === 1 || !editForm.thumbnail) {
+        // Use functional update for editForm to avoid stale closure
+        if (newImages.length === 1) {
           setEditForm(form => ({ ...form, thumbnail: imageUrl }));
+        } else {
+          // Check current thumbnail via functional update
+          setEditForm(form => {
+            if (!form.thumbnail) {
+              return { ...form, thumbnail: imageUrl };
+            }
+            return form;
+          });
         }
         return newImages;
       });

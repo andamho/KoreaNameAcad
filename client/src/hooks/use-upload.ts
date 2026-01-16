@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import type { UppyFile } from "@uppy/core";
 
 interface UploadMetadata {
@@ -111,10 +111,9 @@ export function useUpload(options: UseUploadOptions = {}) {
   const { maxWidth = 1200, maxHeight = 1200, quality = 0.8 } = options;
   
   // Use ref to always have the latest callbacks without causing re-renders
+  // Update synchronously on every render to ensure we always have the latest
   const optionsRef = useRef(options);
-  useEffect(() => {
-    optionsRef.current = options;
-  }, [options]);
+  optionsRef.current = options;
 
   const requestUploadUrl = useCallback(
     async (file: File): Promise<UploadResponse> => {
