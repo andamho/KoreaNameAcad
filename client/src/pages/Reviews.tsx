@@ -59,9 +59,13 @@ function CmsReviewCard({ review }: { review: Content }) {
   // 이미지 업로드 hook
   const { uploadFile, isUploading } = useUpload({
     onSuccess: (response) => {
+      console.log("[CmsReviewCard] onSuccess called with:", response);
       const imageUrl = response.objectPath;
+      console.log("[CmsReviewCard] imageUrl:", imageUrl);
       setUploadedImages(prev => {
+        console.log("[CmsReviewCard] prev uploadedImages:", prev);
         const newImages = [...prev, imageUrl];
+        console.log("[CmsReviewCard] new uploadedImages:", newImages);
         if (newImages.length === 1 || !editForm.thumbnail) {
           setEditForm(form => ({ ...form, thumbnail: imageUrl }));
         }
@@ -69,7 +73,8 @@ function CmsReviewCard({ review }: { review: Content }) {
       });
       toast({ title: "이미지가 추가되었습니다." });
     },
-    onError: () => {
+    onError: (err) => {
+      console.error("[CmsReviewCard] onError:", err);
       toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
     },
   });
