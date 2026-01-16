@@ -57,12 +57,26 @@ export function Navbar() {
     isDraft: false,
   });
   
-  // Image upload for thumbnail
+  // Uploaded images list (Naver Blog style)
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  
+  // Image upload (unified - both thumbnail and content)
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadFile, isUploading } = useUpload({
     onSuccess: (response) => {
-      setWriteForm(prev => ({ ...prev, thumbnail: response.objectPath }));
-      toast({ title: "이미지가 업로드되었습니다." });
+      const imageUrl = response.objectPath;
+      setUploadedImages(prev => {
+        const newImages = [...prev, imageUrl];
+        // First image automatically becomes thumbnail
+        if (newImages.length === 1) {
+          setWriteForm(form => ({ ...form, thumbnail: imageUrl }));
+        }
+        return newImages;
+      });
+      // Add to content body
+      const imageMarkdown = `\n![이미지](${imageUrl})\n`;
+      setWriteForm(prev => ({ ...prev, content: prev.content + imageMarkdown }));
+      toast({ title: "이미지가 추가되었습니다." });
     },
     onError: () => {
       toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
@@ -70,39 +84,38 @@ export function Navbar() {
   });
   
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
-        return;
+    const files = e.target.files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith("image/")) {
+          toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
+          continue;
+        }
+        await uploadFile(file);
       }
-      await uploadFile(file);
-    }
-  };
-  
-  // Image upload for content body
-  const contentImageInputRef = useRef<HTMLInputElement>(null);
-  const { uploadFile: uploadContentImage, isUploading: isUploadingContent } = useUpload({
-    onSuccess: (response) => {
-      const imageMarkdown = `\n![이미지](${response.objectPath})\n`;
-      setWriteForm(prev => ({ ...prev, content: prev.content + imageMarkdown }));
-      toast({ title: "본문에 이미지가 추가되었습니다." });
-    },
-    onError: () => {
-      toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
-    },
-  });
-  
-  const handleContentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
-        return;
-      }
-      await uploadContentImage(file);
     }
     e.target.value = "";
+  };
+  
+  // Set selected image as thumbnail
+  const setAsThumbnail = (imageUrl: string) => {
+    setWriteForm(prev => ({ ...prev, thumbnail: imageUrl }));
+    toast({ title: "대표 이미지가 변경되었습니다." });
+  };
+  
+  // Reset form including images
+  const resetWriteForm = () => {
+    setWriteForm({
+      category: "review",
+      title: "",
+      thumbnail: "",
+      content: "",
+      isVideo: false,
+      videoUrl: "",
+      isDraft: false,
+    });
+    setUploadedImages([]);
   };
 
   // Close menu on ESC key
