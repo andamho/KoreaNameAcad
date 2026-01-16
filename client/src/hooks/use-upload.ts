@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import type { UppyFile } from "@uppy/core";
 
 interface UploadMetadata {
@@ -109,6 +109,12 @@ export function useUpload(options: UseUploadOptions = {}) {
   const [progress, setProgress] = useState(0);
 
   const { maxWidth = 1200, maxHeight = 1200, quality = 0.8 } = options;
+  
+  // Use ref to always have the latest callbacks without causing re-renders
+  const optionsRef = useRef(options);
+  useEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
 
   const requestUploadUrl = useCallback(
     async (file: File): Promise<UploadResponse> => {
@@ -175,20 +181,22 @@ export function useUpload(options: UseUploadOptions = {}) {
 
         setProgress(100);
         console.log("[useUpload] calling onSuccess callback...");
-        options.onSuccess?.(uploadResponse);
+        // Use ref to get the latest callback
+        optionsRef.current.onSuccess?.(uploadResponse);
         console.log("[useUpload] onSuccess callback completed");
         return uploadResponse;
       } catch (err) {
         console.error("[useUpload] error:", err);
         const error = err instanceof Error ? err : new Error("Upload failed");
         setError(error);
-        options.onError?.(error);
+        // Use ref to get the latest callback
+        optionsRef.current.onError?.(error);
         return null;
       } finally {
         setIsUploading(false);
       }
     },
-    [requestUploadUrl, uploadToPresignedUrl, options, maxWidth, maxHeight, quality]
+    [requestUploadUrl, uploadToPresignedUrl, maxWidth, maxHeight, quality]
   );
 
   const getUploadParameters = useCallback(
