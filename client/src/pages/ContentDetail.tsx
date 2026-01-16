@@ -6,6 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useUpload } from "@/hooks/use-upload";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,7 +35,19 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
     isVideo: false,
   });
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+  
+  const { uploadFile, isUploading } = useUpload({
+    onSuccess: (response) => {
+      const imageUrl = response.objectPath;
+      setUploadedImages(prev => [...prev, imageUrl]);
+      if (!editForm.thumbnail) {
+        setEditForm(prev => ({ ...prev, thumbnail: imageUrl }));
+      }
+    },
+    onError: () => {
+      toast({ title: "이미지 업로드 실패", variant: "destructive" });
+    },
+  });
 
   const { data: content, isLoading, error } = useQuery<Content>({
     queryKey: ["/api/contents", "detail", id],
@@ -152,31 +165,15 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
     const files = e.target.files;
     if (!files || files.length === 0) return;
     
-    setIsUploading(true);
-    try {
-      for (const file of Array.from(files)) {
-        const formData = new FormData();
-        formData.append("file", file);
-        
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          setUploadedImages(prev => [...prev, data.url]);
-          if (!editForm.thumbnail) {
-            setEditForm(prev => ({ ...prev, thumbnail: data.url }));
-          }
-        }
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith("image/")) {
+        toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
+        continue;
       }
-    } catch (error) {
-      toast({ title: "이미지 업로드 실패", variant: "destructive" });
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      await uploadFile(file);
     }
+    
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const setAsThumbnail = (url: string) => {
