@@ -214,11 +214,6 @@ function CmsReviewCard({ review }: { review: Content }) {
             {review.title}
           </h4>
           
-          {/* 내용 */}
-          <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-            {review.content}
-          </p>
-          
           {/* 날짜 */}
           <p className="text-xs text-muted-foreground">
             {new Date(review.createdAt).toLocaleDateString("ko-KR")}

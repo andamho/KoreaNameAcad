@@ -73,9 +73,6 @@ export function Navbar() {
         }
         return newImages;
       });
-      // Add to content body
-      const imageMarkdown = `\n![이미지](${imageUrl})\n`;
-      setWriteForm(prev => ({ ...prev, content: prev.content + imageMarkdown }));
       toast({ title: "이미지가 추가되었습니다." });
     },
     onError: () => {
