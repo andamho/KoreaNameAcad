@@ -336,14 +336,15 @@ export default function NameStoryDetail() {
                   <p className="text-foreground leading-relaxed mb-1">🌸운이 술술 풀리는 이름으로</p>
                   <p className="text-foreground leading-relaxed mb-3">인생역전!</p>
                   <p className="text-foreground leading-relaxed mb-1">🔮이름상담 및 작명 [신청방법]</p>
-                  <p className="text-foreground leading-relaxed mb-3">👇👇👇</p>
+                  <p className="text-foreground leading-relaxed mb-4">👇👇👇</p>
                   <a 
                     href="https://korea-name-acad.com/services" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-primary hover:underline font-medium"
+                    className="inline-block px-6 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: '#0ABAB5' }}
                   >
-                    https://korea-name-acad.com/services
+                    바로가기&gt;
                   </a>
                 </div>
               </div>
