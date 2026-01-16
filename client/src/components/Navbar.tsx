@@ -236,8 +236,17 @@ export function Navbar() {
   };
 
   const goToPage = (path: string) => {
+    // 스크롤 복원 데이터 삭제 (메뉴에서 이동 시 맨 위에서 시작)
+    try {
+      const positions = JSON.parse(sessionStorage.getItem("kna_scroll_positions") || "{}");
+      delete positions[path];
+      sessionStorage.setItem("kna_scroll_positions", JSON.stringify(positions));
+    } catch {}
+    
     setLocation(path);
     setMenuOpen(false);
+    // 페이지 최상단으로 스크롤
+    window.scrollTo(0, 0);
   };
 
   const menuItems = [
