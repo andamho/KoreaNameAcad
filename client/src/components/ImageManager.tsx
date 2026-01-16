@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Upload, GripVertical, X, ChevronUp, ChevronDown } from "lucide-react";
+import { Upload, X, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
@@ -132,66 +132,70 @@ export function ImageManager({
         <div className="grid grid-cols-4 gap-2 mt-2">
           {images.map((img, idx) => (
             <div
-              key={`${img}-${idx}`}
-              draggable
+              key={img}
+              draggable={true}
               onDragStart={(e) => handleDragStart(e, idx)}
               onDragOver={(e) => handleDragOver(e, idx)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, idx)}
               onDragEnd={handleDragEnd}
+              style={{ cursor: 'grab' }}
               className={`relative aspect-square rounded overflow-hidden border-2 transition-all ${
                 thumbnail === img ? 'border-primary' : 'border-transparent'
               } ${dragOverIndex === idx ? 'ring-2 ring-blue-400 scale-105' : ''} ${
                 draggedIndex === idx ? 'opacity-50' : ''
               }`}
-              onClick={() => setAsThumbnail(img)}
             >
-              <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-black/50 to-transparent z-10 flex items-start justify-between px-0.5 pt-0.5">
-                <GripVertical className="w-4 h-4 text-white/80 hidden sm:block" />
-                <div className="flex gap-0.5 sm:hidden">
-                  <button
-                    type="button"
-                    className="w-5 h-5 bg-white/80 rounded flex items-center justify-center disabled:opacity-30"
-                    onClick={(e) => { e.stopPropagation(); moveImage(idx, 'up'); }}
-                    disabled={idx === 0}
-                  >
-                    <ChevronUp className="w-3 h-3 text-black" />
-                  </button>
-                  <button
-                    type="button"
-                    className="w-5 h-5 bg-white/80 rounded flex items-center justify-center disabled:opacity-30"
-                    onClick={(e) => { e.stopPropagation(); moveImage(idx, 'down'); }}
-                    disabled={idx === images.length - 1}
-                  >
-                    <ChevronDown className="w-3 h-3 text-black" />
-                  </button>
-                </div>
-                <span className="text-white/90 text-[10px] font-bold bg-black/40 px-1 rounded">{idx + 1}</span>
-              </div>
               <img src={img} alt="" className="w-full h-full object-cover" />
-              {thumbnail === img && (
-                <div className="absolute bottom-0.5 left-0.5 bg-primary text-primary-foreground text-[10px] px-1 rounded z-10">
-                  대표
-                </div>
-              )}
+              
+              {/* 순번 표시 (왼쪽 상단) */}
+              <span className="absolute top-0.5 left-0.5 text-white/90 text-[10px] font-bold bg-black/60 px-1.5 py-0.5 rounded z-10">{idx + 1}</span>
+              
+              {/* 삭제 버튼 (오른쪽 상단) */}
               <button
                 type="button"
-                className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 z-20"
+                className="absolute top-0.5 right-0.5 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 z-20"
                 onClick={(e) => {
                   e.stopPropagation();
                   removeImage(idx);
                 }}
               >
-                <X className="w-3 h-3" />
+                <X className="w-4 h-4" />
               </button>
+              
+              {/* 대표 표시 (왼쪽 하단) */}
+              {thumbnail === img && (
+                <div className="absolute bottom-0.5 left-0.5 bg-primary text-primary-foreground text-[10px] px-1 rounded z-10">
+                  대표
+                </div>
+              )}
+              
+              {/* 순서 변경 버튼 (오른쪽 하단) */}
+              <div className="absolute bottom-0.5 right-0.5 flex gap-0.5 z-10">
+                <button
+                  type="button"
+                  className="w-5 h-5 bg-white/90 rounded flex items-center justify-center disabled:opacity-30"
+                  onClick={(e) => { e.stopPropagation(); moveImage(idx, 'up'); }}
+                  disabled={idx === 0}
+                >
+                  <ChevronUp className="w-3 h-3 text-black" />
+                </button>
+                <button
+                  type="button"
+                  className="w-5 h-5 bg-white/90 rounded flex items-center justify-center disabled:opacity-30"
+                  onClick={(e) => { e.stopPropagation(); moveImage(idx, 'down'); }}
+                  disabled={idx === images.length - 1}
+                >
+                  <ChevronDown className="w-3 h-3 text-black" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
 
       <p className="text-xs text-muted-foreground">
-        <span className="hidden sm:inline">드래그 또는 </span>
-        화살표로 순서 변경 / 클릭하여 대표 이미지 선택
+        화살표(▲▼)로 순서 변경 / 이미지 클릭하여 대표 선택
       </p>
     </div>
   );
