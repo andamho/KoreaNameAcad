@@ -328,30 +328,34 @@ export default function NameStoryDetail() {
                   );
                 })}
                 
-                <div className="mt-8 rounded-2xl py-10 px-6 text-center relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #e8f4f3 0%, #d4ebe8 50%, #f5e6e0 100%)' }}>
+                <div className="mt-8 rounded-2xl py-10 px-6 text-center relative overflow-hidden bg-white border border-gray-100">
                   <div className="relative z-10">
-                    <p className="text-[#2d4a5e] text-xl md:text-2xl font-bold mb-2">고달픈 인생</p>
-                    <p className="text-[#2d4a5e] text-xl md:text-2xl font-bold mb-2">이름 하나로 이유를 찾고</p>
-                    <p className="text-[#0ABAB5] text-xl md:text-2xl font-bold mb-2">운이 술술 풀리는</p>
-                    <p className="text-[#2d4a5e] text-xl md:text-2xl font-bold mb-4">새 이름으로, <span className="font-extrabold">인생역전하세요.</span></p>
-                    <p className="text-[#5a7a8a] text-sm mb-1">한글·한자이름만으로 운명상담</p>
-                    <p className="text-[#5a7a8a] text-sm mb-6">[정확도 80% 이상]</p>
-                    <div className="flex justify-center gap-3">
+                    <div className="font-bold tracking-tight text-center" style={{ fontSize: 'clamp(18px, 4vw, 24px)', lineHeight: '1.35', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1em' }}>
+                      <span className="text-gray-900">고달픈 인생</span>
+                      <span className="text-gray-900">이름 하나로 이유를 찾고</span>
+                      <span className="kna-highlight">
+                        <span className="kna-shine">운이 술술 풀리는</span>
+                      </span>
+                      <span className="kna-highlight">
+                        <span className="kna-shine">새 이름으로, 인생역전하세요.</span>
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground text-sm mt-4 mb-1">한글·한자이름만으로 운명상담</p>
+                    <p className="text-muted-foreground text-sm mb-6">[정확도 80% 이상]</p>
+                    <div className="flex justify-center items-center gap-4">
                       <a 
                         href="https://korea-name-acad.com/services" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="inline-block px-5 py-2.5 rounded-md text-white font-medium hover:opacity-90 transition-opacity text-sm"
-                        style={{ backgroundColor: '#2d3748' }}
+                        className="px-4 py-1.5 bg-black text-white font-medium rounded-full text-sm hover:bg-gray-800 transition-colors flex items-center gap-0.5"
                       >
-                        지금 신청›
+                        지금 신청 <span>›</span>
                       </a>
                       <a 
                         href="/reviews"
-                        className="inline-block px-5 py-2.5 rounded-md font-medium hover:opacity-90 transition-opacity text-sm border"
-                        style={{ backgroundColor: 'white', color: '#2d3748', borderColor: '#d1d5db' }}
+                        className="text-black font-medium text-sm hover:opacity-70 transition-opacity flex items-center gap-0.5"
                       >
-                        후기 보기›
+                        후기 보기 <span>›</span>
                       </a>
                     </div>
                   </div>
