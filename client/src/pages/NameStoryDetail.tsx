@@ -345,9 +345,8 @@ export default function NameStoryDetail() {
                         <span className="kna-underline" aria-hidden="true" />
                       </span>
                     </div>
-                    <div className="text-muted-foreground text-sm mt-4 mb-5" style={{ lineHeight: '1.3' }}>
+                    <div className="text-muted-foreground text-sm mt-4 mb-5 flex flex-col items-center" style={{ gap: '0.1em' }}>
                       <span>한글·한자이름만으로 운명상담</span>
-                      <br />
                       <span>[정확도 80% 이상]</span>
                     </div>
                     <div className="flex justify-center items-center gap-4">
