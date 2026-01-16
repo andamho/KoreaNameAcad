@@ -194,13 +194,11 @@ export function Navbar() {
     } else {
       setLocation("/");
     }
-    window.scrollTo(0, 0);
     setMenuOpen(false);
   };
 
   const goToPage = (path: string) => {
     setLocation(path);
-    window.scrollTo(0, 0);
     setMenuOpen(false);
   };
 

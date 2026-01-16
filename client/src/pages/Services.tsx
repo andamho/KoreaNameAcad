@@ -23,6 +23,14 @@ export default function Services() {
   const isClosingFromBackButton = useRef(false);
   const scrollBeforeProcess = useRef<number | null>(null);
 
+  // 페이지 진입 시 스크롤 탑 (단, 뒤로가기가 아닌 경우에만)
+  useEffect(() => {
+    // history.state에 스크롤 위치가 없으면 새 방문으로 판단하고 스크롤 탑
+    if (!window.history.state?.scrollY) {
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
   // ref를 state와 동기화
   useEffect(() => {
     dialogOpenRef.current = dialogOpen;

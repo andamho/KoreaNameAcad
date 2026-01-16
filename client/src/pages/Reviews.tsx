@@ -23,6 +23,7 @@ const categoryOptions = [
   { value: "expert", label: "한국이름학교" },
 ];
 import reviewsCharacterImage from "@assets/KakaoTalk_20251226_140721227_1766725962281.png";
+import { useLocation } from "wouter";
 
 // 후기 타입 정의
 interface Testimonial {
@@ -346,6 +347,13 @@ export default function Reviews() {
   const [animated, setAnimated] = useState(false);
   const { toast } = useToast();
   const { isAdmin, token } = useAdmin();
+
+  // 페이지 진입 시 스크롤 탑 (단, 뒤로가기가 아닌 경우에만)
+  useEffect(() => {
+    if (!window.history.state?.scrollY) {
+      window.scrollTo(0, 0);
+    }
+  }, []);
   
   // 후기 작성 상태 (레거시 - 로컬 저장용)
   const [showWriteDialog, setShowWriteDialog] = useState(false);

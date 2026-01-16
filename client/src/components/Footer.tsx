@@ -107,10 +107,7 @@ export function Footer() {
         {/* CTA 버튼 영역 - 히어로 섹션 스타일 */}
         <div className="flex items-center justify-center gap-6 my-12">
           <button
-            onClick={() => {
-              setLocation('/services');
-              window.scrollTo(0, 0);
-            }}
+            onClick={() => setLocation('/services')}
             className="px-5 py-1 bg-white text-black font-semibold rounded-full text-sm hover:bg-gray-200 transition-colors flex items-center gap-1"
             data-testid="button-footer-apply"
           >
@@ -139,10 +136,7 @@ export function Footer() {
               {serviceLinks.map((link, idx) => (
                 <li key={idx}>
                   <button
-                    onClick={() => {
-                      setLocation(link.path);
-                      window.scrollTo(0, 0);
-                    }}
+                    onClick={() => setLocation(link.path)}
                     className="text-white/80 hover:text-white text-sm transition-colors inline-flex items-center gap-2"
                     data-testid={`footer-service-${idx}`}
                   >
@@ -162,10 +156,7 @@ export function Footer() {
               {supportLinks.map((link, idx) => (
                 <li key={idx}>
                   <button
-                    onClick={() => {
-                      setLocation(link.path);
-                      window.scrollTo(0, 0);
-                    }}
+                    onClick={() => setLocation(link.path)}
                     className="text-white/80 hover:text-white text-sm transition-colors inline-flex items-center gap-2"
                     data-testid={`footer-support-${idx}`}
                   >
