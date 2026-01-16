@@ -326,6 +326,20 @@ function StoryCard({ story }: { story: Content }) {
                         대표
                       </div>
                     )}
+                    <button
+                      type="button"
+                      className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const newImages = uploadedImages.filter((_, i) => i !== idx);
+                        setUploadedImages(newImages);
+                        if (editForm.thumbnail === img) {
+                          setEditForm(prev => ({ ...prev, thumbnail: newImages[0] || "" }));
+                        }
+                      }}
+                    >
+                      ✕
+                    </button>
                   </div>
                 ))}
               </div>
