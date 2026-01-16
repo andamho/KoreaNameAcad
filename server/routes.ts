@@ -6,15 +6,21 @@ import { sendConsultationNotification } from "./email";
 import crypto from "crypto";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 
-// 간단한 토큰 저장소 (메모리 기반)
-const validTokens = new Set<string>();
+// 관리자 비밀번호 기반 영구 토큰 생성 (서버 재시작 후에도 유효)
+function getValidAdminToken(): string | null {
+  const adminPassword = process.env.ADMIN_PASSWORD?.trim();
+  if (!adminPassword) return null;
+  // 비밀번호 해시 기반 토큰 생성 (항상 동일한 토큰 생성)
+  return crypto.createHash("sha256").update(`admin_token_${adminPassword}`).digest("hex");
+}
 
 // Admin verification middleware
 function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  const validToken = getValidAdminToken();
   
-  if (!token || !validTokens.has(token)) {
+  if (!token || !validToken || token !== validToken) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   next();
@@ -62,9 +68,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (inputPassword === adminPassword) {
-        // 토큰 생성 및 저장
-        const token = crypto.randomBytes(32).toString("hex");
-        validTokens.add(token);
+        // 영구 토큰 반환 (비밀번호 해시 기반)
+        const token = getValidAdminToken();
         return res.json({ success: true, token });
       }
       
@@ -79,7 +84,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/verify", async (req, res) => {
     try {
       const { token } = req.body;
-      if (token && validTokens.has(token)) {
+      const validToken = getValidAdminToken();
+      if (token && validToken && token === validToken) {
         return res.json({ valid: true });
       }
       return res.json({ valid: false });
@@ -209,7 +215,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user is admin (for showing drafts)
       const authHeader = req.headers.authorization;
       const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
-      const isAdmin = token && validTokens.has(token);
+      const validToken = getValidAdminToken();
+      const isAdmin = token && validToken && token === validToken;
       
       // Map legacy category values to current format
       if (category && legacyCategoryMap[category.toLowerCase()]) {
