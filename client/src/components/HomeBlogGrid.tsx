@@ -80,7 +80,7 @@ export function HomeBlogGrid() {
                 <img
                   src={content.thumbnail || PLACEHOLDER_SVG}
                   alt={content.title}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = PLACEHOLDER_SVG;
                   }}
