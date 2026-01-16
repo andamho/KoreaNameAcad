@@ -38,7 +38,7 @@ interface Testimonial {
 // 로컬스토리지 키
 const ADMIN_TOKEN_KEY = "kna_admin_token";
 
-// CMS 후기 카드 컴포넌트 (수정 기능 포함)
+// CMS 후기 카드 컴포넌트 (수정 기능 포함) - 네이버 블로그 스타일 이미지 업로드
 function CmsReviewCard({ review }: { review: Content }) {
   const { isAdmin, token } = useAdmin();
   const { toast } = useToast();
@@ -52,24 +52,22 @@ function CmsReviewCard({ review }: { review: Content }) {
     videoUrl: review.videoUrl || "",
   });
   
+  // Naver Blog style: uploaded images gallery
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const contentImageInputRef = useRef<HTMLInputElement>(null);
   
+  // Unified image upload (multiple support, no markdown)
   const { uploadFile, isUploading } = useUpload({
     onSuccess: (response) => {
-      setEditForm(prev => ({ ...prev, thumbnail: response.objectPath }));
-      toast({ title: "이미지가 업로드되었습니다." });
-    },
-    onError: () => {
-      toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
-    },
-  });
-  
-  const { uploadFile: uploadContentImage, isUploading: isUploadingContent } = useUpload({
-    onSuccess: (response) => {
-      const imageMarkdown = `\n![이미지](${response.objectPath})\n`;
-      setEditForm(prev => ({ ...prev, content: prev.content + imageMarkdown }));
-      toast({ title: "본문에 이미지가 추가되었습니다." });
+      const imageUrl = response.objectPath;
+      setUploadedImages(prev => {
+        const newImages = [...prev, imageUrl];
+        if (newImages.length === 1 || !editForm.thumbnail) {
+          setEditForm(form => ({ ...form, thumbnail: imageUrl }));
+        }
+        return newImages;
+      });
+      toast({ title: "이미지가 추가되었습니다." });
     },
     onError: () => {
       toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
@@ -77,26 +75,23 @@ function CmsReviewCard({ review }: { review: Content }) {
   });
   
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
-        return;
+    const files = e.target.files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith("image/")) {
+          toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
+          continue;
+        }
+        await uploadFile(file);
       }
-      await uploadFile(file);
-    }
-  };
-  
-  const handleContentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
-        return;
-      }
-      await uploadContentImage(file);
     }
     e.target.value = "";
+  };
+  
+  const setAsThumbnail = (imageUrl: string) => {
+    setEditForm(prev => ({ ...prev, thumbnail: imageUrl }));
+    toast({ title: "대표 이미지가 변경되었습니다." });
   };
   
   const deleteMutation = useMutation({
@@ -159,6 +154,19 @@ function CmsReviewCard({ review }: { review: Content }) {
       isVideo: review.isVideo,
       videoUrl: review.videoUrl || "",
     });
+    // Extract existing images from content and thumbnail
+    const imageRegex = /!\[[^\]]*\]\(([^)]+)\)/g;
+    const existingImages: string[] = [];
+    let match;
+    while ((match = imageRegex.exec(review.content)) !== null) {
+      if (!existingImages.includes(match[1])) {
+        existingImages.push(match[1]);
+      }
+    }
+    if (review.thumbnail && !existingImages.includes(review.thumbnail)) {
+      existingImages.unshift(review.thumbnail);
+    }
+    setUploadedImages(existingImages);
     setShowEditDialog(true);
   };
   
@@ -260,81 +268,60 @@ function CmsReviewCard({ review }: { review: Content }) {
                 data-testid="input-edit-title"
               />
             </div>
+            {/* 이미지 업로드 (네이버 블로그 스타일) */}
             <div>
-              <Label>썸네일 이미지 (선택)</Label>
-              <div className="flex gap-2 items-center">
-                <Input
-                  value={editForm.thumbnail}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, thumbnail: e.target.value }))}
-                  placeholder="URL 직접 입력 또는 이미지 업로드"
-                  className="flex-1"
-                />
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                >
-                  {isUploading ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Upload className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-              {editForm.thumbnail && (
-                <div className="mt-2 relative">
-                  <img 
-                    src={editForm.thumbnail} 
-                    alt="썸네일 미리보기" 
-                    className="w-full h-32 object-cover rounded border"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-1 right-1 h-6 px-2 text-xs bg-background/80"
-                    onClick={() => setEditForm(prev => ({ ...prev, thumbnail: "" }))}
-                  >
-                    삭제
-                  </Button>
-                </div>
-              )}
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <Label htmlFor="edit-content">내용</Label>
-                <div className="flex items-center gap-1">
+              <div className="flex items-center justify-between mb-2">
+                <Label>이미지</Label>
+                <div>
                   <input
-                    ref={contentImageInputRef}
+                    ref={fileInputRef}
                     type="file"
                     accept="image/*"
+                    multiple
                     className="hidden"
-                    onChange={handleContentImageUpload}
+                    onChange={handleImageUpload}
                   />
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => contentImageInputRef.current?.click()}
-                    disabled={isUploadingContent}
-                    className="h-7 text-xs"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="h-8"
                   >
-                    {isUploadingContent ? "업로드 중..." : "이미지 추가"}
+                    {isUploading ? "업로드 중..." : (
+                      <>
+                        <Upload className="w-4 h-4 mr-1" />
+                        이미지 추가
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
+              {uploadedImages.length > 0 && (
+                <div className="grid grid-cols-4 gap-2 mt-2">
+                  {uploadedImages.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className={`relative aspect-square rounded overflow-hidden cursor-pointer border-2 ${editForm.thumbnail === img ? 'border-primary' : 'border-transparent'}`}
+                      onClick={() => setAsThumbnail(img)}
+                    >
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      {editForm.thumbnail === img && (
+                        <div className="absolute top-0.5 left-0.5 bg-primary text-primary-foreground text-[10px] px-1 rounded">
+                          대표
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                클릭하여 대표 이미지 선택
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="edit-content">내용</Label>
               <Textarea
                 id="edit-content"
                 value={editForm.content}
