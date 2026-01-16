@@ -164,13 +164,33 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
             ) : null}
 
             <div className="prose prose-lg max-w-none dark:prose-invert">
-              {content.content.split('\n').map((paragraph, index) => (
-                paragraph.trim() && (
+              {content.content.split('\n').map((line, index) => {
+                const trimmedLine = line.trim();
+                if (!trimmedLine) return null;
+                
+                const imageMatch = trimmedLine.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+                if (imageMatch) {
+                  const [, alt, src] = imageMatch;
+                  return (
+                    <div key={index} className="my-4">
+                      <img 
+                        src={src} 
+                        alt={alt || "이미지"} 
+                        className="w-full h-auto rounded-lg"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  );
+                }
+                
+                return (
                   <p key={index} className="text-foreground leading-relaxed mb-4">
-                    {paragraph}
+                    {trimmedLine}
                   </p>
-                )
-              ))}
+                );
+              })}
             </div>
           </article>
         </div>

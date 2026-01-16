@@ -45,10 +45,23 @@ function StoryCard({ story }: { story: Content }) {
   });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const contentImageInputRef = useRef<HTMLInputElement>(null);
+  
   const { uploadFile, isUploading } = useUpload({
     onSuccess: (response) => {
       setEditForm(prev => ({ ...prev, thumbnail: response.objectPath }));
       toast({ title: "이미지가 업로드되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
+    },
+  });
+  
+  const { uploadFile: uploadContentImage, isUploading: isUploadingContent } = useUpload({
+    onSuccess: (response) => {
+      const imageMarkdown = `\n![이미지](${response.objectPath})\n`;
+      setEditForm(prev => ({ ...prev, content: prev.content + imageMarkdown }));
+      toast({ title: "본문에 이미지가 추가되었습니다." });
     },
     onError: () => {
       toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
@@ -64,6 +77,18 @@ function StoryCard({ story }: { story: Content }) {
       }
       await uploadFile(file);
     }
+  };
+  
+  const handleContentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
+        return;
+      }
+      await uploadContentImage(file);
+    }
+    e.target.value = "";
   };
   
   const deleteMutation = useMutation({
@@ -303,7 +328,28 @@ function StoryCard({ story }: { story: Content }) {
             )}
           </div>
           <div>
-            <Label htmlFor="edit-content">내용</Label>
+            <div className="flex items-center justify-between mb-1">
+              <Label htmlFor="edit-content">내용</Label>
+              <div className="flex items-center gap-1">
+                <input
+                  ref={contentImageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleContentImageUpload}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => contentImageInputRef.current?.click()}
+                  disabled={isUploadingContent}
+                  className="h-7 text-xs"
+                >
+                  {isUploadingContent ? "업로드 중..." : "이미지 추가"}
+                </Button>
+              </div>
+            </div>
             <Textarea
               id="edit-content"
               value={editForm.content}

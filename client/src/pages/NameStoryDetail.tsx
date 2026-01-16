@@ -154,10 +154,35 @@ export default function NameStoryDetail() {
             )}
 
             <Card className="p-6 md:p-8">
-              <div 
-                className="prose prose-lg dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: story.content }}
-              />
+              <div className="prose prose-lg dark:prose-invert max-w-none">
+                {story.content.split('\n').map((line, index) => {
+                  const trimmedLine = line.trim();
+                  if (!trimmedLine) return null;
+                  
+                  const imageMatch = trimmedLine.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+                  if (imageMatch) {
+                    const [, alt, src] = imageMatch;
+                    return (
+                      <div key={index} className="my-4">
+                        <img 
+                          src={src} 
+                          alt={alt || "이미지"} 
+                          className="w-full h-auto rounded-lg"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <p key={index} className="text-foreground leading-relaxed mb-4">
+                      {trimmedLine}
+                    </p>
+                  );
+                })}
+              </div>
             </Card>
           </article>
         </div>
