@@ -534,87 +534,60 @@ export function Navbar() {
               />
             </div>
             <div>
-              <Label>썸네일 이미지 (선택)</Label>
-              <div className="flex gap-2 items-center">
-                <Input
-                  id="write-thumbnail"
-                  value={writeForm.thumbnail}
-                  onChange={(e) => setWriteForm(prev => ({ ...prev, thumbnail: e.target.value }))}
-                  placeholder="URL 직접 입력 또는 이미지 업로드"
-                  className="flex-1"
-                  data-testid="input-write-thumbnail"
-                />
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                  data-testid="input-write-thumbnail-file"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  data-testid="button-write-upload-thumbnail"
-                >
-                  {isUploading ? (
-                    <span className="animate-spin">⏳</span>
-                  ) : (
-                    <Upload className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-              {writeForm.thumbnail && (
-                <div className="mt-2 relative">
-                  <img 
-                    src={writeForm.thumbnail} 
-                    alt="썸네일 미리보기" 
-                    className="w-full h-32 object-cover rounded border"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-1 right-1 h-6 px-2 text-xs bg-background/80"
-                    onClick={() => setWriteForm(prev => ({ ...prev, thumbnail: "" }))}
-                    data-testid="button-write-remove-thumbnail"
-                  >
-                    삭제
-                  </Button>
-                </div>
-              )}
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <Label htmlFor="write-content">내용</Label>
+              <div className="flex items-center justify-between mb-2">
+                <Label>이미지</Label>
                 <div>
                   <input
+                    ref={fileInputRef}
                     type="file"
                     accept="image/*"
-                    ref={contentImageInputRef}
-                    onChange={handleContentImageUpload}
+                    multiple
                     className="hidden"
-                    data-testid="input-write-content-image"
+                    onChange={handleImageUpload}
+                    data-testid="input-write-images"
                   />
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => contentImageInputRef.current?.click()}
-                    disabled={isUploadingContent}
-                    data-testid="button-write-add-content-image"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    data-testid="button-write-upload-images"
                   >
                     <ImageIcon className="w-4 h-4 mr-1" />
-                    {isUploadingContent ? "업로드 중..." : "이미지 추가"}
+                    {isUploading ? "업로드 중..." : "이미지 추가"}
                   </Button>
                 </div>
               </div>
+              {uploadedImages.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">클릭하여 대표 이미지 선택 (첫 번째 이미지가 기본 대표 이미지)</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {uploadedImages.map((img, idx) => (
+                      <div 
+                        key={idx} 
+                        className={`relative aspect-square cursor-pointer rounded overflow-hidden border-2 ${writeForm.thumbnail === img ? 'border-primary ring-2 ring-primary' : 'border-transparent hover:border-muted-foreground/50'}`}
+                        onClick={() => setAsThumbnail(img)}
+                        data-testid={`image-thumbnail-select-${idx}`}
+                      >
+                        <img 
+                          src={img} 
+                          alt={`이미지 ${idx + 1}`} 
+                          className="w-full h-full object-cover"
+                        />
+                        {writeForm.thumbnail === img && (
+                          <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1 rounded">
+                            대표
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="write-content">내용</Label>
               <Textarea
                 id="write-content"
                 value={writeForm.content}
