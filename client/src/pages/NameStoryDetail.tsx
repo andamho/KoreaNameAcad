@@ -50,10 +50,13 @@ export default function NameStoryDetail() {
   const { uploadFile, isUploading } = useUpload({
     onSuccess: (response) => {
       const imageUrl = response.objectPath;
-      setUploadedImages(prev => [...prev, imageUrl]);
-      if (!editForm.thumbnail) {
-        setEditForm(prev => ({ ...prev, thumbnail: imageUrl }));
-      }
+      setUploadedImages(prev => {
+        const newImages = [...prev, imageUrl];
+        if (newImages.length === 1) {
+          setEditForm(form => ({ ...form, thumbnail: imageUrl }));
+        }
+        return newImages;
+      });
     },
     onError: () => {
       toast({ title: "이미지 업로드 실패", variant: "destructive" });
