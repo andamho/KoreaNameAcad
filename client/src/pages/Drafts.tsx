@@ -240,7 +240,7 @@ export default function Drafts() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background drafts-page">
       <Navbar />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">

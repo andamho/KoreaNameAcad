@@ -170,7 +170,7 @@ function StoryCard({ story }: { story: Content }) {
     <>
     <Link href={`/name-stories/${story.id}`}>
       <Card 
-        className="group overflow-hidden hover-elevate active-elevate-2 cursor-pointer relative"
+        className="group overflow-hidden hover-elevate active-elevate-2 cursor-pointer relative story-card"
         data-testid={`card-story-${story.id}`}
       >
         {/* 관리자 버튼들 */}

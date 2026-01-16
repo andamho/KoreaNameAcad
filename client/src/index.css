@@ -1849,3 +1849,76 @@ html.ua-tiktok button:not(.ig-tt-dialog button) {
   font-size: 82% !important;
 }
 
+/* =====================================================
+   인앱 브라우저 상세 페이지 82% 최적화
+   - 후기, 이름이야기, 공지사항, 한국이름학교 등 모든 상세 페이지
+   - 임시저장소 페이지
+   ===================================================== */
+
+/* 상세 페이지 제목 (h1, h2, h3) 82% */
+html.ua-instagram article h1,
+html.ua-tiktok article h1 {
+  font-size: clamp(20px, 5vw, 25px) !important;
+}
+
+html.ua-instagram article h2,
+html.ua-tiktok article h2 {
+  font-size: clamp(18px, 4.5vw, 22px) !important;
+}
+
+html.ua-instagram article h3,
+html.ua-tiktok article h3 {
+  font-size: clamp(16px, 4vw, 18px) !important;
+}
+
+/* 상세 페이지 본문 p 82% */
+html.ua-instagram article p,
+html.ua-tiktok article p,
+html.ua-instagram .prose p,
+html.ua-tiktok .prose p {
+  font-size: clamp(13px, 3.5vw, 15px) !important;
+  line-height: 1.7 !important;
+}
+
+/* 상세 페이지 날짜/메타 정보 */
+html.ua-instagram article .text-sm,
+html.ua-tiktok article .text-sm,
+html.ua-instagram article .text-muted-foreground,
+html.ua-tiktok article .text-muted-foreground {
+  font-size: 12px !important;
+}
+
+/* 임시저장소 페이지 82% */
+html.ua-instagram .drafts-page h1,
+html.ua-tiktok .drafts-page h1 {
+  font-size: clamp(20px, 5vw, 25px) !important;
+}
+
+html.ua-instagram .drafts-page h2,
+html.ua-tiktok .drafts-page h2,
+html.ua-instagram .drafts-page h3,
+html.ua-tiktok .drafts-page h3 {
+  font-size: clamp(14px, 4vw, 16px) !important;
+}
+
+html.ua-instagram .drafts-page p,
+html.ua-tiktok .drafts-page p {
+  font-size: clamp(12px, 3.5vw, 14px) !important;
+}
+
+/* 카드/그리드 제목 82% */
+html.ua-instagram .content-grid h3,
+html.ua-tiktok .content-grid h3,
+html.ua-instagram .story-card h3,
+html.ua-tiktok .story-card h3 {
+  font-size: clamp(12px, 3vw, 14px) !important;
+}
+
+/* 카드 날짜 */
+html.ua-instagram .content-grid .text-xs,
+html.ua-tiktok .content-grid .text-xs,
+html.ua-instagram .story-card .text-xs,
+html.ua-tiktok .story-card .text-xs {
+  font-size: 10px !important;
+}
+
