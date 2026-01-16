@@ -27,6 +27,11 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
     },
   });
 
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
   useEffect(() => {
     const userAgent = navigator.userAgent || '';
     const isInstagram = userAgent.includes('Instagram');
