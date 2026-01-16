@@ -27,30 +27,45 @@ export default function Admin() {
     videoUrl: "",
     isVideo: false,
   });
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   
-  const contentImageInputRef = useRef<HTMLInputElement>(null);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
   
-  const { uploadFile: uploadContentImage, isUploading: isUploadingContent } = useUpload({
+  const { uploadFile, isUploading } = useUpload({
     onSuccess: (response) => {
-      const imageMarkdown = `\n![이미지](${response.objectPath})\n`;
-      setStoryForm(prev => ({ ...prev, content: prev.content + imageMarkdown }));
-      toast({ title: "본문에 이미지가 추가되었습니다." });
+      const imageUrl = response.objectPath;
+      setUploadedImages(prev => {
+        const newImages = [...prev, imageUrl];
+        if (newImages.length === 1 || !storyForm.thumbnail) {
+          setStoryForm(form => ({ ...form, thumbnail: imageUrl }));
+        }
+        return newImages;
+      });
+      toast({ title: "이미지가 추가되었습니다." });
     },
     onError: () => {
       toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
     },
   });
   
-  const handleContentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
-        return;
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith("image/")) {
+          toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
+          continue;
+        }
+        await uploadFile(file);
       }
-      await uploadContentImage(file);
     }
     e.target.value = "";
+  };
+  
+  const setAsThumbnail = (imageUrl: string) => {
+    setStoryForm(prev => ({ ...prev, thumbnail: imageUrl }));
+    toast({ title: "대표 이미지가 변경되었습니다." });
   };
 
   const { data: consultations, isLoading: loadingConsultations } = useQuery<Consultation[]>({
@@ -102,6 +117,7 @@ export default function Admin() {
 
   const resetStoryForm = () => {
     setStoryForm({ title: "", thumbnail: "", content: "", videoUrl: "", isVideo: false });
+    setUploadedImages([]);
   };
 
   const openEditDialog = (story: NameStory) => {
@@ -113,6 +129,19 @@ export default function Admin() {
       videoUrl: story.videoUrl || "",
       isVideo: story.isVideo,
     });
+    // 기존 이미지들 추출 (썸네일 + 본문 이미지)
+    const existingImages: string[] = [];
+    const imageRegex = /!\[[^\]]*\]\(([^)]+)\)/g;
+    let match;
+    while ((match = imageRegex.exec(story.content)) !== null) {
+      if (!existingImages.includes(match[1])) {
+        existingImages.push(match[1]);
+      }
+    }
+    if (story.thumbnail && !existingImages.includes(story.thumbnail)) {
+      existingImages.unshift(story.thumbnail);
+    }
+    setUploadedImages(existingImages);
     setStoryDialogOpen(true);
   };
 
@@ -300,29 +329,59 @@ export default function Admin() {
                         data-testid="input-story-title"
                       />
                     </div>
+                    {/* 이미지 업로드 (네이버 블로그 스타일) */}
                     <div className="space-y-2">
-                      <Label htmlFor="thumbnail">썸네일 이미지</Label>
-                      <Input
-                        id="thumbnail"
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              setStoryForm({ ...storyForm, thumbnail: reader.result as string });
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                        data-testid="input-story-thumbnail"
-                      />
-                      {storyForm.thumbnail && (
-                        <div className="mt-2">
-                          <img src={storyForm.thumbnail} alt="미리보기" className="max-h-40 rounded" />
+                      <div className="flex items-center justify-between">
+                        <Label>이미지</Label>
+                        <div>
+                          <input
+                            ref={thumbnailInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={handleImageUpload}
+                            data-testid="input-story-thumbnail"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => thumbnailInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="h-8"
+                            data-testid="button-add-images"
+                          >
+                            {isUploading ? "업로드 중..." : (
+                              <>
+                                <Upload className="w-4 h-4 mr-1" />
+                                이미지 추가
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                      {uploadedImages.length > 0 && (
+                        <div className="grid grid-cols-4 gap-2 mt-2">
+                          {uploadedImages.map((img, idx) => (
+                            <div
+                              key={idx}
+                              className={`relative aspect-square rounded overflow-hidden cursor-pointer border-2 ${storyForm.thumbnail === img ? 'border-primary' : 'border-transparent'}`}
+                              onClick={() => setAsThumbnail(img)}
+                            >
+                              <img src={img} alt="" className="w-full h-full object-cover" />
+                              {storyForm.thumbnail === img && (
+                                <div className="absolute top-0.5 left-0.5 bg-primary text-primary-foreground text-[10px] px-1 rounded">
+                                  대표
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       )}
+                      <p className="text-xs text-muted-foreground">
+                        클릭하여 대표 이미지 선택
+                      </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch
@@ -346,30 +405,7 @@ export default function Admin() {
                       </div>
                     )}
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="content">내용 (HTML 지원)</Label>
-                        <div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            ref={contentImageInputRef}
-                            onChange={handleContentImageUpload}
-                            className="hidden"
-                            data-testid="input-content-image"
-                          />
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => contentImageInputRef.current?.click()}
-                            disabled={isUploadingContent}
-                            data-testid="button-add-content-image"
-                          >
-                            <Upload className="w-4 h-4 mr-1" />
-                            {isUploadingContent ? "업로드 중..." : "이미지 추가"}
-                          </Button>
-                        </div>
-                      </div>
+                      <Label htmlFor="content">내용</Label>
                       <Textarea
                         id="content"
                         value={storyForm.content}
