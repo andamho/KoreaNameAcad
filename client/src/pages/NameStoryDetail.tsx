@@ -200,12 +200,12 @@ export default function NameStoryDetail() {
                   <p className="text-foreground leading-relaxed mb-1">🔮이름상담 및 작명 [신청방법]</p>
                   <p className="text-foreground leading-relaxed mb-3">👇👇👇</p>
                   <a 
-                    href="https://korea-name-acad.com/" 
+                    href="https://korea-name-acad.com/services" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-primary hover:underline font-medium"
                   >
-                    https://korea-name-acad.com/
+                    https://korea-name-acad.com/services
                   </a>
                 </div>
               </div>

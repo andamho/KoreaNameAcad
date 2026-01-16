@@ -127,7 +127,7 @@ export default function Admin() {
 
 🔮이름상담 및 작명 [신청방법]
 👇👇👇
-https://korea-name-acad.com/`;
+https://korea-name-acad.com/services`;
 
   const resetStoryForm = () => {
     setStoryForm({ title: "", thumbnail: "", content: defaultPromoText, videoUrl: "", isVideo: false });
