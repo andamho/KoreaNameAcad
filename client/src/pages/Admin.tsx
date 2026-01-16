@@ -115,7 +115,7 @@ export default function Admin() {
     },
   });
 
-  // 홍보 문구 기본값
+  // 홍보 문구 기본값 (버튼은 상세페이지에서 자동 렌더링됨)
   const defaultPromoText = `😩고달픈 인생,
 이름 하나로 이유와 해결책을!
 
@@ -126,8 +126,7 @@ export default function Admin() {
 인생역전!
 
 🔮이름상담 및 작명 [신청방법]
-👇👇👇
-https://korea-name-acad.com/services`;
+👇👇👇`;
 
   const resetStoryForm = () => {
     setStoryForm({ title: "", thumbnail: "", content: defaultPromoText, videoUrl: "", isVideo: false });
