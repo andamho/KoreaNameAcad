@@ -115,8 +115,22 @@ export default function Admin() {
     },
   });
 
+  // 홍보 문구 기본값
+  const defaultPromoText = `😩고달픈 인생,
+이름 하나로 이유와 해결책을!
+
+🔍한글.한자이름만으로 운명상담
+[정확도 80%👆]
+
+🌸운이 술술 풀리는 이름으로
+인생역전!
+
+🔮이름상담 및 작명 [신청방법]
+👇👇👇
+https://korea-name-acad.com/`;
+
   const resetStoryForm = () => {
-    setStoryForm({ title: "", thumbnail: "", content: "", videoUrl: "", isVideo: false });
+    setStoryForm({ title: "", thumbnail: "", content: defaultPromoText, videoUrl: "", isVideo: false });
     setUploadedImages([]);
   };
 
