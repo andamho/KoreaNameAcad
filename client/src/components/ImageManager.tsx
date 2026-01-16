@@ -151,12 +151,16 @@ export function ImageManager({
               {/* 순번 표시 (왼쪽 상단) */}
               <span className="absolute top-0.5 left-0.5 text-white/90 text-[10px] font-bold bg-black/60 px-1.5 py-0.5 rounded z-10">{idx + 1}</span>
               
-              {/* 삭제 버튼 (오른쪽 상단) */}
+              {/* 삭제 버튼 (오른쪽 상단) - 드래그 방지 */}
               <button
                 type="button"
+                draggable={false}
                 className="absolute top-0.5 right-0.5 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 z-20"
+                onMouseDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
+                  e.preventDefault();
                   removeImage(idx);
                 }}
               >
@@ -170,20 +174,26 @@ export function ImageManager({
                 </div>
               )}
               
-              {/* 순서 변경 버튼 (오른쪽 하단) */}
+              {/* 순서 변경 버튼 (오른쪽 하단) - 드래그 방지 */}
               <div className="absolute bottom-0.5 right-0.5 flex gap-0.5 z-10">
                 <button
                   type="button"
+                  draggable={false}
                   className="w-5 h-5 bg-white/90 rounded flex items-center justify-center disabled:opacity-30"
-                  onClick={(e) => { e.stopPropagation(); moveImage(idx, 'up'); }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); moveImage(idx, 'up'); }}
                   disabled={idx === 0}
                 >
                   <ChevronUp className="w-3 h-3 text-black" />
                 </button>
                 <button
                   type="button"
+                  draggable={false}
                   className="w-5 h-5 bg-white/90 rounded flex items-center justify-center disabled:opacity-30"
-                  onClick={(e) => { e.stopPropagation(); moveImage(idx, 'down'); }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); moveImage(idx, 'down'); }}
                   disabled={idx === images.length - 1}
                 >
                   <ChevronDown className="w-3 h-3 text-black" />

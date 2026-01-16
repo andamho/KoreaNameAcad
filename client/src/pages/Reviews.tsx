@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Quote, Download, Heart, Clock, Plus, Lock, LogOut, Trash2, Pencil, Upload } from "lucide-react";
+import { Star, Quote, Download, Heart, Clock, Plus, Lock, LogOut, Trash2, Pencil } from "lucide-react";
+import { ImageManager } from "@/components/ImageManager";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -52,11 +53,10 @@ function CmsReviewCard({ review }: { review: Content }) {
     videoUrl: review.videoUrl || "",
   });
   
-  // Naver Blog style: uploaded images gallery
+  // 이미지 갤러리 상태
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Unified image upload (multiple support, no markdown)
+  // 이미지 업로드 hook
   const { uploadFile, isUploading } = useUpload({
     onSuccess: (response) => {
       const imageUrl = response.objectPath;
@@ -73,26 +73,6 @@ function CmsReviewCard({ review }: { review: Content }) {
       toast({ title: "이미지 업로드에 실패했습니다.", variant: "destructive" });
     },
   });
-  
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (!file.type.startsWith("image/")) {
-          toast({ title: "이미지 파일만 업로드할 수 있습니다.", variant: "destructive" });
-          continue;
-        }
-        await uploadFile(file);
-      }
-    }
-    e.target.value = "";
-  };
-  
-  const setAsThumbnail = (imageUrl: string) => {
-    setEditForm(prev => ({ ...prev, thumbnail: imageUrl }));
-    toast({ title: "대표 이미지가 변경되었습니다." });
-  };
   
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -278,72 +258,15 @@ function CmsReviewCard({ review }: { review: Content }) {
                 data-testid="input-edit-title"
               />
             </div>
-            {/* 이미지 업로드 (네이버 블로그 스타일) */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label>이미지</Label>
-                <div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleImageUpload}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="h-8"
-                  >
-                    {isUploading ? "업로드 중..." : (
-                      <>
-                        <Upload className="w-4 h-4 mr-1" />
-                        이미지 추가
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-              {uploadedImages.length > 0 && (
-                <div className="grid grid-cols-4 gap-2 mt-2">
-                  {uploadedImages.map((img, idx) => (
-                    <div
-                      key={idx}
-                      className={`relative aspect-square rounded overflow-hidden cursor-pointer border-2 ${editForm.thumbnail === img ? 'border-primary' : 'border-transparent'}`}
-                      onClick={() => setAsThumbnail(img)}
-                    >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
-                      {editForm.thumbnail === img && (
-                        <div className="absolute top-0.5 left-0.5 bg-primary text-primary-foreground text-[10px] px-1 rounded">
-                          대표
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const newImages = uploadedImages.filter((_, i) => i !== idx);
-                          setUploadedImages(newImages);
-                          if (editForm.thumbnail === img) {
-                            setEditForm(prev => ({ ...prev, thumbnail: newImages[0] || "" }));
-                          }
-                        }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <p className="text-xs text-muted-foreground mt-1">
-                클릭하여 대표 이미지 선택
-              </p>
-            </div>
+            {/* 이미지 업로드 (ImageManager 컴포넌트 사용) */}
+            <ImageManager
+              images={uploadedImages}
+              onImagesChange={setUploadedImages}
+              thumbnail={editForm.thumbnail}
+              onThumbnailChange={(thumb) => setEditForm(prev => ({ ...prev, thumbnail: thumb }))}
+              onUpload={uploadFile}
+              isUploading={isUploading}
+            />
             <div>
               <Label htmlFor="edit-content">내용</Label>
               <Textarea
