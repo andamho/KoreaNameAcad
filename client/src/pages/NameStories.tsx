@@ -366,6 +366,13 @@ function StorySkeleton() {
 
 export default function NameStories() {
   const { isAdmin, token, isVerifying } = useAdmin();
+
+  // 페이지 진입 시 스크롤 탑 (단, 뒤로가기가 아닌 경우에만)
+  useEffect(() => {
+    if (!window.history.state?.scrollY) {
+      window.scrollTo(0, 0);
+    }
+  }, []);
   
   const { data: stories, isLoading, error } = useQuery<Content[]>({
     queryKey: ["/api/contents", "nameStory"],

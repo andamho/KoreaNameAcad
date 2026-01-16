@@ -5,6 +5,13 @@ import { Bell } from "lucide-react";
 import { useEffect } from "react";
 
 export default function Notice() {
+  // 페이지 진입 시 스크롤 탑 (단, 뒤로가기가 아닌 경우에만)
+  useEffect(() => {
+    if (!window.history.state?.scrollY) {
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
   useEffect(() => {
     const userAgent = navigator.userAgent || '';
     const isInstagram = userAgent.includes('Instagram');

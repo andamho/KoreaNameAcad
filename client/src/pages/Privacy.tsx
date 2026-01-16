@@ -3,6 +3,13 @@ import { Footer } from "@/components/Footer";
 import { useEffect } from "react";
 
 export default function Privacy() {
+  // 페이지 진입 시 스크롤 탑 (단, 뒤로가기가 아닌 경우에만)
+  useEffect(() => {
+    if (!window.history.state?.scrollY) {
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
   useEffect(() => {
     const userAgent = navigator.userAgent || '';
     const isInstagram = userAgent.includes('Instagram');
