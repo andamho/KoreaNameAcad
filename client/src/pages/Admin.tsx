@@ -32,6 +32,7 @@ export default function Admin() {
   
   const { uploadFile, isUploading } = useUpload({
     onSuccess: (response) => {
+      console.log("[Admin] onSuccess called with:", response);
       const imageUrl = response.objectPath;
       setUploadedImages(prev => {
         const newImages = [...prev, imageUrl];
