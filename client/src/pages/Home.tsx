@@ -38,6 +38,11 @@ export default function Home() {
   const referrerPage = useRef<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // 페이지 로드 시 맨 위로 스크롤
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // 크리스마스 팝업 3초 후 자동 닫기
   useEffect(() => {
     if (showChristmasPopup) {
