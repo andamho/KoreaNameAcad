@@ -183,8 +183,19 @@ export function useUpload(options: UseUploadOptions = {}) {
 
         setProgress(100);
         console.log("[useUpload] calling onSuccess callback...");
+        console.log("[useUpload] optionsRef.current:", optionsRef.current);
+        console.log("[useUpload] onSuccess exists:", !!optionsRef.current.onSuccess);
         // Use ref to get the latest callback
-        optionsRef.current.onSuccess?.(uploadResponse);
+        if (optionsRef.current.onSuccess) {
+          try {
+            optionsRef.current.onSuccess(uploadResponse);
+            console.log("[useUpload] onSuccess callback executed successfully");
+          } catch (callbackError) {
+            console.error("[useUpload] onSuccess callback threw error:", callbackError);
+          }
+        } else {
+          console.warn("[useUpload] onSuccess callback is undefined!");
+        }
         console.log("[useUpload] onSuccess callback completed");
         return uploadResponse;
       } catch (err) {
