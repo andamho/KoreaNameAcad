@@ -8,6 +8,7 @@ import KnaIntroBlock from "@/components/KnaIntroBlock";
 import KnaStepsSection from "@/components/KnaStepsSection";
 import KnaMythTruthSection from "@/components/KnaMythTruthSection";
 import KnaPricingSection from "@/components/KnaPricingSection";
+import { HomeBlogGrid } from "@/components/HomeBlogGrid";
 import { Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLocation, Link } from "wouter";
@@ -312,6 +313,8 @@ export default function Home() {
           </div>
         </section>
       </div>
+
+      <HomeBlogGrid />
 
       <KnaPricingSection />
 
