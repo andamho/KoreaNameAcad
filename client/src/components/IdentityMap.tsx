@@ -165,7 +165,7 @@ export default function IdentityMap() {
       {/* n1: 홍길동 - 이메일보다 위로, 이름 라벨은 위에, 박스 20% 축소 */}
       <div className="id-node absolute top-[8%] md:top-[15%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n1" style={{ "--c": "#ff4757", animationDelay: "0s" } as React.CSSProperties}>
         <div className="mb-1 text-white text-[10px] md:text-xs font-semibold">이름</div>
-        <div className="anchor text-white font-black text-sm md:text-lg px-2.5 md:px-3 py-1 md:py-1.5 rounded-xl whitespace-nowrap" style={{ background: "#ff3b4f", boxShadow: "0 0 25px rgba(255, 59, 79, 0.5)", border: "1.5px solid rgba(255,255,255,0.25)" }}>홍길동</div>
+        <div className="anchor text-white font-black text-sm md:text-base px-2.5 py-1 rounded-xl whitespace-nowrap" style={{ background: "#ff3b4f", boxShadow: "0 0 25px rgba(255, 59, 79, 0.5)", border: "1.5px solid rgba(255,255,255,0.25)" }}>홍길동</div>
       </div>
 
       {/* n2: 전화번호 - 모바일에서 더 왼쪽 위로 */}
