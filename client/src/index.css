@@ -566,22 +566,22 @@ html.ua-tiktok .text-sm.tracking-wide {
 /* Steps 섹션: 인앱에서도 모바일 원본 크기 유지 */
 html.ua-instagram .kna-steps-section h2[class*="text-[25px]"],
 html.ua-tiktok .kna-steps-section h2[class*="text-[25px]"] {
-  font-size: 25px !important;
+  font-size: 19.5px !important;
 }
 html.ua-instagram .kna-steps-section p.text-lg,
 html.ua-tiktok .kna-steps-section p.text-lg {
-  font-size: 15px !important;
+  font-size: 14px !important;
   line-height: 1.75 !important;
 }
 html.ua-instagram .kna-steps-section .text-xs,
 html.ua-tiktok .kna-steps-section .text-xs {
-  font-size: 12px !important;
+  font-size: 9.5px !important;
 }
 html.ua-instagram .kna-steps-section h3[class*="text-[21px]"],
 html.ua-instagram .kna-steps-section h3[class*="text-[22px]"],
 html.ua-tiktok .kna-steps-section h3[class*="text-[21px]"],
 html.ua-tiktok .kna-steps-section h3[class*="text-[22px]"] {
-  font-size: 21px !important;
+  font-size: 16.5px !important;
 }
 
 /* Danger 섹션: 인앱에서도 모바일 원본 크기 유지 */
