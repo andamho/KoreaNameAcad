@@ -560,6 +560,50 @@ html.ua-tiktok .text-sm.tracking-wide {
   font-size: 12px !important;
 }
 
+/* ========================================
+   인앱 브라우저: Steps/Danger 섹션 카드 텍스트 크기 복원
+   html.ua-instagram p 규칙으로 인해 작아진 것을 원래 크기로 복원
+   ======================================== */
+/* Steps 섹션: 카드 내 p.text-lg (18px) */
+html.ua-instagram .kna-steps-section p.text-lg,
+html.ua-tiktok .kna-steps-section p.text-lg {
+  font-size: 18px !important;
+  line-height: 1.75 !important;
+}
+/* Steps 섹션: 카드 내 text-xs 푸터 라벨 (12px) */
+html.ua-instagram .kna-steps-section .text-xs,
+html.ua-tiktok .kna-steps-section .text-xs {
+  font-size: 12px !important;
+}
+/* Steps 섹션: 카드 타이틀 h3 text-[21px]/text-[22px] */
+html.ua-instagram .kna-steps-section h3[class*="text-[21px]"],
+html.ua-instagram .kna-steps-section h3[class*="text-[22px]"],
+html.ua-tiktok .kna-steps-section h3[class*="text-[21px]"],
+html.ua-tiktok .kna-steps-section h3[class*="text-[22px]"] {
+  font-size: 21px !important;
+}
+
+/* Danger 섹션: StackItem 내 p.text-lg (18px) */
+html.ua-instagram .kna-danger-section p.text-lg,
+html.ua-tiktok .kna-danger-section p.text-lg {
+  font-size: 18px !important;
+  line-height: 1.75 !important;
+}
+/* Danger 섹션: StackItem 타이틀 h4 text-[21px]/text-[22px] */
+html.ua-instagram .kna-danger-section h4[class*="text-[21px]"],
+html.ua-instagram .kna-danger-section h4[class*="text-[22px]"],
+html.ua-tiktok .kna-danger-section h4[class*="text-[21px]"],
+html.ua-tiktok .kna-danger-section h4[class*="text-[22px]"] {
+  font-size: 21px !important;
+}
+/* Danger 섹션: 프레임 헤더 h3 text-[23px]/text-[24px] */
+html.ua-instagram .kna-danger-section h3[class*="text-[23px]"],
+html.ua-instagram .kna-danger-section h3[class*="text-[24px]"],
+html.ua-tiktok .kna-danger-section h3[class*="text-[23px]"],
+html.ua-tiktok .kna-danger-section h3[class*="text-[24px]"] {
+  font-size: 23px !important;
+}
+
 /* LIGHT MODE */
 :root {
   --button-outline: rgba(0,0,0, .10);
