@@ -1327,6 +1327,11 @@ html.ua-tiktok .kna-intro-bottom .h-\[420px\],
 .ig-shell .kna-steps-inner {
   zoom: 0.78 !important;
 }
+/* Steps 섹션 아이콘 보정: 48px / 0.78 = 62px → zoom 후 48px */
+.ig-shell .kna-steps-inner .h-12.w-12 {
+  width: 62px !important;
+  height: 62px !important;
+}
 
 /* 비용 섹션: zoom 대신 font-size 조정 (IdentityMap SVG 호환) */
 .ig-shell .kna-pricing-inner {
