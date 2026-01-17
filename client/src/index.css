@@ -1379,31 +1379,26 @@ html.ua-instagram .identity-map-inner .id-node > div:last-child,
 html.ua-tiktok .identity-map-inner .id-node > div:last-child {
   font-size: 8px !important;
 }
-/* Pricing 섹션: 인앱에서도 모바일 원본 크기 유지 */
-.ig-shell .kna-pricing-inner h2[class*="text-[25px]"],
+/* Pricing 섹션: 인앱 82% 축소 규칙 */
 html.ua-instagram .kna-pricing-inner h2[class*="text-[25px]"],
 html.ua-tiktok .kna-pricing-inner h2[class*="text-[25px]"] {
-  font-size: 25px !important;
+  font-size: 21px !important;
 }
-.ig-shell .kna-pricing-inner .text-lg,
 html.ua-instagram .kna-pricing-inner .text-lg,
 html.ua-tiktok .kna-pricing-inner .text-lg {
-  font-size: 18px !important;
+  font-size: 15px !important;
 }
-.ig-shell .kna-pricing-inner .text-sm,
 html.ua-instagram .kna-pricing-inner .text-sm,
 html.ua-tiktok .kna-pricing-inner .text-sm {
-  font-size: 14px !important;
+  font-size: 11.5px !important;
 }
-.ig-shell .kna-pricing-inner .text-base,
 html.ua-instagram .kna-pricing-inner .text-base,
 html.ua-tiktok .kna-pricing-inner .text-base {
-  font-size: 16px !important;
+  font-size: 13px !important;
 }
-.ig-shell .kna-pricing-inner .text-xs,
 html.ua-instagram .kna-pricing-inner .text-xs,
 html.ua-tiktok .kna-pricing-inner .text-xs {
-  font-size: 12px !important;
+  font-size: 10px !important;
 }
 
 /* 인앱 모든 섹션 상하 패딩 통일 (3단계 섹션 기준: pt-24 pb-24 = 96px) */
