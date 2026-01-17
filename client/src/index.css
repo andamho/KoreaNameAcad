@@ -584,25 +584,31 @@ html.ua-tiktok .kna-steps-section h3[class*="text-[22px]"] {
   font-size: 21px !important;
 }
 
-/* Danger 섹션: StackItem 내 p.text-lg (18px × 0.82 = 15px) */
-html.ua-instagram .kna-danger-section p.text-lg,
-html.ua-tiktok .kna-danger-section p.text-lg {
-  font-size: 15px !important;
-  line-height: 1.75 !important;
+/* Danger 섹션: 인앱에서도 모바일 원본 크기 유지 */
+html.ua-instagram .kna-danger-section h2[class*="text-[25px]"],
+html.ua-tiktok .kna-danger-section h2[class*="text-[25px]"] {
+  font-size: 25px !important;
 }
-/* Danger 섹션: StackItem 타이틀 h4 text-[21px]/text-[22px] (21px × 0.82 = 17px) */
-html.ua-instagram .kna-danger-section h4[class*="text-[21px]"],
-html.ua-instagram .kna-danger-section h4[class*="text-[22px]"],
-html.ua-tiktok .kna-danger-section h4[class*="text-[21px]"],
-html.ua-tiktok .kna-danger-section h4[class*="text-[22px]"] {
-  font-size: 17px !important;
-}
-/* Danger 섹션: 프레임 헤더 h3 text-[23px]/text-[24px] (23px × 0.82 = 19px) */
 html.ua-instagram .kna-danger-section h3[class*="text-[23px]"],
 html.ua-instagram .kna-danger-section h3[class*="text-[24px]"],
 html.ua-tiktok .kna-danger-section h3[class*="text-[23px]"],
 html.ua-tiktok .kna-danger-section h3[class*="text-[24px]"] {
-  font-size: 19px !important;
+  font-size: 23px !important;
+}
+html.ua-instagram .kna-danger-section h4[class*="text-[21px]"],
+html.ua-instagram .kna-danger-section h4[class*="text-[22px]"],
+html.ua-tiktok .kna-danger-section h4[class*="text-[21px]"],
+html.ua-tiktok .kna-danger-section h4[class*="text-[22px]"] {
+  font-size: 21px !important;
+}
+html.ua-instagram .kna-danger-section p.text-lg,
+html.ua-tiktok .kna-danger-section p.text-lg {
+  font-size: 18px !important;
+  line-height: 1.75 !important;
+}
+html.ua-instagram .kna-danger-section .text-sm,
+html.ua-tiktok .kna-danger-section .text-sm {
+  font-size: 14px !important;
 }
 
 /* MythTruth 섹션: 인앱에서도 모바일 원본 크기 유지 */
