@@ -841,7 +841,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     등본상 가족은 더 깊게 연결됩니다
                   </h3>
                   <p className="text-[17px] leading-relaxed text-white/80 mb-6">
-                    법적 에너지권 안에서 글자 에너지로 깊게 연결된 등본상 가족은<br className="hidden sm:block" /> 
+                    법적 에너지권 안에서 글자 에너지로 깊게 연결된 등본상 가족은<br className="hidden sm:block" />{" "}
                     더욱 긴밀하며 상당한 영향을 미칩니다.
                   </p>
                   <div className="rounded-xl bg-[#0A0D11] border border-[#56D5DB]/30 p-5 shadow-inner">
