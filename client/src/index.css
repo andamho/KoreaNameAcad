@@ -563,23 +563,25 @@ html.ua-tiktok .text-sm.tracking-wide {
 /* ========================================
    인앱 브라우저: Steps/Danger 섹션 카드 텍스트 크기 (82% 적용)
    ======================================== */
-/* Steps 섹션: 카드 내 p.text-lg (18px × 0.82 = 15px) */
+/* Steps 섹션: 인앱에서도 모바일 원본 크기 유지 */
+html.ua-instagram .kna-steps-section h2[class*="text-[25px]"],
+html.ua-tiktok .kna-steps-section h2[class*="text-[25px]"] {
+  font-size: 25px !important;
+}
 html.ua-instagram .kna-steps-section p.text-lg,
 html.ua-tiktok .kna-steps-section p.text-lg {
-  font-size: 15px !important;
+  font-size: 18px !important;
   line-height: 1.75 !important;
 }
-/* Steps 섹션: 카드 내 text-xs 푸터 라벨 (12px × 0.82 = 10px) */
 html.ua-instagram .kna-steps-section .text-xs,
 html.ua-tiktok .kna-steps-section .text-xs {
-  font-size: 10px !important;
+  font-size: 12px !important;
 }
-/* Steps 섹션: 카드 타이틀 h3 text-[21px]/text-[22px] (21px × 0.82 = 17px) */
 html.ua-instagram .kna-steps-section h3[class*="text-[21px]"],
 html.ua-instagram .kna-steps-section h3[class*="text-[22px]"],
 html.ua-tiktok .kna-steps-section h3[class*="text-[21px]"],
 html.ua-tiktok .kna-steps-section h3[class*="text-[22px]"] {
-  font-size: 17px !important;
+  font-size: 21px !important;
 }
 
 /* Danger 섹션: StackItem 내 p.text-lg (18px × 0.82 = 15px) */
