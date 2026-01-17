@@ -1318,16 +1318,14 @@ html.ua-tiktok .kna-intro-bottom .h-\[420px\],
 /* 주의: html.ua-instagram/tiktok에는 zoom 적용 안 함 (글자가 너무 작아짐) */
 .ig-shell .kna-danger-section > div,
 .ig-shell .kna-value-section > div,
-.ig-shell .kna-intro-block > div {
-  zoom: 0.82 !important;
-}
-.ig-shell .kna-steps-inner {
-  zoom: 0.78 !important;
-}
+.ig-shell .kna-intro-block > div,
 .ig-shell .kna-myth-truth-inner,
 .ig-shell .kna-video-inner,
 .ig-shell .kna-footer > div {
   zoom: 0.82 !important;
+}
+.ig-shell .kna-steps-inner {
+  zoom: 0.78 !important;
 }
 
 /* 비용 섹션: zoom 대신 font-size 조정 (IdentityMap SVG 호환) */
