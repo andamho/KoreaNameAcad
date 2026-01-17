@@ -168,10 +168,10 @@ export default function IdentityMap() {
         <div className="anchor text-white font-black text-base md:text-lg px-3 md:px-3.5 py-1.5 rounded-xl whitespace-nowrap" style={{ background: "#ff3b4f", boxShadow: "0 0 25px rgba(255, 59, 79, 0.5)", border: "1.5px solid rgba(255,255,255,0.25)" }}>홍길동</div>
       </div>
 
-      {/* n2: 전화번호 - 모바일에서 더 왼쪽 위로, 데스크탑 선 100% 더 길게 */}
-      <div className="id-node absolute top-[48%] md:top-[60%] left-[12%] md:left-[6%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n2" style={{ "--c": "#ffa502", animationDelay: "0.5s" } as React.CSSProperties}>
-        <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-9 h-9 md:w-11 md:h-11" style={{ backgroundColor: "#ffa502", boxShadow: "0 0 20px #ffa502" }}>
-          <svg viewBox="0 0 24 24" className="stroke-white fill-none w-[18px] h-[18px] md:w-[22px] md:h-[22px]" style={{ strokeWidth: 2.2 }}>
+      {/* n2: 전화번호 - 모바일에서 더 왼쪽 위로, 데스크탑 선 90% 길게 */}
+      <div className="id-node absolute top-[48%] md:top-[59%] left-[12%] md:left-[10%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n2" style={{ "--c": "#ffa502", animationDelay: "0.5s" } as React.CSSProperties}>
+        <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-10 h-10 md:w-12 md:h-12" style={{ backgroundColor: "#ffa502", boxShadow: "0 0 20px #ffa502" }}>
+          <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-6 md:h-6" style={{ strokeWidth: 2.2 }}>
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
           </svg>
         </div>
