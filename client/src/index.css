@@ -566,22 +566,22 @@ html.ua-tiktok .text-sm.tracking-wide {
 /* Steps 섹션: 인앱에서도 모바일 원본 크기 유지 */
 html.ua-instagram .kna-steps-section h2[class*="text-[25px]"],
 html.ua-tiktok .kna-steps-section h2[class*="text-[25px]"] {
-  font-size: 19.5px !important;
+  font-size: 25px !important;
 }
 html.ua-instagram .kna-steps-section p.text-lg,
 html.ua-tiktok .kna-steps-section p.text-lg {
-  font-size: 14px !important;
+  font-size: 18px !important;
   line-height: 1.75 !important;
 }
 html.ua-instagram .kna-steps-section .text-xs,
 html.ua-tiktok .kna-steps-section .text-xs {
-  font-size: 9.5px !important;
+  font-size: 12px !important;
 }
 html.ua-instagram .kna-steps-section h3[class*="text-[21px]"],
 html.ua-instagram .kna-steps-section h3[class*="text-[22px]"],
 html.ua-tiktok .kna-steps-section h3[class*="text-[21px]"],
 html.ua-tiktok .kna-steps-section h3[class*="text-[22px]"] {
-  font-size: 16.5px !important;
+  font-size: 21px !important;
 }
 
 /* Danger 섹션: 인앱에서도 모바일 원본 크기 유지 */
@@ -1318,8 +1318,12 @@ html.ua-tiktok .kna-intro-bottom .h-\[420px\],
 /* 주의: html.ua-instagram/tiktok에는 zoom 적용 안 함 (글자가 너무 작아짐) */
 .ig-shell .kna-danger-section > div,
 .ig-shell .kna-value-section > div,
-.ig-shell .kna-intro-block > div,
-.ig-shell .kna-steps-inner,
+.ig-shell .kna-intro-block > div {
+  zoom: 0.82 !important;
+}
+.ig-shell .kna-steps-inner {
+  zoom: 0.78 !important;
+}
 .ig-shell .kna-myth-truth-inner,
 .ig-shell .kna-video-inner,
 .ig-shell .kna-footer > div {
