@@ -1384,8 +1384,8 @@ html.ua-instagram .kna-pricing-inner h2[class*="text-[25px]"],
 html.ua-tiktok .kna-pricing-inner h2[class*="text-[25px]"] {
   font-size: 21px !important;
 }
-html.ua-instagram .kna-pricing-inner .text-lg,
-html.ua-tiktok .kna-pricing-inner .text-lg {
+html.ua-instagram .kna-pricing-inner p.text-lg,
+html.ua-tiktok .kna-pricing-inner p.text-lg {
   font-size: 15px !important;
 }
 html.ua-instagram .kna-pricing-inner .text-sm,
