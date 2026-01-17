@@ -497,7 +497,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                       (한자는 꼭 직접 입력해주세요. 같은 의미의 한자가 많기 때문에, 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.)
                     </p>
                     <a
-                      href="https://search.naver.com/"
+                      href="https://hanja.dict.naver.com/#/main"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full font-semibold text-sm bg-[#03C75A] text-white shadow-sm transition-all duration-200 hover:bg-[#02b351] hover:shadow-md active:scale-[0.98]"
@@ -555,7 +555,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 (한자는 꼭 직접 입력해주세요. 같은 의미의 한자가 많기 때문에, 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.)
               </p>
               <a
-                href="https://search.naver.com/"
+                href="https://hanja.dict.naver.com/#/main"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full font-semibold text-sm bg-[#03C75A] text-white shadow-sm transition-all duration-200 hover:bg-[#02b351] hover:shadow-md active:scale-[0.98]"
