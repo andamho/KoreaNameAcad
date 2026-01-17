@@ -475,13 +475,7 @@ export default function NameStories() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
           {/* Story cards */}
-          {isLoading ? (
-            <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <StorySkeleton key={i} />
-              ))}
-            </div>
-          ) : error ? (
+          {isLoading ? null : error ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">콘텐츠를 불러오는데 실패했습니다.</p>
             </div>

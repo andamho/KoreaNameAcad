@@ -11,6 +11,7 @@ import KnaPricingSection from "@/components/KnaPricingSection";
 import { Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLocation, Link } from "wouter";
+import { useScrollRestore } from "@/hooks/use-scroll-restore";
 import { Card } from "@/components/ui/card";
 import {
   Dialog,
@@ -37,10 +38,8 @@ export default function Home() {
   const referrerPage = useRef<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // 페이지 로드 시 맨 위로 스크롤
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  // 스크롤 위치 복원 (뒤로가기 시)
+  useScrollRestore("/");
 
   // 크리스마스 팝업 3초 후 자동 닫기
   useEffect(() => {
