@@ -10,7 +10,7 @@ import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Heart, Baby, LifeBuoy, Zap, X, FileText, BookOpenText } from "lucide-react";
+import { Heart, Baby, LifeBuoy, Zap, X, FileText, BookOpenText, Copy, Check } from "lucide-react";
 // 로고는 public 폴더에서 preload되어 빠르게 로드됨
 const formLogoImage = "/form-logo.png";
 
@@ -54,6 +54,25 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const [consultationTime, setConsultationTime] = useState("");
   const [familyPolicyDialogOpen, setFamilyPolicyDialogOpen] = useState(false);
   const [showCardHint, setShowCardHint] = useState(false);
+  const [accountCopied, setAccountCopied] = useState(false);
+  
+  const handleCopyAccount = async () => {
+    try {
+      await navigator.clipboard.writeText("3518205812453");
+      setAccountCopied(true);
+      toast({
+        title: "복사 완료",
+        description: "계좌번호가 복사되었습니다.",
+      });
+      setTimeout(() => setAccountCopied(false), 2000);
+    } catch (err) {
+      toast({
+        title: "복사 실패",
+        description: "계좌번호를 복사할 수 없습니다.",
+        variant: "destructive",
+      });
+    }
+  };
   const isClosingFromBackButton = useRef(false);
   const familyPolicyDialogOpenRef = useRef(false);
 
@@ -471,12 +490,19 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 </div>
 
                 {index === 0 && (
-                  <div className="bg-muted p-3 rounded-md">
+                  <div className="bg-muted p-3 rounded-md space-y-2">
                     <p className="text-base md:text-base text-muted-foreground">
                       넓을 홍 길할 길 동녘 동 ❌<br />
                       洪吉東 ⭕<br />
                       (한자는 꼭 직접 입력해주세요. 같은 의미의 한자가 많기 때문에, 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.)
                     </p>
+                    <a
+                      href="https://search.naver.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full font-semibold text-sm bg-[#03C75A] text-white shadow-sm transition-all duration-200 hover:bg-[#02b351] hover:shadow-md active:scale-[0.98]"
+                      data-testid="link-naver-search-1"
+                    >네이버 이동 <span className="text-base">›</span></a>
                   </div>
                 )}
 
@@ -522,12 +548,19 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               />
             </div>
 
-            <div className="bg-muted p-3 rounded-md">
+            <div className="bg-muted p-3 rounded-md space-y-2">
               <p className="text-base md:text-base text-muted-foreground">
                 넓을 홍 길할 길 동녘 동 ❌<br />
                 洪吉東 ⭕<br />
                 (한자는 꼭 직접 입력해주세요. 같은 의미의 한자가 많기 때문에, 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.)
               </p>
+              <a
+                href="https://search.naver.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full font-semibold text-sm bg-[#03C75A] text-white shadow-sm transition-all duration-200 hover:bg-[#02b351] hover:shadow-md active:scale-[0.98]"
+                data-testid="link-naver-search-2"
+              >네이버 이동 <span className="text-base">›</span></a>
             </div>
           </Card>
         )}
@@ -602,7 +635,18 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           <Card className="p-4 bg-muted">
             <div className="space-y-2 text-base md:text-base">
               <p className="font-semibold text-foreground">와츠유어네임 이름연구협회 전용 입금계좌</p>
-              <p className="text-foreground">농협 351 8205 8124 53</p>
+              <p className="text-foreground flex items-center gap-2 flex-wrap">
+                <span>농협 351 8205 8124 53</span>
+                <button
+                  type="button"
+                  onClick={handleCopyAccount}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                  data-testid="button-copy-account"
+                >
+                  {accountCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  {accountCopied ? "복사됨" : "복사"}
+                </button>
+              </p>
               {type === "naming" ? (
                 <p className="text-muted-foreground">상담비: 이름분석 6만원 + 이름감명 2만원(개당)</p>
               ) : (
