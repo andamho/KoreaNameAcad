@@ -1952,3 +1952,9 @@ html.ua-tiktok .kna-promo a {
   font-size: 11px !important;
 }
 
+/* IdentityMap 인앱 82% 스케일 */
+html.ua-instagram .identity-map-inner,
+html.ua-tiktok .identity-map-inner {
+  zoom: 0.82;
+}
+
