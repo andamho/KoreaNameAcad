@@ -1243,27 +1243,14 @@ html.ua-tiktok .kna-intro-bottom .h-\[420px\],
 
 /* 모든 섹션을 zoom으로 축소 (레이아웃 크기도 변경) */
 /* 주의: .kna-pricing-inner는 IdentityMap SVG 좌표 문제로 zoom 제외 → font-size로 대체 */
+/* 주의: html.ua-instagram/tiktok에는 zoom 적용 안 함 (글자가 너무 작아짐) */
 .ig-shell .kna-danger-section > div,
 .ig-shell .kna-value-section > div,
 .ig-shell .kna-intro-block > div,
 .ig-shell .kna-steps-inner,
 .ig-shell .kna-myth-truth-inner,
 .ig-shell .kna-video-inner,
-.ig-shell .kna-footer > div,
-html.ua-instagram .kna-danger-section > div,
-html.ua-instagram .kna-value-section > div,
-html.ua-instagram .kna-intro-block > div,
-html.ua-instagram .kna-steps-inner,
-html.ua-instagram .kna-myth-truth-inner,
-html.ua-instagram .kna-video-inner,
-html.ua-instagram .kna-footer > div,
-html.ua-tiktok .kna-danger-section > div,
-html.ua-tiktok .kna-value-section > div,
-html.ua-tiktok .kna-intro-block > div,
-html.ua-tiktok .kna-steps-inner,
-html.ua-tiktok .kna-myth-truth-inner,
-html.ua-tiktok .kna-video-inner,
-html.ua-tiktok .kna-footer > div {
+.ig-shell .kna-footer > div {
   zoom: 0.82 !important;
 }
 
@@ -1482,41 +1469,21 @@ html.ua-tiktok .kna-pricing-section .kna-pricing-inner {
 .ig-shell .kna-myth-truth-section,
 .ig-shell .kna-video-section,
 .ig-shell .kna-pricing-section,
-.ig-shell .kna-footer,
-html.ua-instagram .kna-danger-section,
-html.ua-instagram .kna-value-section,
-html.ua-instagram .kna-intro-block,
-html.ua-instagram .kna-steps-section,
-html.ua-instagram .kna-myth-truth-section,
-html.ua-instagram .kna-video-section,
-html.ua-instagram .kna-pricing-section,
-html.ua-instagram .kna-footer,
-html.ua-tiktok .kna-danger-section,
-html.ua-tiktok .kna-value-section,
-html.ua-tiktok .kna-intro-block,
-html.ua-tiktok .kna-steps-section,
-html.ua-tiktok .kna-myth-truth-section,
-html.ua-tiktok .kna-video-section,
-html.ua-tiktok .kna-pricing-section,
-html.ua-tiktok .kna-footer {
+.ig-shell .kna-footer {
   overflow-x: hidden !important;
 }
 
 /* zoom 사용으로 음수 마진 불필요 - 레이아웃 크기가 자동으로 조정됨 */
 
 /* video 섹션: 캐릭터 숨김 */
-.ig-shell .ig-video-char-container > img,
-html.ua-instagram .ig-video-char-container > img,
-html.ua-tiktok .ig-video-char-container > img {
+.ig-shell .ig-video-char-container > img {
   display: none !important;
 }
 
 /* 하단 패딩 제거 규칙 삭제 - 이제 모든 섹션 상하 96px 통일 */
 
 /* 비용 섹션 캐릭터 컨테이너: 고정 마진으로 통일 */
-.ig-shell .ig-pricing-char-container,
-html.ua-instagram .ig-pricing-char-container,
-html.ua-tiktok .ig-pricing-char-container {
+.ig-shell .ig-pricing-char-container {
   margin-top: 0 !important;
 }
 
