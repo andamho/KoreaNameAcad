@@ -58,7 +58,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   
   const handleCopyAccount = async () => {
     try {
-      await navigator.clipboard.writeText("3518205812453");
+      await navigator.clipboard.writeText("농협 351 8205 8124 53");
       setAccountCopied(true);
       toast({
         title: "복사 완료",
