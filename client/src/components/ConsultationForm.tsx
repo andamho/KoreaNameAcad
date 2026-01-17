@@ -358,7 +358,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             </span>
           </Label>
           <p className="text-sm text-muted-foreground">
-            · 등본상 주소와 실제 거주지가 다른 분들은 예약상담시 꼭 말씀주세요.
+            · 등본상 주소와 실제 거주지가 다르거나, 등본상 등재되지 않은 동거인이 있으신 분들은 예약상담시 꼭 말씀주세요.
           </p>
           <Input
             id="registration-document"
@@ -608,7 +608,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               ) : (
                 <p className="text-muted-foreground">상담비: 명당 6만원 | 등본상 가족 전체 명수로 입금</p>
               )}
-              <p className="text-orange-600 dark:text-orange-400">* 입금확인 후 상담예약해드립니다.</p>
+              <p className="text-orange-600 dark:text-orange-400">· 입금확인 후 상담예약해드립니다.</p>
             </div>
           </Card>
         </div>
