@@ -162,8 +162,8 @@ export default function IdentityMap() {
         </div>
       </div>
 
-      {/* n1: 홍길동 - 모바일에서 더 위로, 이름 라벨은 위에, 박스 20% 축소 */}
-      <div className="id-node absolute top-[8%] md:top-[36%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n1" style={{ "--c": "#ff4757", animationDelay: "0s" } as React.CSSProperties}>
+      {/* n1: 홍길동 - 이메일보다 위로, 이름 라벨은 위에, 박스 20% 축소 */}
+      <div className="id-node absolute top-[8%] md:top-[15%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n1" style={{ "--c": "#ff4757", animationDelay: "0s" } as React.CSSProperties}>
         <div className="mb-1 text-white text-[10px] md:text-xs font-semibold">이름</div>
         <div className="anchor text-white font-black text-sm md:text-lg px-2.5 md:px-3 py-1 md:py-1.5 rounded-xl whitespace-nowrap" style={{ background: "#ff3b4f", boxShadow: "0 0 25px rgba(255, 59, 79, 0.5)", border: "1.5px solid rgba(255,255,255,0.25)" }}>홍길동</div>
       </div>
@@ -248,8 +248,8 @@ export default function IdentityMap() {
         <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold whitespace-nowrap">사업자명</div>
       </div>
 
-      {/* n9: 이메일주소 - 모바일에서 살짝 아래로 */}
-      <div className="id-node absolute top-[18%] md:top-[18%] left-[22%] md:left-[22%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n9" style={{ "--c": "#a29bfe", animationDelay: "4s" } as React.CSSProperties}>
+      {/* n9: 이메일주소 - 홍길동보다 아래로 */}
+      <div className="id-node absolute top-[18%] md:top-[25%] left-[22%] md:left-[22%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n9" style={{ "--c": "#a29bfe", animationDelay: "4s" } as React.CSSProperties}>
         <div className="anchor rounded-2xl flex justify-center items-center mb-1 w-9 h-9 md:w-10 md:h-10" style={{ backgroundColor: "#a29bfe", boxShadow: "0 0 20px #a29bfe" }}>
           <svg viewBox="0 0 24 24" className="stroke-white fill-none w-5 h-5 md:w-[22px] md:h-[22px]" style={{ strokeWidth: 2.2 }}>
             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
