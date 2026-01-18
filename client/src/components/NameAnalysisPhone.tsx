@@ -366,7 +366,14 @@ export function NameAnalysisPhone() {
                 <h2 className="phone-name-title">홍길동</h2>
                 <div className="phone-element-info">
                   <span className="phone-dot"></span>
-                  토/목 → <strong>화 (상생 & 상극)</strong>
+                  NAME ANALYSIS 오행운
+                </div>
+                <div className="phone-element-info" style={{ marginTop: '4px' }}>
+                  <span style={{ color: '#ef4444', fontWeight: 600 }}>토/목</span> → 화
+                </div>
+                <div className="phone-element-info" style={{ marginTop: '2px', fontSize: '11px' }}>
+                  ㆍ관계운 상극&상생<br />
+                  <span style={{ marginLeft: '12px' }}>(Good & Bad)</span>
                 </div>
               </div>
 
