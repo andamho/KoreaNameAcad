@@ -364,16 +364,12 @@ export function NameAnalysisPhone() {
               <div className="phone-header">
                 <span className="phone-super-tag">SUPERHERO DNA</span>
                 <h2 className="phone-name-title">홍길동</h2>
-                <div className="phone-element-info">
-                  <span className="phone-dot"></span>
-                  NAME ANALYSIS 오행운
-                </div>
+                <div className="phone-section-title" style={{ marginTop: '8px' }}>NAME ANALYSIS (오행운)</div>
                 <div className="phone-element-info" style={{ marginTop: '4px' }}>
-                  <span style={{ color: '#ef4444', fontWeight: 600 }}>토/목</span> → 화
+                  <span style={{ color: '#f97316', fontWeight: 600 }}>토/목</span> → 화
                 </div>
                 <div className="phone-element-info" style={{ marginTop: '2px', fontSize: '11px' }}>
-                  ㆍ관계운 상극&상생<br />
-                  <span style={{ marginLeft: '12px' }}>(Good & Bad)</span>
+                  ㆍ인간관계운 <span style={{ color: '#f97316' }}>상극</span>&상생
                 </div>
               </div>
 
