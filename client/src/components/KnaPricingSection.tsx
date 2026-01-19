@@ -119,7 +119,7 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
             <div className="w-full lg:flex-1 order-last flex flex-col">
               {/* 애니메이션 위 타이틀 섹션 */}
               <div 
-                className="identity-map-title text-center py-6 lg:py-8 px-4 rounded-t-3xl lg:rounded-t-none lg:rounded-tr-3xl"
+                className="identity-map-title text-center py-6 lg:py-8 px-4 lg:rounded-tr-3xl"
                 style={{ background: "radial-gradient(circle at 50% 100%, #0d1b35 0%, #050a15 100%)" }}
               >
                 <h3 className="text-base lg:text-lg font-semibold text-white mb-1">
