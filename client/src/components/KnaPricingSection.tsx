@@ -116,8 +116,20 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
             </div>
             
             {/* Identity Map - Right on desktop, bottom on mobile - fills remaining space */}
-            <div className="w-full lg:flex-1 order-last flex items-stretch">
-              <div className="w-full">
+            <div className="w-full lg:flex-1 order-last flex flex-col">
+              {/* 애니메이션 위 타이틀 섹션 */}
+              <div 
+                className="identity-map-title text-center py-6 lg:py-8 px-4 rounded-t-3xl lg:rounded-t-none lg:rounded-tr-3xl"
+                style={{ background: "radial-gradient(circle at 50% 100%, #0d1b35 0%, #050a15 100%)" }}
+              >
+                <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-2">
+                  나를 둘러싼 이름들은 안녕할까요?
+                </h3>
+                <p className="text-sm md:text-base lg:text-lg text-white/70">
+                  나를 만드는 힘, 이름과 숫자
+                </p>
+              </div>
+              <div className="w-full flex-1">
                 <IdentityMap />
               </div>
             </div>
