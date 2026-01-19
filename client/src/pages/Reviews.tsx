@@ -40,10 +40,11 @@ interface Testimonial {
 const ADMIN_TOKEN_KEY = "kna_admin_token";
 
 // CMS 후기 카드 컴포넌트 (수정 기능 포함) - 네이버 블로그 스타일 이미지 업로드
-function CmsReviewCard({ review }: { review: Content }) {
+function CmsReviewCard({ review, index = 0 }: { review: Content; index?: number }) {
   const { isAdmin, token } = useAdmin();
   const { toast } = useToast();
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [editForm, setEditForm] = useState({
     category: review.category,
     title: review.title,
@@ -228,11 +229,20 @@ function CmsReviewCard({ review }: { review: Content }) {
           
           {/* 썸네일 - 정사각형 (네이버 블로그 스타일) */}
           {review.thumbnail && (
-            <div className="aspect-square w-full overflow-hidden rounded-lg sm:mb-4">
+            <div className="aspect-square w-full overflow-hidden rounded-lg sm:mb-4 relative bg-muted">
+              {!imageLoaded && (
+                <div className="absolute inset-0 bg-muted animate-pulse" />
+              )}
               <img
                 src={review.thumbnail}
                 alt={review.title}
-                className="w-full h-full object-cover"
+                className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                loading={index < 4 ? "eager" : "lazy"}
+                decoding="async"
+                fetchPriority={index < 4 ? "high" : "auto"}
+                width={300}
+                height={300}
+                onLoad={() => setImageLoaded(true)}
               />
             </div>
           )}
@@ -873,8 +883,8 @@ export default function Reviews() {
                 최신 고객 후기
               </h3>
               <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
-                {cmsReviews.map((review) => (
-                  <CmsReviewCard key={review.id} review={review} />
+                {cmsReviews.map((review, idx) => (
+                  <CmsReviewCard key={review.id} review={review} index={idx} />
                 ))}
               </div>
             </div>
