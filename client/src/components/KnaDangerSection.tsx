@@ -17,8 +17,8 @@ export default function KnaDangerSection() {
         {/* Frame 1: 이름은 힘이 셉니다 */}
         <div className="frame bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl shadow-sm overflow-hidden mb-16">
           <div className="flex items-center gap-3 px-6 py-5 bg-white dark:bg-card border-b border-gray-200 dark:border-border">
-            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0">
-              <Zap className="w-6 h-6 fill-orange-500 stroke-white" strokeWidth={2.5} />
+            <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
+              <Zap className="w-5 h-5 fill-orange-500 stroke-white" strokeWidth={2.5} />
             </div>
             <h3 className="text-[23px] md:text-[24px] font-bold text-gray-900 dark:text-foreground tracking-tight">
               이름은 힘이 셉니다
