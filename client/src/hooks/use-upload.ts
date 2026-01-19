@@ -108,7 +108,7 @@ export function useUpload(options: UseUploadOptions = {}) {
   const [error, setError] = useState<Error | null>(null);
   const [progress, setProgress] = useState(0);
 
-  const { maxWidth = 1200, maxHeight = 1200, quality = 0.65 } = options;
+  const { maxWidth = 1200, maxHeight = 1200, quality = 0.75 } = options;
   
   // Use ref to always have the latest callbacks without causing re-renders
   // Update synchronously on every render to ensure we always have the latest
