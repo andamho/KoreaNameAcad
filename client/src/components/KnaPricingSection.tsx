@@ -122,10 +122,10 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
                 className="identity-map-title text-center py-6 lg:py-8 px-4 rounded-t-3xl lg:rounded-t-none lg:rounded-tr-3xl"
                 style={{ background: "radial-gradient(circle at 50% 100%, #0d1b35 0%, #050a15 100%)" }}
               >
-                <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-2">
+                <h3 className="text-base lg:text-lg font-semibold text-white mb-1">
                   나를 둘러싼 이름들은 안녕할까요?
                 </h3>
-                <p className="text-sm md:text-base lg:text-lg text-white/70">
+                <p className="text-xs lg:text-sm text-white/70">
                   나를 만드는 힘, 이름과 숫자
                 </p>
               </div>
