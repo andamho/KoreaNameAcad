@@ -139,7 +139,7 @@ export default function IdentityMap() {
 
   return (
     <div
-      className="relative w-full aspect-[1/1.56] max-w-[500px] lg:max-w-none lg:aspect-auto lg:h-full lg:min-h-[400px] mx-auto rounded-3xl rounded-t-none lg:rounded-tl-none lg:rounded-bl-none overflow-hidden flex items-center justify-center"
+      className="relative w-full aspect-[1/1.56] max-w-[500px] lg:max-w-none lg:aspect-auto lg:h-full lg:min-h-[400px] mx-auto rounded-none rounded-b-3xl lg:rounded-b-none lg:rounded-br-3xl overflow-hidden flex items-center justify-center"
       style={{ background: "radial-gradient(circle at 50% 50%, #0d1b35 0%, #050a15 100%)" }}
     >
       {/* 내부 래퍼 - 원래 비율 유지하면서 상하 중앙 정렬 */}
