@@ -2043,20 +2043,4 @@ html.ua-tiktok .identity-map-inner {
   zoom: 0.82;
 }
 
-/* IdentityMap 타이틀 인앱 82% 스케일 */
-html.ua-instagram .identity-map-title,
-html.ua-tiktok .identity-map-title,
-.ig-shell .identity-map-title {
-  zoom: 0.82;
-}
-html.ua-instagram .identity-map-title h3,
-html.ua-tiktok .identity-map-title h3,
-.ig-shell .identity-map-title h3 {
-  font-size: calc(1rem * 0.82) !important; /* text-base 16px → 13px */
-}
-html.ua-instagram .identity-map-title p,
-html.ua-tiktok .identity-map-title p,
-.ig-shell .identity-map-title p {
-  font-size: calc(0.75rem * 0.82) !important; /* text-xs 12px → 10px */
-}
 
