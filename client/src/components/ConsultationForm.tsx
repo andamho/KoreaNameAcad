@@ -198,22 +198,29 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   return (
     <div className="kna-consultation-form absolute inset-0 flex flex-col bg-white">
       {/* 상단 헤더 + 진행바 - 완전 고정 */}
-      <div className="flex-shrink-0 bg-white border-b border-slate-100 shadow-sm px-6 pt-6 pb-5 z-40">
+      <div 
+        className="flex-shrink-0 border-b border-slate-100 shadow-sm px-6 pt-8 pb-5 z-40"
+        style={{ 
+          backgroundImage: 'url(/bank-card-bg.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center top'
+        }}
+      >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <div className="text-xs text-slate-500 font-bold tracking-widest uppercase mb-1">
+            <div className="text-xs text-teal-700 font-bold tracking-widest uppercase mb-1">
               {type === "naming" ? "Name Evaluation" : "Name Analysis"}
             </div>
-            <div className="text-2xl form-title-font font-bold tracking-tight text-slate-900">{formTitle}</div>
+            <div className="text-2xl form-title-font font-bold tracking-tight text-slate-800">{formTitle}</div>
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-sm text-slate-500 mb-2 font-medium">
-          <span className={currentStep === 1 ? "font-bold text-slate-900" : ""}>1. 기본정보</span>
-          <span className={currentStep === 2 ? "font-bold text-slate-900" : ""}>2. 상담내용</span>
-          <span className={currentStep === 3 ? "font-bold text-slate-900" : ""}>3. 결제/일정</span>
+        <div className="flex items-center justify-between text-sm text-slate-600 mb-2 font-medium">
+          <span className={currentStep === 1 ? "font-bold text-slate-800" : ""}>1. 기본정보</span>
+          <span className={currentStep === 2 ? "font-bold text-slate-800" : ""}>2. 상담내용</span>
+          <span className={currentStep === 3 ? "font-bold text-slate-800" : ""}>3. 결제/일정</span>
         </div>
-        <div className="h-1.5 rounded-full bg-slate-200/60 overflow-hidden backdrop-blur-sm">
+        <div className="h-1.5 rounded-full bg-white/60 overflow-hidden backdrop-blur-sm">
           <div 
             className="h-full rounded-full bg-tiffany transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
             style={{ width: currentStep === 1 ? '33.333%' : currentStep === 2 ? '66.666%' : '100%' }}
