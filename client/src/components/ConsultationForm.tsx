@@ -24,9 +24,10 @@ interface NameChangeData {
 interface ConsultationFormProps {
   type: "analysis" | "naming";
   onSuccess?: () => void;
+  onOpenFamilyPolicy?: () => void;
 }
 
-export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
+export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: ConsultationFormProps) {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [numPeople, setNumPeople] = useState<number>(1);
@@ -50,8 +51,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const [referralSource, setReferralSource] = useState("");
   const [depositorName, setDepositorName] = useState("");
   const [consultationTime, setConsultationTime] = useState("");
-  const [familyPolicyDialogOpen, setFamilyPolicyDialogOpen] = useState(false);
-  const [accountCopied, setAccountCopied] = useState(false);
+    const [accountCopied, setAccountCopied] = useState(false);
   const [showDuration, setShowDuration] = useState(false);
 
   // 가격 계산: 이름분석 6만원/인, 이름감명 = 이름분석(6만) + 감명비(2만 × 개수)
@@ -270,7 +270,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 </div>
                 <button 
                   type="button"
-                  onClick={() => setFamilyPolicyDialogOpen(true)}
+                  onClick={() => onOpenFamilyPolicy?.()}
                   className="self-start ml-10 text-xs font-bold text-tiffany-dark bg-tiffany-light/80 border border-tiffany/20 px-4 py-2 rounded-full hover:bg-tiffany-light transition flex items-center gap-1"
                   data-testid="button-family-policy-form"
                 >
@@ -906,48 +906,6 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         </div>
       </div>
 
-      {/* 가족 상담 원칙 커스텀 바텀 패널 */}
-      {familyPolicyDialogOpen && (
-        <>
-          {/* 오버레이 */}
-          <div 
-            className="fixed inset-0 bg-black/60 z-[200] animate-in fade-in duration-300"
-            onClick={() => setFamilyPolicyDialogOpen(false)}
-          />
-          {/* 바텀 시트 */}
-          <div className="fixed inset-x-0 bottom-0 z-[201] bg-white rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[85vh] flex flex-col">
-            {/* 헤더 */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
-              <h3 className="text-xl form-title-font font-bold text-slate-900">등본상 가족 상담 원칙</h3>
-              <button 
-                type="button"
-                onClick={() => setFamilyPolicyDialogOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition"
-                data-testid="button-close-family-policy"
-              >
-                <X className="w-4 h-4 text-slate-600" />
-              </button>
-            </div>
-            {/* 콘텐츠 */}
-            <div className="overflow-y-auto flex-1 p-6 space-y-6 text-slate-700">
-              <p className="text-lg leading-relaxed">
-                저희 협회는 정확한 이름분석과 상담을 위해 <strong className="text-tiffany-dark">등본상 가족 전체 상담</strong>을 원칙으로 하고 있습니다.
-              </p>
-              <div className="bg-tiffany-light/50 rounded-2xl p-6 space-y-4">
-                <h4 className="font-bold text-slate-900">왜 가족 전체 상담인가요?</h4>
-                <ul className="space-y-2 text-base">
-                  <li>· 이름의 기운은 가족 구성원 간에 상호작용합니다</li>
-                  <li>· 한 사람의 이름 변경이 다른 가족에게 영향을 줄 수 있습니다</li>
-                  <li>· 전체적인 맥락을 파악해야 정확한 분석이 가능합니다</li>
-                </ul>
-              </div>
-              <p className="text-sm text-slate-500 pb-6">
-                특별한 사정이 있으신 경우 예약 상담 시 말씀해 주시면 상황에 맞게 안내해 드리겠습니다.
-              </p>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 }
