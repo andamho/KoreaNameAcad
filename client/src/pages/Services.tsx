@@ -51,6 +51,10 @@ export default function Services() {
         isClosingFromBackButton.current = true;
         setAnalysisDetailOpen(false);
       } else if (dialogOpenRef.current) {
+        // formStep이 있으면 폼 내부 네비게이션이므로 닫지 않음
+        if (event.state?.formStep !== undefined) {
+          return;
+        }
         // consultation 상태면 닫지 않음
         if (modalState === "consultation") {
           return;
