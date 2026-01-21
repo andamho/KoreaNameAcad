@@ -2044,20 +2044,11 @@ html.ua-tiktok .identity-map-inner {
 }
 
 /* ========== 상담 신청서 스타일 ========== */
-/* 일반 브라우저: 하단 고정바 safe-area 패딩 */
-.kna-form-bottom-bar > div {
-  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-}
-
-/* 인앱 브라우저: safe-area 패딩 제거 (인앱에서 과도하게 적용되는 문제 해결) */
-html.ua-instagram .kna-form-bottom-bar > div,
-html.ua-tiktok .kna-form-bottom-bar > div {
-  padding-bottom: 12px !important;
-}
-
-/* 인앱 브라우저: 결제정보 카드 영역 82% 축소 */
-html.ua-instagram .kna-consultation-form .kna-payment-card,
-html.ua-tiktok .kna-consultation-form .kna-payment-card {
+/* 인앱 브라우저 82% 스케일 - 헤더와 스크롤 영역만 적용 (하단바 제외) */
+html.ua-instagram .kna-consultation-form .flex-shrink-0.bg-gradient-to-br,
+html.ua-tiktok .kna-consultation-form .flex-shrink-0.bg-gradient-to-br,
+html.ua-instagram .kna-consultation-form .flex-1.overflow-y-auto,
+html.ua-tiktok .kna-consultation-form .flex-1.overflow-y-auto {
   zoom: 0.82;
 }
 

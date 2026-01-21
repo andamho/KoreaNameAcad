@@ -929,8 +929,8 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
       </div>
 
       {/* 하단 고정 바 - 완전 고정 */}
-      <div className="kna-form-bottom-bar flex-shrink-0 border-t border-slate-100 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.08)] z-[9999] relative">
-        <div className="px-4 py-3 flex items-center gap-4">
+      <div className="flex-shrink-0 border-t border-slate-100 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.08)] z-[9999] relative">
+        <div className="px-4 py-3 pb-[calc(12px+env(safe-area-inset-bottom))] flex items-center gap-4">
           <div className="flex-1">
             <div className="text-[10px] text-slate-500 font-bold mb-0.5">총 상담비</div>
             <div className="text-lg form-title-font font-bold text-slate-900 tracking-tight">
