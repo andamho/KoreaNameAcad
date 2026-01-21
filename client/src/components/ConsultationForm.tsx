@@ -276,15 +276,14 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                     진행해 드리고 있습니다.
                   </div>
                 </div>
-                <a 
-                  href="/family-policy"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button 
+                  type="button"
+                  onClick={onOpenFamilyPolicy}
                   className="self-start ml-10 text-xs font-bold text-tiffany-dark bg-tiffany-light/80 border border-tiffany/20 px-4 py-2 rounded-full hover:bg-tiffany-light transition flex items-center gap-1"
                   data-testid="button-family-policy-form"
                 >
                   원칙 자세히 보기 <span className="text-[10px]">›</span>
-                </a>
+                </button>
               </div>
             </div>
           )}
