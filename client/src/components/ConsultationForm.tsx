@@ -895,10 +895,10 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
               <div className="mt-2 rounded-2xl bg-slate-50/50 p-6 text-lg text-slate-600 border border-slate-100/50 backdrop-blur-sm form-animate-fade-in">
                 {type === "naming" ? (
                   <ul className="space-y-3">
-                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>이름분석 + 감명 1개</span> <span className="font-bold text-slate-800">1시간 10분</span></li>
-                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>이름분석 + 감명 2개</span> <span className="font-bold text-slate-800">1시간 20분</span></li>
-                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>이름분석 + 감명 3개</span> <span className="font-bold text-slate-800">1시간 30분</span></li>
-                    <li className="flex justify-between"><span>이름분석 + 감명 4개</span> <span className="font-bold text-slate-800">1시간 40분</span></li>
+                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>이름분석<br className="sm:hidden" /><span className="hidden sm:inline"> </span>+ 감명 1개</span> <span className="font-bold text-slate-800">1시간 10분</span></li>
+                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>감명 2개</span> <span className="font-bold text-slate-800">1시간 20분</span></li>
+                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>감명 3개</span> <span className="font-bold text-slate-800">1시간 30분</span></li>
+                    <li className="flex justify-between"><span>감명 4개</span> <span className="font-bold text-slate-800">1시간 40분</span></li>
                   </ul>
                 ) : (
                   <ul className="space-y-3">
