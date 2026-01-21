@@ -43,6 +43,10 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   ]);
   const [evaluationKoreanName, setEvaluationKoreanName] = useState("");
   const [evaluationChineseName, setEvaluationChineseName] = useState("");
+  const [numEvaluationNames, setNumEvaluationNames] = useState<number>(1);
+  const [evaluationNamesData, setEvaluationNamesData] = useState<{koreanName: string; chineseName: string}[]>([
+    { koreanName: "", chineseName: "" }
+  ]);
   const [reason, setReason] = useState("");
   const [referralSource, setReferralSource] = useState("");
   const [depositorName, setDepositorName] = useState("");
@@ -51,8 +55,26 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const [accountCopied, setAccountCopied] = useState(false);
   const [showDuration, setShowDuration] = useState(false);
 
+  // 가격 계산: 이름분석 6만원/인, 이름감명 = 이름분석(6만) + 감명비(2만 × 개수)
   const PRICE_PER_PERSON = 60000;
-  const totalPrice = numPeople * PRICE_PER_PERSON;
+  const EVALUATION_PRICE = 20000;
+  const totalPrice = type === "naming" 
+    ? PRICE_PER_PERSON + (numEvaluationNames * EVALUATION_PRICE)
+    : numPeople * PRICE_PER_PERSON;
+
+  const handleNumEvaluationNamesChange = (num: number) => {
+    setNumEvaluationNames(num);
+    const newData = Array.from({ length: num }, (_, i) => 
+      evaluationNamesData[i] || { koreanName: "", chineseName: "" }
+    );
+    setEvaluationNamesData(newData);
+  };
+
+  const updateEvaluationNameData = (index: number, field: "koreanName" | "chineseName", value: string) => {
+    const newData = [...evaluationNamesData];
+    newData[index] = { ...newData[index], [field]: value };
+    setEvaluationNamesData(newData);
+  };
 
   const handleCopyAccount = async () => {
     try {
@@ -166,14 +188,16 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
     
     const consultationData = {
       type,
-      numPeople,
+      numPeople: type === "naming" ? 1 : numPeople,
       peopleData,
       phone,
       hasNameChange: hasNameChange === "예" ? "yes" : "no",
       numNameChanges: hasNameChange === "예" ? numNameChanges : undefined,
       nameChangeData: hasNameChange === "예" ? nameChangeData : undefined,
-      evaluationKoreanName: type === "naming" ? evaluationKoreanName : undefined,
-      evaluationChineseName: type === "naming" ? evaluationChineseName : undefined,
+      // 이름감명 전용 필드
+      numEvaluationNames: type === "naming" ? numEvaluationNames : undefined,
+      evaluationNamesData: type === "naming" ? evaluationNamesData : undefined,
+      totalPrice,
       reason,
       referralSource: referralSource || undefined,
       depositorName,
@@ -526,6 +550,86 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
       {/* Step 2: 상담내용 */}
       {currentStep === 2 && (
         <div className="space-y-8 pt-8 px-6 pb-8 form-animate-fade-in">
+          {/* 이름감명일 때만: 감명할 이름 정보 */}
+          {type === "naming" && (
+            <div className="glass-card rounded-3xl p-8">
+              <div>
+                <h2 className="text-2xl form-title-font font-bold tracking-tight text-slate-900">감명할 이름 정보</h2>
+                <p className="text-base text-slate-500 mt-2 font-medium">타 작명소에서 받은 이름을 분석해 드립니다.</p>
+              </div>
+              
+              <div className="mt-6">
+                <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">감명할 이름 개수</label>
+                <div className="grid grid-cols-4 gap-3">
+                  {[1, 2, 3, 4].map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => handleNumEvaluationNamesChange(num)}
+                      className={`rounded-2xl border px-4 py-3 text-lg font-bold transition ${
+                        numEvaluationNames === num
+                          ? "bg-tiffany text-white border-tiffany shadow-lg shadow-tiffany/30"
+                          : "border-slate-200 bg-white/60 text-slate-700 hover:bg-white"
+                      }`}
+                      data-testid={`eval-names-${num}`}
+                    >
+                      {num}개
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-3 text-sm text-slate-500">
+                  상담비: 이름분석 6만원 + 감명비 {numEvaluationNames}개 × 2만원 = <strong className="text-tiffany">{totalPrice.toLocaleString()}원</strong>
+                </p>
+              </div>
+
+              <div className="mt-8 space-y-6">
+                {evaluationNamesData.map((data, index) => (
+                  <div key={index} className="p-6 bg-white/60 rounded-2xl border border-slate-100">
+                    <h4 className="text-lg form-title-font font-bold text-slate-800 mb-4">{index + 1}번째 감명 이름</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-base font-bold text-slate-600 block mb-2">한글 이름</label>
+                        <input 
+                          className="w-full rounded-2xl border border-slate-200 bg-white/50 px-5 py-4 text-lg form-focus-ring" 
+                          placeholder="홍길동"
+                          value={data.koreanName}
+                          onChange={(e) => updateEvaluationNameData(index, "koreanName", e.target.value)}
+                          data-testid={`eval-korean-name-${index}`}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-base font-bold text-slate-600 block mb-2">한자 이름</label>
+                        <input 
+                          className="w-full rounded-2xl border border-slate-200 bg-white/50 px-5 py-4 text-lg form-focus-ring" 
+                          placeholder="洪吉洞"
+                          value={data.chineseName}
+                          onChange={(e) => updateEvaluationNameData(index, "chineseName", e.target.value)}
+                          data-testid={`eval-chinese-name-${index}`}
+                        />
+                      </div>
+                    </div>
+                    {index === 0 && (
+                      <div className="mt-4 bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
+                        <p className="text-sm text-slate-600 leading-relaxed mb-2">
+                          한자는 꼭 직접 입력해주세요. 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.
+                        </p>
+                        <a
+                          href="https://hanja.dict.naver.com/#/main"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm bg-[#03C75A] text-white shadow-sm transition-all duration-200 hover:bg-[#02b351]"
+                          data-testid="link-naver-search-eval"
+                        >
+                          네이버 한자사전 <span className="text-base">›</span>
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="glass-card rounded-3xl p-8">
             <div>
               <h2 className="text-2xl form-title-font font-bold tracking-tight text-slate-900">상담 내용</h2>
@@ -535,7 +639,10 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">상담 사유</label>
               <textarea 
                 className="w-full min-h-[240px] rounded-2xl border border-slate-200 bg-white/50 px-6 py-5 text-lg form-focus-ring leading-relaxed resize-none backdrop-blur-sm"
-                placeholder={`예)
+                placeholder={type === "naming" ? `예)
+· 이 이름이 아이에게 맞는지 확인하고 싶습니다
+· 여러 이름 중에서 가장 좋은 이름을 고르고 싶습니다
+· 타 작명소 이름의 정확한 분석을 받고 싶습니다` : `예)
 · 가족 관계에서 반복되는 문제가 있습니다
 · 아이 이름의 방향성을 잡고 싶습니다
 · 개명 여부를 신중히 판단하고 싶습니다`}
@@ -684,7 +791,10 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           <div className="glass-card rounded-3xl p-8">
             <h3 className="text-xl form-title-font font-bold text-slate-900">희망 상담 시간</h3>
             <div className="mt-6 grid grid-cols-2 gap-3">
-              {["주중 오후 2시", "주말 오후 2시"].map((time) => (
+              {(type === "naming" 
+                ? ["주중 오전 10시", "주중 오후 2시", "주말 오전 10시", "주말 오후 2시"]
+                : ["주중 오후 2시", "주말 오후 2시"]
+              ).map((time) => (
                 <button
                   key={time}
                   type="button"
@@ -712,12 +822,21 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             </button>
             {showDuration && (
               <div className="mt-2 rounded-2xl bg-slate-50/50 p-6 text-lg text-slate-600 border border-slate-100/50 backdrop-blur-sm form-animate-fade-in">
-                <ul className="space-y-3">
-                  <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>1인</span> <span className="font-bold text-slate-800">1시간</span></li>
-                  <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>2인</span> <span className="font-bold text-slate-800">1시간 30분</span></li>
-                  <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>3인</span> <span className="font-bold text-slate-800">2시간</span></li>
-                  <li className="flex justify-between"><span>4인 이상</span> <span className="font-bold text-slate-800">2시간 30분</span></li>
-                </ul>
+                {type === "naming" ? (
+                  <ul className="space-y-3">
+                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>이름분석 + 감명 1개</span> <span className="font-bold text-slate-800">1시간 30분</span></li>
+                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>이름분석 + 감명 2개</span> <span className="font-bold text-slate-800">1시간 40분</span></li>
+                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>이름분석 + 감명 3개</span> <span className="font-bold text-slate-800">1시간 50분</span></li>
+                    <li className="flex justify-between"><span>이름분석 + 감명 4개</span> <span className="font-bold text-slate-800">2시간</span></li>
+                  </ul>
+                ) : (
+                  <ul className="space-y-3">
+                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>1인</span> <span className="font-bold text-slate-800">1시간</span></li>
+                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>2인</span> <span className="font-bold text-slate-800">1시간 30분</span></li>
+                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>3인</span> <span className="font-bold text-slate-800">2시간</span></li>
+                    <li className="flex justify-between"><span>4인 이상</span> <span className="font-bold text-slate-800">2시간 30분</span></li>
+                  </ul>
+                )}
               </div>
             )}
           </div>
