@@ -5,6 +5,7 @@ import { NameAnalysisPhone } from "@/components/NameAnalysisPhone";
 import { ConsultationForm } from "@/components/ConsultationForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
+import { Card } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { Search, Star, Flower, Baby, Building, Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin } from "lucide-react";
 import { useLocation } from "wouter";
@@ -16,6 +17,7 @@ export default function Services() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
   const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
+  const [familyPolicyOpen, setFamilyPolicyOpen] = useState(false);
   
   // 뒤로 가기 버튼 처리를 위한 ref
   const dialogOpenRef = useRef(false);
@@ -49,8 +51,8 @@ export default function Services() {
         isClosingFromBackButton.current = true;
         setAnalysisDetailOpen(false);
       } else if (dialogOpenRef.current) {
-        // consultation 또는 familyPolicy 상태면 닫지 않음 (내부 다이얼로그 전환)
-        if (modalState === "consultation" || modalState === "familyPolicy") {
+        // consultation 상태면 닫지 않음
+        if (modalState === "consultation") {
           return;
         }
         isClosingFromBackButton.current = true;
@@ -520,13 +522,14 @@ export default function Services() {
 
       {/* 상담 신청 모달 */}
       <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) closeDialog(); }}>
-        <DialogContent className="z-[10001] w-full h-full max-w-full max-h-full sm:!top-[80px] sm:!translate-y-0 sm:!h-[calc(100vh-80px)] sm:max-w-[700px] overflow-y-auto !p-4 sm:!p-6 inset-0 !translate-x-0 !translate-y-0 sm:!left-[50%] sm:!translate-x-[-50%] rounded-none sm:rounded-t-none sm:rounded-b-lg" aria-describedby={undefined}>
+        <DialogContent className="w-full h-full max-w-full max-h-full sm:!top-[80px] sm:!translate-y-0 sm:!h-[calc(100vh-80px)] sm:max-w-[700px] overflow-y-auto !p-4 sm:!p-6 inset-0 !translate-x-0 !translate-y-0 sm:!left-[50%] sm:!translate-x-[-50%] rounded-none sm:rounded-t-none sm:rounded-b-lg" aria-describedby={undefined}>
           <DialogHeader className="sr-only">
             <DialogTitle>{dialogType === "analysis" ? "이름분석 상담 신청" : "이름감명 상담 신청"}</DialogTitle>
           </DialogHeader>
           <ConsultationForm 
             type={dialogType}
             onSuccess={closeDialog}
+            onOpenFamilyPolicy={() => setFamilyPolicyOpen(true)}
           />
         </DialogContent>
       </Dialog>
@@ -697,6 +700,138 @@ export default function Services() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* 등본상 가족 상담 원칙 Sheet */}
+      <Sheet open={familyPolicyOpen} onOpenChange={setFamilyPolicyOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto z-[10002]">
+          <SheetHeader className="pb-4">
+            <SheetTitle className="text-2xl font-bold text-center">👨‍👩‍👧‍👦 등본상 가족 상담 원칙</SheetTitle>
+          </SheetHeader>
+          <div className="space-y-4 text-foreground leading-relaxed pb-8">
+            <Card className="p-5 space-y-4">
+              <p className="text-center">
+                가족은 운명 공동체로,<br />
+                서로 이름운의 영향을<br />
+                강하게 주고 받습니다.
+              </p>
+              
+              <div className="mt-4">
+                <h3 className="font-bold text-lg mb-2">💍 결혼, 혼을 연결하는 인연</h3>
+                <p>
+                  '결혼'이라는 말은<br />
+                  본래 '혼(魂)을 연결한다'는 뜻에서<br />
+                  유래했다고 합니다.
+                </p>
+                <p className="mt-2">
+                  그만큼 결혼은 특별한 만남이며,<br />
+                  '일심동체'라는 말이 있죠?
+                </p>
+                <p className="mt-2">
+                  몸과 마음이 하나가 되는 것처럼<br />
+                  강력하게 연결됩니다.
+                </p>
+              </div>
+
+              <div className="mt-4">
+                <h3 className="font-bold text-lg mb-2">👶 자녀, 피와 살로 이어진 존재</h3>
+                <p>
+                  자녀는 '피붙이', '살붙이'라고도 하지요.<br />
+                  그래서 '혈육(血肉)'이라고 부릅니다.
+                </p>
+                <p className="mt-2">
+                  즉,<br />
+                  피로 연결되고 살로 이어진 관계,<br />
+                  분리된 거 같지만<br />
+                  결코 분리될 수 없는<br />
+                  그런 특별한 관계입니다.
+                </p>
+              </div>
+
+              <div className="mt-4">
+                <h3 className="font-bold text-lg mb-2">🔄 이름운, 서로에게 영향을 줍니다</h3>
+                <p>
+                  결혼을 하게 되면<br />
+                  부부 각자의 이름운이<br />
+                  서로에게 영향을 미칩니다.
+                </p>
+                <p className="mt-2">
+                  또한,<br />
+                  자녀가 태어나게 되면<br />
+                  자녀의 초년운이<br />
+                  👉 부모의 중년운에 영향을 주고,
+                </p>
+                <p className="mt-2">
+                  부모의 중년운은<br />
+                  👉 자녀의 초년운에 영향을 미칩니다.
+                </p>
+                <p className="mt-2">
+                  이처럼 가족은 운명공동체로서<br />
+                  서로 이름운의 영향을<br />
+                  밀접하게 주고 받습니다.
+                </p>
+              </div>
+
+              <div className="mt-4">
+                <h3 className="font-bold text-lg mb-2">📜 이름은 '소리'보다 '글자'가 강합니다</h3>
+                <p>
+                  이름에는<br />
+                  소리에너지도 있지만,<br />
+                  그보다 훨씬 강력한 것이<br />
+                  바로 글자 에너지입니다.
+                </p>
+                <p className="mt-2">
+                  법적 에너지권 안에서<br />
+                  글자 에너지로 깊게 연결되어 있는<br />
+                  등본상 가족은,<br />
+                  더욱 긴밀한 관계를 가지며<br />
+                  상당한 영향을 미칩니다.
+                </p>
+              </div>
+
+              <p className="font-semibold text-lg mt-4 text-center bg-tiffany-light/50 rounded-2xl p-4">
+                📌 정확한 이름분석 상담을 받으시려면,<br />
+                등본상 가족 전체의<br />
+                이름 분석이 반드시 필요합니다.
+              </p>
+            </Card>
+
+            <Card className="p-5 space-y-4">
+              <h3 className="font-bold text-lg text-center">📌✨📖 같이보시면 좋은 글</h3>
+              <div className="space-y-3">
+                <a 
+                  href="https://m.blog.naver.com/whats_ur_name_777/223450662435" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block p-4 bg-muted rounded-lg hover-elevate active-elevate-2"
+                  data-testid="link-blog-1"
+                >
+                  <h4 className="font-semibold text-foreground mb-1">
+                    "아빠가 바람이 났습니다" 엄마이름때문에
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    😓아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습...
+                  </p>
+                </a>
+                <a 
+                  href="https://m.blog.naver.com/whats_ur_name_777/223924993144" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block p-4 bg-muted rounded-lg hover-elevate active-elevate-2"
+                  data-testid="link-blog-2"
+                >
+                  <h4 className="font-semibold text-foreground mb-1">
+                    개명한 이름때문에 아빠가 돌아가시고, 소송도 걸리고
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    어느날 인스타로 디엠이 왔습니다. 너무 살기 힘들다며 죽고 싶다고까지 했습니다. 젊으신 분이 그러시면 ...
+                  </p>
+                </a>
+              </div>
+            </Card>
+          </div>
+        </SheetContent>
+      </Sheet>
+
     </div>
   );
 }
