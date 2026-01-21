@@ -708,7 +708,6 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                 className="w-full min-h-[180px] rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring leading-relaxed resize-none backdrop-blur-sm"
                 placeholder={type === "naming" ? `예)
 · 이 이름이 아이에게 맞는지 확인하고 싶습니다
-· 여러 이름 중에서 가장 좋은 이름을 고르고 싶습니다
 · 타 작명소 이름의 정확한 분석을 받고 싶습니다` : `예)
 · 가족 관계에서 반복되는 문제가 있습니다
 · 개명 여부를 신중히 판단하고 싶습니다`}
