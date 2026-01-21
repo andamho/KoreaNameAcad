@@ -208,6 +208,12 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     submitMutation.mutate(consultationData);
   };
 
+  // 현재 step을 ref로 관리 (popstate 이벤트에서 최신 값 접근용)
+  const currentStepRef = useRef(currentStep);
+  useEffect(() => {
+    currentStepRef.current = currentStep;
+  }, [currentStep]);
+
   // 브라우저 뒤로/앞으로 가기 버튼 처리
   useEffect(() => {
     // 폼이 열릴 때 초기 히스토리 상태 설정 (step 1)
@@ -215,22 +221,26 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
 
     const handlePopState = (event: PopStateEvent) => {
       const state = event.state;
+      
+      // formStep이 있으면 해당 step으로 이동
       if (state && typeof state.formStep === 'number') {
-        // 히스토리에 저장된 step으로 이동
+        event.stopImmediatePropagation(); // 라우터보다 먼저 처리
         setCurrentStep(state.formStep);
         setTimeout(() => {
           scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
         }, 0);
       } else {
-        // formStep이 없으면 step 1에서 뒤로가기 한 것 - 다시 step 1로 유지
+        // formStep이 없으면 (step 1에서 뒤로가기) - 폼을 유지하고 step 1로
+        event.stopImmediatePropagation();
         window.history.pushState({ formStep: 1 }, '');
         setCurrentStep(1);
       }
     };
 
-    window.addEventListener('popstate', handlePopState);
+    // 캡처 단계에서 이벤트를 가로채서 라우터보다 먼저 처리
+    window.addEventListener('popstate', handlePopState, true);
     return () => {
-      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('popstate', handlePopState, true);
     };
   }, []);
 
@@ -243,7 +253,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     }, 0);
   };
 
-  // 뒤로 이동 (이전 버튼) - history.back() 사용
+  // 뒤로 이동 (이전 버튼) - 이전 step의 상태를 설정하고 history.back()
   const goToPrevStep = () => {
     window.history.back();
   };
@@ -504,8 +514,8 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                           <div>
                             <label className="text-base font-bold text-slate-600 block mb-2">개명 전 한자</label>
                             <input 
-                              className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
-                              placeholder="洪吉洞"
+                              className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-sm form-focus-ring" 
+                              placeholder="洪吉洞 (예시)"
                               value={data.chineseName}
                               onChange={(e) => updateNameChangeData(index, "chineseName", e.target.value)}
                               data-testid={`input-chinese-name-${index}`}
@@ -657,8 +667,8 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                       <div>
                         <label className="text-base font-bold text-slate-600 block mb-2">한자 이름</label>
                         <input 
-                          className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
-                          placeholder="洪吉洞"
+                          className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-sm form-focus-ring" 
+                          placeholder="洪吉洞 (예시)"
                           value={data.chineseName}
                           onChange={(e) => updateEvaluationNameData(index, "chineseName", e.target.value)}
                           data-testid={`eval-chinese-name-${index}`}
