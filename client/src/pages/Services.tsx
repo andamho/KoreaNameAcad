@@ -522,7 +522,7 @@ export default function Services() {
 
       {/* 상담 신청 모달 */}
       <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) closeDialog(); }}>
-        <DialogContent className="w-full h-full max-w-full max-h-full !top-0 sm:!top-[80px] !translate-y-0 sm:!h-[calc(100vh-80px)] sm:max-w-[700px] overflow-y-auto !p-4 sm:!p-6 inset-0 !translate-x-0 !left-0 sm:!left-[50%] sm:!translate-x-[-50%] rounded-none sm:rounded-t-none sm:rounded-b-lg z-[300]" aria-describedby={undefined}>
+        <DialogContent className="z-[10001] w-full h-full max-w-full max-h-full sm:!top-[80px] sm:!translate-y-0 sm:!h-[calc(100vh-80px)] sm:max-w-[700px] overflow-y-auto !p-4 sm:!p-6 inset-0 !translate-x-0 !translate-y-0 sm:!left-[50%] sm:!translate-x-[-50%] rounded-none sm:rounded-t-none sm:rounded-b-lg" aria-describedby={undefined}>
           <DialogHeader className="sr-only">
             <DialogTitle>{dialogType === "analysis" ? "이름분석 상담 신청" : "이름감명 상담 신청"}</DialogTitle>
           </DialogHeader>
