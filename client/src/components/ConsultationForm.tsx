@@ -515,7 +515,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                             <label className="text-base font-bold text-slate-600 block mb-2">개명 전 한자</label>
                             <input 
                               className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-sm form-focus-ring" 
-                              placeholder="洪吉洞 (예시)"
+                              placeholder="洪吉洞"
                               value={data.chineseName}
                               onChange={(e) => updateNameChangeData(index, "chineseName", e.target.value)}
                               data-testid={`input-chinese-name-${index}`}
@@ -668,7 +668,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                         <label className="text-base font-bold text-slate-600 block mb-2">한자 이름</label>
                         <input 
                           className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-sm form-focus-ring" 
-                          placeholder="洪吉洞 (예시)"
+                          placeholder="洪吉洞"
                           value={data.chineseName}
                           onChange={(e) => updateEvaluationNameData(index, "chineseName", e.target.value)}
                           data-testid={`eval-chinese-name-${index}`}
