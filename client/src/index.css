@@ -2089,9 +2089,10 @@ html.ua-tiktok .identity-map-inner {
   animation: formFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* 폼 타이틀 폰트 (고려대학교 볼드) */
+/* 폼 타이틀 폰트 (기본 sans-serif) */
 .form-title-font {
-  font-family: 'KoreaUnivB', 'Noto Serif KR', serif;
+  font-family: inherit;
+  font-weight: 700;
 }
 
 /* tiffany 색상 체계 */
