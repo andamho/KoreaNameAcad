@@ -2044,13 +2044,7 @@ html.ua-tiktok .identity-map-inner {
 }
 
 /* ========== 상담 신청서 스타일 ========== */
-/* 인앱 브라우저 82% 스케일 - 헤더와 스크롤 영역만 적용 (하단바 제외) */
-html.ua-instagram .kna-consultation-form .flex-shrink-0.bg-gradient-to-br,
-html.ua-tiktok .kna-consultation-form .flex-shrink-0.bg-gradient-to-br,
-html.ua-instagram .kna-consultation-form .flex-1.overflow-y-auto,
-html.ua-tiktok .kna-consultation-form .flex-1.overflow-y-auto {
-  zoom: 0.82;
-}
+/* 인앱 브라우저에서 상담신청서는 스케일 없이 원본 크기 유지 (레이아웃 깨짐 방지) */
 
 /* Glassmorphism 카드 */
 .glass-card {
