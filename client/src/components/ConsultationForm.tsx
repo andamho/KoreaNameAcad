@@ -605,41 +605,40 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <div 
               className="relative mx-auto max-w-[400px] aspect-[1.586/1] rounded-2xl p-5 sm:p-6 text-white shadow-2xl overflow-hidden ring-1 ring-black/10"
               style={{ 
-                backgroundImage: 'url(/attached_assets/bg.png_1768976268783.png)',
+                backgroundImage: 'url(/bank-card-bg.png)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center'
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/20 to-black/40" />
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="flex flex-col items-start">
-                  <span className="text-[10px] sm:text-xs font-bold tracking-widest uppercase text-white/90 drop-shadow-sm">Nonghyup Bank</span>
+                <div className="flex flex-col items-center pt-2">
+                  <span className="text-sm sm:text-base font-bold tracking-wide text-teal-700">Nonghyup Bank</span>
                 </div>
 
                 <div className="flex flex-col items-center space-y-2 sm:space-y-3">
-                  <div className="text-lg sm:text-2xl md:text-3xl font-mono font-bold tracking-wider text-white drop-shadow-md whitespace-nowrap text-center">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-mono font-bold tracking-wider text-teal-600 whitespace-nowrap text-center">
                     351 8205 8124 53
                   </div>
 
                   <button 
                     type="button"
                     onClick={handleCopyAccount}
-                    className="group flex items-center gap-1.5 rounded-full bg-white/20 px-3 sm:px-4 py-1.5 sm:py-2 hover:bg-white/30 transition active:scale-95 whitespace-nowrap backdrop-blur-md border border-white/30 shadow-lg"
+                    className="group flex items-center gap-1.5 rounded-full bg-rose-100/80 px-4 sm:px-5 py-2 sm:py-2.5 hover:bg-rose-200/80 transition active:scale-95 whitespace-nowrap border border-rose-200/50 shadow-sm"
                     data-testid="button-copy-account"
                   >
-                    <span className="text-xs sm:text-sm font-bold text-white drop-shadow-sm">
+                    <span className="text-sm sm:text-base font-bold text-rose-500">
                       {accountCopied ? "복사됨!" : "계좌번호 복사"}
                     </span>
                     {accountCopied ? (
-                      <Check className="w-3 h-3 sm:w-4 sm:h-4 text-white/90" />
+                      <Check className="w-4 h-4 text-rose-500" />
                     ) : (
-                      <Copy className="w-3 h-3 sm:w-4 sm:h-4 text-white/90" />
+                      <Copy className="w-4 h-4 text-rose-500" />
                     )}
                   </button>
                 </div>
 
-                <div className="text-center">
-                  <span className="text-xs sm:text-sm font-medium text-white/95 tracking-tight drop-shadow-sm">
+                <div className="text-center pb-2">
+                  <span className="text-xs sm:text-sm font-medium text-slate-600 tracking-tight">
                     예금주: 와츠유어네임 이름연구협회
                   </span>
                 </div>
