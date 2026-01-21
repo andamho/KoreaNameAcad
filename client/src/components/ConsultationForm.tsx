@@ -280,17 +280,19 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <Label className="text-lg md:text-lg font-semibold">등본상 가족 인원 <span className="text-lg md:text-lg font-normal text-muted-foreground">(해당 인원을 체크하세요)</span></Label>
             <div className="flex gap-2 flex-wrap">
               {[1, 2, 3, 4, 5, 6].map((num) => (
-                <Button
+                <button
                   key={num}
                   type="button"
-                  variant={numPeople === num ? "default" : "outline"}
-                  size="sm"
                   onClick={() => handleNumPeopleChange(num)}
                   data-testid={`button-people-${num}`}
-                  className="w-10 h-10 text-lg"
+                  className={`w-10 h-10 text-lg font-semibold rounded-xl border-2 transition-all
+                    ${numPeople === num 
+                      ? 'bg-[#56D5DB] text-white border-[#56D5DB]' 
+                      : 'bg-white text-[#56D5DB] border-[#56D5DB]/40 hover:border-[#56D5DB]'
+                    }`}
                 >
                   {num}
-                </Button>
+                </button>
               ))}
             </div>
             <p className="text-base md:text-base text-orange-600 dark:text-orange-400 mt-2">
@@ -434,17 +436,19 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               <Label className="text-lg md:text-lg font-semibold">개명인원</Label>
               <div className="flex gap-2 flex-wrap">
                 {[1, 2, 3, 4].map((num) => (
-                  <Button
+                  <button
                     key={num}
                     type="button"
-                    variant={numNameChanges === num ? "default" : "outline"}
-                    size="sm"
                     onClick={() => handleNumNameChangesChange(num)}
                     data-testid={`button-namechange-${num}`}
-                    className="w-10 h-10 text-lg"
+                    className={`w-10 h-10 text-lg font-semibold rounded-xl border-2 transition-all
+                      ${numNameChanges === num 
+                        ? 'bg-[#56D5DB] text-white border-[#56D5DB]' 
+                        : 'bg-white text-[#56D5DB] border-[#56D5DB]/40 hover:border-[#56D5DB]'
+                      }`}
                   >
                     {num}
-                  </Button>
+                  </button>
                 ))}
               </div>
             </div>
@@ -584,11 +588,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <Label className="text-lg md:text-lg font-semibold">저희 한국이름학교를 어떻게 알게 되셨나요?</Label>
             <p className="text-base md:text-base text-muted-foreground">(처음 접하신 경로를 선택해 주세요.)</p>
           </div>
-          <RadioGroup 
-            value={referralSource} 
-            onValueChange={setReferralSource}
-            className="grid grid-cols-2 sm:grid-cols-3 gap-3"
-          >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {[
               { value: "지인소개", label: "지인소개" },
               { value: "블로그", label: "블로그" },
@@ -599,23 +599,24 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               { value: "쓰레드", label: "쓰레드" },
               { value: "크몽", label: "크몽" },
             ].map((option) => (
-              <label
+              <button
                 key={option.value}
+                type="button"
+                onClick={() => setReferralSource(option.value)}
+                data-testid={`referral-${option.value}`}
                 className={`
-                  flex items-center gap-2.5 rounded-xl px-4 h-9
-                  border-2 transition-all cursor-pointer hover-elevate
+                  flex items-center justify-center rounded-xl px-4 h-10
+                  border-2 transition-all font-semibold text-base
                   ${referralSource === option.value 
-                    ? 'border-primary bg-primary/5 dark:bg-primary/10' 
-                    : 'border-border bg-card'
+                    ? 'bg-[#56D5DB] text-white border-[#56D5DB]' 
+                    : 'bg-white text-[#56D5DB] border-[#56D5DB]/40 hover:border-[#56D5DB]'
                   }
                 `}
-                data-testid={`referral-${option.value}`}
               >
-                <RadioGroupItem value={option.value} id={`ref-${option.value}`} />
-                <span className="font-medium">{option.label}</span>
-              </label>
+                {option.label}
+              </button>
             ))}
-          </RadioGroup>
+          </div>
         </div>
 
         {/* 입금자명 */}
