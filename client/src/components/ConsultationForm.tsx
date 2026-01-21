@@ -858,25 +858,6 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
             )}
           </div>
 
-          <div className="flex gap-3 pt-4">
-            <button 
-              type="button"
-              onClick={() => goToStep(2)}
-              className="w-1/3 rounded-xl border border-slate-200 bg-white/60 py-2.5 text-base font-bold text-slate-600 hover:bg-white transition"
-              data-testid="button-back-step2"
-            >
-              이전
-            </button>
-            <button 
-              type="button"
-              onClick={handleSubmit}
-              disabled={submitMutation.isPending}
-              className="w-2/3 rounded-xl bg-tiffany text-white py-2.5 text-base font-bold hover:bg-tiffany-dark transition shadow-md shadow-tiffany/30 transform active:scale-[0.98] disabled:opacity-50"
-              data-testid="button-submit"
-            >
-              {submitMutation.isPending ? "신청 중..." : "상담 신청하기"}
-            </button>
-          </div>
         </div>
       )}
       </div>
