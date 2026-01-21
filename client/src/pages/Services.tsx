@@ -705,7 +705,7 @@ export default function Services() {
       <Sheet open={familyPolicyOpen} onOpenChange={setFamilyPolicyOpen}>
         <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto z-[10002]">
           <SheetHeader className="pb-4">
-            <SheetTitle className="text-2xl font-bold text-center">등본상 가족 상담 원칙</SheetTitle>
+            <SheetTitle className="text-2xl font-bold text-center">👨‍👩‍👧‍👦 등본상 가족 상담 원칙</SheetTitle>
           </SheetHeader>
           <div className="space-y-4 text-foreground leading-relaxed pb-8">
             <Card className="p-5 space-y-4">
@@ -716,7 +716,7 @@ export default function Services() {
               </p>
               
               <div className="mt-4">
-                <h3 className="font-bold text-lg mb-2">결혼, 혼을 연결하는 인연</h3>
+                <h3 className="font-bold text-lg mb-2">💍 결혼, 혼을 연결하는 인연</h3>
                 <p>
                   '결혼'이라는 말은<br />
                   본래 '혼(魂)을 연결한다'는 뜻에서<br />
@@ -733,7 +733,7 @@ export default function Services() {
               </div>
 
               <div className="mt-4">
-                <h3 className="font-bold text-lg mb-2">자녀, 피와 살로 이어진 존재</h3>
+                <h3 className="font-bold text-lg mb-2">👶 자녀, 피와 살로 이어진 존재</h3>
                 <p>
                   자녀는 '피붙이', '살붙이'라고도 하지요.<br />
                   그래서 '혈육(血肉)'이라고 부릅니다.
@@ -748,7 +748,7 @@ export default function Services() {
               </div>
 
               <div className="mt-4">
-                <h3 className="font-bold text-lg mb-2">이름운, 서로에게 영향을 줍니다</h3>
+                <h3 className="font-bold text-lg mb-2">🔄 이름운, 서로에게 영향을 줍니다</h3>
                 <p>
                   결혼을 하게 되면<br />
                   부부 각자의 이름운이<br />
@@ -758,11 +758,11 @@ export default function Services() {
                   또한,<br />
                   자녀가 태어나게 되면<br />
                   자녀의 초년운이<br />
-                  부모의 중년운에 영향을 주고,
+                  👉 부모의 중년운에 영향을 주고,
                 </p>
                 <p className="mt-2">
                   부모의 중년운은<br />
-                  자녀의 초년운에 영향을 미칩니다.
+                  👉 자녀의 초년운에 영향을 미칩니다.
                 </p>
                 <p className="mt-2">
                   이처럼 가족은 운명공동체로서<br />
@@ -772,7 +772,7 @@ export default function Services() {
               </div>
 
               <div className="mt-4">
-                <h3 className="font-bold text-lg mb-2">이름은 '소리'보다 '글자'가 강합니다</h3>
+                <h3 className="font-bold text-lg mb-2">📜 이름은 '소리'보다 '글자'가 강합니다</h3>
                 <p>
                   이름에는<br />
                   소리에너지도 있지만,<br />
@@ -789,14 +789,14 @@ export default function Services() {
               </div>
 
               <p className="font-semibold text-lg mt-4 text-center bg-tiffany-light/50 rounded-2xl p-4">
-                정확한 이름분석 상담을 받으시려면,<br />
+                📌 정확한 이름분석 상담을 받으시려면,<br />
                 등본상 가족 전체의<br />
                 이름 분석이 반드시 필요합니다.
               </p>
             </Card>
 
             <Card className="p-5 space-y-4">
-              <h3 className="font-bold text-lg text-center">같이보시면 좋은 글</h3>
+              <h3 className="font-bold text-lg text-center">📌✨📖 같이보시면 좋은 글</h3>
               <div className="space-y-3">
                 <a 
                   href="https://m.blog.naver.com/whats_ur_name_777/223450662435" 
@@ -809,7 +809,7 @@ export default function Services() {
                     "아빠가 바람이 났습니다" 엄마이름때문에
                   </h4>
                   <p className="text-sm text-muted-foreground">
-                    아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습...
+                    😓아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습...
                   </p>
                 </a>
                 <a 
