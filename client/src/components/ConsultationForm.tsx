@@ -31,6 +31,37 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
   const { toast } = useToast();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentStep, setCurrentStep] = useState(1);
+  const isNavigatingBack = useRef(false);
+  const initialHistoryLength = useRef(window.history.length);
+
+  // 브라우저 뒤로가기 버튼 처리
+  useEffect(() => {
+    // 폼이 열릴 때 초기 히스토리 항목 추가
+    window.history.pushState({ formStep: 1 }, '');
+    
+    const handlePopState = (event: PopStateEvent) => {
+      // 뒤로가기 감지
+      if (currentStep > 1) {
+        // 이전 스텝으로 이동
+        isNavigatingBack.current = true;
+        setCurrentStep(prev => prev - 1);
+        setTimeout(() => {
+          scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+        }, 0);
+        // 새로운 히스토리 항목 추가 (다음 뒤로가기를 위해)
+        window.history.pushState({ formStep: currentStep - 1 }, '');
+      } else {
+        // 스텝 1에서 뒤로가기하면 폼 닫기
+        onSuccess?.();
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [currentStep, onSuccess]);
   const [numPeople, setNumPeople] = useState<number>(1);
   const [peopleData, setPeopleData] = useState<PersonData[]>([
     { name: "", gender: "여성", birthYear: "", occupation: "" }
@@ -209,6 +240,10 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
   };
 
   const goToStep = (step: number) => {
+    // 앞으로 이동할 때만 히스토리 추가 (뒤로가기 버튼 대응)
+    if (step > currentStep) {
+      window.history.pushState({ formStep: step }, '');
+    }
     setCurrentStep(step);
     setTimeout(() => {
       scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
