@@ -2044,6 +2044,12 @@ html.ua-tiktok .identity-map-inner {
 }
 
 /* ========== 상담 신청서 스타일 ========== */
+/* 인앱 브라우저 82% 스케일 */
+html.ua-instagram .kna-consultation-form,
+html.ua-tiktok .kna-consultation-form {
+  zoom: 0.82;
+}
+
 /* Glassmorphism 카드 */
 .glass-card {
   background: rgba(255, 255, 255, 0.85);
