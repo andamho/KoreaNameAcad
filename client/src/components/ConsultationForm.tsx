@@ -615,7 +615,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <div 
               className="relative mx-auto max-w-[400px] aspect-[1.586/1] rounded-2xl p-5 sm:p-6 text-white shadow-2xl overflow-hidden ring-1 ring-black/10"
               style={{ 
-                backgroundImage: 'url(/bank-card-bg.png)',
+                backgroundImage: 'url(/payment-card-bg.png)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center'
               }}
