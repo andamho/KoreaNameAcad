@@ -221,6 +221,10 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
         setTimeout(() => {
           scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
         }, 0);
+      } else {
+        // formStep이 없으면 step 1에서 뒤로가기 한 것 - 다시 step 1로 유지
+        window.history.pushState({ formStep: 1 }, '');
+        setCurrentStep(1);
       }
     };
 
@@ -230,13 +234,18 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     };
   }, []);
 
-  const goToStep = (step: number) => {
-    // 새 step으로 이동 시 히스토리에 추가
+  // 앞으로 이동 (다음 버튼)
+  const goToNextStep = (step: number) => {
     window.history.pushState({ formStep: step }, '');
     setCurrentStep(step);
     setTimeout(() => {
       scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
     }, 0);
+  };
+
+  // 뒤로 이동 (이전 버튼) - history.back() 사용
+  const goToPrevStep = () => {
+    window.history.back();
   };
 
   const referralOptions = [
