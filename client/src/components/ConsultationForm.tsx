@@ -613,13 +613,27 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             
             {/* 은행 카드 - 실제 신용카드 비율 (85.6mm x 53.98mm ≈ 1.586:1) */}
             <div 
-              className="relative mx-auto max-w-[400px] aspect-[1.586/1] rounded-2xl p-5 sm:p-6 text-white shadow-2xl overflow-hidden ring-1 ring-black/10"
+              className="relative mx-auto max-w-[400px] aspect-[1.586/1] rounded-2xl p-5 sm:p-6 text-white shadow-2xl overflow-hidden ring-1 ring-white/30"
               style={{ 
                 backgroundImage: 'url(/payment-card-bg-opt.webp)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center'
               }}
             >
+              {/* 유리 광택 효과 오버레이 */}
+              <div 
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.1) 100%)'
+                }}
+              />
+              {/* 상단 하이라이트 */}
+              <div 
+                className="absolute inset-x-0 top-0 h-1/3 pointer-events-none"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%)'
+                }}
+              />
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div className="flex flex-col items-center pt-2">
                   <span className="text-sm sm:text-base font-bold tracking-wide text-white/90">Nonghyup Bank</span>
