@@ -623,7 +623,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   <button 
                     type="button"
                     onClick={handleCopyAccount}
-                    className="group flex items-center gap-1.5 rounded-full bg-slate-100/80 px-4 sm:px-5 py-2 sm:py-2.5 hover:bg-slate-200/80 transition active:scale-95 whitespace-nowrap border border-slate-200/50 shadow-sm"
+                    className="group flex items-center gap-1.5 rounded-full bg-transparent px-4 sm:px-5 py-2 sm:py-2.5 hover:bg-slate-100/50 transition active:scale-95 whitespace-nowrap border border-slate-400/50"
                     data-testid="button-copy-account"
                   >
                     <span className="text-sm sm:text-base font-bold text-slate-600">
