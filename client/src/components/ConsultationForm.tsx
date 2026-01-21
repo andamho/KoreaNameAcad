@@ -269,7 +269,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     <div className="kna-consultation-form absolute inset-0 flex flex-col bg-white">
       {/* 상단 헤더 + 진행바 - 완전 고정 */}
       <div 
-        className="kna-form-header flex-shrink-0 border-b border-slate-100 shadow-sm px-6 pt-8 pb-5 z-40"
+        className="flex-shrink-0 border-b border-slate-100 shadow-sm px-6 pt-8 pb-5 z-40"
         style={{ 
           backgroundImage: 'url(/bank-card-bg-opt.webp)',
           backgroundSize: 'cover',
@@ -308,7 +308,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
       </div>
       
       {/* 중간 콘텐츠 - 스크롤 영역 */}
-      <div ref={scrollContainerRef} className="kna-form-content flex-1 overflow-y-auto bg-slate-50/30">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-slate-50/30">
 
       {/* Step 1: 기본정보 */}
       {currentStep === 1 && (
@@ -929,7 +929,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
       </div>
 
       {/* 하단 고정 바 - 완전 고정 */}
-      <div className="kna-form-bottom-bar flex-shrink-0 border-t border-slate-100 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.08)] z-[9999] relative">
+      <div className="flex-shrink-0 border-t border-slate-100 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.08)] z-[9999] relative">
         <div className="px-4 py-3 pb-[calc(12px+env(safe-area-inset-bottom))] flex items-center gap-4">
           <div className="flex-1">
             <div className="text-[10px] text-slate-500 font-bold mb-0.5">총 상담비</div>
