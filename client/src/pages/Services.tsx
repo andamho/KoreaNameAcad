@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { Card } from "@/components/ui/card";
 import { X } from "lucide-react";
-import { Search, Star, Flower, Baby, Building, Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin, Heart, RefreshCw, FileText } from "lucide-react";
+import { Search, Star, Flower, Baby, Building, Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin, Heart, LifeBuoy, Zap } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect, useState, useRef } from "react";
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
@@ -781,35 +781,35 @@ export default function Services() {
                   </div>
                   <div className="pt-4 border-t border-white/10">
                     <p className="text-[17px] leading-relaxed text-white font-medium">
-                      · 분리될 수 없는 특별한 관계
+                      · 분리된 듯 보이나 결코 분리될 수 없는 특별한 연대
                     </p>
                   </div>
                 </article>
               </div>
 
-              {/* 상단→중앙 연결선 */}
-              <div className="relative h-16 z-0">
+              {/* 첫번째 선 연결 애니메이션 */}
+              <div className="relative h-20 w-full overflow-visible pointer-events-none">
                 <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                   <path 
-                    d="M 25 0 V 40 Q 25 50 30 50 H 45 Q 50 50 50 60 V 100" 
+                    d="M 25 0 V 40 Q 25 45 20.85 45 H 16.7 Q 11.7 45 11.7 50 V 100" 
                     className="family-stripe-path" 
                     stroke="url(#grad-aurora-1)" 
                   />
                   <path 
-                    d="M 75 0 V 40 Q 75 50 70 50 H 55 Q 50 50 50 60 V 100" 
+                    d="M 75 0 V 40 Q 75 45 70 45 H 38.3 Q 33.3 45 33.3 50 V 100" 
                     className="family-stripe-path family-delay-top" 
                     stroke="url(#grad-aurora-1)" 
                   />
                 </svg>
                 <svg className="absolute inset-0 w-full h-full family-static-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
                   <path 
-                    d="M 25 0 V 40 Q 25 50 30 50 H 45 Q 50 50 50 60 V 100" 
+                    d="M 25 0 V 40 Q 25 45 20.85 45 H 16.7 Q 11.7 45 11.7 50 V 100" 
                     fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                     stroke="url(#grad-aurora-1)" 
                     style={{ vectorEffect: 'non-scaling-stroke' }}
                   />
                   <path 
-                    d="M 75 0 V 40 Q 75 50 70 50 H 55 Q 50 50 50 60 V 100" 
+                    d="M 75 0 V 40 Q 75 45 70 45 H 38.3 Q 33.3 45 33.3 50 V 100" 
                     fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                     stroke="url(#grad-aurora-1)" 
                     style={{ vectorEffect: 'non-scaling-stroke' }}
@@ -817,83 +817,93 @@ export default function Services() {
                 </svg>
               </div>
 
-              {/* 중앙 연결 카드 - 이름운 */}
-              <div className="relative">
-                <article className="family-card-mid group rounded-2xl bg-gradient-to-br from-[#56D5DB]/10 to-[#7F5AF0]/10 border border-[#56D5DB]/30 p-6 shadow-lg">
+              {/* 중단 2개 카드 - 이름운, 에너지의 원리 */}
+              <div className="grid gap-6 md:grid-cols-2 z-10 relative">
+                <article className="family-card-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
-                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/20 text-[#56D5DB]">
-                      <RefreshCw className="h-5 w-5" />
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <LifeBuoy className="h-5 w-5" />
                     </div>
-                    <div>
+                    <div className="w-full">
                       <h3 className="text-[19px] font-bold text-white">이름운, 서로에게 영향</h3>
-                      <p className="mt-1 text-[15px] text-white/60">
-                        · 부부 각자의 이름운이 서로에게 영향
-                      </p>
+                      <div className="mt-2 space-y-1 text-[15px] text-white/60">
+                        <div className="flex justify-between px-1 border-b border-white/5 py-1"><span>남편</span> <span>↔</span> <span>아내</span></div>
+                        <div className="flex justify-between px-1 border-b border-white/5 py-1"><span>부모</span> <span>↔</span> <span>자녀</span></div>
+                        <div className="flex justify-between px-1 py-1"><span>자녀</span> <span>↔</span> <span>자녀</span></div>
+                      </div>
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10 space-y-2">
-                    <p className="text-[17px] leading-relaxed text-white font-medium">
-                      · 자녀의 초년운 → 부모의 중년운에 영향
+                    <p className="text-[17px] text-white font-medium">
+                      · 부부의 이름운은 결혼과 함께 상호작용
                     </p>
-                    <p className="text-[17px] leading-relaxed text-white font-medium">
-                      · 부모의 중년운 → 자녀의 초년운에 영향
+                    <p className="text-[17px] text-white font-medium">
+                      · 자녀의 초년운 ↔ 부모의 중년운에 영향
                     </p>
                   </div>
                 </article>
-              </div>
 
-              {/* 중앙→하단 연결선 */}
-              <div className="relative h-16 z-0">
-                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <path 
-                    d="M 50 0 V 100" 
-                    className="family-stripe-path family-delay-bottom" 
-                    stroke="url(#grad-aurora-2)" 
-                  />
-                </svg>
-                <svg className="absolute inset-0 w-full h-full family-static-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <path 
-                    d="M 50 0 V 100" 
-                    fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    stroke="url(#grad-aurora-2)" 
-                    style={{ vectorEffect: 'non-scaling-stroke' }}
-                  />
-                </svg>
-              </div>
-
-              {/* 하단 카드 - 글자 에너지 */}
-              <div className="relative z-10">
-                <article className="family-card-bot group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                <article className="family-card-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
-                      <FileText className="h-5 w-5" />
+                      <Zap className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-[19px] font-bold text-white">이름은 '소리'보다 '글자'가 강합니다</h3>
+                      <h3 className="text-[19px] font-bold text-white">에너지의 원리</h3>
                       <p className="mt-1 text-[15px] text-white/60">
-                        · 글자 에너지로 깊게 연결된 등본상 가족
+                        이름은 '소리'보다 '글자'가 강합니다
                       </p>
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10">
                     <p className="text-[17px] leading-relaxed text-white font-medium">
-                      · 법적 에너지권 안에서 상당한 영향
+                      · 이름에는 소리 에너지도 있지만, 그보다 훨씬 강력한 것이 바로 글자 에너지입니다.<br />
+                      · 소리 에너지는 말하는 순간 사라지지만, 글자 에너지는 폐기하기 전까지 계속 존재합니다.
                     </p>
                   </div>
                 </article>
               </div>
 
-              {/* 결론 */}
-              <div className="mt-8 p-6 rounded-2xl bg-gradient-to-r from-[#56D5DB]/20 to-[#7F5AF0]/20 border border-[#56D5DB]/30">
-                <p className="text-[18px] font-bold text-center text-white leading-relaxed">
-                  정확한 이름분석 상담을 받으시려면,<br />
-                  <span className="text-[#56D5DB]">등본상 가족 전체</span>의 이름 분석이 반드시 필요합니다.
-                </p>
+              {/* 두번째 선 연결 애니메이션 */}
+              <div className="relative h-20 w-full overflow-visible pointer-events-none">
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <path d="M 25 0 V 45 Q 25 50 30 50 H 45 Q 50 50 50 55 V 100" className="family-stripe-path family-delay-bottom" stroke="url(#grad-aurora-2)" />
+                  <path d="M 75 0 V 45 Q 75 50 70 50 H 55 Q 50 50 50 55 V 100" className="family-stripe-path family-delay-bottom" stroke="url(#grad-aurora-2)" />
+                </svg>
+                <svg className="absolute inset-0 w-full h-full family-static-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <path d="M 25 0 V 45 Q 25 50 30 50 H 45 Q 50 50 50 55 V 100" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" stroke="url(#grad-aurora-2)" style={{ vectorEffect: 'non-scaling-stroke' }} />
+                  <path d="M 75 0 V 45 Q 75 50 70 50 H 55 Q 50 50 50 55 V 100" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" stroke="url(#grad-aurora-2)" style={{ vectorEffect: 'non-scaling-stroke' }} />
+                </svg>
               </div>
 
-              {/* 관련 글 */}
-              <div className="mt-8 space-y-4">
-                <h3 className="text-[18px] font-bold text-[#56D5DB] text-center mb-4">📖 같이 보시면 좋은 글</h3>
+              {/* 결론 카드 */}
+              <article className="family-card-bot rounded-2xl border-2 border-[#56D5DB]/30 bg-[#56D5DB]/[0.05] p-8 relative overflow-hidden shadow-[0_0_40px_-10px_rgba(86,213,219,0.15)] z-10">
+                <div className="absolute inset-0 bg-gradient-to-b from-[#56D5DB]/5 to-transparent"></div>
+                <div className="relative text-left">
+                  <div className="inline-block rounded-full border border-[#56D5DB]/30 bg-[#56D5DB]/[0.15] px-3 py-1 text-[13px] font-bold text-[#56D5DB] mb-3">
+                    핵심 결론
+                  </div>
+                  <h3 className="text-[19px] font-bold text-[#56D5DB] mb-4">
+                    등본상 가족은 더 깊게 연결됩니다
+                  </h3>
+                  <p className="text-[17px] leading-relaxed text-white/80 mb-6">
+                    법적 에너지권 안에서 글자 에너지로 깊게 연결된 등본상 가족은<br className="hidden sm:block" /> 
+                    더욱 긴밀하며 상당한 영향을 미칩니다.
+                  </p>
+                  <div className="rounded-xl bg-[#0A0D11] border border-[#56D5DB]/30 p-5 shadow-inner">
+                    <p className="text-[17px] font-bold text-[#56D5DB] text-center leading-relaxed">
+                      "그래서 등본상 가족 전체의 이름분석을 진행하셔야<br className="hidden sm:block" /> 정확한 운명상담이 가능합니다."
+                    </p>
+                  </div>
+                </div>
+              </article>
+
+              {/* 추천 글 섹션 */}
+              <div className="mt-16 border-t border-white/10 pt-10">
+                <h3 className="text-[19px] font-bold text-white mb-6 flex items-center gap-2">
+                  <span className="inline-block w-1 h-5 bg-[#56D5DB] rounded-full"></span>
+                  같이 보시면 좋은 글
+                </h3>
                 <div className="space-y-4">
                   <a 
                     href="https://blog.naver.com/whats_ur_name_777/223450662435" 
