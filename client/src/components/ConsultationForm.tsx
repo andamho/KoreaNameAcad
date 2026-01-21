@@ -314,7 +314,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                       type="button"
                       onClick={() => handleNumPeopleChange(num)}
                       data-testid={`button-people-${num}`}
-                      className={`rounded-xl border px-0 py-3 text-lg font-bold transition ${
+                      className={`rounded-lg border px-0 py-2 text-base font-bold transition ${
                         numPeople === num 
                           ? "bg-tiffany text-white border-tiffany shadow-md scale-105" 
                           : "bg-white/60 text-slate-500 border-slate-200 hover:bg-white"
@@ -342,7 +342,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                       {type === "naming" ? "현재 이름" : "이름"}
                     </label>
                     <input 
-                      className="w-full rounded-2xl border border-slate-200 bg-white/50 px-5 py-4 text-lg form-focus-ring backdrop-blur-sm" 
+                      className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring backdrop-blur-sm" 
                       placeholder="예: 홍길동"
                       value={person.name}
                       onChange={(e) => updatePersonData(index, "name", e.target.value)}
@@ -357,7 +357,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                           key={gender}
                           type="button"
                           onClick={() => updatePersonData(index, "gender", gender)}
-                          className={`rounded-2xl border px-5 py-3.5 text-lg font-bold transition ${
+                          className={`rounded-xl border px-4 py-2.5 text-base font-bold transition ${
                             person.gender === gender
                               ? "bg-tiffany text-white border-tiffany shadow-lg shadow-tiffany/20 scale-[1.01]"
                               : "bg-white/60 text-slate-500 border-slate-200 hover:bg-white"
@@ -373,7 +373,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     <div>
                       <label className="text-base font-bold text-slate-600 block mb-2">생년</label>
                       <input 
-                        className="w-full rounded-2xl border border-slate-200 bg-white/50 px-5 py-4 text-lg form-focus-ring backdrop-blur-sm" 
+                        className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring backdrop-blur-sm" 
                         placeholder="1990" 
                         inputMode="numeric"
                         value={person.birthYear}
@@ -384,7 +384,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     <div>
                       <label className="text-base font-bold text-slate-600 block mb-2">직업</label>
                       <input 
-                        className="w-full rounded-2xl border border-slate-200 bg-white/50 px-5 py-4 text-lg form-focus-ring backdrop-blur-sm" 
+                        className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring backdrop-blur-sm" 
                         placeholder="입력"
                         value={person.occupation}
                         onChange={(e) => updatePersonData(index, "occupation", e.target.value)}
@@ -405,7 +405,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                     key={option}
                     type="button"
                     onClick={() => setHasNameChange(option)}
-                    className={`rounded-2xl border px-6 py-3.5 text-lg font-bold transition ${
+                    className={`rounded-xl border px-4 py-2.5 text-base font-bold transition ${
                       hasNameChange === option
                         ? "bg-tiffany text-white border-tiffany shadow-lg shadow-tiffany/30 scale-[1.01]"
                         : "bg-white/80 text-slate-500 border-slate-200 hover:bg-white"
@@ -428,7 +428,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                         type="button"
                         onClick={() => handleNumNameChangesChange(num)}
                         data-testid={`button-namechange-${num}`}
-                        className={`rounded-xl border px-0 py-3 text-lg font-bold transition ${
+                        className={`rounded-lg border px-0 py-2 text-base font-bold transition ${
                           numNameChanges === num 
                             ? "bg-tiffany text-white border-tiffany shadow-md scale-105" 
                             : "bg-white/60 text-slate-500 border-slate-200 hover:bg-white"
@@ -447,7 +447,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                         <div>
                           <label className="text-base font-bold text-slate-600 block mb-2">현재 이름</label>
                           <input 
-                            className="w-full rounded-2xl border border-slate-200 bg-white/50 px-5 py-4 text-lg form-focus-ring" 
+                            className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
                             placeholder="현재 이름"
                             value={data.previousName}
                             onChange={(e) => updateNameChangeData(index, "previousName", e.target.value)}
@@ -458,7 +458,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                           <div>
                             <label className="text-base font-bold text-slate-600 block mb-2">개명 전 한글</label>
                             <input 
-                              className="w-full rounded-2xl border border-slate-200 bg-white/50 px-5 py-4 text-lg form-focus-ring" 
+                              className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
                               placeholder="홍길동"
                               value={data.koreanName}
                               onChange={(e) => updateNameChangeData(index, "koreanName", e.target.value)}
@@ -468,7 +468,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                           <div>
                             <label className="text-base font-bold text-slate-600 block mb-2">개명 전 한자</label>
                             <input 
-                              className="w-full rounded-2xl border border-slate-200 bg-white/50 px-5 py-4 text-lg form-focus-ring" 
+                              className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
                               placeholder="洪吉洞"
                               value={data.chineseName}
                               onChange={(e) => updateNameChangeData(index, "chineseName", e.target.value)}
@@ -495,7 +495,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                         <div>
                           <label className="text-base font-bold text-slate-600 block mb-2">개명년도</label>
                           <input 
-                            className="w-full rounded-2xl border border-slate-200 bg-white/50 px-5 py-4 text-lg form-focus-ring" 
+                            className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
                             placeholder="2020"
                             value={data.changeYear}
                             onChange={(e) => updateNameChangeData(index, "changeYear", e.target.value)}
@@ -559,7 +559,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <button 
               type="button"
               onClick={() => goToStep(2)}
-              className="w-full rounded-2xl bg-tiffany text-white py-4 text-xl font-bold hover:bg-tiffany-dark transition shadow-lg shadow-tiffany/30 transform active:scale-[0.98]"
+              className="w-full rounded-xl bg-tiffany text-white py-3 text-base font-bold hover:bg-tiffany-dark transition shadow-md shadow-tiffany/30 transform active:scale-[0.98]"
               data-testid="button-next-step2"
             >
               다음: 상담내용
@@ -587,7 +587,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                       key={num}
                       type="button"
                       onClick={() => handleNumEvaluationNamesChange(num)}
-                      className={`rounded-2xl border px-4 py-3 text-lg font-bold transition ${
+                      className={`rounded-xl border px-3 py-2 text-base font-bold transition ${
                         numEvaluationNames === num
                           ? "bg-tiffany text-white border-tiffany shadow-lg shadow-tiffany/30"
                           : "border-slate-200 bg-white/60 text-slate-700 hover:bg-white"
@@ -611,7 +611,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                       <div>
                         <label className="text-base font-bold text-slate-600 block mb-2">한글 이름</label>
                         <input 
-                          className="w-full rounded-2xl border border-slate-200 bg-white/50 px-5 py-4 text-lg form-focus-ring" 
+                          className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
                           placeholder="홍길동"
                           value={data.koreanName}
                           onChange={(e) => updateEvaluationNameData(index, "koreanName", e.target.value)}
@@ -621,7 +621,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                       <div>
                         <label className="text-base font-bold text-slate-600 block mb-2">한자 이름</label>
                         <input 
-                          className="w-full rounded-2xl border border-slate-200 bg-white/50 px-5 py-4 text-lg form-focus-ring" 
+                          className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
                           placeholder="洪吉洞"
                           value={data.chineseName}
                           onChange={(e) => updateEvaluationNameData(index, "chineseName", e.target.value)}
@@ -659,7 +659,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <div className="mt-8">
               <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">상담 사유</label>
               <textarea 
-                className="w-full min-h-[240px] rounded-2xl border border-slate-200 bg-white/50 px-6 py-5 text-lg form-focus-ring leading-relaxed resize-none backdrop-blur-sm"
+                className="w-full min-h-[180px] rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring leading-relaxed resize-none backdrop-blur-sm"
                 placeholder={type === "naming" ? `예)
 · 이 이름이 아이에게 맞는지 확인하고 싶습니다
 · 여러 이름 중에서 가장 좋은 이름을 고르고 싶습니다
@@ -684,7 +684,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   type="button"
                   onClick={() => setReferralSource(option)}
                   data-testid={`referral-${option}`}
-                  className={`rounded-2xl border px-6 py-3.5 text-lg font-bold transition ${
+                  className={`rounded-xl border px-4 py-2.5 text-base font-bold transition ${
                     referralSource === option
                       ? "bg-tiffany text-white border-tiffany shadow-lg shadow-tiffany/30 scale-[1.01]"
                       : "bg-white/80 text-slate-500 border-slate-200 hover:bg-white"
@@ -700,7 +700,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <button 
               type="button"
               onClick={() => goToStep(1)}
-              className="w-1/3 rounded-2xl border border-slate-200 bg-white/60 py-4 text-lg font-bold text-slate-600 hover:bg-white transition"
+              className="w-1/3 rounded-xl border border-slate-200 bg-white/60 py-2.5 text-base font-bold text-slate-600 hover:bg-white transition"
               data-testid="button-back-step1"
             >
               이전
@@ -708,7 +708,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <button 
               type="button"
               onClick={() => goToStep(3)}
-              className="w-2/3 rounded-2xl bg-tiffany text-white py-4 text-xl font-bold hover:bg-tiffany-dark transition shadow-lg shadow-tiffany/30 transform active:scale-[0.98]"
+              className="w-2/3 rounded-xl bg-tiffany text-white py-2.5 text-base font-bold hover:bg-tiffany-dark transition shadow-md shadow-tiffany/30 transform active:scale-[0.98]"
               data-testid="button-next-step3"
             >
               다음: 결제/일정
@@ -726,7 +726,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <div className="mt-8">
               <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">휴대폰 번호</label>
               <input 
-                className="w-full rounded-2xl border border-slate-200 bg-white/50 px-6 py-5 text-xl form-focus-ring"
+                className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring"
                 placeholder="010-0000-0000" 
                 inputMode="tel"
                 value={phone}
@@ -800,7 +800,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <div className="mt-8">
               <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">입금자명</label>
               <input 
-                className="w-full rounded-2xl border border-slate-200 bg-white/50 px-6 py-5 text-xl form-focus-ring"
+                className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring"
                 placeholder="입금하신 분의 성함"
                 value={depositorName}
                 onChange={(e) => setDepositorName(e.target.value)}
@@ -817,7 +817,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   key={time}
                   type="button"
                   onClick={() => setConsultationTime(time)}
-                  className={`rounded-2xl border px-6 py-4 text-lg font-bold transition ${
+                  className={`rounded-xl border px-4 py-2.5 text-base font-bold transition ${
                     consultationTime === time
                       ? "bg-tiffany text-white border-tiffany shadow-lg shadow-tiffany/30 scale-[1.01]"
                       : "border-slate-200 bg-white/60 text-slate-700 hover:bg-white"
@@ -832,7 +832,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <button 
               type="button"
               onClick={() => setShowDuration(!showDuration)}
-              className="mt-6 w-full text-left rounded-2xl border border-slate-200 bg-white/60 px-6 py-5 text-lg font-bold text-slate-800 hover:bg-white transition flex justify-between items-center group"
+              className="mt-4 w-full text-left rounded-xl border border-slate-200 bg-white/60 px-4 py-3 text-base font-bold text-slate-800 hover:bg-white transition flex justify-between items-center group"
               data-testid="toggle-duration"
             >
               <span className="form-title-font">평균 상담 소요시간 보기</span>
@@ -863,7 +863,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <button 
               type="button"
               onClick={() => goToStep(2)}
-              className="w-1/3 rounded-2xl border border-slate-200 bg-white/60 py-4 text-lg font-bold text-slate-600 hover:bg-white transition"
+              className="w-1/3 rounded-xl border border-slate-200 bg-white/60 py-2.5 text-base font-bold text-slate-600 hover:bg-white transition"
               data-testid="button-back-step2"
             >
               이전
@@ -872,7 +872,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               type="button"
               onClick={handleSubmit}
               disabled={submitMutation.isPending}
-              className="w-2/3 rounded-2xl bg-tiffany text-white py-4 text-xl font-bold hover:bg-tiffany-dark transition shadow-lg shadow-tiffany/30 transform active:scale-[0.98] disabled:opacity-50"
+              className="w-2/3 rounded-xl bg-tiffany text-white py-2.5 text-base font-bold hover:bg-tiffany-dark transition shadow-md shadow-tiffany/30 transform active:scale-[0.98] disabled:opacity-50"
               data-testid="button-submit"
             >
               {submitMutation.isPending ? "신청 중..." : "상담 신청하기"}
@@ -884,10 +884,10 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
       {/* 하단 고정 바 - 완전 고정 */}
       <div className="flex-shrink-0 border-t border-slate-100 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.08)] z-40">
-        <div className="px-6 py-5 flex items-center gap-6">
+        <div className="px-4 py-3 flex items-center gap-4">
           <div className="flex-1">
-            <div className="text-xs text-slate-500 font-bold mb-1">총 상담비</div>
-            <div className="text-2xl form-title-font font-bold text-slate-900 tracking-tight">
+            <div className="text-[10px] text-slate-500 font-bold mb-0.5">총 상담비</div>
+            <div className="text-lg form-title-font font-bold text-slate-900 tracking-tight">
               {totalPrice.toLocaleString()}원
             </div>
           </div>
@@ -899,7 +899,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               else handleSubmit();
             }}
             disabled={currentStep === 3 && submitMutation.isPending}
-            className="rounded-2xl bg-tiffany text-white px-8 py-4 text-lg font-bold hover:bg-tiffany-dark transition shadow-lg shadow-tiffany/30 transform active:scale-[0.98] disabled:opacity-50"
+            className="rounded-xl bg-tiffany text-white px-6 py-2.5 text-base font-bold hover:bg-tiffany-dark transition shadow-md shadow-tiffany/30 transform active:scale-[0.98] disabled:opacity-50"
             data-testid="button-sticky-cta"
           >
             {currentStep === 3 ? (submitMutation.isPending ? "신청 중..." : "상담 신청하기") : "계속하기"}
