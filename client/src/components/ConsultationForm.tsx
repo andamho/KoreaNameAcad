@@ -622,33 +622,33 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             >
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div className="flex flex-col items-center pt-2">
-                  <span className="text-sm sm:text-base font-bold tracking-wide text-teal-700">Nonghyup Bank</span>
+                  <span className="text-sm sm:text-base font-bold tracking-wide text-white/90">Nonghyup Bank</span>
                 </div>
 
                 <div className="flex flex-col items-center space-y-2 sm:space-y-3">
-                  <div className="text-xl sm:text-2xl md:text-3xl font-mono font-bold tracking-wider text-emerald-800 whitespace-nowrap text-center">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-mono font-bold tracking-wider text-white whitespace-nowrap text-center">
                     351 8205 8124 53
                   </div>
 
                   <button 
                     type="button"
                     onClick={handleCopyAccount}
-                    className="group flex items-center gap-1.5 rounded-full bg-transparent px-4 sm:px-5 py-2 sm:py-2.5 hover:bg-slate-100/50 transition active:scale-95 whitespace-nowrap border border-slate-400/50"
+                    className="group flex items-center gap-1.5 rounded-full bg-white/20 px-4 sm:px-5 py-2 sm:py-2.5 hover:bg-white/30 transition active:scale-95 whitespace-nowrap border border-white/40"
                     data-testid="button-copy-account"
                   >
-                    <span className="text-sm sm:text-base font-bold text-slate-600">
+                    <span className="text-sm sm:text-base font-bold text-white">
                       {accountCopied ? "복사됨!" : "계좌번호 복사"}
                     </span>
                     {accountCopied ? (
-                      <Check className="w-4 h-4 text-slate-600" />
+                      <Check className="w-4 h-4 text-white" />
                     ) : (
-                      <Copy className="w-4 h-4 text-slate-600" />
+                      <Copy className="w-4 h-4 text-white" />
                     )}
                   </button>
                 </div>
 
                 <div className="text-center pb-2">
-                  <span className="text-xs sm:text-sm font-medium text-slate-600 tracking-tight">
+                  <span className="text-xs sm:text-sm font-medium text-white/80 tracking-tight">
                     예금주: 와츠유어네임 이름연구협회
                   </span>
                 </div>
