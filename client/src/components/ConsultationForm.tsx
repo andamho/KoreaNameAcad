@@ -701,7 +701,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         <div className="space-y-8 pt-8 px-6 pb-8 form-animate-fade-in">
           <div className="glass-card rounded-3xl p-8">
             <h2 className="text-2xl form-title-font font-bold tracking-tight text-slate-900">연락 및 결제</h2>
-            <p className="text-base text-slate-500 mt-2 font-medium">입금 확인 후 24시간 내에 확정 문자를 드립니다.</p>
+            <p className="text-base text-slate-500 mt-2 font-medium">입금 확인 후 상담예약해드립니다.</p>
             <div className="mt-8">
               <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">휴대폰 번호</label>
               <input 
