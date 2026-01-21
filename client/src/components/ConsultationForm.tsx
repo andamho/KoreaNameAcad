@@ -791,10 +791,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
           <div className="glass-card rounded-3xl p-8">
             <h3 className="text-xl form-title-font font-bold text-slate-900">희망 상담 시간</h3>
             <div className="mt-6 grid grid-cols-2 gap-3">
-              {(type === "naming" 
-                ? ["주중 오전 10시", "주중 오후 2시", "주말 오전 10시", "주말 오후 2시"]
-                : ["주중 오후 2시", "주말 오후 2시"]
-              ).map((time) => (
+              {["주중 오후 2시", "주말 오후 2시"].map((time) => (
                 <button
                   key={time}
                   type="button"
