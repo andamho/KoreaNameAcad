@@ -198,7 +198,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   return (
     <div className="kna-consultation-form space-y-0 pb-28">
       {/* 상단 헤더 + 진행바 */}
-      <div className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-sm -mx-6 -mt-6 px-6 pt-6 pb-4">
+      <div className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-sm -mx-6 -mt-8 px-6 pt-8 pb-5">
         <div className="flex items-center justify-between mb-4">
           <div>
             <div className="text-xs text-slate-500 font-bold tracking-widest uppercase mb-1">
@@ -721,8 +721,8 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
       )}
 
       {/* 하단 고정 바 - sticky로 Dialog 안에서도 하단 고정 */}
-      <div className="sticky bottom-0 left-0 right-0 z-50 -mx-6 mt-8 border-t border-white/60 bg-white/95 backdrop-blur-xl shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
-        <div className="px-6 py-5 flex items-center gap-6">
+      <div className="sticky bottom-0 left-0 right-0 z-50 -mx-6 -mb-6 mt-8 border-t border-slate-100 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
+        <div className="px-6 py-6 pb-8 flex items-center gap-6">
           <div className="flex-1">
             <div className="text-xs text-slate-500 font-bold mb-1">총 상담비</div>
             <div className="text-2xl form-title-font font-bold text-slate-900 tracking-tight">
