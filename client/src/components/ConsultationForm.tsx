@@ -594,7 +594,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
           <div className="flex gap-3 pt-4">
             <button 
               type="button"
-              onClick={() => goToStep(2)}
+              onClick={() => goToNextStep(2)}
               className="w-full rounded-xl bg-tiffany text-white py-3 text-base font-bold hover:bg-tiffany-dark transition shadow-md shadow-tiffany/30 transform active:scale-[0.98]"
               data-testid="button-next-step2"
             >
@@ -701,7 +701,6 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
 · 여러 이름 중에서 가장 좋은 이름을 고르고 싶습니다
 · 타 작명소 이름의 정확한 분석을 받고 싶습니다` : `예)
 · 가족 관계에서 반복되는 문제가 있습니다
-· 아이 이름의 방향성을 잡고 싶습니다
 · 개명 여부를 신중히 판단하고 싶습니다`}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
@@ -735,7 +734,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
           <div className="flex gap-3 pt-4">
             <button 
               type="button"
-              onClick={() => goToStep(1)}
+              onClick={() => goToPrevStep()}
               className="w-1/3 rounded-xl border border-slate-200 bg-white/60 py-2.5 text-base font-bold text-slate-600 hover:bg-white transition"
               data-testid="button-back-step1"
             >
@@ -743,7 +742,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
             </button>
             <button 
               type="button"
-              onClick={() => goToStep(3)}
+              onClick={() => goToNextStep(3)}
               className="w-2/3 rounded-xl bg-tiffany text-white py-2.5 text-base font-bold hover:bg-tiffany-dark transition shadow-md shadow-tiffany/30 transform active:scale-[0.98]"
               data-testid="button-next-step3"
             >
@@ -895,6 +894,18 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
             )}
           </div>
 
+          {/* 이전 버튼 */}
+          <div className="flex gap-3 pt-4">
+            <button 
+              type="button"
+              onClick={() => goToPrevStep()}
+              className="w-full rounded-xl border border-slate-200 bg-white/60 py-2.5 text-base font-bold text-slate-600 hover:bg-white transition"
+              data-testid="button-back-step2"
+            >
+              이전
+            </button>
+          </div>
+
         </div>
       )}
       </div>
@@ -911,8 +922,8 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
           <button 
             type="button"
             onClick={() => {
-              if (currentStep === 1) goToStep(2);
-              else if (currentStep === 2) goToStep(3);
+              if (currentStep === 1) goToNextStep(2);
+              else if (currentStep === 2) goToNextStep(3);
               else handleSubmit();
             }}
             disabled={currentStep === 3 && submitMutation.isPending}
