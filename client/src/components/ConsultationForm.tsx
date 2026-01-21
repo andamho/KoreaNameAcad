@@ -31,28 +31,48 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
   const { toast } = useToast();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentStep, setCurrentStep] = useState(1);
-  const isNavigatingBack = useRef(false);
-  const initialHistoryLength = useRef(window.history.length);
+  const currentStepRef = useRef(1);
+  const onSuccessRef = useRef(onSuccess);
+  const isHandlingPopState = useRef(false);
+  
+  // refs 동기화
+  useEffect(() => {
+    currentStepRef.current = currentStep;
+  }, [currentStep]);
+  
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+  }, [onSuccess]);
 
   // 브라우저 뒤로가기 버튼 처리
   useEffect(() => {
-    // 폼이 열릴 때 초기 히스토리 항목 추가
-    window.history.pushState({ formStep: 1 }, '');
+    // 폼이 열릴 때 초기 히스토리 항목 추가 (스텝 1)
+    window.history.pushState({ consultationFormStep: 1 }, '');
     
     const handlePopState = (event: PopStateEvent) => {
-      // 뒤로가기 감지
-      if (currentStep > 1) {
+      // 이미 처리 중이면 무시
+      if (isHandlingPopState.current) return;
+      isHandlingPopState.current = true;
+      
+      const step = currentStepRef.current;
+      
+      if (step > 1) {
         // 이전 스텝으로 이동
-        isNavigatingBack.current = true;
-        setCurrentStep(prev => prev - 1);
+        const newStep = step - 1;
+        setCurrentStep(newStep);
+        currentStepRef.current = newStep;
+        
         setTimeout(() => {
           scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
-        }, 0);
-        // 새로운 히스토리 항목 추가 (다음 뒤로가기를 위해)
-        window.history.pushState({ formStep: currentStep - 1 }, '');
+          isHandlingPopState.current = false;
+        }, 50);
+        
+        // 현재 상태를 유지하면서 다음 뒤로가기를 위해 히스토리 추가
+        window.history.pushState({ consultationFormStep: newStep }, '');
       } else {
         // 스텝 1에서 뒤로가기하면 폼 닫기
-        onSuccess?.();
+        isHandlingPopState.current = false;
+        onSuccessRef.current?.();
       }
     };
 
@@ -61,7 +81,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [currentStep, onSuccess]);
+  }, [type]);
   const [numPeople, setNumPeople] = useState<number>(1);
   const [peopleData, setPeopleData] = useState<PersonData[]>([
     { name: "", gender: "여성", birthYear: "", occupation: "" }
