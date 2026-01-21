@@ -740,7 +740,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             
             {/* 은행 카드 - 실제 신용카드 비율 (85.6mm x 53.98mm ≈ 1.586:1) */}
             <div 
-              className="relative mx-auto max-w-[400px] aspect-[1.586/1] rounded-2xl p-5 sm:p-6 text-white shadow-2xl overflow-hidden ring-1 ring-white/30"
+              className="relative mx-auto max-w-[360px] aspect-[1.586/1] rounded-2xl p-4 text-white shadow-2xl overflow-hidden ring-1 ring-white/30"
               style={{ 
                 backgroundImage: 'url(/payment-card-bg-opt.webp)',
                 backgroundSize: 'cover',
@@ -761,35 +761,35 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                   background: 'linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%)'
                 }}
               />
-              <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="flex flex-col items-center pt-2">
-                  <span className="text-sm sm:text-base font-bold tracking-wide text-white/90">Nonghyup Bank</span>
+              <div className="relative z-10 flex flex-col h-full justify-between py-1">
+                <div className="flex flex-col items-center">
+                  <span className="text-xs font-bold tracking-wide text-white/90">Nonghyup Bank</span>
                 </div>
 
-                <div className="flex flex-col items-center space-y-2 sm:space-y-3">
-                  <div className="text-xl sm:text-2xl md:text-3xl font-mono font-bold tracking-wider text-white whitespace-nowrap text-center">
+                <div className="flex flex-col items-center space-y-2">
+                  <div className="text-lg sm:text-xl font-mono font-bold tracking-wider text-white whitespace-nowrap text-center">
                     351 8205 8124 53
                   </div>
 
                   <button 
                     type="button"
                     onClick={handleCopyAccount}
-                    className="group flex items-center gap-1.5 rounded-full bg-white/20 px-4 sm:px-5 py-2 sm:py-2.5 hover:bg-white/30 transition active:scale-95 whitespace-nowrap border border-white/40"
+                    className="group flex items-center gap-1 rounded-full bg-white/20 px-3 py-1.5 hover:bg-white/30 transition active:scale-95 whitespace-nowrap border border-white/40"
                     data-testid="button-copy-account"
                   >
-                    <span className="text-sm sm:text-base font-bold text-white">
+                    <span className="text-xs font-bold text-white">
                       {accountCopied ? "복사됨!" : "계좌번호 복사"}
                     </span>
                     {accountCopied ? (
-                      <Check className="w-4 h-4 text-white" />
+                      <Check className="w-3 h-3 text-white" />
                     ) : (
-                      <Copy className="w-4 h-4 text-white" />
+                      <Copy className="w-3 h-3 text-white" />
                     )}
                   </button>
                 </div>
 
-                <div className="text-center pb-2">
-                  <span className="text-xs sm:text-sm font-medium text-white/80 tracking-tight">
+                <div className="text-center">
+                  <span className="text-[11px] font-medium text-white/80 tracking-tight">
                     예금주: 와츠유어네임 이름연구협회
                   </span>
                 </div>
