@@ -196,9 +196,9 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const formTitle = type === "naming" ? "이름감명" : "이름분석 운명상담";
 
   return (
-    <div className="kna-consultation-form space-y-0 pb-28">
+    <div className="kna-consultation-form space-y-0">
       {/* 상단 헤더 + 진행바 */}
-      <div className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-sm -mx-6 -mt-8 px-6 pt-8 pb-5">
+      <div className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-sm px-6 pt-6 pb-5">
         <div className="flex items-center justify-between mb-4">
           <div>
             <div className="text-xs text-slate-500 font-bold tracking-widest uppercase mb-1">
@@ -223,7 +223,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
       {/* Step 1: 기본정보 */}
       {currentStep === 1 && (
-        <div className="space-y-8 pt-8 form-animate-fade-in">
+        <div className="space-y-8 pt-8 px-6 pb-32 form-animate-fade-in">
           {/* 가족 상담 원칙 안내 */}
           {type === "analysis" && (
             <div className="rounded-3xl bg-white/60 border border-tiffany-light p-6 shadow-lg backdrop-blur-md">
@@ -515,7 +515,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
       {/* Step 2: 상담내용 */}
       {currentStep === 2 && (
-        <div className="space-y-8 pt-8 form-animate-fade-in">
+        <div className="space-y-8 pt-8 px-6 pb-32 form-animate-fade-in">
           <div className="glass-card rounded-3xl p-8">
             <div>
               <h2 className="text-2xl form-title-font font-bold tracking-tight text-slate-900">상담 내용</h2>
@@ -581,7 +581,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
 
       {/* Step 3: 결제/일정 */}
       {currentStep === 3 && (
-        <div className="space-y-8 pt-8 form-animate-fade-in">
+        <div className="space-y-8 pt-8 px-6 pb-32 form-animate-fade-in">
           <div className="glass-card rounded-3xl p-8">
             <h2 className="text-2xl form-title-font font-bold tracking-tight text-slate-900">연락 및 결제</h2>
             <p className="text-base text-slate-500 mt-2 font-medium">입금 확인 후 24시간 내에 확정 문자를 드립니다.</p>
@@ -721,8 +721,8 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
       )}
 
       {/* 하단 고정 바 - sticky로 Dialog 안에서도 하단 고정 */}
-      <div className="sticky bottom-0 left-0 right-0 z-50 -mx-6 -mb-6 mt-8 border-t border-slate-100 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
-        <div className="px-6 py-6 pb-8 flex items-center gap-6">
+      <div className="sticky bottom-0 left-0 right-0 z-50 border-t border-slate-100 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
+        <div className="px-6 py-5 flex items-center gap-6">
           <div className="flex-1">
             <div className="text-xs text-slate-500 font-bold mb-1">총 상담비</div>
             <div className="text-2xl form-title-font font-bold text-slate-900 tracking-tight">

@@ -322,7 +322,7 @@ export default function Home() {
       <Footer />
 
       <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) closeDialog(); }}>
-        <DialogContent className="w-full h-full max-w-full max-h-full sm:!top-[80px] sm:!translate-y-0 sm:!h-[calc(100vh-80px)] sm:max-w-[700px] overflow-y-auto rounded-none sm:rounded-t-none sm:rounded-b-lg">
+        <DialogContent className="w-full h-full max-w-full max-h-full sm:!top-[80px] sm:!translate-y-0 sm:!h-[calc(100vh-80px)] sm:max-w-[700px] overflow-y-auto rounded-none sm:rounded-t-none sm:rounded-b-lg !p-0">
           <ConsultationForm 
             type={dialogType}
             onSuccess={closeDialog}
