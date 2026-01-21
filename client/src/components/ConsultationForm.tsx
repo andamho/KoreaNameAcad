@@ -29,6 +29,7 @@ interface ConsultationFormProps {
 
 export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: ConsultationFormProps) {
   const { toast } = useToast();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [numPeople, setNumPeople] = useState<number>(1);
   const [peopleData, setPeopleData] = useState<PersonData[]>([
@@ -209,6 +210,9 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
 
   const goToStep = (step: number) => {
     setCurrentStep(step);
+    setTimeout(() => {
+      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+    }, 0);
   };
 
   const referralOptions = [
@@ -252,7 +256,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
       </div>
       
       {/* 중간 콘텐츠 - 스크롤 영역 */}
-      <div className="flex-1 overflow-y-auto bg-slate-50/30">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-slate-50/30">
 
       {/* Step 1: 기본정보 */}
       {currentStep === 1 && (
