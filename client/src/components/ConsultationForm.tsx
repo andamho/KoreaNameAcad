@@ -201,7 +201,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
       <div 
         className="flex-shrink-0 border-b border-slate-100 shadow-sm px-6 pt-8 pb-5 z-40"
         style={{ 
-          backgroundImage: 'url(/bank-card-bg.png)',
+          backgroundImage: 'url(/bank-card-bg-opt.webp)',
           backgroundSize: 'cover',
           backgroundPosition: 'center top'
         }}
@@ -615,7 +615,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
             <div 
               className="relative mx-auto max-w-[400px] aspect-[1.586/1] rounded-2xl p-5 sm:p-6 text-white shadow-2xl overflow-hidden ring-1 ring-black/10"
               style={{ 
-                backgroundImage: 'url(/payment-card-bg.png)',
+                backgroundImage: 'url(/payment-card-bg-opt.webp)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center'
               }}

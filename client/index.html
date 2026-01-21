@@ -3,12 +3,17 @@
   <head>
     <link rel="preload" as="image" href="/navbar-logo.png" fetchpriority="high">
     <link rel="preload" as="image" href="/form-logo.png" fetchpriority="high">
+    <link rel="preload" as="image" href="/bank-card-bg-opt.webp" type="image/webp">
+    <link rel="preload" as="image" href="/payment-card-bg-opt.webp" type="image/webp">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700&display=swap" rel="stylesheet">
     <script>
       // 내비바 로고 즉시 로드 (전체 버전 + 작은 버전)
       (new Image()).src = '/navbar-logo.png';
+      // 상담폼 배경 이미지 프리로드
+      (new Image()).src = '/bank-card-bg-opt.webp';
+      (new Image()).src = '/payment-card-bg-opt.webp';
       // 작은 버전 base64 인라인 (836 bytes) - 인앱 브라우저 빠른 표시용
       window.__LOGO_TINY = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACABAMAAAAxEHz4AAAAIVBMVEVHcExW1ttY1ttS1dtV1dtT1dta19z5/v6n6eyE4OXT9PZkEfEhAAAABnRSTlMAruEddUD/GPw7AAACzElEQVRo3u2XzXLaMBDHyVDuCW2554tz00nuTUNzZkimdxiyY/UBIqMHsCU/AAgeoDI8ZWTZgE1ssrJPnep/IRD2x+5K3o9Wy8nJycnJyekf0t3gTGvwVNO8fd8Ho4sv3+rY33Zhp/MaTtz2IafxQzN7gMkPO/tODw40HloBfsI7XdnY30CJPjcJwASBP8wRlOoS7UC/HIB24TtUCJmFdq8KMMYBPkGlcLfpdzXgGhVBvxqASuORCHAxjI4BMFehdwwwtb5FUhSf6o+TcAIg8vZ5gsQkQV9DFWwtuIh8yefZO49hkvAIsGDGhEi+jJjyl1yk79UM4AWTQ48yAYRzIRWbE8W45NoLqWiAuM3mGq0ojYngisb6p0lEWSznEaXrOSKLnSTWtf62L1Sc5U9GTIbafpXkZoi5hyqWGxqH2+QBYRGNRcQwd/EETAhMSD+ck422WW3mhIU6H3Sd/O8UVUySELj2IMnbH6oBXIcQAx6gz0+lgHUGYPGSo56GFBDq70sDYClAaKKPAqTVxNOWKYAGKUB/EKBqSlaOiIxMCIy+piHEIjuTF2Q9I8J4MFMs9UBujxQLAG4ArwsaGQC3BkDqgUepAQAWsC9onvEgyWMBcI3uSqkHsDgAXKIBmQeeJeDk0AMdQwFwiu4KXhiQTZw8TLqWCXRn6OwBC3/752K2q5If1oN9YyOcZpePUB7g6/q+r/Awc2HhS4sO/7iPQdC/5jXnAKI15cYTvkrqO1E+t2mOueZMRKgJIZOBTXvO90YplB8xnmtuk6Fdd5a6NwhuOSUVZjQuxa41YueD4oTCC/aoCaU45ZEao+ao4ZTWfE6snpKmOPvybcFmY6galvELw00zB6pcmFqsn2UHYbf4ldyFr3Z787u978pyfz5c3M7t9s6E0G1mrwn3u9Iyqbf/t5+7BnFx9tCqq7vnweDXU8vJycnJycnpv9IbR7jl9lsqExQAAAAASUVORK5CYII=';
       // 인앱 브라우저 클래스 즉시 추가 (CSS 로드 전에 실행)
