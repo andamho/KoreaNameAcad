@@ -208,11 +208,31 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     submitMutation.mutate(consultationData);
   };
 
+  // 브라우저 뒤로/앞으로 가기 버튼 처리
+  useEffect(() => {
+    // 폼이 열릴 때 초기 히스토리 상태 설정 (step 1)
+    window.history.replaceState({ formStep: 1 }, '');
+
+    const handlePopState = (event: PopStateEvent) => {
+      const state = event.state;
+      if (state && typeof state.formStep === 'number') {
+        // 히스토리에 저장된 step으로 이동
+        setCurrentStep(state.formStep);
+        setTimeout(() => {
+          scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+        }, 0);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
   const goToStep = (step: number) => {
-    // 앞으로 이동할 때만 히스토리 추가 (뒤로가기 버튼 대응)
-    if (step > currentStep) {
-      window.history.pushState({ formStep: step }, '');
-    }
+    // 새 step으로 이동 시 히스토리에 추가
+    window.history.pushState({ formStep: step }, '');
     setCurrentStep(step);
     setTimeout(() => {
       scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
