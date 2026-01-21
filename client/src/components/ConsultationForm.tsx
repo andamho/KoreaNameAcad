@@ -1,11 +1,18 @@
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { X, FileText, Copy, Check, ChevronDown } from "lucide-react";
-
+import { Heart, Baby, LifeBuoy, Zap, X, FileText, BookOpenText } from "lucide-react";
+// 로고는 public 폴더에서 preload되어 빠르게 로드됨
 const formLogoImage = "/form-logo.png";
-const formBgImage = "/attached_assets/bg.png_1768976268783.png";
 
 interface PersonData {
   name: string;
@@ -24,80 +31,90 @@ interface NameChangeData {
 interface ConsultationFormProps {
   type: "analysis" | "naming";
   onSuccess?: () => void;
-  onOpenFamilyPolicy?: () => void;
 }
 
-export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: ConsultationFormProps) {
+export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const { toast } = useToast();
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [currentStep, setCurrentStep] = useState(1);
   const [numPeople, setNumPeople] = useState<number>(1);
   const [peopleData, setPeopleData] = useState<PersonData[]>([
-    { name: "", gender: "여성", birthYear: "", occupation: "" }
+    { name: "", gender: "", birthYear: "", occupation: "" }
   ]);
   const [registrationDocument, setRegistrationDocument] = useState<File | null>(null);
   const [phone, setPhone] = useState("");
-  const [hasNameChange, setHasNameChange] = useState<string>("아니오");
+  const [hasNameChange, setHasNameChange] = useState<string>("no");
   const [numNameChanges, setNumNameChanges] = useState<number>(1);
   const [nameChangeData, setNameChangeData] = useState<NameChangeData[]>([
     { previousName: "", koreanName: "", chineseName: "", changeYear: "" }
   ]);
   const [evaluationKoreanName, setEvaluationKoreanName] = useState("");
   const [evaluationChineseName, setEvaluationChineseName] = useState("");
-  const [numEvaluationNames, setNumEvaluationNames] = useState<number>(1);
-  const [evaluationNamesData, setEvaluationNamesData] = useState<{koreanName: string; chineseName: string}[]>([
-    { koreanName: "", chineseName: "" }
-  ]);
   const [reason, setReason] = useState("");
   const [referralSource, setReferralSource] = useState("");
   const [depositorName, setDepositorName] = useState("");
   const [consultationTime, setConsultationTime] = useState("");
-    const [accountCopied, setAccountCopied] = useState(false);
-  const [showDuration, setShowDuration] = useState(false);
+  const [familyPolicyDialogOpen, setFamilyPolicyDialogOpen] = useState(false);
+  const [showCardHint, setShowCardHint] = useState(false);
+  const isClosingFromBackButton = useRef(false);
+  const familyPolicyDialogOpenRef = useRef(false);
 
-  // 가격 계산: 이름분석 6만원/인, 이름감명 = 이름분석(6만) + 감명비(2만 × 개수)
-  const PRICE_PER_PERSON = 60000;
-  const EVALUATION_PRICE = 20000;
-  const totalPrice = type === "naming" 
-    ? PRICE_PER_PERSON + (numEvaluationNames * EVALUATION_PRICE)
-    : numPeople * PRICE_PER_PERSON;
+  // ref를 state와 동기화
+  useEffect(() => {
+    familyPolicyDialogOpenRef.current = familyPolicyDialogOpen;
+  }, [familyPolicyDialogOpen]);
 
-  const handleNumEvaluationNamesChange = (num: number) => {
-    setNumEvaluationNames(num);
-    const newData = Array.from({ length: num }, (_, i) => 
-      evaluationNamesData[i] || { koreanName: "", chineseName: "" }
-    );
-    setEvaluationNamesData(newData);
-  };
-
-  const updateEvaluationNameData = (index: number, field: "koreanName" | "chineseName", value: string) => {
-    const newData = [...evaluationNamesData];
-    newData[index] = { ...newData[index], [field]: value };
-    setEvaluationNamesData(newData);
-  };
-
-  const handleCopyAccount = async () => {
-    try {
-      await navigator.clipboard.writeText("농협 351 8205 8124 53");
-      setAccountCopied(true);
-      toast({
-        title: "복사 완료",
-        description: "계좌번호가 복사되었습니다.",
-      });
-      setTimeout(() => setAccountCopied(false), 2000);
-    } catch (err) {
-      toast({
-        title: "복사 실패",
-        description: "계좌번호를 복사할 수 없습니다.",
-        variant: "destructive",
-      });
+  // 가족 상담 원칙 다이얼로그 열릴 때 힌트 토스트 3초간 표시
+  useEffect(() => {
+    if (familyPolicyDialogOpen) {
+      setShowCardHint(true);
+      const timer = setTimeout(() => {
+        setShowCardHint(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowCardHint(false);
     }
+  }, [familyPolicyDialogOpen]);
+
+  // 뒤로 가기 버튼으로 가족 상담 원칙 다이얼로그 닫기
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const modalState = event.state?.modal;
+      
+      // familyPolicy가 열려있고, state가 familyPolicy가 아니면 (consultation 또는 null) 닫음
+      if (familyPolicyDialogOpenRef.current && modalState !== "familyPolicy") {
+        isClosingFromBackButton.current = true;
+        setFamilyPolicyDialogOpen(false);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []); // 의존성 배열 비움 - 항상 최신 ref 값을 참조
+
+  const openFamilyPolicyDialog = () => {
+    setFamilyPolicyDialogOpen(true);
+    // 현재 state의 from 정보를 유지하면서 familyPolicy 모달 상태 추가
+    const currentFrom = window.history.state?.from;
+    window.history.pushState({ modal: "familyPolicy", from: currentFrom }, "");
+  };
+
+  const closeFamilyPolicyDialog = () => {
+    setFamilyPolicyDialogOpen(false);
+    // X 버튼이나 외부 클릭으로 닫을 때만 히스토리를 조용히 정리 (consultation state로 복원)
+    if (!isClosingFromBackButton.current && window.history.state?.modal === "familyPolicy") {
+      const currentFrom = window.history.state?.from;
+      window.history.replaceState({ modal: "consultation", from: currentFrom }, "", window.location.pathname);
+    }
+    isClosingFromBackButton.current = false;
   };
 
   const handleNumPeopleChange = (num: number) => {
     setNumPeople(num);
     const newPeopleData = Array.from({ length: num }, (_, i) => 
-      peopleData[i] || { name: "", gender: "여성", birthYear: "", occupation: "" }
+      peopleData[i] || { name: "", gender: "", birthYear: "", occupation: "" }
     );
     setPeopleData(newPeopleData);
   };
@@ -146,11 +163,13 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     },
   });
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     let fileData: { fileName?: string; fileData?: string; fileType?: string } = {};
     
     if (registrationDocument) {
-      const maxSize = 5 * 1024 * 1024;
+      const maxSize = 5 * 1024 * 1024; // 5MB
       if (registrationDocument.size > maxSize) {
         toast({
           title: "파일 크기 초과",
@@ -168,6 +187,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
           reader.readAsDataURL(registrationDocument);
         });
         
+        // Extract pure base64 (remove data:image/png;base64, prefix)
         const base64Data = dataUrl.split(',')[1];
         
         fileData = {
@@ -188,16 +208,14 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     
     const consultationData = {
       type,
-      numPeople: type === "naming" ? 1 : numPeople,
+      numPeople,
       peopleData,
       phone,
-      hasNameChange: hasNameChange === "예" ? "yes" : "no",
-      numNameChanges: hasNameChange === "예" ? numNameChanges : undefined,
-      nameChangeData: hasNameChange === "예" ? nameChangeData : undefined,
-      // 이름감명 전용 필드
-      numEvaluationNames: type === "naming" ? numEvaluationNames : undefined,
-      evaluationNamesData: type === "naming" ? evaluationNamesData : undefined,
-      totalPrice,
+      hasNameChange,
+      numNameChanges: hasNameChange === "yes" ? numNameChanges : undefined,
+      nameChangeData: hasNameChange === "yes" ? nameChangeData : undefined,
+      evaluationKoreanName: type === "naming" ? evaluationKoreanName : undefined,
+      evaluationChineseName: type === "naming" ? evaluationChineseName : undefined,
       reason,
       referralSource: referralSource || undefined,
       depositorName,
@@ -208,693 +226,704 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     submitMutation.mutate(consultationData);
   };
 
-  const goToStep = (step: number) => {
-    // 앞으로 이동할 때만 히스토리 추가 (뒤로가기 버튼 대응)
-    if (step > currentStep) {
-      window.history.pushState({ formStep: step }, '');
-    }
-    setCurrentStep(step);
-    setTimeout(() => {
-      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
-    }, 0);
-  };
-
-  const referralOptions = [
-    "지인소개", "블로그", "인스타", "틱톡", 
-    "유튜브", "페이스북", "쓰레드", "크몽"
-  ];
-
   const formTitle = type === "naming" ? "이름감명" : "이름분석 운명상담";
 
   return (
-    <div className="kna-consultation-form absolute inset-0 flex flex-col bg-white">
-      {/* 상단 헤더 + 진행바 - 완전 고정 */}
-      <div 
-        className="flex-shrink-0 border-b border-slate-100 shadow-sm px-6 pt-8 pb-5 z-40"
-        style={{ 
-          backgroundImage: 'url(/bank-card-bg-opt.webp)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center top'
-        }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <div className="text-xs text-teal-700 font-bold tracking-widest uppercase mb-1">
-              {type === "naming" ? "Name Evaluation" : "Name Analysis"}
-            </div>
-            <div className="text-2xl form-title-font font-bold tracking-tight text-slate-800">{formTitle}</div>
+    <div className="kna-consultation-form ig-tt-dialog space-y-6 py-8">
+      <div className="flex items-end justify-between gap-4">
+        <h3 className="ig-tt-title text-[21px] md:text-[22px] font-bold text-[#56D5DB] mb-2">{formTitle}</h3>
+        <img 
+          src={formLogoImage} 
+          alt="한국이름학교 로고" 
+          className="w-[52px] h-[52px] md:w-16 md:h-16 flex-shrink-0"
+          style={{ filter: "brightness(0) saturate(100%) invert(75%) sepia(37%) saturate(520%) hue-rotate(127deg) brightness(95%) contrast(91%)" }}
+          loading="eager"
+          fetchPriority="high"
+        />
+      </div>
+      <div className="space-y-2.5">
+        {type === "naming" && (
+          <div className="space-y-1">
+            <p className="text-lg md:text-lg text-orange-600 dark:text-orange-400 font-bold">
+              이름감명시 현재 이름에 대한 이름분석 필수
+            </p>
+            <p className="text-sm text-muted-foreground">
+              (새이름이 현재 이름운보다 작거나 너무 커도 안좋습니다)
+            </p>
           </div>
+        )}
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* 등본상 가족 인원 - 이름분석에서만 표시 */}
+        {type === "analysis" && (
+          <div className="space-y-3">
+            <Label className="text-lg md:text-lg font-semibold">등본상 가족 인원 <span className="text-lg md:text-lg font-normal text-muted-foreground">(해당 인원을 체크하세요)</span></Label>
+            <div className="flex gap-2 flex-wrap">
+              {[1, 2, 3, 4, 5, 6].map((num) => (
+                <Button
+                  key={num}
+                  type="button"
+                  variant={numPeople === num ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleNumPeopleChange(num)}
+                  data-testid={`button-people-${num}`}
+                  className="w-10 h-10 text-lg"
+                >
+                  {num}
+                </Button>
+              ))}
+            </div>
+            <p className="text-base md:text-base text-orange-600 dark:text-orange-400 mt-2">
+              저희 협회는 <span className="font-bold">등본상 가족 상담 원칙</span>으로 상담진행해 드리고 있습니다{" "}
+              <button
+                type="button"
+                onClick={openFamilyPolicyDialog}
+                className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full font-semibold text-sm bg-[#F1FAEE] text-[#0b7f82] shadow-sm transition-all duration-200 hover:bg-[#e5f4e0] hover:shadow-md active:scale-[0.98]"
+                data-testid="button-family-policy-form"
+              >자세히 보기 <span className="text-base">›</span></button>
+            </p>
+          </div>
+        )}
+
+        {/* 각 인원별 정보 입력 */}
+        {peopleData.map((person, index) => (
+          <Card key={index} className="p-4 space-y-4">
+            {type === "analysis" && <h4 className="text-lg md:text-lg font-semibold text-foreground">{index + 1}번째 분석 대상</h4>}
+            
+            <div className="space-y-2">
+              <Label htmlFor={`name-${index}`} className="text-lg md:text-lg">
+                {type === "naming" ? "현재 이름" : "이름"}
+              </Label>
+              <Input
+                id={`name-${index}`}
+                value={person.name}
+                onChange={(e) => updatePersonData(index, "name", e.target.value)}
+                placeholder="홍길동"
+                required
+                data-testid={`input-name-${index}`}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`gender-${index}`} className="text-lg md:text-lg">성별</Label>
+              <RadioGroup
+                value={person.gender}
+                onValueChange={(value) => updatePersonData(index, "gender", value)}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="male" id={`male-${index}`} data-testid={`radio-male-${index}`} />
+                  <Label htmlFor={`male-${index}`} className="text-lg md:text-lg font-normal cursor-pointer">남성</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="female" id={`female-${index}`} data-testid={`radio-female-${index}`} />
+                  <Label htmlFor={`female-${index}`} className="text-lg md:text-lg font-normal cursor-pointer">여성</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`birthYear-${index}`} className="text-lg md:text-lg">태어난 연도</Label>
+              <Input
+                id={`birthYear-${index}`}
+                value={person.birthYear}
+                onChange={(e) => updatePersonData(index, "birthYear", e.target.value)}
+                placeholder="1990"
+                required
+                data-testid={`input-birthyear-${index}`}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`occupation-${index}`} className="text-lg md:text-lg">하는 일</Label>
+              <Input
+                id={`occupation-${index}`}
+                value={person.occupation}
+                onChange={(e) => updatePersonData(index, "occupation", e.target.value)}
+                placeholder="직업을 입력하세요"
+                required
+                data-testid={`input-occupation-${index}`}
+              />
+            </div>
+          </Card>
+        ))}
+
+        {/* 주민등본 사진 첨부 */}
+        <div className="space-y-2">
+          <Label htmlFor="registration-document" className="text-lg md:text-lg flex flex-col md:flex-row md:items-baseline md:gap-1">
+            <span>주민등본 사진</span>
+            <span className="text-base md:text-base font-normal text-orange-600 dark:text-orange-400">
+              <span className="hidden md:inline">(</span>정확한 한자 확인을 위해 반드시 첨부 | 주민등록번호 및 주소는 가린 후 제출<span className="hidden md:inline">)</span>
+            </span>
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            · 등본상 주소와 실제 거주지가 다른 분들은 예약상담시 꼭 말씀주세요.
+          </p>
+          <Input
+            id="registration-document"
+            type="file"
+            accept="image/*"
+            onChange={(e) => setRegistrationDocument(e.target.files?.[0] || null)}
+            data-testid="input-registration-document"
+            className="cursor-pointer pt-1.5 pb-2.5 md:pt-2 md:pb-2"
+          />
+          {registrationDocument && (
+            <p className="text-lg md:text-lg text-muted-foreground">
+              선택된 파일: {registrationDocument.name}
+            </p>
+          )}
         </div>
 
-        <div className="flex items-center justify-between text-sm text-slate-600 mb-2 font-medium">
-          <span className={currentStep === 1 ? "font-bold text-slate-800" : ""}>1. 기본정보</span>
-          <span className={currentStep === 2 ? "font-bold text-slate-800" : ""}>2. 상담내용</span>
-          <span className={currentStep === 3 ? "font-bold text-slate-800" : ""}>3. 결제/일정</span>
-        </div>
-        <div className="h-1.5 rounded-full bg-white/60 overflow-hidden backdrop-blur-sm">
-          <div 
-            className="h-full rounded-full bg-tiffany transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-            style={{ width: currentStep === 1 ? '33.333%' : currentStep === 2 ? '66.666%' : '100%' }}
+        {/* 연락처 */}
+        <div className="space-y-2">
+          <Label htmlFor="phone" className="text-lg md:text-lg">연락처</Label>
+          <Input
+            id="phone"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="010-1234-5678"
+            required
+            data-testid="input-phone"
           />
         </div>
-      </div>
-      
-      {/* 중간 콘텐츠 - 스크롤 영역 */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-slate-50/30">
 
-      {/* Step 1: 기본정보 */}
-      {currentStep === 1 && (
-        <div className="space-y-8 pt-8 px-6 pb-8 form-animate-fade-in">
-          {/* 가족 상담 원칙 안내 */}
-          {type === "analysis" && (
-            <div className="rounded-3xl bg-white/60 border border-tiffany-light p-6 shadow-lg backdrop-blur-md">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-start gap-4">
-                  <div className="mt-1 w-6 h-6 rounded-full bg-tiffany text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-sm">!</div>
-                  <div className="text-lg text-slate-800 font-medium leading-relaxed form-title-font">
-                    저희 협회는 <span className="font-bold text-tiffany-dark underline underline-offset-4 decoration-tiffany/50">등본상 가족 상담 원칙</span>으로<br/>
-                    진행해 드리고 있습니다.
-                  </div>
-                </div>
-                <button 
-                  type="button"
-                  onClick={onOpenFamilyPolicy}
-                  className="self-start ml-10 text-xs font-bold text-tiffany-dark bg-tiffany-light/80 border border-tiffany/20 px-4 py-2 rounded-full hover:bg-tiffany-light transition flex items-center gap-1"
-                  data-testid="button-family-policy-form"
-                >
-                  원칙 자세히 보기 <span className="text-[10px]">›</span>
-                </button>
+        {/* 개명여부 */}
+        <div className="space-y-3">
+          <Label className="text-lg md:text-lg font-semibold">개명여부</Label>
+          <RadioGroup
+            value={hasNameChange}
+            onValueChange={setHasNameChange}
+            className="flex gap-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="yes" id="namechange-yes" data-testid="radio-namechange-yes" />
+              <Label htmlFor="namechange-yes" className="font-normal cursor-pointer">예</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="no" id="namechange-no" data-testid="radio-namechange-no" />
+              <Label htmlFor="namechange-no" className="font-normal cursor-pointer">아니오</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {/* 개명인원 선택 (예일 경우) */}
+        {hasNameChange === "yes" && (
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <Label className="text-lg md:text-lg font-semibold">개명인원</Label>
+              <div className="flex gap-2 flex-wrap">
+                {[1, 2, 3, 4].map((num) => (
+                  <Button
+                    key={num}
+                    type="button"
+                    variant={numNameChanges === num ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleNumNameChangesChange(num)}
+                    data-testid={`button-namechange-${num}`}
+                    className="w-10 h-10 text-lg"
+                  >
+                    {num}
+                  </Button>
+                ))}
               </div>
             </div>
-          )}
 
-          {/* 이름감명 안내 */}
-          {type === "naming" && (
-            <div className="rounded-3xl bg-gradient-to-br from-amber-50/80 to-orange-50/60 border border-amber-200/60 p-6 shadow-lg backdrop-blur-md">
-              <div className="flex items-start gap-4">
-                <div className="mt-0.5 w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-400 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-md">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                    <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5zM18 1.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.91-1.91l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.91-1.91l.258-1.036A.75.75 0 0118 1.5z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <div className="text-lg text-slate-800 font-bold leading-relaxed form-title-font">
-                    이름감명시 <span className="text-amber-600">현재 이름분석 필수</span>
-                  </div>
-                  <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-                    새 이름이 현재 이름운보다 작거나 너무 커도 안됩니다
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+            {/* 각 개명인원별 정보 입력 */}
+            {nameChangeData.map((data, index) => (
+              <Card key={index} className="p-4 space-y-4">
+                <h4 className="text-[21px] md:text-[22px] font-semibold text-foreground">{index + 1}번째 개명 정보</h4>
 
-          {/* 등본상 가족 인원 */}
-          <div className="glass-card rounded-3xl p-8">
-            {type === "analysis" && (
-              <div className="mt-2">
-                <div className="text-xl form-title-font font-bold text-slate-900 mb-4">등본상 가족 인원</div>
-                <div className="grid grid-cols-6 gap-2">
-                  {[1, 2, 3, 4, 5, 6].map((num) => (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => handleNumPeopleChange(num)}
-                      data-testid={`button-people-${num}`}
-                      className={`rounded-lg border px-0 py-2 text-base font-bold transition ${
-                        numPeople === num 
-                          ? "bg-tiffany text-white border-tiffany shadow-md scale-105" 
-                          : "bg-white/60 text-slate-500 border-slate-200 hover:bg-white"
-                      }`}
-                    >
-                      {num}
-                    </button>
-                  ))}
+                <div className="space-y-2">
+                  <Label htmlFor={`previousName-${index}`} className="text-lg md:text-lg">현재 이름</Label>
+                  <Input
+                    id={`previousName-${index}`}
+                    value={data.previousName}
+                    onChange={(e) => updateNameChangeData(index, "previousName", e.target.value)}
+                    placeholder="현재 이름"
+                    data-testid={`input-previous-name-${index}`}
+                  />
                 </div>
-                <p className="mt-3 text-sm text-slate-500 font-medium">해당 인원을 체크하세요. (최대 6명)</p>
-              </div>
-            )}
 
-            {/* 각 인원별 정보 입력 */}
-            {peopleData.map((person, index) => (
-              <div key={index} className={`${index === 0 ? 'mt-6' : 'mt-10 border-t border-slate-200/50 pt-10'} form-animate-fade-in`}>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="text-lg form-title-font font-bold text-slate-800">
-                    {type === "analysis" ? `${index + 1}번째 분석 대상` : "현재 정보"}
-                  </div>
-                </div>
-                <div className="space-y-6">
-                  <div>
-                    <label className="text-base font-bold text-slate-600 block mb-2">
-                      {type === "naming" ? "현재 이름" : "이름"}
-                    </label>
-                    <input 
-                      className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring backdrop-blur-sm" 
-                      placeholder="예: 홍길동"
-                      value={person.name}
-                      onChange={(e) => updatePersonData(index, "name", e.target.value)}
-                      data-testid={`input-name-${index}`}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor={`koreanName-${index}`} className="text-lg md:text-lg">개명 전 한글 이름</Label>
+                    <Input
+                      id={`koreanName-${index}`}
+                      value={data.koreanName}
+                      onChange={(e) => updateNameChangeData(index, "koreanName", e.target.value)}
+                      placeholder="홍길동"
+                      data-testid={`input-korean-name-${index}`}
                     />
                   </div>
-                  <div>
-                    <label className="text-base font-bold text-slate-600 block mb-2">성별</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      {["여성", "남성"].map((gender) => (
-                        <button
-                          key={gender}
-                          type="button"
-                          onClick={() => updatePersonData(index, "gender", gender)}
-                          className={`rounded-xl border px-4 py-2.5 text-base font-bold transition ${
-                            person.gender === gender
-                              ? "bg-tiffany text-white border-tiffany shadow-lg shadow-tiffany/20 scale-[1.01]"
-                              : "bg-white/60 text-slate-500 border-slate-200 hover:bg-white"
-                          }`}
-                          data-testid={`radio-${gender}-${index}`}
-                        >
-                          {gender}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-base font-bold text-slate-600 block mb-2">생년</label>
-                      <input 
-                        className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring backdrop-blur-sm" 
-                        placeholder="1990" 
-                        inputMode="numeric"
-                        value={person.birthYear}
-                        onChange={(e) => updatePersonData(index, "birthYear", e.target.value)}
-                        data-testid={`input-birthyear-${index}`}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-base font-bold text-slate-600 block mb-2">직업</label>
-                      <input 
-                        className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring backdrop-blur-sm" 
-                        placeholder="입력"
-                        value={person.occupation}
-                        onChange={(e) => updatePersonData(index, "occupation", e.target.value)}
-                        data-testid={`input-occupation-${index}`}
-                      />
-                    </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor={`chineseName-${index}`} className="text-lg md:text-lg">개명전 한자 이름</Label>
+                    <Input
+                      id={`chineseName-${index}`}
+                      value={data.chineseName}
+                      onChange={(e) => updateNameChangeData(index, "chineseName", e.target.value)}
+                      placeholder="洪吉洞"
+                      data-testid={`input-chinese-name-${index}`}
+                    />
                   </div>
                 </div>
-              </div>
+
+                {index === 0 && (
+                  <div className="bg-muted p-3 rounded-md">
+                    <p className="text-base md:text-base text-muted-foreground">
+                      넓을 홍 길할 길 동녘 동 ❌<br />
+                      洪吉東 ⭕<br />
+                      (한자는 꼭 직접 입력해주세요. 같은 의미의 한자가 많기 때문에, 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.)
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor={`changeYear-${index}`} className="text-lg md:text-lg">개명년도</Label>
+                  <Input
+                    id={`changeYear-${index}`}
+                    value={data.changeYear}
+                    onChange={(e) => updateNameChangeData(index, "changeYear", e.target.value)}
+                    placeholder="2020"
+                    data-testid={`input-change-year-${index}`}
+                  />
+                </div>
+              </Card>
             ))}
+          </div>
+        )}
 
-            {/* 개명 이력 */}
-            <div className="pt-10 mt-10 border-t border-slate-200/60">
-              <label className="text-xl form-title-font font-bold text-slate-900 block mb-5">개명 이력이 있나요?</label>
-              <div className="grid grid-cols-2 gap-3">
-                {["아니오", "예"].map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => setHasNameChange(option)}
-                    className={`rounded-xl border px-4 py-2.5 text-base font-bold transition ${
-                      hasNameChange === option
-                        ? "bg-tiffany text-white border-tiffany shadow-lg shadow-tiffany/30 scale-[1.01]"
-                        : "bg-white/80 text-slate-500 border-slate-200 hover:bg-white"
-                    }`}
-                    data-testid={`radio-namechange-${option}`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
+        {/* 감명받을 이름 (이름감명일 경우) */}
+        {type === "naming" && (
+          <Card className="p-4 space-y-4">
+            <h4 className="text-[21px] md:text-[22px] font-semibold text-foreground">감명받을 이름</h4>
+            
+            <div className="space-y-2">
+              <Label htmlFor="evaluation-korean-name" className="text-lg md:text-lg">한글이름</Label>
+              <Input
+                id="evaluation-korean-name"
+                value={evaluationKoreanName}
+                onChange={(e) => setEvaluationKoreanName(e.target.value)}
+                placeholder="홍길동"
+                data-testid="input-evaluation-korean-name"
+              />
+            </div>
 
-              {/* 개명 인원 선택 */}
-              {hasNameChange === "예" && (
-                <div className="mt-10 pt-10 border-t border-slate-200/60 form-animate-fade-in">
-                  <h3 className="text-lg font-bold text-slate-800 mb-4">개명 인원 선택</h3>
-                  <div className="grid grid-cols-4 gap-2 mb-8">
-                    {[1, 2, 3, 4].map((num) => (
-                      <button
-                        key={num}
-                        type="button"
-                        onClick={() => handleNumNameChangesChange(num)}
-                        data-testid={`button-namechange-${num}`}
-                        className={`rounded-lg border px-0 py-2 text-base font-bold transition ${
-                          numNameChanges === num 
-                            ? "bg-tiffany text-white border-tiffany shadow-md scale-105" 
-                            : "bg-white/60 text-slate-500 border-slate-200 hover:bg-white"
-                        }`}
-                      >
-                        {num}
-                      </button>
-                    ))}
-                  </div>
+            <div className="space-y-2">
+              <Label htmlFor="evaluation-chinese-name" className="text-lg md:text-lg">한자이름</Label>
+              <Input
+                id="evaluation-chinese-name"
+                value={evaluationChineseName}
+                onChange={(e) => setEvaluationChineseName(e.target.value)}
+                placeholder="洪吉洞"
+                data-testid="input-evaluation-chinese-name"
+              />
+            </div>
 
-                  {/* 개명 정보 입력 */}
-                  {nameChangeData.map((data, index) => (
-                    <div key={index} className={`${index > 0 ? 'mt-10 border-t border-slate-200/50 pt-10' : ''} form-animate-fade-in`}>
-                      <h4 className="text-lg form-title-font font-bold text-slate-800 mb-6">{index + 1}번째 개명 정보</h4>
-                      <div className="space-y-6">
-                        <div>
-                          <label className="text-base font-bold text-slate-600 block mb-2">현재 이름</label>
-                          <input 
-                            className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
-                            placeholder="현재 이름"
-                            value={data.previousName}
-                            onChange={(e) => updateNameChangeData(index, "previousName", e.target.value)}
-                            data-testid={`input-previous-name-${index}`}
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-base font-bold text-slate-600 block mb-2">개명 전 한글</label>
-                            <input 
-                              className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
-                              placeholder="홍길동"
-                              value={data.koreanName}
-                              onChange={(e) => updateNameChangeData(index, "koreanName", e.target.value)}
-                              data-testid={`input-korean-name-${index}`}
-                            />
-                          </div>
-                          <div>
-                            <label className="text-base font-bold text-slate-600 block mb-2">개명 전 한자</label>
-                            <input 
-                              className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
-                              placeholder="洪吉洞"
-                              value={data.chineseName}
-                              onChange={(e) => updateNameChangeData(index, "chineseName", e.target.value)}
-                              data-testid={`input-chinese-name-${index}`}
-                            />
-                          </div>
-                        </div>
-                        {index === 0 && (
-                          <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
-                            <p className="text-sm text-slate-600 leading-relaxed mb-2">
-                              한자는 꼭 직접 입력해주세요. 같은 의미의 한자가 많기 때문에, 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.
-                            </p>
-                            <a
-                              href="https://hanja.dict.naver.com/#/main"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm bg-[#03C75A] text-white shadow-sm transition-all duration-200 hover:bg-[#02b351]"
-                              data-testid="link-naver-search"
-                            >
-                              네이버 한자사전 <span className="text-base">›</span>
-                            </a>
-                          </div>
-                        )}
-                        <div>
-                          <label className="text-base font-bold text-slate-600 block mb-2">개명년도</label>
-                          <input 
-                            className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
-                            placeholder="2020"
-                            value={data.changeYear}
-                            onChange={(e) => updateNameChangeData(index, "changeYear", e.target.value)}
-                            data-testid={`input-change-year-${index}`}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            <div className="bg-muted p-3 rounded-md">
+              <p className="text-base md:text-base text-muted-foreground">
+                넓을 홍 길할 길 동녘 동 ❌<br />
+                洪吉東 ⭕<br />
+                (한자는 꼭 직접 입력해주세요. 같은 의미의 한자가 많기 때문에, 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.)
+              </p>
+            </div>
+          </Card>
+        )}
+
+        {/* 상담받고자 하는 이유 */}
+        <div className="space-y-2">
+          <Label htmlFor="reason" className="text-lg md:text-lg">상담받고자 하는 이유</Label>
+          <Textarea
+            id="reason"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="상담을 받고자 하는 이유를 적어주세요"
+            className="min-h-[100px]"
+            data-testid="input-reason"
+          />
+        </div>
+
+        {/* 문의 경로 */}
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <Label className="text-lg md:text-lg font-semibold">저희 한국이름학교를 어떻게 알게 되셨나요?</Label>
+            <p className="text-base md:text-base text-muted-foreground">(처음 접하신 경로를 선택해 주세요.)</p>
+          </div>
+          <RadioGroup 
+            value={referralSource} 
+            onValueChange={setReferralSource}
+            className="grid grid-cols-2 sm:grid-cols-3 gap-3"
+          >
+            {[
+              { value: "지인소개", label: "지인소개" },
+              { value: "블로그", label: "블로그" },
+              { value: "인스타", label: "인스타" },
+              { value: "틱톡", label: "틱톡" },
+              { value: "유튜브", label: "유튜브" },
+              { value: "페이스북", label: "페이스북" },
+              { value: "쓰레드", label: "쓰레드" },
+              { value: "크몽", label: "크몽" },
+            ].map((option) => (
+              <label
+                key={option.value}
+                className={`
+                  flex items-center gap-2.5 rounded-xl px-4 h-9
+                  border-2 transition-all cursor-pointer hover-elevate
+                  ${referralSource === option.value 
+                    ? 'border-primary bg-primary/5 dark:bg-primary/10' 
+                    : 'border-border bg-card'
+                  }
+                `}
+                data-testid={`referral-${option.value}`}
+              >
+                <RadioGroupItem value={option.value} id={`ref-${option.value}`} />
+                <span className="font-medium">{option.label}</span>
+              </label>
+            ))}
+          </RadioGroup>
+        </div>
+
+        {/* 입금자명 */}
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <Label htmlFor="depositor-name" className="text-lg md:text-lg">입금자명</Label>
+            <Input
+              id="depositor-name"
+              value={depositorName}
+              onChange={(e) => setDepositorName(e.target.value)}
+              placeholder="입금하신 분의 성함을 입력하세요"
+              required
+              data-testid="input-depositor-name"
+              className="placeholder:text-sm"
+            />
+          </div>
+          <Card className="p-4 bg-muted">
+            <div className="space-y-2 text-base md:text-base">
+              <p className="font-semibold text-foreground">와츠유어네임 이름연구협회 전용 입금계좌</p>
+              <p className="text-foreground">농협 351 8205 8124 53</p>
+              {type === "naming" ? (
+                <p className="text-muted-foreground">상담비: 이름분석 6만원 + 이름감명 2만원(개당)</p>
+              ) : (
+                <p className="text-muted-foreground">상담비: 명당 6만원 | 등본상 가족 전체 명수로 입금</p>
+              )}
+              <p className="text-orange-600 dark:text-orange-400">* 입금확인 후 상담예약해드립니다.</p>
+            </div>
+          </Card>
+        </div>
+
+        {/* 상담시간 */}
+        <div className="space-y-3">
+          <Label className="text-lg md:text-lg font-semibold">상담시간</Label>
+          <RadioGroup
+            value={consultationTime}
+            onValueChange={setConsultationTime}
+            className="flex gap-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="weekday" id="time-weekday" data-testid="radio-time-weekday" />
+              <Label htmlFor="time-weekday" className="font-normal cursor-pointer">주중 2시</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="weekend" id="time-weekend" data-testid="radio-time-weekend" />
+              <Label htmlFor="time-weekend" className="font-normal cursor-pointer">주말 2시</Label>
+            </div>
+          </RadioGroup>
+          <Card className="p-4 bg-muted">
+            <div className="text-base md:text-base text-muted-foreground space-y-1">
+              <p className="font-semibold text-foreground">※ 평균 상담 소요시간</p>
+              {type === "naming" ? (
+                <p>1시간 10분(감명 개수에 따라 변동)</p>
+              ) : (
+                <>
+                  <p>1인 - 1시간, 2인 - 1시간 30분,</p>
+                  <p>3인 - 2시간, 4인이상 - 2시간 30분</p>
+                </>
               )}
             </div>
-          </div>
-
-          {/* 등본 첨부 */}
-          <div className="glass-card rounded-3xl p-8">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-xl form-title-font font-bold text-slate-900">등본 첨부</h3>
-                <p className="text-sm text-slate-500 mt-2 font-medium leading-normal">
-                  정확한 한자 확인을 위해 필수입니다.<br/>
-                  <span className="text-xs text-slate-400">* 주민등록번호 뒷자리 및 주소는 가린 후 제출</span>
-                </p>
-                <div className="mt-4 p-4 bg-slate-50/80 rounded-2xl border border-slate-100">
-                  <p className="text-sm text-slate-600 leading-relaxed font-medium">
-                    · <strong>실거주지 불일치</strong> 혹은 <strong>등본 외 동거인</strong>이 있으신 경우 예약 상담 시 꼭 말씀해주세요.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="mt-6">
-              <label htmlFor="file" className="block cursor-pointer group">
-                <div className="rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50/30 p-8 group-hover:bg-slate-50/60 transition text-center sm:text-left">
-                  <div className="flex flex-col sm:flex-row items-center gap-6">
-                    <div className="w-16 h-16 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm">
-                      <FileText className="w-7 h-7 text-tiffany" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-lg font-bold text-slate-900">파일 선택</div>
-                      <div className="text-sm text-slate-400 mt-1 truncate max-w-[200px] mx-auto sm:mx-0">
-                        {registrationDocument ? registrationDocument.name : "선택된 파일 없음"}
-                      </div>
-                    </div>
-                    <div className="text-sm font-bold text-tiffany bg-tiffany-light px-5 py-2.5 rounded-full hover:bg-teal-100 transition">업로드</div>
-                  </div>
-                </div>
-              </label>
-              <input 
-                id="file" 
-                type="file" 
-                className="hidden" 
-                accept="image/*"
-                onChange={(e) => setRegistrationDocument(e.target.files?.[0] || null)}
-                data-testid="input-registration-document"
-              />
-            </div>
-          </div>
-
-          {/* 다음 버튼 */}
-          <div className="flex gap-3 pt-4">
-            <button 
-              type="button"
-              onClick={() => goToStep(2)}
-              className="w-full rounded-xl bg-tiffany text-white py-3 text-base font-bold hover:bg-tiffany-dark transition shadow-md shadow-tiffany/30 transform active:scale-[0.98]"
-              data-testid="button-next-step2"
-            >
-              다음: 상담내용
-            </button>
-          </div>
+          </Card>
         </div>
-      )}
 
-      {/* Step 2: 상담내용 */}
-      {currentStep === 2 && (
-        <div className="space-y-8 pt-8 px-6 pb-8 form-animate-fade-in">
-          {/* 이름감명일 때만: 감명할 이름 정보 */}
-          {type === "naming" && (
-            <div className="glass-card rounded-3xl p-8">
-              <div>
-                <h2 className="text-2xl form-title-font font-bold tracking-tight text-slate-900">감명할 이름 정보</h2>
-                <p className="text-base text-slate-500 mt-2 font-medium">타 작명소에서 받은 이름을 분석해 드립니다.</p>
-              </div>
-              
-              <div className="mt-6">
-                <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">감명할 이름 개수</label>
-                <div className="grid grid-cols-4 gap-3">
-                  {[1, 2, 3, 4].map((num) => (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => handleNumEvaluationNamesChange(num)}
-                      className={`rounded-xl border px-3 py-2 text-base font-bold transition ${
-                        numEvaluationNames === num
-                          ? "bg-tiffany text-white border-tiffany shadow-lg shadow-tiffany/30"
-                          : "border-slate-200 bg-white/60 text-slate-700 hover:bg-white"
-                      }`}
-                      data-testid={`eval-names-${num}`}
-                    >
-                      {num}
-                    </button>
-                  ))}
-                </div>
-                <p className="mt-3 text-sm text-slate-500">
-                  상담비: 이름분석 6만원 + 감명비 {numEvaluationNames}개 × 2만원 = <strong className="text-tiffany">{totalPrice.toLocaleString()}원</strong>
-                </p>
-              </div>
+        <Button type="submit" className="w-full text-lg" size="lg" data-testid="button-submit">
+          상담 신청하기
+        </Button>
+      </form>
 
-              <div className="mt-8 space-y-6">
-                {evaluationNamesData.map((data, index) => (
-                  <div key={index} className="p-6 bg-white/60 rounded-2xl border border-slate-100">
-                    <h4 className="text-lg form-title-font font-bold text-slate-800 mb-4">{index + 1}번째 감명 이름</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-base font-bold text-slate-600 block mb-2">한글 이름</label>
-                        <input 
-                          className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
-                          placeholder="홍길동"
-                          value={data.koreanName}
-                          onChange={(e) => updateEvaluationNameData(index, "koreanName", e.target.value)}
-                          data-testid={`eval-korean-name-${index}`}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-base font-bold text-slate-600 block mb-2">한자 이름</label>
-                        <input 
-                          className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
-                          placeholder="洪吉洞"
-                          value={data.chineseName}
-                          onChange={(e) => updateEvaluationNameData(index, "chineseName", e.target.value)}
-                          data-testid={`eval-chinese-name-${index}`}
-                        />
-                      </div>
-                    </div>
-                    {index === 0 && (
-                      <div className="mt-4 bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
-                        <p className="text-sm text-slate-600 leading-relaxed mb-2">
-                          한자는 꼭 직접 입력해주세요. 네이버에서 검색 후 복사해서 붙여 넣으시면 됩니다.
-                        </p>
-                        <a
-                          href="https://hanja.dict.naver.com/#/main"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm bg-[#03C75A] text-white shadow-sm transition-all duration-200 hover:bg-[#02b351]"
-                          data-testid="link-naver-search-eval"
-                        >
-                          네이버 한자사전 <span className="text-base">›</span>
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+      {/* 등본상 가족 상담 원칙 슬라이드 패널 */}
+      <Sheet open={familyPolicyDialogOpen} onOpenChange={(open) => { if (!open) closeFamilyPolicyDialog(); }}>
+        <SheetContent 
+          side="right"
+          className="family-policy-sheet z-[10002] w-full sm:max-w-[725px] sm:w-[725px] overflow-hidden bg-[#0A0D11] text-white border-l border-white/10 !p-0 flex flex-col"
+          aria-describedby={undefined}
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>등본상 가족 상담 원칙</SheetTitle>
+          </SheetHeader>
 
-          <div className="glass-card rounded-3xl p-8">
+          {/* SVG Gradients for line animations */}
+          <svg className="absolute w-0 h-0">
+            <defs>
+              <linearGradient id="grad-aurora-1" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#56D5DB" />
+                <stop offset="100%" stopColor="#7F5AF0" />
+              </linearGradient>
+              <linearGradient id="grad-aurora-2" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4361EE" />
+                <stop offset="100%" stopColor="#F72585" />
+              </linearGradient>
+            </defs>
+          </svg>
+          
+          {/* Fixed Header - 고정 영역 */}
+          <div className="shrink-0 px-6 py-6 sm:px-8 bg-[#0A0D11] flex items-start justify-between border-b border-white/5">
             <div>
-              <h2 className="text-2xl form-title-font font-bold tracking-tight text-slate-900">상담 내용</h2>
-              <p className="text-base text-slate-500 mt-2 font-medium">가장 고민되시는 부분을 편안하게 적어주세요.</p>
+              <h1 className="text-[22px] sm:text-[26px] font-bold text-[#56D5DB] tracking-tight">
+                등본상 가족 상담 원칙
+              </h1>
+              <p className="mt-3 text-[17px] font-semibold tracking-tight text-white/85">
+                가족은 운명 공동체로, 서로 이름운의 영향을 강하게 주고 받습니다.
+              </p>
             </div>
-            <div className="mt-8">
-              <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">상담 사유</label>
-              <textarea 
-                className="w-full min-h-[180px] rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring leading-relaxed resize-none backdrop-blur-sm"
-                placeholder={type === "naming" ? `예)
-· 이 이름이 아이에게 맞는지 확인하고 싶습니다
-· 여러 이름 중에서 가장 좋은 이름을 고르고 싶습니다
-· 타 작명소 이름의 정확한 분석을 받고 싶습니다` : `예)
-· 가족 관계에서 반복되는 문제가 있습니다
-· 아이 이름의 방향성을 잡고 싶습니다
-· 개명 여부를 신중히 판단하고 싶습니다`}
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                data-testid="input-reason"
-              />
-              <p className="mt-3 text-sm text-slate-400">내용은 상담 준비 외에는 절대 사용되지 않습니다.</p>
-            </div>
+            <SheetClose className="group -mr-2 ml-4 p-2 rounded-md text-white/40 hover:text-white focus:outline-none transition-colors">
+              <span className="sr-only">닫기</span>
+              <X className="h-8 w-8 group-hover:rotate-90 transition-transform duration-300" />
+            </SheetClose>
           </div>
 
-          <div className="glass-card rounded-3xl p-8">
-            <h3 className="text-xl form-title-font font-bold text-slate-900 mb-5">한국이름학교를 어떻게 알게 되셨나요?</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {referralOptions.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setReferralSource(option)}
-                  data-testid={`referral-${option}`}
-                  className={`rounded-xl border px-4 py-2.5 text-base font-bold transition ${
-                    referralSource === option
-                      ? "bg-tiffany text-white border-tiffany shadow-lg shadow-tiffany/30 scale-[1.01]"
-                      : "bg-white/80 text-slate-500 border-slate-200 hover:bg-white"
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <button 
-              type="button"
-              onClick={() => goToStep(1)}
-              className="w-1/3 rounded-xl border border-slate-200 bg-white/60 py-2.5 text-base font-bold text-slate-600 hover:bg-white transition"
-              data-testid="button-back-step1"
-            >
-              이전
-            </button>
-            <button 
-              type="button"
-              onClick={() => goToStep(3)}
-              className="w-2/3 rounded-xl bg-tiffany text-white py-2.5 text-base font-bold hover:bg-tiffany-dark transition shadow-md shadow-tiffany/30 transform active:scale-[0.98]"
-              data-testid="button-next-step3"
-            >
-              다음: 결제/일정
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: 결제/일정 */}
-      {currentStep === 3 && (
-        <div className="space-y-8 pt-8 px-6 pb-8 form-animate-fade-in">
-          <div className="glass-card rounded-3xl p-8">
-            <h2 className="text-2xl form-title-font font-bold tracking-tight text-slate-900">연락 및 결제</h2>
-            <p className="text-base text-slate-500 mt-2 font-medium">입금 확인 후 상담예약해드립니다.</p>
-            <div className="mt-8">
-              <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">휴대폰 번호</label>
-              <input 
-                className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring"
-                placeholder="010-0000-0000" 
-                inputMode="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                data-testid="input-phone"
-              />
-            </div>
-          </div>
-
-          <div className="glass-card rounded-3xl p-8">
-            <h3 className="text-xl form-title-font font-bold text-slate-900 mb-6">결제 정보</h3>
-            
-            {/* 은행 카드 - 실제 신용카드 비율 (85.6mm x 53.98mm ≈ 1.586:1) */}
-            <div 
-              className="relative mx-auto max-w-[400px] aspect-[1.586/1] rounded-2xl p-4 sm:p-5 text-white shadow-2xl overflow-hidden ring-1 ring-white/30"
-              style={{ 
-                backgroundImage: 'url(/payment-card-bg-opt.webp)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center'
-              }}
-            >
-              {/* 유리 광택 효과 오버레이 */}
-              <div 
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.1) 100%)'
-                }}
-              />
-              {/* 상단 하이라이트 */}
-              <div 
-                className="absolute inset-x-0 top-0 h-1/3 pointer-events-none"
-                style={{
-                  background: 'linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%)'
-                }}
-              />
-              <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="flex flex-col items-center">
-                  <span className="text-xs sm:text-sm font-bold tracking-wide text-white/90">Nonghyup Bank</span>
-                </div>
-
-                <div className="flex flex-col items-center space-y-2">
-                  <div className="text-lg sm:text-xl font-mono font-bold tracking-wider text-white whitespace-nowrap text-center">
-                    351 8205 8124 53
+          {/* Scrollable Content - 스크롤 영역 */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-8 sm:px-8">
+            <div className="flex flex-col">
+              
+              {/* 상단 2개 카드 - 결혼, 자녀 (테두리 애니메이션 추가) */}
+              <div className="grid gap-6 md:grid-cols-2 z-10 relative">
+                <article className="family-card-top group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <Heart className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-[19px] font-bold text-white">부부, 혼의 연결</h3>
+                      <p className="mt-1 text-[15px] text-white/60">
+                        · '결혼'은 본래 '혼(魂)을 연결한다'는 뜻에서 유래
+                      </p>
+                    </div>
                   </div>
+                  <div className="pt-4 border-t border-white/10">
+                    <p className="text-[17px] leading-relaxed text-white font-medium">
+                      · 일심동체처럼 몸과 마음이 강력히 연결
+                    </p>
+                  </div>
+                </article>
 
-                  <button 
-                    type="button"
-                    onClick={handleCopyAccount}
-                    className="group flex items-center gap-1 rounded-full bg-white/20 px-3 py-1.5 hover:bg-white/30 transition active:scale-95 whitespace-nowrap border border-white/40"
-                    data-testid="button-copy-account"
-                  >
-                    <span className="text-xs sm:text-sm font-bold text-white">
-                      {accountCopied ? "복사됨!" : "계좌번호 복사"}
-                    </span>
-                    {accountCopied ? (
-                      <Check className="w-3.5 h-3.5 text-white" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5 text-white" />
-                    )}
-                  </button>
-                </div>
-
-                <div className="text-center">
-                  <span className="text-[11px] sm:text-xs font-medium text-white/80 tracking-tight">
-                    예금주: 와츠유어네임 이름연구협회
-                  </span>
-                </div>
+                <article className="family-card-top group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <Baby className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-[19px] font-bold text-white">자녀, 혈육</h3>
+                      <p className="mt-1 text-[15px] text-white/60">
+                        · 혈육: 피로 연결되고 살로 이어진 관계
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-white/10">
+                    <p className="text-[17px] leading-relaxed text-white font-medium">
+                      · 분리된 듯 보이나 결코 분리될 수 없는 특별한 연대
+                    </p>
+                  </div>
+                </article>
               </div>
-            </div>
 
-            <div className="mt-8">
-              <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">입금자명</label>
-              <input 
-                className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring"
-                placeholder="입금하신 분의 성함"
-                value={depositorName}
-                onChange={(e) => setDepositorName(e.target.value)}
-                data-testid="input-depositor-name"
-              />
-            </div>
-          </div>
+              {/* 첫번째 선 연결 애니메이션 - 결혼→이름운(좌1/3), 자녀→이름운(우1/3) */}
+              <div className="relative h-20 w-full overflow-visible pointer-events-none">
+                {/* 애니메이션 선 */}
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  {/* 결혼 카드(25%) → 이름운 카드 좌측 1/3 지점(16.7%) - 직선 + 꺾임부분만 라운드 */}
+                  <path 
+                    d="M 25 0 V 40 Q 25 45 20.85 45 H 16.7 Q 11.7 45 11.7 50 V 100" 
+                    className="family-stripe-path" 
+                    stroke="url(#grad-aurora-1)" 
+                  />
+                  {/* 자녀 카드(75%) → 이름운 카드 우측 1/3 지점(33.3%) - 직선 + 꺾임부분만 라운드 */}
+                  <path 
+                    d="M 75 0 V 40 Q 75 45 70 45 H 38.3 Q 33.3 45 33.3 50 V 100" 
+                    className="family-stripe-path family-delay-top" 
+                    stroke="url(#grad-aurora-1)" 
+                  />
+                </svg>
+                {/* 고정 연결선 - 애니메이션 후 나타남 */}
+                <svg className="absolute inset-0 w-full h-full family-static-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <path 
+                    d="M 25 0 V 40 Q 25 45 20.85 45 H 16.7 Q 11.7 45 11.7 50 V 100" 
+                    fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    stroke="url(#grad-aurora-1)" 
+                    style={{ vectorEffect: 'non-scaling-stroke' }}
+                  />
+                  <path 
+                    d="M 75 0 V 40 Q 75 45 70 45 H 38.3 Q 33.3 45 33.3 50 V 100" 
+                    fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    stroke="url(#grad-aurora-1)" 
+                    style={{ vectorEffect: 'non-scaling-stroke' }}
+                  />
+                </svg>
+              </div>
 
-          <div className="glass-card rounded-3xl p-8">
-            <h3 className="text-xl form-title-font font-bold text-slate-900">희망 상담 시간</h3>
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              {["주중 2시", "주말 2시"].map((time) => (
-                <button
-                  key={time}
-                  type="button"
-                  onClick={() => setConsultationTime(time)}
-                  className={`rounded-xl border px-4 py-2.5 text-base font-bold transition ${
-                    consultationTime === time
-                      ? "bg-tiffany text-white border-tiffany shadow-lg shadow-tiffany/30 scale-[1.01]"
-                      : "border-slate-200 bg-white/60 text-slate-700 hover:bg-white"
-                  }`}
-                  data-testid={`time-${time}`}
-                >
-                  {time}
-                </button>
-              ))}
-            </div>
+              {/* 중단 2개 카드 - 이름운, 에너지의 원리 */}
+              <div className="grid gap-6 md:grid-cols-2 z-10 relative">
+                <article className="family-card-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <LifeBuoy className="h-5 w-5" />
+                    </div>
+                    <div className="w-full">
+                      <h3 className="text-[19px] font-bold text-white">이름운, 서로에게 영향</h3>
+                      <div className="mt-2 space-y-1 text-[15px] text-white/60">
+                        <div className="flex justify-between px-1 border-b border-white/5 py-1"><span>남편</span> <span>↔</span> <span>아내</span></div>
+                        <div className="flex justify-between px-1 border-b border-white/5 py-1"><span>부모</span> <span>↔</span> <span>자녀</span></div>
+                        <div className="flex justify-between px-1 py-1"><span>자녀</span> <span>↔</span> <span>자녀</span></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-white/10 space-y-2">
+                    <p className="text-[17px] text-white font-medium">
+                      · 부부의 이름운은 결혼과 함께 상호작용
+                    </p>
+                    <p className="text-[17px] text-white font-medium">
+                      · 자녀의 초년운 ↔ 부모의 중년운에 영향
+                    </p>
+                  </div>
+                </article>
 
-            <button 
-              type="button"
-              onClick={() => setShowDuration(!showDuration)}
-              className="mt-4 w-full text-left rounded-xl border border-slate-200 bg-white/60 px-4 py-3 text-base font-bold text-slate-800 hover:bg-white transition flex justify-between items-center group"
-              data-testid="toggle-duration"
-            >
-              <span className="form-title-font">평균 상담 소요시간 보기</span>
-              <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 group-hover:text-tiffany ${showDuration ? 'rotate-180' : ''}`} />
-            </button>
-            {showDuration && (
-              <div className="mt-2 rounded-2xl bg-slate-50/50 p-6 text-lg text-slate-600 border border-slate-100/50 backdrop-blur-sm form-animate-fade-in">
-                {type === "naming" ? (
-                  <ul className="space-y-3">
-                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>이름분석 + 감명 1개</span> <span className="font-bold text-slate-800">1시간 10분</span></li>
-                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>이름분석 + 감명 2개</span> <span className="font-bold text-slate-800">1시간 20분</span></li>
-                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>이름분석 + 감명 3개</span> <span className="font-bold text-slate-800">1시간 30분</span></li>
-                    <li className="flex justify-between"><span>이름분석 + 감명 4개</span> <span className="font-bold text-slate-800">1시간 40분</span></li>
-                  </ul>
-                ) : (
-                  <ul className="space-y-3">
-                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>1인</span> <span className="font-bold text-slate-800">1시간</span></li>
-                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>2인</span> <span className="font-bold text-slate-800">1시간 30분</span></li>
-                    <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>3인</span> <span className="font-bold text-slate-800">2시간</span></li>
-                    <li className="flex justify-between"><span>4인 이상</span> <span className="font-bold text-slate-800">2시간 30분</span></li>
-                  </ul>
+                <article className="family-card-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <Zap className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-[19px] font-bold text-white">에너지의 원리</h3>
+                      <p className="mt-1 text-[15px] text-white/60">
+                        이름은 '소리'보다 '글자'가 강합니다
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-white/10">
+                    <p className="text-[17px] leading-relaxed text-white font-medium">
+                      · 이름에는 소리 에너지도 있지만, 그보다 훨씬 강력한 것이 바로 글자 에너지입니다.<br />
+                      · 소리 에너지는 말하는 순간 사라지지만, 글자 에너지는 폐기하기 전까지 계속 존재합니다.
+                    </p>
+                  </div>
+                </article>
+              </div>
+
+              {/* 두번째 선 연결 애니메이션 */}
+              <div className="relative h-20 w-full overflow-visible pointer-events-none">
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <path d="M 25 0 V 45 Q 25 50 30 50 H 45 Q 50 50 50 55 V 100" className="family-stripe-path family-delay-bottom" stroke="url(#grad-aurora-2)" />
+                  <path d="M 75 0 V 45 Q 75 50 70 50 H 55 Q 50 50 50 55 V 100" className="family-stripe-path family-delay-bottom" stroke="url(#grad-aurora-2)" />
+                </svg>
+                {/* 고정 연결선 - 애니메이션 후 나타남 */}
+                <svg className="absolute inset-0 w-full h-full family-static-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <path d="M 25 0 V 45 Q 25 50 30 50 H 45 Q 50 50 50 55 V 100" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" stroke="url(#grad-aurora-2)" style={{ vectorEffect: 'non-scaling-stroke' }} />
+                  <path d="M 75 0 V 45 Q 75 50 70 50 H 55 Q 50 50 50 55 V 100" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" stroke="url(#grad-aurora-2)" style={{ vectorEffect: 'non-scaling-stroke' }} />
+                </svg>
+              </div>
+
+              {/* 결론 카드 */}
+              <article className="family-card-bot rounded-2xl border-2 border-[#56D5DB]/30 bg-[#56D5DB]/[0.05] p-8 relative overflow-hidden shadow-[0_0_40px_-10px_rgba(86,213,219,0.15)] z-10">
+                <div className="absolute inset-0 bg-gradient-to-b from-[#56D5DB]/5 to-transparent"></div>
+                <div className="relative text-left">
+                  <div className="inline-block rounded-full border border-[#56D5DB]/30 bg-[#56D5DB]/[0.15] px-3 py-1 text-[13px] font-bold text-[#56D5DB] mb-3">
+                    핵심 결론
+                  </div>
+                  <h3 className="text-[19px] font-bold text-[#56D5DB] mb-4">
+                    등본상 가족은 더 깊게 연결됩니다
+                  </h3>
+                  <p className="text-[17px] leading-relaxed text-white/80 mb-6">
+                    법적 에너지권 안에서 글자 에너지로 깊게 연결된 등본상 가족은<br className="hidden sm:block" /> 
+                    더욱 긴밀하며 상당한 영향을 미칩니다.
+                  </p>
+                  <div className="rounded-xl bg-[#0A0D11] border border-[#56D5DB]/30 p-5 shadow-inner">
+                    <p className="text-[17px] font-bold text-[#56D5DB] text-center leading-relaxed">
+                      "그래서 등본상 가족 전체의 이름분석을 진행하셔야<br className="hidden sm:block" /> 정확한 운명상담이 가능합니다."
+                    </p>
+                  </div>
+                </div>
+              </article>
+
+              {/* 추천 글 섹션 */}
+              <div className="mt-16 border-t border-white/10 pt-10">
+                <h3 className="text-[19px] font-bold text-white mb-6 flex items-center gap-2">
+                  <span className="inline-block w-1 h-5 bg-[#56D5DB] rounded-full"></span>
+                  같이 보시면 좋은 글
+                </h3>
+                {showCardHint && (
+                  <div className="flex justify-center mb-4 animate-in fade-in duration-300">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/80 border border-[#56D5DB]/30">
+                      <span className="w-2 h-2 rounded-full bg-[#56D5DB]"></span>
+                      <span className="text-[15px] text-white">카드를 <span className="text-[#56D5DB] font-semibold">터치</span>하면 전체 내용을 볼 수 있어요.</span>
+                    </div>
+                  </div>
                 )}
+                
+                <div className="grid gap-4">
+                  <a 
+                    href="https://blog.naver.com/whats_ur_name_777/223450662435" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block group rounded-xl bg-[#0A0D11] border border-white/10 p-5 hover:border-[#56D5DB]/50 transition-all shadow-md"
+                    data-testid="link-blog-1"
+                  >
+                    <div className="flex items-start gap-4">
+                      <span className="text-3xl filter grayscale group-hover:grayscale-0 transition-all">🤦‍♀️</span>
+                      <div className="flex-1">
+                        <h4 className="text-[17px] font-bold text-white group-hover:text-[#56D5DB] transition-colors leading-snug">
+                          "아빠가 바람이 났습니다" <br className="sm:hidden" />
+                          <span className="text-white/50 font-normal text-[15px] sm:ml-2">엄마 이름 때문에</span>
+                        </h4>
+                        <p className="mt-2 text-[15px] text-white/60 leading-relaxed line-clamp-2">
+                          아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습니다...
+                        </p>
+                        <div className="mt-3 flex items-center text-[13px] font-bold text-[#56D5DB]/90 opacity-80 group-hover:opacity-100">
+                          터치해서 전체 내용 보기
+                          <svg className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+
+                  <a 
+                    href="https://blog.naver.com/whats_ur_name_777/223924993144" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block group rounded-xl bg-[#0A0D11] border border-white/10 p-5 hover:border-[#56D5DB]/50 transition-all shadow-md"
+                    data-testid="link-blog-2"
+                  >
+                    <div className="flex items-start gap-4">
+                      <span className="text-3xl filter grayscale group-hover:grayscale-0 transition-all">⚖️</span>
+                      <div className="flex-1">
+                        <h4 className="text-[17px] font-bold text-white group-hover:text-[#56D5DB] transition-colors leading-snug">
+                          개명한 이름 때문에 아빠가 돌아가시고...
+                        </h4>
+                        <p className="mt-2 text-[15px] text-white/60 leading-relaxed line-clamp-2">
+                          어느날 인스타로 디엠이 왔습니다. 너무 살기 힘들다며 죽고 싶다고까지 했습니다. 젊으신 분이 그러시면...
+                        </p>
+                        <div className="mt-3 flex items-center text-[13px] font-bold text-[#56D5DB]/90 opacity-80 group-hover:opacity-100">
+                          터치해서 전체 내용 보기
+                          <svg className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                </div>
               </div>
-            )}
-          </div>
 
-        </div>
-      )}
-      </div>
-
-      {/* 하단 고정 바 - 완전 고정 */}
-      <div className="flex-shrink-0 border-t border-slate-100 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.08)] z-40">
-        <div className="px-4 py-3 flex items-center gap-4">
-          <div className="flex-1">
-            <div className="text-[10px] text-slate-500 font-bold mb-0.5">총 상담비</div>
-            <div className="text-lg form-title-font font-bold text-slate-900 tracking-tight">
-              {totalPrice.toLocaleString()}원
             </div>
+            <div className="h-24"></div>
           </div>
-          <button 
-            type="button"
-            onClick={() => {
-              if (currentStep === 1) goToStep(2);
-              else if (currentStep === 2) goToStep(3);
-              else handleSubmit();
-            }}
-            disabled={currentStep === 3 && submitMutation.isPending}
-            className="rounded-xl bg-tiffany text-white px-6 py-2.5 text-base font-bold hover:bg-tiffany-dark transition shadow-md shadow-tiffany/30 transform active:scale-[0.98] disabled:opacity-50"
-            data-testid="button-sticky-cta"
-          >
-            {currentStep === 3 ? (submitMutation.isPending ? "신청 중..." : "상담 신청하기") : "계속하기"}
-          </button>
-        </div>
-      </div>
-
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
