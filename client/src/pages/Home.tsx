@@ -539,7 +539,7 @@ export default function Home() {
 
       {/* 등본상 가족 상담 원칙 Sheet */}
       <Sheet open={familyPolicyOpen} onOpenChange={setFamilyPolicyOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+        <SheetContent side="right" className="!z-[350] !w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader className="pb-4">
             <SheetTitle className="text-xl font-bold">등본상 가족 상담 원칙</SheetTitle>
           </SheetHeader>
