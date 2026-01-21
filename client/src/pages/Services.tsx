@@ -787,9 +787,39 @@ export default function Services() {
                 </article>
               </div>
 
+              {/* 상단→중앙 연결선 */}
+              <div className="relative h-16 z-0">
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <path 
+                    d="M 25 0 V 40 Q 25 50 30 50 H 45 Q 50 50 50 60 V 100" 
+                    className="family-stripe-path" 
+                    stroke="url(#grad-aurora-1)" 
+                  />
+                  <path 
+                    d="M 75 0 V 40 Q 75 50 70 50 H 55 Q 50 50 50 60 V 100" 
+                    className="family-stripe-path family-delay-top" 
+                    stroke="url(#grad-aurora-1)" 
+                  />
+                </svg>
+                <svg className="absolute inset-0 w-full h-full family-static-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <path 
+                    d="M 25 0 V 40 Q 25 50 30 50 H 45 Q 50 50 50 60 V 100" 
+                    fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    stroke="url(#grad-aurora-1)" 
+                    style={{ vectorEffect: 'non-scaling-stroke' }}
+                  />
+                  <path 
+                    d="M 75 0 V 40 Q 75 50 70 50 H 55 Q 50 50 50 60 V 100" 
+                    fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    stroke="url(#grad-aurora-1)" 
+                    style={{ vectorEffect: 'non-scaling-stroke' }}
+                  />
+                </svg>
+              </div>
+
               {/* 중앙 연결 카드 - 이름운 */}
-              <div className="relative py-8">
-                <article className="family-card-center group rounded-2xl bg-gradient-to-br from-[#56D5DB]/10 to-[#7F5AF0]/10 border border-[#56D5DB]/30 p-6 shadow-lg">
+              <div className="relative">
+                <article className="family-card-mid group rounded-2xl bg-gradient-to-br from-[#56D5DB]/10 to-[#7F5AF0]/10 border border-[#56D5DB]/30 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/20 text-[#56D5DB]">
                       <RefreshCw className="h-5 w-5" />
@@ -812,9 +842,28 @@ export default function Services() {
                 </article>
               </div>
 
+              {/* 중앙→하단 연결선 */}
+              <div className="relative h-16 z-0">
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <path 
+                    d="M 50 0 V 100" 
+                    className="family-stripe-path family-delay-bottom" 
+                    stroke="url(#grad-aurora-2)" 
+                  />
+                </svg>
+                <svg className="absolute inset-0 w-full h-full family-static-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <path 
+                    d="M 50 0 V 100" 
+                    fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    stroke="url(#grad-aurora-2)" 
+                    style={{ vectorEffect: 'non-scaling-stroke' }}
+                  />
+                </svg>
+              </div>
+
               {/* 하단 카드 - 글자 에너지 */}
-              <div className="relative">
-                <article className="family-card-bottom group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+              <div className="relative z-10">
+                <article className="family-card-bot group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
                       <FileText className="h-5 w-5" />
