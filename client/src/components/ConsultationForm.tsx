@@ -196,7 +196,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const formTitle = type === "naming" ? "이름감명" : "이름분석 운명상담";
 
   return (
-    <div className="kna-consultation-form space-y-0">
+    <div className="kna-consultation-form space-y-0 pb-28">
       {/* 상단 헤더 + 진행바 */}
       <div className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-white/50 shadow-sm -mx-6 -mt-6 px-6 pt-6 pb-4">
         <div className="flex items-center justify-between mb-4">
@@ -723,9 +723,9 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
         </div>
       )}
 
-      {/* 하단 고정 바 */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/60 bg-white/80 backdrop-blur-xl shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-        <div className="max-w-3xl mx-auto px-6 py-5 flex items-center gap-6">
+      {/* 하단 고정 바 - sticky로 Dialog 안에서도 하단 고정 */}
+      <div className="sticky bottom-0 left-0 right-0 z-50 -mx-6 mt-8 border-t border-white/60 bg-white/95 backdrop-blur-xl shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
+        <div className="px-6 py-5 flex items-center gap-6">
           <div className="flex-1">
             <div className="text-xs text-slate-500 font-bold mb-1">총 상담비</div>
             <div className="text-2xl form-title-font font-bold text-slate-900 tracking-tight">
@@ -740,7 +740,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
               else handleSubmit();
             }}
             disabled={currentStep === 3 && submitMutation.isPending}
-            className="rounded-2xl bg-tiffany text-white px-10 py-4 text-xl font-bold hover:bg-tiffany-dark transition shadow-lg shadow-tiffany/30 transform active:scale-[0.98] disabled:opacity-50"
+            className="rounded-2xl bg-tiffany text-white px-8 py-4 text-lg font-bold hover:bg-tiffany-dark transition shadow-lg shadow-tiffany/30 transform active:scale-[0.98] disabled:opacity-50"
             data-testid="button-sticky-cta"
           >
             {currentStep === 3 ? (submitMutation.isPending ? "신청 중..." : "상담 신청하기") : "계속하기"}
