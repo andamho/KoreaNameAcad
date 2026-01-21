@@ -2043,4 +2043,63 @@ html.ua-tiktok .identity-map-inner {
   zoom: 0.82;
 }
 
+/* ========== 상담 신청서 스타일 ========== */
+/* Glassmorphism 카드 */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+/* 폼 입력 포커스 링 */
+.form-focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.2);
+  border-color: rgba(20, 184, 166, 0.7);
+}
+
+/* 폼 세그먼트 버튼 - 선택됨 */
+.seg-btn-active {
+  background-color: #14b8a6;
+  color: white;
+  border-color: #14b8a6;
+  box-shadow: 0 10px 15px -3px rgba(20, 184, 166, 0.3);
+  transform: scale(1.01);
+}
+
+/* 폼 세그먼트 버튼 - 미선택 */
+.seg-btn-inactive {
+  background-color: rgba(255, 255, 255, 0.6);
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+
+.seg-btn-inactive:hover {
+  background-color: white;
+}
+
+/* 폼 페이드인 애니메이션 */
+@keyframes formFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.form-animate-fade-in {
+  animation: formFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 폼 타이틀 폰트 (Noto Serif KR) */
+.form-title-font {
+  font-family: 'Noto Serif KR', 'KoreaUnivB', serif;
+}
+
+/* tiffany 색상 체계 */
+.text-tiffany { color: #14b8a6; }
+.text-tiffany-dark { color: #0f766e; }
+.bg-tiffany { background-color: #14b8a6; }
+.bg-tiffany-light { background-color: #ccfbf1; }
+.border-tiffany { border-color: #14b8a6; }
+.border-tiffany-light { border-color: #ccfbf1; }
+
 
