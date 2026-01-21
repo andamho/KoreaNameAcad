@@ -52,6 +52,12 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     const handlePopState = (event: PopStateEvent) => {
       // 이미 처리 중이면 무시
       if (isHandlingPopState.current) return;
+      
+      // FamilyPolicy Sheet가 열려있으면 이 핸들러에서 처리하지 않음 (Home.tsx에서 처리)
+      if (event.state?.modal === "familyPolicy" || event.state?.modal === "consultation") {
+        return;
+      }
+      
       isHandlingPopState.current = true;
       
       const step = currentStepRef.current;

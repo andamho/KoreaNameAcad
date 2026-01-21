@@ -37,6 +37,7 @@ export default function Home() {
   const isClosingFromBackButton = useRef(false);
   const dialogOpenRef = useRef(false);
   const analysisDetailOpenRef = useRef(false);
+  const familyPolicyOpenRef = useRef(false);
   const referrerPage = useRef<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -121,6 +122,10 @@ export default function Home() {
   }, [analysisDetailOpen]);
 
   useEffect(() => {
+    familyPolicyOpenRef.current = familyPolicyOpen;
+  }, [familyPolicyOpen]);
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const openType = params.get("open");
     const detailType = params.get("detail");
@@ -155,6 +160,14 @@ export default function Home() {
     const handlePopState = (event: PopStateEvent) => {
       const modalState = event.state?.modal;
       const fromPage = event.state?.from || referrerPage.current;
+      
+      // FamilyPolicy Sheet가 열려있으면 먼저 닫음
+      if (familyPolicyOpenRef.current) {
+        setFamilyPolicyOpen(false);
+        // 다시 consultation 히스토리 상태로 복원
+        window.history.pushState({ modal: "consultation" }, '');
+        return; // 다른 처리 하지 않음
+      }
       
       // analysisDetail이 열려있고, state에서 사라졌으면 닫음
       if (analysisDetailOpenRef.current && modalState !== "analysisDetail") {
@@ -328,7 +341,11 @@ export default function Home() {
           <ConsultationForm 
             type={dialogType}
             onSuccess={closeDialog}
-            onOpenFamilyPolicy={() => setFamilyPolicyOpen(true)}
+            onOpenFamilyPolicy={() => {
+              setFamilyPolicyOpen(true);
+              // FamilyPolicy Sheet 열릴 때 히스토리 상태 추가
+              window.history.pushState({ modal: "familyPolicy" }, '');
+            }}
           />
         </DialogContent>
       </Dialog>
