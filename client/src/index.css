@@ -2044,7 +2044,29 @@ html.ua-tiktok .identity-map-inner {
 }
 
 /* ========== 상담 신청서 스타일 ========== */
-/* 인앱 브라우저에서 상담신청서는 스케일 없이 원본 크기 유지 (레이아웃 깨짐 방지) */
+/* 인앱 브라우저: font-size 기반 82% 스케일 (zoom 대신) */
+html.ua-instagram .kna-consultation-form,
+html.ua-tiktok .kna-consultation-form {
+  font-size: 82%;
+}
+
+/* 인앱: 상담신청서 하단바 safe-area 패딩 제거 */
+html.ua-instagram .kna-consultation-form .kna-form-bottom-bar,
+html.ua-tiktok .kna-consultation-form .kna-form-bottom-bar {
+  padding-bottom: 12px !important;
+}
+
+/* 인앱: 헤더 패딩 축소 */
+html.ua-instagram .kna-consultation-form .kna-form-header,
+html.ua-tiktok .kna-consultation-form .kna-form-header {
+  padding: 1.5rem 1.25rem 1rem !important;
+}
+
+/* 인앱: 콘텐츠 영역 패딩 축소 */
+html.ua-instagram .kna-consultation-form .kna-form-content,
+html.ua-tiktok .kna-consultation-form .kna-form-content {
+  padding: 1.25rem !important;
+}
 
 /* Glassmorphism 카드 */
 .glass-card {
