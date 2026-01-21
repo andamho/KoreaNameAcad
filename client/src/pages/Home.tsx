@@ -529,92 +529,129 @@ export default function Home() {
       <Sheet open={familyPolicyOpen} onOpenChange={setFamilyPolicyOpen}>
         <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader className="pb-4">
-            <SheetTitle className="text-xl font-bold">등본상 가족 상담 원칙</SheetTitle>
+            <SheetTitle className="text-2xl font-bold text-center">👨‍👩‍👧‍👦 등본상 가족 상담 원칙</SheetTitle>
           </SheetHeader>
-          <div className="space-y-6 text-foreground leading-relaxed pb-8">
-            <p className="text-center">
-              가족은 운명 공동체로,<br />
-              서로 이름운의 영향을<br />
-              강하게 주고 받습니다.
-            </p>
-            
-            <div className="mt-6">
-              <h3 className="font-bold text-lg mb-2">결혼, 혼을 연결하는 인연</h3>
-              <p>
-                '결혼'이라는 말은 본래 '혼(魂)을 연결한다'는 뜻에서 유래했다고 합니다.
+          <div className="space-y-4 text-foreground leading-relaxed pb-8">
+            <Card className="p-5 space-y-4">
+              <p className="text-center">
+                가족은 운명 공동체로,<br />
+                서로 이름운의 영향을<br />
+                강하게 주고 받습니다.
               </p>
-              <p className="mt-2">
-                그만큼 결혼은 특별한 만남이며, '일심동체'라는 말이 있죠? 몸과 마음이 하나가 되는 것처럼 강력하게 연결됩니다.
-              </p>
-            </div>
-
-            <div className="mt-6">
-              <h3 className="font-bold text-lg mb-2">자녀, 피와 살로 이어진 존재</h3>
-              <p>
-                자녀는 '피붙이', '살붙이'라고도 하지요. 그래서 '혈육(血肉)'이라고 부릅니다.
-              </p>
-              <p className="mt-2">
-                즉, 피로 연결되고 살로 이어진 관계, 분리된 거 같지만 결코 분리될 수 없는 그런 특별한 관계입니다.
-              </p>
-            </div>
-
-            <div className="mt-6">
-              <h3 className="font-bold text-lg mb-2">이름운, 서로에게 영향을 줍니다</h3>
-              <p>
-                결혼을 하게 되면 부부 각자의 이름운이 서로에게 영향을 미칩니다.
-              </p>
-              <p className="mt-2">
-                또한, 자녀가 태어나게 되면 자녀의 초년운이 부모의 중년운에 영향을 주고, 부모의 중년운은 자녀의 초년운에 영향을 미칩니다.
-              </p>
-              <p className="mt-2">
-                이처럼 가족은 운명공동체로서 서로 이름운의 영향을 밀접하게 주고 받습니다.
-              </p>
-            </div>
-
-            <div className="mt-6">
-              <h3 className="font-bold text-lg mb-2">이름은 '소리'보다 '글자'가 강합니다</h3>
-              <p>
-                이름에는 소리에너지도 있지만, 그보다 훨씬 강력한 것이 바로 글자 에너지입니다.
-              </p>
-              <p className="mt-2">
-                법적 에너지권 안에서 글자 에너지로 깊게 연결되어 있는 등본상 가족은, 더욱 긴밀한 관계를 가지며 상당한 영향을 미칩니다.
-              </p>
-            </div>
-
-            <p className="font-semibold text-lg mt-6 text-center bg-tiffany-light/50 rounded-2xl p-4">
-              정확한 이름분석 상담을 받으시려면,<br />
-              등본상 가족 전체의 이름 분석이 반드시 필요합니다.
-            </p>
-
-            <div className="mt-8 space-y-4">
-              <h3 className="font-bold text-lg text-center">같이보시면 좋은 글</h3>
-              <a 
-                href="https://m.blog.naver.com/whats_ur_name_777/223450662435" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="block p-4 bg-muted rounded-lg hover:bg-muted/80 transition"
-              >
-                <h4 className="font-semibold text-foreground mb-1">
-                  "아빠가 바람이 났습니다" 엄마이름때문에
-                </h4>
-                <p className="text-sm text-muted-foreground">
-                  아빠의 바람으로 집안이 엉망진창되었습...
+              
+              <div className="mt-4">
+                <h3 className="font-bold text-lg mb-2">💍 결혼, 혼을 연결하는 인연</h3>
+                <p>
+                  '결혼'이라는 말은<br />
+                  본래 '혼(魂)을 연결한다'는 뜻에서<br />
+                  유래했다고 합니다.
                 </p>
-              </a>
-              <a 
-                href="https://m.blog.naver.com/whats_ur_name_777/223924993144" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="block p-4 bg-muted rounded-lg hover:bg-muted/80 transition"
-              >
-                <h4 className="font-semibold text-foreground mb-1">
-                  개명한 이름때문에 아빠가 돌아가시고, 소송도 걸리고
-                </h4>
-                <p className="text-sm text-muted-foreground">
-                  어느날 인스타로 디엠이 왔습니다...
+                <p className="mt-2">
+                  그만큼 결혼은 특별한 만남이며,<br />
+                  '일심동체'라는 말이 있죠?
                 </p>
-              </a>
-            </div>
+                <p className="mt-2">
+                  몸과 마음이 하나가 되는 것처럼<br />
+                  강력하게 연결됩니다.
+                </p>
+              </div>
+
+              <div className="mt-4">
+                <h3 className="font-bold text-lg mb-2">👶 자녀, 피와 살로 이어진 존재</h3>
+                <p>
+                  자녀는 '피붙이', '살붙이'라고도 하지요.<br />
+                  그래서 '혈육(血肉)'이라고 부릅니다.
+                </p>
+                <p className="mt-2">
+                  즉,<br />
+                  피로 연결되고 살로 이어진 관계,<br />
+                  분리된 거 같지만<br />
+                  결코 분리될 수 없는<br />
+                  그런 특별한 관계입니다.
+                </p>
+              </div>
+
+              <div className="mt-4">
+                <h3 className="font-bold text-lg mb-2">🔄 이름운, 서로에게 영향을 줍니다</h3>
+                <p>
+                  결혼을 하게 되면<br />
+                  부부 각자의 이름운이<br />
+                  서로에게 영향을 미칩니다.
+                </p>
+                <p className="mt-2">
+                  또한,<br />
+                  자녀가 태어나게 되면<br />
+                  자녀의 초년운이<br />
+                  👉 부모의 중년운에 영향을 주고,
+                </p>
+                <p className="mt-2">
+                  부모의 중년운은<br />
+                  👉 자녀의 초년운에 영향을 미칩니다.
+                </p>
+                <p className="mt-2">
+                  이처럼 가족은 운명공동체로서<br />
+                  서로 이름운의 영향을<br />
+                  밀접하게 주고 받습니다.
+                </p>
+              </div>
+
+              <div className="mt-4">
+                <h3 className="font-bold text-lg mb-2">📜 이름은 '소리'보다 '글자'가 강합니다</h3>
+                <p>
+                  이름에는<br />
+                  소리에너지도 있지만,<br />
+                  그보다 훨씬 강력한 것이<br />
+                  바로 글자 에너지입니다.
+                </p>
+                <p className="mt-2">
+                  법적 에너지권 안에서<br />
+                  글자 에너지로 깊게 연결되어 있는<br />
+                  등본상 가족은,<br />
+                  더욱 긴밀한 관계를 가지며<br />
+                  상당한 영향을 미칩니다.
+                </p>
+              </div>
+
+              <p className="font-semibold text-lg mt-4 text-center bg-tiffany-light/50 rounded-2xl p-4">
+                📌 정확한 이름분석 상담을 받으시려면,<br />
+                등본상 가족 전체의<br />
+                이름 분석이 반드시 필요합니다.
+              </p>
+            </Card>
+
+            <Card className="p-5 space-y-4">
+              <h3 className="font-bold text-lg text-center">📌✨📖 같이보시면 좋은 글</h3>
+              <div className="space-y-3">
+                <a 
+                  href="https://m.blog.naver.com/whats_ur_name_777/223450662435" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block p-4 bg-muted rounded-lg hover-elevate active-elevate-2"
+                  data-testid="link-blog-1"
+                >
+                  <h4 className="font-semibold text-foreground mb-1">
+                    "아빠가 바람이 났습니다" 엄마이름때문에
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    😓아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습...
+                  </p>
+                </a>
+                <a 
+                  href="https://m.blog.naver.com/whats_ur_name_777/223924993144" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block p-4 bg-muted rounded-lg hover-elevate active-elevate-2"
+                  data-testid="link-blog-2"
+                >
+                  <h4 className="font-semibold text-foreground mb-1">
+                    개명한 이름때문에 아빠가 돌아가시고, 소송도 걸리고
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    어느날 인스타로 디엠이 왔습니다. 너무 살기 힘들다며 죽고 싶다고까지 했습니다. 젊으신 분이 그러시면 ...
+                  </p>
+                </a>
+              </div>
+            </Card>
           </div>
         </SheetContent>
       </Sheet>
