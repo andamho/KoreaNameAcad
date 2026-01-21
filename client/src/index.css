@@ -2047,7 +2047,10 @@ html.ua-tiktok .identity-map-inner {
 /* 인앱 브라우저 82% 스케일 */
 html.ua-instagram .kna-consultation-form,
 html.ua-tiktok .kna-consultation-form {
-  zoom: 0.82;
+  transform: scale(0.82);
+  transform-origin: top center;
+  width: 122%;
+  margin-left: -11%;
 }
 
 /* Glassmorphism 카드 */
