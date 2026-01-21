@@ -616,23 +616,23 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
                 </div>
 
                 <div className="flex flex-col items-center space-y-2 sm:space-y-3">
-                  <div className="text-xl sm:text-2xl md:text-3xl font-mono font-bold tracking-wider text-teal-600 whitespace-nowrap text-center">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-mono font-bold tracking-wider text-emerald-800 whitespace-nowrap text-center">
                     351 8205 8124 53
                   </div>
 
                   <button 
                     type="button"
                     onClick={handleCopyAccount}
-                    className="group flex items-center gap-1.5 rounded-full bg-rose-100/80 px-4 sm:px-5 py-2 sm:py-2.5 hover:bg-rose-200/80 transition active:scale-95 whitespace-nowrap border border-rose-200/50 shadow-sm"
+                    className="group flex items-center gap-1.5 rounded-full bg-slate-100/80 px-4 sm:px-5 py-2 sm:py-2.5 hover:bg-slate-200/80 transition active:scale-95 whitespace-nowrap border border-slate-200/50 shadow-sm"
                     data-testid="button-copy-account"
                   >
-                    <span className="text-sm sm:text-base font-bold text-rose-500">
+                    <span className="text-sm sm:text-base font-bold text-slate-600">
                       {accountCopied ? "복사됨!" : "계좌번호 복사"}
                     </span>
                     {accountCopied ? (
-                      <Check className="w-4 h-4 text-rose-500" />
+                      <Check className="w-4 h-4 text-slate-600" />
                     ) : (
-                      <Copy className="w-4 h-4 text-rose-500" />
+                      <Copy className="w-4 h-4 text-slate-600" />
                     )}
                   </button>
                 </div>
