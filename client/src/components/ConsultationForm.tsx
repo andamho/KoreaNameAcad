@@ -196,7 +196,7 @@ export function ConsultationForm({ type, onSuccess }: ConsultationFormProps) {
   const formTitle = type === "naming" ? "이름감명" : "이름분석 운명상담";
 
   return (
-    <div className="kna-consultation-form h-full flex flex-col">
+    <div className="kna-consultation-form absolute inset-0 flex flex-col bg-white">
       {/* 상단 헤더 + 진행바 - 완전 고정 */}
       <div className="flex-shrink-0 bg-white border-b border-slate-100 shadow-sm px-6 pt-6 pb-5 z-40">
         <div className="flex items-center justify-between mb-4">
