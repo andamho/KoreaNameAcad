@@ -218,12 +218,15 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
   useEffect(() => {
     // 폼이 열릴 때 초기 히스토리 상태 설정 (step 1)
     window.history.replaceState({ formStep: 1 }, '');
+    console.log('[Form] Mounted, set initial state to step 1');
 
     const handlePopState = (event: PopStateEvent) => {
       const state = event.state;
+      console.log('[Form] popstate event, state:', state, 'currentStepRef:', currentStepRef.current);
       
       // formStep이 있으면 해당 step으로 이동
       if (state && typeof state.formStep === 'number') {
+        console.log('[Form] Moving to step:', state.formStep);
         event.stopImmediatePropagation(); // 라우터보다 먼저 처리
         setCurrentStep(state.formStep);
         setTimeout(() => {
@@ -231,6 +234,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
         }, 0);
       } else {
         // formStep이 없으면 (step 1에서 뒤로가기) - 폼을 유지하고 step 1로
+        console.log('[Form] No formStep, pushing step 1');
         event.stopImmediatePropagation();
         window.history.pushState({ formStep: 1 }, '');
         setCurrentStep(1);
@@ -240,12 +244,14 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     // 캡처 단계에서 이벤트를 가로채서 라우터보다 먼저 처리
     window.addEventListener('popstate', handlePopState, true);
     return () => {
+      console.log('[Form] Unmounting, removing popstate listener');
       window.removeEventListener('popstate', handlePopState, true);
     };
   }, []);
 
   // 앞으로 이동 (다음 버튼)
   const goToNextStep = (step: number) => {
+    console.log('[Form] goToNextStep:', step);
     window.history.pushState({ formStep: step }, '');
     setCurrentStep(step);
     setTimeout(() => {
@@ -253,8 +259,9 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     }, 0);
   };
 
-  // 뒤로 이동 (이전 버튼) - 이전 step의 상태를 설정하고 history.back()
+  // 뒤로 이동 (이전 버튼) - history.back() 사용
   const goToPrevStep = () => {
+    console.log('[Form] goToPrevStep called, current step:', currentStepRef.current);
     window.history.back();
   };
 
