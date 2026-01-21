@@ -632,7 +632,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                       }`}
                       data-testid={`eval-names-${num}`}
                     >
-                      {num}개
+                      {num}
                     </button>
                   ))}
                 </div>
