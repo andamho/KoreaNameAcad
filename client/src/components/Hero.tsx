@@ -119,10 +119,10 @@ export function Hero() {
               <span className={isDesktop ? "text-white" : "text-gray-900 dark:text-white"}>고달픈 인생</span>
               <span className={isDesktop ? "text-white" : "text-gray-900 dark:text-white"} style={{whiteSpace: 'nowrap'}}>이름 하나로 이유를 찾고</span>
               <span className="kna-highlight">
-                <span className="kna-shine">운이 술술 풀리는</span>
+                <span className={isDesktop ? "kna-shine-dark" : "kna-shine"}>운이 술술 풀리는</span>
               </span>
               <span className="kna-highlight">
-                <span className="kna-shine">새 이름으로, 인생역전하세요.</span>
+                <span className={isDesktop ? "kna-shine-dark" : "kna-shine"}>새 이름으로, 인생역전하세요.</span>
                 <span className="kna-underline" aria-hidden="true" />
               </span>
             </h1>

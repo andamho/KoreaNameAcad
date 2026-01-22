@@ -997,6 +997,23 @@ html.ua-tiktok .kna-myth-truth-section .text-sm {
   display: inline-block;
 }
 
+/* 데스크톱용 진한 청록색 하이라이트 */
+.kna-shine-dark {
+  background: linear-gradient(90deg,
+    #0d7377 0%,
+    #0f8b8d 35%,
+    #ffffff 49%,
+    #ffffff 51%,
+    #0f8b8d 65%,
+    #0d7377 100%);
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: kna-flow 7s ease-in-out infinite;
+  display: inline-block;
+}
+
 /* ② 밑줄에도 같은 흐름 적용 */
 .kna-underline {
   position: absolute;
