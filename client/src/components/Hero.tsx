@@ -54,43 +54,7 @@ export function Hero() {
         {/* Bottom gradient to hide danger section character */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-background to-transparent" />
         
-        {/* Falling flower petals animation - 110 random positions */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(7)].map((_, i) => {
-            const positions = [3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57,60,63,66,69,72,75,78,81,84,87,90,93,96,
-              5,8,11,14,17,20,23,26,29,32,35,38,41,44,47,50,53,56,59,62,65,68,71,74,77,80,83,86,89,92,95,
-              4,7,10,13,16,19,22,25,28,31,34,37,40,43,46,49,52,55,58,61,64,67,70,73,76,79,82,85,88,91,94,97,
-              2,98,1,99,100,101,102,103,104,105,106,107,108,109,110];
-            const randomIndex = Math.floor(Math.random() * 110);
-            const leftPos = positions[randomIndex] % 100;
-            const randomDelay = Math.random() * 8;
-            const randomDuration = 8 + Math.random() * 6;
-            const randomRotate = Math.floor(Math.random() * 360);
-            const randomScale = 0.5 + Math.random() * 0.7;
-            
-            return (
-              <div
-                key={i}
-                className="absolute animate-fall-petal"
-                style={{
-                  left: `${leftPos}%`,
-                  top: `-${5 + Math.random() * 10}%`,
-                  animationDelay: `${randomDelay}s`,
-                  animationDuration: `${randomDuration}s`,
-                }}
-              >
-                <div 
-                  className="w-3 h-4 rounded-full bg-gradient-to-br from-pink-200/70 to-pink-300/50 dark:from-pink-300/50 dark:to-pink-400/30"
-                  style={{
-                    transform: `rotate(${randomRotate}deg) scale(${randomScale})`,
-                    borderRadius: '50% 50% 50% 0',
-                  }}
-                />
               </div>
-            );
-          })}
-        </div>
-      </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative h-full flex items-center justify-center">
         <div className="text-center max-w-4xl mx-auto space-y-8 hero-wrap">
