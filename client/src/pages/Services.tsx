@@ -287,7 +287,7 @@ export default function Services() {
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6" data-testid="text-services-title">
                 전문적인 이름 서비스
               </h1>
-              <p className="text-xl md:text-2xl text-white/90">
+              <p className="text-xl md:text-2xl text-slate-700">
                 고달픈 인생,<br />
                 이름 하나로 이유와 해결책을
               </p>

@@ -64,14 +64,14 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
                 className="w-auto h-40 md:h-56 flex-shrink-0 order-1 md:order-2"
               />
               <div className="text-center md:text-left order-2 md:order-1">
-                <p className="text-sm font-medium tracking-wide text-white/70 mb-2">PRICE & GUIDE</p>
+                <p className="text-sm font-medium tracking-wide text-slate-600 mb-2">PRICE & GUIDE</p>
                 <h1 
                   className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4"
                   data-testid="heading-pricing"
                 >
                   비용 및 시간
                 </h1>
-                <p className="text-lg md:text-2xl text-white/90" data-testid="text-pricing-policy">모든 비용은 이름연구협회 규정에 따릅니다</p>
+                <p className="text-lg md:text-2xl text-slate-700" data-testid="text-pricing-policy">모든 비용은 이름연구협회 규정에 따릅니다</p>
               </div>
             </div>
           </div>
