@@ -716,14 +716,17 @@ export default function Reviews() {
       <Navbar />
       
       {/* Hero Section with character on left */}
-      <section 
-        className="relative overflow-hidden py-16 md:py-24"
-        style={{ 
-          backgroundImage: 'url(/bank-card-bg-opt.webp)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}
-      >
+      <section className="relative overflow-hidden py-16 md:py-24">
+        {/* 배경 이미지 - 최적화된 img 태그 */}
+        <img 
+          src="/bank-card-bg-opt.webp" 
+          alt="" 
+          className="absolute inset-0 w-full h-full object-cover"
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
+          aria-hidden="true"
+        />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
             <img 

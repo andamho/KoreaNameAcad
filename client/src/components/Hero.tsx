@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
-import heroImage from "@assets/ChatGPT Image 2025년 10월 8일 오후 09_34_23_1759926875782.png";
+// 최적화된 WebP 이미지 사용 (2.4MB → 46KB)
+const heroImage = "/hero-bg-opt.webp";
 import { clearScrollPosition } from "@/hooks/use-scroll-restore";
 
 export function Hero() {
@@ -50,6 +51,9 @@ export function Hero() {
           alt="배경" 
           className={`w-full h-full object-cover object-[55%] md:object-[98%] transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
           style={{ willChange: 'opacity' }}
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-background/40 to-transparent dark:from-background/85 dark:via-background/55 dark:to-transparent" />
         {/* Bottom gradient to hide danger section character */}
