@@ -283,16 +283,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
             </div>
             <div className="text-2xl form-title-font font-bold tracking-tight text-slate-800">{formTitle}</div>
           </div>
-          {/* 데스크탑용 닫기 버튼 */}
-          <button
-            type="button"
-            onClick={onSuccess}
-            className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-white/60 hover:bg-white/80 border border-slate-200 text-slate-500 hover:text-slate-700 transition-all shadow-sm"
-            data-testid="button-close-form"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+                  </div>
 
         <div className="flex items-center justify-between text-sm text-slate-600 mb-2 font-medium">
           <span className={currentStep === 1 ? "font-bold text-slate-800" : ""}>1. 기본정보</span>
