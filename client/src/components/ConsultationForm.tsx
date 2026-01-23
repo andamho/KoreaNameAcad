@@ -1009,7 +1009,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                   }`}
                   data-testid={`time-${time}`}
                 >
-                  {time}
+                  <span className="kna-inapp-zoom">{time}</span>
                 </button>
               ))}
             </div>
