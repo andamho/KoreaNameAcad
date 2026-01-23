@@ -74,8 +74,7 @@ export async function sendConsultationNotification(consultation: Consultation): 
                   ${consultation.nameChangeData?.map((change, index) => `
                     <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
                       <strong>${index + 1}번째 개명:</strong><br>
-                      현재 이름: ${change.currentName}<br>
-                      이전 이름: ${change.previousName}<br>
+                      현재 이름: ${change.previousName}<br>
                       한글 이름: ${change.koreanName}<br>
                       한자 이름: ${change.chineseName}<br>
                       개명 년도: ${change.changeYear}
@@ -103,7 +102,7 @@ export async function sendConsultationNotification(consultation: Consultation): 
             ${consultation.referralSource ? `
               <div class="section">
                 <div class="label">🔍 문의 경로</div>
-                <div class="value">${consultation.referralSource}</div>
+                <div class="value">${consultation.referralSource}${consultation.referrerName ? ` (소개자: ${consultation.referrerName})` : ''}</div>
               </div>
             ` : ''}
 
@@ -172,8 +171,7 @@ ${consultation.hasNameChange === 'yes' ? `
 개명 횟수: ${consultation.numNameChanges}회
 ${consultation.nameChangeData?.map((change, index) => `
 ${index + 1}번째 개명:
-- 현재 이름: ${change.currentName}
-- 이전 이름: ${change.previousName}
+- 현재 이름: ${change.previousName}
 - 한글 이름: ${change.koreanName}
 - 한자 이름: ${change.chineseName}
 - 개명 년도: ${change.changeYear}
@@ -189,7 +187,7 @@ ${consultation.type === 'naming' && consultation.evaluationKoreanName ? `
 💬 상담 이유:
 ${consultation.reason}
 
-${consultation.referralSource ? `🔍 문의 경로: ${consultation.referralSource}\n` : ''}
+${consultation.referralSource ? `🔍 문의 경로: ${consultation.referralSource}${consultation.referrerName ? ` (소개자: ${consultation.referrerName})` : ''}\n` : ''}
 💰 입금자명: ${consultation.depositorName}
 ⏰ 희망 상담 시간: ${consultation.consultationTime}
 

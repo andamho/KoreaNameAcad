@@ -41,6 +41,7 @@ export const consultationSchema = z.object({
   evaluationChineseName: z.string().optional(),
   reason: z.string(),
   referralSource: z.string().optional(),
+  referrerName: z.string().optional(),
   depositorName: z.string(),
   consultationTime: z.string(),
   fileName: z.string().optional(),
