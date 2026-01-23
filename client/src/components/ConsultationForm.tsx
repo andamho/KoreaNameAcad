@@ -489,7 +489,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                   {nameChangeData.map((data, index) => (
                     <div key={index} className={`${index > 0 ? 'mt-10 border-t border-slate-200/50 pt-10' : ''} form-animate-fade-in`}>
                       <h4 className="text-lg form-title-font font-bold text-slate-800 mb-6">{index + 1}번째 개명 정보</h4>
-                      <div className="space-y-6">
+                      <div className="kna-inapp-zoom space-y-6">
                         <div>
                           <label className="text-base font-bold text-slate-600 block mb-2">현재 이름</label>
                           <input 
@@ -558,7 +558,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
 
           {/* 등본 첨부 */}
           <div className="glass-card rounded-3xl p-8">
-            <div className="flex items-start justify-between gap-3">
+            <div className="kna-inapp-zoom flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-xl form-title-font font-bold text-slate-900">등본 첨부</h3>
                 <p className="text-sm text-slate-500 mt-2 font-medium leading-normal">
