@@ -670,11 +670,11 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                 <h3 className="text-xl form-title-font font-bold text-slate-900">등본 첨부</h3>
                 <p className="kna-inapp-zoom text-sm text-slate-500 mt-2 font-medium leading-normal">
                   정확한 한자 확인을 위해 필수입니다.<br/>
-                  <span className="kna-inapp-zoom text-xs text-slate-400">* 주민등록번호 뒷자리 및 주소는 가린 후 제출</span>
+                  <span className="kna-inapp-zoom text-xs text-slate-400">· 주민등록번호 및 주소는 가린 후 제출</span>
                 </p>
                 <div className="mt-4 p-4 bg-slate-50/80 rounded-2xl border border-slate-100">
                   <p className="kna-inapp-zoom text-sm text-slate-600 leading-relaxed font-medium">
-                    · <strong>실거주지 불일치</strong> 혹은 <strong>등본 외 동거인</strong>이 있으신 경우 예약 상담 시 꼭 말씀해주세요.
+                    <strong>실거주지 불일치</strong> 혹은 <strong>등본 외 동거인</strong>이 있으신 경우 예약 상담 시 꼭 말씀해주세요.
                   </p>
                 </div>
               </div>
