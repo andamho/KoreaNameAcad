@@ -2082,6 +2082,12 @@ html.ua-tiktok .kna-inapp-zoom-3x {
   zoom: 0.55;
 }
 
+/* textarea placeholder에 82% zoom 적용 */
+html.ua-instagram .kna-inapp-zoom-textarea::placeholder,
+html.ua-tiktok .kna-inapp-zoom-textarea::placeholder {
+  font-size: 82%;
+}
+
 /* Glassmorphism 카드 */
 .glass-card {
   background: rgba(255, 255, 255, 0.85);
