@@ -859,10 +859,10 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                   onClick={(e) => e.stopPropagation()}
                 >
                   <h4 className="text-lg font-bold text-slate-800 mb-2">지인 소개</h4>
-                  <p className="text-sm text-slate-500 mb-4">누구인지 이름을 아시면 적어주세요.</p>
+                  <p className="text-sm text-slate-500 mb-4">소개해 주신 분 성함을 적어 주세요.</p>
                   <input 
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base form-focus-ring mb-4"
-                    placeholder="소개해주신 분 성함 (선택)"
+                    placeholder="홍길동"
                     value={referrerName}
                     onChange={(e) => setReferrerName(e.target.value)}
                     autoFocus
