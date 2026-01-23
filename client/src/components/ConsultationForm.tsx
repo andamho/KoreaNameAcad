@@ -56,6 +56,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
   const [consultationTime, setConsultationTime] = useState("");
     const [accountCopied, setAccountCopied] = useState(false);
   const [showDuration, setShowDuration] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // 가격 계산: 이름분석 6만원/인, 이름감명 = 이름분석(6만) + 감명비(2만 × 개수)
   const PRICE_PER_PERSON = 60000;
@@ -152,28 +153,22 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     // 모든 필드 유효성 검사
     const error = validateAllFields();
     if (error) {
+      setFormError(error.message);
       // 해당 step으로 이동 후 스크롤
       if (error.step !== currentStep) {
         window.history.pushState({ formStep: error.step }, '');
         setCurrentStep(error.step);
         setTimeout(() => {
           scrollToField(error.fieldId);
-          toast({
-            title: "입력이 필요합니다",
-            description: error.message,
-            variant: "destructive",
-          });
         }, 100);
       } else {
         scrollToField(error.fieldId);
-        toast({
-          title: "입력이 필요합니다",
-          description: error.message,
-          variant: "destructive",
-        });
       }
+      // 5초 후 에러 메시지 자동 제거
+      setTimeout(() => setFormError(null), 5000);
       return;
     }
+    setFormError(null);
 
     let fileData: { fileName?: string; fileData?: string; fileType?: string } = {};
     
@@ -395,6 +390,21 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
         </div>
       </div>
       
+      {/* 에러 메시지 배너 */}
+      {formError && (
+        <div className="flex-shrink-0 bg-red-500 text-white px-6 py-3 flex items-center gap-3 animate-pulse">
+          <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold shrink-0">!</div>
+          <span className="text-sm font-medium flex-1">{formError}</span>
+          <button 
+            type="button" 
+            onClick={() => setFormError(null)}
+            className="text-white/80 hover:text-white text-lg font-bold"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* 중간 콘텐츠 - 스크롤 영역 */}
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-slate-50/30">
 
