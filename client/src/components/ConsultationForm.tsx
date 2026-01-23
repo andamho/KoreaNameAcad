@@ -50,6 +50,8 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
   ]);
   const [reason, setReason] = useState("");
   const [referralSource, setReferralSource] = useState("");
+  const [referrerName, setReferrerName] = useState("");
+  const [showReferrerInput, setShowReferrerInput] = useState(false);
   const [depositorName, setDepositorName] = useState("");
   const [consultationTime, setConsultationTime] = useState("");
     const [accountCopied, setAccountCopied] = useState(false);
@@ -226,6 +228,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
       totalPrice,
       reason,
       referralSource: referralSource || undefined,
+      referrerName: referralSource === "지인소개" && referrerName.trim() ? referrerName.trim() : undefined,
       depositorName,
       consultationTime,
       ...fileData,
@@ -301,6 +304,14 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
           return { isValid: false, message: `${i + 1}번째 개명 정보의 개명년도를 입력해주세요.`, fieldId: `field-change-year-${i}`, step: 1 };
         }
       }
+    }
+
+    // Step 2: 상담 사유 및 유입 경로 검사
+    if (!reason.trim()) {
+      return { isValid: false, message: "상담받고자 하는 이유를 적어주세요.", fieldId: "field-reason", step: 2 };
+    }
+    if (!referralSource) {
+      return { isValid: false, message: "한국이름학교를 어떻게 알게 되셨는지 선택해주세요.", fieldId: "field-referral", step: 2 };
     }
 
     // Step 3: 연락처 및 결제 정보 검사
@@ -783,7 +794,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
             </div>
           )}
 
-          <div className="glass-card rounded-3xl p-8">
+          <div id="field-reason" className="glass-card rounded-3xl p-8">
             <div>
               <h2 className="text-2xl form-title-font font-bold tracking-tight text-slate-900">상담 내용</h2>
               <p className="text-base text-slate-500 mt-2 font-medium">가장 고민되시는 부분을 편안하게 적어주세요.</p>
@@ -805,14 +816,19 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
             </div>
           </div>
 
-          <div className="glass-card rounded-3xl p-8">
+          <div id="field-referral" className="glass-card rounded-3xl p-8">
             <h3 className="text-xl form-title-font font-bold text-slate-900 mb-5">한국이름학교를 어떻게 알게 되셨나요?</h3>
             <div className="grid grid-cols-2 gap-3">
               {referralOptions.map((option) => (
                 <button
                   key={option}
                   type="button"
-                  onClick={() => setReferralSource(option)}
+                  onClick={() => {
+                    setReferralSource(option);
+                    if (option === "지인소개") {
+                      setShowReferrerInput(true);
+                    }
+                  }}
                   data-testid={`referral-${option}`}
                   className={`rounded-xl border px-4 py-2.5 text-base font-bold transition ${
                     referralSource === option
@@ -824,6 +840,35 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                 </button>
               ))}
             </div>
+
+            {/* 지인소개 팝업 입력창 */}
+            {showReferrerInput && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowReferrerInput(false)}>
+                <div 
+                  className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl form-animate-fade-in"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <h4 className="text-lg font-bold text-slate-800 mb-2">지인 소개</h4>
+                  <p className="text-sm text-slate-500 mb-4">누구인지 이름을 아시면 적어주세요.</p>
+                  <input 
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base form-focus-ring mb-4"
+                    placeholder="소개해주신 분 성함 (선택)"
+                    value={referrerName}
+                    onChange={(e) => setReferrerName(e.target.value)}
+                    autoFocus
+                    data-testid="input-referrer-name"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowReferrerInput(false)}
+                    className="w-full rounded-xl bg-tiffany text-white py-3 text-base font-bold hover:bg-tiffany-dark transition"
+                    data-testid="button-confirm-referrer"
+                  >
+                    확인
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4">
