@@ -147,6 +147,18 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
   });
 
   const handleSubmit = async () => {
+    // Step 3 유효성 검사
+    const error = validateStep3();
+    if (error) {
+      toast({
+        title: "입력이 필요합니다",
+        description: error.message,
+        variant: "destructive",
+      });
+      scrollToField(error.fieldId);
+      return;
+    }
+
     let fileData: { fileName?: string; fileData?: string; fileType?: string } = {};
     
     if (registrationDocument) {
@@ -244,8 +256,86 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     };
   }, []);
 
-  // 앞으로 이동 (다음 버튼)
+  // 유효성 검사 - 빠진 필드 찾기
+  const validateStep1 = (): { isValid: boolean; message: string; fieldId: string } | null => {
+    // 분석 대상 정보 검사
+    for (let i = 0; i < peopleData.length; i++) {
+      if (!peopleData[i].name.trim()) {
+        return { isValid: false, message: `${i + 1}번째 분석 대상의 이름을 입력해주세요.`, fieldId: `field-name-${i}` };
+      }
+      if (!peopleData[i].birthYear.trim()) {
+        return { isValid: false, message: `${i + 1}번째 분석 대상의 생년을 입력해주세요.`, fieldId: `field-birthyear-${i}` };
+      }
+    }
+
+    // 개명 이력이 "예"인 경우 개명 정보 검사
+    if (hasNameChange === "예") {
+      for (let i = 0; i < nameChangeData.length; i++) {
+        if (!nameChangeData[i].previousName.trim()) {
+          return { isValid: false, message: `${i + 1}번째 개명 정보의 현재 이름을 입력해주세요.`, fieldId: `field-previous-name-${i}` };
+        }
+        if (!nameChangeData[i].koreanName.trim()) {
+          return { isValid: false, message: `${i + 1}번째 개명 정보의 개명 전 한글 이름을 입력해주세요.`, fieldId: `field-korean-name-${i}` };
+        }
+        if (!nameChangeData[i].chineseName.trim()) {
+          return { isValid: false, message: `${i + 1}번째 개명 정보의 개명 전 한자를 입력해주세요.`, fieldId: `field-chinese-name-${i}` };
+        }
+        if (!nameChangeData[i].changeYear.trim()) {
+          return { isValid: false, message: `${i + 1}번째 개명 정보의 개명년도를 입력해주세요.`, fieldId: `field-change-year-${i}` };
+        }
+      }
+    }
+
+    // 등본 첨부 필수
+    if (!registrationDocument) {
+      return { isValid: false, message: "등본을 첨부해주세요.", fieldId: "field-registration-document" };
+    }
+
+    return null;
+  };
+
+  const validateStep3 = (): { isValid: boolean; message: string; fieldId: string } | null => {
+    if (!phone.trim()) {
+      return { isValid: false, message: "휴대폰 번호를 입력해주세요.", fieldId: "field-phone" };
+    }
+    if (!depositorName.trim()) {
+      return { isValid: false, message: "입금자명을 입력해주세요.", fieldId: "field-depositor-name" };
+    }
+    if (!consultationTime) {
+      return { isValid: false, message: "희망 상담 시간을 선택해주세요.", fieldId: "field-consultation-time" };
+    }
+    return null;
+  };
+
+  // 스크롤하여 해당 필드로 이동
+  const scrollToField = (fieldId: string) => {
+    const element = document.getElementById(fieldId);
+    if (element && scrollContainerRef.current) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // 입력 필드면 포커스
+      const input = element.querySelector('input, textarea');
+      if (input) {
+        setTimeout(() => (input as HTMLElement).focus(), 500);
+      }
+    }
+  };
+
+  // 앞으로 이동 (다음 버튼) - 유효성 검사 포함
   const goToNextStep = (step: number) => {
+    // Step 1에서 다음으로 갈 때 유효성 검사
+    if (currentStep === 1) {
+      const error = validateStep1();
+      if (error) {
+        toast({
+          title: "입력이 필요합니다",
+          description: error.message,
+          variant: "destructive",
+        });
+        scrollToField(error.fieldId);
+        return;
+      }
+    }
+
     window.history.pushState({ formStep: step }, '');
     setCurrentStep(step);
     setTimeout(() => {
@@ -383,7 +473,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                   </div>
                 </div>
                 <div className="kna-inapp-zoom space-y-6">
-                  <div>
+                  <div id={`field-name-${index}`}>
                     <label className="text-base font-bold text-slate-600 block mb-2">
                       {type === "naming" ? "현재 이름" : "이름"}
                     </label>
@@ -416,7 +506,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
+                    <div id={`field-birthyear-${index}`}>
                       <label className="text-base font-bold text-slate-600 block mb-2">생년</label>
                       <input 
                         className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring backdrop-blur-sm" 
@@ -490,7 +580,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                     <div key={index} className={`${index > 0 ? 'mt-10 border-t border-slate-200/50 pt-10' : ''} form-animate-fade-in`}>
                       <h4 className="text-lg form-title-font font-bold text-slate-800 mb-6">{index + 1}번째 개명 정보</h4>
                       <div className="kna-inapp-zoom space-y-6">
-                        <div>
+                        <div id={`field-previous-name-${index}`}>
                           <label className="text-base font-bold text-slate-600 block mb-2">현재 이름</label>
                           <input 
                             className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
@@ -501,7 +591,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                          <div>
+                          <div id={`field-korean-name-${index}`}>
                             <label className="text-base font-bold text-slate-600 block mb-2">개명 전 한글</label>
                             <input 
                               className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
@@ -511,7 +601,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                               data-testid={`input-korean-name-${index}`}
                             />
                           </div>
-                          <div>
+                          <div id={`field-chinese-name-${index}`}>
                             <label className="text-base font-bold text-slate-600 block mb-2">개명 전 한자</label>
                             <input 
                               className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-sm form-focus-ring" 
@@ -538,7 +628,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                             </a>
                           </div>
                         )}
-                        <div>
+                        <div id={`field-change-year-${index}`}>
                           <label className="text-base font-bold text-slate-600 block mb-2">개명년도</label>
                           <input 
                             className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
@@ -557,7 +647,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
           </div>
 
           {/* 등본 첨부 */}
-          <div className="glass-card rounded-3xl p-8">
+          <div id="field-registration-document" className="glass-card rounded-3xl p-8">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-xl form-title-font font-bold text-slate-900">등본 첨부</h3>
@@ -767,7 +857,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
           <div className="glass-card rounded-3xl p-8">
             <h2 className="text-2xl form-title-font font-bold tracking-tight text-slate-900">연락 및 결제</h2>
             <p className="text-base text-slate-500 mt-2 font-medium">입금 확인 후 상담예약해드립니다.</p>
-            <div className="mt-8">
+            <div id="field-phone" className="mt-8">
               <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">휴대폰 번호</label>
               <input 
                 className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring"
@@ -841,7 +931,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
               </div>
             </div>
 
-            <div className="mt-8">
+            <div id="field-depositor-name" className="mt-8">
               <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">입금자명</label>
               <input 
                 className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring"
@@ -853,7 +943,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
             </div>
           </div>
 
-          <div className="glass-card rounded-3xl p-8">
+          <div id="field-consultation-time" className="glass-card rounded-3xl p-8">
             <h3 className="text-xl form-title-font font-bold text-slate-900">희망 상담 시간</h3>
             <div className="mt-6 grid grid-cols-2 gap-3">
               {["주중 2시", "주말 2시"].map((time) => (
