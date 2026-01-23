@@ -303,7 +303,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
 
       {/* Step 1: 기본정보 */}
       {currentStep === 1 && (
-        <div className="space-y-8 pt-8 px-6 pb-8 form-animate-fade-in">
+        <div className="kna-step1-content space-y-8 pt-8 px-6 pb-8 form-animate-fade-in">
           {/* 가족 상담 원칙 안내 */}
           {type === "analysis" && (
             <div className="rounded-3xl bg-white/60 border border-tiffany-light p-6 shadow-lg backdrop-blur-md">
