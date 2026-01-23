@@ -147,15 +147,29 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
   });
 
   const handleSubmit = async () => {
-    // Step 3 유효성 검사
-    const error = validateStep3();
+    // 모든 필드 유효성 검사
+    const error = validateAllFields();
     if (error) {
-      toast({
-        title: "입력이 필요합니다",
-        description: error.message,
-        variant: "destructive",
-      });
-      scrollToField(error.fieldId);
+      // 해당 step으로 이동 후 스크롤
+      if (error.step !== currentStep) {
+        window.history.pushState({ formStep: error.step }, '');
+        setCurrentStep(error.step);
+        setTimeout(() => {
+          scrollToField(error.fieldId);
+          toast({
+            title: "입력이 필요합니다",
+            description: error.message,
+            variant: "destructive",
+          });
+        }, 100);
+      } else {
+        scrollToField(error.fieldId);
+        toast({
+          title: "입력이 필요합니다",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
       return;
     }
 
@@ -256,54 +270,50 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     };
   }, []);
 
-  // 유효성 검사 - 빠진 필드 찾기
-  const validateStep1 = (): { isValid: boolean; message: string; fieldId: string } | null => {
-    // 분석 대상 정보 검사
+  // 유효성 검사 - 모든 필드 검사 (최종 제출 시)
+  const validateAllFields = (): { isValid: boolean; message: string; fieldId: string; step: number } | null => {
+    // Step 1: 분석 대상 정보 검사
     for (let i = 0; i < peopleData.length; i++) {
       if (!peopleData[i].name.trim()) {
-        return { isValid: false, message: `${i + 1}번째 분석 대상의 이름을 입력해주세요.`, fieldId: `field-name-${i}` };
+        return { isValid: false, message: `${i + 1}번째 분석 대상의 이름을 입력해주세요.`, fieldId: `field-name-${i}`, step: 1 };
       }
       if (!peopleData[i].birthYear.trim()) {
-        return { isValid: false, message: `${i + 1}번째 분석 대상의 생년을 입력해주세요.`, fieldId: `field-birthyear-${i}` };
+        return { isValid: false, message: `${i + 1}번째 분석 대상의 생년을 입력해주세요.`, fieldId: `field-birthyear-${i}`, step: 1 };
+      }
+      if (!peopleData[i].occupation.trim()) {
+        return { isValid: false, message: `${i + 1}번째 분석 대상의 직업을 입력해주세요.`, fieldId: `field-occupation-${i}`, step: 1 };
       }
     }
 
-    // 개명 이력이 "예"인 경우 개명 정보 검사
+    // Step 1: 개명 이력이 "예"인 경우 개명 정보 검사
     if (hasNameChange === "예") {
       for (let i = 0; i < nameChangeData.length; i++) {
         if (!nameChangeData[i].previousName.trim()) {
-          return { isValid: false, message: `${i + 1}번째 개명 정보의 현재 이름을 입력해주세요.`, fieldId: `field-previous-name-${i}` };
+          return { isValid: false, message: `${i + 1}번째 개명 정보의 현재 이름을 입력해주세요.`, fieldId: `field-previous-name-${i}`, step: 1 };
         }
         if (!nameChangeData[i].koreanName.trim()) {
-          return { isValid: false, message: `${i + 1}번째 개명 정보의 개명 전 한글 이름을 입력해주세요.`, fieldId: `field-korean-name-${i}` };
+          return { isValid: false, message: `${i + 1}번째 개명 정보의 개명 전 한글 이름을 입력해주세요.`, fieldId: `field-korean-name-${i}`, step: 1 };
         }
         if (!nameChangeData[i].chineseName.trim()) {
-          return { isValid: false, message: `${i + 1}번째 개명 정보의 개명 전 한자를 입력해주세요.`, fieldId: `field-chinese-name-${i}` };
+          return { isValid: false, message: `${i + 1}번째 개명 정보의 개명 전 한자를 입력해주세요.`, fieldId: `field-chinese-name-${i}`, step: 1 };
         }
         if (!nameChangeData[i].changeYear.trim()) {
-          return { isValid: false, message: `${i + 1}번째 개명 정보의 개명년도를 입력해주세요.`, fieldId: `field-change-year-${i}` };
+          return { isValid: false, message: `${i + 1}번째 개명 정보의 개명년도를 입력해주세요.`, fieldId: `field-change-year-${i}`, step: 1 };
         }
       }
     }
 
-    // 등본 첨부 필수
-    if (!registrationDocument) {
-      return { isValid: false, message: "등본을 첨부해주세요.", fieldId: "field-registration-document" };
-    }
-
-    return null;
-  };
-
-  const validateStep3 = (): { isValid: boolean; message: string; fieldId: string } | null => {
+    // Step 3: 연락처 및 결제 정보 검사
     if (!phone.trim()) {
-      return { isValid: false, message: "휴대폰 번호를 입력해주세요.", fieldId: "field-phone" };
+      return { isValid: false, message: "휴대폰 번호를 입력해주세요.", fieldId: "field-phone", step: 3 };
     }
     if (!depositorName.trim()) {
-      return { isValid: false, message: "입금자명을 입력해주세요.", fieldId: "field-depositor-name" };
+      return { isValid: false, message: "입금자명을 입력해주세요.", fieldId: "field-depositor-name", step: 3 };
     }
     if (!consultationTime) {
-      return { isValid: false, message: "희망 상담 시간을 선택해주세요.", fieldId: "field-consultation-time" };
+      return { isValid: false, message: "희망 상담 시간을 선택해주세요.", fieldId: "field-consultation-time", step: 3 };
     }
+
     return null;
   };
 
@@ -320,22 +330,8 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     }
   };
 
-  // 앞으로 이동 (다음 버튼) - 유효성 검사 포함
+  // 앞으로 이동 (다음 버튼)
   const goToNextStep = (step: number) => {
-    // Step 1에서 다음으로 갈 때 유효성 검사
-    if (currentStep === 1) {
-      const error = validateStep1();
-      if (error) {
-        toast({
-          title: "입력이 필요합니다",
-          description: error.message,
-          variant: "destructive",
-        });
-        scrollToField(error.fieldId);
-        return;
-      }
-    }
-
     window.history.pushState({ formStep: step }, '');
     setCurrentStep(step);
     setTimeout(() => {
@@ -517,7 +513,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                         data-testid={`input-birthyear-${index}`}
                       />
                     </div>
-                    <div>
+                    <div id={`field-occupation-${index}`}>
                       <label className="text-base font-bold text-slate-600 block mb-2">직업</label>
                       <input 
                         className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring backdrop-blur-sm" 
