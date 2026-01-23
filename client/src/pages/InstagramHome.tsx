@@ -20,6 +20,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
+import { Heart, Baby, LifeBuoy, Zap, Users, X } from "lucide-react";
 import analysisExampleImage from "@assets/hongildong-analysis.jpg";
 import newYearImage from "@assets/newYearPopup_optimized.jpg";
 import characterImage from "@assets/KakaoTalk_20251226_135549799_1766724973553.png";
@@ -57,10 +65,12 @@ export default function InstagramHome() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
   const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
+  const [familyPolicyOpen, setFamilyPolicyOpen] = useState(false);
   const [showChristmasPopup, setShowChristmasPopup] = useState(false); // 팝업 비활성화
   const isClosingFromBackButton = useRef(false);
   const dialogOpenRef = useRef(false);
   const analysisDetailOpenRef = useRef(false);
+  const familyPolicyOpenRef = useRef(false);
   const referrerPage = useRef<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -284,6 +294,10 @@ export default function InstagramHome() {
   }, [analysisDetailOpen]);
 
   useEffect(() => {
+    familyPolicyOpenRef.current = familyPolicyOpen;
+  }, [familyPolicyOpen]);
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const openType = params.get("open");
     const detailType = params.get("detail");
@@ -318,6 +332,15 @@ export default function InstagramHome() {
     const handlePopState = (event: PopStateEvent) => {
       const modalState = event.state?.modal;
       const fromPage = event.state?.from || referrerPage.current;
+      
+      // familyPolicy가 열려있고, state가 familyPolicy가 아니면 닫음 (consultation으로 돌아감)
+      if (familyPolicyOpenRef.current && modalState !== "familyPolicy") {
+        isClosingFromBackButton.current = true;
+        setFamilyPolicyOpen(false);
+        // consultation 상태로 돌아왔으면 consultation은 그대로 유지
+        isClosingFromBackButton.current = false;
+        return;
+      }
       
       // analysisDetail이 열려있고, state에서 사라졌으면 닫음
       if (analysisDetailOpenRef.current && modalState !== "analysisDetail") {
@@ -421,6 +444,21 @@ export default function InstagramHome() {
     isClosingFromBackButton.current = false;
   };
 
+  const openFamilyPolicy = () => {
+    setFamilyPolicyOpen(true);
+    // consultation 위에 familyPolicy를 열었음을 히스토리에 기록
+    const fromPage = window.history.state?.from || referrerPage.current;
+    window.history.pushState({ modal: "familyPolicy", from: fromPage }, "");
+  };
+
+  const closeFamilyPolicy = () => {
+    setFamilyPolicyOpen(false);
+    // X 버튼이나 외부 클릭으로 닫을 때 - 뒤로 가기로 consultation으로 돌아감
+    if (!isClosingFromBackButton.current) {
+      window.history.back();
+    }
+    isClosingFromBackButton.current = false;
+  };
 
   return (
     <>
@@ -499,6 +537,7 @@ export default function InstagramHome() {
           <ConsultationForm 
             type={dialogType}
             onSuccess={closeDialog}
+            onOpenFamilyPolicy={openFamilyPolicy}
           />
         </DialogContent>
       </Dialog>
@@ -593,6 +632,171 @@ export default function InstagramHome() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* 등본상 가족 상담 원칙 Sheet */}
+      <Sheet open={familyPolicyOpen} onOpenChange={(open) => { if (!open) closeFamilyPolicy(); }}>
+        <SheetContent 
+          side="right"
+          className="family-policy-sheet z-[10002] w-full sm:max-w-[725px] sm:w-[725px] overflow-hidden bg-[#0A0D11] text-white border-l border-white/10 !p-0 flex flex-col"
+          aria-describedby={undefined}
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>등본상 가족 상담 원칙</SheetTitle>
+          </SheetHeader>
+
+          {/* SVG Gradients for line animations */}
+          <svg className="absolute w-0 h-0">
+            <defs>
+              <linearGradient id="grad-aurora-1" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#56D5DB" />
+                <stop offset="100%" stopColor="#7F5AF0" />
+              </linearGradient>
+              <linearGradient id="grad-aurora-2" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4361EE" />
+                <stop offset="100%" stopColor="#F72585" />
+              </linearGradient>
+            </defs>
+          </svg>
+          
+          {/* Fixed Header */}
+          <div className="shrink-0 px-6 py-6 sm:px-8 bg-[#0A0D11] flex items-start justify-between border-b border-white/5">
+            <div>
+              <h1 className="text-[22px] sm:text-[26px] font-bold text-[#56D5DB] tracking-tight">
+                등본상 가족 상담 원칙
+              </h1>
+              <p className="mt-3 text-[17px] font-semibold tracking-tight text-white/85">
+                가족은 운명 공동체로, 서로 이름운의 영향을 강하게 주고 받습니다.
+              </p>
+            </div>
+            <SheetClose className="group -mr-2 ml-4 p-2 rounded-md text-white/40 hover:text-white focus:outline-none transition-colors">
+              <span className="sr-only">닫기</span>
+              <X className="h-8 w-8 group-hover:rotate-90 transition-transform duration-300" />
+            </SheetClose>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-8 sm:px-8">
+            <div className="flex flex-col">
+              
+              {/* 상단 2개 카드 - 결혼, 자녀 */}
+              <div className="grid gap-6 md:grid-cols-2 z-10 relative">
+                <article className="family-card-top group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <Heart className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-[19px] font-bold text-white">부부, 혼의 연결</h3>
+                      <p className="mt-1 text-[15px] text-white/60">
+                        · '결혼'은 본래 '혼(魂)을 연결한다'는 뜻에서 유래
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-white/10">
+                    <p className="text-[17px] leading-relaxed text-white font-medium">
+                      · 일심동체처럼 몸과 마음이 강력히 연결
+                    </p>
+                  </div>
+                </article>
+
+                <article className="family-card-top group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <Baby className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-[19px] font-bold text-white">자녀, 혈육</h3>
+                      <p className="mt-1 text-[15px] text-white/60">
+                        · 혈육: 피로 연결되고 살로 이어진 관계
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-white/10">
+                    <p className="text-[17px] leading-relaxed text-white font-medium">
+                      · 분리된 듯 보이나 결코 분리될 수 없는 특별한 연대
+                    </p>
+                  </div>
+                </article>
+              </div>
+
+              {/* 중단 2개 카드 - 이름운, 에너지의 원리 */}
+              <div className="grid gap-6 md:grid-cols-2 z-10 relative mt-6">
+                <article className="family-card-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <LifeBuoy className="h-5 w-5" />
+                    </div>
+                    <div className="w-full">
+                      <h3 className="text-[19px] font-bold text-white">이름운, 서로에게 영향</h3>
+                      <div className="mt-2 space-y-1 text-[15px] text-white/60">
+                        <div className="flex justify-between px-1 border-b border-white/5 py-1"><span>남편</span> <span>↔</span> <span>아내</span></div>
+                        <div className="flex justify-between px-1 border-b border-white/5 py-1"><span>부모</span> <span>↔</span> <span>자녀</span></div>
+                        <div className="flex justify-between px-1 py-1"><span>자녀</span> <span>↔</span> <span>자녀</span></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-white/10 space-y-2">
+                    <p className="text-[17px] text-white font-medium">
+                      · 부부의 이름운은 결혼과 함께 상호작용
+                    </p>
+                    <p className="text-[17px] text-white font-medium">
+                      · 자녀의 초년운 ↔ 부모의 중년운에 영향
+                    </p>
+                  </div>
+                </article>
+
+                <article className="family-card-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <Zap className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-[19px] font-bold text-white">에너지의 원리</h3>
+                      <p className="mt-1 text-[15px] text-white/60">
+                        · 가정 내 에너지 분배
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-white/10 space-y-2">
+                    <p className="text-[17px] text-white font-medium">
+                      · 한 사람의 운이 좋아지면, 가족 전체에도 영향
+                    </p>
+                    <p className="text-[17px] text-white font-medium">
+                      · 가족 중 한 사람의 불운이 전체 균형을 흔들 수 있음
+                    </p>
+                  </div>
+                </article>
+              </div>
+
+              {/* 하단 결론 카드 */}
+              <div className="mt-6 z-10 relative">
+                <article className="family-card-bottom group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
+                      <Users className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-[19px] font-bold text-white">따라서, 등본상 가족은 함께</h3>
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-white/10 space-y-3">
+                    <p className="text-[17px] text-white font-medium">
+                      · 가족 전체 이름운을 조화롭게 분석
+                    </p>
+                    <p className="text-[17px] text-white font-medium">
+                      · 개명이 필요한 경우, 가족 전체의 균형을 고려해 진행
+                    </p>
+                    <p className="text-[17px] text-white font-medium">
+                      · 한 사람만 개명해도, 가족 전체에 긍정적 파급 효과
+                    </p>
+                  </div>
+                </article>
+              </div>
+
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
       </div>
     </>
   );
