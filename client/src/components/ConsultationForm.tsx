@@ -558,12 +558,12 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
 
           {/* 등본 첨부 */}
           <div className="glass-card rounded-3xl p-8">
-            <div className="kna-inapp-zoom flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-xl form-title-font font-bold text-slate-900">등본 첨부</h3>
                 <p className="text-sm text-slate-500 mt-2 font-medium leading-normal">
                   정확한 한자 확인을 위해 필수입니다.<br/>
-                  <span className="text-xs text-slate-400">* 주민등록번호 뒷자리 및 주소는 가린 후 제출</span>
+                  <span className="kna-inapp-zoom text-xs text-slate-400">* 주민등록번호 뒷자리 및 주소는 가린 후 제출</span>
                 </p>
                 <div className="mt-4 p-4 bg-slate-50/80 rounded-2xl border border-slate-100">
                   <p className="text-sm text-slate-600 leading-relaxed font-medium">
@@ -581,7 +581,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                     </div>
                     <div className="flex-1">
                       <div className="text-lg font-bold text-slate-900">파일 선택</div>
-                      <div className="text-sm text-slate-400 mt-1 truncate max-w-[200px] mx-auto sm:mx-0">
+                      <div className="kna-inapp-zoom text-sm text-slate-400 mt-1 truncate max-w-[200px] mx-auto sm:mx-0">
                         {registrationDocument ? registrationDocument.name : "선택된 파일 없음"}
                       </div>
                     </div>
