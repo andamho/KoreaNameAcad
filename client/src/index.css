@@ -2061,6 +2061,12 @@ html.ua-tiktok .identity-map-inner {
 }
 
 /* ========== 상담 신청서 스타일 ========== */
+/* 인앱 브라우저: 텍스트 자동 확대 비활성화 (들쭉날쭉 방지) */
+html.ua-instagram .kna-consultation-form,
+html.ua-tiktok .kna-consultation-form {
+  -webkit-text-size-adjust: none !important;
+  text-size-adjust: none !important;
+}
 /* 인앱 브라우저 82% 스케일 - 헤더와 스크롤 영역만 적용 (하단바 제외) */
 html.ua-instagram .kna-consultation-form .flex-shrink-0,
 html.ua-tiktok .kna-consultation-form .flex-shrink-0,
