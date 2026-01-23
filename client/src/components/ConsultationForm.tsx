@@ -1024,7 +1024,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
               <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 group-hover:text-tiffany ${showDuration ? 'rotate-180' : ''}`} />
             </button>
             {showDuration && (
-              <div className="mt-2 rounded-2xl bg-slate-50/50 p-6 text-base text-slate-600 border border-slate-100/50 backdrop-blur-sm form-animate-fade-in">
+              <div className="kna-inapp-zoom mt-2 rounded-2xl bg-slate-50/50 p-6 text-base text-slate-600 border border-slate-100/50 backdrop-blur-sm form-animate-fade-in">
                 {type === "naming" ? (
                   <ul className="space-y-3">
                     <li className="flex justify-between border-b border-slate-200/60 pb-2"><span>이름분석<br className="sm:hidden" /><span className="hidden sm:inline"> </span>+ 감명 1개</span> <span className="font-bold text-slate-800">1시간 10분</span></li>
