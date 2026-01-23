@@ -907,11 +907,11 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
         <div className="space-y-8 pt-8 px-6 pb-8 form-animate-fade-in">
           <div className="glass-card rounded-3xl p-8">
             <h2 className="text-2xl form-title-font font-bold tracking-tight text-slate-900">연락 및 결제</h2>
-            <p className="text-base text-slate-500 mt-2 font-medium">입금 확인 후 상담예약해드립니다.</p>
+            <p className="kna-inapp-zoom text-base text-slate-500 mt-2 font-medium">입금 확인 후 상담예약해드립니다.</p>
             <div id="field-phone" className="mt-8">
               <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">휴대폰 번호</label>
               <input 
-                className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring"
+                className="kna-inapp-zoom-input w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring"
                 placeholder="010-0000-0000" 
                 inputMode="tel"
                 value={phone}
@@ -985,7 +985,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
             <div id="field-depositor-name" className="mt-8">
               <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">입금자명</label>
               <input 
-                className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring"
+                className="kna-inapp-zoom-input w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring"
                 placeholder="입금하신 분의 성함"
                 value={depositorName}
                 onChange={(e) => setDepositorName(e.target.value)}
@@ -1020,7 +1020,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
               className="mt-4 w-full text-left rounded-xl border border-slate-200 bg-white/60 px-4 py-3 text-base font-bold text-slate-800 hover:bg-white transition flex justify-between items-center group"
               data-testid="toggle-duration"
             >
-              <span className="form-title-font">평균 상담 소요시간 보기</span>
+              <span className="kna-inapp-zoom form-title-font">평균 상담 소요시간 보기</span>
               <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 group-hover:text-tiffany ${showDuration ? 'rotate-180' : ''}`} />
             </button>
             {showDuration && (
