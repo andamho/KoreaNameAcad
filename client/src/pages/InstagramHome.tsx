@@ -337,8 +337,7 @@ export default function InstagramHome() {
       if (familyPolicyOpenRef.current && modalState !== "familyPolicy") {
         isClosingFromBackButton.current = true;
         setFamilyPolicyOpen(false);
-        // consultation 상태로 돌아왔으면 consultation은 그대로 유지
-        isClosingFromBackButton.current = false;
+        // isClosingFromBackButton은 closeFamilyPolicy에서 reset됨
         return;
       }
       
