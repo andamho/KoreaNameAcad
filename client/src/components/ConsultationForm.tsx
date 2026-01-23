@@ -1020,7 +1020,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
               className="mt-4 w-full text-left rounded-xl border border-slate-200 bg-white/60 px-4 py-3 text-base font-bold text-slate-800 hover:bg-white transition flex justify-between items-center group"
               data-testid="toggle-duration"
             >
-              <span className="form-title-font">평균 상담 소요시간 보기</span>
+              <span className="kna-inapp-zoom form-title-font">평균 상담 소요시간 보기</span>
               <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 group-hover:text-tiffany ${showDuration ? 'rotate-180' : ''}`} />
             </button>
             {showDuration && (
