@@ -834,7 +834,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                 </div>
 
                 <div className="text-center">
-                  <span className="kna-inapp-zoom-2x text-[11px] sm:text-xs font-medium text-white/80 tracking-tight">
+                  <span className="kna-inapp-zoom-3x text-[11px] sm:text-xs font-medium text-white/80 tracking-tight">
                     예금주: 와츠유어네임 이름연구협회
                   </span>
                 </div>

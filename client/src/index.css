@@ -2076,6 +2076,12 @@ html.ua-tiktok .kna-inapp-zoom-2x {
   zoom: 0.67;
 }
 
+/* 82% x 82% x 82% = 약 55% zoom (가장 작게) */
+html.ua-instagram .kna-inapp-zoom-3x,
+html.ua-tiktok .kna-inapp-zoom-3x {
+  zoom: 0.55;
+}
+
 /* Glassmorphism 카드 */
 .glass-card {
   background: rgba(255, 255, 255, 0.85);
