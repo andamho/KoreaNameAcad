@@ -393,9 +393,12 @@ export default function InstagramHome() {
 
   const openDialog = (type: "analysis" | "naming") => {
     setDialogType(type);
+    // ref를 먼저 업데이트 (popstate 이벤트 핸들러에서 사용)
+    dialogOpenRef.current = true;
     setDialogOpen(true);
-    // hash를 사용하여 뒤로 가기 버튼으로 닫을 수 있게 함 (인앱 브라우저 호환)
-    window.location.hash = "#consultation";
+    // pushState로 히스토리 추가 (hashchange 이벤트 발생 없이)
+    const newUrl = window.location.pathname + window.location.search + '#consultation';
+    window.history.pushState({ modal: 'consultation' }, '', newUrl);
   };
 
   const closeDialog = () => {
@@ -420,9 +423,12 @@ export default function InstagramHome() {
   };
 
   const openAnalysisDetail = () => {
+    // ref를 먼저 업데이트 (popstate 이벤트 핸들러에서 사용)
+    analysisDetailOpenRef.current = true;
     setAnalysisDetailOpen(true);
-    // hash를 사용하여 뒤로 가기 버튼으로 닫을 수 있게 함 (인앱 브라우저 호환)
-    window.location.hash = "#analysisDetail";
+    // pushState로 히스토리 추가 (hashchange 이벤트 발생 없이)
+    const newUrl = window.location.pathname + window.location.search + '#analysisDetail';
+    window.history.pushState({ modal: 'analysisDetail' }, '', newUrl);
   };
 
   const closeAnalysisDetail = () => {
@@ -447,9 +453,12 @@ export default function InstagramHome() {
   };
 
   const openFamilyPolicy = () => {
+    // ref를 먼저 업데이트 (popstate 이벤트 핸들러에서 사용)
+    familyPolicyOpenRef.current = true;
     setFamilyPolicyOpen(true);
-    // hash를 사용하여 뒤로 가기 버튼으로 닫을 수 있게 함 (인앱 브라우저 호환)
-    window.location.hash = "#familyPolicy";
+    // pushState로 히스토리 추가 (hashchange 이벤트 발생 없이)
+    const newUrl = window.location.pathname + window.location.search + '#familyPolicy';
+    window.history.pushState({ modal: 'familyPolicy' }, '', newUrl);
   };
 
   const closeFamilyPolicy = () => {

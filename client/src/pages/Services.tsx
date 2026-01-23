@@ -22,6 +22,7 @@ export default function Services() {
   // 뒤로 가기 버튼 처리를 위한 ref
   const dialogOpenRef = useRef(false);
   const analysisDetailOpenRef = useRef(false);
+  const familyPolicyOpenRef = useRef(false);
   const isClosingFromBackButton = useRef(false);
   const scrollBeforeProcess = useRef<number | null>(null);
 
@@ -42,56 +43,97 @@ export default function Services() {
     analysisDetailOpenRef.current = analysisDetailOpen;
   }, [analysisDetailOpen]);
 
-  // 뒤로 가기 버튼 처리
   useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      const modalState = event.state?.modal;
+    familyPolicyOpenRef.current = familyPolicyOpen;
+  }, [familyPolicyOpen]);
+
+  // 뒤로 가기 버튼 처리 (popstate + hashchange 둘 다 사용)
+  useEffect(() => {
+    const handleBackNavigation = () => {
+      const hash = window.location.hash;
       
-      if (analysisDetailOpenRef.current) {
+      // familyPolicy가 열려있는데 hash가 #familyPolicy가 아니면 닫음
+      if (familyPolicyOpenRef.current && hash !== "#familyPolicy") {
+        isClosingFromBackButton.current = true;
+        setFamilyPolicyOpen(false);
+        return;
+      }
+      
+      // analysisDetail이 열려있는데 hash가 #analysisDetail이 아니면 닫음
+      if (analysisDetailOpenRef.current && hash !== "#analysisDetail") {
         isClosingFromBackButton.current = true;
         setAnalysisDetailOpen(false);
-      } else if (dialogOpenRef.current) {
-        // formStep이 있으면 폼 내부 네비게이션이므로 닫지 않음
-        if (event.state?.formStep !== undefined) {
-          return;
-        }
-        // consultation 상태면 닫지 않음
-        if (modalState === "consultation") {
-          return;
-        }
+        return;
+      }
+      
+      // consultation이 열려있는데 hash가 #consultation이나 #familyPolicy가 아니면 닫음
+      if (dialogOpenRef.current && hash !== "#consultation" && hash !== "#familyPolicy") {
         isClosingFromBackButton.current = true;
         setDialogOpen(false);
-      } else if (event.state?.scrollPosition !== undefined) {
-        // 진행과정 보기에서 뒤로 가기 - 저장된 스크롤 위치로 복원
-        window.scrollTo({ top: event.state.scrollPosition, behavior: "instant" });
       }
     };
 
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    // hashchange 이벤트 (인앱 브라우저에서 더 안정적)
+    window.addEventListener("hashchange", handleBackNavigation);
+    // popstate 이벤트 (일반 브라우저 호환)
+    window.addEventListener("popstate", handleBackNavigation);
+    
+    return () => {
+      window.removeEventListener("hashchange", handleBackNavigation);
+      window.removeEventListener("popstate", handleBackNavigation);
+    };
   }, []);
   
   const openDialog = (type: "analysis" | "naming") => {
     setDialogType(type);
+    // ref를 먼저 업데이트 (popstate 이벤트 핸들러에서 사용)
+    dialogOpenRef.current = true;
     setDialogOpen(true);
-    window.history.pushState({ modal: "consultation" }, "");
+    // pushState로 히스토리 추가 (hashchange 이벤트 발생 없이)
+    const newUrl = window.location.pathname + window.location.search + '#consultation';
+    window.history.pushState({ modal: 'consultation' }, '', newUrl);
   };
 
   const closeDialog = () => {
     setDialogOpen(false);
     if (!isClosingFromBackButton.current) {
-      window.history.back();
+      if (window.location.hash) {
+        window.history.back();
+      }
     }
     isClosingFromBackButton.current = false;
   };
 
   const openAnalysisDetail = () => {
+    // ref를 먼저 업데이트 (popstate 이벤트 핸들러에서 사용)
+    analysisDetailOpenRef.current = true;
     setAnalysisDetailOpen(true);
-    window.history.pushState({ modal: "analysisDetail" }, "");
+    // pushState로 히스토리 추가 (hashchange 이벤트 발생 없이)
+    const newUrl = window.location.pathname + window.location.search + '#analysisDetail';
+    window.history.pushState({ modal: 'analysisDetail' }, '', newUrl);
   };
 
   const closeAnalysisDetail = () => {
     setAnalysisDetailOpen(false);
+    if (!isClosingFromBackButton.current) {
+      if (window.location.hash) {
+        window.history.back();
+      }
+    }
+    isClosingFromBackButton.current = false;
+  };
+
+  const openFamilyPolicy = () => {
+    // ref를 먼저 업데이트 (popstate 이벤트 핸들러에서 사용)
+    familyPolicyOpenRef.current = true;
+    setFamilyPolicyOpen(true);
+    // pushState로 히스토리 추가 (hashchange 이벤트 발생 없이)
+    const newUrl = window.location.pathname + window.location.search + '#familyPolicy';
+    window.history.pushState({ modal: 'familyPolicy' }, '', newUrl);
+  };
+
+  const closeFamilyPolicy = () => {
+    setFamilyPolicyOpen(false);
     if (!isClosingFromBackButton.current) {
       window.history.back();
     }
@@ -542,7 +584,7 @@ export default function Services() {
           <ConsultationForm 
             type={dialogType}
             onSuccess={closeDialog}
-            onOpenFamilyPolicy={() => setFamilyPolicyOpen(true)}
+            onOpenFamilyPolicy={openFamilyPolicy}
           />
         </DialogContent>
       </Dialog>
@@ -715,7 +757,7 @@ export default function Services() {
       </Sheet>
 
       {/* 등본상 가족 상담 원칙 Sheet */}
-      <Sheet open={familyPolicyOpen} onOpenChange={setFamilyPolicyOpen}>
+      <Sheet open={familyPolicyOpen} onOpenChange={(open) => { if (!open) closeFamilyPolicy(); }}>
         <SheetContent 
           side="right"
           className="family-policy-sheet z-[10002] w-full sm:max-w-[725px] sm:w-[725px] overflow-hidden bg-[#0A0D11] text-white border-l border-white/10 !p-0 flex flex-col"
