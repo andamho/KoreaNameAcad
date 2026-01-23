@@ -812,7 +812,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                 </div>
 
                 <div className="flex flex-col items-center space-y-2">
-                  <div className="text-lg sm:text-[28px] font-mono font-bold tracking-wider text-white whitespace-nowrap text-center">
+                  <div className="text-lg sm:text-[31px] font-mono font-bold tracking-wider text-white whitespace-nowrap text-center">
                     351 8205 8124 53
                   </div>
 
