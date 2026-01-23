@@ -808,7 +808,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
               />
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div className="flex flex-col items-center">
-                  <span className="kna-inapp-zoom-2x text-xs sm:text-sm font-bold tracking-wide text-white/90">Nonghyup Bank</span>
+                  <span className="kna-inapp-zoom-2x text-xs sm:text-[15px] font-bold tracking-wide text-white/90">Nonghyup Bank</span>
                 </div>
 
                 <div className="flex flex-col items-center space-y-2">
@@ -834,7 +834,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                 </div>
 
                 <div className="text-center">
-                  <span className="kna-inapp-zoom-3x text-[11px] sm:text-xs font-medium text-white/80 tracking-tight">
+                  <span className="kna-inapp-zoom-3x text-[11px] sm:text-[14px] font-medium text-white/80 tracking-tight">
                     예금주: 와츠유어네임 이름연구협회
                   </span>
                 </div>
