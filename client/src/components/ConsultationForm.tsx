@@ -489,8 +489,8 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                     {type === "analysis" ? `${index + 1}번째 분석 대상` : "현재 정보"}
                   </div>
                 </div>
-                <div className="kna-inapp-zoom space-y-6">
-                  <div id={`field-name-${index}`}>
+                <div className="space-y-6">
+                  <div className="kna-inapp-zoom" id={`field-name-${index}`}>
                     <label className="text-base font-bold text-slate-600 block mb-2">
                       {type === "naming" ? "현재 이름" : "이름"}
                     </label>
@@ -522,7 +522,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                       ))}
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="kna-inapp-zoom grid grid-cols-2 gap-4">
                     <div id={`field-birthyear-${index}`}>
                       <label className="text-base font-bold text-slate-600 block mb-2">생년</label>
                       <input 
