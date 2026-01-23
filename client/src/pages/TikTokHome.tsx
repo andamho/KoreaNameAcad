@@ -313,10 +313,12 @@ export default function TikTokHome() {
     if (openType === "analysis" || openType === "naming") {
       setDialogType(openType);
       setDialogOpen(true);
-      window.history.replaceState({ modal: "consultation", from: fromPage }, "", "/tt");
+      // hash 기반으로 변경 (인앱 브라우저 호환)
+      window.history.replaceState(null, "", "/tt#consultation");
     } else if (detailType === "analysis") {
       setAnalysisDetailOpen(true);
-      window.history.replaceState({ modal: "analysisDetail", from: fromPage }, "", "/tt");
+      // hash 기반으로 변경 (인앱 브라우저 호환)
+      window.history.replaceState(null, "", "/tt#analysisDetail");
     }
 
     const hash = window.location.hash;
@@ -331,54 +333,55 @@ export default function TikTokHome() {
     }
   }, []);
 
-  // 뒤로 가기 버튼 감지 및 처리
+  // 뒤로 가기 버튼 감지 및 처리 (popstate + hashchange 둘 다 사용)
   useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      const modalState = event.state?.modal;
-      const fromPage = event.state?.from || referrerPage.current;
+    const handleBackNavigation = () => {
+      const hash = window.location.hash;
+      const fromPage = referrerPage.current;
       
-      // familyPolicy가 열려있고, state가 familyPolicy가 아니면 닫음 (consultation으로 돌아감)
-      if (familyPolicyOpenRef.current && modalState !== "familyPolicy") {
+      // familyPolicy가 열려있는데 hash가 #familyPolicy가 아니면 닫음
+      if (familyPolicyOpenRef.current && hash !== "#familyPolicy") {
         isClosingFromBackButton.current = true;
         setFamilyPolicyOpen(false);
-        // isClosingFromBackButton은 closeFamilyPolicy에서 reset됨
         return;
       }
       
-      // analysisDetail이 열려있고, state에서 사라졌으면 닫음
-      if (analysisDetailOpenRef.current && modalState !== "analysisDetail") {
+      // analysisDetail이 열려있는데 hash가 #analysisDetail이 아니면 닫음
+      if (analysisDetailOpenRef.current && hash !== "#analysisDetail") {
         isClosingFromBackButton.current = true;
         setAnalysisDetailOpen(false);
-        // referrer 페이지로 이동
         if (fromPage) {
           setTimeout(() => {
             setLocation(fromPage);
-            // referrer 정보 초기화 (한 번 사용 후 삭제)
             referrerPage.current = null;
           }, 0);
         }
+        return;
       }
-      // consultation이 열려있고, state가 consultation도 familyPolicy도 아니면 닫음
-      else if (dialogOpenRef.current && modalState !== "consultation" && modalState !== "familyPolicy") {
+      
+      // consultation이 열려있는데 hash가 #consultation이나 #familyPolicy가 아니면 닫음
+      if (dialogOpenRef.current && hash !== "#consultation" && hash !== "#familyPolicy") {
         isClosingFromBackButton.current = true;
         setDialogOpen(false);
-        // referrer 페이지로 이동
         if (fromPage) {
           setTimeout(() => {
             setLocation(fromPage);
-            // referrer 정보 초기화 (한 번 사용 후 삭제)
             referrerPage.current = null;
           }, 0);
         }
       }
     };
 
-    window.addEventListener("popstate", handlePopState);
+    // hashchange 이벤트 (인앱 브라우저에서 더 안정적)
+    window.addEventListener("hashchange", handleBackNavigation);
+    // popstate 이벤트 (일반 브라우저 호환)
+    window.addEventListener("popstate", handleBackNavigation);
     
     return () => {
-      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("hashchange", handleBackNavigation);
+      window.removeEventListener("popstate", handleBackNavigation);
     };
-  }, []); // 의존성 배열 비움 - 항상 최신 ref 값을 참조
+  }, [setLocation]);
 
   // 홈 버튼 클릭 시 모든 Dialog 닫기
   useEffect(() => {
@@ -395,19 +398,19 @@ export default function TikTokHome() {
   const openDialog = (type: "analysis" | "naming") => {
     setDialogType(type);
     setDialogOpen(true);
-    // 히스토리에 고유 ID를 저장하여 뒤로 가기 버튼으로 닫을 수 있게 함
-    const fromPage = window.history.state?.from || referrerPage.current;
-    window.history.pushState({ modal: "consultation", from: fromPage }, "");
+    // hash를 사용하여 뒤로 가기 버튼으로 닫을 수 있게 함 (인앱 브라우저 호환)
+    window.location.hash = "#consultation";
   };
 
   const closeDialog = () => {
     setDialogOpen(false);
     // X 버튼이나 외부 클릭으로 닫을 때
     if (!isClosingFromBackButton.current) {
-      const fromPage = window.history.state?.from || referrerPage.current;
-      window.history.replaceState(null, "", window.location.pathname);
-      
-      // referrer 페이지로 이동
+      // hash 제거
+      if (window.location.hash) {
+        window.history.back();
+      }
+      const fromPage = referrerPage.current;
       if (fromPage) {
         setTimeout(() => {
           setLocation(fromPage);
@@ -422,19 +425,19 @@ export default function TikTokHome() {
 
   const openAnalysisDetail = () => {
     setAnalysisDetailOpen(true);
-    // 히스토리에 고유 ID를 저장하여 뒤로 가기 버튼으로 닫을 수 있게 함
-    const fromPage = window.history.state?.from || referrerPage.current;
-    window.history.pushState({ modal: "analysisDetail", from: fromPage }, "");
+    // hash를 사용하여 뒤로 가기 버튼으로 닫을 수 있게 함 (인앱 브라우저 호환)
+    window.location.hash = "#analysisDetail";
   };
 
   const closeAnalysisDetail = () => {
     setAnalysisDetailOpen(false);
     // X 버튼이나 외부 클릭으로 닫을 때
     if (!isClosingFromBackButton.current) {
-      const fromPage = window.history.state?.from || referrerPage.current;
-      window.history.replaceState(null, "", window.location.pathname);
-      
-      // referrer 페이지로 이동
+      // hash 제거
+      if (window.location.hash) {
+        window.history.back();
+      }
+      const fromPage = referrerPage.current;
       if (fromPage) {
         setTimeout(() => {
           setLocation(fromPage);
@@ -449,14 +452,13 @@ export default function TikTokHome() {
 
   const openFamilyPolicy = () => {
     setFamilyPolicyOpen(true);
-    // consultation 위에 familyPolicy를 열었음을 히스토리에 기록
-    const fromPage = window.history.state?.from || referrerPage.current;
-    window.history.pushState({ modal: "familyPolicy", from: fromPage }, "");
+    // hash를 사용하여 뒤로 가기 버튼으로 닫을 수 있게 함 (인앱 브라우저 호환)
+    window.location.hash = "#familyPolicy";
   };
 
   const closeFamilyPolicy = () => {
     setFamilyPolicyOpen(false);
-    // X 버튼이나 외부 클릭으로 닫을 때 - 뒤로 가기로 consultation으로 돌아감
+    // X 버튼이나 외부 클릭으로 닫을 때 - hash 제거하여 consultation으로 돌아감
     if (!isClosingFromBackButton.current) {
       window.history.back();
     }
