@@ -285,7 +285,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
           </div>
                   </div>
 
-        <div className="flex items-center justify-between text-slate-600 mb-2 font-medium" style={{fontSize: '82%'}}>
+        <div className="kna-form-steps flex items-center justify-between text-slate-600 mb-2 font-medium" style={{fontSize: '11px'}}>
           <span className={currentStep === 1 ? "font-bold text-slate-800" : ""}>1. 기본정보</span>
           <span className={currentStep === 2 ? "font-bold text-slate-800" : ""}>2. 상담내용</span>
           <span className={currentStep === 3 ? "font-bold text-slate-800" : ""}>3. 결제/일정</span>
