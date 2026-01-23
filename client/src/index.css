@@ -2062,11 +2062,11 @@ html.ua-tiktok .identity-map-inner {
 
 /* ========== 상담 신청서 스타일 ========== */
 /* 인앱 브라우저: Dialog는 Portal로 렌더링되어 .ig-shell 밖에 있으므로 html 셀렉터 사용 */
-/* 스텝 인디케이터 + Step 1 콘텐츠만 82% zoom */
+/* 특정 요소만 82% zoom */
 html.ua-instagram .kna-step-indicator,
 html.ua-tiktok .kna-step-indicator,
-html.ua-instagram .kna-step1-content,
-html.ua-tiktok .kna-step1-content {
+html.ua-instagram .kna-inapp-zoom,
+html.ua-tiktok .kna-inapp-zoom {
   zoom: 0.82;
 }
 

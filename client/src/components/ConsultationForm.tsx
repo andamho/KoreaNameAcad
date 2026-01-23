@@ -303,7 +303,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
 
       {/* Step 1: 기본정보 */}
       {currentStep === 1 && (
-        <div className="kna-step1-content space-y-8 pt-8 px-6 pb-8 form-animate-fade-in">
+        <div className="space-y-8 pt-8 px-6 pb-8 form-animate-fade-in">
           {/* 가족 상담 원칙 안내 */}
           {type === "analysis" && (
             <div className="rounded-3xl bg-white/60 border border-tiffany-light p-6 shadow-lg backdrop-blur-md">
@@ -318,7 +318,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                 <button 
                   type="button"
                   onClick={onOpenFamilyPolicy}
-                  className="self-start ml-10 text-xs font-bold text-tiffany-dark bg-tiffany-light/80 border border-tiffany/20 px-4 py-2 rounded-full hover:bg-tiffany-light transition flex items-center gap-1"
+                  className="kna-inapp-zoom self-start ml-10 text-xs font-bold text-tiffany-dark bg-tiffany-light/80 border border-tiffany/20 px-4 py-2 rounded-full hover:bg-tiffany-light transition flex items-center gap-1"
                   data-testid="button-family-policy-form"
                 >
                   원칙 자세히 보기 <span className="text-[10px]">›</span>
@@ -370,7 +370,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                     </button>
                   ))}
                 </div>
-                <p className="mt-3 text-sm text-slate-500 font-medium">해당 인원을 체크하세요. (최대 6명)</p>
+                <p className="kna-inapp-zoom mt-3 text-sm text-slate-500 font-medium">해당 인원을 체크하세요. (최대 6명)</p>
               </div>
             )}
 
@@ -382,7 +382,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                     {type === "analysis" ? `${index + 1}번째 분석 대상` : "현재 정보"}
                   </div>
                 </div>
-                <div className="space-y-6">
+                <div className="kna-inapp-zoom space-y-6">
                   <div>
                     <label className="text-base font-bold text-slate-600 block mb-2">
                       {type === "naming" ? "현재 이름" : "이름"}
