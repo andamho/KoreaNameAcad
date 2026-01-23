@@ -2067,7 +2067,13 @@ html.ua-instagram .kna-step-indicator,
 html.ua-tiktok .kna-step-indicator,
 html.ua-instagram .kna-inapp-zoom,
 html.ua-tiktok .kna-inapp-zoom {
-  font-size: 82% !important;
+  font-size: 13px !important;
+}
+
+/* kna-inapp-zoom 내부 모든 자식 요소에도 13px 강제 적용 */
+html.ua-instagram .kna-inapp-zoom *,
+html.ua-tiktok .kna-inapp-zoom * {
+  font-size: 13px !important;
 }
 
 /* 82% x 82% = 약 67% (더 작게) */
