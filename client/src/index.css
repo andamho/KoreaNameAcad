@@ -2061,8 +2061,12 @@ html.ua-tiktok .identity-map-inner {
 }
 
 /* ========== 상담 신청서 스타일 ========== */
-/* 인앱 브라우저: zoom 적용 안 함 (html.ua-instagram에 zoom 적용시 이중 축소 발생) */
-/* Dialog는 Portal로 렌더링되어 .ig-shell 밖에 있으므로, zoom 없이 사용 */
+/* 인앱 브라우저: Dialog는 Portal로 렌더링되어 .ig-shell 밖에 있으므로 html 셀렉터 사용 */
+/* 단, 스텝 인디케이터만 82% zoom (다른 요소는 이중 축소 발생하므로 제외) */
+html.ua-instagram .kna-step-indicator,
+html.ua-tiktok .kna-step-indicator {
+  zoom: 0.82;
+}
 
 /* Glassmorphism 카드 */
 .glass-card {
