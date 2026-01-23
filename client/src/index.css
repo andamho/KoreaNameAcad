@@ -2062,24 +2062,24 @@ html.ua-tiktok .identity-map-inner {
 
 /* ========== 상담 신청서 스타일 ========== */
 /* 인앱 브라우저: Dialog는 Portal로 렌더링되어 .ig-shell 밖에 있으므로 html 셀렉터 사용 */
-/* 특정 요소만 82% zoom */
+/* 특정 요소만 82% 크기 - zoom 대신 font-size 사용 (iOS 인앱 브라우저 호환) */
 html.ua-instagram .kna-step-indicator,
 html.ua-tiktok .kna-step-indicator,
 html.ua-instagram .kna-inapp-zoom,
 html.ua-tiktok .kna-inapp-zoom {
-  zoom: 0.82;
+  font-size: 82% !important;
 }
 
-/* 82% x 82% = 약 67% zoom (더 작게) */
+/* 82% x 82% = 약 67% (더 작게) */
 html.ua-instagram .kna-inapp-zoom-2x,
 html.ua-tiktok .kna-inapp-zoom-2x {
-  zoom: 0.67;
+  font-size: 67% !important;
 }
 
-/* 82% x 82% x 82% = 약 55% zoom (가장 작게) */
+/* 82% x 82% x 82% = 약 55% (가장 작게) */
 html.ua-instagram .kna-inapp-zoom-3x,
 html.ua-tiktok .kna-inapp-zoom-3x {
-  zoom: 0.55;
+  font-size: 55% !important;
 }
 
 /* textarea placeholder에 82% zoom 적용 */
