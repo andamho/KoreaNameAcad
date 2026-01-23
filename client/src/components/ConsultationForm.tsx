@@ -808,11 +808,11 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
               />
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div className="flex flex-col items-center">
-                  <span className="text-xs sm:text-sm font-bold tracking-wide text-white/90">Nonghyup Bank</span>
+                  <span className="kna-inapp-zoom text-xs sm:text-sm font-bold tracking-wide text-white/90">Nonghyup Bank</span>
                 </div>
 
                 <div className="flex flex-col items-center space-y-2">
-                  <div className="text-lg sm:text-xl font-mono font-bold tracking-wider text-white whitespace-nowrap text-center">
+                  <div className="kna-inapp-zoom text-lg sm:text-xl font-mono font-bold tracking-wider text-white whitespace-nowrap text-center">
                     351 8205 8124 53
                   </div>
 
@@ -822,7 +822,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                     className="group flex items-center gap-1 rounded-full bg-white/20 px-3 py-1.5 hover:bg-white/30 transition active:scale-95 whitespace-nowrap border border-white/40"
                     data-testid="button-copy-account"
                   >
-                    <span className="text-xs sm:text-sm font-bold text-white">
+                    <span className="kna-inapp-zoom text-xs sm:text-sm font-bold text-white">
                       {accountCopied ? "복사됨!" : "계좌번호 복사"}
                     </span>
                     {accountCopied ? (
@@ -834,7 +834,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                 </div>
 
                 <div className="text-center">
-                  <span className="text-[11px] sm:text-xs font-medium text-white/80 tracking-tight">
+                  <span className="kna-inapp-zoom text-[11px] sm:text-xs font-medium text-white/80 tracking-tight">
                     예금주: 와츠유어네임 이름연구협회
                   </span>
                 </div>
