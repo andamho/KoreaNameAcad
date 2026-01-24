@@ -192,14 +192,14 @@ function MobileCircleItem({ node }: { node: Node }) {
       <div 
         className={`w-32 h-32 rounded-full bg-white dark:bg-gray-800 border-[3px] shadow-lg flex flex-col items-center justify-center p-4 mb-5 transition-all duration-500 ${
           isVisible 
-            ? 'border-[#7EE8E2] scale-110 shadow-[0_0_30px_rgba(126,232,226,0.3)]' 
+            ? 'border-[#7EE8E2] scale-[0.99] shadow-[0_0_30px_rgba(126,232,226,0.3)]' 
             : 'border-gray-200 dark:border-gray-600 scale-100'
         }`}
       >
         <div className="mb-2">{node.mobileIcon}</div>
         <span 
           className={`text-gray-900 dark:text-foreground font-semibold leading-tight whitespace-pre-line tracking-tight transition-all duration-500 text-center ${
-            isVisible ? 'text-[22px]' : 'text-[21px]'
+            isVisible ? 'text-[20px]' : 'text-[21px]'
           }`}
         >
           {node.mobileTitle || node.title}
@@ -208,7 +208,7 @@ function MobileCircleItem({ node }: { node: Node }) {
       <p 
         className={`leading-relaxed break-keep max-w-[320px] transition-all duration-500 text-lg origin-top whitespace-pre-line ${
           isVisible 
-            ? 'text-gray-800 dark:text-gray-200 scale-105' 
+            ? 'text-gray-800 dark:text-gray-200 scale-[0.95]' 
             : 'text-gray-600 dark:text-muted-foreground scale-100'
         }`}
       >
@@ -245,7 +245,7 @@ function MobileCenterLogo() {
       <div 
         className={`relative w-40 h-40 rounded-full bg-white dark:bg-gray-800 border-[3px] border-gray-200 dark:border-gray-600 shadow-lg flex items-center justify-center overflow-hidden transition-all duration-500 ${
           isVisible 
-            ? 'scale-110 shadow-[0_0_30px_rgba(0,0,0,0.1)]' 
+            ? 'scale-[0.99] shadow-[0_0_30px_rgba(0,0,0,0.1)]' 
             : 'scale-100'
         }`}
       >
