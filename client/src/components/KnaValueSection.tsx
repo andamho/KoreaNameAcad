@@ -199,7 +199,7 @@ function MobileCircleItem({ node }: { node: Node }) {
         <div className="mb-2">{node.mobileIcon}</div>
         <span 
           className={`text-gray-900 dark:text-foreground font-semibold leading-tight whitespace-pre-line tracking-tight transition-all duration-500 text-center ${
-            isVisible ? 'text-[22px]' : 'text-[21px]'
+            isVisible ? 'text-[20px]' : 'text-[19px]'
           }`}
         >
           {node.mobileTitle || node.title}
