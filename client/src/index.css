@@ -1104,8 +1104,8 @@ html.ua-tiktok .kna-myth-truth-section .text-sm {
 
 /* 번개 리플 퍼지는 애니메이션 */
 @keyframes rippleAnim {
-  0% { width: 90px; height: 90px; opacity: 0.9; border-radius: 36px; }
-  100% { width: 220px; height: 220px; opacity: 0; border-radius: 50%; }
+  0% { width: 72px; height: 72px; opacity: 0.9; border-radius: 29px; }
+  100% { width: 176px; height: 176px; opacity: 0; border-radius: 50%; }
 }
 
 .ripple {
@@ -1113,9 +1113,9 @@ html.ua-tiktok .kna-myth-truth-section .text-sm {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 90px;
-  height: 90px;
-  border-radius: 36px;
+  width: 72px;
+  height: 72px;
+  border-radius: 29px;
   background: rgba(249, 115, 22, 0.45);
   animation: rippleAnim 3s infinite ease-out;
   z-index: -1;
