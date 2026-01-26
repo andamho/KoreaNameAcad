@@ -217,15 +217,17 @@ export function Navbar() {
     console.log("[Navbar] handleWriteSubmit - uploadedImages:", uploadedImages);
     console.log("[Navbar] handleWriteSubmit - uploadedImages.length:", uploadedImages.length);
     
+    // 썸네일 결정 (첫번째 이미지 또는 선택된 이미지)
+    const finalThumbnail = writeForm.thumbnail || uploadedImages[0] || "";
+    
     // 이미지를 content 맨 앞에 마크다운으로 추가
     // 기존 content에서 이미지 마크다운 제거 후 새로 추가
+    // 썸네일은 content에서 제외 (중복 방지)
     const imageRegex = /!\[[^\]]*\]\([^)]+\)\n*/g;
     const cleanContent = writeForm.content.replace(imageRegex, '').trim();
-    const imagesMarkdown = uploadedImages.map(img => `![이미지](${img})`).join('\n');
+    const contentImages = uploadedImages.filter(img => img !== finalThumbnail);
+    const imagesMarkdown = contentImages.map(img => `![이미지](${img})`).join('\n');
     const finalContent = imagesMarkdown ? `${imagesMarkdown}\n\n${cleanContent}` : cleanContent;
-    
-    // 썸네일이 없으면 첫번째 이미지 사용
-    const finalThumbnail = writeForm.thumbnail || uploadedImages[0] || "";
     
     const payload = {
       ...writeForm,
@@ -601,7 +603,7 @@ export function Navbar() {
               </div>
               {uploadedImages.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">클릭하여 대표 이미지 선택 (첫 번째 이미지가 기본 대표 이미지)</p>
+                  <p className="text-xs text-muted-foreground">클릭: 대표 이미지 선택 | 화살표: 순서 변경 | X: 삭제</p>
                   <div className="grid grid-cols-4 gap-2">
                     {uploadedImages.map((img, idx) => (
                       <div 
@@ -620,6 +622,59 @@ export function Navbar() {
                             대표
                           </div>
                         )}
+                        {/* 삭제 버튼 */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setUploadedImages(prev => prev.filter((_, i) => i !== idx));
+                            if (writeForm.thumbnail === img) {
+                              const remaining = uploadedImages.filter((_, i) => i !== idx);
+                              setWriteForm(form => ({ ...form, thumbnail: remaining[0] || "" }));
+                            }
+                          }}
+                          className="absolute top-1 right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs"
+                          data-testid={`button-remove-image-${idx}`}
+                        >
+                          ×
+                        </button>
+                        {/* 순서 변경 버튼들 */}
+                        <div className="absolute bottom-1 right-1 flex gap-0.5">
+                          {idx > 0 && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setUploadedImages(prev => {
+                                  const newArr = [...prev];
+                                  [newArr[idx - 1], newArr[idx]] = [newArr[idx], newArr[idx - 1]];
+                                  return newArr;
+                                });
+                              }}
+                              className="w-5 h-5 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-xs"
+                              data-testid={`button-move-left-${idx}`}
+                            >
+                              ←
+                            </button>
+                          )}
+                          {idx < uploadedImages.length - 1 && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setUploadedImages(prev => {
+                                  const newArr = [...prev];
+                                  [newArr[idx], newArr[idx + 1]] = [newArr[idx + 1], newArr[idx]];
+                                  return newArr;
+                                });
+                              }}
+                              className="w-5 h-5 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-xs"
+                              data-testid={`button-move-right-${idx}`}
+                            >
+                              →
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

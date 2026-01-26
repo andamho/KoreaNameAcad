@@ -144,14 +144,20 @@ export default function Admin() {
       return;
     }
     
+    // 썸네일 결정
+    const finalThumbnail = storyForm.thumbnail || uploadedImages[0] || "";
+    
     // 이미지를 content 맨 앞에 마크다운으로 추가
     // 기존 content에서 이미지 마크다운 제거 후 새로 추가
+    // 썸네일은 content에서 제외 (중복 방지)
     let cleanContent = storyForm.content.replace(/!\[[^\]]*\]\([^)]+\)\n*/g, '').trim();
-    const imagesMarkdown = uploadedImages.map(img => `![이미지](${img})`).join('\n');
+    const contentImages = uploadedImages.filter(img => img !== finalThumbnail);
+    const imagesMarkdown = contentImages.map(img => `![이미지](${img})`).join('\n');
     const finalContent = imagesMarkdown ? `${imagesMarkdown}\n\n${cleanContent}` : cleanContent;
     
     const submitData = {
       ...storyForm,
+      thumbnail: finalThumbnail,
       content: finalContent,
     };
     

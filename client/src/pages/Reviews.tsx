@@ -175,18 +175,20 @@ function CmsReviewCard({ review, index = 0 }: { review: Content; index?: number 
       return;
     }
     
+    // 썸네일이 없으면 첫번째 이미지 사용
+    const finalThumbnail = editForm.thumbnail || uploadedImages[0] || "";
+    
     // 이미지를 content 맨 앞에 마크다운으로 추가
     // 기존 content에서 이미지 마크다운 제거 후 새로 추가
+    // 썸네일은 content에서 제외 (중복 방지)
     let cleanContent = editForm.content.replace(/!\[[^\]]*\]\([^)]+\)\n*/g, '').trim();
-    const imagesMarkdown = uploadedImages.map(img => `![이미지](${img})`).join('\n');
+    const contentImages = uploadedImages.filter(img => img !== finalThumbnail);
+    const imagesMarkdown = contentImages.map(img => `![이미지](${img})`).join('\n');
     const finalContent = imagesMarkdown ? `${imagesMarkdown}\n\n${cleanContent}` : cleanContent;
     
     console.log("[CmsReviewCard] cleanContent:", cleanContent.substring(0, 100));
     console.log("[CmsReviewCard] imagesMarkdown:", imagesMarkdown);
     console.log("[CmsReviewCard] finalContent:", finalContent.substring(0, 200));
-    
-    // 썸네일이 없으면 첫번째 이미지 사용
-    const finalThumbnail = editForm.thumbnail || uploadedImages[0] || "";
     console.log("[CmsReviewCard] finalThumbnail:", finalThumbnail);
     
     updateMutation.mutate({

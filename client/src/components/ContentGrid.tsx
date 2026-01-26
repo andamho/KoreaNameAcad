@@ -231,14 +231,20 @@ function ContentCard({ content, basePath }: ContentCardProps) {
     console.log("[ContentGrid] handleEditSubmit - uploadedImages:", uploadedImages);
     console.log("[ContentGrid] handleEditSubmit - uploadedImages.length:", uploadedImages.length);
     
+    // 썸네일 결정
+    const finalThumbnail = editForm.thumbnail || uploadedImages[0] || "";
+    
     // 기존 마크다운 이미지 제거 후 새 이미지 마크다운 생성
+    // 썸네일은 content에서 제외 (중복 방지)
     const imageRegex = /!\[[^\]]*\]\([^)]+\)\n*/g;
     const cleanContent = editForm.content.replace(imageRegex, '').trim();
-    const imagesMarkdown = uploadedImages.map(img => `![이미지](${img})`).join('\n');
+    const contentImages = uploadedImages.filter(img => img !== finalThumbnail);
+    const imagesMarkdown = contentImages.map(img => `![이미지](${img})`).join('\n');
     const finalContent = imagesMarkdown ? `${imagesMarkdown}\n\n${cleanContent}` : cleanContent;
     
     const payload = {
       ...editForm,
+      thumbnail: finalThumbnail,
       content: finalContent,
     };
     
