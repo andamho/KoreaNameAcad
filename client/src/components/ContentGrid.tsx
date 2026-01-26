@@ -88,13 +88,27 @@ function ContentCard({ content, basePath }: ContentCardProps) {
   const { uploadFile, isUploading } = useUpload({
     onSuccess: (response) => {
       const imageUrl = response.objectPath;
+      console.log("[ContentGrid] onSuccess - 새 이미지 URL:", imageUrl);
+      console.log("[ContentGrid] onSuccess - setUploadedImages 호출 직전 images:", uploadedImages);
+      console.log("[ContentGrid] onSuccess - 호출 직전 images.length:", uploadedImages.length);
+      
       setUploadedImages(prev => {
+        console.log("[ContentGrid] setUploadedImages callback - prev:", prev);
+        console.log("[ContentGrid] setUploadedImages callback - prev.length:", prev.length);
         const newImages = [...prev, imageUrl];
+        console.log("[ContentGrid] setUploadedImages callback - newImages:", newImages);
+        console.log("[ContentGrid] setUploadedImages callback - newImages.length:", newImages.length);
         if (newImages.length === 1 || !editForm.thumbnail) {
           setEditForm(form => ({ ...form, thumbnail: imageUrl }));
         }
         return newImages;
       });
+      
+      // 다음 렌더 사이클 후 상태 확인
+      setTimeout(() => {
+        console.log("[ContentGrid] onSuccess - setUploadedImages 호출 후 (setTimeout) - 현재 상태는 클로저로 인해 이전 값일 수 있음");
+      }, 0);
+      
       toast({ title: "이미지가 추가되었습니다." });
     },
     onError: () => {
@@ -212,7 +226,27 @@ function ContentCard({ content, basePath }: ContentCardProps) {
       toast({ title: "제목과 내용을 입력해주세요.", variant: "destructive" });
       return;
     }
-    updateMutation.mutate(editForm);
+    
+    // 디버깅: 현재 uploadedImages 상태 확인
+    console.log("[ContentGrid] handleEditSubmit - uploadedImages:", uploadedImages);
+    console.log("[ContentGrid] handleEditSubmit - uploadedImages.length:", uploadedImages.length);
+    
+    // 기존 마크다운 이미지 제거 후 새 이미지 마크다운 생성
+    const imageRegex = /!\[[^\]]*\]\([^)]+\)\n*/g;
+    const cleanContent = editForm.content.replace(imageRegex, '').trim();
+    const imagesMarkdown = uploadedImages.map(img => `![이미지](${img})`).join('\n');
+    const finalContent = imagesMarkdown ? `${imagesMarkdown}\n\n${cleanContent}` : cleanContent;
+    
+    const payload = {
+      ...editForm,
+      content: finalContent,
+    };
+    
+    // 디버깅: 서버로 보내는 payload 확인
+    console.log("[ContentGrid] handleEditSubmit - payload:", payload);
+    console.log("[ContentGrid] handleEditSubmit - images count in content:", uploadedImages.length);
+    
+    updateMutation.mutate(payload);
   };
   
   return (
