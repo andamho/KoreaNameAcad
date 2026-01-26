@@ -392,11 +392,39 @@ function ContentCard({ content, basePath }: ContentCardProps) {
               <div className="grid grid-cols-4 gap-2 mt-2">
                 {uploadedImages.map((img, idx) => (
                   <div
-                    key={idx}
-                    className={`relative aspect-square rounded overflow-hidden cursor-pointer border-2 ${editForm.thumbnail === img ? 'border-primary' : 'border-transparent'}`}
+                    key={img}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', idx.toString());
+                      e.currentTarget.style.opacity = '0.5';
+                    }}
+                    onDragEnd={(e) => {
+                      e.currentTarget.style.opacity = '1';
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.style.transform = 'scale(1)';
+                      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+                      if (fromIdx !== idx) {
+                        setUploadedImages(prev => {
+                          const newArr = [...prev];
+                          const [moved] = newArr.splice(fromIdx, 1);
+                          newArr.splice(idx, 0, moved);
+                          return newArr;
+                        });
+                      }
+                    }}
+                    className={`relative aspect-square rounded overflow-hidden cursor-grab active:cursor-grabbing border-2 transition-transform ${editForm.thumbnail === img ? 'border-primary' : 'border-transparent'}`}
                     onClick={() => setAsThumbnail(img)}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={img} alt="" className="w-full h-full object-cover pointer-events-none" />
                     {editForm.thumbnail === img && (
                       <div className="absolute top-0.5 left-0.5 bg-primary text-primary-foreground text-[10px] px-1 rounded">
                         대표
@@ -421,7 +449,7 @@ function ContentCard({ content, basePath }: ContentCardProps) {
               </div>
             )}
             <p className="text-xs text-muted-foreground mt-1">
-              클릭하여 대표 이미지 선택
+              클릭: 대표 이미지 선택 | 드래그: 순서 변경
             </p>
           </div>
           <div>

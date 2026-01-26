@@ -603,19 +603,47 @@ export function Navbar() {
               </div>
               {uploadedImages.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">클릭: 대표 이미지 선택 | 화살표: 순서 변경 | X: 삭제</p>
+                  <p className="text-xs text-muted-foreground">클릭: 대표 이미지 선택 | 드래그: 순서 변경 | X: 삭제</p>
                   <div className="grid grid-cols-4 gap-2">
                     {uploadedImages.map((img, idx) => (
                       <div 
-                        key={idx} 
-                        className={`relative aspect-square cursor-pointer rounded overflow-hidden border-2 ${writeForm.thumbnail === img ? 'border-primary ring-2 ring-primary' : 'border-transparent hover:border-muted-foreground/50'}`}
+                        key={img} 
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData('text/plain', idx.toString());
+                          e.currentTarget.style.opacity = '0.5';
+                        }}
+                        onDragEnd={(e) => {
+                          e.currentTarget.style.opacity = '1';
+                        }}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                        }}
+                        onDragLeave={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.style.transform = 'scale(1)';
+                          const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+                          if (fromIdx !== idx) {
+                            setUploadedImages(prev => {
+                              const newArr = [...prev];
+                              const [moved] = newArr.splice(fromIdx, 1);
+                              newArr.splice(idx, 0, moved);
+                              return newArr;
+                            });
+                          }
+                        }}
+                        className={`relative aspect-square cursor-grab active:cursor-grabbing rounded overflow-hidden border-2 transition-transform ${writeForm.thumbnail === img ? 'border-primary ring-2 ring-primary' : 'border-transparent hover:border-muted-foreground/50'}`}
                         onClick={() => setAsThumbnail(img)}
                         data-testid={`image-thumbnail-select-${idx}`}
                       >
                         <img 
                           src={img} 
                           alt={`이미지 ${idx + 1}`} 
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover pointer-events-none"
                         />
                         {writeForm.thumbnail === img && (
                           <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1 rounded">
@@ -638,43 +666,6 @@ export function Navbar() {
                         >
                           ×
                         </button>
-                        {/* 순서 변경 버튼들 */}
-                        <div className="absolute bottom-1 right-1 flex gap-0.5">
-                          {idx > 0 && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setUploadedImages(prev => {
-                                  const newArr = [...prev];
-                                  [newArr[idx - 1], newArr[idx]] = [newArr[idx], newArr[idx - 1]];
-                                  return newArr;
-                                });
-                              }}
-                              className="w-5 h-5 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-xs"
-                              data-testid={`button-move-left-${idx}`}
-                            >
-                              ←
-                            </button>
-                          )}
-                          {idx < uploadedImages.length - 1 && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setUploadedImages(prev => {
-                                  const newArr = [...prev];
-                                  [newArr[idx], newArr[idx + 1]] = [newArr[idx + 1], newArr[idx]];
-                                  return newArr;
-                                });
-                              }}
-                              className="w-5 h-5 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-xs"
-                              data-testid={`button-move-right-${idx}`}
-                            >
-                              →
-                            </button>
-                          )}
-                        </div>
                       </div>
                     ))}
                   </div>
