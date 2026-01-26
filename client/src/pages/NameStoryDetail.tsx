@@ -274,33 +274,49 @@ export default function NameStoryDetail() {
 
             <Card className="p-6 md:p-8">
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                {story.content.split('\n').map((line, index) => {
-                  const trimmedLine = line.trim();
-                  if (!trimmedLine) return null;
+                {(() => {
+                  const lines = story.content.split('\n');
+                  const result: JSX.Element[] = [];
+                  let textBuffer: string[] = [];
                   
-                  const imageMatch = trimmedLine.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
-                  if (imageMatch) {
-                    const [, alt, src] = imageMatch;
-                    return (
-                      <div key={index} className="my-4">
-                        <img 
-                          src={src} 
-                          alt={alt || "이미지"} 
-                          className="w-full h-auto rounded-lg"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    );
-                  }
+                  const flushTextBuffer = (key: string) => {
+                    if (textBuffer.length > 0) {
+                      result.push(
+                        <div key={key} className="text-foreground leading-relaxed whitespace-pre-line">
+                          {textBuffer.join('\n')}
+                        </div>
+                      );
+                      textBuffer = [];
+                    }
+                  };
                   
-                  return (
-                    <p key={index} className="text-foreground leading-relaxed mb-4">
-                      {trimmedLine}
-                    </p>
-                  );
-                })}
+                  lines.forEach((line, index) => {
+                    const trimmedLine = line.trim();
+                    const imageMatch = trimmedLine.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+                    
+                    if (imageMatch) {
+                      flushTextBuffer(`text-before-${index}`);
+                      const [, alt, src] = imageMatch;
+                      result.push(
+                        <div key={`img-${index}`} className="my-4">
+                          <img 
+                            src={src} 
+                            alt={alt || "이미지"} 
+                            className="w-full h-auto rounded-lg"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      );
+                    } else {
+                      textBuffer.push(line);
+                    }
+                  });
+                  
+                  flushTextBuffer('text-end');
+                  return result;
+                })()}
                 
                 <div className="kna-promo mt-8 rounded-2xl py-10 px-6 text-center relative overflow-hidden bg-white border border-gray-100">
                   <div className="relative z-10">
