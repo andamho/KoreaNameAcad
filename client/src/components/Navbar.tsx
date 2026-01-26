@@ -59,6 +59,10 @@ export function Navbar() {
   
   // Uploaded images list (Naver Blog style)
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const uploadedImagesRef = useRef<string[]>([]);
+  
+  // Keep ref in sync with state
+  uploadedImagesRef.current = uploadedImages;
   
   // Image upload (unified - both thumbnail and content)
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -213,19 +217,22 @@ export function Navbar() {
       return;
     }
     
+    // useRef를 사용하여 최신 이미지 순서 가져오기 (클로저 문제 해결)
+    const currentImages = uploadedImagesRef.current;
+    
     // 디버깅: 현재 uploadedImages 상태 확인
-    console.log("[Navbar] handleWriteSubmit - uploadedImages:", uploadedImages);
-    console.log("[Navbar] handleWriteSubmit - uploadedImages.length:", uploadedImages.length);
+    console.log("[Navbar] handleWriteSubmit - currentImages (from ref):", currentImages);
+    console.log("[Navbar] handleWriteSubmit - currentImages.length:", currentImages.length);
     
     // 썸네일 결정 (첫번째 이미지 또는 선택된 이미지)
-    const finalThumbnail = writeForm.thumbnail || uploadedImages[0] || "";
+    const finalThumbnail = writeForm.thumbnail || currentImages[0] || "";
     
     // 이미지를 content 맨 앞에 마크다운으로 추가
     // 기존 content에서 이미지 마크다운 제거 후 새로 추가
     // 썸네일은 content에서 제외 (중복 방지)
     const imageRegex = /!\[[^\]]*\]\([^)]+\)\n*/g;
     const cleanContent = writeForm.content.replace(imageRegex, '').trim();
-    const contentImages = uploadedImages.filter(img => img !== finalThumbnail);
+    const contentImages = currentImages.filter(img => img !== finalThumbnail);
     const imagesMarkdown = contentImages.map(img => `![이미지](${img})`).join('\n');
     const finalContent = imagesMarkdown ? `${imagesMarkdown}\n\n${cleanContent}` : cleanContent;
     
@@ -238,7 +245,7 @@ export function Navbar() {
     
     // 디버깅: 서버로 보내는 payload 확인
     console.log("[Navbar] handleWriteSubmit - payload:", payload);
-    console.log("[Navbar] handleWriteSubmit - images count:", uploadedImages.length);
+    console.log("[Navbar] handleWriteSubmit - images count:", currentImages.length);
     
     createContentMutation.mutate(payload);
   };
