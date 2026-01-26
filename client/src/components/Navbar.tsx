@@ -65,8 +65,13 @@ export function Navbar() {
   const { uploadFile, isUploading } = useUpload({
     onSuccess: (response) => {
       const imageUrl = response.objectPath;
+      console.log("[Navbar] onSuccess - 새 이미지 URL:", imageUrl);
+      console.log("[Navbar] onSuccess - BEFORE uploadedImages:", uploadedImages, "len:", uploadedImages.length);
+      
       setUploadedImages(prev => {
+        console.log("[Navbar] setUploadedImages - prev:", prev, "len:", prev.length);
         const newImages = [...prev, imageUrl];
+        console.log("[Navbar] setUploadedImages - AFTER newImages:", newImages, "len:", newImages.length);
         // First image automatically becomes thumbnail
         if (newImages.length === 1) {
           setWriteForm(form => ({ ...form, thumbnail: imageUrl }));
@@ -207,7 +212,33 @@ export function Navbar() {
       toast({ title: "제목과 내용을 입력해주세요.", variant: "destructive" });
       return;
     }
-    createContentMutation.mutate({ ...writeForm, isDraft: asDraft });
+    
+    // 디버깅: 현재 uploadedImages 상태 확인
+    console.log("[Navbar] handleWriteSubmit - uploadedImages:", uploadedImages);
+    console.log("[Navbar] handleWriteSubmit - uploadedImages.length:", uploadedImages.length);
+    
+    // 이미지를 content 맨 앞에 마크다운으로 추가
+    // 기존 content에서 이미지 마크다운 제거 후 새로 추가
+    const imageRegex = /!\[[^\]]*\]\([^)]+\)\n*/g;
+    const cleanContent = writeForm.content.replace(imageRegex, '').trim();
+    const imagesMarkdown = uploadedImages.map(img => `![이미지](${img})`).join('\n');
+    const finalContent = imagesMarkdown ? `${imagesMarkdown}\n\n${cleanContent}` : cleanContent;
+    
+    // 썸네일이 없으면 첫번째 이미지 사용
+    const finalThumbnail = writeForm.thumbnail || uploadedImages[0] || "";
+    
+    const payload = {
+      ...writeForm,
+      thumbnail: finalThumbnail,
+      content: finalContent,
+      isDraft: asDraft,
+    };
+    
+    // 디버깅: 서버로 보내는 payload 확인
+    console.log("[Navbar] handleWriteSubmit - payload:", payload);
+    console.log("[Navbar] handleWriteSubmit - images count:", uploadedImages.length);
+    
+    createContentMutation.mutate(payload);
   };
 
   const goToHome = () => {
