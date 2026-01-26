@@ -666,6 +666,43 @@ export function Navbar() {
                         >
                           ×
                         </button>
+                        {/* 순서 변경 버튼 (모바일용) */}
+                        <div className="absolute bottom-1 right-1 flex gap-0.5">
+                          {idx > 0 && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setUploadedImages(prev => {
+                                  const newArr = [...prev];
+                                  [newArr[idx - 1], newArr[idx]] = [newArr[idx], newArr[idx - 1]];
+                                  return newArr;
+                                });
+                              }}
+                              className="w-5 h-5 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-xs"
+                              data-testid={`button-move-left-${idx}`}
+                            >
+                              ←
+                            </button>
+                          )}
+                          {idx < uploadedImages.length - 1 && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setUploadedImages(prev => {
+                                  const newArr = [...prev];
+                                  [newArr[idx], newArr[idx + 1]] = [newArr[idx + 1], newArr[idx]];
+                                  return newArr;
+                                });
+                              }}
+                              className="w-5 h-5 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-xs"
+                              data-testid={`button-move-right-${idx}`}
+                            >
+                              →
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
