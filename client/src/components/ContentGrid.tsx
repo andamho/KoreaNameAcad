@@ -300,9 +300,9 @@ function ContentCard({ content, basePath }: ContentCardProps) {
             }}
           />
           {content.isVideo && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 flex items-center justify-center">
-                <Play className="w-5 h-5 sm:w-6 sm:h-6 text-primary ml-0.5" fill="currentColor" />
+            <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2">
+              <div className="w-5 h-5 sm:w-10 sm:h-10 rounded-full bg-black/60 sm:bg-white/90 flex items-center justify-center">
+                <Play className="w-2.5 h-2.5 sm:w-5 sm:h-5 text-white sm:text-primary ml-0.5" fill="currentColor" />
               </div>
             </div>
           )}
