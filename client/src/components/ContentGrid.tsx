@@ -54,8 +54,8 @@ export function ContentGrid({ category, basePath, emptyMessage = "등록된 콘�
 
   return (
     <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4 content-grid">
-      {contents.map((content) => (
-        <ContentCard key={content.id} content={content} basePath={basePath} />
+      {contents.map((content, idx) => (
+        <ContentCard key={content.id} content={content} basePath={basePath} index={idx} />
       ))}
     </div>
   );
@@ -64,9 +64,10 @@ export function ContentGrid({ category, basePath, emptyMessage = "등록된 콘�
 interface ContentCardProps {
   content: Content;
   basePath: string;
+  index?: number;
 }
 
-function ContentCard({ content, basePath }: ContentCardProps) {
+function ContentCard({ content, basePath, index = 0 }: ContentCardProps) {
   const thumbnailUrl = content.thumbnail || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23e5e7eb' width='400' height='400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='48' fill='%239ca3af'%3E이미지%3C/text%3E%3C/svg%3E";
   const { isAdmin, token } = useAdmin();
   const { toast } = useToast();
@@ -292,7 +293,7 @@ function ContentCard({ content, basePath }: ContentCardProps) {
             src={thumbnailUrl}
             alt={content.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
+            loading={index < 6 ? "eager" : "lazy"}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.onerror = null;

@@ -170,7 +170,14 @@ export function Navbar() {
     setMenuOpen(false);
   };
   
-  // Create content mutation
+  // 이미지 프리로딩 함수
+  const preloadImage = (src: string) => {
+    if (!src || src.startsWith('data:')) return;
+    const img = new Image();
+    img.src = src;
+  };
+
+  // Create content mutation with optimistic update
   const createContentMutation = useMutation({
     mutationFn: async (data: typeof writeForm) => {
       const token = localStorage.getItem("kna_admin_token");
@@ -185,10 +192,47 @@ export function Navbar() {
       if (!response.ok) throw new Error("Failed to create content");
       return response.json();
     },
-    onSuccess: (data) => {
+    onMutate: async (newContent) => {
+      // 이미지 프리로딩 - 서버 응답 전에 미리 로드
+      if (newContent.thumbnail) {
+        preloadImage(newContent.thumbnail);
+      }
+      
+      // Optimistic update - 새 글을 즉시 캐시에 추가
+      await queryClient.cancelQueries({ queryKey: ["/api/contents"] });
+      await queryClient.cancelQueries({ queryKey: ["/api/contents", newContent.category] });
+      
+      const previousContents = queryClient.getQueryData(["/api/contents", newContent.category]);
+      
+      // 임시 ID로 새 콘텐츠 생성
+      const optimisticContent = {
+        id: `temp-${Date.now()}`,
+        ...newContent,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      
+      // 카테고리별 목록에 즉시 추가
+      queryClient.setQueryData(["/api/contents", newContent.category], (old: any[] | undefined) => {
+        if (!old) return [optimisticContent];
+        return [optimisticContent, ...old];
+      });
+      
+      return { previousContents, category: newContent.category };
+    },
+    onSuccess: (data, variables, context) => {
+      // 서버 응답으로 캐시 업데이트 (임시 데이터를 실제 데이터로 교체)
+      queryClient.setQueryData(["/api/contents", data.category], (old: any[] | undefined) => {
+        if (!old) return [data];
+        return old.map(item => item.id?.startsWith?.('temp-') ? data : item);
+      });
+      
+      // 전체 목록도 업데이트
       queryClient.invalidateQueries({ queryKey: ["/api/contents"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/contents", data.category] });
-      queryClient.invalidateQueries({ queryKey: ["/api/contents", "drafts"] });
+      if (data.isDraft) {
+        queryClient.invalidateQueries({ queryKey: ["/api/contents", "drafts"] });
+      }
+      
       setShowWriteDialog(false);
       setWriteForm({
         category: "review",
@@ -206,7 +250,11 @@ export function Navbar() {
         toast({ title: "콘텐츠가 등록되었습니다." });
       }
     },
-    onError: () => {
+    onError: (err, variables, context) => {
+      // 에러 시 이전 상태로 롤백
+      if (context?.previousContents) {
+        queryClient.setQueryData(["/api/contents", context.category], context.previousContents);
+      }
       toast({ title: "등록에 실패했습니다.", variant: "destructive" });
     },
   });

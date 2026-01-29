@@ -33,7 +33,7 @@ function formatDate(dateValue: string | Date) {
   return `${date.getFullYear()}. ${String(date.getMonth() + 1).padStart(2, '0')}. ${String(date.getDate()).padStart(2, '0')}.`;
 }
 
-function StoryCard({ story }: { story: Content }) {
+function StoryCard({ story, index = 0 }: { story: Content; index?: number }) {
   const { isAdmin, token } = useAdmin();
   const { toast } = useToast();
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -219,6 +219,7 @@ function StoryCard({ story }: { story: Content }) {
             src={story.thumbnail || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23e5e7eb' width='400' height='400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='48' fill='%239ca3af'%3E이미지%3C/text%3E%3C/svg%3E"}
             alt={story.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading={index < 6 ? "eager" : "lazy"}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.onerror = null;
@@ -492,8 +493,8 @@ export default function NameStories() {
             </div>
           ) : stories && stories.length > 0 ? (
             <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
-              {stories.map((story) => (
-                <StoryCard key={story.id} story={story} />
+              {stories.map((story, idx) => (
+                <StoryCard key={story.id} story={story} index={idx} />
               ))}
             </div>
           ) : null}
