@@ -14,7 +14,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { useAdmin } from "@/contexts/AdminContext";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useScrollRestore, saveScrollPosition } from "@/hooks/use-scroll-restore";
 import type { Content } from "@shared/schema";
 
@@ -370,13 +370,15 @@ export default function Reviews() {
   // 스크롤 위치 복원
   useScrollRestore("/reviews");
   
-  // 후기 작성 상태 (레거시 - 로컬 저장용)
+  // 후기 작성 상태 (CMS API 사용)
   const [showWriteDialog, setShowWriteDialog] = useState(false);
   const [reviewForm, setReviewForm] = useState({
-    name: "",
-    service: "이름분석" as "이름분석" | "개명",
+    category: "review" as string,
+    title: "",
+    thumbnail: "",
     content: "",
-    date: new Date().toISOString().slice(0, 7).replace("-", "."),
+    videoUrl: "",
+    isVideo: false,
   });
   
   // 추가된 후기 (세션 동안만 유지, 새로고침하면 사라짐)
