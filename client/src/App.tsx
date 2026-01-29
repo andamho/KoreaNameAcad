@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { AdminProvider } from "@/contexts/AdminContext";
+import type { Content } from "@shared/schema";
 import Home from "@/pages/Home";
 import InstagramHome from "@/pages/InstagramHome";
 import TikTokHome from "@/pages/TikTokHome";
@@ -97,7 +98,7 @@ function App() {
     }
   }, []);
 
-  // 팝업 이미지 최우선 로딩 + 캐릭터 이미지 미리 로딩
+  // 팝업 이미지 최우선 로딩 + 캐릭터 이미지 미리 로딩 + 콘텐츠 이미지 프리로드
   useEffect(() => {
     // 1. 팝업 이미지 최우선 로드 (가장 먼저!)
     const popupLink = document.createElement('link');
@@ -144,6 +145,61 @@ function App() {
       const img = new Image();
       img.src = src;
     });
+
+    // 3. 콘텐츠 이미지 즉시 프리로드 (API 호출과 이미지 로딩 동시 시작)
+    const preloadContentImages = async () => {
+      try {
+        // 모든 카테고리 동시에 fetch
+        const categories = ['review', 'nameStory', 'announcement', 'expert'];
+        const results = await Promise.all(
+          categories.map(cat => 
+            fetch(`/api/contents?category=${cat}`)
+              .then(res => res.ok ? res.json() : [])
+              .catch(() => [])
+          )
+        );
+        
+        // 각 카테고리에서 첫 6개씩 이미지 추출
+        const allThumbnails: string[] = [];
+        results.forEach((contents: Content[]) => {
+          if (Array.isArray(contents)) {
+            contents.slice(0, 6).forEach(content => {
+              if (content.thumbnail) {
+                allThumbnails.push(content.thumbnail);
+              }
+            });
+          }
+        });
+
+        // 중복 제거 후 프리로드
+        const uniqueThumbnails = Array.from(new Set(allThumbnails));
+        uniqueThumbnails.forEach((url) => {
+          // preload link 추가
+          const link = document.createElement('link');
+          link.rel = 'preload';
+          link.as = 'image';
+          link.href = url;
+          link.setAttribute('fetchpriority', 'high');
+          document.head.appendChild(link);
+          
+          // Image 객체로도 즉시 로딩 시작
+          const img = new Image();
+          img.src = url;
+        });
+
+        // React Query 캐시에도 미리 저장
+        categories.forEach((cat, idx) => {
+          if (results[idx] && Array.isArray(results[idx])) {
+            queryClient.setQueryData(['/api/contents', cat], results[idx]);
+          }
+        });
+      } catch (e) {
+        // 프리로드 실패해도 앱 동작에는 영향 없음
+      }
+    };
+
+    // 즉시 실행 (await 없이)
+    preloadContentImages();
   }, []);
 
   return (
