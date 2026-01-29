@@ -556,16 +556,16 @@ export function Navbar() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="write-category">카테고리</Label>
+            <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+              <Label htmlFor="write-category" className="text-sm font-semibold text-primary mb-2 block">카테고리 선택 (필수)</Label>
               <Select 
                 value={writeForm.category} 
                 onValueChange={(value) => setWriteForm(prev => ({ ...prev, category: value }))}
               >
-                <SelectTrigger data-testid="select-write-category">
-                  <SelectValue />
+                <SelectTrigger data-testid="select-write-category" className="bg-background">
+                  <SelectValue placeholder="카테고리를 선택하세요" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[9999]">
                   {categoryOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                   ))}
@@ -744,10 +744,36 @@ export function Navbar() {
                 <Input
                   id="write-videoUrl"
                   value={writeForm.videoUrl}
-                  onChange={(e) => setWriteForm(prev => ({ ...prev, videoUrl: e.target.value }))}
+                  onChange={(e) => {
+                    const url = e.target.value;
+                    setWriteForm(prev => ({ ...prev, videoUrl: url }));
+                    // YouTube 썸네일 자동 추출
+                    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&\s?]+)/);
+                    if (match && match[1]) {
+                      const thumbnailUrl = `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg`;
+                      setWriteForm(prev => ({ ...prev, thumbnail: thumbnailUrl }));
+                    }
+                  }}
                   placeholder="https://youtube.com/watch?v=..."
                   data-testid="input-write-videourl"
                 />
+                {writeForm.thumbnail && writeForm.thumbnail.includes('img.youtube.com') && (
+                  <div className="mt-2">
+                    <p className="text-xs text-muted-foreground mb-1">자동 추출된 썸네일:</p>
+                    <img 
+                      src={writeForm.thumbnail} 
+                      alt="YouTube 썸네일" 
+                      className="w-full max-w-[200px] rounded border"
+                      onError={(e) => {
+                        // maxresdefault 실패 시 hqdefault로 대체
+                        const target = e.target as HTMLImageElement;
+                        if (target.src.includes('maxresdefault')) {
+                          target.src = target.src.replace('maxresdefault', 'hqdefault');
+                        }
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             )}
             <div className="flex gap-2">
