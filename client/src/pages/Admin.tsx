@@ -348,20 +348,24 @@ export default function Admin() {
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
-                      <Label htmlFor="category" className="text-sm font-semibold text-primary mb-2 block">카테고리 선택 (필수)</Label>
-                      <Select 
-                        value={contentForm.category} 
-                        onValueChange={(value) => setContentForm({ ...contentForm, category: value })}
-                      >
-                        <SelectTrigger data-testid="select-content-category" className="bg-background">
-                          <SelectValue placeholder="카테고리를 선택하세요" />
-                        </SelectTrigger>
-                        <SelectContent className="z-[9999]">
-                          {categoryOptions.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label className="text-sm font-semibold text-primary mb-3 block">카테고리 선택 (필수)</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {categoryOptions.map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => setContentForm({ ...contentForm, category: opt.value })}
+                            className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                              contentForm.category === opt.value 
+                                ? 'border-primary bg-primary text-primary-foreground' 
+                                : 'border-border bg-background text-foreground hover:border-primary/50'
+                            }`}
+                            data-testid={`button-category-${opt.value}`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="title">제목</Label>
