@@ -23,9 +23,9 @@ interface UseUploadOptions {
 
 async function compressImage(
   file: File,
-  maxWidth: number = 1200,
-  maxHeight: number = 1200,
-  quality: number = 0.8
+  maxWidth: number = 800,
+  maxHeight: number = 800,
+  quality: number = 0.7
 ): Promise<File> {
   if (!file.type.startsWith("image/")) {
     return file;
@@ -43,10 +43,8 @@ async function compressImage(
     img.onload = () => {
       let { width, height } = img;
 
-      if (width <= maxWidth && height <= maxHeight && file.size < 500 * 1024) {
-        resolve(file);
-        return;
-      }
+      // 항상 압축 실행 (크기 조건 제거)
+      // 작은 이미지도 리사이징하여 일관된 품질 유지
 
       if (width > maxWidth) {
         height = (height * maxWidth) / width;
@@ -108,7 +106,7 @@ export function useUpload(options: UseUploadOptions = {}) {
   const [error, setError] = useState<Error | null>(null);
   const [progress, setProgress] = useState(0);
 
-  const { maxWidth = 1200, maxHeight = 1200, quality = 0.75 } = options;
+  const { maxWidth = 800, maxHeight = 800, quality = 0.7 } = options;
   
   // Use ref to always have the latest callbacks without causing re-renders
   // Update synchronously on every render to ensure we always have the latest
