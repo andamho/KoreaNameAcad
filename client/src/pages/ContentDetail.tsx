@@ -136,7 +136,8 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
   };
 
   const getYouTubeEmbedUrl = (url: string) => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/);
+    // Support: youtube.com/watch?v=, youtu.be/, youtube.com/embed/, youtube.com/shorts/
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&\s?]+)/);
     return match ? `https://www.youtube.com/embed/${match[1]}` : null;
   };
 

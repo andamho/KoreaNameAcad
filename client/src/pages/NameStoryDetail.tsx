@@ -23,9 +23,10 @@ function formatDate(dateValue: string | Date) {
 }
 
 function getYouTubeEmbedUrl(url: string): string | null {
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  // Support: youtube.com/watch?v=, youtu.be/, youtube.com/embed/, youtube.com/shorts/
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?\s]*).*/;
   const match = url.match(regExp);
-  if (match && match[2].length === 11) {
+  if (match && match[2]) {
     return `https://www.youtube.com/embed/${match[2]}`;
   }
   return null;
