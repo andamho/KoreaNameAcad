@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,18 +10,27 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Download, Plus, Pencil, Trash2 } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { ImageManager } from "@/components/ImageManager";
-import type { Consultation, NameStory, InsertNameStory } from "@shared/schema";
+import type { Consultation, Content, InsertContent } from "@shared/schema";
+
+const categoryOptions = [
+  { value: "review", label: "후기" },
+  { value: "nameStory", label: "이름이야기" },
+  { value: "announcement", label: "공지사항" },
+  { value: "expert", label: "한국이름학교" },
+];
 
 export default function Admin() {
   const { toast } = useToast();
-  const [storyDialogOpen, setStoryDialogOpen] = useState(false);
-  const [editingStory, setEditingStory] = useState<NameStory | null>(null);
-  const [storyForm, setStoryForm] = useState<InsertNameStory>({
+  const [contentDialogOpen, setContentDialogOpen] = useState(false);
+  const [editingContent, setEditingContent] = useState<Content | null>(null);
+  const [contentForm, setContentForm] = useState<InsertContent>({
+    category: "nameStory",
     title: "",
     thumbnail: "",
     content: "",
@@ -29,6 +38,10 @@ export default function Admin() {
     isVideo: false,
   });
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const uploadedImagesRef = useRef<string[]>([]);
+  
+  // Keep ref in sync with state
+  uploadedImagesRef.current = uploadedImages;
   
   const { uploadFile, isUploading } = useUpload({
     onSuccess: (response) => {
@@ -36,8 +49,8 @@ export default function Admin() {
       const imageUrl = response.objectPath;
       setUploadedImages(prev => {
         const newImages = [...prev, imageUrl];
-        if (newImages.length === 1 || !storyForm.thumbnail) {
-          setStoryForm(form => ({ ...form, thumbnail: imageUrl }));
+        if (newImages.length === 1 || !contentForm.thumbnail) {
+          setContentForm(form => ({ ...form, thumbnail: imageUrl }));
         }
         return newImages;
       });
@@ -52,43 +65,43 @@ export default function Admin() {
     queryKey: ["/api/consultations"],
   });
 
-  const { data: stories, isLoading: loadingStories } = useQuery<NameStory[]>({
-    queryKey: ["/api/name-stories"],
+  const { data: contents, isLoading: loadingContents } = useQuery<Content[]>({
+    queryKey: ["/api/contents"],
   });
 
-  const createStoryMutation = useMutation({
-    mutationFn: (data: InsertNameStory) => apiRequest("POST", "/api/name-stories", data),
+  const createContentMutation = useMutation({
+    mutationFn: (data: InsertContent) => apiRequest("POST", "/api/contents", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/name-stories"] });
-      setStoryDialogOpen(false);
-      resetStoryForm();
-      toast({ title: "이야기가 등록되었습니다." });
+      queryClient.invalidateQueries({ queryKey: ["/api/contents"] });
+      setContentDialogOpen(false);
+      resetContentForm();
+      toast({ title: "콘텐츠가 등록되었습니다." });
     },
     onError: () => {
       toast({ title: "등록 실패", variant: "destructive" });
     },
   });
 
-  const updateStoryMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<InsertNameStory> }) => 
-      apiRequest("PUT", `/api/name-stories/${id}`, data),
+  const updateContentMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<InsertContent> }) => 
+      apiRequest("PUT", `/api/contents/${id}`, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/name-stories"] });
-      setStoryDialogOpen(false);
-      setEditingStory(null);
-      resetStoryForm();
-      toast({ title: "이야기가 수정되었습니다." });
+      queryClient.invalidateQueries({ queryKey: ["/api/contents"] });
+      setContentDialogOpen(false);
+      setEditingContent(null);
+      resetContentForm();
+      toast({ title: "콘텐츠가 수정되었습니다." });
     },
     onError: () => {
       toast({ title: "수정 실패", variant: "destructive" });
     },
   });
 
-  const deleteStoryMutation = useMutation({
-    mutationFn: (id: string) => apiRequest("DELETE", `/api/name-stories/${id}`),
+  const deleteContentMutation = useMutation({
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/contents/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/name-stories"] });
-      toast({ title: "이야기가 삭제되었습니다." });
+      queryClient.invalidateQueries({ queryKey: ["/api/contents"] });
+      toast({ title: "콘텐츠가 삭제되었습니다." });
     },
     onError: () => {
       toast({ title: "삭제 실패", variant: "destructive" });
@@ -108,63 +121,67 @@ export default function Admin() {
 🔮이름상담 및 작명 [신청방법]
 👇👇👇`;
 
-  const resetStoryForm = () => {
-    setStoryForm({ title: "", thumbnail: "", content: defaultPromoText, videoUrl: "", isVideo: false });
+  const resetContentForm = () => {
+    setContentForm({ category: "nameStory", title: "", thumbnail: "", content: defaultPromoText, videoUrl: "", isVideo: false });
     setUploadedImages([]);
   };
 
-  const openEditDialog = (story: NameStory) => {
-    setEditingStory(story);
-    setStoryForm({
-      title: story.title,
-      thumbnail: story.thumbnail,
-      content: story.content,
-      videoUrl: story.videoUrl || "",
-      isVideo: story.isVideo,
+  const openEditDialog = (content: Content) => {
+    setEditingContent(content);
+    setContentForm({
+      category: content.category,
+      title: content.title,
+      thumbnail: content.thumbnail,
+      content: content.content,
+      videoUrl: content.videoUrl || "",
+      isVideo: content.isVideo,
     });
     // 기존 이미지들 추출 (썸네일 + 본문 이미지)
     const existingImages: string[] = [];
     const imageRegex = /!\[[^\]]*\]\(([^)]+)\)/g;
     let match;
-    while ((match = imageRegex.exec(story.content)) !== null) {
+    while ((match = imageRegex.exec(content.content)) !== null) {
       if (!existingImages.includes(match[1])) {
         existingImages.push(match[1]);
       }
     }
-    if (story.thumbnail && !existingImages.includes(story.thumbnail)) {
-      existingImages.unshift(story.thumbnail);
+    if (content.thumbnail && !existingImages.includes(content.thumbnail)) {
+      existingImages.unshift(content.thumbnail);
     }
     setUploadedImages(existingImages);
-    setStoryDialogOpen(true);
+    setContentDialogOpen(true);
   };
 
-  const handleStorySubmit = () => {
-    if (!storyForm.title || !storyForm.thumbnail || !storyForm.content) {
+  const handleContentSubmit = () => {
+    if (!contentForm.title || !contentForm.thumbnail || !contentForm.content) {
       toast({ title: "제목, 썸네일, 내용을 모두 입력해주세요.", variant: "destructive" });
       return;
     }
     
+    // useRef를 사용하여 최신 이미지 순서 가져오기 (클로저 문제 해결)
+    const currentImages = uploadedImagesRef.current;
+    
     // 썸네일 결정
-    const finalThumbnail = storyForm.thumbnail || uploadedImages[0] || "";
+    const finalThumbnail = contentForm.thumbnail || currentImages[0] || "";
     
     // 이미지를 content 맨 앞에 마크다운으로 추가
     // 기존 content에서 이미지 마크다운 제거 후 새로 추가
     // 썸네일은 content에서 제외 (중복 방지)
-    let cleanContent = storyForm.content.replace(/!\[[^\]]*\]\([^)]+\)\n*/g, '').trim();
-    const contentImages = uploadedImages.filter(img => img !== finalThumbnail);
+    let cleanContent = contentForm.content.replace(/!\[[^\]]*\]\([^)]+\)\n*/g, '').trim();
+    const contentImages = currentImages.filter(img => img !== finalThumbnail);
     const imagesMarkdown = contentImages.map(img => `![이미지](${img})`).join('\n');
     const finalContent = imagesMarkdown ? `${imagesMarkdown}\n\n${cleanContent}` : cleanContent;
     
     const submitData = {
-      ...storyForm,
+      ...contentForm,
       thumbnail: finalThumbnail,
       content: finalContent,
     };
     
-    if (editingStory) {
-      updateStoryMutation.mutate({ id: editingStory.id, data: submitData });
+    if (editingContent) {
+      updateContentMutation.mutate({ id: editingContent.id, data: submitData });
     } else {
-      createStoryMutation.mutate(submitData);
+      createContentMutation.mutate(submitData);
     }
   };
 
@@ -196,8 +213,8 @@ export default function Admin() {
             <TabsTrigger value="consultations" data-testid="tab-consultations">
               신청서 관리 ({consultations?.length || 0})
             </TabsTrigger>
-            <TabsTrigger value="stories" data-testid="tab-stories">
-              이름이야기 관리 ({stories?.length || 0})
+            <TabsTrigger value="contents" data-testid="tab-contents">
+              콘텐츠 관리 ({contents?.length || 0})
             </TabsTrigger>
           </TabsList>
 
@@ -252,7 +269,7 @@ export default function Admin() {
                         <div>
                           <h3 className="font-semibold text-foreground mb-2">개명 정보</h3>
                           <div className="space-y-2">
-                            {consultation.nameChangeData.map((change, idx) => (
+                            {consultation.nameChangeData.map((change: any, idx) => (
                               <div key={idx} className="text-sm bg-muted/30 p-2 rounded">
                                 <p><span className="text-muted-foreground">현재 이름:</span> {change.currentName}</p>
                                 <p><span className="text-muted-foreground">이전 이름:</span> {change.previousName}</p>
@@ -310,63 +327,79 @@ export default function Admin() {
             )}
           </TabsContent>
 
-          <TabsContent value="stories" className="space-y-4">
+          <TabsContent value="contents" className="space-y-4">
             <div className="flex justify-end">
-              <Dialog open={storyDialogOpen} onOpenChange={(open) => {
-                setStoryDialogOpen(open);
+              <Dialog open={contentDialogOpen} onOpenChange={(open) => {
+                setContentDialogOpen(open);
                 if (!open) {
-                  setEditingStory(null);
-                  resetStoryForm();
+                  setEditingContent(null);
+                  resetContentForm();
                 }
               }}>
                 <DialogTrigger asChild>
-                  <Button data-testid="button-add-story">
+                  <Button data-testid="button-add-content">
                     <Plus className="w-4 h-4 mr-2" />
-                    새 이야기 작성
+                    새 글 작성
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>{editingStory ? "이야기 수정" : "새 이야기 작성"}</DialogTitle>
+                    <DialogTitle>{editingContent ? "콘텐츠 수정" : "새 글 작성"}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="category">카테고리</Label>
+                      <Select 
+                        value={contentForm.category} 
+                        onValueChange={(value) => setContentForm({ ...contentForm, category: value })}
+                      >
+                        <SelectTrigger data-testid="select-content-category">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categoryOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="title">제목</Label>
                       <Input
                         id="title"
-                        value={storyForm.title}
-                        onChange={(e) => setStoryForm({ ...storyForm, title: e.target.value })}
-                        placeholder="이야기 제목"
-                        data-testid="input-story-title"
+                        value={contentForm.title}
+                        onChange={(e) => setContentForm({ ...contentForm, title: e.target.value })}
+                        placeholder="제목을 입력하세요"
+                        data-testid="input-content-title"
                       />
                     </div>
                     {/* 이미지 업로드 (드래그앤드롭 지원) */}
                     <ImageManager
                       images={uploadedImages}
                       onImagesChange={setUploadedImages}
-                      thumbnail={storyForm.thumbnail}
-                      onThumbnailChange={(thumb) => setStoryForm(prev => ({ ...prev, thumbnail: thumb }))}
+                      thumbnail={contentForm.thumbnail || ""}
+                      onThumbnailChange={(thumb) => setContentForm(prev => ({ ...prev, thumbnail: thumb }))}
                       onUpload={uploadFile}
                       isUploading={isUploading}
                     />
                     <div className="flex items-center gap-2">
                       <Switch
                         id="isVideo"
-                        checked={storyForm.isVideo}
-                        onCheckedChange={(checked) => setStoryForm({ ...storyForm, isVideo: checked })}
+                        checked={contentForm.isVideo}
+                        onCheckedChange={(checked) => setContentForm({ ...contentForm, isVideo: checked })}
                         data-testid="switch-is-video"
                       />
                       <Label htmlFor="isVideo">영상 콘텐츠</Label>
                     </div>
-                    {storyForm.isVideo && (
+                    {contentForm.isVideo && (
                       <div className="space-y-2">
                         <Label htmlFor="videoUrl">영상 URL (YouTube)</Label>
                         <Input
                           id="videoUrl"
-                          value={storyForm.videoUrl || ""}
-                          onChange={(e) => setStoryForm({ ...storyForm, videoUrl: e.target.value })}
+                          value={contentForm.videoUrl || ""}
+                          onChange={(e) => setContentForm({ ...contentForm, videoUrl: e.target.value })}
                           placeholder="https://www.youtube.com/watch?v=..."
-                          data-testid="input-story-video"
+                          data-testid="input-content-video"
                         />
                       </div>
                     )}
@@ -374,49 +407,52 @@ export default function Admin() {
                       <Label htmlFor="content">내용</Label>
                       <Textarea
                         id="content"
-                        value={storyForm.content}
-                        onChange={(e) => setStoryForm({ ...storyForm, content: e.target.value })}
-                        placeholder="이야기 내용을 입력하세요..."
+                        value={contentForm.content}
+                        onChange={(e) => setContentForm({ ...contentForm, content: e.target.value })}
+                        placeholder="내용을 입력하세요..."
                         rows={10}
-                        data-testid="input-story-content"
+                        data-testid="input-content-body"
                       />
                     </div>
                     <Button 
-                      onClick={handleStorySubmit} 
+                      onClick={handleContentSubmit} 
                       className="w-full"
-                      disabled={createStoryMutation.isPending || updateStoryMutation.isPending}
-                      data-testid="button-submit-story"
+                      disabled={createContentMutation.isPending || updateContentMutation.isPending}
+                      data-testid="button-submit-content"
                     >
-                      {editingStory ? "수정하기" : "등록하기"}
+                      {editingContent ? "수정하기" : "등록하기"}
                     </Button>
                   </div>
                 </DialogContent>
               </Dialog>
             </div>
 
-            {loadingStories ? (
+            {loadingContents ? (
               <div className="text-center py-8">로딩 중...</div>
-            ) : stories && stories.length === 0 ? (
+            ) : contents && contents.length === 0 ? (
               <Card className="p-8 text-center">
-                <p className="text-muted-foreground">아직 등록된 이야기가 없습니다.</p>
+                <p className="text-muted-foreground">아직 등록된 콘텐츠가 없습니다.</p>
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {stories?.map((story) => (
-                  <Card key={story.id} className="overflow-hidden" data-testid={`story-card-${story.id}`}>
+                {contents?.map((content) => (
+                  <Card key={content.id} className="overflow-hidden" data-testid={`content-card-${content.id}`}>
                     <div className="aspect-video relative">
-                      <img src={story.thumbnail} alt={story.title} className="w-full h-full object-cover" />
-                      {story.isVideo && (
+                      <img src={content.thumbnail || ""} alt={content.title} className="w-full h-full object-cover" />
+                      {content.isVideo && (
                         <Badge className="absolute top-2 right-2">영상</Badge>
                       )}
+                      <Badge className="absolute top-2 left-2" variant="secondary">
+                        {categoryOptions.find(c => c.value === content.category)?.label || content.category}
+                      </Badge>
                     </div>
                     <div className="p-4">
-                      <h3 className="font-semibold text-foreground line-clamp-2 mb-2">{story.title}</h3>
+                      <h3 className="font-semibold text-foreground line-clamp-2 mb-2">{content.title}</h3>
                       <p className="text-sm text-muted-foreground mb-4">
-                        {new Date(story.createdAt).toLocaleDateString("ko-KR")}
+                        {new Date(content.createdAt).toLocaleDateString("ko-KR")}
                       </p>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => openEditDialog(story)} data-testid={`button-edit-${story.id}`}>
+                        <Button size="sm" variant="outline" onClick={() => openEditDialog(content)} data-testid={`button-edit-${content.id}`}>
                           <Pencil className="w-4 h-4 mr-1" />
                           수정
                         </Button>
@@ -425,10 +461,10 @@ export default function Admin() {
                           variant="outline" 
                           onClick={() => {
                             if (confirm("정말 삭제하시겠습니까?")) {
-                              deleteStoryMutation.mutate(story.id);
+                              deleteContentMutation.mutate(content.id);
                             }
                           }}
-                          data-testid={`button-delete-${story.id}`}
+                          data-testid={`button-delete-${content.id}`}
                         >
                           <Trash2 className="w-4 h-4 mr-1" />
                           삭제
