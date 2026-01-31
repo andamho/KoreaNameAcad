@@ -551,7 +551,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
 
             {/* 개명 이력 */}
             <div className="pt-10 mt-10 border-t border-slate-200/60">
-              <label className="text-xl form-title-font font-bold text-slate-900 block mb-5">개명 이력이 있나요?</label>
+              <label className="text-xl form-title-font font-bold text-slate-900 block mb-5">개명 이력 있는 분이 계신가요? <span className="text-sm font-normal text-slate-500">(본인 및 등본상 가족 기준)</span></label>
               <div className="grid grid-cols-2 gap-3">
                 {["아니오", "예"].map((option) => (
                   <button
