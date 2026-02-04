@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 전체 화면 다이얼로그 (Admin 글 작성용) */
+.dialog-fullscreen {
+  width: 90vw !important;
+  max-width: 90vw !important;
+  height: 90vh !important;
+  max-height: 90vh !important;
+}
+
 /* 모바일 터치 하이라이트 제거 */
 @layer base {
   *,
