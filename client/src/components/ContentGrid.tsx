@@ -323,7 +323,7 @@ function ContentCard({ content, basePath, index = 0 }: ContentCardProps) {
     
     {/* 수정 다이얼로그 */}
     <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto z-[210]">
+      <DialogContent className="dialog-fullscreen overflow-y-auto z-[210]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Pencil className="w-5 h-5" />

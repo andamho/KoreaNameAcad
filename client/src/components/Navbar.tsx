@@ -596,7 +596,7 @@ export function Navbar() {
       
       {/* 글쓰기 다이얼로그 */}
       <Dialog open={showWriteDialog} onOpenChange={setShowWriteDialog}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="dialog-fullscreen overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <PenSquare className="w-5 h-5" />
@@ -605,14 +605,14 @@ export function Navbar() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
-              <Label className="text-sm font-semibold text-primary mb-3 block">카테고리 선택 (필수)</Label>
-              <div className="grid grid-cols-2 gap-2">
+              <Label className="text-sm font-semibold text-primary mb-2 block">카테고리 선택 (필수)</Label>
+              <div className="flex flex-wrap gap-2">
                 {categoryOptions.map((opt) => (
                   <button
                     key={opt.value}
                     type="button"
                     onClick={() => setWriteForm(prev => ({ ...prev, category: opt.value }))}
-                    className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                    className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all whitespace-nowrap ${
                       writeForm.category === opt.value 
                         ? 'border-primary bg-primary text-primary-foreground' 
                         : 'border-border bg-background text-foreground hover:border-primary/50'
@@ -768,14 +768,14 @@ export function Navbar() {
                 </div>
               )}
             </div>
-            <div>
+            <div className="flex-1 flex flex-col">
               <Label htmlFor="write-content">내용</Label>
               <Textarea
                 id="write-content"
                 value={writeForm.content}
                 onChange={(e) => setWriteForm(prev => ({ ...prev, content: e.target.value }))}
                 placeholder="내용을 입력하세요"
-                rows={6}
+                className="flex-1 min-h-[300px] md:min-h-[400px] text-base"
                 data-testid="input-write-content"
               />
             </div>
