@@ -342,7 +342,7 @@ export default function Admin() {
                     새 글 작성
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="w-[95vw] max-w-[95vw] h-[95vh] max-h-[95vh] md:w-[90vw] md:max-w-[90vw] overflow-y-auto">
+                <DialogContent className="overflow-y-auto" style={{ width: '90vw', maxWidth: '90vw', height: '90vh', maxHeight: '90vh' }}>
                   <DialogHeader>
                     <DialogTitle>{editingContent ? "콘텐츠 수정" : "새 글 작성"}</DialogTitle>
                   </DialogHeader>
