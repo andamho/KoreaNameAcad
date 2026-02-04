@@ -342,20 +342,20 @@ export default function Admin() {
                     새 글 작성
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="w-[95vw] max-w-[95vw] h-[95vh] max-h-[95vh] md:w-[90vw] md:max-w-[90vw] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>{editingContent ? "콘텐츠 수정" : "새 글 작성"}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
-                      <Label className="text-sm font-semibold text-primary mb-3 block">카테고리 선택 (필수)</Label>
-                      <div className="grid grid-cols-2 gap-2">
+                      <Label className="text-sm font-semibold text-primary mb-2 block">카테고리 선택 (필수)</Label>
+                      <div className="flex flex-wrap gap-2">
                         {categoryOptions.map((opt) => (
                           <button
                             key={opt.value}
                             type="button"
                             onClick={() => setContentForm({ ...contentForm, category: opt.value })}
-                            className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                            className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all whitespace-nowrap ${
                               contentForm.category === opt.value 
                                 ? 'border-primary bg-primary text-primary-foreground' 
                                 : 'border-border bg-background text-foreground hover:border-primary/50'
@@ -432,14 +432,14 @@ export default function Admin() {
                         )}
                       </div>
                     )}
-                    <div className="space-y-2">
+                    <div className="space-y-2 flex-1 flex flex-col">
                       <Label htmlFor="content">내용</Label>
                       <Textarea
                         id="content"
                         value={contentForm.content}
                         onChange={(e) => setContentForm({ ...contentForm, content: e.target.value })}
                         placeholder="내용을 입력하세요..."
-                        rows={10}
+                        className="flex-1 min-h-[300px] md:min-h-[400px] text-base"
                         data-testid="input-content-body"
                       />
                     </div>
