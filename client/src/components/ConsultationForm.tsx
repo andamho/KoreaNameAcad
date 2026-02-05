@@ -672,6 +672,18 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                   정확한 한자 확인을 위해 필수입니다.<br/>
                   <span className="kna-inapp-zoom text-xs text-slate-400">· 주민등록번호 및 주소는 가린 후 제출</span>
                 </p>
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="kna-inapp-zoom text-xs text-slate-400">정부24 온라인 발급 서비스</span>
+                  <a 
+                    href="https://plus.gov.kr/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-3 py-1 bg-slate-900 text-white text-xs font-medium rounded-full hover:bg-slate-800 transition-colors"
+                    data-testid="link-gov24"
+                  >
+                    바로가기 &gt;
+                  </a>
+                </div>
                 <div className="mt-4 p-4 bg-slate-50/80 rounded-2xl border border-slate-100">
                   <p className="kna-inapp-zoom text-sm text-slate-600 leading-relaxed font-medium">
                     <strong>실거주지 불일치</strong> 혹은 <strong>등본 외 동거인</strong>이 있으신 경우 예약 상담 시 꼭 말씀해주세요.
