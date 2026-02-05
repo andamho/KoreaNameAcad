@@ -673,7 +673,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                   <span className="kna-inapp-zoom text-xs text-slate-400">· 주민등록번호 및 주소는 가린 후 제출</span>
                 </p>
                 <div className="mt-3 flex items-center gap-2">
-                  <span className="kna-inapp-zoom text-xs text-slate-400">정부24 온라인 발급 서비스</span>
+                  <span className="kna-inapp-zoom text-xs text-slate-400">· 정부24 온라인 발급 서비스</span>
                   <a 
                     href="https://plus.gov.kr/" 
                     target="_blank" 
