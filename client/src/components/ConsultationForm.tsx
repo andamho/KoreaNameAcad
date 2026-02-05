@@ -675,7 +675,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                 <div className="mt-3 flex items-center gap-2">
                   <span className="kna-inapp-zoom text-xs text-slate-400">· 정부24 온라인 발급 서비스</span>
                   <a 
-                    href="https://plus.gov.kr/" 
+                    href="https://www.gov.kr/mw/AA020InfoCappView.do?CappBizCD=13100000015&HighCtgCD=A01010001&tp_seq=01&Mcode=10200" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-flex items-center px-3 py-1 bg-slate-900 text-white text-xs font-medium rounded-full hover:bg-slate-800 transition-colors"
