@@ -383,7 +383,7 @@ export default function Services() {
             <ServiceCard
               icon={Star}
               title="이름감명"
-              description="타 작명소에서 받은 이름의 적합도를 점검해드립니다"
+              description="타 작명소에서 개명하기 위해 받은 이름의 적합도를 점검해드립니다"
               buttonText="신청하기"
               onClick={() => openDialog("naming")}
               data-testid="card-service-1"
