@@ -678,7 +678,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                     href="https://www.gov.kr/mw/AA020InfoCappView.do?CappBizCD=13100000015&HighCtgCD=A01010001&tp_seq=01&Mcode=10200" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="inline-flex items-center px-3 py-1 bg-slate-900 text-white text-xs font-medium rounded-full hover:bg-slate-800 transition-colors"
+                    className="kna-inapp-zoom-xs inline-flex items-center px-3 py-1 bg-slate-900 text-white text-xs font-medium rounded-full hover:bg-slate-800 transition-colors"
                     data-testid="link-gov24"
                   >
                     바로가기 &gt;

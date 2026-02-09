@@ -2084,6 +2084,20 @@ html.ua-tiktok .kna-inapp-zoom * {
   font-size: 13px !important;
 }
 
+/* text-xs(12px) 요소에 82% 적용: 12px × 0.82 = ~10px */
+html.ua-instagram .kna-inapp-zoom.text-xs,
+html.ua-tiktok .kna-inapp-zoom.text-xs,
+html.ua-instagram .kna-inapp-zoom .text-xs,
+html.ua-tiktok .kna-inapp-zoom .text-xs {
+  font-size: 10px !important;
+}
+
+/* kna-inapp-zoom-xs: text-xs 전용 82% 축소 클래스 */
+html.ua-instagram .kna-inapp-zoom-xs,
+html.ua-tiktok .kna-inapp-zoom-xs {
+  font-size: 10px !important;
+}
+
 /* 82% x 82% = 약 67% (더 작게) */
 html.ua-instagram .kna-inapp-zoom-2x,
 html.ua-tiktok .kna-inapp-zoom-2x {
