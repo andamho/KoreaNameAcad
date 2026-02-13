@@ -150,86 +150,122 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
   });
 
   const handleSubmit = async () => {
-    // 모든 필드 유효성 검사
-    const error = validateAllFields();
-    if (error) {
-      setFormError(error.message);
-      // 해당 step으로 이동 후 스크롤
-      if (error.step !== currentStep) {
-        window.history.pushState({ formStep: error.step }, '');
-        setCurrentStep(error.step);
-        setTimeout(() => {
+    try {
+      const error = validateAllFields();
+      if (error) {
+        setFormError(error.message);
+        if (error.step !== currentStep) {
+          window.history.pushState({ formStep: error.step }, '');
+          setCurrentStep(error.step);
+          setTimeout(() => {
+            scrollToField(error.fieldId);
+          }, 100);
+        } else {
           scrollToField(error.fieldId);
-        }, 100);
-      } else {
-        scrollToField(error.fieldId);
-      }
-      // 5초 후 에러 메시지 자동 제거
-      setTimeout(() => setFormError(null), 5000);
-      return;
-    }
-    setFormError(null);
-
-    let fileData: { fileName?: string; fileData?: string; fileType?: string } = {};
-    
-    if (registrationDocument) {
-      const maxSize = 5 * 1024 * 1024;
-      if (registrationDocument.size > maxSize) {
-        toast({
-          title: "파일 크기 초과",
-          description: "파일 크기는 5MB 이하여야 합니다.",
-          variant: "destructive",
-        });
+        }
+        setTimeout(() => setFormError(null), 5000);
         return;
       }
+      setFormError(null);
 
-      try {
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(registrationDocument);
-        });
-        
-        const base64Data = dataUrl.split(',')[1];
-        
-        fileData = {
-          fileName: registrationDocument.name,
-          fileData: base64Data,
-          fileType: registrationDocument.type,
-        };
-      } catch (error) {
-        console.error("File reading error:", error);
-        toast({
-          title: "파일 업로드 실패",
-          description: "파일을 읽을 수 없습니다. 다시 시도해주세요.",
-          variant: "destructive",
-        });
-        return;
+      let fileData: { fileName?: string; fileData?: string; fileType?: string } = {};
+      
+      if (registrationDocument) {
+        const maxSize = 5 * 1024 * 1024;
+        if (registrationDocument.size > maxSize) {
+          toast({
+            title: "파일 크기 초과",
+            description: "파일 크기는 5MB 이하여야 합니다.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('Canvas not supported');
+
+          const img = new Image();
+          const imageUrl = URL.createObjectURL(registrationDocument);
+
+          await new Promise<void>((resolve, reject) => {
+            img.onload = () => {
+              const MAX_DIMENSION = 1600;
+              let { width, height } = img;
+              if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+                if (width > height) {
+                  height = Math.round(height * (MAX_DIMENSION / width));
+                  width = MAX_DIMENSION;
+                } else {
+                  width = Math.round(width * (MAX_DIMENSION / height));
+                  height = MAX_DIMENSION;
+                }
+              }
+              canvas.width = width;
+              canvas.height = height;
+              ctx.drawImage(img, 0, 0, width, height);
+              URL.revokeObjectURL(imageUrl);
+              resolve();
+            };
+            img.onerror = () => {
+              URL.revokeObjectURL(imageUrl);
+              reject(new Error('Image load failed'));
+            };
+            img.src = imageUrl;
+          });
+
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          const base64Data = compressedDataUrl.split(',')[1];
+          console.log('[Submit] Compressed file size:', Math.round(base64Data.length / 1024), 'KB');
+
+          fileData = {
+            fileName: registrationDocument.name.replace(/\.[^.]+$/, '.jpg'),
+            fileData: base64Data,
+            fileType: 'image/jpeg',
+          };
+        } catch (fileError) {
+          console.error("File processing error:", fileError);
+          toast({
+            title: "파일 처리 실패",
+            description: "파일을 처리할 수 없습니다. 다시 시도해주세요.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
-    }
-    
-    const consultationData = {
-      type,
-      numPeople: type === "naming" ? 1 : numPeople,
-      peopleData,
-      phone,
-      hasNameChange: hasNameChange === "예" ? "yes" : "no",
-      numNameChanges: hasNameChange === "예" ? numNameChanges : undefined,
-      nameChangeData: hasNameChange === "예" ? nameChangeData : undefined,
-      // 이름감명 전용 필드
-      numEvaluationNames: type === "naming" ? numEvaluationNames : undefined,
-      evaluationNamesData: type === "naming" ? evaluationNamesData : undefined,
-      totalPrice,
-      reason,
-      referralSource: referralSource || undefined,
-      referrerName: referralSource === "지인소개" && referrerName.trim() ? referrerName.trim() : undefined,
-      depositorName,
-      consultationTime,
-      ...fileData,
-    };
+      
+      const consultationData = {
+        type,
+        numPeople: type === "naming" ? 1 : numPeople,
+        peopleData,
+        phone,
+        hasNameChange: hasNameChange === "예" ? "yes" : "no",
+        numNameChanges: hasNameChange === "예" ? numNameChanges : undefined,
+        nameChangeData: hasNameChange === "예" ? nameChangeData : undefined,
+        numEvaluationNames: type === "naming" ? numEvaluationNames : undefined,
+        evaluationNamesData: type === "naming" ? evaluationNamesData : undefined,
+        totalPrice,
+        reason,
+        referralSource: referralSource || undefined,
+        referrerName: referralSource === "지인소개" && referrerName.trim() ? referrerName.trim() : undefined,
+        depositorName,
+        consultationTime,
+        ...fileData,
+      };
 
-    submitMutation.mutate(consultationData);
+      const bodySize = JSON.stringify(consultationData).length;
+      console.log('[Submit] Total request body size:', Math.round(bodySize / 1024), 'KB');
+
+      submitMutation.mutate(consultationData);
+    } catch (unexpectedError) {
+      console.error("[Submit] Unexpected error:", unexpectedError);
+      toast({
+        title: "오류 발생",
+        description: "예상치 못한 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    }
   };
 
   // 현재 step을 ref로 관리 (popstate 이벤트에서 최신 값 접근용)
