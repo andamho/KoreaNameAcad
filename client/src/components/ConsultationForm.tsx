@@ -171,16 +171,6 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
       let fileData: { fileName?: string; fileData?: string; fileType?: string } = {};
       
       if (registrationDocument) {
-        const maxSize = 5 * 1024 * 1024;
-        if (registrationDocument.size > maxSize) {
-          toast({
-            title: "파일 크기 초과",
-            description: "파일 크기는 5MB 이하여야 합니다.",
-            variant: "destructive",
-          });
-          return;
-        }
-
         try {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
