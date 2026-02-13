@@ -36,6 +36,8 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     { name: "", gender: "여성", birthYear: "", occupation: "" }
   ]);
   const [registrationDocument, setRegistrationDocument] = useState<File | null>(null);
+  const [compressedFile, setCompressedFile] = useState<{ fileName: string; fileData: string; fileType: string } | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
   const [phone, setPhone] = useState("");
   const [hasNameChange, setHasNameChange] = useState<string>("아니오");
   const [numNameChanges, setNumNameChanges] = useState<number>(1);
@@ -77,6 +79,76 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
     const newData = [...evaluationNamesData];
     newData[index] = { ...newData[index], [field]: value };
     setEvaluationNamesData(newData);
+  };
+
+  const compressImage = async (file: File): Promise<{ fileName: string; fileData: string; fileType: string }> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { reject(new Error('Canvas not supported')); return; }
+
+            const MAX_DIMENSION = 1600;
+            let { width, height } = img;
+            if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+              if (width > height) {
+                height = Math.round(height * (MAX_DIMENSION / width));
+                width = MAX_DIMENSION;
+              } else {
+                width = Math.round(width * (MAX_DIMENSION / height));
+                height = MAX_DIMENSION;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            const base64Data = compressedDataUrl.split(',')[1];
+            if (!base64Data || base64Data.length < 100) {
+              reject(new Error('Compression produced empty result'));
+              return;
+            }
+            console.log('[Compress] Compressed:', Math.round(file.size / 1024), 'KB →', Math.round(base64Data.length / 1024), 'KB');
+            resolve({
+              fileName: file.name.replace(/\.[^.]+$/, '.jpg'),
+              fileData: base64Data,
+              fileType: 'image/jpeg',
+            });
+          } catch (err) {
+            reject(err);
+          }
+        };
+        img.onerror = () => reject(new Error('Image load failed'));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error('File read failed'));
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileSelect = async (file: File) => {
+    setRegistrationDocument(file);
+    setIsCompressing(true);
+    try {
+      const compressed = await compressImage(file);
+      setCompressedFile(compressed);
+      console.log('[FileSelect] File compressed and stored in state');
+    } catch (err) {
+      console.error('[FileSelect] Compression failed:', err);
+      setRegistrationDocument(null);
+      setCompressedFile(null);
+      toast({
+        title: "파일 처리 실패",
+        description: "이미지를 처리할 수 없습니다. 다른 파일을 선택해주세요.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCompressing(false);
+    }
   };
 
   const handleCopyAccount = async () => {
@@ -170,59 +242,9 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
 
       let fileData: { fileName?: string; fileData?: string; fileType?: string } = {};
       
-      if (registrationDocument) {
-        try {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          if (!ctx) throw new Error('Canvas not supported');
-
-          const img = new Image();
-          const imageUrl = URL.createObjectURL(registrationDocument);
-
-          await new Promise<void>((resolve, reject) => {
-            img.onload = () => {
-              const MAX_DIMENSION = 1600;
-              let { width, height } = img;
-              if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
-                if (width > height) {
-                  height = Math.round(height * (MAX_DIMENSION / width));
-                  width = MAX_DIMENSION;
-                } else {
-                  width = Math.round(width * (MAX_DIMENSION / height));
-                  height = MAX_DIMENSION;
-                }
-              }
-              canvas.width = width;
-              canvas.height = height;
-              ctx.drawImage(img, 0, 0, width, height);
-              URL.revokeObjectURL(imageUrl);
-              resolve();
-            };
-            img.onerror = () => {
-              URL.revokeObjectURL(imageUrl);
-              reject(new Error('Image load failed'));
-            };
-            img.src = imageUrl;
-          });
-
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          const base64Data = compressedDataUrl.split(',')[1];
-          console.log('[Submit] Compressed file size:', Math.round(base64Data.length / 1024), 'KB');
-
-          fileData = {
-            fileName: registrationDocument.name.replace(/\.[^.]+$/, '.jpg'),
-            fileData: base64Data,
-            fileType: 'image/jpeg',
-          };
-        } catch (fileError) {
-          console.error("File processing error:", fileError);
-          toast({
-            title: "파일 처리 실패",
-            description: "파일을 처리할 수 없습니다. 다시 시도해주세요.",
-            variant: "destructive",
-          });
-          return;
-        }
+      if (compressedFile) {
+        fileData = compressedFile;
+        console.log('[Submit] Using pre-compressed file:', Math.round(compressedFile.fileData.length / 1024), 'KB');
       }
       
       const consultationData = {
@@ -727,7 +749,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                     <div className="flex-1">
                       <div className="text-lg font-bold text-slate-900">파일 선택</div>
                       <div className="kna-inapp-zoom text-sm text-slate-400 mt-1 truncate max-w-[200px] mx-auto sm:mx-0">
-                        {registrationDocument ? registrationDocument.name : "선택된 파일 없음"}
+                        {isCompressing ? "파일 처리 중..." : registrationDocument ? registrationDocument.name : "선택된 파일 없음"}
                       </div>
                     </div>
                     <div className="kna-inapp-zoom text-sm font-bold text-tiffany bg-tiffany-light px-5 py-2.5 rounded-full hover:bg-teal-100 transition">업로드</div>
@@ -739,7 +761,15 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                 type="file" 
                 className="hidden" 
                 accept="image/*"
-                onChange={(e) => setRegistrationDocument(e.target.files?.[0] || null)}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleFileSelect(file);
+                  } else {
+                    setRegistrationDocument(null);
+                    setCompressedFile(null);
+                  }
+                }}
                 data-testid="input-registration-document"
               />
             </div>
@@ -750,10 +780,11 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
             <button 
               type="button"
               onClick={() => goToNextStep(2)}
-              className="w-full rounded-xl bg-tiffany text-white py-3 text-base font-bold hover:bg-tiffany-dark transition shadow-md shadow-tiffany/30 transform active:scale-[0.98]"
+              disabled={isCompressing}
+              className="w-full rounded-xl bg-tiffany text-white py-3 text-base font-bold hover:bg-tiffany-dark transition shadow-md shadow-tiffany/30 transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="button-next-step2"
             >
-              다음: 상담내용
+              {isCompressing ? "파일 처리 중..." : "다음: 상담내용"}
             </button>
           </div>
         </div>
