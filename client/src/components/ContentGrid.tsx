@@ -11,7 +11,7 @@ import { saveScrollPosition } from "@/hooks/use-scroll-restore";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -20,10 +20,11 @@ const categoryOptions = [
   { value: "nameStory", label: "이름이야기" },
   { value: "announcement", label: "공지사항" },
   { value: "expert", label: "한국이름학교" },
+  { value: "about", label: "협회 소개" },
 ];
 
 interface ContentGridProps {
-  category: "nameStory" | "expert" | "announcement" | "review";
+  category: "nameStory" | "expert" | "announcement" | "review" | "about";
   basePath: string;
   emptyMessage?: string;
 }
@@ -455,12 +456,11 @@ function ContentCard({ content, basePath, index = 0 }: ContentCardProps) {
           </div>
           <div>
             <Label htmlFor="edit-content">내용</Label>
-            <Textarea
-              id="edit-content"
+            <RichTextEditor
               value={editForm.content}
-              onChange={(e) => setEditForm(prev => ({ ...prev, content: e.target.value }))}
+              onChange={(val) => setEditForm(prev => ({ ...prev, content: val }))}
               placeholder="내용을 입력하세요"
-              rows={6}
+              className="min-h-[200px]"
               data-testid="input-edit-content"
             />
           </div>

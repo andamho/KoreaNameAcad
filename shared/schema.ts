@@ -77,7 +77,7 @@ export type InsertNameStory = z.infer<typeof insertNameStorySchema>;
 export type NameStory = typeof nameStories.$inferSelect;
 
 // Content categories for CMS
-export const contentCategoryEnum = z.enum(["nameStory", "expert", "announcement", "review"]);
+export const contentCategoryEnum = z.enum(["nameStory", "expert", "announcement", "review", "about"]);
 export type ContentCategory = z.infer<typeof contentCategoryEnum>;
 
 // Contents table for unified CMS

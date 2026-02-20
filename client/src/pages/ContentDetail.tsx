@@ -9,9 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ImageManager } from "@/components/ImageManager";
+import { RichTextEditor, renderFormattedText } from "@/components/RichTextEditor";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Content } from "@shared/schema";
 import { useEffect, useState } from "react";
@@ -288,9 +288,10 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
                 
                 const flushTextBuffer = (key: string) => {
                   if (textBuffer.length > 0) {
+                    const text = textBuffer.join('\n');
                     result.push(
                       <div key={key} className="text-foreground leading-relaxed whitespace-pre-line">
-                        {textBuffer.join('\n')}
+                        {renderFormattedText(text)}
                       </div>
                     );
                     textBuffer = [];
@@ -386,12 +387,12 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
             />
             <div>
               <Label htmlFor="edit-content">내용</Label>
-              <Textarea
-                id="edit-content"
+              <RichTextEditor
                 value={editForm.content}
-                onChange={(e) => setEditForm(prev => ({ ...prev, content: e.target.value }))}
+                onChange={(val) => setEditForm(prev => ({ ...prev, content: val }))}
                 placeholder="내용을 입력하세요"
-                rows={8}
+                className="min-h-[200px]"
+                data-testid="input-edit-content"
               />
             </div>
             <div className="flex items-center gap-2">

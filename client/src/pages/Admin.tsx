@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -23,6 +23,7 @@ const categoryOptions = [
   { value: "nameStory", label: "이름이야기" },
   { value: "announcement", label: "공지사항" },
   { value: "expert", label: "한국이름학교" },
+  { value: "about", label: "협회 소개" },
 ];
 
 export default function Admin() {
@@ -434,10 +435,9 @@ export default function Admin() {
                     )}
                     <div className="space-y-2 flex-1 flex flex-col">
                       <Label htmlFor="content">내용</Label>
-                      <Textarea
-                        id="content"
+                      <RichTextEditor
                         value={contentForm.content}
-                        onChange={(e) => setContentForm({ ...contentForm, content: e.target.value })}
+                        onChange={(val) => setContentForm({ ...contentForm, content: val })}
                         placeholder="내용을 입력하세요..."
                         className="flex-1 min-h-[300px] md:min-h-[400px] text-base"
                         data-testid="input-content-body"

@@ -1,4 +1,4 @@
-import { MessageCircle, FileText, Star, DollarSign, BookOpen, PenSquare, Lock, LogOut, User, FileEdit, Upload, ImageIcon } from "lucide-react";
+import { MessageCircle, FileText, Star, DollarSign, BookOpen, PenSquare, Lock, LogOut, User, FileEdit, Upload, ImageIcon, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect, useRef } from "react";
@@ -9,7 +9,7 @@ import { useUpload } from "@/hooks/use-upload";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -25,6 +25,7 @@ const categoryOptions = [
   { value: "nameStory", label: "이름이야기" },
   { value: "announcement", label: "공지사항" },
   { value: "expert", label: "한국이름학교" },
+  { value: "about", label: "협회 소개" },
 ];
 
 export function Navbar() {
@@ -361,6 +362,12 @@ export function Navbar() {
       label: "흥미진진 이름이야기", 
       action: () => goToPage('/name-stories'),
       description: "이름에 담긴 이야기"
+    },
+    { 
+      icon: Building2, 
+      label: "협회 소개", 
+      action: () => goToPage('/about'),
+      description: "와츠유어네임 이름연구협회"
     },
     { 
       icon: MessageCircle, 
@@ -770,10 +777,9 @@ export function Navbar() {
             </div>
             <div className="flex-1 flex flex-col">
               <Label htmlFor="write-content">내용</Label>
-              <Textarea
-                id="write-content"
+              <RichTextEditor
                 value={writeForm.content}
-                onChange={(e) => setWriteForm(prev => ({ ...prev, content: e.target.value }))}
+                onChange={(val) => setWriteForm(prev => ({ ...prev, content: val }))}
                 placeholder="내용을 입력하세요"
                 className="flex-1 min-h-[300px] md:min-h-[400px] text-base"
                 data-testid="input-write-content"

@@ -23,6 +23,7 @@ import Notice from "@/pages/Notice";
 import ExpertCourse from "@/pages/ExpertCourse";
 import ContentDetail from "@/pages/ContentDetail";
 import Drafts from "@/pages/Drafts";
+import About from "@/pages/About";
 import NotFound from "@/pages/not-found";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
@@ -78,6 +79,10 @@ function Router() {
       <Route path="/expert-course" component={ExpertCourse}/>
       <Route path="/expert-course/:id">
         {(params) => <ContentDetail backPath="/expert-course" backLabel="전문가 과정 목록" />}
+      </Route>
+      <Route path="/about" component={About}/>
+      <Route path="/about/:id">
+        {(params) => <ContentDetail backPath="/about" backLabel="협회 소개 목록" />}
       </Route>
       <Route component={NotFound} />
     </Switch>
@@ -150,7 +155,7 @@ function App() {
     const preloadContentImages = async () => {
       try {
         // 모든 카테고리 동시에 fetch
-        const categories = ['review', 'nameStory', 'announcement', 'expert'];
+        const categories = ['review', 'nameStory', 'announcement', 'expert', 'about'];
         const results = await Promise.all(
           categories.map(cat => 
             fetch(`/api/contents?category=${cat}`)
