@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 import { Bold, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,34 +23,44 @@ const fontSizeOptions = [
 
 export function RichTextEditor({ value, onChange, placeholder, className, "data-testid": testId }: RichTextEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const savedSelection = useRef<{ start: number; end: number } | null>(null);
 
-  const wrapSelection = (before: string, after: string) => {
+  const saveSelection = useCallback(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
+    savedSelection.current = {
+      start: textarea.selectionStart,
+      end: textarea.selectionEnd,
+    };
+  }, []);
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = value.substring(start, end);
+  const wrapSelection = useCallback((before: string, after: string) => {
+    const sel = savedSelection.current;
+    if (!sel || sel.start === sel.end) return;
 
+    const selectedText = value.substring(sel.start, sel.end);
     if (selectedText.length === 0) return;
 
-    const newValue = value.substring(0, start) + before + selectedText + after + value.substring(end);
+    const newValue = value.substring(0, sel.start) + before + selectedText + after + value.substring(sel.end);
     onChange(newValue);
 
-    requestAnimationFrame(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + before.length, end + before.length);
-    });
-  };
+    const textarea = textareaRef.current;
+    if (textarea) {
+      requestAnimationFrame(() => {
+        textarea.focus();
+        textarea.setSelectionRange(sel.start + before.length, sel.end + before.length);
+      });
+    }
+  }, [value, onChange]);
 
-  const handleBold = () => {
+  const handleBold = useCallback(() => {
     wrapSelection("**", "**");
-  };
+  }, [wrapSelection]);
 
-  const handleFontSize = (size: string) => {
+  const handleFontSize = useCallback((size: string) => {
     if (size === "16") return;
     wrapSelection(`{size:${size}}`, `{/size}`);
-  };
+  }, [wrapSelection]);
 
   return (
     <div className="space-y-1">
@@ -59,7 +69,10 @@ export function RichTextEditor({ value, onChange, placeholder, className, "data-
           type="button"
           size="sm"
           variant="ghost"
-          onClick={handleBold}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            handleBold();
+          }}
           className="h-8 px-2.5 font-bold"
           data-testid="button-bold"
         >
@@ -68,7 +81,11 @@ export function RichTextEditor({ value, onChange, placeholder, className, "data-
         <div className="flex items-center gap-1">
           <Type className="w-4 h-4 text-muted-foreground" />
           <Select onValueChange={handleFontSize}>
-            <SelectTrigger className="h-8 w-[110px] text-xs" data-testid="select-font-size">
+            <SelectTrigger
+              className="h-8 w-[110px] text-xs"
+              data-testid="select-font-size"
+              onMouseDown={() => saveSelection()}
+            >
               <SelectValue placeholder="글자 크기" />
             </SelectTrigger>
             <SelectContent>
@@ -86,6 +103,8 @@ export function RichTextEditor({ value, onChange, placeholder, className, "data-
         ref={textareaRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onSelect={saveSelection}
+        onBlur={saveSelection}
         placeholder={placeholder}
         className={`flex w-full rounded-b-md border border-border bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className || ""}`}
         data-testid={testId}
