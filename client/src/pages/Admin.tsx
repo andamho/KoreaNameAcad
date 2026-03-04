@@ -436,6 +436,7 @@ export default function Admin() {
                     <div className="space-y-2 flex-1 flex flex-col">
                       <Label htmlFor="content">내용</Label>
                       <RichTextEditor
+                        key={editingContent?.id ?? "new"}
                         value={contentForm.content}
                         onChange={(val) => setContentForm({ ...contentForm, content: val })}
                         placeholder="내용을 입력하세요..."

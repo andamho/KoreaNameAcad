@@ -457,6 +457,7 @@ function ContentCard({ content, basePath, index = 0 }: ContentCardProps) {
           <div>
             <Label htmlFor="edit-content">내용</Label>
             <RichTextEditor
+              key={showEditDialog ? content.id : "closed"}
               value={editForm.content}
               onChange={(val) => setEditForm(prev => ({ ...prev, content: val }))}
               placeholder="내용을 입력하세요"

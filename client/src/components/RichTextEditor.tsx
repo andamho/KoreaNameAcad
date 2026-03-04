@@ -30,11 +30,11 @@ function markersToHtml(text: string): string {
   html = html.replace(
     /\{size:(\d+)\}([\s\S]*?)\{\/size\}/g,
     (_match, size, content) => {
-      const processed = content.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      const processed = content.replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>");
       return `<span style="font-size:${size}px">${processed}</span>`;
     }
   );
-  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/\n/g, "<br>");
   return html;
 }
@@ -325,7 +325,7 @@ export function RichTextEditor({
 
 export function renderFormattedText(text: string): JSX.Element[] {
   const parts: JSX.Element[] = [];
-  const regex = /(\*\*(.+?)\*\*|\{size:(\d+)\}([\s\S]*?)\{\/size\})/g;
+  const regex = /(\*\*([\s\S]+?)\*\*|\{size:(\d+)\}([\s\S]*?)\{\/size\})/g;
   let lastIndex = 0;
   let match;
   let key = 0;
@@ -342,7 +342,7 @@ export function renderFormattedText(text: string): JSX.Element[] {
     } else if (match[3] && match[4] !== undefined) {
       const size = match[3];
       const innerContent = match[4];
-      const boldRegex = /\*\*(.+?)\*\*/g;
+      const boldRegex = /\*\*([\s\S]+?)\*\*/g;
       let innerLastIndex = 0;
       let innerMatch;
       const innerParts: JSX.Element[] = [];
