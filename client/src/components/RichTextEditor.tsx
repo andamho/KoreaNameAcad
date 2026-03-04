@@ -1,7 +1,6 @@
-import { useRef, useEffect, useCallback } from "react";
-import { Bold, Type } from "lucide-react";
+import { useRef, useEffect, useCallback, useState } from "react";
+import { Bold, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface RichTextEditorProps {
   value: string;
@@ -13,7 +12,7 @@ interface RichTextEditorProps {
 
 const fontSizeOptions = [
   { value: "14", label: "14px" },
-  { value: "16", label: "16px (기본)" },
+  { value: "16", label: "16px 기본" },
   { value: "18", label: "18px" },
   { value: "20", label: "20px" },
   { value: "24", label: "24px" },
@@ -35,7 +34,6 @@ function markersToHtml(text: string): string {
       return `<span style="font-size:${size}px">${processed}</span>`;
     }
   );
-
   html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/\n/g, "<br>");
   return html;
@@ -47,7 +45,6 @@ function domToMarkers(node: Node): string {
 
   for (let i = 0; i < children.length; i++) {
     const child = children[i];
-
     if (child.nodeType === Node.TEXT_NODE) {
       result += child.textContent || "";
     } else if (child.nodeType === Node.ELEMENT_NODE) {
@@ -72,9 +69,7 @@ function domToMarkers(node: Node): string {
           result += domToMarkers(el);
         }
       } else if (tag === "div" || tag === "p") {
-        if (i > 0) {
-          result += "\n";
-        }
+        if (i > 0) result += "\n";
         result += domToMarkers(el);
       } else if (tag === "img") {
         const alt = el.getAttribute("alt") || "이미지";
@@ -85,7 +80,6 @@ function domToMarkers(node: Node): string {
       }
     }
   }
-
   return result;
 }
 
@@ -108,7 +102,7 @@ export function RichTextEditor({
   const editorRef = useRef<HTMLDivElement>(null);
   const savedRange = useRef<Range | null>(null);
   const lastSentValue = useRef(value);
-  const isInternalChange = useRef(false);
+  const [sizeMenuOpen, setSizeMenuOpen] = useState(false);
 
   useEffect(() => {
     if (editorRef.current) {
@@ -118,28 +112,15 @@ export function RichTextEditor({
   }, []);
 
   useEffect(() => {
-    if (isInternalChange.current) {
-      isInternalChange.current = false;
+    if (!editorRef.current) return;
+    if (value === lastSentValue.current) return;
+    const currentContent = htmlToMarkers(editorRef.current.innerHTML);
+    if (currentContent === value) {
+      lastSentValue.current = value;
       return;
     }
-    if (editorRef.current && value !== lastSentValue.current) {
-      const sel = window.getSelection();
-      let cursorAtEnd = false;
-      if (sel && sel.rangeCount > 0 && editorRef.current.contains(sel.anchorNode)) {
-        cursorAtEnd = true;
-      }
-      editorRef.current.innerHTML = markersToHtml(value);
-      lastSentValue.current = value;
-      if (cursorAtEnd && editorRef.current) {
-        requestAnimationFrame(() => {
-          const r = document.createRange();
-          r.selectNodeContents(editorRef.current!);
-          r.collapse(false);
-          sel?.removeAllRanges();
-          sel?.addRange(r);
-        });
-      }
-    }
+    editorRef.current.innerHTML = markersToHtml(value);
+    lastSentValue.current = value;
   }, [value]);
 
   const saveRange = useCallback(() => {
@@ -149,19 +130,23 @@ export function RichTextEditor({
       sel.rangeCount > 0 &&
       editorRef.current?.contains(sel.anchorNode)
     ) {
-      savedRange.current = sel.getRangeAt(0).cloneRange();
+      try {
+        savedRange.current = sel.getRangeAt(0).cloneRange();
+      } catch {
+        savedRange.current = null;
+      }
     }
   }, []);
 
   const restoreRange = useCallback((): boolean => {
-    if (!savedRange.current) return false;
-    editorRef.current?.focus();
+    if (!savedRange.current || !editorRef.current) return false;
+    editorRef.current.focus();
     const sel = window.getSelection();
     if (sel) {
       sel.removeAllRanges();
       try {
         sel.addRange(savedRange.current);
-        return true;
+        return !sel.isCollapsed;
       } catch {
         return false;
       }
@@ -170,50 +155,70 @@ export function RichTextEditor({
   }, []);
 
   const emitChange = useCallback(() => {
-    if (editorRef.current) {
-      const markers = htmlToMarkers(editorRef.current.innerHTML);
-      isInternalChange.current = true;
-      lastSentValue.current = markers;
-      onChange(markers);
-    }
+    if (!editorRef.current) return;
+    const markers = htmlToMarkers(editorRef.current.innerHTML);
+    lastSentValue.current = markers;
+    onChange(markers);
   }, [onChange]);
 
-  const handleBold = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      document.execCommand("bold", false);
-      saveRange();
-      emitChange();
-    },
-    [saveRange, emitChange]
-  );
+  const applyBold = useCallback(() => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+    const range = sel.getRangeAt(0);
+    const ancestor =
+      range.commonAncestorContainer.nodeType === Node.TEXT_NODE
+        ? range.commonAncestorContainer.parentElement
+        : (range.commonAncestorContainer as Element);
+    const existingBold = ancestor?.closest("strong, b");
 
-  const handleFontSize = useCallback(
+    if (existingBold) {
+      const parent = existingBold.parentNode!;
+      while (existingBold.firstChild) {
+        parent.insertBefore(existingBold.firstChild, existingBold);
+      }
+      parent.removeChild(existingBold);
+    } else {
+      try {
+        const strong = document.createElement("strong");
+        range.surroundContents(strong);
+      } catch {
+        const fragment = range.extractContents();
+        const strong = document.createElement("strong");
+        strong.appendChild(fragment);
+        range.insertNode(strong);
+      }
+    }
+    saveRange();
+    emitChange();
+  }, [saveRange, emitChange]);
+
+  const applyFontSize = useCallback(
     (size: string) => {
+      setSizeMenuOpen(false);
       if (size === "16") return;
+
       const restored = restoreRange();
       if (!restored) return;
 
       const sel = window.getSelection();
-      if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
-        const range = sel.getRangeAt(0);
-        const span = document.createElement("span");
-        span.style.fontSize = `${size}px`;
-        try {
-          range.surroundContents(span);
-        } catch {
-          const fragment = range.extractContents();
-          span.appendChild(fragment);
-          range.insertNode(span);
-        }
-        sel.removeAllRanges();
-        const newRange = document.createRange();
-        newRange.selectNodeContents(span);
-        sel.addRange(newRange);
-        saveRange();
-        emitChange();
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+
+      const range = sel.getRangeAt(0);
+      const span = document.createElement("span");
+      span.style.fontSize = `${size}px`;
+      try {
+        range.surroundContents(span);
+      } catch {
+        const fragment = range.extractContents();
+        span.appendChild(fragment);
+        range.insertNode(span);
       }
+      sel.removeAllRanges();
+      const newRange = document.createRange();
+      newRange.selectNodeContents(span);
+      sel.addRange(newRange);
+      saveRange();
+      emitChange();
     },
     [restoreRange, saveRange, emitChange]
   );
@@ -241,40 +246,55 @@ export function RichTextEditor({
           type="button"
           size="sm"
           variant="ghost"
-          onMouseDown={handleBold}
-          className="h-8 px-2.5 font-bold no-default-hover-elevate"
+          onPointerDown={(e) => e.preventDefault()}
+          onClick={applyBold}
+          className="h-8 px-2.5 font-bold"
           data-testid="button-bold"
         >
           <Bold className="w-4 h-4" />
         </Button>
-        <div className="flex items-center gap-1">
-          <Type className="w-4 h-4 text-muted-foreground" />
-          <Select onValueChange={handleFontSize}>
-            <SelectTrigger
-              className="h-8 w-[110px] text-xs"
-              data-testid="select-font-size"
-              onMouseDown={() => saveRange()}
-              onFocus={() => saveRange()}
-            >
-              <SelectValue placeholder="글자 크기" />
-            </SelectTrigger>
-            <SelectContent>
+
+        <div className="relative">
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              saveRange();
+            }}
+            onClick={() => setSizeMenuOpen((prev) => !prev)}
+            className="h-8 px-2.5 flex items-center gap-1 text-xs"
+            data-testid="button-font-size-toggle"
+          >
+            글자 크기
+            <ChevronDown className="w-3 h-3" />
+          </Button>
+
+          {sizeMenuOpen && (
+            <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-border rounded-md shadow-md overflow-hidden min-w-[110px]">
               {fontSizeOptions.map((opt) => (
-                <SelectItem
+                <button
                   key={opt.value}
-                  value={opt.value}
+                  type="button"
+                  onPointerDown={(e) => e.preventDefault()}
+                  onClick={() => applyFontSize(opt.value)}
+                  className="w-full text-left px-3 py-1.5 text-sm hover-elevate"
+                  style={{ fontSize: `${Math.min(parseInt(opt.value), 20)}px` }}
                   data-testid={`font-size-${opt.value}`}
                 >
                   {opt.label}
-                </SelectItem>
+                </button>
               ))}
-            </SelectContent>
-          </Select>
+            </div>
+          )}
         </div>
+
         <span className="text-xs text-muted-foreground ml-auto hidden sm:inline">
           텍스트 선택 후 적용
         </span>
       </div>
+
       <div className="relative">
         <div
           ref={editorRef}
@@ -284,14 +304,18 @@ export function RichTextEditor({
           onSelect={saveRange}
           onMouseUp={saveRange}
           onKeyUp={saveRange}
-          onBlur={() => saveRange()}
+          onTouchEnd={saveRange}
+          onBlur={() => {
+            saveRange();
+          }}
           onPaste={handlePaste}
+          onClick={() => setSizeMenuOpen(false)}
           className={`w-full rounded-b-md border border-border bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 overflow-auto whitespace-pre-wrap break-words ${className || ""}`}
           style={{ minHeight: "150px" }}
           data-testid={testId}
         />
         {isEmpty && placeholder && (
-          <div className="absolute top-2 left-3 text-muted-foreground pointer-events-none select-none">
+          <div className="absolute top-2 left-3 text-muted-foreground pointer-events-none select-none text-base">
             {placeholder}
           </div>
         )}
