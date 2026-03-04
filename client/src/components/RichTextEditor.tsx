@@ -195,7 +195,6 @@ export function RichTextEditor({
   const applyFontSize = useCallback(
     (size: string) => {
       setSizeMenuOpen(false);
-      if (size === "16") return;
 
       const restored = restoreRange();
       if (!restored) return;
@@ -246,8 +245,10 @@ export function RichTextEditor({
           type="button"
           size="sm"
           variant="ghost"
-          onPointerDown={(e) => e.preventDefault()}
-          onClick={applyBold}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            applyBold();
+          }}
           className="h-8 px-2.5 font-bold"
           data-testid="button-bold"
         >
@@ -259,10 +260,6 @@ export function RichTextEditor({
             type="button"
             size="sm"
             variant="ghost"
-            onPointerDown={(e) => {
-              e.preventDefault();
-              saveRange();
-            }}
             onClick={() => setSizeMenuOpen((prev) => !prev)}
             className="h-8 px-2.5 flex items-center gap-1 text-xs"
             data-testid="button-font-size-toggle"
@@ -277,8 +274,10 @@ export function RichTextEditor({
                 <button
                   key={opt.value}
                   type="button"
-                  onPointerDown={(e) => e.preventDefault()}
-                  onClick={() => applyFontSize(opt.value)}
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    applyFontSize(opt.value);
+                  }}
                   className="w-full text-left px-3 py-1.5 text-sm hover-elevate"
                   style={{ fontSize: `${Math.min(parseInt(opt.value), 20)}px` }}
                   data-testid={`font-size-${opt.value}`}
