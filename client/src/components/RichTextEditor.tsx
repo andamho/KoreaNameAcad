@@ -60,10 +60,11 @@ function domToMarkers(node: Node): string {
         const fontSize = el.style.fontSize;
         if (fontSize) {
           const size = parseInt(fontSize);
-          if (size && size !== 16) {
-            result += `{size:${size}}` + domToMarkers(el) + "{/size}";
+          const inner = domToMarkers(el);
+          if (size && size !== 16 && inner) {
+            result += `{size:${size}}` + inner + "{/size}";
           } else {
-            result += domToMarkers(el);
+            result += inner;
           }
         } else {
           result += domToMarkers(el);
@@ -323,53 +324,27 @@ export function RichTextEditor({
   );
 }
 
-export function renderFormattedText(text: string): JSX.Element[] {
+function renderInline(text: string, keyRef: { v: number }): JSX.Element[] {
   const parts: JSX.Element[] = [];
   const regex = /(\*\*([\s\S]+?)\*\*|\{size:(\d+)\}([\s\S]*?)\{\/size\})/g;
   let lastIndex = 0;
   let match;
-  let key = 0;
 
   while ((match = regex.exec(text)) !== null) {
     if (match.index > lastIndex) {
       parts.push(
-        <span key={key++}>{text.substring(lastIndex, match.index)}</span>
+        <span key={keyRef.v++}>{text.substring(lastIndex, match.index)}</span>
       );
     }
 
-    if (match[2]) {
-      parts.push(<strong key={key++}>{match[2]}</strong>);
-    } else if (match[3] && match[4] !== undefined) {
-      const size = match[3];
-      const innerContent = match[4];
-      const boldRegex = /\*\*([\s\S]+?)\*\*/g;
-      let innerLastIndex = 0;
-      let innerMatch;
-      const innerParts: JSX.Element[] = [];
-      let innerKey = 0;
-
-      while ((innerMatch = boldRegex.exec(innerContent)) !== null) {
-        if (innerMatch.index > innerLastIndex) {
-          innerParts.push(
-            <span key={innerKey++}>
-              {innerContent.substring(innerLastIndex, innerMatch.index)}
-            </span>
-          );
-        }
-        innerParts.push(<strong key={innerKey++}>{innerMatch[1]}</strong>);
-        innerLastIndex = innerMatch.index + innerMatch[0].length;
-      }
-      if (innerLastIndex < innerContent.length) {
-        innerParts.push(
-          <span key={innerKey++}>
-            {innerContent.substring(innerLastIndex)}
-          </span>
-        );
-      }
-
+    if (match[2] !== undefined) {
       parts.push(
-        <span key={key++} style={{ fontSize: `${size}px` }}>
-          {innerParts.length > 0 ? innerParts : innerContent}
+        <strong key={keyRef.v++}>{renderInline(match[2], keyRef)}</strong>
+      );
+    } else if (match[3] && match[4] !== undefined) {
+      parts.push(
+        <span key={keyRef.v++} style={{ fontSize: `${match[3]}px` }}>
+          {renderInline(match[4], keyRef)}
         </span>
       );
     }
@@ -378,8 +353,14 @@ export function renderFormattedText(text: string): JSX.Element[] {
   }
 
   if (lastIndex < text.length) {
-    parts.push(<span key={key++}>{text.substring(lastIndex)}</span>);
+    parts.push(<span key={keyRef.v++}>{text.substring(lastIndex)}</span>);
   }
 
-  return parts.length > 0 ? parts : [<span key="0">{text}</span>];
+  return parts;
+}
+
+export function renderFormattedText(text: string): JSX.Element[] {
+  const keyRef = { v: 0 };
+  const result = renderInline(text, keyRef);
+  return result.length > 0 ? result : [<span key="0">{text}</span>];
 }
