@@ -1,9 +1,9 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ContentGrid } from "@/components/ContentGrid";
-import { Building2 } from "lucide-react";
 import { useEffect } from "react";
 import { useScrollRestore } from "@/hooks/use-scroll-restore";
+import aboutCharacterImage from "@assets/KakaoTalk_20260305_100337313_1772672651584.png";
 
 export default function About() {
   useScrollRestore("/about");
@@ -27,19 +27,34 @@ export default function About() {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0d9488] to-[#14b8a6] dark:from-[#0f766e] dark:to-[#0d9488] py-16 md:py-20">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTR2NGg0di00em0wLThoLTR2NGg0di00em04IDhoLTR2NGg0di00em0tOCA4aC00djRoNHYtNHptOCAwaC00djRoNHYtNHptMC04aC00djRoNHYtNHptOC04aC00djRoNHYtNHptMCA4aC00djRoNHYtNHptLTggMGgtNHY0aDR2LTR6bTggOGgtNHY0aDR2LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
+      {/* Hero Section - 다른 페이지와 동일한 패턴 */}
+      <section className="relative overflow-hidden py-16 md:py-24">
+        <img
+          src="/bank-card-bg-opt.webp"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
+          aria-hidden="true"
+        />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
-              <Building2 className="w-10 h-10 text-white" />
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
+            <img
+              src={aboutCharacterImage}
+              alt="협회 소개 캐릭터"
+              className="w-auto h-40 md:h-56 flex-shrink-0"
+            />
+            <div className="text-center md:text-left">
+              <p className="text-sm font-medium tracking-wide text-slate-600 mb-2">ABOUT US</p>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6" data-testid="text-about-title">
+                협회 소개
+              </h1>
+              <p className="text-lg md:text-2xl text-slate-700">
+                와츠유어네임 이름연구협회를<br />
+                소개합니다
+              </p>
             </div>
-            <h1 className="text-[22px] md:text-4xl lg:text-5xl font-extrabold text-white mb-4" data-testid="text-about-title">
-              협회 소개
-            </h1>
-            <p className="text-[16px] md:text-xl text-white/90 max-w-2xl">
-              와츠유어네임 이름연구협회를 소개합니다
-            </p>
           </div>
         </div>
       </section>
