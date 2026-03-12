@@ -44,6 +44,9 @@ export default function About() {
               src={aboutCharacterImage}
               alt="협회 소개 캐릭터"
               className="w-auto h-40 md:h-56 flex-shrink-0"
+              fetchPriority="high"
+              loading="eager"
+              decoding="async"
             />
             <div className="text-center md:text-left">
               <p className="text-sm font-medium tracking-wide text-slate-600 mb-2">ABOUT US</p>
