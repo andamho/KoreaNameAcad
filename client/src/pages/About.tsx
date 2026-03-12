@@ -3,7 +3,6 @@ import { Footer } from "@/components/Footer";
 import { ContentGrid } from "@/components/ContentGrid";
 import { useEffect } from "react";
 import { useScrollRestore } from "@/hooks/use-scroll-restore";
-import aboutCharacterImage from "@assets/KakaoTalk_20260305_100337313_1772672651584.png";
 
 export default function About() {
   useScrollRestore("/about");
@@ -41,7 +40,7 @@ export default function About() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
             <img
-              src={aboutCharacterImage}
+              src="/about-character-opt.webp"
               alt="협회 소개 캐릭터"
               className="w-auto h-40 md:h-56 flex-shrink-0"
               fetchPriority="high"
