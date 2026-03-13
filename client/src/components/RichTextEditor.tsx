@@ -324,49 +324,77 @@ export function RichTextEditor({
   );
 }
 
-function renderBoldOnly(text: string, keyRef: { v: number }): JSX.Element[] {
+function parseFormatted(text: string, keyRef: { v: number }): JSX.Element[] {
   const parts: JSX.Element[] = [];
-  const boldRegex = /\*\*([\s\S]+?)\*\*/g;
-  let lastIndex = 0;
-  let match;
+  let i = 0;
 
-  while ((match = boldRegex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(<span key={keyRef.v++}>{text.substring(lastIndex, match.index)}</span>);
-    }
-    parts.push(<strong key={keyRef.v++}>{match[1]}</strong>);
-    lastIndex = match.index + match[0].length;
-  }
+  while (i < text.length) {
+    // Find next {size:N} opener
+    const sizeOpenRe = /\{size:(\d+)\}/g;
+    sizeOpenRe.lastIndex = i;
+    const sizeMatch = sizeOpenRe.exec(text);
+    const sizeIdx = sizeMatch ? sizeMatch.index : -1;
 
-  if (lastIndex < text.length) {
-    parts.push(<span key={keyRef.v++}>{text.substring(lastIndex)}</span>);
-  }
+    // Find next ** opener
+    const boldIdx = text.indexOf("**", i);
 
-  return parts.length > 0 ? parts : [<span key={keyRef.v++}>{text}</span>];
-}
+    const hasSizeFirst =
+      sizeIdx >= 0 && (boldIdx < 0 || sizeIdx <= boldIdx);
+    const hasBoldFirst =
+      boldIdx >= 0 && (sizeIdx < 0 || boldIdx < sizeIdx);
 
-function renderInline(text: string, keyRef: { v: number }): JSX.Element[] {
-  const parts: JSX.Element[] = [];
-  const sizeRegex = /\{size:(\d+)\}([\s\S]*?)\{\/size\}/g;
-  let lastIndex = 0;
-  let match;
-
-  while ((match = sizeRegex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(...renderBoldOnly(text.substring(lastIndex, match.index), keyRef));
+    if (!hasSizeFirst && !hasBoldFirst) {
+      if (i < text.length)
+        parts.push(<span key={keyRef.v++}>{text.slice(i)}</span>);
+      break;
     }
 
-    parts.push(
-      <span key={keyRef.v++} style={{ fontSize: `${match[1]}px` }}>
-        {renderBoldOnly(match[2], keyRef)}
-      </span>
-    );
+    if (hasSizeFirst) {
+      const matchStart = sizeMatch!.index;
+      const size = sizeMatch![1];
+      const contentStart = matchStart + sizeMatch![0].length;
+      const closeIdx = text.indexOf("{/size}", contentStart);
 
-    lastIndex = match.index + match[0].length;
-  }
+      if (closeIdx < 0) {
+        if (matchStart > i)
+          parts.push(<span key={keyRef.v++}>{text.slice(i, matchStart)}</span>);
+        parts.push(<span key={keyRef.v++}>{sizeMatch![0]}</span>);
+        i = contentStart;
+        continue;
+      }
 
-  if (lastIndex < text.length) {
-    parts.push(...renderBoldOnly(text.substring(lastIndex), keyRef));
+      if (matchStart > i)
+        parts.push(<span key={keyRef.v++}>{text.slice(i, matchStart)}</span>);
+
+      parts.push(
+        <span key={keyRef.v++} style={{ fontSize: `${size}px` }}>
+          {parseFormatted(text.slice(contentStart, closeIdx), keyRef)}
+        </span>
+      );
+      i = closeIdx + "{/size}".length;
+    } else {
+      const matchStart = boldIdx;
+      const contentStart = matchStart + 2;
+      const closeIdx = text.indexOf("**", contentStart);
+
+      if (closeIdx < 0) {
+        if (matchStart > i)
+          parts.push(<span key={keyRef.v++}>{text.slice(i, matchStart)}</span>);
+        parts.push(<span key={keyRef.v++}>**</span>);
+        i = contentStart;
+        continue;
+      }
+
+      if (matchStart > i)
+        parts.push(<span key={keyRef.v++}>{text.slice(i, matchStart)}</span>);
+
+      parts.push(
+        <strong key={keyRef.v++}>
+          {parseFormatted(text.slice(contentStart, closeIdx), keyRef)}
+        </strong>
+      );
+      i = closeIdx + 2;
+    }
   }
 
   return parts;
@@ -374,6 +402,6 @@ function renderInline(text: string, keyRef: { v: number }): JSX.Element[] {
 
 export function renderFormattedText(text: string): JSX.Element[] {
   const keyRef = { v: 0 };
-  const result = renderInline(text, keyRef);
+  const result = parseFormatted(text, keyRef);
   return result.length > 0 ? result : [<span key="0">{text}</span>];
 }
