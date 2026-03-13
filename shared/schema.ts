@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean, timestamp, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -17,7 +17,30 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
-// Consultation schema for in-memory storage
+// Consultations table (Neon Postgres)
+export const consultations = pgTable("consultations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  type: text("type").notNull(),
+  numPeople: integer("num_people").notNull(),
+  peopleData: text("people_data").notNull(),       // JSON string
+  phone: text("phone").notNull(),
+  hasNameChange: text("has_name_change").notNull(),
+  numNameChanges: integer("num_name_changes"),
+  nameChangeData: text("name_change_data"),         // JSON string (optional)
+  evaluationKoreanName: text("evaluation_korean_name"),
+  evaluationChineseName: text("evaluation_chinese_name"),
+  reason: text("reason").notNull(),
+  referralSource: text("referral_source"),
+  referrerName: text("referrer_name"),
+  depositorName: text("depositor_name").notNull(),
+  consultationTime: text("consultation_time").notNull(),
+  fileName: text("file_name"),
+  fileData: text("file_data"),
+  fileType: text("file_type"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Zod schema for API validation (keeps existing shape)
 export const consultationSchema = z.object({
   id: z.string(),
   type: z.enum(["analysis", "naming"]),

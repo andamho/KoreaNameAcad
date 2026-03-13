@@ -88,9 +88,9 @@ Preferred communication style: Simple, everyday language.
 - UUID-based entity identification
 
 **API Endpoints**
-- POST `/api/consultations` - Create new consultation requests (automatically sends email notification)
-- GET `/api/consultations` - Retrieve all consultations
-- GET `/api/consultations/:id` - Retrieve specific consultation by ID
+- POST `/api/consultations` - Create new consultation requests (saved to Neon DB, automatically sends email notification)
+- GET `/api/consultations` - Retrieve all consultations (from Neon DB)
+- GET `/api/consultations/:id` - Retrieve specific consultation by ID (from Neon DB)
 
 **Unified CMS API (Contents)**
 - GET `/api/contents?category={category}` - List contents filtered by category (nameStory, expert, announcement, review)
@@ -125,7 +125,7 @@ Preferred communication style: Simple, everyday language.
 - Only image-only lines are parsed (for security - no inline HTML injection)
 - Images that fail to load are hidden via onError handler
 
-**Note:** Currently using MemStorage (in-memory). Data is lost on server restart. For persistent storage, PostgreSQL database migration is required.
+**Note:** All CMS contents (`contents` table) and consultations (`consultations` table) are stored in Neon Postgres. The `NEON_DATABASE_URL` secret must be set in both development and production environments. `MemStorage` (in-memory) is still defined in code but not used.
 
 ### Development Environment
 

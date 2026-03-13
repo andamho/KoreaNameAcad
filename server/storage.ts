@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Consultation, type InsertConsultation, type NameStory, type InsertNameStory, nameStories, type Content, type InsertContent, type ContentCategory, contents } from "@shared/schema";
+import { type User, type InsertUser, type Consultation, type InsertConsultation, type NameStory, type InsertNameStory, nameStories, type Content, type InsertContent, type ContentCategory, contents, consultations } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { eq, desc, sql } from "drizzle-orm";
 
@@ -174,9 +174,33 @@ export class MemStorage implements IStorage {
   }
 }
 
+// DB row → Consultation type 변환 헬퍼
+function rowToConsultation(row: typeof consultations.$inferSelect): Consultation {
+  return {
+    id: row.id,
+    type: row.type as "analysis" | "naming",
+    numPeople: row.numPeople,
+    peopleData: JSON.parse(row.peopleData),
+    phone: row.phone,
+    hasNameChange: row.hasNameChange,
+    numNameChanges: row.numNameChanges ?? undefined,
+    nameChangeData: row.nameChangeData ? JSON.parse(row.nameChangeData) : undefined,
+    evaluationKoreanName: row.evaluationKoreanName ?? undefined,
+    evaluationChineseName: row.evaluationChineseName ?? undefined,
+    reason: row.reason,
+    referralSource: row.referralSource ?? undefined,
+    referrerName: row.referrerName ?? undefined,
+    depositorName: row.depositorName,
+    consultationTime: row.consultationTime,
+    fileName: row.fileName ?? undefined,
+    fileData: row.fileData ?? undefined,
+    fileType: row.fileType ?? undefined,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
 export class DatabaseStorage implements IStorage {
   private users: Map<string, User>;
-  private consultations: Map<string, Consultation>;
   private db: any;
   private dbAvailable: boolean = false;
   private dbInitPromise: Promise<void>;
@@ -184,7 +208,6 @@ export class DatabaseStorage implements IStorage {
 
   constructor() {
     this.users = new Map();
-    this.consultations = new Map();
     this.dbInitPromise = this.initDatabase();
   }
 
@@ -258,21 +281,55 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createConsultation(insertConsultation: InsertConsultation): Promise<Consultation> {
-    const id = randomUUID();
-    const createdAt = new Date().toISOString();
-    const consultation: Consultation = { ...insertConsultation, id, createdAt };
-    this.consultations.set(id, consultation);
-    return consultation;
+    await this.ensureDbReady();
+    try {
+      const [row] = await this.db.insert(consultations).values({
+        type: insertConsultation.type,
+        numPeople: insertConsultation.numPeople,
+        peopleData: JSON.stringify(insertConsultation.peopleData),
+        phone: insertConsultation.phone,
+        hasNameChange: insertConsultation.hasNameChange,
+        numNameChanges: insertConsultation.numNameChanges ?? null,
+        nameChangeData: insertConsultation.nameChangeData ? JSON.stringify(insertConsultation.nameChangeData) : null,
+        evaluationKoreanName: insertConsultation.evaluationKoreanName ?? null,
+        evaluationChineseName: insertConsultation.evaluationChineseName ?? null,
+        reason: insertConsultation.reason,
+        referralSource: insertConsultation.referralSource ?? null,
+        referrerName: insertConsultation.referrerName ?? null,
+        depositorName: insertConsultation.depositorName,
+        consultationTime: insertConsultation.consultationTime,
+        fileName: insertConsultation.fileName ?? null,
+        fileData: insertConsultation.fileData ?? null,
+        fileType: insertConsultation.fileType ?? null,
+      }).returning();
+      console.log(`[DB] createConsultation 성공: ${row.id}`);
+      return rowToConsultation(row);
+    } catch (error: any) {
+      console.error(`[DB ERROR] createConsultation: ${error?.message}`, { timestamp: new Date().toISOString() });
+      throw new DatabaseError(`상담 저장 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
   }
 
   async getAllConsultations(): Promise<Consultation[]> {
-    return Array.from(this.consultations.values()).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    await this.ensureDbReady();
+    try {
+      const rows = await this.db.select().from(consultations).orderBy(desc(consultations.createdAt));
+      return rows.map(rowToConsultation);
+    } catch (error: any) {
+      console.error(`[DB ERROR] getAllConsultations: ${error?.message}`, { timestamp: new Date().toISOString() });
+      throw new DatabaseError(`조회 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
   }
 
   async getConsultation(id: string): Promise<Consultation | undefined> {
-    return this.consultations.get(id);
+    await this.ensureDbReady();
+    try {
+      const [row] = await this.db.select().from(consultations).where(eq(consultations.id, id));
+      return row ? rowToConsultation(row) : undefined;
+    } catch (error: any) {
+      console.error(`[DB ERROR] getConsultation(${id}): ${error?.message}`, { timestamp: new Date().toISOString() });
+      throw new DatabaseError(`조회 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
   }
 
   async createNameStory(insertStory: InsertNameStory): Promise<NameStory> {
