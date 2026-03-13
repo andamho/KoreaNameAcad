@@ -37,12 +37,24 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // DB 초기화 대기 (storage singleton이 백그라운드에서 연결 시도)
+  const { storage } = await import("./storage");
+  if ('getDbStatus' in storage && typeof (storage as any).getDbStatus === 'function') {
+    const dbStatus = await (storage as any).getDbStatus();
+    if (dbStatus.available) {
+      log(`✅ DB 연결 확인 완료 - 서버 시작`);
+    } else {
+      console.error(`❌ [STARTUP] DB 연결 실패: ${dbStatus.error}`);
+      console.error(`❌ [STARTUP] DB 없이 서버를 시작하면 빈 데이터가 반환됩니다. 프로세스를 종료합니다.`);
+      process.exit(1);
+    }
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
     res.status(status).json({ message });
     throw err;
   });

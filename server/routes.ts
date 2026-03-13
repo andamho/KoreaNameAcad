@@ -1,10 +1,19 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage, DatabaseError } from "./storage";
 import { insertConsultationSchema, insertNameStorySchema, insertContentSchema, contentCategoryEnum, type ContentCategory } from "@shared/schema";
 import { sendConsultationNotification } from "./email";
 import crypto from "crypto";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
+
+function handleDbError(error: any, res: Response, route: string): Response {
+  if (error instanceof DatabaseError) {
+    console.error(`[503] DB 장애 | route=${route} code=${error.code} msg=${error.message} ts=${new Date().toISOString()}`);
+    return res.status(503).json({ ok: false, error: error.code });
+  }
+  console.error(`[500] 서버 오류 | route=${route} msg=${error?.message} ts=${new Date().toISOString()}`);
+  return res.status(500).json({ error: "Internal server error" });
+}
 
 // 관리자 비밀번호 기반 영구 토큰 생성 (서버 재시작 후에도 유효)
 function getValidAdminToken(): string | null {
@@ -27,30 +36,21 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health check endpoint - shows DB status for debugging
+  // Health check endpoint
   app.get("/api/health", async (req, res) => {
     try {
-      // Check if storage has getDbStatus method (DatabaseStorage)
       if ('getDbStatus' in storage && typeof (storage as any).getDbStatus === 'function') {
         const dbStatus = await (storage as any).getDbStatus();
-        return res.json({
-          status: dbStatus.available ? "healthy" : "unhealthy",
+        const status = dbStatus.available ? "healthy" : "unhealthy";
+        return res.status(dbStatus.available ? 200 : 503).json({
+          status,
           database: dbStatus,
           timestamp: new Date().toISOString(),
         });
       }
-      // MemStorage fallback
-      return res.json({
-        status: "healthy",
-        database: { available: false, error: "Using in-memory storage" },
-        timestamp: new Date().toISOString(),
-      });
+      return res.json({ status: "healthy", database: { available: true }, timestamp: new Date().toISOString() });
     } catch (error: any) {
-      return res.status(500).json({
-        status: "error",
-        error: error?.message,
-        timestamp: new Date().toISOString(),
-      });
+      return res.status(503).json({ status: "error", error: error?.message, timestamp: new Date().toISOString() });
     }
   });
 
@@ -117,22 +117,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const consultations = await storage.getAllConsultations();
       return res.json(consultations);
-    } catch (error) {
-      console.error("Error fetching consultations:", error);
-      return res.status(500).json({ error: "Failed to fetch consultations" });
+    } catch (error: any) {
+      return handleDbError(error, res, "GET /api/consultations");
     }
   });
 
   app.get("/api/consultations/:id", async (req, res, next) => {
     try {
       const consultation = await storage.getConsultation(req.params.id);
-      if (!consultation) {
-        return res.status(404).json({ error: "Consultation not found" });
-      }
+      if (!consultation) return res.status(404).json({ error: "Consultation not found" });
       return res.json(consultation);
-    } catch (error) {
-      console.error("Error fetching consultation:", error);
-      return res.status(500).json({ error: "Failed to fetch consultation" });
+    } catch (error: any) {
+      return handleDbError(error, res, `GET /api/consultations/${req.params.id}`);
     }
   });
 
@@ -142,8 +138,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertNameStorySchema.parse(req.body);
       const story = await storage.createNameStory(validatedData);
       return res.json(story);
-    } catch (error) {
-      console.error("Error creating name story:", error);
+    } catch (error: any) {
+      if (error instanceof DatabaseError) return handleDbError(error, res, "POST /api/name-stories");
       return res.status(400).json({ error: "Invalid name story data" });
     }
   });
@@ -153,47 +149,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const stories = await storage.getAllNameStories();
       return res.json(stories);
     } catch (error: any) {
-      console.error("Error fetching name stories:", error);
-      return res.status(500).json({ error: "Failed to fetch name stories", details: error?.message || String(error) });
+      return handleDbError(error, res, "GET /api/name-stories");
     }
   });
 
   app.get("/api/name-stories/:id", async (req, res, next) => {
     try {
       const story = await storage.getNameStory(req.params.id);
-      if (!story) {
-        return res.status(404).json({ error: "Name story not found" });
-      }
+      if (!story) return res.status(404).json({ error: "Name story not found" });
       return res.json(story);
-    } catch (error) {
-      console.error("Error fetching name story:", error);
-      return res.status(500).json({ error: "Failed to fetch name story" });
+    } catch (error: any) {
+      return handleDbError(error, res, `GET /api/name-stories/${req.params.id}`);
     }
   });
 
   app.put("/api/name-stories/:id", async (req, res, next) => {
     try {
       const story = await storage.updateNameStory(req.params.id, req.body);
-      if (!story) {
-        return res.status(404).json({ error: "Name story not found" });
-      }
+      if (!story) return res.status(404).json({ error: "Name story not found" });
       return res.json(story);
-    } catch (error) {
-      console.error("Error updating name story:", error);
-      return res.status(500).json({ error: "Failed to update name story" });
+    } catch (error: any) {
+      return handleDbError(error, res, `PUT /api/name-stories/${req.params.id}`);
     }
   });
 
   app.delete("/api/name-stories/:id", async (req, res, next) => {
     try {
       const deleted = await storage.deleteNameStory(req.params.id);
-      if (!deleted) {
-        return res.status(404).json({ error: "Name story not found" });
-      }
+      if (!deleted) return res.status(404).json({ error: "Name story not found" });
       return res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting name story:", error);
-      return res.status(500).json({ error: "Failed to delete name story" });
+    } catch (error: any) {
+      return handleDbError(error, res, `DELETE /api/name-stories/${req.params.id}`);
     }
   });
 
@@ -228,38 +214,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("Invalid category received:", category);
         return res.status(400).json({ error: "Invalid category", received: category });
       }
-      let contents = await storage.getAllContents(category as ContentCategory | undefined);
-      
+      let contentList = await storage.getAllContents(category as ContentCategory | undefined);
+
       // Filter out drafts for non-admin users
       if (!isAdmin || !includeDrafts) {
-        contents = contents.filter(c => !c.isDraft);
+        contentList = contentList.filter(c => !c.isDraft);
       }
-      
-      console.log("GET /api/contents - returned", contents.length, "items");
-      return res.json(contents);
-    } catch (error) {
-      console.error("Error fetching contents:", error);
-      return res.status(500).json({ error: "Failed to fetch contents" });
+
+      console.log(`[DB] GET /api/contents(${category}) → ${contentList.length}건 (isAdmin=${isAdmin})`);
+      return res.json(contentList);
+    } catch (error: any) {
+      return handleDbError(error, res, `GET /api/contents?category=${req.query.category}`);
     }
   });
 
   app.get("/api/contents/:id", async (req, res) => {
     try {
       const content = await storage.getContent(req.params.id);
-      if (!content) {
-        return res.status(404).json({ error: "Content not found" });
-      }
+      if (!content) return res.status(404).json({ error: "Content not found" });
       return res.json(content);
-    } catch (error) {
-      console.error("Error fetching content:", error);
-      return res.status(500).json({ error: "Failed to fetch content" });
+    } catch (error: any) {
+      return handleDbError(error, res, `GET /api/contents/${req.params.id}`);
     }
   });
 
   app.post("/api/contents", requireAdmin, async (req, res) => {
     try {
-      console.log("Content create request body:", JSON.stringify(req.body, null, 2));
-      // 빈 문자열을 null로 변환
       const cleanedData = {
         ...req.body,
         thumbnail: req.body.thumbnail?.trim() || null,
@@ -269,7 +249,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const content = await storage.createContent(validatedData);
       return res.json(content);
     } catch (error: any) {
-      console.error("Error creating content:", error);
+      if (error instanceof DatabaseError) return handleDbError(error, res, "POST /api/contents");
       console.error("Validation errors:", error?.errors || error?.issues);
       return res.status(400).json({ error: "Invalid content data", details: error?.errors || error?.issues || error?.message });
     }
@@ -278,26 +258,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/contents/:id", requireAdmin, async (req, res) => {
     try {
       const content = await storage.updateContent(req.params.id, req.body);
-      if (!content) {
-        return res.status(404).json({ error: "Content not found" });
-      }
+      if (!content) return res.status(404).json({ error: "Content not found" });
       return res.json(content);
-    } catch (error) {
-      console.error("Error updating content:", error);
-      return res.status(500).json({ error: "Failed to update content" });
+    } catch (error: any) {
+      return handleDbError(error, res, `PUT /api/contents/${req.params.id}`);
     }
   });
 
   app.delete("/api/contents/:id", requireAdmin, async (req, res) => {
     try {
       const deleted = await storage.deleteContent(req.params.id);
-      if (!deleted) {
-        return res.status(404).json({ error: "Content not found" });
-      }
+      if (!deleted) return res.status(404).json({ error: "Content not found" });
       return res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting content:", error);
-      return res.status(500).json({ error: "Failed to delete content" });
+    } catch (error: any) {
+      return handleDbError(error, res, `DELETE /api/contents/${req.params.id}`);
     }
   });
 

@@ -32,10 +32,11 @@ interface ContentGridProps {
 export function ContentGrid({ category, basePath, emptyMessage = "등록된 콘텐츠가 없습니다." }: ContentGridProps) {
   const { isAdmin, token, isVerifying } = useAdmin();
   
-  const { data: contents, isLoading } = useQuery<Content[]>({
+  const { data: contents, isLoading, isError, error } = useQuery<Content[]>({
     queryKey: ["/api/contents", category],
     queryFn: async () => {
       const response = await fetch(`/api/contents?category=${category}`);
+      if (response.status === 503) throw new Error("DATABASE_UNAVAILABLE");
       if (!response.ok) throw new Error("Failed to fetch contents");
       return response.json();
     },
@@ -43,6 +44,15 @@ export function ContentGrid({ category, basePath, emptyMessage = "등록된 콘�
 
   if (isLoading) {
     return null;
+  }
+
+  if (isError) {
+    const isDbError = (error as Error)?.message === "DATABASE_UNAVAILABLE";
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        {isDbError ? "일시적으로 데이터를 불러올 수 없습니다. 잠시 후 다시 시도해 주세요." : "데이터를 불러오는 중 오류가 발생했습니다."}
+      </div>
+    );
   }
 
   if (!contents || contents.length === 0) {

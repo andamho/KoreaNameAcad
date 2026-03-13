@@ -371,10 +371,11 @@ export default function NameStories() {
   // 스크롤 위치 복원
   useScrollRestore("/name-stories");
   
-  const { data: stories, isLoading, error } = useQuery<Content[]>({
+  const { data: stories, isLoading, isError, error } = useQuery<Content[]>({
     queryKey: ["/api/contents", "nameStory"],
     queryFn: async () => {
       const response = await fetch("/api/contents?category=nameStory");
+      if (response.status === 503) throw new Error("DATABASE_UNAVAILABLE");
       if (!response.ok) throw new Error("Failed to fetch stories");
       return response.json();
     },
@@ -487,9 +488,13 @@ export default function NameStories() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
           {/* Story cards */}
-          {isLoading ? null : error ? (
+          {isLoading ? null : isError ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">콘텐츠를 불러오는데 실패했습니다.</p>
+              <p className="text-muted-foreground">
+                {(error as Error)?.message === "DATABASE_UNAVAILABLE"
+                  ? "일시적으로 데이터를 불러올 수 없습니다. 잠시 후 다시 시도해 주세요."
+                  : "콘텐츠를 불러오는데 실패했습니다."}
+              </p>
             </div>
           ) : stories && stories.length > 0 ? (
             <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">

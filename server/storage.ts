@@ -2,6 +2,15 @@ import { type User, type InsertUser, type Consultation, type InsertConsultation,
 import { randomUUID } from "crypto";
 import { eq, desc, sql } from "drizzle-orm";
 
+export class DatabaseError extends Error {
+  public readonly code: string;
+  constructor(message: string, code = "DATABASE_UNAVAILABLE") {
+    super(message);
+    this.name = "DatabaseError";
+    this.code = code;
+  }
+}
+
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -220,10 +229,15 @@ export class DatabaseStorage implements IStorage {
     this.dbAvailable = false;
   }
 
-  // Ensure database is ready before any operation
-  private async ensureDbReady(): Promise<boolean> {
+  // Ensure database is ready before any operation — throws DatabaseError if not
+  private async ensureDbReady(): Promise<void> {
     await this.dbInitPromise;
-    return this.dbAvailable && !!this.db;
+    if (!this.dbAvailable || !this.db) {
+      throw new DatabaseError(
+        `DB 사용 불가: ${this.dbInitError || "unknown error"}`,
+        "DATABASE_UNAVAILABLE"
+      );
+    }
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -262,176 +276,137 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createNameStory(insertStory: InsertNameStory): Promise<NameStory> {
-    const ready = await this.ensureDbReady();
-    if (ready) {
-      try {
-        const [story] = await this.db.insert(nameStories).values({
-          title: insertStory.title,
-          thumbnail: insertStory.thumbnail,
-          content: insertStory.content,
-          videoUrl: insertStory.videoUrl,
-          isVideo: insertStory.isVideo ?? false,
-        }).returning();
-        return story;
-      } catch (error) {
-        console.error("Database insert failed:", error);
-        throw error;
-      }
+    await this.ensureDbReady();
+    try {
+      const [story] = await this.db.insert(nameStories).values({
+        title: insertStory.title,
+        thumbnail: insertStory.thumbnail,
+        content: insertStory.content,
+        videoUrl: insertStory.videoUrl,
+        isVideo: insertStory.isVideo ?? false,
+      }).returning();
+      return story;
+    } catch (error: any) {
+      console.error(`[DB ERROR] createNameStory: ${error?.message}`, { timestamp: new Date().toISOString() });
+      throw new DatabaseError(`삽입 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
-    throw new Error("Database not available");
   }
 
   async getAllNameStories(): Promise<NameStory[]> {
-    const ready = await this.ensureDbReady();
-    if (ready) {
-      try {
-        return await this.db.select().from(nameStories).orderBy(desc(nameStories.createdAt));
-      } catch (error) {
-        console.error("Database query failed:", error);
-        return [];
-      }
+    await this.ensureDbReady();
+    try {
+      return await this.db.select().from(nameStories).orderBy(desc(nameStories.createdAt));
+    } catch (error: any) {
+      console.error(`[DB ERROR] getAllNameStories: ${error?.message}`, { timestamp: new Date().toISOString() });
+      throw new DatabaseError(`쿼리 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
-    return [];
   }
 
   async getNameStory(id: string): Promise<NameStory | undefined> {
-    const ready = await this.ensureDbReady();
-    if (ready) {
-      try {
-        const [story] = await this.db.select().from(nameStories).where(eq(nameStories.id, id));
-        return story;
-      } catch (error) {
-        console.error("Database query failed:", error);
-        return undefined;
-      }
+    await this.ensureDbReady();
+    try {
+      const [story] = await this.db.select().from(nameStories).where(eq(nameStories.id, id));
+      return story;
+    } catch (error: any) {
+      console.error(`[DB ERROR] getNameStory(${id}): ${error?.message}`, { timestamp: new Date().toISOString() });
+      throw new DatabaseError(`쿼리 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
-    return undefined;
   }
 
   async updateNameStory(id: string, updateData: Partial<InsertNameStory>): Promise<NameStory | undefined> {
-    const ready = await this.ensureDbReady();
-    if (ready) {
-      try {
-        const [updated] = await this.db.update(nameStories)
-          .set({ ...updateData, updatedAt: new Date() })
-          .where(eq(nameStories.id, id))
-          .returning();
-        return updated;
-      } catch (error) {
-        console.error("Database update failed:", error);
-        return undefined;
-      }
+    await this.ensureDbReady();
+    try {
+      const [updated] = await this.db.update(nameStories)
+        .set({ ...updateData, updatedAt: new Date() })
+        .where(eq(nameStories.id, id))
+        .returning();
+      return updated;
+    } catch (error: any) {
+      console.error(`[DB ERROR] updateNameStory(${id}): ${error?.message}`, { timestamp: new Date().toISOString() });
+      throw new DatabaseError(`업데이트 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
-    return undefined;
   }
 
   async deleteNameStory(id: string): Promise<boolean> {
-    const ready = await this.ensureDbReady();
-    if (ready) {
-      try {
-        const result = await this.db.delete(nameStories).where(eq(nameStories.id, id)).returning();
-        return result.length > 0;
-      } catch (error) {
-        console.error("Database delete failed:", error);
-        return false;
-      }
+    await this.ensureDbReady();
+    try {
+      const result = await this.db.delete(nameStories).where(eq(nameStories.id, id)).returning();
+      return result.length > 0;
+    } catch (error: any) {
+      console.error(`[DB ERROR] deleteNameStory(${id}): ${error?.message}`, { timestamp: new Date().toISOString() });
+      throw new DatabaseError(`삭제 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
-    return false;
   }
 
   // Content CMS methods
   async createContent(insertContent: InsertContent): Promise<Content> {
-    const ready = await this.ensureDbReady();
-    console.log("createContent - DB ready:", ready);
-    if (ready) {
-      try {
-        console.log("createContent - Inserting:", JSON.stringify(insertContent));
-        const [content] = await this.db.insert(contents).values({
-          category: insertContent.category,
-          title: insertContent.title,
-          thumbnail: insertContent.thumbnail,
-          content: insertContent.content,
-          videoUrl: insertContent.videoUrl,
-          isVideo: insertContent.isVideo ?? false,
-          isDraft: insertContent.isDraft ?? false,
-        }).returning();
-        console.log("createContent - Inserted successfully:", content.id);
-        return content;
-      } catch (error) {
-        console.error("Database insert failed:", error);
-        throw error;
-      }
+    await this.ensureDbReady();
+    try {
+      const [content] = await this.db.insert(contents).values({
+        category: insertContent.category,
+        title: insertContent.title,
+        thumbnail: insertContent.thumbnail,
+        content: insertContent.content,
+        videoUrl: insertContent.videoUrl,
+        isVideo: insertContent.isVideo ?? false,
+        isDraft: insertContent.isDraft ?? false,
+      }).returning();
+      console.log(`[DB] createContent 성공: ${content.id}`);
+      return content;
+    } catch (error: any) {
+      console.error(`[DB ERROR] createContent: ${error?.message}`, { timestamp: new Date().toISOString() });
+      throw new DatabaseError(`삽입 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
-    throw new Error("Database not available");
   }
 
   async getAllContents(category?: ContentCategory): Promise<Content[]> {
-    const ready = await this.ensureDbReady();
-    console.log("getAllContents - DB ready:", ready, "category:", category);
-    if (ready) {
-      try {
-        if (category) {
-          const result = await this.db.select().from(contents)
-            .where(eq(contents.category, category))
-            .orderBy(desc(contents.createdAt));
-          console.log("getAllContents - query returned", result.length, "items");
-          return result;
-        }
-        const result = await this.db.select().from(contents).orderBy(desc(contents.createdAt));
-        console.log("getAllContents - query returned", result.length, "items");
-        return result;
-      } catch (error) {
-        console.error("Database query failed:", error);
-        return [];
-      }
+    await this.ensureDbReady();
+    try {
+      const result = category
+        ? await this.db.select().from(contents).where(eq(contents.category, category)).orderBy(desc(contents.createdAt))
+        : await this.db.select().from(contents).orderBy(desc(contents.createdAt));
+      console.log(`[DB] getAllContents(${category ?? "all"}) → ${result.length}건`);
+      return result;
+    } catch (error: any) {
+      console.error(`[DB ERROR] getAllContents(${category}): ${error?.message}`, { timestamp: new Date().toISOString() });
+      throw new DatabaseError(`쿼리 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
-    console.log("getAllContents - DB not ready, returning empty array");
-    return [];
   }
 
   async getContent(id: string): Promise<Content | undefined> {
-    const ready = await this.ensureDbReady();
-    if (ready) {
-      try {
-        const [content] = await this.db.select().from(contents).where(eq(contents.id, id));
-        return content;
-      } catch (error) {
-        console.error("Database query failed:", error);
-        return undefined;
-      }
+    await this.ensureDbReady();
+    try {
+      const [content] = await this.db.select().from(contents).where(eq(contents.id, id));
+      return content;
+    } catch (error: any) {
+      console.error(`[DB ERROR] getContent(${id}): ${error?.message}`, { timestamp: new Date().toISOString() });
+      throw new DatabaseError(`쿼리 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
-    return undefined;
   }
 
   async updateContent(id: string, updateData: Partial<InsertContent>): Promise<Content | undefined> {
-    const ready = await this.ensureDbReady();
-    if (ready) {
-      try {
-        const [updated] = await this.db.update(contents)
-          .set({ ...updateData, updatedAt: new Date() })
-          .where(eq(contents.id, id))
-          .returning();
-        return updated;
-      } catch (error) {
-        console.error("Database update failed:", error);
-        return undefined;
-      }
+    await this.ensureDbReady();
+    try {
+      const [updated] = await this.db.update(contents)
+        .set({ ...updateData, updatedAt: new Date() })
+        .where(eq(contents.id, id))
+        .returning();
+      return updated;
+    } catch (error: any) {
+      console.error(`[DB ERROR] updateContent(${id}): ${error?.message}`, { timestamp: new Date().toISOString() });
+      throw new DatabaseError(`업데이트 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
-    return undefined;
   }
 
   async deleteContent(id: string): Promise<boolean> {
-    const ready = await this.ensureDbReady();
-    if (ready) {
-      try {
-        const result = await this.db.delete(contents).where(eq(contents.id, id)).returning();
-        return result.length > 0;
-      } catch (error) {
-        console.error("Database delete failed:", error);
-        return false;
-      }
+    await this.ensureDbReady();
+    try {
+      const result = await this.db.delete(contents).where(eq(contents.id, id)).returning();
+      return result.length > 0;
+    } catch (error: any) {
+      console.error(`[DB ERROR] deleteContent(${id}): ${error?.message}`, { timestamp: new Date().toISOString() });
+      throw new DatabaseError(`삭제 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
-    return false;
   }
 }
 
