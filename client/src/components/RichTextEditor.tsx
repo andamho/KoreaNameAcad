@@ -324,36 +324,49 @@ export function RichTextEditor({
   );
 }
 
-function renderInline(text: string, keyRef: { v: number }): JSX.Element[] {
+function renderBoldOnly(text: string, keyRef: { v: number }): JSX.Element[] {
   const parts: JSX.Element[] = [];
-  const regex = /(\*\*([\s\S]+?)\*\*|\{size:(\d+)\}([\s\S]*?)\{\/size\})/g;
+  const boldRegex = /\*\*([\s\S]+?)\*\*/g;
   let lastIndex = 0;
   let match;
 
-  while ((match = regex.exec(text)) !== null) {
+  while ((match = boldRegex.exec(text)) !== null) {
     if (match.index > lastIndex) {
-      parts.push(
-        <span key={keyRef.v++}>{text.substring(lastIndex, match.index)}</span>
-      );
+      parts.push(<span key={keyRef.v++}>{text.substring(lastIndex, match.index)}</span>);
     }
-
-    if (match[2] !== undefined) {
-      parts.push(
-        <strong key={keyRef.v++}>{renderInline(match[2], keyRef)}</strong>
-      );
-    } else if (match[3] && match[4] !== undefined) {
-      parts.push(
-        <span key={keyRef.v++} style={{ fontSize: `${match[3]}px` }}>
-          {renderInline(match[4], keyRef)}
-        </span>
-      );
-    }
-
+    parts.push(<strong key={keyRef.v++}>{match[1]}</strong>);
     lastIndex = match.index + match[0].length;
   }
 
   if (lastIndex < text.length) {
     parts.push(<span key={keyRef.v++}>{text.substring(lastIndex)}</span>);
+  }
+
+  return parts.length > 0 ? parts : [<span key={keyRef.v++}>{text}</span>];
+}
+
+function renderInline(text: string, keyRef: { v: number }): JSX.Element[] {
+  const parts: JSX.Element[] = [];
+  const sizeRegex = /\{size:(\d+)\}([\s\S]*?)\{\/size\}/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = sizeRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(...renderBoldOnly(text.substring(lastIndex, match.index), keyRef));
+    }
+
+    parts.push(
+      <span key={keyRef.v++} style={{ fontSize: `${match[1]}px` }}>
+        {renderBoldOnly(match[2], keyRef)}
+      </span>
+    );
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(...renderBoldOnly(text.substring(lastIndex), keyRef));
   }
 
   return parts;
