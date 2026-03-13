@@ -186,30 +186,38 @@ export class DatabaseStorage implements IStorage {
   }
 
   private async initDatabase() {
-    try {
-      console.log("📦 Importing database module...");
-      const { db } = await import("./db");
-      if (!db) {
-        this.dbInitError = "Database module returned null - DATABASE_URL may be missing";
-        console.error("❌", this.dbInitError);
-        this.dbAvailable = false;
+    const MAX_RETRIES = 5;
+    const RETRY_DELAY_MS = 2000;
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        console.log(`📦 DB 연결 시도 ${attempt}/${MAX_RETRIES}...`);
+        const { db } = await import("./db");
+        if (!db) {
+          this.dbInitError = "Database module returned null - DATABASE_URL may be missing";
+          console.error("❌", this.dbInitError);
+          this.dbAvailable = false;
+          return;
+        }
+        this.db = db;
+        console.log("🔍 Testing database connection with SELECT 1...");
+        await db.execute(sql`SELECT 1`);
+        this.dbAvailable = true;
+        this.dbInitError = null;
+        console.log(`✅ Database connection established successfully (attempt ${attempt})`);
         return;
+      } catch (error: any) {
+        this.dbInitError = `${error?.name}: ${error?.message}`;
+        console.error(`❌ DB init failed (attempt ${attempt}/${MAX_RETRIES}):`);
+        console.error("   Error:", error?.message);
+        if (attempt < MAX_RETRIES) {
+          console.log(`⏳ Retrying in ${RETRY_DELAY_MS}ms...`);
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+        }
       }
-      this.db = db;
-      console.log("🔍 Testing database connection with SELECT 1...");
-      // Use simple SELECT 1 instead of table query to avoid schema/migration issues
-      await db.execute(sql`SELECT 1`);
-      this.dbAvailable = true;
-      this.dbInitError = null;
-      console.log("✅ Database connection established successfully");
-    } catch (error: any) {
-      this.dbInitError = `${error?.name}: ${error?.message}`;
-      console.error("❌ DB init failed:");
-      console.error("   Error name:", error?.name);
-      console.error("   Error message:", error?.message);
-      console.error("   Full error:", error);
-      this.dbAvailable = false;
     }
+    console.error(`❌ DB connection failed after ${MAX_RETRIES} attempts. Running without database.`);
+    this.dbAvailable = false;
   }
 
   // Ensure database is ready before any operation

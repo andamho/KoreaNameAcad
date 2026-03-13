@@ -34,7 +34,9 @@ try {
       ssl: {
         rejectUnauthorized: false,
       },
-      connectionTimeoutMillis: 10000,
+      connectionTimeoutMillis: 15000,
+      idleTimeoutMillis: 30000,
+      max: 3,
     });
     db = drizzle(pool, { schema });
     console.log("✅ Database pool created successfully");
