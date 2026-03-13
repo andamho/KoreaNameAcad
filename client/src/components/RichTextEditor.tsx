@@ -163,35 +163,11 @@ export function RichTextEditor({
   }, [onChange]);
 
   const applyBold = useCallback(() => {
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
-    const range = sel.getRangeAt(0);
-    const ancestor =
-      range.commonAncestorContainer.nodeType === Node.TEXT_NODE
-        ? range.commonAncestorContainer.parentElement
-        : (range.commonAncestorContainer as Element);
-    const existingBold = ancestor?.closest("strong, b");
-
-    if (existingBold) {
-      const parent = existingBold.parentNode!;
-      while (existingBold.firstChild) {
-        parent.insertBefore(existingBold.firstChild, existingBold);
-      }
-      parent.removeChild(existingBold);
-    } else {
-      try {
-        const strong = document.createElement("strong");
-        range.surroundContents(strong);
-      } catch {
-        const fragment = range.extractContents();
-        const strong = document.createElement("strong");
-        strong.appendChild(fragment);
-        range.insertNode(strong);
-      }
-    }
-    saveRange();
+    if (!editorRef.current) return;
+    editorRef.current.focus();
+    document.execCommand("bold");
     emitChange();
-  }, [saveRange, emitChange]);
+  }, [emitChange]);
 
   const applyFontSize = useCallback(
     (size: string) => {
@@ -204,23 +180,47 @@ export function RichTextEditor({
       if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
 
       const range = sel.getRangeAt(0);
-      const span = document.createElement("span");
-      span.style.fontSize = `${size}px`;
-      try {
-        range.surroundContents(span);
-      } catch {
-        const fragment = range.extractContents();
-        span.appendChild(fragment);
-        range.insertNode(span);
+      const ancestor = range.commonAncestorContainer;
+
+      // Collect all text nodes that intersect the selection
+      const walker = document.createTreeWalker(
+        ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentNode! : ancestor,
+        NodeFilter.SHOW_TEXT,
+        null
+      );
+
+      const toWrap: { node: Text; start: number; end: number }[] = [];
+      let n: Text | null;
+      while ((n = walker.nextNode() as Text | null)) {
+        if (!range.intersectsNode(n)) continue;
+        const nr = document.createRange();
+        nr.selectNode(n);
+        const s =
+          range.compareBoundaryPoints(Range.START_TO_START, nr) > 0
+            ? range.startOffset
+            : 0;
+        const e =
+          range.compareBoundaryPoints(Range.END_TO_END, nr) < 0
+            ? range.endOffset
+            : n.length;
+        if (s < e) toWrap.push({ node: n, start: s, end: e });
       }
+
+      // Wrap in reverse order so offsets stay valid
+      for (let i = toWrap.length - 1; i >= 0; i--) {
+        const { node, start, end } = toWrap[i];
+        const target = node.splitText(start);
+        if (end - start < target.length) target.splitText(end - start);
+        const span = document.createElement("span");
+        span.style.fontSize = `${size}px`;
+        target.parentNode!.insertBefore(span, target);
+        span.appendChild(target);
+      }
+
       sel.removeAllRanges();
-      const newRange = document.createRange();
-      newRange.selectNodeContents(span);
-      sel.addRange(newRange);
-      saveRange();
       emitChange();
     },
-    [restoreRange, saveRange, emitChange]
+    [restoreRange, emitChange]
   );
 
   const handlePaste = useCallback(
