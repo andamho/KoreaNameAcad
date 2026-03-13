@@ -47,6 +47,7 @@ const characterImages = [
   effortCharacterImage,
   stepsCharacterImage,
   guideCharacterImage,
+  '/about-character-opt.webp',
 ];
 
 // 팝업 이미지 (최우선 로드)
