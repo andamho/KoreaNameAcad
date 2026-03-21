@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from "react";
-import { Bold, ChevronDown } from "lucide-react";
+import { Bold, ChevronDown, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface RichTextEditorProps {
@@ -8,6 +8,7 @@ interface RichTextEditorProps {
   placeholder?: string;
   className?: string;
   "data-testid"?: string;
+  onUploadImage?: (file: File) => Promise<string>;
 }
 
 const fontSizeOptions = [
@@ -22,7 +23,16 @@ const fontSizeOptions = [
 
 function markersToHtml(text: string): string {
   if (!text) return "";
-  let html = text
+
+  // Extract image markers before HTML escaping
+  const images: { alt: string; src: string }[] = [];
+  let processed = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
+    const idx = images.length;
+    images.push({ alt, src });
+    return `__IMG_${idx}__`;
+  });
+
+  let html = processed
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
@@ -30,12 +40,22 @@ function markersToHtml(text: string): string {
   html = html.replace(
     /\{size:(\d+)\}([\s\S]*?)\{\/size\}/g,
     (_match, size, content) => {
-      const processed = content.replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>");
-      return `<span style="font-size:${size}px">${processed}</span>`;
+      const inner = content.replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>");
+      return `<span style="font-size:${size}px">${inner}</span>`;
     }
   );
   html = html.replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/\n/g, "<br>");
+
+  // Restore images
+  images.forEach(({ alt, src }, idx) => {
+    const escapedAlt = alt.replace(/"/g, "&quot;");
+    html = html.replace(
+      `__IMG_${idx}__`,
+      `<img src="${src}" alt="${escapedAlt}" style="max-width:100%;display:block;margin:8px 0" />`
+    );
+  });
+
   return html;
 }
 
@@ -99,11 +119,14 @@ export function RichTextEditor({
   placeholder,
   className,
   "data-testid": testId,
+  onUploadImage,
 }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const savedRange = useRef<Range | null>(null);
   const lastSentValue = useRef(value);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [sizeMenuOpen, setSizeMenuOpen] = useState(false);
+  const [isImageUploading, setIsImageUploading] = useState(false);
 
   useEffect(() => {
     if (editorRef.current) {
@@ -182,7 +205,6 @@ export function RichTextEditor({
       const range = sel.getRangeAt(0);
       const ancestor = range.commonAncestorContainer;
 
-      // Collect all text nodes that intersect the selection
       const walker = document.createTreeWalker(
         ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentNode! : ancestor,
         NodeFilter.SHOW_TEXT,
@@ -206,7 +228,6 @@ export function RichTextEditor({
         if (s < e) toWrap.push({ node: n, start: s, end: e });
       }
 
-      // Wrap in reverse order so offsets stay valid
       for (let i = toWrap.length - 1; i >= 0; i--) {
         const { node, start, end } = toWrap[i];
         const target = node.splitText(start);
@@ -221,6 +242,67 @@ export function RichTextEditor({
       emitChange();
     },
     [restoreRange, emitChange]
+  );
+
+  const insertImageAtCursor = useCallback(
+    (url: string) => {
+      if (!editorRef.current) return;
+
+      // Restore saved selection (cursor position before file dialog opened)
+      if (savedRange.current) {
+        editorRef.current.focus();
+        const sel = window.getSelection();
+        if (sel) {
+          sel.removeAllRanges();
+          try {
+            sel.addRange(savedRange.current);
+          } catch {}
+        }
+      } else {
+        editorRef.current.focus();
+      }
+
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "이미지";
+      img.style.maxWidth = "100%";
+      img.style.display = "block";
+      img.style.margin = "8px 0";
+
+      const sel2 = window.getSelection();
+      if (sel2 && sel2.rangeCount > 0) {
+        const r = sel2.getRangeAt(0);
+        r.collapse(true);
+        r.insertNode(img);
+        r.setStartAfter(img);
+        r.setEndAfter(img);
+        sel2.removeAllRanges();
+        sel2.addRange(r);
+      } else {
+        editorRef.current.appendChild(img);
+      }
+
+      emitChange();
+    },
+    [emitChange]
+  );
+
+  const handleImageFileChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file || !onUploadImage) return;
+      e.target.value = "";
+      setIsImageUploading(true);
+      try {
+        const url = await onUploadImage(file);
+        insertImageAtCursor(url);
+      } catch (err) {
+        console.error("Image upload failed:", err);
+      } finally {
+        setIsImageUploading(false);
+      }
+    },
+    [onUploadImage, insertImageAtCursor]
   );
 
   const handlePaste = useCallback(
@@ -290,6 +372,36 @@ export function RichTextEditor({
           )}
         </div>
 
+        {onUploadImage && (
+          <>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={isImageUploading}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                saveRange();
+              }}
+              onClick={() => {
+                fileInputRef.current?.click();
+              }}
+              className="h-8 px-2.5 flex items-center gap-1 text-xs"
+              data-testid="button-insert-image"
+            >
+              <ImagePlus className="w-4 h-4" />
+              {isImageUploading ? "업로드 중..." : "이미지"}
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageFileChange}
+            />
+          </>
+        )}
+
         <span className="text-xs text-muted-foreground ml-auto hidden sm:inline">
           텍스트 선택 후 적용
         </span>
@@ -329,13 +441,11 @@ function parseFormatted(text: string, keyRef: { v: number }): JSX.Element[] {
   let i = 0;
 
   while (i < text.length) {
-    // Find next {size:N} opener
     const sizeOpenRe = /\{size:(\d+)\}/g;
     sizeOpenRe.lastIndex = i;
     const sizeMatch = sizeOpenRe.exec(text);
     const sizeIdx = sizeMatch ? sizeMatch.index : -1;
 
-    // Find next ** opener
     const boldIdx = text.indexOf("**", i);
 
     const hasSizeFirst =
