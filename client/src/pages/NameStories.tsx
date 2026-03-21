@@ -102,8 +102,10 @@ function StoryCard({ story, index = 0 }: { story: Content; index?: number }) {
       if (!response.ok) throw new Error("Failed to update");
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contents"] });
       queryClient.invalidateQueries({ queryKey: ["/api/contents", "nameStory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/contents", variables.category] });
       setShowEditDialog(false);
       toast({ title: "수정되었습니다." });
     },
