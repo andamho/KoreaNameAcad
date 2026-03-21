@@ -351,7 +351,7 @@ function ContentCard({ content, basePath, index = 0 }: ContentCardProps) {
               <SelectTrigger data-testid="select-edit-category">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="z-[300]">
+              <SelectContent className="z-[20000]">
                 {categoryOptions.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                 ))}

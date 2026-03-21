@@ -387,7 +387,7 @@ export default function NameStoryDetail() {
                 <SelectTrigger>
                   <SelectValue placeholder="카테고리 선택" />
                 </SelectTrigger>
-                <SelectContent className="z-[300]">
+                <SelectContent className="z-[20000]">
                   {categoryOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                   ))}
