@@ -238,7 +238,6 @@ export function RichTextEditor({
         span.appendChild(target);
       }
 
-      sel.removeAllRanges();
       emitChange();
     },
     [restoreRange, emitChange]
