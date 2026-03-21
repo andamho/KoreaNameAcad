@@ -241,7 +241,7 @@ export function RichTextEditor({
 
   return (
     <div className="space-y-0">
-      <div className="flex items-center gap-2 p-1.5 bg-muted/50 rounded-t-md border border-b-0 border-border">
+      <div className="sticky top-0 z-[100] flex items-center gap-2 p-1.5 bg-muted/80 backdrop-blur-sm rounded-t-md border border-b-0 border-border">
         <Button
           type="button"
           size="sm"
