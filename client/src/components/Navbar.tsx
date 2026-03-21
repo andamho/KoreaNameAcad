@@ -783,6 +783,11 @@ export function Navbar() {
                 placeholder="내용을 입력하세요"
                 className="flex-1 min-h-[300px] md:min-h-[400px] text-base"
                 data-testid="input-write-content"
+                onUploadImage={async (file) => {
+                  const result = await uploadFile(file);
+                  if (!result) throw new Error("업로드 실패");
+                  return result.objectPath;
+                }}
               />
             </div>
             <div className="flex items-center gap-2">
