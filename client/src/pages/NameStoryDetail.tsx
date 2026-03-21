@@ -9,6 +9,7 @@ import { Footer } from "@/components/Footer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageManager } from "@/components/ImageManager";
 import { RichTextEditor, renderFormattedText } from "@/components/RichTextEditor";
 import { useToast } from "@/hooks/use-toast";
@@ -39,7 +40,16 @@ export default function NameStoryDetail() {
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const categoryOptions = [
+    { value: "review", label: "후기" },
+    { value: "nameStory", label: "이름이야기" },
+    { value: "announcement", label: "공지사항" },
+    { value: "expert", label: "한국이름학교" },
+    { value: "about", label: "협회 소개" },
+  ];
+
   const [editForm, setEditForm] = useState({
+    category: "",
     title: "",
     thumbnail: "",
     content: "",
@@ -136,6 +146,7 @@ export default function NameStoryDetail() {
   const openEditDialog = () => {
     if (story) {
       setEditForm({
+        category: story.category,
         title: story.title,
         thumbnail: story.thumbnail || "",
         content: story.content,
@@ -367,6 +378,22 @@ export default function NameStoryDetail() {
             <DialogTitle>이름이야기 수정</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-category">카테고리</Label>
+              <Select
+                value={editForm.category}
+                onValueChange={(value) => setEditForm(prev => ({ ...prev, category: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="카테고리 선택" />
+                </SelectTrigger>
+                <SelectContent className="z-[300]">
+                  {categoryOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <Label htmlFor="edit-title">제목</Label>
               <Input

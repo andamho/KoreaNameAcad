@@ -10,6 +10,7 @@ import { useUpload } from "@/hooks/use-upload";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageManager } from "@/components/ImageManager";
 import { RichTextEditor, renderFormattedText } from "@/components/RichTextEditor";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -27,7 +28,16 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const categoryOptions = [
+    { value: "review", label: "후기" },
+    { value: "nameStory", label: "이름이야기" },
+    { value: "announcement", label: "공지사항" },
+    { value: "expert", label: "한국이름학교" },
+    { value: "about", label: "협회 소개" },
+  ];
+
   const [editForm, setEditForm] = useState({
+    category: "",
     title: "",
     thumbnail: "",
     content: "",
@@ -144,6 +154,7 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
   const openEditDialog = () => {
     if (content) {
       setEditForm({
+        category: content.category,
         title: content.title,
         thumbnail: content.thumbnail || "",
         content: content.content,
@@ -368,6 +379,22 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
             <DialogTitle>콘텐츠 수정</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-category">카테고리</Label>
+              <Select
+                value={editForm.category}
+                onValueChange={(value) => setEditForm(prev => ({ ...prev, category: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="카테고리 선택" />
+                </SelectTrigger>
+                <SelectContent className="z-[300]">
+                  {categoryOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <Label htmlFor="edit-title">제목</Label>
               <Input
