@@ -323,84 +323,86 @@ export function RichTextEditor({
 
   return (
     <div className="space-y-0">
-      <div className="sticky top-0 z-[100] flex items-center gap-2 p-1.5 bg-muted/80 backdrop-blur-sm rounded-t-md border border-b-0 border-border">
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          onPointerDown={(e) => {
-            e.preventDefault();
-            applyBold();
-          }}
-          className="h-8 px-2.5 font-bold"
-          data-testid="button-bold"
-        >
-          <Bold className="w-4 h-4" />
-        </Button>
-
-        <div className="relative">
+      <div className="sticky top-0 z-[100] flex items-center gap-1 p-1.5 bg-muted/80 backdrop-blur-sm rounded-t-md border border-b-0 border-border">
+        <div className="flex items-center">
           <Button
             type="button"
             size="sm"
             variant="ghost"
-            onClick={() => setSizeMenuOpen((prev) => !prev)}
-            className="h-8 px-2.5 flex items-center gap-1 text-xs"
-            data-testid="button-font-size-toggle"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              applyBold();
+            }}
+            className="h-8 px-2.5 font-bold"
+            data-testid="button-bold"
           >
-            글자 크기
-            <ChevronDown className="w-3 h-3" />
+            <Bold className="w-4 h-4" />
           </Button>
 
-          {sizeMenuOpen && (
-            <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-border rounded-md shadow-md overflow-hidden min-w-[110px]">
-              {fontSizeOptions.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onPointerDown={(e) => {
-                    e.preventDefault();
-                    applyFontSize(opt.value);
-                  }}
-                  className="w-full text-left px-3 py-1.5 text-sm hover-elevate"
-                  style={{ fontSize: `${Math.min(parseInt(opt.value), 20)}px` }}
-                  data-testid={`font-size-${opt.value}`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {onUploadImage && (
-          <>
+          <div className="relative">
             <Button
               type="button"
               size="sm"
               variant="ghost"
-              disabled={isImageUploading}
-              onPointerDown={(e) => {
-                e.preventDefault();
-                saveRange();
-              }}
-              onClick={() => {
-                fileInputRef.current?.click();
-              }}
+              onClick={() => setSizeMenuOpen((prev) => !prev)}
               className="h-8 px-2.5 flex items-center gap-1 text-xs"
-              data-testid="button-insert-image"
+              data-testid="button-font-size-toggle"
             >
-              <ImagePlus className="w-4 h-4" />
-              {isImageUploading ? "업로드 중..." : "이미지"}
+              글자 크기
+              <ChevronDown className="w-3 h-3" />
             </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageFileChange}
-            />
-          </>
-        )}
+
+            {sizeMenuOpen && (
+              <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-border rounded-md shadow-md overflow-hidden min-w-[110px]">
+                {fontSizeOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      applyFontSize(opt.value);
+                    }}
+                    className="w-full text-left px-3 py-1.5 text-sm hover-elevate"
+                    style={{ fontSize: `${Math.min(parseInt(opt.value), 20)}px` }}
+                    data-testid={`font-size-${opt.value}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {onUploadImage && (
+            <>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={isImageUploading}
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  saveRange();
+                }}
+                onClick={() => {
+                  fileInputRef.current?.click();
+                }}
+                className="h-8 px-2.5 flex items-center gap-1 text-xs"
+                data-testid="button-insert-image"
+              >
+                <ImagePlus className="w-4 h-4" />
+                {isImageUploading ? "업로드 중..." : "이미지"}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageFileChange}
+              />
+            </>
+          )}
+        </div>
 
         <span className="text-xs text-muted-foreground ml-auto hidden sm:inline">
           텍스트 선택 후 적용
