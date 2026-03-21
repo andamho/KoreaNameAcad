@@ -473,6 +473,11 @@ function ContentCard({ content, basePath, index = 0 }: ContentCardProps) {
               placeholder="내용을 입력하세요"
               className="min-h-[200px]"
               data-testid="input-edit-content"
+              onUploadImage={async (file) => {
+                const result = await uploadFile(file);
+                if (!result) throw new Error("업로드 실패");
+                return result.objectPath;
+              }}
             />
           </div>
           <div className="flex items-center gap-2">
