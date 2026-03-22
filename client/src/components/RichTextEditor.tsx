@@ -104,8 +104,12 @@ function domToMarkers(node: Node): string {
           result += domToMarkers(el);
         }
       } else if (tag === "div" || tag === "p") {
+        const inner = domToMarkers(el);
+        // An empty block element (containing only <br>) already gets its newline
+        // from the block's own prefix — don't also count the <br> inside
+        const content = inner === "\n" ? "" : inner;
         if (i > 0) result += "\n";
-        result += domToMarkers(el);
+        result += content;
       } else if (tag === "img") {
         const alt = el.getAttribute("alt") || "이미지";
         const src = el.getAttribute("src") || "";
