@@ -40,8 +40,11 @@ function markersToHtml(text: string): string {
   html = html.replace(
     /\{size:(\d+)\}([\s\S]*?)\{\/size\}/g,
     (_match, size, content) => {
+      const sizeNum = parseInt(size);
       const inner = content.replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>");
-      return `<span style="font-size:${size}px">${inner}</span>`;
+      // Invalid size (e.g. {size:1} from browser em units) — render without size
+      if (sizeNum < 12) return inner;
+      return `<span style="font-size:${sizeNum}px">${inner}</span>`;
     }
   );
   html = html.replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>");
@@ -57,6 +60,10 @@ function markersToHtml(text: string): string {
   });
 
   return html;
+}
+
+function hasVisibleText(s: string): boolean {
+  return /[^\s\n]/.test(s);
 }
 
 function domToMarkers(node: Node): string {
@@ -75,13 +82,20 @@ function domToMarkers(node: Node): string {
         result += "\n";
       } else if (tag === "strong" || tag === "b") {
         const inner = domToMarkers(el);
-        if (inner) result += "**" + inner + "**";
+        // Only wrap in bold markers when there is actual visible text content
+        if (inner && hasVisibleText(inner)) {
+          result += "**" + inner + "**";
+        } else {
+          result += inner;
+        }
       } else if (tag === "span") {
         const fontSize = el.style.fontSize;
-        if (fontSize) {
+        // Only process px font sizes in a valid range (avoid 1em → 1px bug)
+        if (fontSize && fontSize.endsWith("px")) {
           const size = parseInt(fontSize);
           const inner = domToMarkers(el);
-          if (size && size !== 16 && inner) {
+          // Only wrap when size is valid, not default 16, and has visible text
+          if (size >= 12 && size !== 16 && inner && hasVisibleText(inner)) {
             result += `{size:${size}}` + inner + "{/size}";
           } else {
             result += inner;
@@ -97,6 +111,7 @@ function domToMarkers(node: Node): string {
         const src = el.getAttribute("src") || "";
         result += `![${alt}](${src})`;
       } else {
+        // Handles <font>, <u>, and any other browser-generated elements
         result += domToMarkers(el);
       }
     }
@@ -230,12 +245,28 @@ export function RichTextEditor({
 
       for (let i = toWrap.length - 1; i >= 0; i--) {
         const { node, start, end } = toWrap[i];
+
+        // Split out exactly the selected portion of the text node
         const target = node.splitText(start);
         if (end - start < target.length) target.splitText(end - start);
-        const span = document.createElement("span");
-        span.style.fontSize = `${size}px`;
-        target.parentNode!.insertBefore(span, target);
-        span.appendChild(target);
+
+        const parent = target.parentNode as HTMLElement;
+
+        // If the parent is already a font-size span AND contains only this one text node,
+        // just update the parent's size instead of nesting a new span inside it.
+        if (
+          parent &&
+          parent.tagName.toLowerCase() === "span" &&
+          parent.style.fontSize &&
+          parent.childNodes.length === 1
+        ) {
+          parent.style.fontSize = `${size}px`;
+        } else {
+          const span = document.createElement("span");
+          span.style.fontSize = `${size}px`;
+          parent.insertBefore(span, target);
+          span.appendChild(target);
+        }
       }
 
       emitChange();
@@ -467,9 +498,9 @@ function parseFormatted(text: string, keyRef: { v: number }): JSX.Element[] {
       const closeIdx = text.indexOf("{/size}", contentStart);
 
       if (closeIdx < 0) {
+        // No closing {/size} found — output text before marker and silently skip the marker
         if (matchStart > i)
           parts.push(<span key={keyRef.v++}>{text.slice(i, matchStart)}</span>);
-        parts.push(<span key={keyRef.v++}>{sizeMatch![0]}</span>);
         i = contentStart;
         continue;
       }
@@ -477,11 +508,18 @@ function parseFormatted(text: string, keyRef: { v: number }): JSX.Element[] {
       if (matchStart > i)
         parts.push(<span key={keyRef.v++}>{text.slice(i, matchStart)}</span>);
 
-      parts.push(
-        <span key={keyRef.v++} style={{ fontSize: `${size}px` }}>
-          {parseFormatted(text.slice(contentStart, closeIdx), keyRef)}
-        </span>
-      );
+      const sizeNum = parseInt(size);
+      const inner = parseFormatted(text.slice(contentStart, closeIdx), keyRef);
+      if (sizeNum >= 12) {
+        parts.push(
+          <span key={keyRef.v++} style={{ fontSize: `${sizeNum}px` }}>
+            {inner}
+          </span>
+        );
+      } else {
+        // Invalid size (e.g. {size:1} from browser-generated em units) — render content unstyled
+        inner.forEach((el) => parts.push(el));
+      }
       i = closeIdx + "{/size}".length;
     } else {
       const matchStart = boldIdx;
@@ -489,9 +527,9 @@ function parseFormatted(text: string, keyRef: { v: number }): JSX.Element[] {
       const closeIdx = text.indexOf("**", contentStart);
 
       if (closeIdx < 0) {
+        // No closing ** found — output text before marker and silently skip the marker
         if (matchStart > i)
           parts.push(<span key={keyRef.v++}>{text.slice(i, matchStart)}</span>);
-        parts.push(<span key={keyRef.v++}>**</span>);
         i = contentStart;
         continue;
       }
