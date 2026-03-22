@@ -285,7 +285,7 @@ export default function NameStoryDetail() {
             )}
 
             <Card className="p-6 md:p-8">
-              <div className="prose prose-lg dark:prose-invert max-w-none">
+              <div className="prose dark:prose-invert max-w-none">
                 {(() => {
                   const lines = story.content.split('\n');
                   const result: JSX.Element[] = [];

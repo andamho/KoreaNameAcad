@@ -123,8 +123,8 @@ function htmlToMarkers(html: string): string {
   const div = document.createElement("div");
   div.innerHTML = html;
   let result = domToMarkers(div);
-  result = result.replace(/\n{3,}/g, "\n\n");
-  result = result.replace(/\n$/, "");
+  // Only collapse extreme whitespace (6+ consecutive newlines → 4), preserve intentional spacing
+  result = result.replace(/\n{6,}/g, "\n\n\n\n");
   return result;
 }
 

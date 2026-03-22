@@ -291,7 +291,7 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
               </div>
             ) : null}
 
-            <div className="prose prose-lg max-w-none dark:prose-invert">
+            <div className="prose max-w-none dark:prose-invert">
               {(() => {
                 const lines = content.content.split('\n');
                 const result: JSX.Element[] = [];
