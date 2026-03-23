@@ -299,9 +299,7 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
                 
                 const flushTextBuffer = (key: string) => {
                   if (textBuffer.length > 0) {
-                    // Normalize: 3+ consecutive newlines → 2 (1 blank line max)
-                    // This also fixes content saved before the domToMarkers fix
-                    const text = textBuffer.join('\n').replace(/\n{3,}/g, '\n\n');
+                    const text = textBuffer.join('\n');
                     result.push(
                       <div key={key} className="text-foreground leading-relaxed whitespace-pre-line">
                         {renderFormattedText(text)}
