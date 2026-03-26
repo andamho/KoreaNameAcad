@@ -61,30 +61,36 @@ export class ObjectStorageService {
   }
 
   async downloadObject(objectKey: string, res: Response) {
-    try {
-      const command = new GetObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: objectKey,
-      });
+    const extensions = ["", ".jpg", ".jpeg", ".png", ".webp", ".gif"];
+    
+    for (const ext of extensions) {
+      try {
+        const command = new GetObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: objectKey + ext,
+        });
 
-      const data = await r2Client.send(command);
+        const data = await r2Client.send(command);
 
-      if (!data.Body) {
-        throw new ObjectNotFoundError();
+        if (!data.Body) continue;
+
+        res.set({
+          "Content-Type": data.ContentType || "application/octet-stream",
+          "Cache-Control": "public, max-age=3600",
+        });
+
+        const stream = data.Body as any;
+        stream.pipe(res);
+        return;
+      } catch (error: any) {
+        if (error.name === "NoSuchKey" || error.Code === "NoSuchKey") {
+          continue;
+        }
+        throw error;
       }
-
-      res.set({
-        "Content-Type": data.ContentType || "application/octet-stream",
-        "Cache-Control": "public, max-age=3600",
-      });
-
-      const stream = data.Body as any;
-      stream.pipe(res);
-    } catch (error: any) {
-      if (error.name === "NoSuchKey") {
-        throw new ObjectNotFoundError();
-      }
-      throw error;
     }
+    
+    throw new ObjectNotFoundError();
+  }
   }
 }
