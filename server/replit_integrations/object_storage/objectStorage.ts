@@ -28,12 +28,10 @@ export class ObjectStorageService {
   async getObjectEntityUploadURL(): Promise<string> {
     const objectId = randomUUID();
     const objectKey = `uploads/${objectId}`;
-
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: objectKey,
     });
-
     const signedUrl = await getSignedUrl(r2Client, command, { expiresIn: 900 });
     return signedUrl;
   }
@@ -69,27 +67,23 @@ export class ObjectStorageService {
           Bucket: BUCKET_NAME,
           Key: objectKey + ext,
         });
-
         const data = await r2Client.send(command);
-
         if (!data.Body) continue;
-
         res.set({
           "Content-Type": data.ContentType || "application/octet-stream",
           "Cache-Control": "public, max-age=3600",
         });
-
         const stream = data.Body as any;
         stream.pipe(res);
         return;
       } catch (error: any) {
-        if (error.name === "NoSuchKey" || error.Code === "NoSuchKey") {
+        const code = error?.Code || error?.code || error?.name || "";
+        if (code.includes("NoSuchKey") || code.includes("NotFound") || code.includes("404")) {
           continue;
         }
         throw error;
       }
     }
-    
     throw new ObjectNotFoundError();
   }
-  }
+}
