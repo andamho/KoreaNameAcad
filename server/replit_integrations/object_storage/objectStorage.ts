@@ -93,4 +93,3 @@ export class ObjectStorageService {
     throw new ObjectNotFoundError();
   }
   }
-}
