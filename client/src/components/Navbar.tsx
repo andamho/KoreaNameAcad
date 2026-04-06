@@ -1,4 +1,4 @@
-import { MessageCircle, FileText, Star, DollarSign, BookOpen, PenSquare, Lock, LogOut, User, FileEdit, Upload, ImageIcon, Building2 } from "lucide-react";
+import { MessageCircle, FileText, Star, DollarSign, BookOpen, PenSquare, Lock, LogOut, User, FileEdit, Upload, ImageIcon, Building2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect, useRef } from "react";
@@ -13,7 +13,7 @@ import { RichTextEditor } from "@/components/RichTextEditor";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import logoImage from "@assets/file_000000009b2c7206ad0a70c0142cb99a_1766915164756.png";
+const logoImage = "/new-logo.png";
 
 // 인앱 브라우저용 작은 base64 로고 (836 bytes) - HTML에서 미리 로드
 const LOGO_TINY = (typeof window !== 'undefined' && (window as any).__LOGO_TINY) || 
@@ -369,9 +369,15 @@ export function Navbar() {
       action: () => goToPage('/about'),
       description: "와츠유어네임 이름연구협회"
     },
-    { 
-      icon: MessageCircle, 
-      label: "문의", 
+    {
+      icon: Sparkles,
+      label: "체험 ZONE",
+      action: () => goToPage('/experience-zone'),
+      description: "내 이름으로 직접 체험해보기"
+    },
+    {
+      icon: MessageCircle,
+      label: "문의",
       href: "https://pf.kakao.com/_Sxnvbb/chat",
       description: "카카오톡 문의"
     }
