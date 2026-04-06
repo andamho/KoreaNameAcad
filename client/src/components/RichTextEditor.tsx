@@ -116,7 +116,9 @@ function domToMarkers(node: Node): string {
       } else if (tag === "img") {
         const alt = el.getAttribute("alt") || "이미지";
         const src = el.getAttribute("src") || "";
-        result += `![${alt}](${src})`;
+        // 이미지는 항상 독립된 줄에 저장
+        if (result && !result.endsWith("\n")) result += "\n";
+        result += `![${alt}](${src})\n`;
       } else {
         // Handles <font>, <u>, and any other browser-generated elements
         result += domToMarkers(el);

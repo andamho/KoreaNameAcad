@@ -287,34 +287,31 @@ export default function NameStoryDetail() {
             <Card className="p-6 md:p-8">
               <div className="prose dark:prose-invert max-w-none">
                 {(() => {
-                  const lines = story.content.split('\n');
+                  const parts = story.content.split(/(!\[[^\]]*\]\([^)]+\))/);
                   const result: JSX.Element[] = [];
                   let textBuffer: string[] = [];
-                  
+
                   const flushTextBuffer = (key: string) => {
-                    if (textBuffer.length > 0) {
-                      const text = textBuffer.join('\n');
-                      result.push(
-                        <div key={key} className="text-foreground leading-relaxed whitespace-pre-line">
-                          {renderFormattedText(text)}
-                        </div>
-                      );
-                      textBuffer = [];
-                    }
+                    const text = textBuffer.join("").replace(/^\n+|\n+$/g, "");
+                    textBuffer = [];
+                    if (!text) return;
+                    result.push(
+                      <div key={key} className="text-foreground leading-relaxed whitespace-pre-line">
+                        {renderFormattedText(text)}
+                      </div>
+                    );
                   };
-                  
-                  lines.forEach((line, index) => {
-                    const trimmedLine = line.trim();
-                    const imageMatch = trimmedLine.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
-                    
+
+                  parts.forEach((part, index) => {
+                    const imageMatch = part.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
                     if (imageMatch) {
                       flushTextBuffer(`text-before-${index}`);
                       const [, alt, src] = imageMatch;
                       result.push(
                         <div key={`img-${index}`} className="my-4">
-                          <img 
-                            src={src} 
-                            alt={alt || "이미지"} 
+                          <img
+                            src={src}
+                            alt={alt || "이미지"}
                             className="w-full h-auto rounded-lg"
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display = 'none';
@@ -323,10 +320,10 @@ export default function NameStoryDetail() {
                         </div>
                       );
                     } else {
-                      textBuffer.push(line);
+                      textBuffer.push(part);
                     }
                   });
-                  
+
                   flushTextBuffer('text-end');
                   return result;
                 })()}
