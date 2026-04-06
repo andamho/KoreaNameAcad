@@ -104,7 +104,10 @@ function domToMarkers(node: Node): string {
           result += domToMarkers(el);
         }
       } else if (tag === "div" || tag === "p") {
-        const inner = domToMarkers(el);
+        const rawInner = domToMarkers(el);
+        // Chrome adds a trailing <br> to contentEditable divs during DOM normalization.
+        // That trailing <br> becomes a trailing \n — strip it to avoid phantom blank lines.
+        const inner = rawInner.endsWith("\n") ? rawInner.slice(0, -1) : rawInner;
         // An empty block element (containing only <br>) already gets its newline
         // from the block's own prefix — don't also count the <br> inside
         const content = inner === "\n" ? "" : inner;
@@ -414,8 +417,9 @@ export function RichTextEditor({
                 size="sm"
                 variant="ghost"
                 disabled={isImageUploading}
-                onPointerDown={(e) => {
-                  e.preventDefault();
+                onPointerDown={() => {
+                  // Save cursor position before editor loses focus (don't preventDefault —
+                  // we need the click event to fire so the file picker opens)
                   saveRange();
                 }}
                 onClick={() => {

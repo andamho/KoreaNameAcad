@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Upload, X, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -20,7 +20,6 @@ export function ImageManager({
   onUpload,
   isUploading,
 }: ImageManagerProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
@@ -111,28 +110,30 @@ export function ImageManager({
       <div className="flex items-center justify-between">
         <Label>이미지</Label>
         <div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={handleFileChange}
-          />
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="h-8"
+            className="h-8 p-0"
+            asChild
           >
-            {isUploading ? "업로드 중..." : (
-              <>
-                <Upload className="w-4 h-4 mr-1" />
-                이미지 추가
-              </>
-            )}
+            <label className="cursor-pointer flex items-center px-3 h-full">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleFileChange}
+                disabled={isUploading}
+              />
+              {isUploading ? "업로드 중..." : (
+                <>
+                  <Upload className="w-4 h-4 mr-1" />
+                  이미지 추가
+                </>
+              )}
+            </label>
           </Button>
         </div>
       </div>
