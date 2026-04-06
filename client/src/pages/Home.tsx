@@ -40,10 +40,9 @@ export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoIndex, setVideoIndex] = useState(0);
   const videoPlaylist = [
-    "/promotion-video.mp4",
-    "/objects/video-1.mp4",
     "/objects/video-2.mp4",
     "/objects/video-3.mp4",
+    "/objects/video-1.mp4",
   ];
 
   // 스크롤 위치 복원 (뒤로가기 시)
@@ -99,7 +98,6 @@ export default function Home() {
 
   // 영상 변경 시 자동 재생
   useEffect(() => {
-    if (videoIndex === 0) return; // 첫 영상은 위 IntersectionObserver가 처리
     const video = videoRef.current;
     if (!video) return;
     video.load();
@@ -315,7 +313,7 @@ export default function Home() {
               preload="metadata"
               controlsList="nodownload"
               data-testid="video-promotion"
-              src={videoIndex === 0 ? "/promotion-video.mp4#t=0.1" : videoPlaylist[videoIndex]}
+              src={videoPlaylist[videoIndex]}
               onEnded={() => setVideoIndex(i => (i + 1) % videoPlaylist.length)}
             >
               동영상을 재생할 수 없습니다. 브라우저가 MP4 형식을 지원하지 않습니다.
