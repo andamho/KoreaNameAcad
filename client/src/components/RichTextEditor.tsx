@@ -417,13 +417,11 @@ export function RichTextEditor({
                 size="sm"
                 variant="ghost"
                 disabled={isImageUploading}
-                onPointerDown={() => {
-                  // Save cursor position before editor loses focus (don't preventDefault —
-                  // we need the click event to fire so the file picker opens)
+                onPointerDown={(e) => {
+                  e.preventDefault(); // 에디터 포커스 유지 (커서 위치 보존)
                   saveRange();
-                }}
-                onClick={() => {
-                  fileInputRef.current?.click();
+                  // setTimeout으로 파일 피커 열기 (preventDefault 후에도 작동)
+                  setTimeout(() => fileInputRef.current?.click(), 0);
                 }}
                 className="h-8 px-2.5 flex items-center gap-1 text-xs"
                 data-testid="button-insert-image"
