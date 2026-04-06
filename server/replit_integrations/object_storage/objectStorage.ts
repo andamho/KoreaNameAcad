@@ -1,6 +1,6 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { Response } from "express";
+import { Request, Response } from "express";
 import { randomUUID } from "crypto";
 
 const r2Client = new S3Client({
@@ -58,23 +58,53 @@ export class ObjectStorageService {
     return key;
   }
 
-  async downloadObject(objectKey: string, res: Response) {
-    const extensions = ["", ".jpg", ".jpeg", ".png", ".webp", ".gif"];
-    
+  async downloadObject(objectKey: string, res: Response, req?: Request) {
+    const extensions = ["", ".jpg", ".jpeg", ".png", ".webp", ".gif", ".mp4", ".webm", ".mov"];
+
     for (const ext of extensions) {
+      const key = objectKey + ext;
       try {
-        const command = new GetObjectCommand({
-          Bucket: BUCKET_NAME,
-          Key: objectKey + ext,
-        });
+        // Range 요청 지원 (영상 스트리밍용)
+        const rangeHeader = req?.headers.range;
+        if (rangeHeader) {
+          const headCmd = new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: key });
+          const head = await r2Client.send(headCmd);
+          const totalSize = head.ContentLength || 0;
+          const contentType = head.ContentType || "video/mp4";
+
+          const [startStr, endStr] = rangeHeader.replace(/bytes=/, "").split("-");
+          const start = parseInt(startStr, 10);
+          const end = endStr ? parseInt(endStr, 10) : Math.min(start + 1024 * 1024 - 1, totalSize - 1);
+          const chunkSize = end - start + 1;
+
+          const command = new GetObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: key,
+            Range: `bytes=${start}-${end}`,
+          });
+          const data = await r2Client.send(command);
+          if (!data.Body) continue;
+
+          res.status(206).set({
+            "Content-Range": `bytes ${start}-${end}/${totalSize}`,
+            "Accept-Ranges": "bytes",
+            "Content-Length": String(chunkSize),
+            "Content-Type": contentType,
+            "Cache-Control": "public, max-age=3600",
+          });
+          (data.Body as any).pipe(res);
+          return;
+        }
+
+        const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key });
         const data = await r2Client.send(command);
         if (!data.Body) continue;
         res.set({
           "Content-Type": data.ContentType || "application/octet-stream",
+          "Accept-Ranges": "bytes",
           "Cache-Control": "public, max-age=3600",
         });
-        const stream = data.Body as any;
-        stream.pipe(res);
+        (data.Body as any).pipe(res);
         return;
       } catch (error: any) {
         const code = error?.Code || error?.code || error?.name || "";

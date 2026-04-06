@@ -38,6 +38,13 @@ export default function Home() {
   const analysisDetailOpenRef = useRef(false);
   const referrerPage = useRef<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoIndex, setVideoIndex] = useState(0);
+  const videoPlaylist = [
+    "/promotion-video.mp4",
+    "/objects/video-1.mp4",
+    "/objects/video-2.mp4",
+    "/objects/video-3.mp4",
+  ];
 
   // 스크롤 위치 복원 (뒤로가기 시)
   useScrollRestore("/");
@@ -89,6 +96,15 @@ export default function Home() {
       observer.disconnect();
     };
   }, []);
+
+  // 영상 변경 시 자동 재생
+  useEffect(() => {
+    if (videoIndex === 0) return; // 첫 영상은 위 IntersectionObserver가 처리
+    const video = videoRef.current;
+    if (!video) return;
+    video.load();
+    video.play().catch(err => console.log('다음 영상 재생 실패:', err));
+  }, [videoIndex]);
 
   // 인앱 브라우저 감지
   useEffect(() => {
@@ -290,18 +306,17 @@ export default function Home() {
         {/* 나비 캐릭터 제거됨 */}
         <section className="kna-video-section pt-24 pb-24 lg:pt-48 lg:pb-48 lg:min-h-screen lg:flex lg:flex-col lg:justify-center">
           <div className="max-w-md mx-auto px-4 sm:px-6 lg:max-w-none lg:px-0 lg:flex lg:flex-col lg:items-center lg:justify-center lg:h-full">
-            <video 
+            <video
               ref={videoRef}
               className="w-full h-auto rounded-lg shadow-lg lg:rounded-none lg:shadow-none lg:h-[calc(100vh-160px)] lg:w-auto lg:max-w-full"
               controls
               playsInline
               muted
-              loop
               preload="metadata"
               controlsList="nodownload"
               data-testid="video-promotion"
-              src="/promotion-video.mp4#t=0.1"
-              poster=""
+              src={videoIndex === 0 ? "/promotion-video.mp4#t=0.1" : videoPlaylist[videoIndex]}
+              onEnded={() => setVideoIndex(i => (i + 1) % videoPlaylist.length)}
             >
               동영상을 재생할 수 없습니다. 브라우저가 MP4 형식을 지원하지 않습니다.
             </video>
