@@ -114,17 +114,17 @@ export class ObjectStorageService {
           return;
         }
 
-        // 일반 요청: HeadObject로 Content-Length 포함
+        // 일반 요청: HeadObject로 Content-Length 포함 후 writeHead로 강제 전송
         const headCmd = new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: key });
         const head = await r2Client.send(headCmd);
         const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key });
         const data = await r2Client.send(command);
         if (!data.Body) continue;
-        res.set({
-          "Content-Type": head.ContentType || data.ContentType || "application/octet-stream",
-          "Content-Length": String(head.ContentLength || ""),
-          "Accept-Ranges": "bytes",
-          "Cache-Control": "public, max-age=3600",
+        res.writeHead(200, {
+          "content-type": head.ContentType || data.ContentType || "application/octet-stream",
+          "content-length": String(head.ContentLength ?? ""),
+          "accept-ranges": "bytes",
+          "cache-control": "public, max-age=3600",
         });
         (data.Body as any).pipe(res);
         return;
