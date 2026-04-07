@@ -465,7 +465,6 @@ export function Navbar() {
                       </div>
                       <div className="flex-1">
                         <div className="font-semibold text-foreground">{item.label}</div>
-                        <div className="text-sm text-muted-foreground">{item.description}</div>
                       </div>
                     </a>
                   ) : (
@@ -480,7 +479,6 @@ export function Navbar() {
                       </div>
                       <div className="flex-1">
                         <div className="font-semibold text-foreground">{item.label}</div>
-                        <div className="text-sm text-muted-foreground">{item.description}</div>
                       </div>
                     </button>
                   )
