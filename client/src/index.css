@@ -40,7 +40,8 @@
 /* 고려대학교 볼드체 폰트 */
 @font-face {
   font-family: 'KoreaUnivB';
-  src: url('/fonts/KoreaUnivB.ttf') format('truetype');
+  src: url('/fonts/KoreaUnivB.woff2') format('woff2'),
+       url('/fonts/KoreaUnivB.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: block;
@@ -49,7 +50,8 @@
 /* 고려대학교 라이트체 폰트 */
 @font-face {
   font-family: 'KoreaUnivL';
-  src: url('/fonts/KoreaUnivL.ttf') format('truetype');
+  src: url('/fonts/KoreaUnivL.woff2') format('woff2'),
+       url('/fonts/KoreaUnivL.ttf') format('truetype');
   font-weight: 300;
   font-style: normal;
   font-display: block;
