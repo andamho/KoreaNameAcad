@@ -15,9 +15,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 const logoImage = "/new-logo.png";
 
-// 새 로고 tiny base64 (1001 bytes, 40x60px) - 즉시 표시용
-const LOGO_TINY = (typeof window !== 'undefined' && (window as any).__LOGO_TINY) ||
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAA8CAMAAAAjZwjSAAABKVBMVEVMaXGHq7ezws8JnbgDh6M1V2kCfpup1tZUbn8LkKwMsccAbopCjKJKW2/U3eIynbM2XW1owM9ypbVFmq9Ir8I/ZXU1w9QwkKcVyNqizNUbU2evwcgotMn++fcmp7685+132OIoZXxa4+tQg5VjscPs7e9ckaNTuMrX5Onp7/DH2N8lgZfQ2NwNvdFTiJ0gWm5+wcp1yNQ9iZ8ahqGauMNIyNVVpbmq2eQKqMEg2eej7O6l7O+K4Oeaw9Box9JQj6Ls8fGJ4edSv85Gq7xv3OVroLTm5+iZxdA/mq7q7e8xf5L5+PjM2+Ehd5GP4edmwtBkmq4wa4Fp1N6MqLN3qbs3hZrCzdO0w8mA1d3y9fb+//+wzNTDz9Q/1uTf6e1X7/eU8PV49/nL6e+7CE3yAAAAY3RSTlMA/hH+/h/+Agj+/v7+EP7+Sf39/f04/v7+N3f+/v79/vCj/eL95vj8Rv79/Pn9X2dX+KP9+/3+/v7+0YyJMbR2cu/U1MO72vrLkv6dr/6l8ibOzdXNuYfxx//////////+//6+OywrAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB90lEQVR4nO2Sh5KiQBRFm9g0IEgQVMw5YU6Tc9gJm0MBgs78/0dsoTjjULofsOUtinpVfXj3vdsAsNde/4kg3HkCQthHFG7pAf0Kx4NiqY2P8MS6DwQQ4Ofl23McwBXhvxJ4ADKHR8sefll7LL+WSo3ypxoTYPjRYWTlDsHnxcXxCQR47bHsTaqsyRJjR7j1WZg4zr2cRoIhwEnuZV647j7ZEyllxuMmyxJoMHas293vhXmh12bWYCInSSNXu2tkDtzFIsey0kUPkc2WrLmjaulL921v5no+qqqiKmQO4q+2LRGSPeSQ3tLFsaq5l7H11hB8vdS0FKH4YNa2LaTaGIf41gPKpFJXbeotIAgSvaoqKoIYN7Npz3YUG+NIfvagK6p0RgUjrkI9LbgpURBNNmtV6pZjLcFmRnOvYh8vlDm7V0VBZ9ls+rmUrlsYR/NGU7zvR4Ns3t0jfV1QptOJ9Uw79brf0Wj+ilIhzr8DGG3JBJFN87QupDGOrPxJbo63iT410FTGeJpU5ApHGz+i2zjfve1hCNE0TfqP7ORDe2zoxpJJApEkIkh5VuxQuzhA/bSGAxIRaIDNisnYduelOXXjNRSEeMMpJsPBhMi+490NZ9i3f3I+yXQqM6OY7+z2DUgIYvl8Mvr+I+wUBAy1Nei99toLAPAXK8w+4C+TK2EAAAAASUVORK5CYII=';
 
 
 // 카테고리 옵션
@@ -33,9 +30,7 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [hasBeenOpened, setHasBeenOpened] = useState(false);
   const [, setLocation] = useLocation();
-  const [logoLoaded, setLogoLoaded] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
   
   // Admin state
   const { isAdmin, login, logout } = useAdmin();
@@ -396,19 +391,12 @@ export function Navbar() {
                 data-testid="link-home"
               >
                 <img
-                  ref={imgRef}
-                  src={logoLoaded ? logoImage : LOGO_TINY}
+                  src={logoImage}
                   alt="한국이름학교 로고"
                   className="h-[97px] w-auto md:h-[110px] object-contain self-center"
                   loading="eager"
                   decoding="sync"
-                  onLoad={() => {
-                    if (!logoLoaded) {
-                      const img = new Image();
-                      img.src = logoImage;
-                      img.onload = () => setLogoLoaded(true);
-                    }
-                  }}
+                  fetchPriority="high"
                 />
                 <div className="font-bold text-foreground text-left flex flex-col justify-center self-center">
                   <div className="kna-brand-main leading-none">한국이름학교</div>
