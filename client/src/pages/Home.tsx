@@ -39,6 +39,7 @@ export default function Home() {
   const referrerPage = useRef<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoIndex, setVideoIndex] = useState(0);
+  const videoIndexRef = useRef(0);
   const videoPlaylist = [
     "/objects/uploads/video-2.mp4",
     "/objects/uploads/video-3.mp4",
@@ -96,12 +97,18 @@ export default function Home() {
     };
   }, []);
 
-  // 영상 변경 시 자동 재생
+  // 영상 변경 시 자동 재생 (초기 렌더링은 IntersectionObserver가 처리)
   useEffect(() => {
+    if (videoIndexRef.current === videoIndex) return; // 초기 렌더링 스킵
+    videoIndexRef.current = videoIndex;
     const video = videoRef.current;
     if (!video) return;
     video.load();
-    video.play().catch(err => console.log('다음 영상 재생 실패:', err));
+    const playWhenReady = () => {
+      video.play().catch(err => console.log('다음 영상 재생 실패:', err));
+    };
+    video.addEventListener('canplay', playWhenReady, { once: true });
+    return () => video.removeEventListener('canplay', playWhenReady);
   }, [videoIndex]);
 
   // 인앱 브라우저 감지
