@@ -72,9 +72,27 @@ export class ObjectStorageService {
           const totalSize = head.ContentLength || 0;
           const contentType = head.ContentType || "video/mp4";
 
-          const [startStr, endStr] = rangeHeader.replace(/bytes=/, "").split("-");
-          const start = parseInt(startStr, 10);
-          const end = endStr ? parseInt(endStr, 10) : Math.min(start + 1024 * 1024 - 1, totalSize - 1);
+          const rawRange = rangeHeader.replace(/bytes=/, "");
+          const [startStr, endStr] = rawRange.split("-");
+
+          let start: number;
+          let end: number;
+
+          if (startStr === "") {
+            // suffix range: bytes=-N → 마지막 N 바이트
+            const suffixLen = parseInt(endStr, 10);
+            start = Math.max(0, totalSize - suffixLen);
+            end = totalSize - 1;
+          } else {
+            start = parseInt(startStr, 10);
+            end = endStr ? Math.min(parseInt(endStr, 10), totalSize - 1) : Math.min(start + 1024 * 1024 - 1, totalSize - 1);
+          }
+
+          if (isNaN(start) || isNaN(end) || start >= totalSize) {
+            res.status(416).set("Content-Range", `bytes */${totalSize}`).end();
+            return;
+          }
+
           const chunkSize = end - start + 1;
 
           const command = new GetObjectCommand({
@@ -96,11 +114,15 @@ export class ObjectStorageService {
           return;
         }
 
+        // 일반 요청: HeadObject로 Content-Length 포함
+        const headCmd = new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: key });
+        const head = await r2Client.send(headCmd);
         const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key });
         const data = await r2Client.send(command);
         if (!data.Body) continue;
         res.set({
-          "Content-Type": data.ContentType || "application/octet-stream",
+          "Content-Type": head.ContentType || data.ContentType || "application/octet-stream",
+          "Content-Length": String(head.ContentLength || ""),
           "Accept-Ranges": "bytes",
           "Cache-Control": "public, max-age=3600",
         });
