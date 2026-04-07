@@ -41,9 +41,9 @@ export default function Home() {
   const [videoIndex, setVideoIndex] = useState(0);
   const videoIndexRef = useRef(0);
   const videoPlaylist = [
-    "/objects/uploads/video-2.mp4",
-    "/objects/uploads/video-3.mp4",
-    "/objects/uploads/video-1.mp4",
+    "https://pub-e7f7238f9e6645d1913614102bc6ef11.r2.dev/uploads/video-2.mp4",
+    "https://pub-e7f7238f9e6645d1913614102bc6ef11.r2.dev/uploads/video-3.mp4",
+    "https://pub-e7f7238f9e6645d1913614102bc6ef11.r2.dev/uploads/video-1.mp4",
   ];
 
   // 스크롤 위치 복원 (뒤로가기 시)
