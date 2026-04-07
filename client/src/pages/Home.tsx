@@ -40,9 +40,9 @@ export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoIndex, setVideoIndex] = useState(0);
   const videoPlaylist = [
-    "/objects/video-2.mp4",
-    "/objects/video-3.mp4",
-    "/objects/video-1.mp4",
+    "/objects/uploads/video-2.mp4",
+    "/objects/uploads/video-3.mp4",
+    "/objects/uploads/video-1.mp4",
   ];
 
   // 스크롤 위치 복원 (뒤로가기 시)
