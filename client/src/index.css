@@ -348,7 +348,7 @@ select {
 html.ua-instagram .kna-navbar img,
 html.ua-tiktok .kna-navbar img {
   height: 84px !important;
-  width: 84px !important;
+  width: auto !important;
 }
 
 /* 메뉴 오버레이 - 인앱 브라우저에서 82% 축소 (페이지와 동일한 비율) */
