@@ -127,7 +127,7 @@ export default function ExperienceZone() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
             <img
-              src="/experience-zone-character.png"
+              src="/experience-zone-character-opt.webp"
               alt="체험 ZONE 캐릭터"
               className="w-auto h-40 md:h-56 flex-shrink-0"
               fetchPriority="high"
