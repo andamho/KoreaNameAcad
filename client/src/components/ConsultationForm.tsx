@@ -878,9 +878,8 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
               <h2 className="text-2xl form-title-font font-bold tracking-tight text-slate-900">상담 내용</h2>
               <p className="kna-inapp-zoom text-base text-slate-500 mt-2 font-medium">가장 고민되시는 부분을 편안하게 적어주세요.</p>
             </div>
-            <div className="mt-8">
-              <label className="text-lg font-bold text-slate-700 block mb-3 form-title-font">상담 사유</label>
-              <textarea 
+            <div className="mt-4">
+              <textarea
                 className="kna-inapp-zoom-textarea w-full min-h-[180px] rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring leading-relaxed resize-none backdrop-blur-sm"
                 placeholder={type === "naming" ? `예)
 · 이 이름이 아이에게 맞는지 확인하고 싶습니다
