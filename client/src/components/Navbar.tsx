@@ -393,7 +393,7 @@ export function Navbar() {
                 <img
                   src={logoImage}
                   alt="한국이름학교 로고"
-                  className="h-[97px] w-auto md:h-[110px] object-contain self-center"
+                  className="h-[84px] w-auto md:h-[110px] object-contain self-center"
                   loading="eager"
                   decoding="sync"
                   fetchPriority="high"
