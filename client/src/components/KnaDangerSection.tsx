@@ -29,7 +29,8 @@ export default function KnaDangerSection() {
             <div className="p-6 bg-white dark:bg-card">
               <StackItem title="이름이 맑아야 인생이 맑다">
                 운칠기삼(運七技三), 운이 70%입니다.<br/>
-                빌게이츠가 미국에 태어나지 않았다면 지금의 빌은 없습니다. 미국에 태어난 건 노력이 아니라 운입니다.<br/>
+                빌게이츠가 미국에 태어나지 않았다면 지금의 빌은 없습니다.<br/>
+                미국에 태어난 건 노력이 아니라 운입니다.<br/>
                 이름의 강력한 운을 모른 채,<br/>
                 <span className="text-orange-500 font-bold">30%의 노력만으로는 인생이 바뀌지 않습니다.</span>
               </StackItem>
