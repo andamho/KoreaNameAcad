@@ -32,7 +32,7 @@ export default function Services() {
       if (!cards) return;
       observer = new IntersectionObserver(
         ([entry]) => { if (entry.isIntersecting) { setFamilyAnimated(true); observer.disconnect(); } },
-        { threshold: 0.05 }
+        { threshold: 0.2 }
       );
       observer.observe(cards);
     }, 300);
