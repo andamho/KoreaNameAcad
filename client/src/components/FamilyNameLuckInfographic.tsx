@@ -25,16 +25,14 @@ export function FamilyNameLuckInfographic() {
           가족과 함께 나누는 이름운
         </text>
 
-        {/* 왼쪽 배지 - 결혼할 때 */}
-        <rect x="130" y="55" width="220" height="36" rx="18" fill="#0c3530" />
-        <text x="240" y="79" fontSize="16" fontWeight="600" fill="white" fontFamily="sans-serif" textAnchor="middle">
-          💍 결혼할 때
+        {/* 왼쪽 배지 텍스트 - 기존 이미지 배지 안에 삽입 */}
+        <text x="268" y="79" fontSize="16" fontWeight="600" fill="white" fontFamily="sans-serif" textAnchor="middle">
+          결혼할 때
         </text>
 
-        {/* 오른쪽 배지 - 출산할 때 */}
-        <rect x="710" y="55" width="220" height="36" rx="18" fill="#0c3530" />
-        <text x="820" y="79" fontSize="16" fontWeight="600" fill="white" fontFamily="sans-serif" textAnchor="middle">
-          👶 출산할 때
+        {/* 오른쪽 배지 텍스트 - 기존 이미지 배지 안에 삽입 */}
+        <text x="862" y="79" fontSize="16" fontWeight="600" fill="white" fontFamily="sans-serif" textAnchor="middle">
+          출산할 때
         </text>
 
         {/* 숫자 배지 - 왼쪽 패널 */}
