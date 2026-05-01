@@ -800,7 +800,14 @@ export default function Services() {
           {/* Scrollable Content - 스크롤 영역 */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-8 sm:px-8">
             <div className="flex flex-col">
-              
+
+              {/* 가족과 함께 나누는 이름운 이미지 */}
+              <img
+                src="/family-consulting-rule.webp"
+                alt="가족과 함께 나누는 이름운"
+                className="w-full rounded-2xl mb-6"
+              />
+
               {/* 상단 2개 카드 - 결혼, 자녀 */}
               <div className="grid gap-6 md:grid-cols-2 z-10 relative">
                 <article className="family-card-top group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
