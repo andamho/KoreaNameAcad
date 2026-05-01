@@ -299,15 +299,17 @@ export default function InstagramHome() {
 
   useEffect(() => {
     if (!familyPolicyOpen) { setFamilyAnimated(false); return; }
-    const cards = familyCardsRef.current;
-    const scroll = familyScrollRef.current;
-    if (!cards || !scroll) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setFamilyAnimated(true); observer.disconnect(); } },
-      { root: scroll, threshold: 0.1 }
-    );
-    observer.observe(cards);
-    return () => observer.disconnect();
+    let observer: IntersectionObserver;
+    const timer = setTimeout(() => {
+      const cards = familyCardsRef.current;
+      if (!cards) return;
+      observer = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) { setFamilyAnimated(true); observer.disconnect(); } },
+        { threshold: 0.05 }
+      );
+      observer.observe(cards);
+    }, 300);
+    return () => { clearTimeout(timer); observer?.disconnect(); };
   }, [familyPolicyOpen]);
 
   useEffect(() => {

@@ -26,15 +26,17 @@ export default function Services() {
   // 카드 섹션이 스크롤되어 보일 때 애니메이션 시작
   useEffect(() => {
     if (!familyPolicyOpen) { setFamilyAnimated(false); return; }
-    const cards = familyCardsRef.current;
-    const scroll = familyScrollRef.current;
-    if (!cards || !scroll) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setFamilyAnimated(true); observer.disconnect(); } },
-      { root: scroll, threshold: 0.1 }
-    );
-    observer.observe(cards);
-    return () => observer.disconnect();
+    let observer: IntersectionObserver;
+    const timer = setTimeout(() => {
+      const cards = familyCardsRef.current;
+      if (!cards) return;
+      observer = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) { setFamilyAnimated(true); observer.disconnect(); } },
+        { threshold: 0.05 }
+      );
+      observer.observe(cards);
+    }, 300);
+    return () => { clearTimeout(timer); observer?.disconnect(); };
   }, [familyPolicyOpen]);
 
   // 뒤로 가기 버튼 처리를 위한 ref
