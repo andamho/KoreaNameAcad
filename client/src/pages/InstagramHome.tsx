@@ -67,6 +67,9 @@ export default function InstagramHome() {
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
   const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
   const [familyPolicyOpen, setFamilyPolicyOpen] = useState(false);
+  const [familyAnimated, setFamilyAnimated] = useState(false);
+  const familyCardsRef = useRef<HTMLDivElement>(null);
+  const familyScrollRef = useRef<HTMLDivElement>(null);
   const [showChristmasPopup, setShowChristmasPopup] = useState(false); // 팝업 비활성화
   const isClosingFromBackButton = useRef(false);
   const dialogOpenRef = useRef(false);
@@ -293,6 +296,19 @@ export default function InstagramHome() {
   useEffect(() => {
     analysisDetailOpenRef.current = analysisDetailOpen;
   }, [analysisDetailOpen]);
+
+  useEffect(() => {
+    if (!familyPolicyOpen) { setFamilyAnimated(false); return; }
+    const cards = familyCardsRef.current;
+    const scroll = familyScrollRef.current;
+    if (!cards || !scroll) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setFamilyAnimated(true); observer.disconnect(); } },
+      { root: scroll, threshold: 0.1 }
+    );
+    observer.observe(cards);
+    return () => observer.disconnect();
+  }, [familyPolicyOpen]);
 
   useEffect(() => {
     familyPolicyOpenRef.current = familyPolicyOpen;
@@ -686,15 +702,15 @@ export default function InstagramHome() {
           </div>
 
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-8 sm:px-8">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-8 sm:px-8" ref={familyScrollRef}>
             <div className="flex flex-col">
 
               {/* 가족과 함께 나누는 이름운 */}
               <div className="mb-6"><FamilyNameLuckInfographic /></div>
 
               {/* 상단 2개 카드 - 결혼, 자녀 */}
-              <div className="grid gap-6 md:grid-cols-2 z-10 relative">
-                <article className="family-card-top group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+              <div ref={familyCardsRef} className="grid gap-6 md:grid-cols-2 z-10 relative">
+                <article className={`${familyAnimated ? 'family-card-top' : ''} group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg`}>
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
                       <Heart className="h-5 w-5" />
@@ -713,7 +729,7 @@ export default function InstagramHome() {
                   </div>
                 </article>
 
-                <article className="family-card-top group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                <article className={`${familyAnimated ? 'family-card-top' : ''} group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg`}>
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
                       <Baby className="h-5 w-5" />
@@ -735,7 +751,7 @@ export default function InstagramHome() {
 
               {/* 중단 2개 카드 - 이름운, 에너지의 원리 */}
               <div className="grid gap-6 md:grid-cols-2 z-10 relative mt-6">
-                <article className="family-card-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                <article className={`${familyAnimated ? 'family-card-mid' : ''} group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg`}>
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
                       <LifeBuoy className="h-5 w-5" />
@@ -759,7 +775,7 @@ export default function InstagramHome() {
                   </div>
                 </article>
 
-                <article className="family-card-mid group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                <article className={`${familyAnimated ? 'family-card-mid' : ''} group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg`}>
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
                       <Zap className="h-5 w-5" />
@@ -784,7 +800,7 @@ export default function InstagramHome() {
 
               {/* 하단 결론 카드 */}
               <div className="mt-6 z-10 relative">
-                <article className="family-card-bottom group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg">
+                <article className={`${familyAnimated ? 'family-card-bottom' : ''} group rounded-2xl bg-[#0A0D11] border border-white/10 p-6 shadow-lg`}>
                   <div className="flex items-start gap-4 mb-4">
                     <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
                       <Users className="h-5 w-5" />
