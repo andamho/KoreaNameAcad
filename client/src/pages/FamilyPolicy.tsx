@@ -156,7 +156,70 @@ export default function FamilyPolicy() {
                     서로 이름운의 영향을<br />
                     강하게 주고 받습니다.
                   </p>
-                  
+
+                  {/* 가족과 함께 나누는 이름운 인포그래픽 */}
+                  <div className="mt-6 rounded-2xl overflow-hidden border border-border/40 shadow-sm bg-[#0d3d3a] text-white">
+                    {/* 타이틀 */}
+                    <div className="px-5 pt-5 pb-3 text-center">
+                      <h2 className="text-lg font-bold tracking-tight">가족과 함께 나누는 이름운</h2>
+                    </div>
+
+                    {/* 결혼할 때 / 출산할 때 */}
+                    <div className="grid grid-cols-2 gap-3 px-4 pb-4">
+                      {/* 결혼할 때 */}
+                      <div className="rounded-xl bg-[#0a2e2b] p-3">
+                        <div className="text-center text-xs font-semibold text-[#56D5DB] mb-3 flex items-center justify-center gap-1">
+                          <span>💍</span> 결혼할 때
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 rounded-lg bg-[#0d3d3a] p-2 text-center">
+                            <div className="text-2xl mb-1">🛋️</div>
+                            <div className="text-[10px] text-white/70">아내가 사온 소파</div>
+                          </div>
+                          <div className="text-white/40 text-sm">→</div>
+                          <div className="flex-1 rounded-lg bg-[#0d3d3a] p-2 text-center">
+                            <div className="text-2xl mb-1">👫</div>
+                            <div className="text-[10px] text-white/70">남편도 당연히 앉죠</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 출산할 때 */}
+                      <div className="rounded-xl bg-[#0a2e2b] p-3">
+                        <div className="text-center text-xs font-semibold text-[#56D5DB] mb-3 flex items-center justify-center gap-1">
+                          <span>👶</span> 출산할 때
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 rounded-lg bg-[#0d3d3a] p-2 text-center">
+                            <div className="text-2xl mb-1">🍼</div>
+                            <div className="text-[10px] text-white/70">아이 태어날 때 갖고 온 냉장고</div>
+                          </div>
+                          <div className="text-white/40 text-sm">→</div>
+                          <div className="flex-1 rounded-lg bg-[#0d3d3a] p-2 text-center">
+                            <div className="text-2xl mb-1">👨‍👩‍👦</div>
+                            <div className="text-[10px] text-white/70">엄마 아빠도 당연히 씁니다</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 이름운 하단 배너 */}
+                    <div className="mx-4 mb-4 rounded-xl bg-[#0a2e2b] px-4 py-4 flex items-center gap-4">
+                      <div className="text-3xl font-black text-[#56D5DB] leading-none flex-shrink-0" style={{fontStyle:'italic'}}>
+                        이름<br/>운
+                      </div>
+                      <div className="flex-1 text-center">
+                        <div className="font-bold text-[#56D5DB] text-sm">이름운</div>
+                        <div className="text-[11px] text-[#56D5DB]/70 mb-1">(NAME LUCK)</div>
+                        <div className="text-[12px] text-white/80 leading-relaxed">
+                          각자 갖고 오는 운이 있어요<br/>
+                          그 운, 가족이 함께 나눠 씁니다.
+                        </div>
+                      </div>
+                      <div className="text-3xl flex-shrink-0">👨‍👩‍👧</div>
+                    </div>
+                  </div>
+
                   <div className="mt-6">
                     <h2 className="font-bold text-lg mb-2">💍 결혼, 혼을 연결하는 인연</h2>
                     <p>
