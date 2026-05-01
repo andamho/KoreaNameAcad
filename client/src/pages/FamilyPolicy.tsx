@@ -1,3 +1,4 @@
+import { FamilyNameLuckInfographic } from "@/components/FamilyNameLuckInfographic";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
@@ -157,12 +158,8 @@ export default function FamilyPolicy() {
                     강하게 주고 받습니다.
                   </p>
 
-                  {/* 가족과 함께 나누는 이름운 이미지 */}
-                  <img
-                    src="/family-consulting-rule.webp"
-                    alt="가족과 함께 나누는 이름운"
-                    className="mt-6 w-full rounded-2xl"
-                  />
+                  {/* 가족과 함께 나누는 이름운 */}
+                  <div className="mt-6"><FamilyNameLuckInfographic /></div>
 
                   <div className="mt-6">
                     <h2 className="font-bold text-lg mb-2">💍 결혼, 혼을 연결하는 인연</h2>

@@ -37,6 +37,7 @@ import stepsCharacterImage from "@assets/KakaoTalk_20251226_164036756_1766734877
 import guideCharacterImage from "@assets/KakaoTalk_20251226_151729031_1766729868877.png";
 import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_1766729101276.png";
 import butterflyCharacterImage from "@assets/KakaoTalk_20251226_134433821_1766724285654.png";
+import { FamilyNameLuckInfographic } from "@/components/FamilyNameLuckInfographic";
 
 const INLINE_IG_STYLES = `
   html.ua-instagram .ig-tt-dialog h2,
@@ -688,12 +689,8 @@ export default function InstagramHome() {
           <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-8 sm:px-8">
             <div className="flex flex-col">
 
-              {/* 가족과 함께 나누는 이름운 이미지 */}
-              <img
-                src="/family-consulting-rule.webp"
-                alt="가족과 함께 나누는 이름운"
-                className="w-full rounded-2xl mb-6"
-              />
+              {/* 가족과 함께 나누는 이름운 */}
+              <div className="mb-6"><FamilyNameLuckInfographic /></div>
 
               {/* 상단 2개 카드 - 결혼, 자녀 */}
               <div className="grid gap-6 md:grid-cols-2 z-10 relative">
