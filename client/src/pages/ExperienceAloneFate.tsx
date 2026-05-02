@@ -81,6 +81,7 @@ export default function ExperienceAloneFate() {
   const [result, setResult] = useState<{ char: string; strokes: number; breakdown: string }[]>([]);
   const [total, setTotal] = useState(0);
   const [calculated, setCalculated] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const animatedTotal = useCountUp(calculated ? total : 0);
 
   // 댓글
@@ -102,10 +103,16 @@ export default function ExperienceAloneFate() {
   function calculate() {
     const chars = name.trim().replace(/\s/g, '');
     if (!chars) return;
-    const res = Array.from(chars).map(ch => ({ char: ch, ...calcChar(ch) })).filter(r => r.strokes > 0);
-    setResult(res);
-    setTotal(res.reduce((s, r) => s + r.strokes, 0));
-    setCalculated(true);
+    setIsAnalyzing(true);
+    setCalculated(false);
+    setResult([]);
+    setTimeout(() => {
+      const res = Array.from(chars).map(ch => ({ char: ch, ...calcChar(ch) })).filter(r => r.strokes > 0);
+      setResult(res);
+      setTotal(res.reduce((s, r) => s + r.strokes, 0));
+      setCalculated(true);
+      setIsAnalyzing(false);
+    }, 1500);
   }
 
   function reset() {
@@ -113,6 +120,7 @@ export default function ExperienceAloneFate() {
     setResult([]);
     setTotal(0);
     setCalculated(false);
+    setIsAnalyzing(false);
   }
 
   async function submitComment() {
@@ -182,72 +190,106 @@ export default function ExperienceAloneFate() {
         <div className="max-w-2xl mx-auto px-5 space-y-8">
 
           {/* ── 계산기 ── */}
-          <div className="rounded-2xl bg-slate-900 dark:bg-slate-800 overflow-hidden shadow-xl">
+          <div className="rounded-3xl bg-slate-900 dark:bg-slate-800 overflow-hidden shadow-2xl">
+            {/* 헤더 */}
             <div className="px-6 pt-6 pb-4 border-b border-white/10">
-              <p className="text-sm font-bold tracking-[0.25em] text-[#56D5DB] uppercase mb-1">이름 획수 자동 계산기</p>
-              <p className="text-white/50 text-sm">이름을 입력하면 총운을 자동으로 계산합니다</p>
+              <p className="text-xs font-bold tracking-[0.3em] text-[#56D5DB] uppercase mb-1">성명 에너지 정밀 진단</p>
+              <p className="text-lg font-bold text-white">이름 획수 자동 계산기</p>
+              <p className="text-white/40 text-sm mt-0.5">자음·모음을 자동 분리하여 총운 수리를 계산합니다</p>
             </div>
+
             <div className="px-6 py-5 space-y-4">
-              <div className="flex gap-2">
+              {/* 입력 */}
+              <div className="relative">
                 <input
                   value={name}
                   onChange={e => { setName(e.target.value); setCalculated(false); }}
-                  onKeyDown={e => e.key === 'Enter' && calculate()}
-                  placeholder="이름 입력 (예: 홍길동)"
-                  className="flex-1 bg-white/10 text-white placeholder-white/30 rounded-xl px-4 py-3 text-base outline-none focus:ring-2 focus:ring-[#18a999] transition"
+                  onKeyDown={e => e.key === 'Enter' && !isAnalyzing && calculate()}
+                  placeholder="성함을 입력하세요 (예: 홍길동)"
+                  disabled={isAnalyzing}
+                  className="w-full bg-white/10 text-white placeholder-white/30 rounded-xl px-4 py-4 text-lg font-medium outline-none focus:ring-2 focus:ring-[#18a999] transition disabled:opacity-50"
                   maxLength={6}
                 />
-                {calculated
-                  ? <button onClick={reset} className="px-4 py-3 rounded-xl bg-white/10 text-white/60 hover:bg-white/20 text-sm transition">초기화</button>
-                  : <button onClick={calculate} disabled={!name.trim()} className="px-5 py-3 rounded-xl bg-[#18a999] text-white font-bold text-sm hover:bg-[#149085] disabled:opacity-40 transition">계산</button>
-                }
+                {/* 스캔 애니메이션 */}
+                {isAnalyzing && (
+                  <div className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
+                    <div className="absolute left-0 right-0 h-0.5 bg-[#56D5DB] shadow-[0_0_12px_#56D5DB]"
+                      style={{ animation: 'scanLine 1.5s linear infinite' }} />
+                  </div>
+                )}
               </div>
+
+              {/* 버튼 */}
+              {calculated ? (
+                <button onClick={reset}
+                  className="w-full py-3.5 rounded-xl bg-white/10 text-white/60 hover:bg-white/20 font-bold transition">
+                  다시 진단하기
+                </button>
+              ) : (
+                <button onClick={calculate} disabled={!name.trim() || isAnalyzing}
+                  className="w-full py-3.5 rounded-xl font-bold text-white transition-all disabled:opacity-40 active:scale-[0.98]"
+                  style={{ background: isAnalyzing ? '#334155' : '#18a999' }}>
+                  {isAnalyzing ? '⚡ 에너지 주파수 분석 중...' : '이름 에너지 진단하기'}
+                </button>
+              )}
 
               {/* 결과 */}
               {calculated && result.length > 0 && (
-                <div className="space-y-3 animate-in fade-in duration-300">
+                <div className="space-y-4">
+                  {/* 글자별 분해 */}
                   <div className="space-y-2">
                     {result.map(({ char, strokes, breakdown }) => (
-                      <div key={char} className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-2.5">
-                        <span className="text-xl font-black text-white w-8 text-center">{char}</span>
-                        <span className="text-[#56D5DB] font-bold w-8">{strokes}획</span>
-                        <span className="text-white/35 text-sm flex-1 truncate">{breakdown}</span>
+                      <div key={char} className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3">
+                        <span className="text-2xl font-black text-white w-10 text-center">{char}</span>
+                        <div className="flex-1">
+                          <span className="text-white/40 text-xs">{breakdown}</span>
+                        </div>
+                        <span className="text-[#56D5DB] font-black text-lg">{strokes}획</span>
                       </div>
                     ))}
                   </div>
 
-                  <div className={`rounded-xl p-4 flex items-center justify-between border ${isDanger ? 'bg-red-500/10 border-red-500/30' : 'bg-[#18a999]/10 border-[#18a999]/20'}`}>
-                    <div>
-                      <p className="text-white/60 text-sm mb-0.5">총운 (총획수)</p>
-                      <p className="text-3xl font-black text-white">{animatedTotal}획</p>
-                    </div>
+                  {/* 총운 결과 */}
+                  <div className={`rounded-2xl border-2 p-6 text-center ${isDanger ? 'bg-red-500/10 border-red-500/40' : 'bg-[#18a999]/10 border-[#18a999]/30'}`}>
+                    <p className="text-white/50 text-sm mb-2">{name} 님의 총운 수리</p>
+                    <p className={`text-7xl font-black mb-3 ${isDanger ? 'text-red-400' : 'text-[#56D5DB]'}`}>
+                      {animatedTotal}
+                    </p>
                     {isDanger ? (
-                      <div className="text-right">
-                        <div className="flex items-center gap-1.5 text-red-400 font-bold text-sm mb-1">
-                          <AlertTriangle className="w-4 h-4" />
-                          주의
-                        </div>
-                        <p className="text-red-300 text-sm">{DANGER_LABELS[total]}</p>
+                      <div className="space-y-2">
+                        <p className="font-bold text-red-300 text-lg flex items-center justify-center gap-2">
+                          <AlertTriangle className="w-5 h-5" /> 고독의 에너지 감지
+                        </p>
+                        <p className="text-red-400/80 text-sm leading-relaxed">
+                          {DANGER_LABELS[total]} — 이름에 혼자 살 팔자를 유도하는<br />에너지가 강하게 흐르고 있습니다.
+                        </p>
+                        <button
+                          onClick={() => commentRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                          className="mt-3 inline-block text-sm text-[#56D5DB] underline underline-offset-2 hover:text-white transition">
+                          진단 기록 남기기 →
+                        </button>
                       </div>
                     ) : (
-                      <div className="text-[#18a999] text-sm font-bold">해당 없음 ✓</div>
+                      <div className="space-y-1">
+                        <p className="font-bold text-[#18a999] text-lg">안정적인 에너지 흐름</p>
+                        <p className="text-white/50 text-sm">
+                          비교적 원만한 수리운입니다.<br />세부적인 자모 조화도 중요하오니 정밀 상담을 권장합니다.
+                        </p>
+                      </div>
                     )}
                   </div>
-
-                  {isDanger && (
-                    <div className="text-center">
-                      <button
-                        onClick={() => commentRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                        className="text-xs text-[#56D5DB] underline underline-offset-2 hover:text-white transition"
-                      >
-                        아래에 진단 기록 남기기 →
-                      </button>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
           </div>
+
+          {/* 스캔 애니메이션 keyframe */}
+          <style>{`
+            @keyframes scanLine {
+              0% { top: 0%; }
+              100% { top: 100%; }
+            }
+          `}</style>
 
           {/* ── 위험 수리운 ── */}
           <div className="space-y-3">
