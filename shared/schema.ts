@@ -125,3 +125,22 @@ export const insertContentSchema = createInsertSchema(contents).omit({
 
 export type InsertContent = z.infer<typeof insertContentSchema>;
 export type Content = typeof contents.$inferSelect;
+
+// Experience Zone 진단 로그 (댓글)
+export const experienceComments = pgTable("experience_comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  pageId: text("page_id").notNull(),          // e.g. "alone-fate"
+  nickname: text("nickname").notNull(),
+  totalStrokes: integer("total_strokes"),     // 계산된 총운 (선택)
+  content: text("content").notNull(),
+  isPrivate: boolean("is_private").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertExperienceCommentSchema = createInsertSchema(experienceComments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertExperienceComment = z.infer<typeof insertExperienceCommentSchema>;
+export type ExperienceComment = typeof experienceComments.$inferSelect;

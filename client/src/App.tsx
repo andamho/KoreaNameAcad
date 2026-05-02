@@ -25,6 +25,7 @@ import ContentDetail from "@/pages/ContentDetail";
 import Drafts from "@/pages/Drafts";
 import About from "@/pages/About";
 import ExperienceZone from "@/pages/ExperienceZone";
+import ExperienceAloneFate from "@/pages/ExperienceAloneFate";
 import NotFound from "@/pages/not-found";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
@@ -87,6 +88,7 @@ function Router() {
         {(params) => <ContentDetail backPath="/about" backLabel="협회 소개 목록" />}
       </Route>
       <Route path="/experience-zone" component={ExperienceZone}/>
+      <Route path="/experience-zone/alone-fate" component={ExperienceAloneFate}/>
       <Route component={NotFound} />
     </Switch>
   );

@@ -1,8 +1,9 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Flame, User, Heart, Sprout, Infinity } from "lucide-react";
+import { Flame, User, Heart, Sprout, Infinity, ChevronRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect } from "react";
+import { useLocation } from "wouter";
 
 const experiences: {
   id: string;
@@ -10,6 +11,7 @@ const experiences: {
   title: string;
   description: string;
   available: boolean;
+  path?: string;
 }[] = [
   {
     id: "short-life",
@@ -23,7 +25,8 @@ const experiences: {
     Icon: User,
     title: "혼자살 팔자 10초 만에 아는 법",
     description: "혼자 사는 운명인지, 이름으로 10초 만에 알아보세요.",
-    available: false,
+    available: true,
+    path: "/experience-zone/alone-fate",
   },
   {
     id: "husband-luck",
@@ -49,6 +52,8 @@ const experiences: {
 ];
 
 export default function ExperienceZone() {
+  const [, setLocation] = useLocation();
+
   useEffect(() => {
     const userAgent = navigator.userAgent || '';
     const isInstagram = userAgent.includes('Instagram');
@@ -155,28 +160,30 @@ export default function ExperienceZone() {
             return (
               <div
                 key={exp.id}
-                className="group relative rounded-2xl bg-card border border-border/50 px-6 py-5 flex items-center gap-5 transition-colors duration-200 hover:border-border"
+                onClick={() => exp.available && exp.path && setLocation(exp.path)}
+                className={`group relative rounded-2xl bg-card border px-6 py-5 flex items-center gap-5 transition-colors duration-200 ${exp.available ? "border-[#18a999]/30 hover:border-[#18a999] cursor-pointer" : "border-border/50"}`}
                 style={{ boxShadow: "0 4px 28px rgba(0,0,0,0.06)" }}
               >
-                {/* 우측 상단 작은 점 */}
-                <span className="absolute top-4 right-4 w-1.5 h-1.5 rounded-full bg-foreground/15" />
-
                 {/* 아이콘 */}
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#18a999]/10 ring-1 ring-[#18a999]/20">
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ring-1 ${exp.available ? "bg-[#18a999]/15 ring-[#18a999]/30" : "bg-[#18a999]/10 ring-[#18a999]/20"}`}>
                   <Icon className="h-6 w-6 text-[#18a999]" />
                 </div>
 
                 {/* 텍스트 */}
-                <div className="flex-1 min-w-0 pr-3">
+                <div className="flex-1 min-w-0">
                   <div className="font-semibold text-foreground text-base leading-snug tracking-tight">
                     {exp.title}
                   </div>
                 </div>
 
-                {/* 준비중 */}
-                <div className="flex-shrink-0 text-[11px] text-muted-foreground/35 tracking-widest font-light">
-                  준비중
-                </div>
+                {/* 상태 */}
+                {exp.available ? (
+                  <ChevronRight className="flex-shrink-0 w-5 h-5 text-[#18a999]" />
+                ) : (
+                  <div className="flex-shrink-0 text-[11px] text-muted-foreground/35 tracking-widest font-light">
+                    준비중
+                  </div>
+                )}
               </div>
             );
           })}

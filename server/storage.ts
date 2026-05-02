@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Consultation, type InsertConsultation, type NameStory, type InsertNameStory, nameStories, type Content, type InsertContent, type ContentCategory, contents, consultations } from "@shared/schema";
+import { type User, type InsertUser, type Consultation, type InsertConsultation, type NameStory, type InsertNameStory, nameStories, type Content, type InsertContent, type ContentCategory, contents, consultations, type ExperienceComment, type InsertExperienceComment, experienceComments } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { eq, desc, sql } from "drizzle-orm";
 
@@ -32,6 +32,10 @@ export interface IStorage {
   getContent(id: string): Promise<Content | undefined>;
   updateContent(id: string, content: Partial<InsertContent>): Promise<Content | undefined>;
   deleteContent(id: string): Promise<boolean>;
+
+  getExperienceComments(pageId: string): Promise<ExperienceComment[]>;
+  createExperienceComment(comment: InsertExperienceComment): Promise<ExperienceComment>;
+  deleteExperienceComment(id: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -172,6 +176,12 @@ export class MemStorage implements IStorage {
   async deleteContent(id: string): Promise<boolean> {
     return this.contentsMap.delete(id);
   }
+
+  async getExperienceComments(_pageId: string): Promise<ExperienceComment[]> { return []; }
+  async createExperienceComment(comment: InsertExperienceComment): Promise<ExperienceComment> {
+    return { ...comment, id: randomUUID(), createdAt: new Date(), isPrivate: comment.isPrivate ?? false, totalStrokes: comment.totalStrokes ?? null };
+  }
+  async deleteExperienceComment(_id: string): Promise<void> {}
 }
 
 // DB row → Consultation type 변환 헬퍼
@@ -463,6 +473,36 @@ export class DatabaseStorage implements IStorage {
     } catch (error: any) {
       console.error(`[DB ERROR] deleteContent(${id}): ${error?.message}`, { timestamp: new Date().toISOString() });
       throw new DatabaseError(`삭제 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async getExperienceComments(pageId: string): Promise<ExperienceComment[]> {
+    await this.ensureDbReady();
+    try {
+      return await this.db.select().from(experienceComments)
+        .where(eq(experienceComments.pageId, pageId))
+        .orderBy(desc(experienceComments.createdAt));
+    } catch (error: any) {
+      throw new DatabaseError(`댓글 조회 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async createExperienceComment(comment: InsertExperienceComment): Promise<ExperienceComment> {
+    await this.ensureDbReady();
+    try {
+      const [result] = await this.db.insert(experienceComments).values(comment).returning();
+      return result;
+    } catch (error: any) {
+      throw new DatabaseError(`댓글 저장 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async deleteExperienceComment(id: string): Promise<void> {
+    await this.ensureDbReady();
+    try {
+      await this.db.delete(experienceComments).where(eq(experienceComments.id, id));
+    } catch (error: any) {
+      throw new DatabaseError(`댓글 삭제 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
   }
 }

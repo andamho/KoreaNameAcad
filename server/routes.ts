@@ -275,6 +275,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ── 체험존 진단 로그 (댓글) ──
+  app.get("/api/experience-comments/:pageId", async (req, res) => {
+    try {
+      const comments = await storage.getExperienceComments(req.params.pageId);
+      return res.json(comments);
+    } catch (error: any) {
+      return handleDbError(error, res, "GET /api/experience-comments");
+    }
+  });
+
+  app.post("/api/experience-comments", async (req, res) => {
+    try {
+      const { pageId, nickname, totalStrokes, content, isPrivate } = req.body;
+      if (!pageId || !nickname?.trim() || !content?.trim()) {
+        return res.status(400).json({ error: "필수 항목을 입력해주세요." });
+      }
+      const comment = await storage.createExperienceComment({
+        pageId,
+        nickname: nickname.trim(),
+        totalStrokes: totalStrokes ?? null,
+        content: content.trim(),
+        isPrivate: !!isPrivate,
+      });
+      return res.json(comment);
+    } catch (error: any) {
+      return handleDbError(error, res, "POST /api/experience-comments");
+    }
+  });
+
+  app.delete("/api/experience-comments/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteExperienceComment(req.params.id);
+      return res.json({ success: true });
+    } catch (error: any) {
+      return handleDbError(error, res, "DELETE /api/experience-comments");
+    }
+  });
+
   // Register object storage routes for file uploads
   registerObjectStorageRoutes(app);
 
