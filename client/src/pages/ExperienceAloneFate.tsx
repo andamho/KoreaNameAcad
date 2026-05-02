@@ -295,24 +295,45 @@ export default function ExperienceAloneFate() {
           </div>
 
           {/* ── 획수표 ── */}
-          <div className="space-y-3">
-            <h2 className="text-xl font-bold text-foreground">한글 획수 참조표</h2>
-            <div className="rounded-2xl overflow-hidden border border-border/50" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-              <div className="grid grid-cols-3 bg-[#18a999] text-white text-sm font-bold px-4 py-3">
-                <span>획수</span><span>자음</span><span>모음</span>
-              </div>
+          <div className="space-y-4">
+            <div className="text-center">
+              <h2 className="text-xl font-bold text-foreground mb-1">성명 에너지 해독표</h2>
+              <p className="text-muted-foreground text-sm">이름의 자음과 모음을 분리하여 에너지 수치를 확인하세요</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { s: '1획', c: 'ㄱ ㄴ', v: 'ㅡ ㅣ' },
-                { s: '2획', c: 'ㄷ ㅅ ㅇ ㅋ', v: 'ㅏ ㅓ ㅗ ㅜ ㅢ' },
-                { s: '3획', c: 'ㄹ ㅁ ㅈ ㅌ', v: 'ㅑ ㅕ ㅛ ㅠ ㅟ ㅐ ㅔ ㅚ' },
-                { s: '4획', c: 'ㅂ ㅊ ㅍ ㅎ', v: 'ㅖ ㅒ ㅝ ㅘ' },
-              ].map(({ s, c, v }, i) => (
-                <div key={s} className={`grid grid-cols-3 px-4 py-3 gap-2 ${i % 2 === 0 ? 'bg-card' : 'bg-muted/30'}`}>
-                  <span className="font-bold text-[#18a999] text-base">{s}</span>
-                  <span className="text-foreground tracking-wider text-sm">{c}</span>
-                  <span className="text-muted-foreground tracking-wider text-sm">{v}</span>
+                { stroke: 1, consonants: ['ㄱ','ㄴ'], vowels: ['ㅡ','ㅣ'] },
+                { stroke: 2, consonants: ['ㄷ','ㅅ','ㅇ','ㅋ'], vowels: ['ㅏ','ㅓ','ㅗ','ㅜ','ㅢ'] },
+                { stroke: 3, consonants: ['ㄹ','ㅁ','ㅈ','ㅌ'], vowels: ['ㅑ','ㅕ','ㅛ','ㅠ','ㅟ','ㅐ','ㅔ','ㅚ'] },
+                { stroke: 4, consonants: ['ㅂ','ㅊ','ㅍ','ㅎ'], vowels: ['ㅖ','ㅒ','ㅝ','ㅘ'] },
+              ].map(item => (
+                <div key={item.stroke} className="bg-card border border-border/50 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+                  <div className="flex">
+                    <div className="w-20 bg-slate-900 dark:bg-slate-700 flex flex-col items-center justify-center text-white p-4 flex-shrink-0">
+                      <span className="text-[10px] opacity-60 uppercase tracking-widest mb-1">Stroke</span>
+                      <span className="text-3xl font-black">{item.stroke}</span>
+                    </div>
+                    <div className="flex-1 p-4 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#18a999]/10 text-[#18a999] border border-[#18a999]/20 flex-shrink-0">자음</span>
+                        <div className="flex flex-wrap gap-2 text-lg font-medium text-foreground">
+                          {item.consonants.map(c => <span key={c} className="hover:text-[#18a999] cursor-default transition-colors">{c}</span>)}
+                        </div>
+                      </div>
+                      <div className="h-px bg-border w-full" />
+                      <div className="flex items-center gap-3">
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800 flex-shrink-0">모음</span>
+                        <div className="flex flex-wrap gap-2 text-lg font-medium text-foreground">
+                          {item.vowels.map(v => <span key={v} className="hover:text-purple-500 cursor-default transition-colors">{v}</span>)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
+            </div>
+            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-800 dark:text-amber-300 text-center italic">
+              "모든 한글은 고유한 에너지 수치를 가집니다. 당신의 합계가 10, 12, 19라면 주목하십시오."
             </div>
           </div>
 
