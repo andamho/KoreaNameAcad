@@ -269,11 +269,21 @@ export default function ExperienceAloneFate() {
                         </button>
                       </div>
                     ) : (
-                      <div className="space-y-1">
-                        <p className="font-bold text-[#18a999] text-lg">안정적인 에너지 흐름</p>
-                        <p className="text-white/50 text-sm">
-                          비교적 원만한 수리운입니다.<br />세부적인 자모 조화도 중요하오니 정밀 상담을 권장합니다.
+                      <div className="space-y-3 text-left">
+                        <p className="font-bold text-[#56D5DB] text-lg">독신운에는 해당되지 않습니다.</p>
+                        <p className="text-white/80 text-base leading-relaxed">
+                          다만, 이름 안에는 <strong className="text-white">총 16가지 운</strong>이 존재합니다.<br />
+                          지금 확인한 건 그 중 <strong className="text-white">하나</strong>일 뿐입니다.
                         </p>
+                        <p className="text-white/55 text-sm leading-relaxed">
+                          단명운 · 남편복 · 자식복 · 재물운 등<br />
+                          나머지 15가지 운도 모두 좋아야<br />
+                          진짜 좋은 이름입니다.
+                        </p>
+                        <button onClick={() => setLocation('/services')}
+                          className="mt-1 inline-flex items-center gap-1 text-sm font-bold text-[#56D5DB] hover:text-white transition-colors">
+                          나머지 15가지 운 분석 받기 →
+                        </button>
                       </div>
                     )}
                   </div>
