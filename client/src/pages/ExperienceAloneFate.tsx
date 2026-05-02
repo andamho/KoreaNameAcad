@@ -163,8 +163,8 @@ export default function ExperienceAloneFate() {
       <Navbar />
 
       {/* 히어로 */}
-      <section className="relative overflow-hidden py-14 md:py-20">
-        <img src="/bank-card-bg-opt.webp" alt="" className="absolute inset-0 w-full h-full object-cover" aria-hidden />
+      <section className="relative overflow-hidden py-16 md:py-24">
+        <img src="/bank-card-bg-opt.webp" alt="" className="absolute inset-0 w-full h-full object-cover object-top" aria-hidden />
         <div className="relative max-w-2xl mx-auto px-5 text-center">
           <button onClick={() => setLocation('/experience-zone')}
             className="inline-flex items-center gap-1 text-white/60 hover:text-white text-sm mb-5 transition-colors">
