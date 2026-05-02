@@ -4,6 +4,7 @@ import { Flame, User, Heart, Sprout, Infinity, ChevronRight } from "lucide-react
 import type { LucideIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
+import { useAdmin } from "@/contexts/AdminContext";
 
 const experiences: {
   id: string;
@@ -11,6 +12,7 @@ const experiences: {
   title: string;
   description: string;
   available: boolean;
+  adminOnly?: boolean;
   path?: string;
 }[] = [
   {
@@ -25,6 +27,7 @@ const experiences: {
     Icon: User,
     title: "혼자살 팔자 10초 만에 아는 법",
     description: "혼자 사는 운명인지, 이름으로 10초 만에 알아보세요.",
+    adminOnly: true,
     available: true,
     path: "/experience-zone/alone-fate",
   },
@@ -53,6 +56,7 @@ const experiences: {
 
 export default function ExperienceZone() {
   const [, setLocation] = useLocation();
+  const { isAdmin } = useAdmin();
 
   useEffect(() => {
     const userAgent = navigator.userAgent || '';
@@ -157,15 +161,17 @@ export default function ExperienceZone() {
         <div className="max-w-xl mx-auto px-5 space-y-5">
           {experiences.map((exp) => {
             const { Icon } = exp;
+            const isAvailable = exp.available && (!exp.adminOnly || isAdmin);
+            const path = isAvailable ? exp.path : undefined;
             return (
               <div
                 key={exp.id}
-                onClick={() => exp.available && exp.path && setLocation(exp.path)}
-                className={`group relative rounded-2xl bg-card border px-6 py-5 flex items-center gap-5 transition-colors duration-200 ${exp.available ? "border-[#18a999]/30 hover:border-[#18a999] cursor-pointer" : "border-border/50"}`}
+                onClick={() => isAvailable && path && setLocation(path)}
+                className={`group relative rounded-2xl bg-card border px-6 py-5 flex items-center gap-5 transition-colors duration-200 ${isAvailable ? "border-[#18a999]/30 hover:border-[#18a999] cursor-pointer" : "border-border/50"}`}
                 style={{ boxShadow: "0 4px 28px rgba(0,0,0,0.06)" }}
               >
                 {/* 아이콘 */}
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ring-1 ${exp.available ? "bg-[#18a999]/15 ring-[#18a999]/30" : "bg-[#18a999]/10 ring-[#18a999]/20"}`}>
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ring-1 ${isAvailable ? "bg-[#18a999]/15 ring-[#18a999]/30" : "bg-[#18a999]/10 ring-[#18a999]/20"}`}>
                   <Icon className="h-6 w-6 text-[#18a999]" />
                 </div>
 
@@ -177,7 +183,7 @@ export default function ExperienceZone() {
                 </div>
 
                 {/* 상태 */}
-                {exp.available ? (
+                {isAvailable ? (
                   <ChevronRight className="flex-shrink-0 w-5 h-5 text-[#18a999]" />
                 ) : (
                   <div className="flex-shrink-0 text-[11px] text-muted-foreground/35 tracking-widest font-light">

@@ -45,6 +45,28 @@ const DANGER_LABELS: Record<number, string> = {
   19: '독신운',
 };
 
+// ── 일일 사용 횟수 제한 ──
+const MAX_DAILY = 5;
+const USAGE_KEY = 'kna_alone_fate_usage';
+
+function getTodayUsage(): number {
+  try {
+    const raw = localStorage.getItem(USAGE_KEY);
+    if (!raw) return 0;
+    const { date, count } = JSON.parse(raw);
+    return date === new Date().toISOString().slice(0, 10) ? (count as number) : 0;
+  } catch { return 0; }
+}
+
+function incrementUsage(): number {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const next = getTodayUsage() + 1;
+    localStorage.setItem(USAGE_KEY, JSON.stringify({ date: today, count: next }));
+    return next;
+  } catch { return 1; }
+}
+
 // ── 댓글 타입 ──
 interface Comment {
   id: string;
@@ -74,7 +96,7 @@ function useCountUp(target: number, duration = 600) {
 
 export default function ExperienceAloneFate() {
   const [, setLocation] = useLocation();
-  const { isAdmin } = useAdmin();
+  const { isAdmin, isVerifying } = useAdmin();
 
   // 계산기
   const [name, setName] = useState('');
@@ -82,6 +104,7 @@ export default function ExperienceAloneFate() {
   const [total, setTotal] = useState(0);
   const [calculated, setCalculated] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [usageCount, setUsageCount] = useState(0);
   const animatedTotal = useCountUp(calculated ? total : 0);
 
   // 댓글
@@ -93,12 +116,23 @@ export default function ExperienceAloneFate() {
   const [commentError, setCommentError] = useState('');
   const commentRef = useRef<HTMLDivElement>(null);
 
+  // 어드민 가드
   useEffect(() => {
+    if (!isVerifying && !isAdmin) {
+      setLocation('/experience-zone');
+    }
+  }, [isVerifying, isAdmin, setLocation]);
+
+  useEffect(() => {
+    setUsageCount(getTodayUsage());
     fetch('/api/experience-comments/alone-fate')
       .then(r => r.json())
       .then(data => setComments(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, []);
+
+  // 모든 hooks 이후 조건부 렌더링
+  if (isVerifying || !isAdmin) return null;
 
   function calculate() {
     const chars = name.trim().replace(/\s/g, '');
@@ -112,6 +146,7 @@ export default function ExperienceAloneFate() {
       setTotal(res.reduce((s, r) => s + r.strokes, 0));
       setCalculated(true);
       setIsAnalyzing(false);
+      setUsageCount(incrementUsage());
     }, 1500);
   }
 
@@ -203,9 +238,9 @@ export default function ExperienceAloneFate() {
                 <input
                   value={name}
                   onChange={e => { setName(e.target.value); setCalculated(false); }}
-                  onKeyDown={e => e.key === 'Enter' && !isAnalyzing && calculate()}
+                  onKeyDown={e => e.key === 'Enter' && !isAnalyzing && usageCount < MAX_DAILY && calculate()}
                   placeholder="성함을 입력하세요 (예: 홍길동)"
-                  disabled={isAnalyzing}
+                  disabled={isAnalyzing || usageCount >= MAX_DAILY}
                   className="w-full bg-white/10 text-white placeholder-white/30 rounded-xl px-4 py-4 text-lg font-medium outline-none focus:ring-2 focus:ring-[#18a999] transition disabled:opacity-50"
                   maxLength={6}
                 />
@@ -219,7 +254,23 @@ export default function ExperienceAloneFate() {
               </div>
 
               {/* 버튼 */}
-              {calculated ? (
+              {usageCount >= MAX_DAILY && !calculated ? (
+                <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-4 text-center">
+                  <p className="text-white font-bold text-base leading-relaxed">
+                    "이름은 운명을 담은 그릇입니다"
+                  </p>
+                  <p className="text-white/50 text-sm leading-relaxed">
+                    이름이 갖는 귀한 가치를 존중하기 위해,<br />
+                    하루 무료 체험 횟수를 5회로 제한하고 있습니다.<br /><br />
+                    소중한 사람의 이름 속 운명을 더 깊이 알고 싶다면<br />
+                    공식 상담을 신청해 주세요.
+                  </p>
+                  <button onClick={() => setLocation('/services')}
+                    className="w-full py-3 rounded-xl bg-[#18a999] text-white font-bold text-sm hover:bg-[#149085] transition">
+                    1:1 정밀 에너지 진단 신청하기 →
+                  </button>
+                </div>
+              ) : calculated ? (
                 <button onClick={reset}
                   className="w-full py-3.5 rounded-xl bg-white/10 text-white/60 hover:bg-white/20 font-bold transition">
                   다시 진단하기
@@ -230,6 +281,27 @@ export default function ExperienceAloneFate() {
                   style={{ background: isAnalyzing ? '#334155' : '#18a999' }}>
                   {isAnalyzing ? '⚡ 에너지 주파수 분석 중...' : '이름 에너지 진단하기'}
                 </button>
+              )}
+
+              {/* 진행바 (4~5회차 경고) */}
+              {usageCount > 0 && usageCount < MAX_DAILY && !calculated && (
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex justify-between text-xs text-white/35">
+                    <span>오늘 무료 진단</span>
+                    <span className={usageCount >= 4 ? 'text-orange-400 font-semibold' : ''}>
+                      {usageCount}/{MAX_DAILY}회 사용 · {MAX_DAILY - usageCount}회 남음
+                    </span>
+                  </div>
+                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${usageCount >= 4 ? 'bg-orange-400' : 'bg-[#18a999]'}`}
+                      style={{ width: `${(usageCount / MAX_DAILY) * 100}%` }}
+                    />
+                  </div>
+                  {usageCount >= 4 && (
+                    <p className="text-xs text-orange-400 text-center">오늘 {MAX_DAILY - usageCount}회 남았습니다</p>
+                  )}
+                </div>
               )}
 
               {/* 결과 */}
@@ -358,25 +430,22 @@ export default function ExperienceAloneFate() {
                 { stroke: 3, consonants: ['ㄹ','ㅁ','ㅈ','ㅌ'], vowels: ['ㅑ','ㅕ','ㅛ','ㅠ','ㅟ','ㅐ','ㅔ','ㅚ'] },
                 { stroke: 4, consonants: ['ㅂ','ㅊ','ㅍ','ㅎ'], vowels: ['ㅖ','ㅒ','ㅝ','ㅘ'] },
               ].map(item => (
-                <div key={item.stroke} className="bg-card border border-border/50 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="flex">
-                    <div className="w-20 bg-slate-900 dark:bg-slate-700 flex flex-col items-center justify-center text-white p-4 flex-shrink-0">
-                      <span className="text-[10px] opacity-60 uppercase tracking-widest mb-1">Stroke</span>
-                      <span className="text-3xl font-black">{item.stroke}</span>
-                    </div>
-                    <div className="flex-1 p-4 space-y-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#18a999]/10 text-[#18a999] border border-[#18a999]/20 flex-shrink-0">자음</span>
-                        <div className="flex flex-wrap gap-2 text-lg font-medium text-foreground">
-                          {item.consonants.map(c => <span key={c} className="hover:text-[#18a999] cursor-default transition-colors">{c}</span>)}
-                        </div>
+                <div key={item.stroke} className="bg-card border border-border/50 rounded-2xl overflow-hidden hover:shadow-md transition-shadow flex">
+                  <div className="w-20 bg-slate-900 dark:bg-slate-700 flex flex-col items-center justify-center text-white p-4 flex-shrink-0">
+                    <span className="text-2xl font-black">{item.stroke}획</span>
+                  </div>
+                  <div className="flex-1 p-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#18a999]/10 text-[#18a999] border border-[#18a999]/20 flex-shrink-0">자음</span>
+                      <div className="flex flex-wrap gap-2 text-lg font-medium text-foreground">
+                        {item.consonants.map(c => <span key={c} className="hover:text-[#18a999] cursor-default transition-colors">{c}</span>)}
                       </div>
-                      <div className="h-px bg-border w-full" />
-                      <div className="flex items-center gap-3">
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800 flex-shrink-0">모음</span>
-                        <div className="flex flex-wrap gap-2 text-lg font-medium text-foreground">
-                          {item.vowels.map(v => <span key={v} className="hover:text-purple-500 cursor-default transition-colors">{v}</span>)}
-                        </div>
+                    </div>
+                    <div className="h-px bg-border w-full" />
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800 flex-shrink-0">모음</span>
+                      <div className="flex flex-wrap gap-2 text-lg font-medium text-foreground">
+                        {item.vowels.map(v => <span key={v} className="hover:text-purple-500 cursor-default transition-colors">{v}</span>)}
                       </div>
                     </div>
                   </div>
@@ -437,7 +506,7 @@ export default function ExperienceAloneFate() {
                   원장님만 보기 (비공개)
                 </label>
                 <button onClick={submitComment} disabled={submitting}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#18a999] text-white text-sm font-bold hover:bg-[#149085] disabled:opacity-50 transition">
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white text-[#18a999] border border-[#18a999]/30 text-sm font-bold hover:bg-[#18a999]/5 disabled:opacity-50 transition">
                   <Send className="w-3.5 h-3.5" />
                   {submitting ? '저장 중...' : '기록 남기기'}
                 </button>
@@ -489,7 +558,7 @@ export default function ExperienceAloneFate() {
             <div className="text-center pt-2">
               <button
                 onClick={() => navigator.share?.({ title: '혼자살 팔자 10초 만에 아는 법', url: window.location.href })}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#18a999]/30 text-[#18a999] text-sm font-bold hover:bg-[#18a999]/10 transition"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#18a999] text-white text-sm font-bold hover:bg-[#149085] transition"
               >
                 <Share2 className="w-4 h-4" />
                 친구에게 공유하기
