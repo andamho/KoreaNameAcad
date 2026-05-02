@@ -95,7 +95,7 @@ export default function ExperienceAloneFate() {
   useEffect(() => {
     fetch('/api/experience-comments/alone-fate')
       .then(r => r.json())
-      .then(setComments)
+      .then(data => setComments(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, []);
 
