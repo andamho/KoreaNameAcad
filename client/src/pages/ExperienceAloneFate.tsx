@@ -175,14 +175,13 @@ export default function ExperienceAloneFate() {
         <img src="/bank-card-bg-opt.webp" alt="" className="absolute inset-0 w-full h-full object-cover object-top" aria-hidden />
         <div className="relative max-w-2xl mx-auto px-5 text-center">
           <button onClick={() => setLocation('/experience-zone')}
-            className="inline-flex items-center gap-1 text-white/60 hover:text-white text-base mb-5 transition-colors">
+            className="inline-flex items-center gap-1 text-slate-700 hover:text-slate-900 font-semibold text-base mb-5 transition-colors">
             <ChevronLeft className="w-4 h-4" /> 체험 ZONE
           </button>
-          <p className="text-sm font-bold tracking-[0.3em] text-[#56D5DB] mb-3 uppercase">수리운 진단</p>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-3">
-            혼자살 팔자<br /><span className="text-[#56D5DB]">10초 만에 아는 법</span>
+          <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-3">
+            <span className="text-slate-800">혼자살 팔자</span><br />
+            <span className="text-[#0f766e]">10초 만에 아는 법</span>
           </h1>
-          <p className="text-white/70 text-base md:text-lg">이름의 총획수로 알아보는 나의 독신운</p>
         </div>
       </section>
 
