@@ -480,7 +480,7 @@ export default function ExperienceAloneFate() {
           {/* ── 획수표 ── */}
           <div className="space-y-4">
             <div className="text-center">
-              <h2 className="text-xl font-bold text-foreground mb-1">성명 에너지 해독표</h2>
+              <h2 className="text-xl font-bold text-foreground mb-1">획수 암호 해독표</h2>
               <p className="text-muted-foreground text-sm">이름의 자음과 모음을 분리하여 에너지 수치를 확인하세요</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
