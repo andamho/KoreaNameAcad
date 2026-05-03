@@ -388,7 +388,7 @@ export default function ExperienceAloneFate() {
                         </p>
                         <button
                           onClick={() => commentRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                          className="mt-3 inline-block text-sm text-white underline underline-offset-2 hover:text-[#56D5DB] transition">
+                          className="mt-3 inline-flex items-center px-4 py-1.5 rounded-full bg-black/60 text-white text-sm font-bold hover:bg-black/80 transition">
                           진단 기록 남기기 &gt;
                         </button>
                       </div>
