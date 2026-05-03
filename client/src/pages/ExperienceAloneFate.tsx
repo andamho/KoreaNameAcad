@@ -49,20 +49,25 @@ const DANGER_LABELS: Record<number, string> = {
 const MAX_DAILY = 3;
 const USAGE_KEY = 'kna_alone_fate_usage';
 
+function getKSTDateString(): string {
+  const now = new Date();
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().slice(0, 10);
+}
+
 function getTodayUsage(): number {
   try {
     const raw = localStorage.getItem(USAGE_KEY);
     if (!raw) return 0;
     const { date, count } = JSON.parse(raw);
-    return date === new Date().toISOString().slice(0, 10) ? (count as number) : 0;
+    return date === getKSTDateString() ? (count as number) : 0;
   } catch { return 0; }
 }
 
 function incrementUsage(): number {
   try {
-    const today = new Date().toISOString().slice(0, 10);
     const next = getTodayUsage() + 1;
-    localStorage.setItem(USAGE_KEY, JSON.stringify({ date: today, count: next }));
+    localStorage.setItem(USAGE_KEY, JSON.stringify({ date: getKSTDateString(), count: next }));
     return next;
   } catch { return 1; }
 }
