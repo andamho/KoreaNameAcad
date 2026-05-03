@@ -353,8 +353,8 @@ export default function ExperienceAloneFate() {
                           진짜 좋은 이름입니다.
                         </p>
                         <button onClick={() => setLocation('/services')}
-                          className="mt-1 inline-flex items-center gap-1 text-sm font-bold text-[#56D5DB] hover:text-white transition-colors">
-                          나머지 15가지 운 분석 받기 →
+                          className="mt-1 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white text-[#18a999] text-sm font-bold border border-white/20 hover:bg-white/90 transition-colors">
+                          나머지 15가지 운 분석 받기 &gt;
                         </button>
                       </div>
                     )}
