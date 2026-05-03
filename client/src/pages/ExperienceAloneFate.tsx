@@ -129,7 +129,7 @@ export default function ExperienceAloneFate() {
   }, [isVerifying, isAdmin, setLocation]);
 
   useEffect(() => {
-    setUsageCount(getTodayUsage());
+    if (!isAdmin) setUsageCount(getTodayUsage()); // 어드민은 0으로 시작 (새로고침 리셋)
     fetch('/api/experience-comments/alone-fate')
       .then(r => r.json())
       .then(data => setComments(Array.isArray(data) ? data : []))
@@ -151,7 +151,7 @@ export default function ExperienceAloneFate() {
       setTotal(res.reduce((s, r) => s + r.strokes, 0));
       setCalculated(true);
       setIsAnalyzing(false);
-      setUsageCount(incrementUsage());
+      setUsageCount(isAdmin ? usageCount + 1 : incrementUsage());
     }, 1500);
   }
 
@@ -265,9 +265,9 @@ export default function ExperienceAloneFate() {
                 <input
                   value={name}
                   onChange={e => { setName(e.target.value); setCalculated(false); }}
-                  onKeyDown={e => e.key === 'Enter' && !isAnalyzing && usageCount < MAX_DAILY && calculate()}
+                  onKeyDown={e => e.key === 'Enter' && !isAnalyzing && (isAdmin || usageCount < MAX_DAILY) && calculate()}
                   placeholder="성함을 입력하세요 (예: 홍길동)"
-                  disabled={isAnalyzing || usageCount >= MAX_DAILY}
+                  disabled={isAnalyzing || (!isAdmin && usageCount >= MAX_DAILY)}
                   className="w-full bg-white/10 text-white placeholder-white/30 rounded-xl px-4 py-4 text-lg font-medium outline-none focus:ring-2 focus:ring-[#18a999] transition disabled:opacity-50"
                   maxLength={6}
                 />
@@ -281,7 +281,7 @@ export default function ExperienceAloneFate() {
               </div>
 
               {/* 버튼 */}
-              {usageCount >= MAX_DAILY && !calculated ? (
+              {usageCount >= MAX_DAILY && !calculated && !isAdmin ? (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-4 text-center">
                   <p className="text-white font-bold text-base leading-relaxed">
                     "이름은 운명을 담은 그릇입니다"
@@ -310,8 +310,15 @@ export default function ExperienceAloneFate() {
                 </button>
               )}
 
-              {/* 진행바 (4~5회차 경고) */}
-              {usageCount > 0 && usageCount < MAX_DAILY && !calculated && (
+              {/* 어드민 5회 소진 미리보기 */}
+              {isAdmin && usageCount >= MAX_DAILY && !calculated && (
+                <div className="rounded-xl border border-[#18a999]/20 bg-[#18a999]/5 px-4 py-2.5 text-center">
+                  <p className="text-[#56D5DB] text-xs font-bold">[관리자 미리보기] 5회 소진 메시지 확인 중 · 새로고침하면 리셋됩니다</p>
+                </div>
+              )}
+
+              {/* 진행바 */}
+              {usageCount > 0 && usageCount < MAX_DAILY && (!calculated || isAdmin) && (
                 <div className="space-y-1.5 pt-1">
                   <div className="flex justify-between text-xs text-white/35">
                     <span>오늘 무료 진단</span>
@@ -325,8 +332,10 @@ export default function ExperienceAloneFate() {
                       style={{ width: `${(usageCount / MAX_DAILY) * 100}%` }}
                     />
                   </div>
-                  {usageCount >= 4 && (
-                    <p className="text-xs text-orange-400 text-center">오늘 {MAX_DAILY - usageCount}회 남았습니다</p>
+                  {(isAdmin || usageCount >= 4) && (
+                    <p className={`text-xs text-center ${usageCount >= 4 ? 'text-orange-400' : 'text-white/30'}`}>
+                      {usageCount >= 4 ? `오늘 ${MAX_DAILY - usageCount}회 남았습니다` : `${usageCount}/${MAX_DAILY}회 진단함`}
+                    </p>
                   )}
                 </div>
               )}
