@@ -453,7 +453,7 @@ export default function ExperienceAloneFate() {
               ))}
             </div>
             <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-800 dark:text-amber-300 text-center italic">
-              "모든 한글은 고유한 에너지 수치를 가집니다. 당신의 합계가 10, 12, 19라면 주목하십시오."
+              "모든 한글은 고유한 에너지 수치를 가집니다. 합계가 10, 12, 19라면 주목하십시오."
             </div>
           </div>
 
