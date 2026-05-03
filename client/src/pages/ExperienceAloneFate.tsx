@@ -74,6 +74,8 @@ interface Comment {
   totalStrokes: number | null;
   content: string;
   isPrivate: boolean;
+  reply: string | null;
+  repliedAt: string | null;
   createdAt: string;
 }
 
@@ -114,6 +116,9 @@ export default function ExperienceAloneFate() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [commentError, setCommentError] = useState('');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [replySubmitting, setReplySubmitting] = useState(false);
   const commentRef = useRef<HTMLDivElement>(null);
 
   // 어드민 가드
@@ -197,6 +202,28 @@ export default function ExperienceAloneFate() {
       headers: { Authorization: `Bearer ${token}` },
     });
     setComments(prev => prev.filter(c => c.id !== id));
+  }
+
+  async function submitReply(id: string) {
+    if (!replyText.trim()) return;
+    setReplySubmitting(true);
+    const token = localStorage.getItem('kna_admin_token');
+    try {
+      const res = await fetch(`/api/experience-comments/${id}/reply`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reply: replyText.trim() }),
+      });
+      if (!res.ok) throw new Error();
+      const updated = await res.json();
+      setComments(prev => prev.map(c => c.id === id ? updated : c));
+      setReplyingTo(null);
+      setReplyText('');
+    } catch {
+      // 실패 무시
+    } finally {
+      setReplySubmitting(false);
+    }
   }
 
   const isDanger = DANGER.includes(total);
@@ -542,13 +569,48 @@ export default function ExperienceAloneFate() {
                           {new Date(c.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                         </span>
                         {isAdmin && (
-                          <button onClick={() => deleteComment(c.id)} className="text-muted-foreground/50 hover:text-red-500 transition">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => { setReplyingTo(replyingTo === c.id ? null : c.id); setReplyText(''); }}
+                              className="text-xs text-[#18a999] hover:text-[#149085] font-medium transition">
+                              답글
+                            </button>
+                            <button onClick={() => deleteComment(c.id)} className="text-muted-foreground/50 hover:text-red-500 transition">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
                     <p className="text-sm text-foreground/80 leading-relaxed">{c.content}</p>
+
+                    {/* 기존 답글 표시 */}
+                    {c.reply && (
+                      <div className="mt-2 ml-3 pl-3 border-l-2 border-[#18a999]/30 space-y-0.5">
+                        <p className="text-xs font-bold text-[#18a999]">원장님</p>
+                        <p className="text-sm text-foreground/80 leading-relaxed">{c.reply}</p>
+                      </div>
+                    )}
+
+                    {/* 어드민 답글 입력 */}
+                    {isAdmin && replyingTo === c.id && (
+                      <div className="mt-2 ml-3 pl-3 border-l-2 border-[#18a999]/30 flex gap-2">
+                        <input
+                          value={replyText}
+                          onChange={e => setReplyText(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && !replySubmitting && submitReply(c.id)}
+                          placeholder="답글을 입력하세요"
+                          className="flex-1 bg-background border border-border rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#18a999] transition"
+                          maxLength={200}
+                        />
+                        <button
+                          onClick={() => submitReply(c.id)}
+                          disabled={replySubmitting || !replyText.trim()}
+                          className="px-3 py-1.5 rounded-lg bg-[#18a999] text-white text-xs font-bold disabled:opacity-40 transition">
+                          {replySubmitting ? '...' : '등록'}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )
               ))}

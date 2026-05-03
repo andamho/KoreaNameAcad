@@ -134,6 +134,8 @@ export const experienceComments = pgTable("experience_comments", {
   totalStrokes: integer("total_strokes"),     // 계산된 총운 (선택)
   content: text("content").notNull(),
   isPrivate: boolean("is_private").default(false).notNull(),
+  reply: text("reply"),                       // 원장님 답글
+  repliedAt: timestamp("replied_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

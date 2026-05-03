@@ -36,6 +36,7 @@ export interface IStorage {
   getExperienceComments(pageId: string): Promise<ExperienceComment[]>;
   createExperienceComment(comment: InsertExperienceComment): Promise<ExperienceComment>;
   deleteExperienceComment(id: string): Promise<void>;
+  replyToExperienceComment(id: string, reply: string): Promise<ExperienceComment>;
 }
 
 export class MemStorage implements IStorage {
@@ -179,9 +180,10 @@ export class MemStorage implements IStorage {
 
   async getExperienceComments(_pageId: string): Promise<ExperienceComment[]> { return []; }
   async createExperienceComment(comment: InsertExperienceComment): Promise<ExperienceComment> {
-    return { ...comment, id: randomUUID(), createdAt: new Date(), isPrivate: comment.isPrivate ?? false, totalStrokes: comment.totalStrokes ?? null };
+    return { ...comment, id: randomUUID(), createdAt: new Date(), isPrivate: comment.isPrivate ?? false, totalStrokes: comment.totalStrokes ?? null, reply: null, repliedAt: null };
   }
   async deleteExperienceComment(_id: string): Promise<void> {}
+  async replyToExperienceComment(_id: string, _reply: string): Promise<ExperienceComment> { throw new Error("Not implemented"); }
 }
 
 // DB row → Consultation type 변환 헬퍼
@@ -503,6 +505,19 @@ export class DatabaseStorage implements IStorage {
       await this.db.delete(experienceComments).where(eq(experienceComments.id, id));
     } catch (error: any) {
       throw new DatabaseError(`댓글 삭제 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async replyToExperienceComment(id: string, reply: string): Promise<ExperienceComment> {
+    await this.ensureDbReady();
+    try {
+      const [result] = await this.db.update(experienceComments)
+        .set({ reply, repliedAt: new Date() })
+        .where(eq(experienceComments.id, id))
+        .returning();
+      return result;
+    } catch (error: any) {
+      throw new DatabaseError(`답글 저장 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
   }
 }

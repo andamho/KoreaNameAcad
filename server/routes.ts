@@ -313,6 +313,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/experience-comments/:id/reply", requireAdmin, async (req, res) => {
+    try {
+      const { reply } = req.body;
+      if (!reply?.trim()) return res.status(400).json({ error: "답글 내용을 입력해주세요." });
+      const comment = await storage.replyToExperienceComment(req.params.id, reply.trim());
+      return res.json(comment);
+    } catch (error: any) {
+      return handleDbError(error, res, "PUT /api/experience-comments/:id/reply");
+    }
+  });
+
   // Register object storage routes for file uploads
   registerObjectStorageRoutes(app);
 
