@@ -537,7 +537,7 @@ export default function ExperienceAloneFate() {
                   <input type="checkbox" checked={isPrivate} onChange={e => setIsPrivate(e.target.checked)}
                     className="rounded" />
                   <Lock className="w-3 h-3" />
-                  원장님만 보기 (비공개)
+                  이름의신만 보기 (비공개)
                 </label>
                 <button onClick={submitComment} disabled={submitting}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white text-[#18a999] border border-[#18a999]/30 text-sm font-bold hover:bg-[#18a999]/5 disabled:opacity-50 transition">
@@ -594,7 +594,7 @@ export default function ExperienceAloneFate() {
                     {/* 기존 답글 표시 */}
                     {c.reply && (
                       <div className="mt-2 ml-3 pl-3 border-l-2 border-[#18a999]/30 space-y-0.5">
-                        <p className="text-xs font-bold text-[#18a999]">원장님</p>
+                        <p className="text-xs font-bold text-[#18a999]">이름의신</p>
                         <p className="text-sm text-foreground/80 leading-relaxed">{c.reply}</p>
                       </div>
                     )}
