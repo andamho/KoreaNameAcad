@@ -174,7 +174,11 @@ export default function ExperienceAloneFate() {
     setTotal(0);
     setCalculated(false);
     setIsAnalyzing(false);
-    if (isAdmin) setUsageCount(0); // 어드민은 리셋 시 카운트도 초기화
+  }
+
+  function adminReset() {
+    reset();
+    setUsageCount(0);
   }
 
   async function submitComment() {
@@ -299,14 +303,14 @@ export default function ExperienceAloneFate() {
               </div>
 
               {/* 버튼 */}
-              {usageCount >= MAX_DAILY && !calculated && !isAdmin ? (
+              {usageCount >= MAX_DAILY && !calculated ? (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-4 text-center">
                   <p className="text-white font-bold text-base leading-relaxed">
                     "이름은 운명을 담은 그릇입니다"
                   </p>
                   <p className="text-white/50 text-sm leading-relaxed">
                     이름이 갖는 귀한 가치를 존중하기 위해,<br />
-                    하루 무료 체험 횟수를 5회로 제한하고 있습니다.<br /><br />
+                    하루 무료 체험 횟수를 {MAX_DAILY}회로 제한하고 있습니다.<br /><br />
                     소중한 사람의 이름 속 운명을 더 깊이 알고 싶다면<br />
                     공식 상담을 신청해 주세요.
                   </p>
@@ -314,6 +318,12 @@ export default function ExperienceAloneFate() {
                     className="px-6 py-2.5 rounded-full bg-[#18a999] text-white font-bold text-sm hover:bg-[#149085] transition">
                     1:1 정밀 에너지 진단 신청하기 &gt;
                   </button>
+                  {isAdmin && (
+                    <button onClick={adminReset}
+                      className="block w-full text-xs text-white/30 hover:text-white/60 transition mt-1">
+                      [관리자] 다시 테스트하기
+                    </button>
+                  )}
                 </div>
               ) : calculated ? (
                 <button onClick={reset}
@@ -326,13 +336,6 @@ export default function ExperienceAloneFate() {
                   style={{ background: isAnalyzing ? '#334155' : '#18a999' }}>
                   {isAnalyzing ? '⚡ 에너지 주파수 분석 중...' : '이름 에너지 진단하기'}
                 </button>
-              )}
-
-              {/* 어드민 5회 소진 미리보기 */}
-              {isAdmin && usageCount >= MAX_DAILY && !calculated && (
-                <div className="rounded-xl border border-[#18a999]/20 bg-[#18a999]/5 px-4 py-2.5 text-center">
-                  <p className="text-[#56D5DB] text-xs font-bold">[관리자 미리보기] 5회 소진 메시지 확인 중 · 새로고침하면 리셋됩니다</p>
-                </div>
               )}
 
               {/* 진행바 */}
