@@ -67,6 +67,19 @@ function incrementUsage(): number {
   } catch { return 1; }
 }
 
+// ── 욕설/비방 필터 ──
+const BLOCKED_WORDS = [
+  '씨발','시발','씨팔','시팔','ㅅㅂ','개새끼','개새','새끼','쌍년','쌍놈',
+  '병신','ㅂㅅ','미친놈','미친년','미친새끼','지랄','존나','ㅈㄴ','좆','보지','자지',
+  '창녀','걸레','찐따','빡대가리','등신','바보새끼','죽어','꺼져','닥쳐','개소리',
+  '썅','개같','ㅗ','개년','개놈','ㄱㅅㄲ','ㅁㅊ','욕','혐오','차별',
+];
+
+function containsBlockedWord(text: string): boolean {
+  const normalized = text.replace(/\s/g, '').toLowerCase();
+  return BLOCKED_WORDS.some(w => normalized.includes(w));
+}
+
 // ── 댓글 타입 ──
 interface Comment {
   id: string;
@@ -167,6 +180,10 @@ export default function ExperienceAloneFate() {
   async function submitComment() {
     if (!nickname.trim() || !commentText.trim()) {
       setCommentError('닉네임과 내용을 입력해주세요.');
+      return;
+    }
+    if (containsBlockedWord(nickname) || containsBlockedWord(commentText)) {
+      setCommentError('부적절한 표현이 포함되어 있습니다. 수정 후 다시 시도해주세요.');
       return;
     }
     setSubmitting(true);

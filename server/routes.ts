@@ -285,11 +285,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  const BLOCKED_WORDS = [
+    '씨발','시발','씨팔','시팔','ㅅㅂ','개새끼','개새','새끼','쌍년','쌍놈',
+    '병신','ㅂㅅ','미친놈','미친년','미친새끼','지랄','존나','ㅈㄴ','좆','보지','자지',
+    '창녀','걸레','찐따','빡대가리','등신','바보새끼','죽어','꺼져','닥쳐','개소리',
+    '썅','개같','개년','개놈','ㄱㅅㄲ','ㅁㅊ','혐오','차별',
+  ];
+  const hasBadWord = (text: string) => BLOCKED_WORDS.some(w => text.replace(/\s/g,'').toLowerCase().includes(w));
+
   app.post("/api/experience-comments", async (req, res) => {
     try {
       const { pageId, nickname, totalStrokes, content, isPrivate } = req.body;
       if (!pageId || !nickname?.trim() || !content?.trim()) {
         return res.status(400).json({ error: "필수 항목을 입력해주세요." });
+      }
+      if (hasBadWord(nickname) || hasBadWord(content)) {
+        return res.status(400).json({ error: "부적절한 표현이 포함되어 있습니다." });
       }
       const comment = await storage.createExperienceComment({
         pageId,
