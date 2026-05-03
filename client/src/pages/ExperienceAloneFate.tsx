@@ -266,8 +266,8 @@ export default function ExperienceAloneFate() {
                     공식 상담을 신청해 주세요.
                   </p>
                   <button onClick={() => setLocation('/services')}
-                    className="w-full py-3 rounded-xl bg-[#18a999] text-white font-bold text-sm hover:bg-[#149085] transition">
-                    1:1 정밀 에너지 진단 신청하기 →
+                    className="px-6 py-2.5 rounded-full bg-[#18a999] text-white font-bold text-sm hover:bg-[#149085] transition">
+                    1:1 정밀 에너지 진단 신청하기 &gt;
                   </button>
                 </div>
               ) : calculated ? (
