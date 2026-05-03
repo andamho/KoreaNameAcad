@@ -161,6 +161,7 @@ export default function ExperienceAloneFate() {
     setTotal(0);
     setCalculated(false);
     setIsAnalyzing(false);
+    if (isAdmin) setUsageCount(0); // 어드민은 리셋 시 카운트도 초기화
   }
 
   async function submitComment() {
@@ -318,7 +319,7 @@ export default function ExperienceAloneFate() {
               )}
 
               {/* 진행바 */}
-              {usageCount > 0 && usageCount < MAX_DAILY && !calculated && (
+              {usageCount > 0 && usageCount < MAX_DAILY && (!calculated || isAdmin) && (
                 <div className="space-y-1.5 pt-1">
                   <div className="flex justify-between text-xs text-white/35">
                     <span>오늘 무료 진단</span>
