@@ -494,7 +494,7 @@ export default function ExperienceAloneFate() {
               <textarea
                 value={commentText}
                 onChange={e => setCommentText(e.target.value)}
-                placeholder="내 이름의 총운과 경험을 나눠주세요&#10;(총운 수리, 실제 경험 등)"
+                placeholder={'예: "홍길*(19획) - 소름 돋네요. 진짜 연애가 안 풀려요."'}
                 className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[90px]"
                 maxLength={300}
               />
