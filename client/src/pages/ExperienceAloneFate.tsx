@@ -318,7 +318,7 @@ export default function ExperienceAloneFate() {
               )}
 
               {/* 진행바 */}
-              {usageCount > 0 && usageCount < MAX_DAILY && (!calculated || isAdmin) && (
+              {usageCount > 0 && usageCount < MAX_DAILY && !calculated && (
                 <div className="space-y-1.5 pt-1">
                   <div className="flex justify-between text-xs text-white/35">
                     <span>오늘 무료 진단</span>
@@ -332,11 +332,9 @@ export default function ExperienceAloneFate() {
                       style={{ width: `${(usageCount / MAX_DAILY) * 100}%` }}
                     />
                   </div>
-                  {(isAdmin || usageCount >= 4) && (
-                    <p className={`text-xs text-center ${usageCount >= 4 ? 'text-orange-400' : 'text-white/30'}`}>
-                      {usageCount >= 4 ? `오늘 ${MAX_DAILY - usageCount}회 남았습니다` : `${usageCount}/${MAX_DAILY}회 진단함`}
-                    </p>
-                  )}
+                  <p className={`text-xs text-center ${usageCount >= 4 ? 'text-orange-400' : 'text-white/30'}`}>
+                    {usageCount >= 4 ? `오늘 ${MAX_DAILY - usageCount}회 남았습니다` : `${usageCount}/${MAX_DAILY}회 진단함`}
+                  </p>
                 </div>
               )}
 
