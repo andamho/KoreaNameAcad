@@ -267,7 +267,7 @@ export default function ExperienceAloneFate() {
                   value={name}
                   onChange={e => { setName(e.target.value); setCalculated(false); }}
                   onKeyDown={e => e.key === 'Enter' && !isAnalyzing && (isAdmin || usageCount < MAX_DAILY) && calculate()}
-                  placeholder="성함을 입력하세요 (예: 홍길동)"
+                  placeholder="이름을 입력하세요 (예: 홍길동)"
                   disabled={isAnalyzing || (!isAdmin && usageCount >= MAX_DAILY)}
                   className="w-full bg-white/10 text-white placeholder-white/30 rounded-xl px-4 py-4 text-lg font-medium outline-none focus:ring-2 focus:ring-[#18a999] transition disabled:opacity-50"
                   maxLength={6}
