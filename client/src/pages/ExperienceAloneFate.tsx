@@ -388,8 +388,8 @@ export default function ExperienceAloneFate() {
                         </p>
                         <button
                           onClick={() => commentRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                          className="mt-3 inline-block text-sm text-[#56D5DB] underline underline-offset-2 hover:text-white transition">
-                          진단 기록 남기기 →
+                          className="mt-3 inline-block text-sm text-white underline underline-offset-2 hover:text-[#56D5DB] transition">
+                          진단 기록 남기기 &gt;
                         </button>
                       </div>
                     ) : (
