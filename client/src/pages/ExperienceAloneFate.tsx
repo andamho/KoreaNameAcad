@@ -46,7 +46,7 @@ const DANGER_LABELS: Record<number, string> = {
 };
 
 // ── 일일 사용 횟수 제한 ──
-const MAX_DAILY = 5;
+const MAX_DAILY = 3;
 const USAGE_KEY = 'kna_alone_fate_usage';
 
 function getTodayUsage(): number {
