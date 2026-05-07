@@ -156,58 +156,43 @@ export function useUpload(options: UseUploadOptions = {}) {
 
   const uploadFile = useCallback(
     async (file: File): Promise<UploadResponse | null> => {
-      console.log("[useUpload] uploadFile called for:", file.name);
       setIsUploading(true);
       setError(null);
       setProgress(0);
 
       try {
-        setProgress(5);
-        console.log("[useUpload] compressing image...");
+        setProgress(10);
         const compressedFile = await compressImage(file, maxWidth, maxHeight, quality);
-        console.log("[useUpload] compression done, file size:", compressedFile.size);
-        
-        setProgress(15);
-        console.log("[useUpload] requesting upload URL...");
-        console.log("[useUpload] file details:", compressedFile.name, compressedFile.type, compressedFile.size);
-        const uploadResponse = await requestUploadUrl(compressedFile);
-        console.log("[useUpload] requestUploadUrl succeeded");
-        console.log("[useUpload] got upload URL:", uploadResponse.objectPath);
 
-        setProgress(40);
-        console.log("[useUpload] uploading to presigned URL...");
-        await uploadToPresignedUrl(compressedFile, uploadResponse.uploadURL);
-        console.log("[useUpload] upload complete!");
+        setProgress(30);
+        const response = await fetch("/api/uploads/upload", {
+          method: "POST",
+          headers: { "Content-Type": compressedFile.type || "application/octet-stream" },
+          body: compressedFile,
+        });
+
+        if (!response.ok) throw new Error("Upload failed");
+
+        const data = await response.json();
+        const uploadResponse: UploadResponse = {
+          uploadURL: "",
+          objectPath: data.objectPath,
+          metadata: { name: compressedFile.name, size: compressedFile.size, contentType: compressedFile.type },
+        };
 
         setProgress(100);
-        console.log("[useUpload] calling onSuccess callback...");
-        console.log("[useUpload] optionsRef.current:", optionsRef.current);
-        console.log("[useUpload] onSuccess exists:", !!optionsRef.current.onSuccess);
-        // Use ref to get the latest callback
-        if (optionsRef.current.onSuccess) {
-          try {
-            optionsRef.current.onSuccess(uploadResponse);
-            console.log("[useUpload] onSuccess callback executed successfully");
-          } catch (callbackError) {
-            console.error("[useUpload] onSuccess callback threw error:", callbackError);
-          }
-        } else {
-          console.warn("[useUpload] onSuccess callback is undefined!");
-        }
-        console.log("[useUpload] onSuccess callback completed");
+        optionsRef.current.onSuccess?.(uploadResponse);
         return uploadResponse;
       } catch (err) {
-        console.error("[useUpload] error:", err);
         const error = err instanceof Error ? err : new Error("Upload failed");
         setError(error);
-        // Use ref to get the latest callback
         optionsRef.current.onError?.(error);
         return null;
       } finally {
         setIsUploading(false);
       }
     },
-    [requestUploadUrl, uploadToPresignedUrl, maxWidth, maxHeight, quality]
+    [maxWidth, maxHeight, quality]
   );
 
   const getUploadParameters = useCallback(

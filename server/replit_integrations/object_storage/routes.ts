@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { randomUUID } from "crypto";
 
 /**
  * Register object storage routes for file uploads.
@@ -35,6 +36,27 @@ export function registerObjectStorageRoutes(app: Express): void {
    * IMPORTANT: The client should NOT send the file to this endpoint.
    * Send JSON metadata only, then upload the file directly to uploadURL.
    */
+  // 서버 프록시 업로드 (CORS 우회)
+  app.post("/api/uploads/upload", (req, res) => {
+    // express.raw로 바이너리 수신
+    let data: Buffer[] = [];
+    req.on("data", (chunk) => data.push(chunk));
+    req.on("end", async () => {
+      try {
+        const buffer = Buffer.concat(data);
+        const contentType = (req.headers["content-type"] as string) || "application/octet-stream";
+        const objectKey = `uploads/${randomUUID()}`;
+        await objectStorageService.putObject(objectKey, buffer, contentType);
+        const objectPath = `/objects/${objectKey}`;
+        res.json({ objectPath });
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        res.status(500).json({ error: "Failed to upload file" });
+      }
+    });
+    req.on("error", () => res.status(500).json({ error: "Upload stream error" }));
+  });
+
   app.post("/api/uploads/request-url", async (req, res) => {
     try {
       const { name, size, contentType } = req.body;

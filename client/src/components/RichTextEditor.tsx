@@ -73,7 +73,10 @@ function domToMarkers(node: Node): string {
   for (let i = 0; i < children.length; i++) {
     const child = children[i];
     if (child.nodeType === Node.TEXT_NODE) {
-      result += child.textContent || "";
+      const text = child.textContent || "";
+      // Chrome이 block 요소 사이에 삽입하는 공백 전용 텍스트 노드 무시
+      if (text.trim() === "") continue;
+      result += text;
     } else if (child.nodeType === Node.ELEMENT_NODE) {
       const el = child as HTMLElement;
       const tag = el.tagName.toLowerCase();

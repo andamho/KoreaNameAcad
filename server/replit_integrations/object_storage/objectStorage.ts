@@ -25,6 +25,16 @@ export class ObjectNotFoundError extends Error {
 export class ObjectStorageService {
   constructor() {}
 
+  async putObject(key: string, buffer: Buffer, contentType: string): Promise<void> {
+    const command = new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+    });
+    await r2Client.send(command);
+  }
+
   async getObjectEntityUploadURL(): Promise<string> {
     const objectId = randomUUID();
     const objectKey = `uploads/${objectId}`;
