@@ -50,6 +50,7 @@ const characterImages = [
   stepsCharacterImage,
   guideCharacterImage,
   '/about-character-opt.webp',
+  '/alone-fate-hero.png',
 ];
 
 // 팝업 이미지 (최우선 로드)

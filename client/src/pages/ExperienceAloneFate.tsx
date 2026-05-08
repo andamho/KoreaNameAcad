@@ -262,7 +262,7 @@ export default function ExperienceAloneFate() {
       {/* 히어로 */}
       <section className="relative overflow-hidden pt-16 pb-[150px] md:pt-24 md:pb-56">
         {/* 배경 이미지 */}
-        <img src="/alone-fate-hero.png" alt="" className="absolute inset-0 w-full h-full object-cover object-top" aria-hidden />
+        <img src="/alone-fate-hero.png" alt="" className="absolute inset-0 w-full h-full object-cover object-top" fetchPriority="high" loading="eager" decoding="sync" aria-hidden />
         {/* SVG 볼록 하단: 페이지 배경색 U자 컷아웃 → 배경이 중앙에서 더 아래로 볼록하게 보임 */}
         <div className="absolute bottom-0 left-0 w-full" aria-hidden>
           <svg viewBox="0 0 1200 150" preserveAspectRatio="none" className="w-full h-28 md:h-36 block">
