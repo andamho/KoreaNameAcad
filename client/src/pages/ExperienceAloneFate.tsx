@@ -260,22 +260,23 @@ export default function ExperienceAloneFate() {
       <Navbar />
 
       {/* 히어로 */}
-      <section className="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-28">
-        {/* 볼록한 하단 배경: section 아래로 80px 넘치게 → border-radius로 잘려 convex 효과 */}
+      <section className="relative overflow-hidden pt-16 pb-24 md:pt-24 md:pb-32">
+        {/* 배경 이미지 */}
+        <img src="/alone-fate-hero.png" alt="" className="absolute inset-0 w-full h-full object-cover object-top" aria-hidden />
+        {/* 볼록 하단: 흰색 컷아웃이 위로 오목하게 → 배경이 아래로 볼록하게 보이는 효과 */}
         <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: '-80px',
-          backgroundImage: 'url(/alone-fate-hero.png)',
-          backgroundSize: 'cover', backgroundPosition: 'center top',
-          borderRadius: '0 0 50% 50% / 0 0 80px 80px',
+          position: 'absolute', bottom: 0, left: '-5%', width: '110%', height: '70px',
+          background: 'var(--background, white)',
+          borderRadius: '50% 50% 0 0 / 70px 70px 0 0',
         }} aria-hidden />
         <div className="relative max-w-2xl mx-auto px-5 text-center">
           <button onClick={() => setLocation('/experience-zone')}
             className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 font-semibold text-sm mb-6 transition-colors">
             <ChevronLeft className="w-4 h-4" /> 체험 ZONE
           </button>
-          <h1 className="text-4xl md:text-5xl font-extrabold leading-tight text-slate-900">
-            혼자 살 팔자<br />
-            10초 만에 아는 법
+          <h1 className="leading-tight text-slate-900">
+            <span className="block text-5xl md:text-6xl font-black tracking-tight">혼자 살 팔자</span>
+            <span className="block text-3xl md:text-4xl font-light tracking-wide mt-1">10초 만에 아는 법</span>
           </h1>
         </div>
       </section>
