@@ -139,6 +139,11 @@ export default function ExperienceAloneFate() {
   const [replySubmitting, setReplySubmitting] = useState(false);
   const commentRef = useRef<HTMLDivElement>(null);
 
+  // 페이지 진입 시 최상단으로
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // 어드민 가드
   useEffect(() => {
     if (!isVerifying && !isAdmin) {
