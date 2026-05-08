@@ -261,7 +261,7 @@ export default function ExperienceAloneFate() {
 
       {/* 히어로 */}
       <section className="relative overflow-hidden py-16 md:py-24">
-        <img src="/alone-fate-hero.jpeg" alt="" className="absolute inset-0 w-full h-full object-cover object-top" aria-hidden />
+        <img src="/alone-fate-hero.png" alt="" className="absolute inset-0 w-full h-full object-cover object-top" aria-hidden />
         <div className="relative max-w-2xl mx-auto px-5 text-center">
           <button onClick={() => setLocation('/experience-zone')}
             className="inline-flex items-center gap-1 text-slate-700 hover:text-slate-900 font-semibold text-base mb-5 transition-colors">
