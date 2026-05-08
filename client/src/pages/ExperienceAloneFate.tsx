@@ -260,15 +260,15 @@ export default function ExperienceAloneFate() {
       <Navbar />
 
       {/* 히어로 */}
-      <section className="relative overflow-hidden pt-16 pb-24 md:pt-24 md:pb-32">
+      <section className="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-28">
         {/* 배경 이미지 */}
         <img src="/alone-fate-hero.png" alt="" className="absolute inset-0 w-full h-full object-cover object-top" aria-hidden />
-        {/* 볼록 하단: 흰색 컷아웃이 위로 오목하게 → 배경이 아래로 볼록하게 보이는 효과 */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: '-5%', width: '110%', height: '70px',
-          background: 'var(--background, white)',
-          borderRadius: '50% 50% 0 0 / 70px 70px 0 0',
-        }} aria-hidden />
+        {/* SVG 볼록 하단: 페이지 배경색 U자 컷아웃 → 배경이 중앙에서 더 아래로 볼록하게 보임 */}
+        <div className="absolute bottom-0 left-0 w-full" aria-hidden>
+          <svg viewBox="0 0 1200 80" preserveAspectRatio="none" className="w-full h-16 md:h-20 block">
+            <path d="M0,80 L0,20 Q600,80 1200,20 L1200,80 Z" className="fill-background" />
+          </svg>
+        </div>
         <div className="relative max-w-2xl mx-auto px-5 text-center">
           <button onClick={() => setLocation('/experience-zone')}
             className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 font-semibold text-sm mb-6 transition-colors">
