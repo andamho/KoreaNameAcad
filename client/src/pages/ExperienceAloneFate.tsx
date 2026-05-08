@@ -326,7 +326,7 @@ export default function ExperienceAloneFate() {
 
             {/* 카드 3개 */}
             <div className="relative px-7 py-7 border-b border-white/8">
-              <p className="text-[10px] font-bold tracking-[0.3em] text-white/25 uppercase mb-5">이 숫자가 총운에 들어가면</p>
+              <p className="text-sm font-bold text-white/50 mb-5">이 숫자가 이름에 들어가면</p>
               <div className="space-y-3">
                 {[
                   { icon: '💫', title: '인연의 어긋남', desc: '만나려고 해도 자꾸 어긋납니다.' },
