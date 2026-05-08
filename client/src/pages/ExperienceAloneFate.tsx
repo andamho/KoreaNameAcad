@@ -370,8 +370,7 @@ export default function ExperienceAloneFate() {
           <div className="rounded-3xl bg-slate-900 dark:bg-slate-800 overflow-hidden shadow-2xl">
             {/* 헤더 */}
             <div className="px-6 pt-6 pb-4 border-b border-white/10">
-              <p className="text-xs font-bold tracking-[0.3em] text-[#56D5DB] uppercase mb-1">성명 에너지 정밀 진단</p>
-              <p className="text-lg font-bold text-white">이름 획수 자동 계산기</p>
+<p className="text-lg font-bold text-white">이름 획수 자동 계산기</p>
               <p className="text-white/40 text-sm mt-0.5">자음·모음을 자동 분리하여 총운 수리를 계산합니다</p>
             </div>
 
