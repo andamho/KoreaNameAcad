@@ -265,8 +265,8 @@ export default function ExperienceAloneFate() {
         <img src="/alone-fate-hero.png" alt="" className="absolute inset-0 w-full h-full object-cover object-top" aria-hidden />
         {/* SVG 볼록 하단: 페이지 배경색 U자 컷아웃 → 배경이 중앙에서 더 아래로 볼록하게 보임 */}
         <div className="absolute bottom-0 left-0 w-full" aria-hidden>
-          <svg viewBox="0 0 1200 80" preserveAspectRatio="none" className="w-full h-16 md:h-20 block">
-            <path d="M0,80 L0,20 Q600,80 1200,20 L1200,80 Z" className="fill-background" />
+          <svg viewBox="0 0 1200 150" preserveAspectRatio="none" className="w-full h-28 md:h-36 block">
+            <path d="M0,150 L0,0 Q600,150 1200,0 L1200,150 Z" className="fill-background" />
           </svg>
         </div>
         <div className="relative max-w-2xl mx-auto px-5 text-center">
