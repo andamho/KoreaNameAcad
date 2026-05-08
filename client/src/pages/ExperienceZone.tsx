@@ -163,7 +163,7 @@ export default function ExperienceZone() {
       </section>
 
       {/* 카드 목록 */}
-      <main className="flex-1 py-16 md:py-20">
+      <main className="flex-1 py-16 md:py-20 -mt-2">
         <div className="max-w-xl mx-auto px-5 space-y-5">
           {experiences.map((exp) => {
             const { Icon } = exp;
