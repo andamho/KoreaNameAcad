@@ -466,7 +466,7 @@ export function RichTextEditor({
           onPaste={handlePaste}
           onClick={() => setSizeMenuOpen(false)}
           className={`w-full rounded-b-md border border-border bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 overflow-auto whitespace-pre-wrap break-words ${className || ""}`}
-          style={{ minHeight: "150px" }}
+          style={{ minHeight: "150px", fontFamily: "'Nanum Square', sans-serif" }}
           data-testid={testId}
         />
         {isEmpty && placeholder && (

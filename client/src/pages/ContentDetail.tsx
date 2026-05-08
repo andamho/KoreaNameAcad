@@ -291,7 +291,7 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
               </div>
             ) : null}
 
-            <div className="prose max-w-none dark:prose-invert">
+            <div className="prose max-w-none dark:prose-invert" style={{ fontFamily: "'Nanum Square', sans-serif" }}>
               {(() => {
                 // 이미지 마커를 기준으로 분리 (줄 위치 상관없이 처리)
                 const parts = content.content.split(/(!\[[^\]]*\]\([^)]+\))/);
