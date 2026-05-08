@@ -278,53 +278,90 @@ export default function ExperienceAloneFate() {
         <div className="max-w-2xl mx-auto px-5 space-y-8">
 
           {/* ── 도입 글 ── */}
-          <div className="rounded-3xl bg-slate-900 overflow-hidden shadow-2xl">
+          <style>{`
+            @keyframes energyPulse {
+              0%, 100% { opacity: 0.03; transform: scale(1); }
+              50% { opacity: 0.07; transform: scale(1.08); }
+            }
+            @keyframes energyPulse2 {
+              0%, 100% { opacity: 0.04; transform: scale(1.05); }
+              50% { opacity: 0.08; transform: scale(0.97); }
+            }
+            .glow-tiffany {
+              text-shadow: 0 0 18px rgba(86,213,219,0.7), 0 0 40px rgba(86,213,219,0.3);
+            }
+          `}</style>
+          <div className="rounded-3xl overflow-hidden shadow-2xl relative" style={{ background: '#0F172A' }}>
+            {/* 배경 에너지 애니메이션 */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              <div style={{
+                position: 'absolute', top: '-20%', left: '-10%',
+                width: '70%', height: '70%', borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(86,213,219,1) 0%, transparent 70%)',
+                animation: 'energyPulse 6s ease-in-out infinite',
+              }} />
+              <div style={{
+                position: 'absolute', bottom: '-20%', right: '-10%',
+                width: '60%', height: '60%', borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(86,213,219,1) 0%, transparent 70%)',
+                animation: 'energyPulse2 8s ease-in-out infinite',
+              }} />
+            </div>
+
             {/* 훅 */}
-            <div className="px-7 pt-8 pb-6 border-b border-white/10">
-              <p className="text-[11px] font-bold tracking-[0.3em] text-[#56D5DB] uppercase mb-4">Energy Diagnosis</p>
-              <p className="text-2xl md:text-3xl font-extrabold text-white leading-[1.6] mb-3">
+            <div className="relative px-7 pt-9 pb-7 border-b border-white/8">
+              <p className="text-[10px] font-bold tracking-[0.4em] text-[#56D5DB] uppercase mb-5">Energy Frequency Diagnosis</p>
+              <p className="text-3xl md:text-4xl font-extrabold text-white leading-[1.5] mb-2">
                 "나는 혼자가 편해."
               </p>
-              <p className="text-white/55 text-base leading-[1.9]">
-                이 말, 입버릇처럼 하고 계신가요?<br />
-                혹시 이름에 <span className="text-[#56D5DB] font-bold">10 · 12 · 19 수리운</span>이<br />
-                있는 건 아닐까요?
-              </p>
+              <p className="text-white/40 text-sm font-medium mb-6">이 말, 입버릇처럼 하고 계신가요?</p>
+              <div className="border-l-2 border-[#56D5DB]/40 pl-4">
+                <p className="text-white/65 text-base leading-[2]">
+                  혹시 이름에<br />
+                  <span className="glow-tiffany text-[#56D5DB] font-black text-xl">10 · 12 · 19</span>
+                  <span className="text-white/65 text-base"> 수리운이 있는 건 아닐까요?</span>
+                </p>
+              </div>
             </div>
 
             {/* 카드 3개 */}
-            <div className="px-7 py-6 space-y-3 border-b border-white/10">
-              <p className="text-[11px] font-bold tracking-[0.25em] text-white/30 uppercase mb-4">이 숫자가 총운에 들어가면</p>
-              {[
-                { icon: '💫', title: '인연의 어긋남', desc: '만나려고 해도 자꾸 어긋납니다.' },
-                { icon: '🧱', title: '관계의 벽', desc: '가까워지려 해도 보이지 않는 벽이 생깁니다.' },
-                { icon: '🌫️', title: '결혼 후 공허함', desc: '결혼을 해도 깊은 공허함이 찾아옵니다.' },
-              ].map(({ icon, title, desc }) => (
-                <div key={title} className="flex items-start gap-4 bg-white/5 rounded-2xl px-4 py-4">
-                  <span className="text-xl flex-shrink-0 mt-0.5">{icon}</span>
-                  <div>
-                    <p className="text-white font-bold text-sm mb-1">{title}</p>
-                    <p className="text-white/45 text-sm leading-[1.8]">{desc}</p>
+            <div className="relative px-7 py-7 border-b border-white/8">
+              <p className="text-[10px] font-bold tracking-[0.3em] text-white/25 uppercase mb-5">이 숫자가 총운에 들어가면</p>
+              <div className="space-y-3">
+                {[
+                  { icon: '💫', title: '인연의 어긋남', desc: '만나려고 해도 자꾸 어긋납니다.' },
+                  { icon: '🧱', title: '관계의 벽', desc: '가까워지려 해도 보이지 않는 벽이 생깁니다.' },
+                  { icon: '🌫️', title: '결혼 후 공허함', desc: '결혼을 해도 깊은 공허함이 찾아옵니다.' },
+                ].map(({ icon, title, desc }) => (
+                  <div key={title} className="flex items-start gap-4 rounded-2xl px-4 py-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <span className="text-xl flex-shrink-0 mt-0.5">{icon}</span>
+                    <div>
+                      <p className="text-white font-bold text-sm mb-1">{title}</p>
+                      <p className="text-white/40 text-sm leading-[1.9]">{desc}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {/* 단명수 경고 */}
-            <div className="px-7 py-6 border-b border-white/10 bg-red-500/5">
-              <p className="text-[11px] font-bold tracking-[0.25em] text-red-400/70 uppercase mb-3">Critical Warning</p>
-              <p className="text-white font-bold text-base leading-[1.8] mb-1">
-                10, 12는 고립시키는 것만으로<br />끝나지 않습니다.
+            <div className="relative px-7 py-7 border-b border-white/8" style={{ background: 'rgba(239,68,68,0.06)' }}>
+              <p className="text-[10px] font-bold tracking-[0.3em] text-red-400/50 uppercase mb-4">Critical Warning</p>
+              <p className="text-white/70 text-base leading-[1.9] mb-3">
+                그리고 <span className="text-white font-bold">10, 12는</span><br />
+                고립시키는 것만으로 끝나지 않습니다.
               </p>
-              <p className="text-red-400 font-black text-xl tracking-wide">단명수입니다.</p>
+              <p className="text-red-400 font-black text-2xl tracking-widest" style={{ textShadow: '0 0 20px rgba(248,113,113,0.5)' }}>
+                단명수입니다.
+              </p>
             </div>
 
             {/* 마무리 */}
-            <div className="px-7 py-6">
-              <p className="text-white/40 text-sm leading-[2]">
+            <div className="relative px-7 py-7">
+              <p className="text-white/35 text-sm leading-[2.1]">
                 지금 이름 획수를 더해보세요.<br />
                 미신이 아닙니다.<br />
-                <span className="text-white/60">이름 구조가 만든 에너지 흐름입니다.</span>
+                <span className="text-white/50">이름 구조가 만든 에너지 흐름입니다.</span>
               </p>
             </div>
           </div>
