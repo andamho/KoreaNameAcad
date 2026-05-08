@@ -260,7 +260,7 @@ export default function ExperienceAloneFate() {
       <Navbar />
 
       {/* 히어로 */}
-      <section className="relative overflow-hidden pt-16 pb-80 md:pt-24 md:pb-56">
+      <section className="relative overflow-hidden pt-16 pb-56 md:pt-24 md:pb-56">
         {/* 배경 이미지 */}
         <img src="/alone-fate-hero.png" alt="" className="absolute inset-0 w-full h-full object-cover object-top" aria-hidden />
         {/* SVG 볼록 하단: 페이지 배경색 U자 컷아웃 → 배경이 중앙에서 더 아래로 볼록하게 보임 */}
