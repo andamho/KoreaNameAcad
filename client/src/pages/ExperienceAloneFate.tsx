@@ -277,6 +277,35 @@ export default function ExperienceAloneFate() {
       <main className="flex-1 py-10 md:py-14">
         <div className="max-w-2xl mx-auto px-5 space-y-8">
 
+          {/* ── 도입 글 ── */}
+          <div className="space-y-5 text-foreground text-base leading-relaxed">
+            <p className="text-lg font-bold">"나는 혼자가 편해."</p>
+            <p>이 말, 입버릇처럼 하고 계신가요?</p>
+            <p>
+              혹시 이름에<br />
+              <strong>10, 12, 19 수리운</strong>이 있는 건 아닐까요?
+            </p>
+            <p className="text-muted-foreground">
+              이 숫자들이 총운에 들어가면<br />
+              본인도 모르게 인연이 막힙니다.
+            </p>
+            <p className="text-muted-foreground">
+              만나려고 해도 자꾸 어긋나고<br />
+              가까워지려 해도 벽이 생기고<br />
+              결혼을 해도 공허함이 찾아옵니다.
+            </p>
+            <p>
+              그리고 <strong>10, 12는</strong><br />
+              고립시키는 것만으로 끝나지 않습니다.<br />
+              <strong className="text-red-500">단명수입니다.</strong>
+            </p>
+            <p className="text-muted-foreground">
+              지금 이름 획수를 더해보세요.<br />
+              미신이 아닙니다.<br />
+              이름 구조가 만든 에너지 흐름입니다.
+            </p>
+          </div>
+
           {/* ── 계산기 ── */}
           <div className="rounded-3xl bg-slate-900 dark:bg-slate-800 overflow-hidden shadow-2xl">
             {/* 헤더 */}
