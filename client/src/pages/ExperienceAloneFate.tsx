@@ -278,32 +278,55 @@ export default function ExperienceAloneFate() {
         <div className="max-w-2xl mx-auto px-5 space-y-8">
 
           {/* ── 도입 글 ── */}
-          <div className="space-y-5 text-foreground text-base leading-relaxed">
-            <p className="text-lg font-bold">"나는 혼자가 편해."</p>
-            <p>이 말, 입버릇처럼 하고 계신가요?</p>
-            <p>
-              혹시 이름에<br />
-              <strong>10, 12, 19 수리운</strong>이 있는 건 아닐까요?
-            </p>
-            <p className="text-muted-foreground">
-              이 숫자들이 총운에 들어가면<br />
-              본인도 모르게 인연이 막힙니다.
-            </p>
-            <p className="text-muted-foreground">
-              만나려고 해도 자꾸 어긋나고<br />
-              가까워지려 해도 벽이 생기고<br />
-              결혼을 해도 공허함이 찾아옵니다.
-            </p>
-            <p>
-              그리고 <strong>10, 12는</strong><br />
-              고립시키는 것만으로 끝나지 않습니다.<br />
-              <strong className="text-red-500">단명수입니다.</strong>
-            </p>
-            <p className="text-muted-foreground">
-              지금 이름 획수를 더해보세요.<br />
-              미신이 아닙니다.<br />
-              이름 구조가 만든 에너지 흐름입니다.
-            </p>
+          <div className="rounded-3xl bg-slate-900 overflow-hidden shadow-2xl">
+            {/* 훅 */}
+            <div className="px-7 pt-8 pb-6 border-b border-white/10">
+              <p className="text-[11px] font-bold tracking-[0.3em] text-[#56D5DB] uppercase mb-4">Energy Diagnosis</p>
+              <p className="text-2xl md:text-3xl font-extrabold text-white leading-[1.6] mb-3">
+                "나는 혼자가 편해."
+              </p>
+              <p className="text-white/55 text-base leading-[1.9]">
+                이 말, 입버릇처럼 하고 계신가요?<br />
+                혹시 이름에 <span className="text-[#56D5DB] font-bold">10 · 12 · 19 수리운</span>이<br />
+                있는 건 아닐까요?
+              </p>
+            </div>
+
+            {/* 카드 3개 */}
+            <div className="px-7 py-6 space-y-3 border-b border-white/10">
+              <p className="text-[11px] font-bold tracking-[0.25em] text-white/30 uppercase mb-4">이 숫자가 총운에 들어가면</p>
+              {[
+                { icon: '💫', title: '인연의 어긋남', desc: '만나려고 해도 자꾸 어긋납니다.' },
+                { icon: '🧱', title: '관계의 벽', desc: '가까워지려 해도 보이지 않는 벽이 생깁니다.' },
+                { icon: '🌫️', title: '결혼 후 공허함', desc: '결혼을 해도 깊은 공허함이 찾아옵니다.' },
+              ].map(({ icon, title, desc }) => (
+                <div key={title} className="flex items-start gap-4 bg-white/5 rounded-2xl px-4 py-4">
+                  <span className="text-xl flex-shrink-0 mt-0.5">{icon}</span>
+                  <div>
+                    <p className="text-white font-bold text-sm mb-1">{title}</p>
+                    <p className="text-white/45 text-sm leading-[1.8]">{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* 단명수 경고 */}
+            <div className="px-7 py-6 border-b border-white/10 bg-red-500/5">
+              <p className="text-[11px] font-bold tracking-[0.25em] text-red-400/70 uppercase mb-3">Critical Warning</p>
+              <p className="text-white font-bold text-base leading-[1.8] mb-1">
+                10, 12는 고립시키는 것만으로<br />끝나지 않습니다.
+              </p>
+              <p className="text-red-400 font-black text-xl tracking-wide">단명수입니다.</p>
+            </div>
+
+            {/* 마무리 */}
+            <div className="px-7 py-6">
+              <p className="text-white/40 text-sm leading-[2]">
+                지금 이름 획수를 더해보세요.<br />
+                미신이 아닙니다.<br />
+                <span className="text-white/60">이름 구조가 만든 에너지 흐름입니다.</span>
+              </p>
+            </div>
           </div>
 
           {/* ── 계산기 ── */}
