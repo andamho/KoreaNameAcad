@@ -123,16 +123,22 @@ export default function ExperienceZone() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-16 md:py-24">
+      <section className="relative overflow-hidden pt-16 pb-[150px] md:pt-24 md:pb-56">
         <img
-          src="/bank-card-bg-opt.webp"
+          src="/alone-fate-hero.png"
           alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-top"
           fetchPriority="high"
           loading="eager"
-          decoding="async"
+          decoding="sync"
           aria-hidden="true"
         />
+        {/* 볼록 하단 SVG */}
+        <div className="absolute bottom-0 left-0 w-full" aria-hidden="true">
+          <svg viewBox="0 0 1200 150" preserveAspectRatio="none" className="w-full h-28 md:h-36 block">
+            <path d="M0,150 L0,0 Q600,150 1200,0 L1200,150 Z" className="fill-background" />
+          </svg>
+        </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
             <img
