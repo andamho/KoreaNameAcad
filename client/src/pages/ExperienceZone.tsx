@@ -125,7 +125,7 @@ export default function ExperienceZone() {
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-16 pb-[150px] md:pt-24 md:pb-56">
         <img
-          src="/alone-fate-hero.png"
+          src="/experience-zone-hero.png"
           alt=""
           className="absolute inset-0 w-full h-full object-cover object-top"
           fetchPriority="high"
