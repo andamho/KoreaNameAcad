@@ -449,7 +449,7 @@ export default function ExperienceHusbandLuck() {
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-white text-sm leading-tight">{ohang}({OHANG_HANJA[ohang]})</p>
                     <p className="text-white/60 text-sm font-medium tracking-widest mt-1">{cho}</p>
-                    {note && <p className="text-[10px] text-white/35 mt-0.5">{note}</p>}
+                    {note && <p className="text-sm text-white/55 font-medium mt-0.5">{note}</p>}
                   </div>
                 </div>
               ))}
