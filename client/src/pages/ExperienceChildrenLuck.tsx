@@ -132,7 +132,8 @@ export default function ExperienceChildrenLuck() {
         body: JSON.stringify({ reply: replyText.trim() }),
       });
       if (!res.ok) throw new Error();
-      setComments(prev => prev.map(c => c.id === id ? { ...c, ...(await res.json()) } : c));
+      const updated = await res.json();
+      setComments(prev => prev.map(c => c.id === id ? updated : c));
       setReplyingTo(null); setReplyText('');
     } catch {} finally { setReplySubmitting(false); }
   }

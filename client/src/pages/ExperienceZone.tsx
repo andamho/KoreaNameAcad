@@ -64,7 +64,8 @@ const experiences: {
     title: "내 이름은 전국 몇 등일까?",
     description: "전국 이름 순위 데이터로 내 이름의 등수를 확인해보세요.",
     adminOnly: true,
-    available: false,
+    available: true,
+    path: "/experience-zone/name-rank",
   },
 ];
 
@@ -137,7 +138,7 @@ export default function ExperienceZone() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-16 pb-[150px] md:pt-24 md:pb-56">
+      <section className="relative overflow-hidden pt-16 pb-[150px] md:pt-24 md:pb-56 border-0 outline-none">
         <img
           src="/mesh-header-hero.png"
           alt=""
@@ -177,7 +178,7 @@ export default function ExperienceZone() {
       </section>
 
       {/* 카드 목록 */}
-      <main className="flex-1 py-16 md:py-20 -mt-2">
+      <main className="flex-1 py-16 md:py-20 -mt-px border-0">
         <div className="max-w-xl mx-auto px-5 space-y-5">
           {experiences
             .filter(exp => !(exp.adminOnly && !exp.available) || isAdmin)

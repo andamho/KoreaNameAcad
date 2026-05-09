@@ -189,6 +189,7 @@ export default function ExperienceHusbandLuck() {
           <style>{`
             @keyframes ep2Pulse { 0%,100%{opacity:.03;transform:scale(1)} 50%{opacity:.07;transform:scale(1.08)} }
             @keyframes ep2Pulse2 { 0%,100%{opacity:.04;transform:scale(1.05)} 50%{opacity:.08;transform:scale(.97)} }
+            @keyframes scanLine { 0%{top:0%} 100%{top:100%} }
             .glow-tiffany2 { text-shadow: 0 0 18px rgba(86,213,219,.7),0 0 40px rgba(86,213,219,.3); }
           `}</style>
           <div className="rounded-3xl overflow-hidden shadow-2xl relative" style={{ background: '#0F172A' }}>
