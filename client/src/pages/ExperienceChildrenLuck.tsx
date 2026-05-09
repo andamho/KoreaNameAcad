@@ -421,11 +421,11 @@ export default function ExperienceChildrenLuck() {
               <p className="text-muted-foreground text-sm">한글 자음마다 고유한 오행 에너지가 있습니다</p>
             </div>
             <div className="rounded-2xl p-3" style={{ background: '#0F172A' }}>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {OHANG_TABLE.map(({ ohang, cho, note }, i) => (
                 <div
                   key={ohang}
-                  className={`relative flex items-center gap-3 rounded-2xl px-4 py-4 overflow-hidden${i === OHANG_TABLE.length - 1 && OHANG_TABLE.length % 2 !== 0 ? ' col-span-2' : ''}`}
+                  className={`relative flex items-center gap-3 rounded-2xl px-4 py-4 overflow-hidden${i === OHANG_TABLE.length - 1 && OHANG_TABLE.length % 2 !== 0 ? ' md:col-span-2' : ''}`}
                   style={{
                     background: OHANG_GLASS[ohang].bg,
                     border: `1px solid ${OHANG_GLASS[ohang].border}`,
