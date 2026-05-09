@@ -32,11 +32,11 @@ const OHANG_ICON: Record<Ohang, string> = {
   '목':'/ohang-mok.png','화':'/ohang-hwa.png','토':'/ohang-to.png','금':'/ohang-geum.png','수':'/ohang-su.png',
 };
 const OHANG_GLASS: Record<Ohang, { bg: string; border: string }> = {
-  '목': { bg: 'rgba(34,139,34,0.22)',   border: 'rgba(255,255,255,0.2)' },
-  '화': { bg: 'rgba(178,34,34,0.22)',   border: 'rgba(255,255,255,0.2)' },
-  '토': { bg: 'rgba(139,69,19,0.22)',   border: 'rgba(255,255,255,0.2)' },
-  '금': { bg: 'rgba(192,192,192,0.18)', border: 'rgba(255,255,255,0.2)' },
-  '수': { bg: 'rgba(0,71,171,0.25)',    border: 'rgba(255,255,255,0.2)' },
+  '목': { bg: 'rgba(34,139,34,0.12)',   border: 'rgba(255,255,255,0.15)' },
+  '화': { bg: 'rgba(178,34,34,0.12)',   border: 'rgba(255,255,255,0.15)' },
+  '토': { bg: 'rgba(139,69,19,0.12)',   border: 'rgba(255,255,255,0.15)' },
+  '금': { bg: 'rgba(192,192,192,0.10)', border: 'rgba(255,255,255,0.15)' },
+  '수': { bg: 'rgba(0,71,171,0.14)',    border: 'rgba(255,255,255,0.15)' },
 };
 
 // ── 상생/상극 판정 ──
