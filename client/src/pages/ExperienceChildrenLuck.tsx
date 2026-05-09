@@ -28,6 +28,9 @@ const OHANG_COLOR: Record<Ohang, string> = {
 const OHANG_HANJA: Record<Ohang, string> = {
   '목':'木','화':'火','토':'土','금':'金','수':'水',
 };
+const OHANG_ICON: Record<Ohang, string> = {
+  '목':'/ohang-mok.png','화':'/ohang-hwa.png','토':'/ohang-to.png','금':'/ohang-geum.png','수':'/ohang-su.png',
+};
 
 const SANGSEONG = new Set([
   '목목','화화','토토','금금','수수',
@@ -349,14 +352,18 @@ export default function ExperienceChildrenLuck() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-white/5 rounded-xl px-4 py-4 text-center">
                       <p className="text-white/40 text-xs mb-2">중간 글자 · {result.midChar}</p>
-                      <p className="text-white font-black text-2xl">{getChosung(result.midChar)}</p>
+                      <div className="w-12 h-12 rounded-xl overflow-hidden mx-auto mb-1">
+                        <img src={OHANG_ICON[result.midOhang]} alt={result.midOhang} className="w-full h-full object-cover" />
+                      </div>
                       <p className="text-xs mt-1 font-bold" style={{ color: OHANG_COLOR[result.midOhang] }}>
                         {OHANG_HANJA[result.midOhang]}({result.midOhang})
                       </p>
                     </div>
                     <div className="bg-white/5 rounded-xl px-4 py-4 text-center">
                       <p className="text-white/40 text-xs mb-2">마지막 글자 · {result.lastChar}</p>
-                      <p className="text-white font-black text-2xl">{getChosung(result.lastChar)}</p>
+                      <div className="w-12 h-12 rounded-xl overflow-hidden mx-auto mb-1">
+                        <img src={OHANG_ICON[result.lastOhang]} alt={result.lastOhang} className="w-full h-full object-cover" />
+                      </div>
                       <p className="text-xs mt-1 font-bold" style={{ color: OHANG_COLOR[result.lastOhang] }}>
                         {OHANG_HANJA[result.lastOhang]}({result.lastOhang})
                       </p>
@@ -409,9 +416,8 @@ export default function ExperienceChildrenLuck() {
             <div className="grid grid-cols-1 gap-3">
               {OHANG_TABLE.map(({ ohang, cho }) => (
                 <div key={ohang} className="flex items-center gap-4 bg-card border border-border/50 rounded-2xl px-5 py-4">
-                  <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl font-black"
-                    style={{ background: OHANG_COLOR[ohang] + '22', color: OHANG_COLOR[ohang], border:`1px solid ${OHANG_COLOR[ohang]}44` }}>
-                    {OHANG_HANJA[ohang]}
+                  <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
+                    <img src={OHANG_ICON[ohang]} alt={ohang} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 flex items-center justify-between gap-4">
                     <p className="font-bold text-foreground text-base">{ohang}({OHANG_HANJA[ohang]})</p>

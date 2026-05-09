@@ -28,6 +28,9 @@ const OHANG_COLOR: Record<Ohang, string> = {
 const OHANG_HANJA: Record<Ohang, string> = {
   '목':'木','화':'火','토':'土','금':'金','수':'水',
 };
+const OHANG_ICON: Record<Ohang, string> = {
+  '목':'/ohang-mok.png','화':'/ohang-hwa.png','토':'/ohang-to.png','금':'/ohang-geum.png','수':'/ohang-su.png',
+};
 
 // ── 상생/상극 판정 ──
 const SANGSEONG = new Set([
@@ -352,7 +355,9 @@ export default function ExperienceHusbandLuck() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-white/5 rounded-xl px-4 py-4 text-center">
                       <p className="text-white/40 text-xs mb-2">성씨 · {result.surname}</p>
-                      <p className="text-white font-black text-2xl">{getChosung(result.surname)}</p>
+                      <div className="w-12 h-12 rounded-xl overflow-hidden mx-auto mb-1">
+                        <img src={OHANG_ICON[result.surnameOhang]} alt={result.surnameOhang} className="w-full h-full object-cover" />
+                      </div>
                       <p className="text-xs mt-1" style={{ color: OHANG_COLOR[result.surnameOhang] }}>
                         {OHANG_HANJA[result.surnameOhang]}({result.surnameOhang})
                         {result.isKim && <span className="text-white/30 block text-[10px]">김씨 특례 적용</span>}
@@ -361,7 +366,9 @@ export default function ExperienceHusbandLuck() {
                     </div>
                     <div className="bg-white/5 rounded-xl px-4 py-4 text-center">
                       <p className="text-white/40 text-xs mb-2">이름 첫글자 · {result.nameFirst}</p>
-                      <p className="text-white font-black text-2xl">{getChosung(result.nameFirst)}</p>
+                      <div className="w-12 h-12 rounded-xl overflow-hidden mx-auto mb-1">
+                        <img src={OHANG_ICON[result.namefirstOhang]} alt={result.namefirstOhang} className="w-full h-full object-cover" />
+                      </div>
                       <p className="text-xs mt-1" style={{ color: OHANG_COLOR[result.namefirstOhang] }}>
                         {OHANG_HANJA[result.namefirstOhang]}({result.namefirstOhang})
                       </p>
@@ -417,8 +424,8 @@ export default function ExperienceHusbandLuck() {
             <div className="grid grid-cols-1 gap-3">
               {OHANG_TABLE.map(({ ohang, cho }) => (
                 <div key={ohang} className="flex items-center gap-4 bg-card border border-border/50 rounded-2xl px-5 py-4">
-                  <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl font-black" style={{ background: OHANG_COLOR[ohang] + '22', color: OHANG_COLOR[ohang], border: `1px solid ${OHANG_COLOR[ohang]}44` }}>
-                    {OHANG_HANJA[ohang]}
+                  <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
+                    <img src={OHANG_ICON[ohang]} alt={ohang} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 flex items-center justify-between gap-4">
                     <p className="font-bold text-foreground text-base">{ohang}({OHANG_HANJA[ohang]})</p>
