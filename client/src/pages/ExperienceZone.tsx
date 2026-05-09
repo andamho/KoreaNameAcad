@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Flame, User, Heart, Sprout, Infinity, ChevronRight } from "lucide-react";
+import { Flame, User, Heart, Sprout, Infinity, Crown, ChevronRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
@@ -56,6 +56,14 @@ const experiences: {
     Icon: Infinity,
     title: "운명의 화신: 숫자로 읽는 나의 본능",
     description: "숫자 속에 새겨진 나의 본능적 운명, 지금 바로 읽어보세요.",
+    available: false,
+  },
+  {
+    id: "name-rank",
+    Icon: Crown,
+    title: "내 이름은 전국 몇 등일까?",
+    description: "전국 이름 순위 데이터로 내 이름의 등수를 확인해보세요.",
+    adminOnly: true,
     available: false,
   },
 ];
@@ -171,7 +179,9 @@ export default function ExperienceZone() {
       {/* 카드 목록 */}
       <main className="flex-1 py-16 md:py-20 -mt-2">
         <div className="max-w-xl mx-auto px-5 space-y-5">
-          {experiences.map((exp) => {
+          {experiences
+            .filter(exp => !(exp.adminOnly && !exp.available) || isAdmin)
+            .map((exp) => {
             const { Icon } = exp;
             const isAvailable = exp.available && (!exp.adminOnly || isAdmin);
             const path = isAvailable ? exp.path : undefined;
