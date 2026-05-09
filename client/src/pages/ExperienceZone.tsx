@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Flame, User, Heart, Sprout, Infinity, Crown, ChevronRight } from "lucide-react";
+import { Flame, User, Heart, Sprout, Crown, ChevronRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
@@ -50,13 +50,6 @@ const experiences: {
     adminOnly: true,
     available: true,
     path: "/experience-zone/children-luck",
-  },
-  {
-    id: "destiny-number",
-    Icon: Infinity,
-    title: "운명의 화신: 숫자로 읽는 나의 본능",
-    description: "숫자 속에 새겨진 나의 본능적 운명, 지금 바로 읽어보세요.",
-    available: false,
   },
   {
     id: "name-rank",
