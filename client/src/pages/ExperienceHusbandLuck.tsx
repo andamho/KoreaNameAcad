@@ -503,7 +503,7 @@ export default function ExperienceHusbandLuck() {
                 placeholder="닉네임 (예: 서울 30대)" maxLength={20}
                 className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition" />
               <textarea value={commentText} onChange={e => setCommentText(e.target.value)}
-                placeholder={'예: "김○○(상극) - 결혼 후 계속 안 풀려요."'}
+                placeholder={'예: "김○○(상극) - 결혼 후 남편과 자꾸 다투게 돼요."'}
                 className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[90px]" maxLength={300} />
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
