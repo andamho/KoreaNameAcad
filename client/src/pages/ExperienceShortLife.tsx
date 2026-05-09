@@ -280,6 +280,9 @@ export default function ExperienceShortLife() {
                   <span className="text-red-400 font-semibold">강한 이별수</span>입니다.<br />
                   연애·가족관계·리더십·인기·승진에 태클을 겁니다.
                 </p>
+                <p className="text-white/45 text-sm leading-[1.9] mt-2">
+                  또한 단명운은 건강관련 문제를 일으킬 수 있습니다.
+                </p>
               </div>
             </div>
 
