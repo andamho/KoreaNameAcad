@@ -31,6 +31,13 @@ const OHANG_HANJA: Record<Ohang, string> = {
 const OHANG_ICON: Record<Ohang, string> = {
   '목':'/ohang-mok.png','화':'/ohang-hwa.png','토':'/ohang-to.png','금':'/ohang-geum.png','수':'/ohang-su.png',
 };
+const OHANG_GLASS: Record<Ohang, { bg: string; border: string }> = {
+  '목': { bg: 'rgba(18,55,30,0.88)', border: 'rgba(74,222,128,0.32)' },
+  '화': { bg: 'rgba(72,14,14,0.88)', border: 'rgba(248,113,113,0.32)' },
+  '토': { bg: 'rgba(72,50,8,0.88)',  border: 'rgba(251,191,36,0.32)' },
+  '금': { bg: 'rgba(38,36,55,0.88)', border: 'rgba(196,181,253,0.32)' },
+  '수': { bg: 'rgba(12,28,72,0.88)', border: 'rgba(96,165,250,0.32)' },
+};
 
 const SANGSEONG = new Set([
   '목목','화화','토토','금금','수수',
@@ -413,18 +420,28 @@ export default function ExperienceChildrenLuck() {
               <h2 className="text-xl font-bold text-foreground mb-1">자음 오행 해독표</h2>
               <p className="text-muted-foreground text-sm">한글 자음마다 고유한 오행 에너지가 있습니다</p>
             </div>
-            <div className="grid grid-cols-1 gap-3">
-              {OHANG_TABLE.map(({ ohang, cho, note }) => (
-                <div key={ohang} className="flex items-center gap-4 bg-card border border-border/50 rounded-2xl px-5 py-4">
-                  <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
+            <div className="grid grid-cols-2 gap-3">
+              {OHANG_TABLE.map(({ ohang, cho, note }, i) => (
+                <div
+                  key={ohang}
+                  className={`relative flex items-center gap-3 rounded-2xl px-4 py-4 overflow-hidden${i === OHANG_TABLE.length - 1 && OHANG_TABLE.length % 2 !== 0 ? ' col-span-2' : ''}`}
+                  style={{
+                    background: OHANG_GLASS[ohang].bg,
+                    border: `1px solid ${OHANG_GLASS[ohang].border}`,
+                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.09), 0 4px 20px ${OHANG_COLOR[ohang]}18`,
+                  }}
+                >
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-4xl font-black select-none pointer-events-none"
+                    style={{ color: OHANG_COLOR[ohang], opacity: 0.1 }}>
+                    {OHANG_HANJA[ohang]}
+                  </span>
+                  <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
                     <img src={OHANG_ICON[ohang]} alt={ohang} className="w-full h-full object-cover" />
                   </div>
-                  <div className="flex-1 flex items-center justify-between gap-4">
-                    <p className="font-bold text-foreground text-base">{ohang}({OHANG_HANJA[ohang]})</p>
-                    <div className="text-right">
-                      <p className="text-muted-foreground text-base font-medium tracking-widest">{cho}</p>
-                      {note && <p className="text-[11px] text-muted-foreground/55 mt-0.5">{note}</p>}
-                    </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-white text-sm leading-tight">{ohang}({OHANG_HANJA[ohang]})</p>
+                    <p className="text-white/60 text-sm font-medium tracking-widest mt-1">{cho}</p>
+                    {note && <p className="text-[10px] text-white/35 mt-0.5">{note}</p>}
                   </div>
                 </div>
               ))}
