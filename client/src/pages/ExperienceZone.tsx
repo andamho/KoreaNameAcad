@@ -201,7 +201,7 @@ export default function ExperienceZone() {
 
                 {/* 텍스트 */}
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-foreground text-base leading-snug tracking-tight">
+                  <div className="font-bold text-foreground text-[17px] leading-snug tracking-tight">
                     {exp.title}
                   </div>
                 </div>
