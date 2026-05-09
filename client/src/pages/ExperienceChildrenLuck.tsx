@@ -345,9 +345,9 @@ export default function ExperienceChildrenLuck() {
                     style={{ background: OHANG_COLOR[ohang] + '22', color: OHANG_COLOR[ohang], border:`1px solid ${OHANG_COLOR[ohang]}44` }}>
                     {OHANG_HANJA[ohang]}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 flex items-center justify-between gap-4">
                     <p className="font-bold text-foreground text-base">{ohang}({OHANG_HANJA[ohang]})</p>
-                    <p className="text-muted-foreground text-sm mt-0.5">{cho}</p>
+                    <p className="text-muted-foreground text-base font-medium tracking-widest">{cho}</p>
                   </div>
                 </div>
               ))}
