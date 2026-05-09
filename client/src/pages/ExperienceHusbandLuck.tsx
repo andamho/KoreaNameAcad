@@ -32,11 +32,11 @@ const OHANG_ICON: Record<Ohang, string> = {
   '목':'/ohang-mok.png','화':'/ohang-hwa.png','토':'/ohang-to.png','금':'/ohang-geum.png','수':'/ohang-su.png',
 };
 const OHANG_GLASS: Record<Ohang, { bg: string; border: string }> = {
-  '목': { bg: 'rgba(18,55,30,0.88)', border: 'rgba(74,222,128,0.32)' },
-  '화': { bg: 'rgba(72,14,14,0.88)', border: 'rgba(248,113,113,0.32)' },
-  '토': { bg: 'rgba(72,50,8,0.88)',  border: 'rgba(251,191,36,0.32)' },
-  '금': { bg: 'rgba(38,36,55,0.88)', border: 'rgba(196,181,253,0.32)' },
-  '수': { bg: 'rgba(12,28,72,0.88)', border: 'rgba(96,165,250,0.32)' },
+  '목': { bg: 'rgba(34,139,34,0.22)',   border: 'rgba(255,255,255,0.2)' },
+  '화': { bg: 'rgba(178,34,34,0.22)',   border: 'rgba(255,255,255,0.2)' },
+  '토': { bg: 'rgba(139,69,19,0.22)',   border: 'rgba(255,255,255,0.2)' },
+  '금': { bg: 'rgba(192,192,192,0.18)', border: 'rgba(255,255,255,0.2)' },
+  '수': { bg: 'rgba(0,71,171,0.25)',    border: 'rgba(255,255,255,0.2)' },
 };
 
 // ── 상생/상극 판정 ──
@@ -428,6 +428,7 @@ export default function ExperienceHusbandLuck() {
               <h2 className="text-xl font-bold text-foreground mb-1">자음 오행 해독표</h2>
               <p className="text-muted-foreground text-sm">한글 자음마다 고유한 오행 에너지가 있습니다</p>
             </div>
+            <div className="rounded-2xl p-3" style={{ background: '#0F172A' }}>
             <div className="grid grid-cols-2 gap-3">
               {OHANG_TABLE.map(({ ohang, cho, note }, i) => (
                 <div
@@ -436,7 +437,9 @@ export default function ExperienceHusbandLuck() {
                   style={{
                     background: OHANG_GLASS[ohang].bg,
                     border: `1px solid ${OHANG_GLASS[ohang].border}`,
-                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.09), 0 4px 20px ${OHANG_COLOR[ohang]}18`,
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
                   }}
                 >
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-4xl font-black select-none pointer-events-none"
@@ -453,6 +456,7 @@ export default function ExperienceHusbandLuck() {
                   </div>
                 </div>
               ))}
+            </div>
             </div>
 
             {/* 상생/상극 */}
