@@ -36,7 +36,9 @@ const experiences: {
     Icon: Heart,
     title: "남편복 1초 만에 아는 법",
     description: "이름에서 남편복을 단 1초 만에 읽어낼 수 있다면?",
-    available: false,
+    adminOnly: true,
+    available: true,
+    path: "/experience-zone/husband-luck",
   },
   {
     id: "children-luck",
