@@ -47,7 +47,9 @@ const experiences: {
     Icon: Sprout,
     title: "자식복 1초 만에 아는 법",
     description: "내 이름 속에 자식복이 담겨 있을까요? 지금 확인해보세요.",
-    available: false,
+    adminOnly: true,
+    available: true,
+    path: "/experience-zone/children-luck",
   },
   {
     id: "destiny-number",
