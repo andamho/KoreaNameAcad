@@ -464,19 +464,19 @@ export default function ExperienceHusbandLuck() {
               <div className="bg-[#18a999]/5 border border-[#18a999]/20 rounded-2xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <CheckCircle2 className="w-4 h-4 text-[#18a999] flex-shrink-0" />
-                  <p className="font-bold text-[#18a999] text-sm tracking-wide">Good</p>
+                  <p className="font-bold text-[#18a999] text-sm tracking-wide">상생 (Good)</p>
                 </div>
                 {['목화  화토  토금  금수  수목','화목  토화  금토  수금  목수','목목  토토'].map((line, i) => (
-                  <p key={i} className="text-muted-foreground text-xs leading-[2]">{line}</p>
+                  <p key={i} className="text-muted-foreground text-sm leading-[2]">{line}</p>
                 ))}
               </div>
               <div className="bg-red-500/5 border border-red-400/20 rounded-2xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                  <p className="font-bold text-red-500 text-sm tracking-wide">Bad</p>
+                  <p className="font-bold text-red-500 text-sm tracking-wide">상극 (Bad)</p>
                 </div>
                 {['목/토  목/금  화/금  화/수  토/수','토/목  금/목  금/화  수/화  수/토','화/화  금/금  수/수'].map((line, i) => (
-                  <p key={i} className="text-muted-foreground text-xs leading-[2]">{line}</p>
+                  <p key={i} className="text-muted-foreground text-sm leading-[2]">{line}</p>
                 ))}
               </div>
             </div>
