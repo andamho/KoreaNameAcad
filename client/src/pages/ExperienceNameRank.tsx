@@ -38,13 +38,14 @@ export default function ExperienceNameRank() {
         </div>
       </section>
       <main className="flex-1 py-10 md:py-14 -mt-px border-0">
-        <div className="max-w-2xl mx-auto px-5 flex flex-col items-center justify-center min-h-[300px] space-y-4">
-          <div className="text-6xl">🏆</div>
-          <p className="text-2xl font-bold text-foreground">준비 중입니다</p>
-          <p className="text-muted-foreground text-center text-base leading-relaxed">
-            전국 이름 순위 데이터를 분석 중입니다.<br />
-            곧 만나보실 수 있습니다.
-          </p>
+        <div className="max-w-2xl mx-auto px-5 space-y-6">
+          <video
+            src="/namerank.mp4"
+            controls
+            playsInline
+            className="w-full rounded-2xl shadow-lg bg-black"
+            style={{ maxHeight: '80vh' }}
+          />
         </div>
       </main>
       <Footer />
