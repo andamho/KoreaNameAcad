@@ -564,6 +564,19 @@ export default function ExperienceAloneFate() {
             ))}
           </div>
 
+          {/* ── 반론 처리 ── */}
+          <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-6 space-y-4">
+            <p className="font-bold text-foreground text-base leading-relaxed">
+              혹시 지금은 부부 사이가 좋아서 내 이야기가 아니라고 생각하시나요?
+            </p>
+            <p className="text-muted-foreground text-base leading-[1.9]">
+              이름의 에너지는 스냅샷이 아니라 한 편의 긴 영화와 같습니다. 100세를 사는 오늘날, 40~50대에 문제가 없다고 해서 그 운이 틀린 것이 아닙니다. 60대, 70대에 찾아오는 뒤늦은 이별이나 예기치 못한 사별, 혹은 한집에 살면서도 남보다 못한 남남으로 지내게 되는 <strong className="text-foreground">'심리적 독신'</strong> 역시 이름 속 10, 12, 19 수리가 만들어내는 에너지의 종착역입니다.
+            </p>
+            <p className="text-muted-foreground text-base leading-[1.9]">
+              미신이 아닙니다. 당신이 평생 불려온 이름의 획수가 만들어낸 과학적인 에너지의 흐름입니다. 이 모든 사실은 <strong className="text-foreground">45만 명의 임상 데이터</strong>가 증명합니다.
+            </p>
+          </div>
+
           {/* ── 경고 ── */}
           <div className="rounded-2xl border-2 border-red-400/25 bg-red-400/5 p-6 space-y-3">
             <div className="flex items-center gap-2 text-red-500 font-bold text-base">
