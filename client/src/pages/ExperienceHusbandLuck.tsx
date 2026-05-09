@@ -49,6 +49,33 @@ function isSangseong(o1: Ohang, o2: Ohang): boolean {
 const BLOCKED = ['씨발','시발','개새끼','병신','미친놈','미친년','지랄','존나','좆','보지','창녀','찐따','등신','죽어','닥쳐'];
 function hasBadWord(t: string) { return BLOCKED.some(w => t.replace(/\s/g,'').includes(w)); }
 
+// ── 일일 사용 횟수 제한 ──
+const MAX_DAILY = 3;
+const USAGE_KEY = 'kna_husband_luck_usage';
+
+function getKSTDateString(): string {
+  const now = new Date();
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().slice(0, 10);
+}
+
+function getTodayUsage(): number {
+  try {
+    const raw = localStorage.getItem(USAGE_KEY);
+    if (!raw) return 0;
+    const { date, count } = JSON.parse(raw);
+    return date === getKSTDateString() ? (count as number) : 0;
+  } catch { return 0; }
+}
+
+function incrementUsage(): number {
+  try {
+    const next = getTodayUsage() + 1;
+    localStorage.setItem(USAGE_KEY, JSON.stringify({ date: getKSTDateString(), count: next }));
+    return next;
+  } catch { return 1; }
+}
+
 interface Comment {
   id: string; nickname: string; totalStrokes: number | null;
   content: string; isPrivate: boolean; reply: string | null;
@@ -67,6 +94,7 @@ export default function ExperienceHusbandLuck() {
   } | null>(null);
   const [calculated, setCalculated] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [usageCount, setUsageCount] = useState(0);
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [nickname, setNickname] = useState('');
@@ -86,6 +114,7 @@ export default function ExperienceHusbandLuck() {
   }, [isVerifying, isAdmin, setLocation]);
 
   useEffect(() => {
+    if (!isAdmin) setUsageCount(getTodayUsage());
     fetch('/api/experience-comments/husband-luck')
       .then(r => r.json())
       .then(data => setComments(Array.isArray(data) ? data : []))
@@ -106,10 +135,13 @@ export default function ExperienceHusbandLuck() {
       const namefirstOhang = getCharOhang(nameFirst);
       setResult({ surname, nameFirst, surnameOhang, namefirstOhang, isKim, good: isSangseong(surnameOhang, namefirstOhang) });
       setCalculated(true); setIsAnalyzing(false);
+      setUsageCount(isAdmin ? usageCount + 1 : incrementUsage());
     }, 1200);
   }
 
   function reset() { setName(''); setResult(null); setCalculated(false); setIsAnalyzing(false); }
+
+  function adminReset() { reset(); setUsageCount(0); }
 
   async function submitComment() {
     if (!nickname.trim() || !commentText.trim()) { setCommentError('닉네임과 내용을 입력해주세요.'); return; }
@@ -252,9 +284,9 @@ export default function ExperienceHusbandLuck() {
                 <input
                   value={name}
                   onChange={e => { setName(e.target.value); setCalculated(false); }}
-                  onKeyDown={e => e.key === 'Enter' && !isAnalyzing && calculate()}
+                  onKeyDown={e => e.key === 'Enter' && !isAnalyzing && (isAdmin || usageCount < MAX_DAILY) && calculate()}
                   placeholder="이름을 입력하세요 (예: 김연아)"
-                  disabled={isAnalyzing}
+                  disabled={isAnalyzing || (!isAdmin && usageCount >= MAX_DAILY)}
                   className="w-full bg-white/10 text-white placeholder-white/30 rounded-xl px-4 py-4 text-lg font-medium outline-none focus:ring-2 focus:ring-[#18a999] transition disabled:opacity-50"
                   maxLength={6}
                 />
@@ -266,7 +298,29 @@ export default function ExperienceHusbandLuck() {
                 )}
               </div>
 
-              {calculated ? (
+              {usageCount >= MAX_DAILY && !calculated ? (
+                <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-4 text-center">
+                  <p className="text-white font-bold text-base leading-relaxed">
+                    "이름은 운명을 담은 그릇입니다"
+                  </p>
+                  <p className="text-white/50 text-sm leading-relaxed">
+                    이름이 갖는 귀한 가치를 존중하기 위해,<br />
+                    하루 무료 체험 횟수를 {MAX_DAILY}회로 제한하고 있습니다.<br /><br />
+                    소중한 사람의 이름 속 운명을 더 깊이 알고 싶다면<br />
+                    공식 상담을 신청해 주세요.
+                  </p>
+                  <button onClick={() => setLocation('/services')}
+                    className="px-6 py-2.5 rounded-full bg-[#18a999] text-white font-bold text-sm hover:bg-[#149085] transition">
+                    1:1 정밀 에너지 진단 신청하기 &gt;
+                  </button>
+                  {isAdmin && (
+                    <button onClick={adminReset}
+                      className="block w-full text-xs text-white/30 hover:text-white/60 transition mt-1">
+                      [관리자] 다시 테스트하기
+                    </button>
+                  )}
+                </div>
+              ) : calculated ? (
                 <button onClick={reset} className="w-full py-3.5 rounded-xl bg-white/10 text-white/60 hover:bg-white/20 font-bold transition">
                   다시 진단하기
                 </button>
@@ -276,6 +330,20 @@ export default function ExperienceHusbandLuck() {
                   style={{ background: isAnalyzing ? '#334155' : '#18a999' }}>
                   {isAnalyzing ? '⚡ 오행 에너지 분석 중...' : '남편복 진단하기'}
                 </button>
+              )}
+
+              {usageCount > 0 && usageCount < MAX_DAILY && (!calculated || isAdmin) && (
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex justify-between text-xs text-white/35">
+                    <span>오늘 무료 진단</span>
+                    <span>{usageCount}/{MAX_DAILY}회 사용 · {MAX_DAILY - usageCount}회 남음</span>
+                  </div>
+                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-500 bg-[#18a999]"
+                      style={{ width: `${(usageCount / MAX_DAILY) * 100}%` }} />
+                  </div>
+                  <p className="text-xs text-center text-white/30">{usageCount}/{MAX_DAILY}회 진단함</p>
+                </div>
               )}
 
               {calculated && result && (
