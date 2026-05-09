@@ -27,6 +27,7 @@ import About from "@/pages/About";
 import ExperienceZone from "@/pages/ExperienceZone";
 import ExperienceAloneFate from "@/pages/ExperienceAloneFate";
 import ExperienceHusbandLuck from "@/pages/ExperienceHusbandLuck";
+import ExperienceShortLife from "@/pages/ExperienceShortLife";
 import NotFound from "@/pages/not-found";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
@@ -93,6 +94,7 @@ function Router() {
       <Route path="/experience-zone" component={ExperienceZone}/>
       <Route path="/experience-zone/alone-fate" component={ExperienceAloneFate}/>
       <Route path="/experience-zone/husband-luck" component={ExperienceHusbandLuck}/>
+      <Route path="/experience-zone/short-life" component={ExperienceShortLife}/>
       <Route component={NotFound} />
     </Switch>
   );

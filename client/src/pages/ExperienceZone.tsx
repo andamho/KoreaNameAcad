@@ -20,7 +20,9 @@ const experiences: {
     Icon: Flame,
     title: "단명운 10초 만에 알아보기",
     description: "이름이 보내는 단명의 신호, 지금 바로 확인해보세요.",
-    available: false,
+    adminOnly: true,
+    available: true,
+    path: "/experience-zone/short-life",
   },
   {
     id: "alone-fate",
