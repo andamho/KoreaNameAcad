@@ -18,7 +18,7 @@ const experiences: {
   {
     id: "short-life",
     Icon: Flame,
-    title: "단명운 10초 만에 알아보기",
+    title: "단명운 1초 만에 알아보기",
     description: "이름이 보내는 단명의 신호, 지금 바로 확인해보세요.",
     adminOnly: true,
     available: true,
@@ -27,8 +27,8 @@ const experiences: {
   {
     id: "alone-fate",
     Icon: User,
-    title: "혼자살 팔자 10초 만에 아는 법",
-    description: "혼자 사는 운명인지, 이름으로 10초 만에 알아보세요.",
+    title: "혼자살 팔자 1초 만에 알아보기",
+    description: "혼자 사는 운명인지, 이름으로 1초 만에 알아보세요.",
     adminOnly: true,
     available: true,
     path: "/experience-zone/alone-fate",
@@ -36,7 +36,7 @@ const experiences: {
   {
     id: "husband-luck",
     Icon: Heart,
-    title: "남편복 1초 만에 아는 법",
+    title: "남편복 1초 만에 알아보기",
     description: "이름에서 남편복을 단 1초 만에 읽어낼 수 있다면?",
     adminOnly: true,
     available: true,
@@ -45,7 +45,7 @@ const experiences: {
   {
     id: "children-luck",
     Icon: Sprout,
-    title: "자식복 1초 만에 아는 법",
+    title: "자식복 1초 만에 알아보기",
     description: "내 이름 속에 자식복이 담겨 있을까요? 지금 확인해보세요.",
     adminOnly: true,
     available: true,
@@ -137,8 +137,8 @@ export default function ExperienceZone() {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-16 pb-[150px] md:pt-24 md:pb-56 border-0 outline-none">
+      {/* Hero Section — overflow-hidden은 이미지 클리핑용, SVG는 section 밖으로 분리 */}
+      <section className="relative overflow-hidden pt-16 pb-4 md:pt-24 md:pb-6">
         <img
           src="/mesh-header-hero.png"
           alt=""
@@ -148,13 +148,7 @@ export default function ExperienceZone() {
           decoding="sync"
           aria-hidden="true"
         />
-        {/* 볼록 하단 SVG */}
-        <div className="absolute bottom-0 left-0 w-full" aria-hidden="true">
-          <svg viewBox="0 0 1200 150" preserveAspectRatio="none" className="w-full h-28 md:h-36 block">
-            <path d="M0,150 L0,0 Q600,150 1200,0 L1200,150 Z" className="fill-background" />
-          </svg>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32 md:pb-48">
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
             <img
               src="/experience-zone-character-opt.webp"
@@ -177,8 +171,15 @@ export default function ExperienceZone() {
         </div>
       </section>
 
+      {/* 볼록 SVG — section 밖, main 위에 겹쳐서 경계선 완전 제거 */}
+      <div className="relative -mt-28 md:-mt-36 pointer-events-none" aria-hidden style={{ zIndex: 1 }}>
+        <svg viewBox="0 0 1200 150" preserveAspectRatio="none" className="w-full h-28 md:h-36 block">
+          <path d="M0,150 L0,0 Q600,150 1200,0 L1200,150 Z" className="fill-background" />
+        </svg>
+      </div>
+
       {/* 카드 목록 */}
-      <main className="flex-1 py-16 md:py-20 -mt-px border-0">
+      <main className="flex-1 py-8 md:py-12 relative" style={{ zIndex: 2 }}>
         <div className="max-w-xl mx-auto px-5 space-y-5">
           {experiences
             .filter(exp => !(exp.adminOnly && !exp.available) || isAdmin)

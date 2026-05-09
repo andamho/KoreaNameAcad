@@ -207,7 +207,7 @@ export default function ExperienceChildrenLuck() {
           </button>
           <h1 className="leading-tight text-slate-900">
             <span className="block text-5xl md:text-6xl font-black tracking-tight">자식복</span>
-            <span className="block text-3xl md:text-4xl font-light tracking-wide mt-1">1초 만에 아는 법</span>
+            <span className="block text-3xl md:text-4xl font-light tracking-wide mt-1">1초 만에 알아보기</span>
           </h1>
         </div>
       </section>
@@ -545,7 +545,7 @@ export default function ExperienceChildrenLuck() {
             </div>
 
             <div className="text-center pt-2">
-              <button onClick={() => navigator.share?.({ title:'자식복 1초 만에 아는 법', url: window.location.href })}
+              <button onClick={() => navigator.share?.({ title:'자식복 1초 만에 알아보기', url: window.location.href })}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#18a999] text-white text-sm font-bold hover:bg-[#149085] transition">
                 <Share2 className="w-4 h-4" /> 친구에게 공유하기
               </button>
