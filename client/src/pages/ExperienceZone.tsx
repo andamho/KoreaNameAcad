@@ -36,7 +36,7 @@ const experiences: {
   {
     id: "husband-luck",
     Icon: Heart,
-    title: "남편복 1초 만에 알아보기",
+    title: "남편복 / 아내복 1초 만에 알아보기",
     description: "이름에서 남편복을 단 1초 만에 읽어낼 수 있다면?",
     adminOnly: true,
     available: true,

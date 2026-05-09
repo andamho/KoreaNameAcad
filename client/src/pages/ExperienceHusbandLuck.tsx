@@ -218,7 +218,7 @@ export default function ExperienceHusbandLuck() {
             <ChevronLeft className="w-4 h-4" /> 체험 ZONE
           </button>
           <h1 className="leading-tight text-slate-900">
-            <span className="block text-5xl md:text-6xl font-black tracking-tight">남편복</span>
+            <span className="block text-5xl md:text-6xl font-black tracking-tight">남편복 / 아내복</span>
             <span className="block text-3xl md:text-4xl font-light tracking-wide mt-1">1초 만에 알아보기</span>
           </h1>
         </div>
@@ -565,7 +565,7 @@ export default function ExperienceHusbandLuck() {
             </div>
 
             <div className="text-center pt-2">
-              <button onClick={() => navigator.share?.({ title:'남편복 1초 만에 알아보기', url: window.location.href })}
+              <button onClick={() => navigator.share?.({ title:'남편복 / 아내복 1초 만에 알아보기', url: window.location.href })}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#18a999] text-white text-sm font-bold hover:bg-[#149085] transition">
                 <Share2 className="w-4 h-4" /> 친구에게 공유하기
               </button>
