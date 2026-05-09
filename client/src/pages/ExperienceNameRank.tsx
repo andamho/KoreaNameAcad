@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useLocation } from "wouter";
@@ -8,8 +8,16 @@ import { useAdmin } from "@/contexts/AdminContext";
 export default function ExperienceNameRank() {
   const [, setLocation] = useLocation();
   const { isAdmin, isVerifying } = useAdmin();
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.play().catch(() => {});
+  }, []);
   useEffect(() => {
     if (!isVerifying && !isAdmin) setLocation('/experience-zone');
   }, [isVerifying, isAdmin, setLocation]);
@@ -40,11 +48,14 @@ export default function ExperienceNameRank() {
       <main className="flex-1 py-10 md:py-14 -mt-px border-0">
         <div className="max-w-2xl mx-auto px-5 space-y-6">
           <video
+            ref={videoRef}
             src="/namerank.mp4"
             controls
             autoPlay
+            loop
             muted
             playsInline
+            preload="auto"
             className="w-full rounded-2xl shadow-lg bg-black"
             style={{ minHeight: '60vh', maxHeight: '85vh', objectFit: 'contain' }}
           />
