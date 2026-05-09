@@ -40,7 +40,7 @@ const OHANG_GLASS: Record<Ohang, { bg: string; border: string }> = {
 };
 
 const SANGSEONG = new Set([
-  '목목','화화','토토','금금','수수',
+  '목목','토토',
   '목화','화목','화토','토화','토금','금토','금수','수금','수목','목수',
 ]);
 function getOhang(char: string): Ohang {
