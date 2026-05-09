@@ -218,7 +218,7 @@ export default function ExperienceHusbandLuck() {
             <ChevronLeft className="w-4 h-4" /> 체험 ZONE
           </button>
           <h1 className="leading-tight text-slate-900">
-            <span className="block text-5xl md:text-6xl font-black tracking-tight">남편복 / 아내복</span>
+            <span className="block text-5xl md:text-6xl font-black tracking-tight">남편복 | 아내복</span>
             <span className="block text-3xl md:text-4xl font-light tracking-wide mt-1">1초 만에 알아보기</span>
           </h1>
         </div>
@@ -248,7 +248,7 @@ export default function ExperienceHusbandLuck() {
                 <p className="text-white/65 text-base leading-[2]">
                   한글 이름에서 <span className="glow-tiffany2 text-[#56D5DB] font-black">성씨의 첫 자음</span>과<br />
                   <span className="glow-tiffany2 text-[#56D5DB] font-black">이름 첫글자의 자음</span>의 관계를 보면<br />
-                  남편복을 알 수 있습니다.
+                  남편복 | 아내복을 알 수 있습니다.
                 </p>
               </div>
             </div>
@@ -269,7 +269,7 @@ export default function ExperienceHusbandLuck() {
                 </div>
               </div>
               <div className="mt-4 rounded-xl px-4 py-3 text-center" style={{ background:'rgba(86,213,219,0.08)',border:'1px solid rgba(86,213,219,0.2)' }}>
-                <p className="text-[#56D5DB] font-bold text-sm">금 + 토 = 상생 → 남편복 좋음 ✓</p>
+                <p className="text-[#56D5DB] font-bold text-sm">금 + 토 = 상생 → 남편복 | 아내복 좋음 ✓</p>
                 <p className="text-white/30 text-xs mt-1">※ 김씨는 ㄱ(木)이 아닌 金(금)으로 봅니다</p>
               </div>
             </div>
@@ -286,7 +286,7 @@ export default function ExperienceHusbandLuck() {
           {/* 계산기 */}
           <div className="rounded-3xl bg-slate-900 dark:bg-slate-800 overflow-hidden shadow-2xl">
             <div className="px-6 pt-6 pb-4 border-b border-white/10">
-              <p className="text-lg font-bold text-white">남편복 자동 진단기</p>
+              <p className="text-lg font-bold text-white">남편복 | 아내복 자동 진단기</p>
               <p className="text-white/40 text-sm mt-0.5">성씨와 이름 첫글자의 오행 관계를 분석합니다</p>
             </div>
             <div className="px-6 py-5 space-y-4">
@@ -338,7 +338,7 @@ export default function ExperienceHusbandLuck() {
                 <button onClick={calculate} disabled={name.trim().length < 2 || isAnalyzing}
                   className="w-full py-3.5 rounded-xl font-bold text-white transition-all disabled:opacity-40 active:scale-[0.98]"
                   style={{ background: isAnalyzing ? '#334155' : '#18a999' }}>
-                  {isAnalyzing ? '⚡ 오행 에너지 분석 중...' : '남편복 진단하기'}
+                  {isAnalyzing ? '⚡ 오행 에너지 분석 중...' : '남편복 | 아내복 진단하기'}
                 </button>
               )}
 
@@ -565,7 +565,7 @@ export default function ExperienceHusbandLuck() {
             </div>
 
             <div className="text-center pt-2">
-              <button onClick={() => navigator.share?.({ title:'남편복 / 아내복 1초 만에 알아보기', url: window.location.href })}
+              <button onClick={() => navigator.share?.({ title:'남편복 | 아내복 1초 만에 알아보기', url: window.location.href })}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#18a999] text-white text-sm font-bold hover:bg-[#149085] transition">
                 <Share2 className="w-4 h-4" /> 친구에게 공유하기
               </button>
