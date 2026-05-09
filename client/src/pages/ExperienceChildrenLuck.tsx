@@ -450,7 +450,7 @@ export default function ExperienceChildrenLuck() {
               ))}
             </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="bg-[#18a999]/5 border border-[#18a999]/20 rounded-2xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <CheckCircle2 className="w-4 h-4 text-[#18a999] flex-shrink-0" />
