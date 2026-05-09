@@ -39,7 +39,7 @@ const DANGER = [10, 12, 14, 20];
 const DANGER_LABELS: Record<number, string> = {
   10: '단명수',
   12: '단명수',
-  14: '이산파멸수 (단명수)',
+  14: '이산파멸(단명수)',
   20: '백사실패(단명수)',
 };
 
