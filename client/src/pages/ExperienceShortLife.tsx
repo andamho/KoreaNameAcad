@@ -506,7 +506,7 @@ export default function ExperienceShortLife() {
                 </div>
               )}
               <textarea value={commentText} onChange={e => setCommentText(e.target.value)}
-                placeholder={'예: "홍○○(14획) - 소름 돋네요. 진짜 이별이 많았어요."'}
+                placeholder={'예: "홍○○(14획) - 요즘 여기저기 자주 아파요."'}
                 className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[90px]" maxLength={300} />
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
