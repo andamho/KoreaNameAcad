@@ -42,9 +42,11 @@ export default function ExperienceNameRank() {
           <video
             src="/namerank.mp4"
             controls
+            autoPlay
+            muted
             playsInline
             className="w-full rounded-2xl shadow-lg bg-black"
-            style={{ maxHeight: '80vh' }}
+            style={{ minHeight: '60vh', maxHeight: '85vh', objectFit: 'contain' }}
           />
         </div>
       </main>
