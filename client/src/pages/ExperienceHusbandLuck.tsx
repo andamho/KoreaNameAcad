@@ -185,11 +185,11 @@ export default function ExperienceHusbandLuck() {
     } catch {} finally { setReplySubmitting(false); }
   }
 
-  const OHANG_TABLE: { ohang: Ohang; cho: string }[] = [
+  const OHANG_TABLE: { ohang: Ohang; cho: string; note?: string }[] = [
     { ohang: '목', cho: 'ㄱ ㄲ ㅋ' },
     { ohang: '화', cho: 'ㄴ ㄷ ㄹ ㅌ' },
     { ohang: '토', cho: 'ㅇ ㅎ' },
-    { ohang: '금', cho: 'ㅅ ㅈ ㅊ ㅆ' },
+    { ohang: '금', cho: 'ㅅ ㅈ ㅊ ㅆ', note: '김씨(金氏)의 ㄱ' },
     { ohang: '수', cho: 'ㅁ ㅂ ㅍ' },
   ];
 
@@ -422,14 +422,17 @@ export default function ExperienceHusbandLuck() {
               <p className="text-muted-foreground text-sm">한글 자음마다 고유한 오행 에너지가 있습니다</p>
             </div>
             <div className="grid grid-cols-1 gap-3">
-              {OHANG_TABLE.map(({ ohang, cho }) => (
+              {OHANG_TABLE.map(({ ohang, cho, note }) => (
                 <div key={ohang} className="flex items-center gap-4 bg-card border border-border/50 rounded-2xl px-5 py-4">
                   <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
                     <img src={OHANG_ICON[ohang]} alt={ohang} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 flex items-center justify-between gap-4">
                     <p className="font-bold text-foreground text-base">{ohang}({OHANG_HANJA[ohang]})</p>
-                    <p className="text-muted-foreground text-base font-medium tracking-widest">{cho}</p>
+                    <div className="text-right">
+                      <p className="text-muted-foreground text-base font-medium tracking-widest">{cho}</p>
+                      {note && <p className="text-[11px] text-muted-foreground/55 mt-0.5">{note}</p>}
+                    </div>
                   </div>
                 </div>
               ))}
