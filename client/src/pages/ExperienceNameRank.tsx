@@ -133,7 +133,7 @@ export default function ExperienceNameRank() {
           {/* 진단 기록 */}
           <div ref={commentRef} className="space-y-5">
             <div>
-              <h2 className="text-xl font-bold text-foreground">진단 기록</h2>
+              <h2 className="text-xl font-bold text-foreground">내 이름은 몇 등일까요? 순위에 없어도 실망하지 마세요!</h2>
               <p className="text-sm text-muted-foreground mt-0.5">영상을 보고 느낀 점을 남겨보세요</p>
             </div>
             <div className="rounded-2xl bg-card border border-border/50 p-5 space-y-3" style={{ boxShadow:'0 2px 12px rgba(0,0,0,0.04)' }}>
@@ -141,7 +141,7 @@ export default function ExperienceNameRank() {
                 placeholder="닉네임 (예: 서울 30대)" maxLength={20}
                 className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition" />
               <textarea value={commentText} onChange={e => setCommentText(e.target.value)}
-                placeholder='예: "내 이름이 몇 등인지 궁금했는데 확인해봤어요."'
+                placeholder={`야호 1등!!!\n저 7위요 ㅋㅋㅋ\n내 이름은 없다능~ 찾기힘들다능\n내이름 없음 ㅋ ㅋ 어머니 아버지 감사합니다!\n지혜인데 너무 흔해서 개명 고민 중ㅋㅋㅋ`}
                 className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[90px]" maxLength={300} />
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
