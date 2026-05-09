@@ -453,14 +453,14 @@ export default function ExperienceChildrenLuck() {
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-[#18a999]/5 border border-[#18a999]/20 rounded-2xl p-4">
                 <p className="font-bold text-[#18a999] text-sm mb-3">😊 상생관계 (좋음)</p>
-                {['목↔화','화↔토','토↔금','금↔수','수↔목','같은 오행'].map(v => (
-                  <p key={v} className="text-muted-foreground text-xs leading-[2]">{v}</p>
+                {['목화  화토  토금  금수  수목','화목  토화  금토  수금  목수','목목  토토'].map((line, i) => (
+                  <p key={i} className="text-muted-foreground text-xs leading-[2]">{line}</p>
                 ))}
               </div>
               <div className="bg-red-500/5 border border-red-400/20 rounded-2xl p-4">
                 <p className="font-bold text-red-500 text-sm mb-3">😔 상극관계 (약함)</p>
-                {['목↔토','목↔금','화↔금','화↔수','토↔수'].map(v => (
-                  <p key={v} className="text-muted-foreground text-xs leading-[2]">{v}</p>
+                {['목/토  목/금  화/금  화/수  토/수','토/목  금/목  금/화  수/화  수/토','화/화  금/금  수/수'].map((line, i) => (
+                  <p key={i} className="text-muted-foreground text-xs leading-[2]">{line}</p>
                 ))}
               </div>
             </div>
