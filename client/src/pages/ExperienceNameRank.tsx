@@ -13,11 +13,12 @@ export default function ExperienceNameRank() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   useEffect(() => {
+    if (isVerifying || !isAdmin) return;
     const v = videoRef.current;
     if (!v) return;
     v.muted = true;
     v.play().catch(() => {});
-  }, []);
+  }, [isVerifying, isAdmin]);
   useEffect(() => {
     if (!isVerifying && !isAdmin) setLocation('/experience-zone');
   }, [isVerifying, isAdmin, setLocation]);
@@ -56,6 +57,7 @@ export default function ExperienceNameRank() {
             muted
             playsInline
             preload="auto"
+            onCanPlay={e => { (e.target as HTMLVideoElement).play().catch(() => {}); }}
             className="w-full rounded-2xl shadow-lg bg-black"
             style={{ minHeight: '60vh', maxHeight: '85vh', objectFit: 'contain' }}
           />

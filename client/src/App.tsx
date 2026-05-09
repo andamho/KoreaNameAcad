@@ -153,6 +153,12 @@ function App() {
     const formLogoImg = new Image();
     formLogoImg.src = formLogoImage;
     
+    // 1.7. 전국순위 영상 미리 버퍼링
+    const nrVideo = document.createElement('video');
+    nrVideo.preload = 'auto';
+    nrVideo.muted = true;
+    nrVideo.src = '/namerank.mp4';
+
     // 2. 캐릭터 이미지 로딩
     characterImages.forEach((src) => {
       const link = document.createElement('link');
