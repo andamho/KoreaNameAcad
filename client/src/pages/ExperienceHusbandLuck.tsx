@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useLocation } from "wouter";
-import { ChevronLeft, Share2, Lock, Send, Trash2 } from "lucide-react";
+import { ChevronLeft, Share2, Lock, Send, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { useAdmin } from "@/contexts/AdminContext";
 
 // ── 초성 추출 ──
@@ -462,13 +462,19 @@ export default function ExperienceHusbandLuck() {
             {/* 상생/상극 */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-[#18a999]/5 border border-[#18a999]/20 rounded-2xl p-4">
-                <p className="font-bold text-[#18a999] text-sm mb-3">😊 상생관계 (좋음)</p>
+                <div className="flex items-center gap-2 mb-3">
+                  <CheckCircle2 className="w-4 h-4 text-[#18a999] flex-shrink-0" />
+                  <p className="font-bold text-[#18a999] text-sm tracking-wide">Good</p>
+                </div>
                 {['목화  화토  토금  금수  수목','화목  토화  금토  수금  목수','목목  토토'].map((line, i) => (
                   <p key={i} className="text-muted-foreground text-xs leading-[2]">{line}</p>
                 ))}
               </div>
               <div className="bg-red-500/5 border border-red-400/20 rounded-2xl p-4">
-                <p className="font-bold text-red-500 text-sm mb-3">😔 상극관계 (약함)</p>
+                <div className="flex items-center gap-2 mb-3">
+                  <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                  <p className="font-bold text-red-500 text-sm tracking-wide">Bad</p>
+                </div>
                 {['목/토  목/금  화/금  화/수  토/수','토/목  금/목  금/화  수/화  수/토','화/화  금/금  수/수'].map((line, i) => (
                   <p key={i} className="text-muted-foreground text-xs leading-[2]">{line}</p>
                 ))}
