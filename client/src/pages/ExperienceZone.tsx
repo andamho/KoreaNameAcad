@@ -153,7 +153,8 @@ export default function ExperienceZone() {
             />
             <div className="text-center md:text-left">
               <p className="text-sm font-medium tracking-wide text-slate-600 mb-2">EXPERIENCE ZONE</p>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6"
+                style={{ textShadow: '0 2px 8px rgba(0,0,0,0.55), 0 4px 24px rgba(0,0,0,0.35)' }}>
                 체험 ZONE
               </h1>
               <p className="text-lg md:text-2xl text-slate-700">
