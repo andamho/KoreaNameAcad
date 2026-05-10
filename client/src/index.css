@@ -643,25 +643,26 @@ html.ua-tiktok .kna-myth-truth-section .text-sm {
 }
 
 /* ======================================
-   체험존 페이지(.kna-experience-page)만 텍스트 축소
-   (인스타·틱톡 인앱 브라우저 — 다른 페이지에는 영향 없음)
+   체험존 페이지(.kna-experience-page) 인스타·틱톡 텍스트 82% 축소
+   (Instagram WebView가 ~22% 팽창 → 미리 82%로 줄여 상쇄)
+   기본px × 0.82 계산값 적용
    ====================================== */
-html.ua-instagram .kna-experience-page .text-2xl,
-html.ua-tiktok    .kna-experience-page .text-2xl { font-size: 16px !important; }
-html.ua-instagram .kna-experience-page .text-3xl,
-html.ua-tiktok    .kna-experience-page .text-3xl { font-size: 18px !important; }
-html.ua-instagram .kna-experience-page .text-4xl,
-html.ua-tiktok    .kna-experience-page .text-4xl { font-size: 20px !important; }
-html.ua-instagram .kna-experience-page .text-5xl,
-html.ua-tiktok    .kna-experience-page .text-5xl { font-size: 22px !important; }
-html.ua-instagram .kna-experience-page .text-6xl,
-html.ua-tiktok    .kna-experience-page .text-6xl { font-size: 24px !important; }
-html.ua-instagram .kna-experience-page .text-7xl,
-html.ua-tiktok    .kna-experience-page .text-7xl { font-size: 26px !important; }
 html.ua-instagram .kna-experience-page .text-lg,
-html.ua-tiktok    .kna-experience-page .text-lg  { font-size: 14px !important; }
+html.ua-tiktok    .kna-experience-page .text-lg  { font-size: 15px !important; }
 html.ua-instagram .kna-experience-page .text-xl,
-html.ua-tiktok    .kna-experience-page .text-xl  { font-size: 15px !important; }
+html.ua-tiktok    .kna-experience-page .text-xl  { font-size: 16px !important; }
+html.ua-instagram .kna-experience-page .text-2xl,
+html.ua-tiktok    .kna-experience-page .text-2xl { font-size: 20px !important; }
+html.ua-instagram .kna-experience-page .text-3xl,
+html.ua-tiktok    .kna-experience-page .text-3xl { font-size: 25px !important; }
+html.ua-instagram .kna-experience-page .text-4xl,
+html.ua-tiktok    .kna-experience-page .text-4xl { font-size: 30px !important; }
+html.ua-instagram .kna-experience-page .text-5xl,
+html.ua-tiktok    .kna-experience-page .text-5xl { font-size: 39px !important; }
+html.ua-instagram .kna-experience-page .text-6xl,
+html.ua-tiktok    .kna-experience-page .text-6xl { font-size: 49px !important; }
+html.ua-instagram .kna-experience-page .text-7xl,
+html.ua-tiktok    .kna-experience-page .text-7xl { font-size: 59px !important; }
 
 /* LIGHT MODE */
 :root {
