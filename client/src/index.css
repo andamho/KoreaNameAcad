@@ -643,15 +643,25 @@ html.ua-tiktok .kna-myth-truth-section .text-sm {
 }
 
 /* ======================================
-   체험존 페이지 Tailwind 텍스트 클래스 일괄 축소
-   (인스타·틱톡 인앱 브라우저에서 큰 제목 최적화)
+   체험존 페이지(.kna-experience-page)만 텍스트 축소
+   (인스타·틱톡 인앱 브라우저 — 다른 페이지에는 영향 없음)
    ====================================== */
-html.ua-instagram .text-2xl, html.ua-tiktok .text-2xl { font-size: 16px !important; }
-html.ua-instagram .text-3xl, html.ua-tiktok .text-3xl { font-size: 18px !important; }
-html.ua-instagram .text-4xl, html.ua-tiktok .text-4xl { font-size: 20px !important; }
-html.ua-instagram .text-5xl, html.ua-tiktok .text-5xl { font-size: 24px !important; }
-html.ua-instagram .text-6xl, html.ua-tiktok .text-6xl { font-size: 26px !important; }
-html.ua-instagram .text-7xl, html.ua-tiktok .text-7xl { font-size: 28px !important; }
+html.ua-instagram .kna-experience-page .text-2xl,
+html.ua-tiktok    .kna-experience-page .text-2xl { font-size: 16px !important; }
+html.ua-instagram .kna-experience-page .text-3xl,
+html.ua-tiktok    .kna-experience-page .text-3xl { font-size: 18px !important; }
+html.ua-instagram .kna-experience-page .text-4xl,
+html.ua-tiktok    .kna-experience-page .text-4xl { font-size: 20px !important; }
+html.ua-instagram .kna-experience-page .text-5xl,
+html.ua-tiktok    .kna-experience-page .text-5xl { font-size: 22px !important; }
+html.ua-instagram .kna-experience-page .text-6xl,
+html.ua-tiktok    .kna-experience-page .text-6xl { font-size: 24px !important; }
+html.ua-instagram .kna-experience-page .text-7xl,
+html.ua-tiktok    .kna-experience-page .text-7xl { font-size: 26px !important; }
+html.ua-instagram .kna-experience-page .text-lg,
+html.ua-tiktok    .kna-experience-page .text-lg  { font-size: 14px !important; }
+html.ua-instagram .kna-experience-page .text-xl,
+html.ua-tiktok    .kna-experience-page .text-xl  { font-size: 15px !important; }
 
 /* LIGHT MODE */
 :root {

@@ -189,7 +189,7 @@ export default function ExperienceChildrenLuck() {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="kna-experience-page min-h-screen bg-background flex flex-col">
       <Navbar />
 
       {/* 히어로 */}

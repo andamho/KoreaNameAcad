@@ -93,7 +93,7 @@ export default function ExperienceNameRank() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="kna-experience-page min-h-screen bg-background flex flex-col">
       <Navbar />
       <section className="relative overflow-hidden pt-16 pb-[150px] md:pt-24 md:pb-56 border-0 outline-none">
         <img src="/alone-fate-hero.png" alt="" className="absolute inset-0 w-full h-full object-cover object-top" fetchPriority="high" loading="eager" decoding="sync" aria-hidden />
