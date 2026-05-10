@@ -642,6 +642,17 @@ html.ua-tiktok .kna-myth-truth-section .text-sm {
   font-size: 14px !important;
 }
 
+/* ======================================
+   체험존 페이지 Tailwind 텍스트 클래스 일괄 축소
+   (인스타·틱톡 인앱 브라우저에서 큰 제목 최적화)
+   ====================================== */
+html.ua-instagram .text-2xl, html.ua-tiktok .text-2xl { font-size: 16px !important; }
+html.ua-instagram .text-3xl, html.ua-tiktok .text-3xl { font-size: 18px !important; }
+html.ua-instagram .text-4xl, html.ua-tiktok .text-4xl { font-size: 20px !important; }
+html.ua-instagram .text-5xl, html.ua-tiktok .text-5xl { font-size: 24px !important; }
+html.ua-instagram .text-6xl, html.ua-tiktok .text-6xl { font-size: 26px !important; }
+html.ua-instagram .text-7xl, html.ua-tiktok .text-7xl { font-size: 28px !important; }
+
 /* LIGHT MODE */
 :root {
   --button-outline: rgba(0,0,0, .10);
