@@ -120,9 +120,6 @@ export default function ExperienceZone() {
         document.head.appendChild(style);
       }
 
-      return () => {
-        document.documentElement.classList.remove(className);
-      };
     }
   }, []);
 

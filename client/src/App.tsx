@@ -116,6 +116,27 @@ function App() {
     } else if (isTikTok) {
       document.documentElement.classList.add('ua-tiktok');
     }
+
+    // 체험존 페이지 전용 인앱 브라우저 스타일 (82% 비율, 영구 주입)
+    if (isInstagram || isTikTok) {
+      const cn = isInstagram ? 'ua-instagram' : 'ua-tiktok';
+      const styleId = 'inapp-experience-global';
+      if (!document.getElementById(styleId)) {
+        const s = document.createElement('style');
+        s.id = styleId;
+        s.textContent = `
+          html.${cn} .kna-experience-page .text-lg  { font-size: 15px !important; }
+          html.${cn} .kna-experience-page .text-xl  { font-size: 16px !important; }
+          html.${cn} .kna-experience-page .text-2xl { font-size: 20px !important; }
+          html.${cn} .kna-experience-page .text-3xl { font-size: 25px !important; }
+          html.${cn} .kna-experience-page .text-4xl { font-size: 30px !important; }
+          html.${cn} .kna-experience-page .text-5xl { font-size: 39px !important; }
+          html.${cn} .kna-experience-page .text-6xl { font-size: 49px !important; }
+          html.${cn} .kna-experience-page .text-7xl { font-size: 59px !important; }
+        `;
+        document.head.appendChild(s);
+      }
+    }
   }, []);
 
   // 팝업 이미지 최우선 로딩 + 캐릭터 이미지 미리 로딩 + 콘텐츠 이미지 프리로드
