@@ -1013,14 +1013,13 @@ html.ua-tiktok    .kna-experience-page .text-7xl { font-size: 59px !important; }
 
 /* ① 글자 내부 '흰색 광택'이 좌우로 흐르는 효과 */
 .kna-shine {
-  /* 흰색 밴드 폭을 아주 얇게: 49%~51%만 white */
   background: linear-gradient(90deg,
-    var(--tiffany) 0%,
-    var(--mint) 35%,
-    #ffffff 49%,
-    #ffffff 51%,
-    var(--mint) 65%,
-    var(--tiffany) 100%);
+    #8b2215 0%,
+    #c44028 35%,
+    #e8592c 49%,
+    #e8592c 51%,
+    #c44028 65%,
+    #8b2215 100%);
   background-size: 240% 100%;
   -webkit-background-clip: text;
   background-clip: text;
