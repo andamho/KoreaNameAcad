@@ -411,7 +411,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
       <div 
         className="flex-shrink-0 border-b border-slate-100 shadow-sm px-6 pt-8 pb-5 z-40"
         style={{ 
-          backgroundImage: 'url(/bank-card-bg-opt.webp)',
+          backgroundImage: 'url(/gradbg2.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center top'
         }}
