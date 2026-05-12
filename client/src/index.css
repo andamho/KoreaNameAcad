@@ -111,6 +111,13 @@
   transform-origin: center;
 }
 
+@media (max-width: 767px) {
+  .hamburger-line {
+    height: 3.2px;
+    background-color: #18a999;
+  }
+}
+
 @media (min-width: 768px) {
   .hamburger-line {
     width: 22px;
