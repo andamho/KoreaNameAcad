@@ -56,6 +56,7 @@ const characterImages = [
   '/about-character-opt.webp',
   '/alone-fate-hero.png',
   '/mesh-header-hero.png',
+  '/gradbg2.png',
 ];
 
 // 팝업 이미지 (최우선 로드)
