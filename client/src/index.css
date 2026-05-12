@@ -116,6 +116,19 @@
     height: 3.2px;
     background-color: #18a999;
   }
+  .kna-shine {
+    background: linear-gradient(90deg,
+      #0f1f3a 0%,
+      #1a2b4a 35%,
+      #243d6a 49%,
+      #243d6a 51%,
+      #1a2b4a 65%,
+      #0f1f3a 100%);
+    background-size: 240% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
 
 @media (min-width: 768px) {
