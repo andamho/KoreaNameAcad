@@ -718,6 +718,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                 <h3 className="text-xl form-title-font font-bold text-slate-900">등본 첨부</h3>
                 <p className="kna-inapp-zoom text-sm text-slate-500 mt-2 font-medium leading-normal">
                   정확한 한자 확인을 위해 필수입니다.<br/>
+                  <span className="kna-inapp-zoom text-xs font-semibold" style={{ color: '#e07b39' }}>· 한자 부분이 선명하게 나온 이미지를 첨부해주세요.</span><br/>
                   <span className="kna-inapp-zoom text-xs text-slate-400">· 주민등록번호 및 주소는 가린 후 제출</span>
                 </p>
                 <div className="mt-3 flex items-center gap-2">
