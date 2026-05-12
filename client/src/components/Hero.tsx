@@ -67,7 +67,7 @@ export function Hero() {
         />
         {/* 모바일에서만 그라데이션 오버레이 */}
         {!isDesktop && (
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/35 to-transparent" />
+          <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 85% 55% at 50% 48%, rgba(0,0,0,0.38) 0%, transparent 70%)' }} />
         )}
         {/* Bottom gradient to hide danger section character */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-background to-transparent" />
