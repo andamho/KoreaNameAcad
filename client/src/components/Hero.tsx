@@ -3,30 +3,30 @@ import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { clearScrollPosition } from "@/hooks/use-scroll-restore";
 
-// 최적화된 WebP 이미지
-const heroImageMobile = "/herobg3rd.png";
+const heroImageMobile = "/herobg3rd.webp";
 const heroImageDesktop = "/hero-desktop-bg.webp";
+
+// 모바일 이미지 즉시 프리로드 (JS 실행과 동시에 시작)
+const mobilePreload = new Image();
+mobilePreload.src = heroImageMobile;
 
 export function Hero() {
   const [location, setLocation] = useLocation();
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
-  
+  const [imageLoaded, setImageLoaded] = useState(() => mobilePreload.complete);
+  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 768);
+
   // 화면 크기 감지
   useEffect(() => {
     const checkDesktop = () => setIsDesktop(window.innerWidth >= 768);
-    checkDesktop();
     window.addEventListener('resize', checkDesktop);
     return () => window.removeEventListener('resize', checkDesktop);
   }, []);
-  
-  // 이미지 프리로드
+
+  // 이미지 로드 완료 감지
   useEffect(() => {
-    const img = new Image();
-    img.src = isDesktop ? heroImageDesktop : heroImageMobile;
-    img.onload = () => setImageLoaded(true);
-    if (img.complete) setImageLoaded(true);
-  }, [isDesktop]);
+    if (mobilePreload.complete) { setImageLoaded(true); return; }
+    mobilePreload.onload = () => setImageLoaded(true);
+  }, []);
   
   // 인앱 브라우저 전용 페이지 감지
   const isInstagram = location === '/ig';
