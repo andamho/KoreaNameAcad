@@ -1035,20 +1035,21 @@ html.ua-tiktok    .kna-experience-page .text-7xl { font-size: 59px !important; }
   display: inline-block;
 }
 
-/* 모바일 kna-shine — 밝은 배경 대비 딥 다크 티파니 */
+/* 모바일 kna-shine — 다크↔미디엄 티파니 shimmer (크림 배경 대비) */
 @media (max-width: 767px) {
   .kna-shine {
     background: linear-gradient(90deg,
-      #021a17 0%,
-      #042d28 35%,
-      #063d35 49%,
-      #063d35 51%,
-      #042d28 65%,
-      #021a17 100%);
+      #052e28 0%,
+      #0a5c52 30%,
+      #138f7e 49%,
+      #138f7e 51%,
+      #0a5c52 70%,
+      #052e28 100%);
     background-size: 240% 100%;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    animation: kna-flow 7s ease-in-out infinite;
   }
 }
 
