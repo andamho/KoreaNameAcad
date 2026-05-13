@@ -54,11 +54,11 @@ export function Hero() {
   const pFontSizeDesktop = 'clamp(19px, 4.6vw, 27px)';
 
   return (
-    <section id="home" className="relative min-h-screen overflow-hidden flex items-center justify-center" style={{ marginTop: '-80px', paddingTop: '80px' }}>
-      <div className="absolute inset-0">
-        <img 
-          src={isDesktop ? heroImageDesktop : heroImageMobile} 
-          alt="배경" 
+    <section id="home" className="relative min-h-screen overflow-hidden flex items-center justify-center" style={{ marginTop: '-80px', paddingTop: '80px', backgroundColor: '#fff8f2' }}>
+      <div className="absolute inset-0 top-[80px]">
+        <img
+          src={isDesktop ? heroImageDesktop : heroImageMobile}
+          alt="배경"
           className={`w-full h-full object-cover object-[55%] md:object-center transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
           style={{ willChange: 'opacity' }}
           fetchPriority="high"
