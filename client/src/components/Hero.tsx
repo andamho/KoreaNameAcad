@@ -54,8 +54,8 @@ export function Hero() {
   const pFontSizeDesktop = 'clamp(19px, 4.6vw, 27px)';
 
   return (
-    <section id="home" className="relative min-h-screen overflow-hidden flex items-center justify-center" style={{ marginTop: '-80px', paddingTop: '80px', backgroundColor: '#fff8f2' }}>
-      <div className="absolute inset-0 top-[80px]">
+    <section id="home" className="relative min-h-screen overflow-hidden flex items-center justify-center" style={{ marginTop: '-80px', paddingTop: '80px' }}>
+      <div className="absolute inset-0">
         <img
           src={isDesktop ? heroImageDesktop : heroImageMobile}
           alt="배경"
@@ -65,6 +65,8 @@ export function Hero() {
           loading="eager"
           decoding="async"
         />
+        {/* 모바일: 내비바 영역(상단 80px)만 크림 오버레이로 패턴 가림 */}
+        <div className="absolute top-0 left-0 right-0 md:hidden" style={{ height: '80px', backgroundColor: '#fff8f2' }} />
         {/* 모바일: 중앙 크림 오버레이 — 선이 안쪽으로 자연스럽게 흐려져 텍스트 가독성 확보 */}
         <div className="absolute inset-0 md:hidden" style={{ background: 'radial-gradient(ellipse 80% 58% at 50% 48%, rgba(255,248,242,0.88) 0%, rgba(255,248,242,0.52) 45%, transparent 75%)' }} />
         {/* Bottom gradient to hide danger section character */}
