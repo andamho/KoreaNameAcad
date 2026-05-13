@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { clearScrollPosition } from "@/hooks/use-scroll-restore";
 
 // 최적화된 WebP 이미지
-const heroImageMobile = "/bgimage-mobile.webp";
+const heroImageMobile = "/herobg.png";
 const heroImageDesktop = "/hero-desktop-bg.webp";
 
 export function Hero() {
@@ -65,10 +65,8 @@ export function Hero() {
           loading="eager"
           decoding="async"
         />
-        {/* 모바일에서만 그라데이션 오버레이 */}
-        {!isDesktop && (
-          <div className="absolute inset-0 bg-white/15" />
-        )}
+        {/* 모바일: 중앙 크림 오버레이 — 선이 안쪽으로 자연스럽게 흐려져 텍스트 가독성 확보 */}
+        <div className="absolute inset-0 md:hidden" style={{ background: 'radial-gradient(ellipse 80% 58% at 50% 48%, rgba(255,248,242,0.88) 0%, rgba(255,248,242,0.52) 45%, transparent 75%)' }} />
         {/* Bottom gradient to hide danger section character */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-background to-transparent" />
       </div>
