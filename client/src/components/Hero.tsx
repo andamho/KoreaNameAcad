@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { clearScrollPosition } from "@/hooks/use-scroll-restore";
 
 // 최적화된 WebP 이미지
-const heroImageMobile = "/herobgnew.png";
+const heroImageMobile = "/herobg2nd.png";
 const heroImageDesktop = "/hero-desktop-bg.webp";
 
 export function Hero() {
