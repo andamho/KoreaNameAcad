@@ -116,19 +116,6 @@
     height: 3.2px;
     background-color: #18a999;
   }
-  .kna-shine {
-    background: linear-gradient(90deg,
-      #021a17 0%,
-      #042d28 35%,
-      #063d35 49%,
-      #063d35 51%,
-      #042d28 65%,
-      #021a17 100%);
-    background-size: 240% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
 }
 
 @media (min-width: 768px) {
@@ -1046,6 +1033,23 @@ html.ua-tiktok    .kna-experience-page .text-7xl { font-size: 59px !important; }
   color: transparent;
   animation: kna-flow 7s ease-in-out infinite;
   display: inline-block;
+}
+
+/* 모바일 kna-shine — 밝은 배경 대비 딥 다크 티파니 */
+@media (max-width: 767px) {
+  .kna-shine {
+    background: linear-gradient(90deg,
+      #021a17 0%,
+      #042d28 35%,
+      #063d35 49%,
+      #063d35 51%,
+      #042d28 65%,
+      #021a17 100%);
+    background-size: 240% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
 
 /* 데스크톱용 진한 청록색 하이라이트 */
