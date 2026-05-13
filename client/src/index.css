@@ -118,12 +118,12 @@
   }
   .kna-shine {
     background: linear-gradient(90deg,
-      #0f1f3a 0%,
-      #1a2b4a 35%,
-      #243d6a 49%,
-      #243d6a 51%,
-      #1a2b4a 65%,
-      #0f1f3a 100%);
+      #073d35 0%,
+      #0a5c52 35%,
+      #0d7066 49%,
+      #0d7066 51%,
+      #0a5c52 65%,
+      #073d35 100%);
     background-size: 240% 100%;
     -webkit-background-clip: text;
     background-clip: text;
