@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { clearScrollPosition } from "@/hooks/use-scroll-restore";
 
-const heroImageMobile = "/herobg3rd.webp";
+const heroImageMobile = "/herobg4th.webp";
 const heroImageDesktop = "/hero-desktop-bg.webp";
 
 // 모바일 이미지 즉시 프리로드 (JS 실행과 동시에 시작)
