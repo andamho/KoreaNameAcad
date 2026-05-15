@@ -6,6 +6,10 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAdmin } from "@/contexts/AdminContext";
 
+// 모듈 로드 즉시 모바일 히어로 이미지 선행 다운로드
+const _expzonePreload = new Image();
+_expzonePreload.src = "/expzone.webp";
+
 const experiences: {
   id: string;
   Icon: LucideIcon;
