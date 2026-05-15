@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { clearScrollPosition } from "@/hooks/use-scroll-restore";
 
 const heroImageMobile = "/herobg7th.webp";
-const heroImageDesktop = "/hero-desktop-bg.webp";
+const heroImageDesktop = "/herobgdesk.webp";
 
 // 모바일 이미지 즉시 프리로드 (JS 실행과 동시에 시작)
 const mobilePreload = new Image();
