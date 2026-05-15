@@ -136,7 +136,7 @@ export default function ExperienceZone() {
         <img
           src="/experiencezonebg.webp"
           alt=""
-          className="absolute inset-0 w-full h-full object-cover object-top hidden md:block"
+          className="absolute inset-0 w-full h-full object-cover object-bottom hidden md:block"
           fetchPriority="high"
           loading="eager"
           decoding="sync"
