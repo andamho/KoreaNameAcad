@@ -68,7 +68,8 @@ const experiences: {
 
 export default function ExperienceZone() {
   const [, setLocation] = useLocation();
-  const { isAdmin } = useAdmin();
+  const { isAdmin, isVerifying } = useAdmin();
+  const showNewBg = isAdmin && !isVerifying;
 
   useEffect(() => {
     const userAgent = navigator.userAgent || '';
@@ -133,23 +134,21 @@ export default function ExperienceZone() {
 
       {/* Hero Section — overflow-hidden은 이미지 클리핑용, SVG는 section 밖으로 분리 */}
       <section className="relative overflow-hidden pt-16 pb-4 md:pt-24 md:pb-6">
-        {/* 모바일 어드민 전용 새 배경 */}
-        {isAdmin && (
-          <img
-            src="/expzone.webp"
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover object-bottom md:hidden"
-            fetchPriority="high"
-            loading="eager"
-            decoding="sync"
-            aria-hidden="true"
-          />
-        )}
-        {/* 기존 배경: 데스크탑 항상 + 모바일 비어드민 */}
+        {/* 기존 배경: 검증 완료 전까지 항상 표시, 어드민 모바일 확정 후 페이드아웃 */}
         <img
           src="/mesh-header-hero.png"
           alt=""
-          className={`absolute inset-0 w-full h-full object-cover object-top ${isAdmin ? 'hidden md:block' : ''}`}
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-500 ${showNewBg ? 'opacity-0 md:opacity-100' : 'opacity-100'}`}
+          fetchPriority="high"
+          loading="eager"
+          decoding="sync"
+          aria-hidden="true"
+        />
+        {/* 모바일 어드민 새 배경: 검증 완료 후 페이드인 */}
+        <img
+          src="/expzone.webp"
+          alt=""
+          className={`absolute inset-0 w-full h-full object-cover object-bottom md:hidden transition-opacity duration-500 ${showNewBg ? 'opacity-100' : 'opacity-0'}`}
           fetchPriority="high"
           loading="eager"
           decoding="sync"
