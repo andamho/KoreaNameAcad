@@ -59,11 +59,10 @@ export function Hero() {
         <img
           src={isDesktop ? heroImageDesktop : heroImageMobile}
           alt="배경"
-          className={`w-full h-full object-cover object-[55%] md:object-center transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-          style={{ willChange: 'opacity' }}
+          className={`w-full h-full object-cover object-[55%] md:object-center ${imageLoaded ? 'opacity-100' : 'opacity-0 transition-opacity duration-300'}`}
           fetchPriority="high"
           loading="eager"
-          decoding="async"
+          decoding="sync"
         />
         {/* Bottom gradient to hide danger section character */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-background to-transparent" />
