@@ -6,9 +6,11 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAdmin } from "@/contexts/AdminContext";
 
-// 모듈 로드 즉시 모바일 히어로 이미지 선행 다운로드
+// 모듈 로드 즉시 선행 다운로드
 const _expzonePreload = new Image();
 _expzonePreload.src = "/expzone.webp";
+const _astronotPreload = new Image();
+_astronotPreload.src = "/astronot.webp";
 
 const experiences: {
   id: string;
@@ -162,7 +164,7 @@ export default function ExperienceZone() {
               className="w-auto h-40 md:h-56 flex-shrink-0"
               fetchPriority="high"
               loading="eager"
-              decoding="async"
+              decoding="sync"
             />
             <div className="text-center md:text-left">
               <p className="text-sm font-medium tracking-wide text-slate-600 mb-2">EXPERIENCE ZONE</p>
