@@ -16,7 +16,7 @@ interface Comment {
 
 export default function ExperienceNameRank() {
   const [, setLocation] = useLocation();
-  const { isAdmin, isVerifying } = useAdmin();
+  const { isAdmin } = useAdmin();
   const videoRef = useRef<HTMLVideoElement>(null);
   const commentRef = useRef<HTMLDivElement>(null);
 
@@ -33,16 +33,11 @@ export default function ExperienceNameRank() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   useEffect(() => {
-    if (isVerifying || !isAdmin) return;
     const v = videoRef.current;
     if (!v) return;
     v.muted = true;
     v.play().catch(() => {});
-  }, [isVerifying, isAdmin]);
-
-  useEffect(() => {
-    if (!isVerifying && !isAdmin) setLocation('/experience-zone');
-  }, [isVerifying, isAdmin, setLocation]);
+  }, []);
 
   useEffect(() => {
     fetch('/api/experience-comments/name-rank')
@@ -50,8 +45,6 @@ export default function ExperienceNameRank() {
       .then(data => setComments(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, []);
-
-  if (isVerifying || !isAdmin) return null;
 
   async function submitComment() {
     if (!nickname.trim() || !commentText.trim()) { setCommentError('닉네임과 내용을 입력해주세요.'); return; }

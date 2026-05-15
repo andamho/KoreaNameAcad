@@ -86,7 +86,7 @@ interface Comment {
 
 export default function ExperienceChildrenLuck() {
   const [, setLocation] = useLocation();
-  const { isAdmin, isVerifying } = useAdmin();
+  const { isAdmin } = useAdmin();
 
   const [name, setName] = useState('');
   const [result, setResult] = useState<{
@@ -110,17 +110,12 @@ export default function ExperienceChildrenLuck() {
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
   useEffect(() => {
-    if (!isVerifying && !isAdmin) setLocation('/experience-zone');
-  }, [isVerifying, isAdmin, setLocation]);
-  useEffect(() => {
     if (!isAdmin) setUsageCount(getTodayUsage());
     fetch('/api/experience-comments/children-luck')
       .then(r => r.json())
       .then(data => setComments(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, []);
-
-  if (isVerifying || !isAdmin) return null;
 
   function calculate() {
     const chars = name.trim().replace(/\s/g, '');

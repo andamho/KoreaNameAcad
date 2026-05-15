@@ -99,7 +99,7 @@ interface Comment {
 
 export default function ExperienceShortLife() {
   const [, setLocation] = useLocation();
-  const { isAdmin, isVerifying } = useAdmin();
+  const { isAdmin } = useAdmin();
 
   const [name, setName] = useState('');
   const [result, setResult] = useState<{ char: string; strokes: number; breakdown: string }[]>([]);
@@ -123,18 +123,12 @@ export default function ExperienceShortLife() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   useEffect(() => {
-    if (!isVerifying && !isAdmin) setLocation('/experience-zone');
-  }, [isVerifying, isAdmin, setLocation]);
-
-  useEffect(() => {
     if (!isAdmin) setUsageCount(getTodayUsage());
     fetch('/api/experience-comments/short-life')
       .then(r => r.json())
       .then(data => setComments(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, []);
-
-  if (isVerifying || !isAdmin) return null;
 
   function calculate() {
     const chars = name.trim().replace(/\s/g, '');

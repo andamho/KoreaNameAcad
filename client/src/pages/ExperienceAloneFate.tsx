@@ -116,7 +116,7 @@ function useCountUp(target: number, duration = 600) {
 
 export default function ExperienceAloneFate() {
   const [, setLocation] = useLocation();
-  const { isAdmin, isVerifying } = useAdmin();
+  const { isAdmin } = useAdmin();
 
   // 계산기
   const [name, setName] = useState('');
@@ -144,13 +144,6 @@ export default function ExperienceAloneFate() {
     window.scrollTo(0, 0);
   }, []);
 
-  // 어드민 가드
-  useEffect(() => {
-    if (!isVerifying && !isAdmin) {
-      setLocation('/experience-zone');
-    }
-  }, [isVerifying, isAdmin, setLocation]);
-
   useEffect(() => {
     if (!isAdmin) setUsageCount(getTodayUsage()); // 어드민은 0으로 시작 (새로고침 리셋)
     fetch('/api/experience-comments/alone-fate')
@@ -158,9 +151,6 @@ export default function ExperienceAloneFate() {
       .then(data => setComments(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, []);
-
-  // 모든 hooks 이후 조건부 렌더링
-  if (isVerifying || !isAdmin) return null;
 
   function calculate() {
     const chars = name.trim().replace(/\s/g, '');
