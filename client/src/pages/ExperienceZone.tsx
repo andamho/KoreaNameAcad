@@ -26,7 +26,6 @@ const experiences: {
     Icon: Flame,
     title: "단명운 1초 만에 알아보기",
     description: "이름이 보내는 단명의 신호, 지금 바로 확인해보세요.",
-    adminOnly: true,
     available: true,
     path: "/experience-zone/short-life",
   },
@@ -35,7 +34,6 @@ const experiences: {
     Icon: User,
     title: "혼자살 팔자 1초 만에 알아보기",
     description: "혼자 사는 운명인지, 이름으로 1초 만에 알아보세요.",
-    adminOnly: true,
     available: true,
     path: "/experience-zone/alone-fate",
   },
@@ -44,7 +42,6 @@ const experiences: {
     Icon: Heart,
     title: "남편복 | 아내복 1초 만에 알아보기",
     description: "이름에서 남편복을 단 1초 만에 읽어낼 수 있다면?",
-    adminOnly: true,
     available: true,
     path: "/experience-zone/husband-luck",
   },
@@ -53,7 +50,6 @@ const experiences: {
     Icon: Sprout,
     title: "자식복 1초 만에 알아보기",
     description: "내 이름 속에 자식복이 담겨 있을까요? 지금 확인해보세요.",
-    adminOnly: true,
     available: true,
     path: "/experience-zone/children-luck",
   },
@@ -62,7 +58,6 @@ const experiences: {
     Icon: Crown,
     title: "내 이름은 전국 몇 등일까?",
     description: "전국 이름 순위 데이터로 내 이름의 등수를 확인해보세요.",
-    adminOnly: true,
     available: true,
     path: "/experience-zone/name-rank",
   },
@@ -191,10 +186,10 @@ export default function ExperienceZone() {
       <main className="flex-1 py-8 md:py-12 relative" style={{ zIndex: 2 }}>
         <div className="max-w-xl mx-auto px-5 space-y-5">
           {experiences
-            .filter(exp => !(exp.adminOnly && !exp.available) || isAdmin)
+            .filter(exp => exp.available)
             .map((exp) => {
             const { Icon } = exp;
-            const isAvailable = exp.available && (!exp.adminOnly || isAdmin);
+            const isAvailable = exp.available;
             const path = isAvailable ? exp.path : undefined;
             return (
               <div
