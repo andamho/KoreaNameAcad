@@ -129,10 +129,23 @@ export default function ExperienceZone() {
 
       {/* Hero Section — overflow-hidden은 이미지 클리핑용, SVG는 section 밖으로 분리 */}
       <section className="relative overflow-hidden pt-16 pb-4 md:pt-24 md:pb-6">
+        {/* 모바일 어드민 전용 새 배경 */}
+        {isAdmin && (
+          <img
+            src="/expzone.webp"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover object-bottom md:hidden"
+            fetchPriority="high"
+            loading="eager"
+            decoding="sync"
+            aria-hidden="true"
+          />
+        )}
+        {/* 기존 배경: 데스크탑 항상 + 모바일 비어드민 */}
         <img
           src="/mesh-header-hero.png"
           alt=""
-          className="absolute inset-0 w-full h-full object-cover object-top"
+          className={`absolute inset-0 w-full h-full object-cover object-top ${isAdmin ? 'hidden md:block' : ''}`}
           fetchPriority="high"
           loading="eager"
           decoding="sync"
