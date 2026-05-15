@@ -67,8 +67,7 @@ const experiences: {
 
 export default function ExperienceZone() {
   const [, setLocation] = useLocation();
-  const { isAdmin, isVerifying } = useAdmin();
-  const showNewBg = isAdmin && !isVerifying;
+  const { isAdmin } = useAdmin();
 
   useEffect(() => {
     const userAgent = navigator.userAgent || '';
@@ -143,21 +142,11 @@ export default function ExperienceZone() {
           decoding="sync"
           aria-hidden="true"
         />
-        {/* 모바일 기본 배경 (비어드민 또는 검증 전) */}
-        <img
-          src="/mesh-header-hero.png"
-          alt=""
-          className={`absolute inset-0 w-full h-full object-cover object-top md:hidden transition-opacity duration-500 ${showNewBg ? 'opacity-0' : 'opacity-100'}`}
-          fetchPriority="high"
-          loading="eager"
-          decoding="sync"
-          aria-hidden="true"
-        />
-        {/* 모바일 어드민 새 배경: 검증 완료 후 페이드인 */}
+        {/* 모바일 배경 (전체 공개) */}
         <img
           src="/expzone.webp"
           alt=""
-          className={`absolute inset-0 w-full h-full object-cover object-bottom md:hidden transition-opacity duration-500 ${showNewBg ? 'opacity-100' : 'opacity-0'}`}
+          className="absolute inset-0 w-full h-full object-cover object-bottom md:hidden"
           fetchPriority="high"
           loading="eager"
           decoding="sync"
