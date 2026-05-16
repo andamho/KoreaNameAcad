@@ -32,7 +32,13 @@ export default function Home() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
   const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
-  const [showChristmasPopup, setShowChristmasPopup] = useState(false); // 팝업 비활성화
+  const [showExpPopup, setShowExpPopup] = useState(() => {
+    try {
+      const hidden = localStorage.getItem('expZonePopupHidden');
+      if (!hidden) return true;
+      return hidden !== new Date().toDateString();
+    } catch { return true; }
+  });
   const isClosingFromBackButton = useRef(false);
   const dialogOpenRef = useRef(false);
   const analysisDetailOpenRef = useRef(false);
@@ -49,25 +55,11 @@ export default function Home() {
   // 스크롤 위치 복원 (뒤로가기 시)
   useScrollRestore("/");
 
-  // 크리스마스 팝업 3초 후 자동 닫기
-  useEffect(() => {
-    if (showChristmasPopup) {
-      const timer = setTimeout(() => {
-        setShowChristmasPopup(false);
-        try { sessionStorage.setItem('christmasPopupShown', 'true'); } catch {}
-        try { window.history.replaceState({ ...window.history.state, popupShown: true }, ''); } catch {}
-      }, 3000);
-      return () => clearTimeout(timer);
+  const closeExpPopup = (hideToday?: boolean) => {
+    setShowExpPopup(false);
+    if (hideToday) {
+      try { localStorage.setItem('expZonePopupHidden', new Date().toDateString()); } catch {}
     }
-  }, [showChristmasPopup]);
-
-  const closeChristmasPopup = () => {
-    setShowChristmasPopup(false);
-    try { sessionStorage.setItem('christmasPopupShown', 'true'); } catch {}
-    // 인앱 브라우저용: history.state에도 기록
-    try { 
-      window.history.replaceState({ ...window.history.state, popupShown: true }, ''); 
-    } catch {}
   };
 
   // 동영상 자동 재생 (스크롤 시)
@@ -274,20 +266,41 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* 크리스마스 팝업 */}
-      {showChristmasPopup && (
-        <div 
+      {showExpPopup && (
+        <div
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60"
-          onClick={closeChristmasPopup}
+          onClick={() => closeExpPopup()}
         >
-          <div className="relative max-w-sm mx-4">
-            <img 
-              src={newYearImage}
-              alt="새해 복 많이 받으세요"
-              className="w-full h-auto rounded-2xl shadow-2xl"
+          <div
+            className="relative mx-4 w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <img
+              src="/expzone.webp"
+              alt="체험존"
+              className="w-full h-52 object-cover object-bottom"
               loading="eager"
               fetchPriority="high"
               decoding="sync"
             />
+            <div className="bg-white px-6 pt-5 pb-6 flex flex-col items-center text-center gap-4">
+              <p className="text-[15px] text-gray-500 font-medium tracking-wide">EXPERIENCE ZONE</p>
+              <h2 className="text-xl font-extrabold text-gray-900 leading-snug">
+                이름 속 운명을<br/>직접 체험해보세요.
+              </h2>
+              <button
+                onClick={() => { closeExpPopup(); setLocation('/experience-zone'); }}
+                className="w-full py-3 bg-[#18a999] text-white font-bold rounded-xl text-base hover:bg-[#149085] transition-colors"
+              >
+                체험존 바로가기
+              </button>
+              <button
+                onClick={() => closeExpPopup(true)}
+                className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                오늘 하루 안 보기
+              </button>
+            </div>
           </div>
         </div>
       )}
