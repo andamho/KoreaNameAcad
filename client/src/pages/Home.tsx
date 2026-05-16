@@ -275,15 +275,24 @@ export default function Home() {
             className="relative mx-4 w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
-            <img
-              src="/expzone.webp"
-              alt="체험존"
-              className="w-full h-52 object-cover object-bottom"
-              loading="eager"
-              fetchPriority="high"
-              decoding="sync"
-            />
-            <div className="bg-white px-6 pt-5 pb-6 flex flex-col items-center text-center gap-4">
+            <div className="relative">
+              <img
+                src="/expzone.webp"
+                alt="체험존"
+                className="w-full h-52 object-cover object-bottom"
+                loading="eager"
+                fetchPriority="high"
+                decoding="sync"
+              />
+              <img
+                src="/astronot.webp"
+                alt="우주비행사"
+                className="absolute left-1/2 -translate-x-1/2 -bottom-12 w-24 h-24 object-contain drop-shadow-xl"
+                loading="eager"
+                decoding="sync"
+              />
+            </div>
+            <div className="bg-white px-6 pt-16 pb-6 flex flex-col items-center text-center gap-4">
               <p className="text-[15px] text-gray-500 font-medium tracking-wide">EXPERIENCE ZONE</p>
               <h2 className="text-xl font-extrabold text-gray-900 leading-snug">
                 이름 속 운명을<br/>직접 체험해보세요.
