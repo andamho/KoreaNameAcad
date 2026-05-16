@@ -313,10 +313,11 @@ export default function ExperienceShortLife() {
           {/* 계산기 */}
           <div className="rounded-3xl bg-slate-900 dark:bg-slate-800 overflow-hidden shadow-2xl">
             <div className="px-6 pt-6 pb-4 border-b border-white/10">
-              <p className="text-center text-sm font-medium text-white/70 leading-relaxed">
+              <p className="text-lg font-bold text-white mb-1">이름획수 AI 진단</p>
+              <p className="text-sm font-medium text-white/70 leading-relaxed">
                 18년간 축적된{' '}
                 <span className="text-amber-400 font-black text-xl tabular-nums">{dataCount}만</span>
-                {' '}명의<br />실제 임상 데이터 기반 분석
+                {' '}명의 실제 임상 데이터 기반 분석
               </p>
             </div>
             <div className="px-6 py-5 space-y-4">
