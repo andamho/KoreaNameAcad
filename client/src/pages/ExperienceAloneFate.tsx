@@ -579,7 +579,7 @@ export default function ExperienceAloneFate() {
               이름의 에너지는 스냅샷이 아니라 한 편의 긴 영화와 같습니다. 100세를 사는 오늘날, 40~50대에 문제가 없다고 해서 그 운이 틀린 것이 아닙니다. 60대, 70대에 찾아오는 뒤늦은 이별이나 예기치 못한 사별, 혹은 한집에 살면서도 남보다 못한 남남으로 지내게 되는 <strong className="text-foreground">'심리적 독신'</strong> 역시 이름 속 10, 12, 19 수리가 만들어내는 에너지의 종착역입니다.
             </p>
             <p className="text-muted-foreground text-base leading-[1.9]">
-              미신이 아닙니다. 평생 불려온 이름의 획수가 만들어낸 과학적인 에너지의 흐름입니다. 이 모든 사실은 <strong className="text-foreground">45만 명의 임상 데이터</strong>가 증명합니다.
+              이 모든 사실은 <strong className="text-foreground">45만 명의 임상 데이터</strong>가 증명합니다.
             </p>
           </div>
 
