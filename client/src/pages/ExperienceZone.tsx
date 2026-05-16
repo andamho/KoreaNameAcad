@@ -196,7 +196,7 @@ export default function ExperienceZone() {
               <div
                 key={exp.id}
                 onClick={() => isAvailable && path && setLocation(path)}
-                className={`group relative rounded-2xl bg-card border px-6 py-5 flex items-center gap-5 transition-colors duration-200 ${isAvailable ? "border-[#18a999]/30 hover:border-[#18a999] cursor-pointer" : "border-border/50"}`}
+                className={`group relative rounded-2xl bg-card border px-6 py-5 flex items-center gap-5 transition-colors duration-200 ${isAvailable ? "border-border hover:border-[#18a999] cursor-pointer" : "border-border/50"}`}
                 style={{ boxShadow: "0 4px 28px rgba(0,0,0,0.06)" }}
               >
                 {/* 아이콘 */}
