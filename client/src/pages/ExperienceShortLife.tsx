@@ -120,18 +120,31 @@ export default function ExperienceShortLife() {
   const [replyText, setReplyText] = useState('');
   const [replySubmitting, setReplySubmitting] = useState(false);
   const commentRef = useRef<HTMLDivElement>(null);
+  const bannerRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   useEffect(() => {
-    let frame = 0;
-    const steps = 45;
-    const id = setInterval(() => {
-      frame++;
-      setDataCount(Math.min(Math.round((frame / steps) * 45), 45));
-      if (frame >= steps) clearInterval(id);
-    }, 30);
-    return () => clearInterval(id);
+    const el = bannerRef.current;
+    if (!el) return;
+    let started = false;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started) {
+        started = true;
+        observer.disconnect();
+        setTimeout(() => {
+          let frame = 0;
+          const steps = 45;
+          const id = setInterval(() => {
+            frame++;
+            setDataCount(Math.min(Math.round((frame / steps) * 45), 45));
+            if (frame >= steps) clearInterval(id);
+          }, 30);
+        }, 1000);
+      }
+    }, { threshold: 0.5 });
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -314,7 +327,7 @@ export default function ExperienceShortLife() {
           <div className="rounded-3xl bg-slate-900 dark:bg-slate-800 overflow-hidden shadow-2xl">
             <div className="px-6 pt-6 pb-4 border-b border-white/10">
               <p className="text-lg font-bold text-white mb-1">이름획수 AI 진단</p>
-              <p className="text-sm font-medium text-white/70 leading-relaxed">
+              <p ref={bannerRef} className="text-sm font-medium text-white/70 leading-relaxed">
                 18년간 축적된{' '}
                 <span className="text-amber-400 font-black text-xl tabular-nums">{dataCount}만</span>
                 {' '}명의 실제 임상 데이터 기반 분석
