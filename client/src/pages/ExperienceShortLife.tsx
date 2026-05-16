@@ -451,6 +451,7 @@ export default function ExperienceShortLife() {
           </div>
 
           {/* 단명수 */}
+          <div className="pt-16">
           <div className="space-y-3">
             <h2 className="text-xl font-bold text-foreground">단명을 만드는 수리운</h2>
             <div className="grid grid-cols-4 gap-3">
@@ -463,8 +464,10 @@ export default function ExperienceShortLife() {
             </div>
             <p className="text-base text-muted-foreground text-center">이름 총획수가 위 숫자면 단명운이 있는 이름입니다.</p>
           </div>
+          </div>
 
           {/* 획수표 */}
+          <div className="pb-16">
           <div className="space-y-4">
             <div className="text-center">
               <h2 className="text-xl font-bold text-foreground mb-1">획수 암호 해독표</h2>
@@ -499,6 +502,7 @@ export default function ExperienceShortLife() {
                 </div>
               ))}
             </div>
+          </div>
           </div>
 
           {/* 상담 유도 */}
