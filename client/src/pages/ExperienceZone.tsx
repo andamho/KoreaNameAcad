@@ -12,7 +12,7 @@ _expzonePreload.src = "/expzone.webp";
 const _astronotPreload = new Image();
 _astronotPreload.src = "/astronot.webp";
 const _expzoneDeskPreload = new Image();
-_expzoneDeskPreload.src = "/experiencezonebg.webp";
+_expzoneDeskPreload.src = "/expzonebg.webp";
 
 const experiences: {
   id: string;
@@ -134,7 +134,7 @@ export default function ExperienceZone() {
       <section className="relative overflow-hidden pt-16 pb-4 md:pt-24 md:pb-6" style={{ backgroundColor: '#f5ede3' }}>
         {/* 데스크탑 배경 */}
         <img
-          src="/experiencezonebg.webp"
+          src="/expzonebg.webp"
           alt=""
           className="absolute inset-0 w-full h-full object-cover object-bottom hidden md:block"
           fetchPriority="high"
