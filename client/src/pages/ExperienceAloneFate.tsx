@@ -125,6 +125,7 @@ export default function ExperienceAloneFate() {
   const [calculated, setCalculated] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [usageCount, setUsageCount] = useState(0);
+  const [dataCount, setDataCount] = useState(0);
   const animatedTotal = useCountUp(calculated ? total : 0);
 
   // 댓글
@@ -142,6 +143,17 @@ export default function ExperienceAloneFate() {
   // 페이지 진입 시 최상단으로
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    let frame = 0;
+    const steps = 45;
+    const id = setInterval(() => {
+      frame++;
+      setDataCount(Math.min(Math.round((frame / steps) * 45), 45));
+      if (frame >= steps) clearInterval(id);
+    }, 30);
+    return () => clearInterval(id);
   }, []);
 
   useEffect(() => {
@@ -372,8 +384,11 @@ export default function ExperienceAloneFate() {
           <div className="rounded-3xl bg-slate-900 dark:bg-slate-800 overflow-hidden shadow-2xl">
             {/* 헤더 */}
             <div className="px-6 pt-6 pb-4 border-b border-white/10">
-<p className="text-lg font-bold text-white">이름 획수 자동 계산기</p>
-              <p className="text-white/40 text-sm mt-0.5">자음·모음을 자동 분리하여 총운 수리를 계산합니다</p>
+              <p className="text-center text-sm font-medium text-white/70 leading-relaxed">
+                18년간 축적된{' '}
+                <span className="text-amber-400 font-black text-xl tabular-nums">{dataCount}만</span>
+                {' '}명의<br />실제 임상 데이터 기반 분석
+              </p>
             </div>
 
             <div className="px-6 py-5 space-y-4">
