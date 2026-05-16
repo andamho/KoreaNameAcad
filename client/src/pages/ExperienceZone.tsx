@@ -131,7 +131,7 @@ export default function ExperienceZone() {
       <Navbar />
 
       {/* Hero Section — overflow-hidden은 이미지 클리핑용, SVG는 section 밖으로 분리 */}
-      <section className="relative overflow-hidden pt-16 pb-4 md:pt-24 md:pb-6">
+      <section className="relative overflow-hidden pt-16 pb-4 md:pt-24 md:pb-6" style={{ backgroundColor: '#f5ede3' }}>
         {/* 데스크탑 배경 */}
         <img
           src="/experiencezonebg.webp"
