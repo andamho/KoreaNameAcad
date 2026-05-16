@@ -24,20 +24,12 @@ const experiences: {
   path?: string;
 }[] = [
   {
-    id: "short-life",
-    Icon: Flame,
-    title: "단명운 1초 만에 알아보기",
-    description: "이름이 보내는 단명의 신호, 지금 바로 확인해보세요.",
+    id: "name-rank",
+    Icon: Crown,
+    title: "내 이름은 전국 몇 등일까?",
+    description: "전국 이름 순위 데이터로 내 이름의 등수를 확인해보세요.",
     available: true,
-    path: "/experience-zone/short-life",
-  },
-  {
-    id: "alone-fate",
-    Icon: User,
-    title: "혼자살 팔자 1초 만에 알아보기",
-    description: "혼자 사는 운명인지, 이름으로 1초 만에 알아보세요.",
-    available: true,
-    path: "/experience-zone/alone-fate",
+    path: "/experience-zone/name-rank",
   },
   {
     id: "husband-luck",
@@ -56,12 +48,20 @@ const experiences: {
     path: "/experience-zone/children-luck",
   },
   {
-    id: "name-rank",
-    Icon: Crown,
-    title: "내 이름은 전국 몇 등일까?",
-    description: "전국 이름 순위 데이터로 내 이름의 등수를 확인해보세요.",
+    id: "alone-fate",
+    Icon: User,
+    title: "혼자살 팔자 1초 만에 알아보기",
+    description: "혼자 사는 운명인지, 이름으로 1초 만에 알아보세요.",
     available: true,
-    path: "/experience-zone/name-rank",
+    path: "/experience-zone/alone-fate",
+  },
+  {
+    id: "short-life",
+    Icon: Flame,
+    title: "단명운 1초 만에 알아보기",
+    description: "이름이 보내는 단명의 신호, 지금 바로 확인해보세요.",
+    available: true,
+    path: "/experience-zone/short-life",
   },
 ];
 
