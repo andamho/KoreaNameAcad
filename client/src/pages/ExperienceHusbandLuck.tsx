@@ -280,7 +280,7 @@ export default function ExperienceHusbandLuck() {
           {/* 계산기 */}
           <div className="rounded-3xl bg-slate-900 dark:bg-slate-800 overflow-hidden shadow-2xl">
             <div className="px-6 pt-6 pb-4 border-b border-white/10">
-              <p className="text-lg font-bold text-white">남편복 | 아내복 자동 진단기</p>
+              <p className="text-lg font-bold text-white">남편복 | 아내복 AI 분석</p>
               <p className="text-white/40 text-sm mt-0.5">성씨와 이름 첫글자의 오행 관계를 분석합니다</p>
             </div>
             <div className="px-6 py-5 space-y-4">
