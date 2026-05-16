@@ -346,7 +346,7 @@ export default function ExperienceChildrenLuck() {
                 <button onClick={calculate} disabled={name.trim().replace(/\s/g,'').length < 3 || isAnalyzing}
                   className="w-full py-3.5 rounded-xl font-bold text-white transition-all disabled:opacity-40 active:scale-[0.98]"
                   style={{ background: isAnalyzing ? '#334155' : '#18a999' }}>
-                  {isAnalyzing ? '⚡ 오행 에너지 분석 중...' : '자식복 진단하기'}
+                  {isAnalyzing ? '⚡ 오행 에너지 분석 중...' : '분석 시작'}
                 </button>
               )}
 

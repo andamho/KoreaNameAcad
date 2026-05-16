@@ -445,7 +445,7 @@ export default function ExperienceAloneFate() {
                 <button onClick={calculate} disabled={!name.trim() || isAnalyzing}
                   className="w-full py-3.5 rounded-xl font-bold text-white transition-all disabled:opacity-40 active:scale-[0.98]"
                   style={{ background: isAnalyzing ? '#334155' : '#18a999' }}>
-                  {isAnalyzing ? '⚡ 에너지 주파수 분석 중...' : '이름 에너지 진단하기'}
+                  {isAnalyzing ? '⚡ 에너지 주파수 분석 중...' : '분석 시작'}
                 </button>
               )}
 
