@@ -445,6 +445,7 @@ export default function ExperienceHusbandLuck() {
           </div>
 
           {/* 오행표 */}
+          <div className="py-16">
           <div className="space-y-4">
             <div className="text-center">
               <h2 className="text-xl font-bold text-foreground mb-1">자음 오행 해독표</h2>
@@ -502,6 +503,7 @@ export default function ExperienceHusbandLuck() {
                 ))}
               </div>
             </div>
+          </div>
           </div>
 
           {/* 상담 유도 */}
