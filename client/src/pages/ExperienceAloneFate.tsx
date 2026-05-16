@@ -552,6 +552,7 @@ export default function ExperienceAloneFate() {
           `}</style>
 
           {/* ── 위험 수리운 ── */}
+          <div className="pt-16">
           <div className="space-y-3">
             <h2 className="text-xl font-bold text-foreground">혼자살 팔자를 만드는 수리운</h2>
             <div className="grid grid-cols-3 gap-3">
@@ -608,8 +609,10 @@ export default function ExperienceAloneFate() {
               10, 12 총운은 <strong className="text-foreground">단명수까지 있어</strong> 더욱 안 좋습니다.
             </p>
           </div>
+          </div>
 
           {/* ── 획수표 ── */}
+          <div className="pt-16 pb-16">
           <div className="space-y-4">
             <div className="text-center">
               <h2 className="text-xl font-bold text-foreground mb-1">획수 암호 해독표</h2>
@@ -647,6 +650,7 @@ export default function ExperienceAloneFate() {
             <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-800 dark:text-amber-300 text-center italic">
               "모든 한글은 고유한 에너지 수치를 가집니다. 합계가 10, 12, 19라면 주목하십시오."
             </div>
+          </div>
           </div>
 
           {/* ── 상담 유도 ── */}
