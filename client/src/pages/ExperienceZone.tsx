@@ -127,7 +127,7 @@ export default function ExperienceZone() {
   }, []);
 
   return (
-    <div className="kna-experience-page min-h-screen bg-background flex flex-col">
+    <div className="kna-experience-page min-h-screen flex flex-col" style={{ backgroundColor: '#f5ede3' }}>
       <Navbar />
 
       {/* Hero Section — overflow-hidden은 이미지 클리핑용, SVG는 section 밖으로 분리 */}
