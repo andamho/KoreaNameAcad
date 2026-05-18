@@ -11,6 +11,7 @@ import KnaPricingSection from "@/components/KnaPricingSection";
 import InAppBrowserHint from "@/components/InAppBrowserHint";
 import { Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useLocation } from "wouter";
 import { useInAppScrollRestore } from "@/hooks/useInAppScrollRestore";
 import { Card } from "@/components/ui/card";
@@ -70,7 +71,13 @@ export default function TikTokHome() {
   const [familyAnimated, setFamilyAnimated] = useState(false);
   const familyCardsRef = useRef<HTMLDivElement>(null);
   const familyScrollRef = useRef<HTMLDivElement>(null);
-  const [showChristmasPopup, setShowChristmasPopup] = useState(false); // 팝업 비활성화
+  const [showExpPopup, setShowExpPopup] = useState(() => {
+    try {
+      const hidden = localStorage.getItem('expZonePopupHidden');
+      if (!hidden) return true;
+      return hidden !== new Date().toDateString();
+    } catch { return true; }
+  });
   const isClosingFromBackButton = useRef(false);
   const dialogOpenRef = useRef(false);
   const analysisDetailOpenRef = useRef(false);
@@ -78,26 +85,11 @@ export default function TikTokHome() {
   const referrerPage = useRef<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // 크리스마스 팝업 3초 후 자동 닫기
-  useEffect(() => {
-    if (showChristmasPopup) {
-      const timer = setTimeout(() => {
-        setShowChristmasPopup(false);
-        try { 
-          sessionStorage.setItem('popupShown', 'true');
-          window.history.replaceState({ ...window.history.state, popupShown: true }, ''); 
-        } catch {}
-      }, 3000);
-      return () => clearTimeout(timer);
+  const closeExpPopup = (hideToday?: boolean) => {
+    setShowExpPopup(false);
+    if (hideToday) {
+      try { localStorage.setItem('expZonePopupHidden', new Date().toDateString()); } catch {}
     }
-  }, [showChristmasPopup]);
-
-  const closeChristmasPopup = () => {
-    setShowChristmasPopup(false);
-    try { 
-      sessionStorage.setItem('popupShown', 'true');
-      window.history.replaceState({ ...window.history.state, popupShown: true }, ''); 
-    } catch {}
   };
 
   // 동영상 자동 재생 (스크롤 시)
@@ -407,7 +399,7 @@ export default function TikTokHome() {
     const handleCloseAllDialogs = () => {
       setDialogOpen(false);
       setAnalysisDetailOpen(false);
-      setShowChristmasPopup(false);
+      setShowExpPopup(false);
     };
     
     window.addEventListener('closeAllDialogs', handleCloseAllDialogs);
@@ -498,24 +490,29 @@ export default function TikTokHome() {
     <>
       <Navbar />
       <div className="min-h-screen bg-background ig-shell">
-        {/* 크리스마스 팝업 */}
-        {showChristmasPopup && (
-          <div 
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60"
-            onClick={closeChristmasPopup}
+        {showExpPopup && createPortal(
+          <div
+            className="fixed inset-0 flex items-center justify-center bg-black/60"
+            style={{ zIndex: 999999 }}
+            onClick={() => closeExpPopup()}
           >
-            <div className="relative max-w-sm mx-4">
-              <img 
-                src={newYearImage}
-                alt="새해 복 많이 받으세요"
-                className="w-full h-auto rounded-2xl shadow-2xl"
-                loading="eager"
-                fetchPriority="high"
-                decoding="sync"
-              />
+            <div
+              className="relative mx-4 w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="relative">
+                <img src="/expzone.webp" alt="체험존" className="w-full h-52 object-cover object-bottom" loading="eager" fetchPriority="high" decoding="sync" />
+                <img src="/astronot.webp" alt="우주비행사" className="absolute left-1/2 -translate-x-1/2 -bottom-8 object-contain drop-shadow-xl" style={{ width: 115, height: 115 }} loading="eager" decoding="sync" />
+              </div>
+              <div className="bg-white px-6 pt-14 pb-6 flex flex-col items-center text-center gap-4">
+                <p className="text-[15px] text-gray-500 font-medium tracking-wide">EXPERIENCE ZONE</p>
+                <h2 className="text-xl font-extrabold text-gray-900 leading-snug">이름 속 운명을<br/>직접 체험해보세요.</h2>
+                <button onClick={() => { closeExpPopup(); setLocation('/experience-zone'); }} className="w-full py-3 bg-[#18a999] text-white font-bold rounded-xl text-base hover:bg-[#149085] transition-colors">체험존 바로가기</button>
+                <button onClick={() => closeExpPopup(true)} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">오늘 하루 안 보기</button>
+              </div>
             </div>
           </div>
-        )}
+        , document.body)}
       {/* <InAppBrowserHint platform="tiktok" /> */}
       
       <Hero />
