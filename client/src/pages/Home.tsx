@@ -10,6 +10,7 @@ import KnaMythTruthSection from "@/components/KnaMythTruthSection";
 import KnaPricingSection from "@/components/KnaPricingSection";
 import { Layers, Compass, Clock, CheckCircle, TriangleAlert, MapPin } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useLocation, Link } from "wouter";
 import { useScrollRestore } from "@/hooks/use-scroll-restore";
 import { Card } from "@/components/ui/card";
@@ -266,9 +267,10 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* 크리스마스 팝업 */}
-      {showExpPopup && (
+      {showExpPopup && createPortal(
         <div
-          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60"
+          className="fixed inset-0 flex items-center justify-center bg-black/60"
+          style={{ zIndex: 999999 }}
           onClick={() => closeExpPopup()}
         >
           <div
@@ -312,7 +314,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
       <Navbar />
       
