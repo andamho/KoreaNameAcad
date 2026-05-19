@@ -44,6 +44,19 @@ import newYearImage from "@assets/newYearPopup_optimized.jpg";
 import formLogoImage from "@assets/file_00000000e75c71fabfe62e47dff1209b_1766979230188.png";
 import navbarLogoImage from "@assets/file_000000009b2c7206ad0a70c0142cb99a_1766915164756.png";
 
+// 모든 페이지 배경이미지 즉시 다운로드 (앱 로드 시 바로 시작)
+const _bgPreloads = [
+  '/herobg7th.webp',       // 홈 모바일 히어로
+  '/herobgdesk2.webp',     // 홈 데스크탑 히어로
+  '/expzone.webp',         // 체험존 모바일
+  '/expzonebg.webp',       // 체험존 데스크탑
+  '/astronot.webp',        // 체험존 캐릭터
+  '/mesh-header-hero.png', // 체험존 모바일 기존
+  '/gradbg2.png',          // 헤더 그라디언트
+  '/about-character-opt.webp',
+  '/alone-fate-hero.png',
+].map(src => { const i = new Image(); i.src = src; return i; });
+
 const characterImages = [
   servicesCharacterImage,
   reviewsCharacterImage,
