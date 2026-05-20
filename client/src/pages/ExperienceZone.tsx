@@ -134,7 +134,7 @@ export default function ExperienceZone() {
         <img
           src={expzonebg1}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover object-bottom"
+          className="absolute inset-0 w-full h-full object-cover object-bottom md:object-[50%_70%]"
           fetchPriority="high"
           loading="eager"
           decoding="sync"
