@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { X, FileText, Copy, Check, ChevronDown } from "lucide-react";
+import bgintro from "@/assets/bgintro";
 
 const formLogoImage = "/form-logo.png";
 const formBgImage = "/attached_assets/bg.png_1768976268783.png";
@@ -411,7 +412,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
       <div 
         className="flex-shrink-0 border-b border-slate-100 shadow-sm px-6 pt-8 pb-5 z-40"
         style={{ 
-          backgroundImage: 'url(/gradbg2.png)',
+          backgroundImage: `url(${bgintro})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center top'
         }}
