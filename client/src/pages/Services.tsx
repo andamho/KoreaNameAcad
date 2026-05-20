@@ -11,7 +11,10 @@ import { Search, Star, Flower, Baby, Building, Layers, Compass, Clock, CheckCirc
 import { useLocation } from "wouter";
 import { useEffect, useState, useRef } from "react";
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
-import pagebgMobileImage from "@assets/pagebg_services.webp";
+import bgintro from "@/assets/bgintro";
+
+const _bgintroPreload = new Image();
+_bgintroPreload.src = bgintro;
 import { FamilyNameLuckInfographic } from "@/components/FamilyNameLuckInfographic";
 
 export default function Services() {
@@ -332,19 +335,16 @@ export default function Services() {
       
       {/* Hero Section with character on left */}
       <section className="relative overflow-hidden py-16 md:py-24">
-        {/* 배경 이미지 - 모바일: pagebg, 데스크탑: bank-card-bg */}
-        <picture className="absolute inset-0 w-full h-full" aria-hidden="true">
-          <source media="(max-width: 767px)" srcSet={pagebgMobileImage} />
-          <img
-            src="/bank-card-bg-opt.webp"
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            fetchPriority="high"
-            loading="eager"
-            decoding="sync"
-            aria-hidden="true"
-          />
-        </picture>
+        {/* 배경 이미지 */}
+        <img
+          src={bgintro}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          fetchPriority="high"
+          loading="eager"
+          decoding="sync"
+          aria-hidden="true"
+        />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
             <img 
