@@ -2,10 +2,10 @@ import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { clearScrollPosition } from "@/hooks/use-scroll-restore";
-import homebgmobile from "@assets/homebgmobile.webp";
+import homebgmobile1 from "@assets/homebgmobile1.webp";
 import homebgdesk from "@assets/homebgdesk.webp";
 
-const heroImageMobile = homebgmobile;
+const heroImageMobile = homebgmobile1;
 const heroImageDesktop = homebgdesk;
 
 // 모바일 이미지 즉시 프리로드 (JS 실행과 동시에 시작)
