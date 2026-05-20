@@ -11,7 +11,7 @@ import { Search, Star, Flower, Baby, Building, Layers, Compass, Clock, CheckCirc
 import { useLocation } from "wouter";
 import { useEffect, useState, useRef } from "react";
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
-import pagebgMobileImage from "@assets/pagebg_services.png";
+import pagebgMobileImage from "@assets/pagebg_services.webp";
 import { FamilyNameLuckInfographic } from "@/components/FamilyNameLuckInfographic";
 
 export default function Services() {
