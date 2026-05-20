@@ -25,7 +25,11 @@ const categoryOptions = [
   { value: "expert", label: "한국이름학교" },
 ];
 import reviewsCharacterImage from "@assets/KakaoTalk_20251226_140721227_1766725962281.png";
+import reviewbgImage from "@assets/reviewbg.webp";
 import { useLocation, Link } from "wouter";
+
+const _heroBgPreload = new Image();
+_heroBgPreload.src = reviewbgImage;
 
 // 후기 타입 정의
 interface Testimonial {
@@ -720,13 +724,13 @@ export default function Reviews() {
       {/* Hero Section with character on left */}
       <section className="relative overflow-hidden py-16 md:py-24">
         {/* 배경 이미지 - 최적화된 img 태그 */}
-        <img 
-          src="/bank-card-bg-opt.webp" 
-          alt="" 
+        <img
+          src={reviewbgImage}
+          alt=""
           className="absolute inset-0 w-full h-full object-cover"
           fetchPriority="high"
           loading="eager"
-          decoding="async"
+          decoding="sync"
           aria-hidden="true"
         />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
