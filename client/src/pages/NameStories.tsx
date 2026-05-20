@@ -12,6 +12,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import type { Content } from "@shared/schema";
 import storiesCharacterImage from "@assets/KakaoTalk_20251226_141747822_1766726282057.png";
+import yellowBrightImage from "@assets/yellow_bright_portrait.webp";
+
+const _heroBgPreload = new Image();
+_heroBgPreload.src = yellowBrightImage;
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -445,13 +449,13 @@ export default function NameStories() {
       {/* Hero Section with character on right */}
       <section className="relative overflow-hidden py-16 md:py-24">
         {/* 배경 이미지 - 최적화된 img 태그 */}
-        <img 
-          src="/bank-card-bg-opt.webp" 
-          alt="" 
+        <img
+          src={yellowBrightImage}
+          alt=""
           className="absolute inset-0 w-full h-full object-cover"
           fetchPriority="high"
           loading="eager"
-          decoding="async"
+          decoding="sync"
           aria-hidden="true"
         />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
