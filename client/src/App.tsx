@@ -55,6 +55,7 @@ const _bgPreloads = [
   '/gradbg2.png',          // 헤더 그라디언트
   '/about-character-opt.webp',
   '/alone-fate-hero.png',
+  '/pagebg.webp',          // 서비스 페이지 모바일 히어로
 ].map(src => { const i = new Image(); i.src = src; return i; });
 
 const characterImages = [

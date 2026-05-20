@@ -331,11 +331,20 @@ export default function Services() {
       
       {/* Hero Section with character on left */}
       <section className="relative overflow-hidden py-16 md:py-24">
-        {/* 배경 이미지 - 최적화된 img 태그 */}
-        <img 
-          src="/bank-card-bg-opt.webp" 
-          alt="" 
-          className="absolute inset-0 w-full h-full object-cover"
+        {/* 배경 이미지 - 모바일: pagebg, 데스크탑: bank-card-bg */}
+        <img
+          src="/pagebg.webp"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover md:hidden"
+          fetchPriority="high"
+          loading="eager"
+          decoding="sync"
+          aria-hidden="true"
+        />
+        <img
+          src="/bank-card-bg-opt.webp"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover hidden md:block"
           fetchPriority="high"
           loading="eager"
           decoding="async"
