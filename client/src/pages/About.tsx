@@ -3,6 +3,10 @@ import { Footer } from "@/components/Footer";
 import { ContentGrid } from "@/components/ContentGrid";
 import { useEffect } from "react";
 import { useScrollRestore } from "@/hooks/use-scroll-restore";
+import introbgImage from "@assets/introbg.webp";
+
+const _heroBgPreload = new Image();
+_heroBgPreload.src = introbgImage;
 
 export default function About() {
   useScrollRestore("/about");
@@ -74,12 +78,12 @@ export default function About() {
       {/* Hero Section - 다른 페이지와 동일한 패턴 */}
       <section className="relative overflow-hidden py-16 md:py-24">
         <img
-          src="/bank-card-bg-opt.webp"
+          src={introbgImage}
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
           fetchPriority="high"
           loading="eager"
-          decoding="async"
+          decoding="sync"
           aria-hidden="true"
         />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
