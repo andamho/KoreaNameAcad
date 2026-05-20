@@ -3,14 +3,16 @@ import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { clearScrollPosition } from "@/hooks/use-scroll-restore";
 import mainbgmobile2 from "@assets/mainbgmobile2.webp";
-import homebgdesk from "@assets/homebgdesk.webp";
+import bgmaindesk from "@assets/bgmaindesk.webp";
 
 const heroImageMobile = mainbgmobile2;
-const heroImageDesktop = homebgdesk;
+const heroImageDesktop = bgmaindesk;
 
-// 모바일 이미지 즉시 프리로드 (JS 실행과 동시에 시작)
+// 모바일/데스크탑 이미지 즉시 프리로드
 const mobilePreload = new Image();
 mobilePreload.src = heroImageMobile;
+const desktopPreload = new Image();
+desktopPreload.src = heroImageDesktop;
 
 export function Hero() {
   const [location, setLocation] = useLocation();
