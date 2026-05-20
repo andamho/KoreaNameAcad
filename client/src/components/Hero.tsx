@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { clearScrollPosition } from "@/hooks/use-scroll-restore";
-import mainbgmobile2 from "@assets/mainbgmobile2.webp";
-import bgmaindesk from "@assets/bgmaindesk.webp";
+import mainbgmobile2 from "@/assets/mainbgmobile2";
+import bgmaindesk from "@/assets/bgmaindesk";
 
 const heroImageMobile = mainbgmobile2;
 const heroImageDesktop = bgmaindesk;
