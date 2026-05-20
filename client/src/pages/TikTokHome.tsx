@@ -38,6 +38,7 @@ import stepsCharacterImage from "@assets/KakaoTalk_20251226_164036756_1766734877
 import guideCharacterImage from "@assets/KakaoTalk_20251226_151729031_1766729868877.png";
 import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_1766729101276.png";
 import butterflyCharacterImage from "@assets/KakaoTalk_20251226_134433821_1766724285654.png";
+import expzonebg1 from "@/assets/expzonebg1";
 import { FamilyNameLuckInfographic } from "@/components/FamilyNameLuckInfographic";
 
 const INLINE_TT_STYLES = `
@@ -501,7 +502,7 @@ export default function TikTokHome() {
               onClick={e => e.stopPropagation()}
             >
               <div className="relative">
-                <img src="/expzone.webp" alt="체험존" className="w-full h-52 object-cover object-bottom" loading="eager" fetchPriority="high" decoding="sync" />
+                <img src={expzonebg1} alt="체험존" className="w-full h-52 object-cover object-bottom" loading="eager" fetchPriority="high" decoding="sync" />
                 <img src="/astronot.webp" alt="우주비행사" className="absolute left-1/2 -translate-x-1/2 -bottom-8 object-contain drop-shadow-xl" style={{ width: 115, height: 115 }} loading="eager" decoding="sync" />
               </div>
               <div className="bg-white px-6 pt-14 pb-6 flex flex-col items-center text-center gap-4">
