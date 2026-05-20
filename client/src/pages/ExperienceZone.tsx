@@ -5,14 +5,12 @@ import type { LucideIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAdmin } from "@/contexts/AdminContext";
+import expzonebg1 from "@/assets/expzonebg1";
 
-// 모듈 로드 즉시 선행 다운로드
-const _expzonePreload = new Image();
-_expzonePreload.src = "/expzone.webp";
+const _expzonebg1Preload = new Image();
+_expzonebg1Preload.src = expzonebg1;
 const _astronotPreload = new Image();
 _astronotPreload.src = "/astronot.webp";
-const _expzoneDeskPreload = new Image();
-_expzoneDeskPreload.src = "/expzonebg.webp";
 
 const experiences: {
   id: string;
@@ -67,7 +65,7 @@ const experiences: {
 
 export default function ExperienceZone() {
   const [, setLocation] = useLocation();
-  const { isAdmin } = useAdmin();
+  useAdmin();
 
   useEffect(() => {
     const userAgent = navigator.userAgent || '';
@@ -132,21 +130,11 @@ export default function ExperienceZone() {
 
       {/* Hero Section — overflow-hidden은 이미지 클리핑용, SVG는 section 밖으로 분리 */}
       <section className="relative overflow-hidden pt-16 pb-4 md:pt-24 md:pb-6">
-        {/* 데스크탑 배경 */}
+        {/* 배경 - 모바일/데스크탑 공통 */}
         <img
-          src="/expzonebg.webp"
+          src={expzonebg1}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover object-bottom hidden md:block"
-          fetchPriority="high"
-          loading="eager"
-          decoding="sync"
-          aria-hidden="true"
-        />
-        {/* 모바일 배경 (전체 공개) */}
-        <img
-          src="/expzone.webp"
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover object-bottom md:hidden"
+          className="absolute inset-0 w-full h-full object-cover object-bottom"
           fetchPriority="high"
           loading="eager"
           decoding="sync"
