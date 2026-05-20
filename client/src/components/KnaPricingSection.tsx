@@ -2,6 +2,10 @@ import { Gem, Clock, Settings } from "lucide-react";
 import { Link } from "wouter";
 import IdentityMap from "./IdentityMap";
 import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_1766729101276.png";
+import costbg from "@/assets/costbg";
+
+const _costbgPreload = new Image();
+_costbgPreload.src = costbg;
 import { saveScrollPosition } from "@/hooks/use-scroll-restore";
 
 const pricingData = {
@@ -50,13 +54,13 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
       {showHero && (
         <section className="relative overflow-hidden py-16 md:py-24">
           {/* 배경 이미지 - 최적화된 img 태그 */}
-          <img 
-            src="/bank-card-bg-opt.webp" 
-            alt="" 
+          <img
+            src={costbg}
+            alt=""
             className="absolute inset-0 w-full h-full object-cover"
             fetchPriority="high"
             loading="eager"
-            decoding="async"
+            decoding="sync"
             aria-hidden="true"
           />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
