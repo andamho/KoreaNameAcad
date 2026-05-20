@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAdmin } from "@/contexts/AdminContext";
 import expzonebg1 from "@/assets/expzonebg1";
+import exzonebgdesk from "@/assets/exzonebgdesk";
 import astronot from "@/assets/astronot";
 
 const experiences: {
@@ -127,10 +128,21 @@ export default function ExperienceZone() {
       {/* Hero Section — overflow-hidden은 이미지 클리핑용, SVG는 section 밖으로 분리 */}
       <section className="relative overflow-hidden pt-16 pb-4 md:pt-24 md:pb-6">
         {/* 배경 - 모바일/데스크탑 공통 */}
+        {/* 모바일 배경 (세로 이미지) */}
         <img
           src={expzonebg1}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover object-bottom md:object-[50%_85%]"
+          className="absolute inset-0 w-full h-full object-cover object-bottom md:hidden"
+          fetchPriority="high"
+          loading="eager"
+          decoding="sync"
+          aria-hidden="true"
+        />
+        {/* 데스크탑 배경 (가로 이미지) */}
+        <img
+          src={exzonebgdesk}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover object-bottom hidden md:block"
           fetchPriority="high"
           loading="eager"
           decoding="sync"
