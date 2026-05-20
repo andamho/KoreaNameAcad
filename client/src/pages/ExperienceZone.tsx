@@ -6,11 +6,7 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAdmin } from "@/contexts/AdminContext";
 import expzonebg1 from "@/assets/expzonebg1";
-
-const _expzonebg1Preload = new Image();
-_expzonebg1Preload.src = expzonebg1;
-const _astronotPreload = new Image();
-_astronotPreload.src = "/astronot.webp";
+import astronot from "@/assets/astronot";
 
 const experiences: {
   id: string;
@@ -143,7 +139,7 @@ export default function ExperienceZone() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32 md:pb-48">
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
             <img
-              src="/astronot.webp"
+              src={astronot}
               alt="체험 ZONE 캐릭터"
               className="w-auto h-40 md:h-56 flex-shrink-0"
               fetchPriority="high"
