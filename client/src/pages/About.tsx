@@ -3,7 +3,7 @@ import { Footer } from "@/components/Footer";
 import { ContentGrid } from "@/components/ContentGrid";
 import { useEffect } from "react";
 import { useScrollRestore } from "@/hooks/use-scroll-restore";
-import servicebg1Image from "@assets/servicebg1.webp";
+import servicebg1Image from "@/assets/servicebg1";
 
 const _heroBgPreload = new Image();
 _heroBgPreload.src = servicebg1Image;

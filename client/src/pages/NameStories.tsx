@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import type { Content } from "@shared/schema";
 import storiesCharacterImage from "@assets/KakaoTalk_20251226_141747822_1766726282057.png";
-import yellowBrightImage from "@assets/yellow_bright_portrait.webp";
+import yellowBrightImage from "@/assets/yellow_bright_portrait";
 
 const _heroBgPreload = new Image();
 _heroBgPreload.src = yellowBrightImage;

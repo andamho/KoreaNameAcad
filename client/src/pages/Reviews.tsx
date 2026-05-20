@@ -25,7 +25,7 @@ const categoryOptions = [
   { value: "expert", label: "한국이름학교" },
 ];
 import reviewsCharacterImage from "@assets/KakaoTalk_20251226_140721227_1766725962281.png";
-import reviewbgImage from "@assets/reviewbg.webp";
+import reviewbgImage from "@/assets/reviewbg";
 import { useLocation, Link } from "wouter";
 
 const _heroBgPreload = new Image();
