@@ -80,7 +80,7 @@ export default function About() {
         <img
           src={servicebg1Image}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-top"
           fetchPriority="high"
           loading="eager"
           decoding="sync"
