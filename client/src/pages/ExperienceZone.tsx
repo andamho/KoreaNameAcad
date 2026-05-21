@@ -148,8 +148,6 @@ export default function ExperienceZone() {
           decoding="sync"
           aria-hidden="true"
         />
-        {/* 하단 그라디언트 — 이미지 가장자리 아티팩트 완전 차단 */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none" style={{ background: 'linear-gradient(to top, hsl(var(--background)) 30%, transparent)' }} />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32 md:pb-48">
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
             <img
@@ -175,9 +173,9 @@ export default function ExperienceZone() {
       </section>
 
       {/* 볼록 SVG */}
-      <div className="relative -mt-28 md:-mt-36 pointer-events-none" aria-hidden style={{ zIndex: 1 }}>
+      <div className="relative -mt-28 md:-mt-36 pointer-events-none" aria-hidden style={{ zIndex: 1, marginBottom: '-2px' }}>
         <svg viewBox="0 0 1200 150" preserveAspectRatio="none" className="w-full h-28 md:h-36 block">
-          <path d="M0,150 L0,0 Q600,150 1200,0 L1200,150 Z" className="fill-background" />
+          <path d="M0,152 L0,0 Q600,152 1200,0 L1200,152 Z" className="fill-background" />
         </svg>
       </div>
 
