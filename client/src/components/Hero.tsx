@@ -2,10 +2,10 @@ import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { clearScrollPosition } from "@/hooks/use-scroll-restore";
-import mainbgnew from "@/assets/mainbgnew";
+import mainbgnew1 from "@/assets/mainbgnew1";
 import bgmaindesk from "@/assets/bgmaindesk";
 
-const heroImageMobile = mainbgnew;
+const heroImageMobile = mainbgnew1;
 const heroImageDesktop = bgmaindesk;
 
 // 모바일/데스크탑 이미지 즉시 프리로드
