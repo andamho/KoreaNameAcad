@@ -23,14 +23,14 @@ interface UseUploadOptions {
 
 async function compressImage(
   file: File,
-  maxWidth: number = 800,
-  maxHeight: number = 800,
-  quality: number = 0.7
+  maxWidth: number = 1600,
+  maxHeight: number = 1600,
+  quality: number = 0.92
 ): Promise<File> {
   if (!file.type.startsWith("image/")) {
     return file;
   }
-  
+
   if (file.type === "image/gif" || file.type === "image/svg+xml") {
     return file;
   }
@@ -43,8 +43,11 @@ async function compressImage(
     img.onload = () => {
       let { width, height } = img;
 
-      // 항상 압축 실행 (크기 조건 제거)
-      // 작은 이미지도 리사이징하여 일관된 품질 유지
+      // 이미 충분히 작고 파일도 가벼우면 원본 그대로 사용 (재인코딩으로 인한 화질 손상 방지)
+      if (width <= maxWidth && height <= maxHeight && file.size < 1.5 * 1024 * 1024) {
+        resolve(file);
+        return;
+      }
 
       if (width > maxWidth) {
         height = (height * maxWidth) / width;
@@ -63,6 +66,9 @@ async function compressImage(
         return;
       }
 
+      // 고품질 다운스케일링 활성화
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
       ctx.fillStyle = "#FFFFFF";
       ctx.fillRect(0, 0, width, height);
       ctx.drawImage(img, 0, 0, width, height);
@@ -106,7 +112,7 @@ export function useUpload(options: UseUploadOptions = {}) {
   const [error, setError] = useState<Error | null>(null);
   const [progress, setProgress] = useState(0);
 
-  const { maxWidth = 800, maxHeight = 800, quality = 0.7 } = options;
+  const { maxWidth = 1600, maxHeight = 1600, quality = 0.92 } = options;
   
   // Use ref to always have the latest callbacks without causing re-renders
   // Update synchronously on every render to ensure we always have the latest
