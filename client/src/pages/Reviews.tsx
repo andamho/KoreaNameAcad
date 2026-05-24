@@ -804,7 +804,7 @@ export default function Reviews() {
             {allAnalysisTestimonials.map((testimonial, index) => (
               <Card
                 key={index}
-                className="p-6 hover-elevate relative"
+                className="kna-nanum-editor p-6 hover-elevate relative"
                 data-testid={`analysis-testimonial-card-${index}`}
               >
                 {/* Quote Icon */}
@@ -855,7 +855,7 @@ export default function Reviews() {
             {allNameChangeTestimonials.map((testimonial, index) => (
               <Card
                 key={index}
-                className="p-6 hover-elevate relative"
+                className="kna-nanum-editor p-6 hover-elevate relative"
                 data-testid={`testimonial-card-${index}`}
               >
                 {/* Quote Icon */}
