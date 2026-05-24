@@ -299,7 +299,7 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
                 let textBuffer: string[] = [];
 
                 const flushTextBuffer = (key: string) => {
-                  const text = textBuffer.join("").replace(/^\n+|\n+$/g, "");
+                  const text = textBuffer.join("").replace(/^\n/, "").replace(/\n+$/, "");
                   textBuffer = [];
                   if (!text) return;
                   result.push(
