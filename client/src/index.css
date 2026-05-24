@@ -57,6 +57,34 @@
   font-display: block;
 }
 
+/* 나눔스퀘어 Regular */
+@font-face {
+  font-family: 'Nanum Square';
+  src: url('/fonts/NanumSquareR.woff') format('woff'),
+       url('/fonts/NanumSquareR.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 나눔스퀘어 ExtraBold (Bold 자리도 같은 가중치로 매핑) */
+@font-face {
+  font-family: 'Nanum Square';
+  src: url('/fonts/NanumSquareEB.woff') format('woff'),
+       url('/fonts/NanumSquareEB.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nanum Square';
+  src: url('/fonts/NanumSquareEB.woff') format('woff'),
+       url('/fonts/NanumSquareEB.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* 햄버거 메뉴 애니메이션 - 숨 고르기형 */
 /* 네비바 버튼 터치 하이라이트 완전 제거 */
 /* 네비바 z-index 강제 적용 - 모든 섹션 위에 표시 */
