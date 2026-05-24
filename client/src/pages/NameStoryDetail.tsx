@@ -285,7 +285,7 @@ export default function NameStoryDetail() {
             )}
 
             <Card className="p-6 md:p-8">
-              <div className="prose dark:prose-invert max-w-none">
+              <div className="kna-nanum-editor prose dark:prose-invert max-w-none">
                 {(() => {
                   const parts = story.content.split(/(!\[[^\]]*\]\([^)]+\))/);
                   const result: JSX.Element[] = [];
