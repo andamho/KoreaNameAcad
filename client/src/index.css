@@ -2220,6 +2220,12 @@ html.ua-tiktok .kna-inapp-zoom-input::placeholder {
   font-weight: 700;
 }
 
+/* 에디터 나눔스퀘어 강제 적용 */
+.kna-nanum-editor,
+.kna-nanum-editor * {
+  font-family: 'Nanum Square', sans-serif !important;
+}
+
 /* tiffany 색상 체계 */
 .text-tiffany { color: #14b8a6; }
 .text-tiffany-dark { color: #0f766e; }
