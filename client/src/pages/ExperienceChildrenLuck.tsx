@@ -421,9 +421,10 @@ export default function ExperienceChildrenLuck() {
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <p className="font-bold text-red-300 text-base">자식과의 관계운이 약한 이름입니다.</p>
+                        <p className="font-bold text-red-300 text-base">조화가 필요한 (에너지 충돌)</p>
+                        <p className="text-red-300/90 text-sm font-medium">서로를 밀어내는 기운이 숨어있습니다.</p>
                         <p className="text-red-400/80 text-sm leading-relaxed">
-                          이름의 오행이 충돌하여<br />자식과의 관계에 어려움이 생길 수 있습니다.
+                          성씨와 이름의 오행이 서로 맞물리지 못하고 부딪히는 흐름입니다. 이 충돌을 완화하고 균형을 잡아줄 따뜻한 보완책이 필요합니다.
                         </p>
                         <button onClick={() => commentRef.current?.scrollIntoView({ behavior:'smooth' })}
                           className="mt-2 inline-block text-sm text-white underline underline-offset-2 hover:text-[#56D5DB] transition">
