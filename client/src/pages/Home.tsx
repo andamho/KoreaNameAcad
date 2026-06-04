@@ -147,9 +147,11 @@ export default function Home() {
     if (openType === "analysis" || openType === "naming") {
       setDialogType(openType);
       setDialogOpen(true);
+      setShowExpPopup(false);
       window.history.replaceState({ modal: "consultation", from: fromPage }, "", "/");
     } else if (detailType === "analysis") {
       setAnalysisDetailOpen(true);
+      setShowExpPopup(false);
       window.history.replaceState({ modal: "analysisDetail", from: fromPage }, "", "/");
     }
 
@@ -211,6 +213,7 @@ export default function Home() {
   const openDialog = (type: "analysis" | "naming") => {
     setDialogType(type);
     setDialogOpen(true);
+    setShowExpPopup(false);
     // 히스토리에 고유 ID를 저장하여 뒤로 가기 버튼으로 닫을 수 있게 함
     const fromPage = window.history.state?.from || referrerPage.current;
     window.history.pushState({ modal: "consultation", from: fromPage }, "");
@@ -239,6 +242,7 @@ export default function Home() {
 
   const openAnalysisDetail = () => {
     setAnalysisDetailOpen(true);
+    setShowExpPopup(false);
     // 히스토리에 고유 ID를 저장하여 뒤로 가기 버튼으로 닫을 수 있게 함
     const fromPage = window.history.state?.from || referrerPage.current;
     window.history.pushState({ modal: "analysisDetail", from: fromPage }, "");
