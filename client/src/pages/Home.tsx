@@ -318,6 +318,16 @@ export default function Home() {
                 오늘 하루 안 보기
               </button>
             </div>
+            <button
+              onClick={() => closeExpPopup()}
+              className="absolute bottom-4 right-4 w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="닫기"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
           </div>
         </div>
       , document.body)}
