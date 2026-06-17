@@ -482,7 +482,7 @@ export default function NameStories() {
                 className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full font-semibold text-sm bg-[#56D5DB] text-white shadow-sm transition-all duration-200 hover:bg-[#4ac5cb] hover:shadow-md active:scale-[0.98]"
                 data-testid="link-blog-stories"
               >
-                <span>자세히 보기</span>
+                <span>전체보기</span>
                 <span className="text-lg">›</span>
               </a>
             </div>
