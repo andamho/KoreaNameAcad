@@ -107,6 +107,10 @@ export function Navbar() {
     toast({ title: "대표 이미지가 변경되었습니다." });
   };
   
+  // 자동 임시저장 키
+  const AUTO_DRAFT_KEY = "kna_write_autodraft";
+  const [hasSavedDraft, setHasSavedDraft] = useState(false);
+
   // Reset form including images
   const resetWriteForm = () => {
     setWriteForm({
@@ -119,6 +123,53 @@ export function Navbar() {
       isDraft: false,
     });
     setUploadedImages([]);
+  };
+
+  // 다이얼로그 열릴 때 로컬 임시저장 확인
+  useEffect(() => {
+    if (showWriteDialog) {
+      const saved = localStorage.getItem(AUTO_DRAFT_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.title || parsed.content) {
+            setHasSavedDraft(true);
+          }
+        } catch {}
+      }
+    }
+  }, [showWriteDialog]);
+
+  // 내용 변경 시 2초 디바운스 자동 저장
+  useEffect(() => {
+    if (!showWriteDialog) return;
+    if (!writeForm.title && !writeForm.content) return;
+    const timer = setTimeout(() => {
+      localStorage.setItem(AUTO_DRAFT_KEY, JSON.stringify({
+        category: writeForm.category,
+        title: writeForm.title,
+        thumbnail: writeForm.thumbnail,
+        content: writeForm.content,
+        isVideo: writeForm.isVideo,
+        videoUrl: writeForm.videoUrl,
+      }));
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [showWriteDialog, writeForm.title, writeForm.content, writeForm.category, writeForm.thumbnail, writeForm.isVideo, writeForm.videoUrl]);
+
+  const restoreAutoDraft = () => {
+    const saved = localStorage.getItem(AUTO_DRAFT_KEY);
+    if (!saved) return;
+    try {
+      const parsed = JSON.parse(saved);
+      setWriteForm(prev => ({ ...prev, ...parsed, isDraft: false }));
+    } catch {}
+    setHasSavedDraft(false);
+  };
+
+  const discardAutoDraft = () => {
+    localStorage.removeItem(AUTO_DRAFT_KEY);
+    setHasSavedDraft(false);
   };
 
   // Close menu on ESC key
@@ -231,6 +282,8 @@ export function Navbar() {
       }
       
       setShowWriteDialog(false);
+      localStorage.removeItem("kna_write_autodraft");
+      setHasSavedDraft(false);
       setWriteForm({
         category: "review",
         title: "",
@@ -603,6 +656,18 @@ export function Navbar() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {hasSavedDraft && (
+              <div className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  이전에 작성 중이던 내용이 있습니다.
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={restoreAutoDraft} className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline">불러오기</button>
+                  <button onClick={discardAutoDraft} className="text-xs text-gray-400 hover:text-gray-600">삭제</button>
+                </div>
+              </div>
+            )}
             <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
               <Label className="text-sm font-semibold text-primary mb-2 block">카테고리 선택 (필수)</Label>
               <div className="flex flex-wrap gap-2">
