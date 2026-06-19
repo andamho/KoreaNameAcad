@@ -226,6 +226,10 @@ function StoryCard({ story, index = 0 }: { story: Content; index?: number }) {
             alt={story.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             loading={index < 6 ? "eager" : "lazy"}
+            fetchPriority={index < 4 ? "high" : "auto"}
+            decoding="async"
+            width={400}
+            height={400}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.onerror = null;
@@ -385,6 +389,7 @@ export default function NameStories() {
       if (!response.ok) throw new Error("Failed to fetch stories");
       return response.json();
     },
+    staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {

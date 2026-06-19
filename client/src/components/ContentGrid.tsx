@@ -40,6 +40,7 @@ export function ContentGrid({ category, basePath, emptyMessage = "등록된 콘�
       if (!response.ok) throw new Error("Failed to fetch contents");
       return response.json();
     },
+    staleTime: 5 * 60 * 1000,
   });
 
   if (isLoading) {
@@ -305,6 +306,10 @@ function ContentCard({ content, basePath, index = 0 }: ContentCardProps) {
             alt={content.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading={index < 6 ? "eager" : "lazy"}
+            fetchPriority={index < 4 ? "high" : "auto"}
+            decoding="async"
+            width={400}
+            height={400}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.onerror = null;
