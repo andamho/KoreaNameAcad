@@ -511,8 +511,19 @@ export class DatabaseStorage implements IStorage {
   async replyToExperienceComment(id: string, reply: string): Promise<ExperienceComment> {
     await this.ensureDbReady();
     try {
+      const [existing] = await this.db.select().from(experienceComments).where(eq(experienceComments.id, id));
+      let replies: Array<{ text: string; createdAt: string }> = [];
+      if (existing?.reply) {
+        try {
+          const parsed = JSON.parse(existing.reply);
+          replies = Array.isArray(parsed) ? parsed : [{ text: existing.reply, createdAt: existing.repliedAt?.toISOString() ?? new Date().toISOString() }];
+        } catch {
+          replies = [{ text: existing.reply, createdAt: existing.repliedAt?.toISOString() ?? new Date().toISOString() }];
+        }
+      }
+      replies.push({ text: reply, createdAt: new Date().toISOString() });
       const [result] = await this.db.update(experienceComments)
-        .set({ reply, repliedAt: new Date() })
+        .set({ reply: JSON.stringify(replies), repliedAt: new Date() })
         .where(eq(experienceComments.id, id))
         .returning();
       return result;

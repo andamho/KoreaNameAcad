@@ -97,6 +97,15 @@ interface Comment {
   repliedAt: string | null; createdAt: string;
 }
 
+function parseReplies(reply: string): Array<{ text: string }> {
+  try {
+    const parsed = JSON.parse(reply);
+    return Array.isArray(parsed) ? parsed : [{ text: reply }];
+  } catch {
+    return [{ text: reply }];
+  }
+}
+
 export default function ExperienceShortLife() {
   const [, setLocation] = useLocation();
   const { isAdmin } = useAdmin();
@@ -577,12 +586,12 @@ export default function ExperienceShortLife() {
                     </div>
                   </div>
                   <p className="text-sm text-foreground/80 leading-relaxed">{c.content}</p>
-                  {c.reply && (
-                    <div className="mt-2 ml-3 pl-3 border-l-2 border-[#18a999]/30 space-y-0.5">
+                  {c.reply && parseReplies(c.reply).map((r, i) => (
+                    <div key={i} className="mt-2 ml-3 pl-3 border-l-2 border-[#18a999]/30 space-y-0.5">
                       <p className="text-xs font-bold text-[#18a999]">이름의신</p>
-                      <p className="text-sm text-foreground/80 leading-relaxed">{c.reply}</p>
+                      <p className="text-sm text-foreground/80 leading-relaxed">{r.text}</p>
                     </div>
-                  )}
+                  ))}
                   {isAdmin && replyingTo === c.id && (
                     <div className="mt-2 ml-3 pl-3 border-l-2 border-[#18a999]/30 flex gap-2">
                       <input value={replyText} onChange={e => setReplyText(e.target.value)}
