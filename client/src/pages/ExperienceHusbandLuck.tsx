@@ -125,6 +125,8 @@ export default function ExperienceHusbandLuck() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [replySubmitting, setReplySubmitting] = useState(false);
+  const [editingReply, setEditingReply] = useState<{ commentId: string; index: number } | null>(null);
+  const [editReplyText, setEditReplyText] = useState('');
   const commentRef = useRef<HTMLDivElement>(null);
   const bannerRef = useRef<HTMLParagraphElement>(null);
 
@@ -217,6 +219,23 @@ export default function ExperienceHusbandLuck() {
       setComments(prev => prev.map(c => c.id === id ? updated : c));
       setReplyingTo(null); setReplyText('');
     } catch {} finally { setReplySubmitting(false); }
+  }
+
+  async function submitEditReply(commentId: string, index: number) {
+    if (!editReplyText.trim()) return;
+    const token = localStorage.getItem('kna_admin_token');
+    try {
+      const res = await fetch(`/api/experience-comments/${commentId}/reply/${index}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text: editReplyText.trim() }),
+      });
+      if (!res.ok) throw new Error();
+      const updated = await res.json();
+      setComments(prev => prev.map(c => c.id === commentId ? updated : c));
+      setEditingReply(null);
+      setEditReplyText('');
+    } catch {}
   }
 
   const OHANG_TABLE: { ohang: Ohang; cho: string; note?: string }[] = [
@@ -586,8 +605,27 @@ export default function ExperienceHusbandLuck() {
                   <p className="text-sm text-foreground/80 leading-relaxed">{c.content}</p>
                   {c.reply && parseReplies(c.reply).map((r, i) => (
                     <div key={i} className="mt-2 ml-3 pl-3 border-l-2 border-[#18a999]/30 space-y-0.5">
-                      <p className="text-xs font-bold text-[#18a999]">이름의신</p>
-                      <p className="text-sm text-foreground/80 leading-relaxed">{r.text}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-bold text-[#18a999]">이름의신</p>
+                        {isAdmin && (
+                          <button onClick={() => { setEditingReply({ commentId: c.id, index: i }); setEditReplyText(r.text); }}
+                            className="text-xs text-muted-foreground hover:text-[#18a999] transition">수정</button>
+                        )}
+                      </div>
+                      {editingReply?.commentId === c.id && editingReply.index === i ? (
+                        <div className="flex gap-2 mt-1">
+                          <input value={editReplyText} onChange={e => setEditReplyText(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && submitEditReply(c.id, i)}
+                            className="flex-1 bg-background border border-border rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#18a999] transition"
+                            maxLength={200} autoFocus />
+                          <button onClick={() => submitEditReply(c.id, i)}
+                            className="px-3 py-1.5 rounded-lg bg-[#18a999] text-white text-xs font-bold transition">저장</button>
+                          <button onClick={() => setEditingReply(null)}
+                            className="px-3 py-1.5 rounded-lg border border-border text-xs transition">취소</button>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-foreground/80 leading-relaxed">{r.text}</p>
+                      )}
                     </div>
                   ))}
                   {isAdmin && replyingTo === c.id && (

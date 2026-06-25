@@ -332,6 +332,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/experience-comments/:id/reply/:index", requireAdmin, async (req, res) => {
+    try {
+      const index = parseInt(req.params.index, 10);
+      const { text } = req.body;
+      if (!text?.trim()) return res.status(400).json({ error: "내용을 입력해주세요." });
+      if (isNaN(index)) return res.status(400).json({ error: "잘못된 인덱스입니다." });
+      const comment = await storage.editExperienceCommentReply(req.params.id, index, text.trim());
+      return res.json(comment);
+    } catch (error: any) {
+      return handleDbError(error, res, "PUT /api/experience-comments/:id/reply/:index");
+    }
+  });
+
   app.put("/api/experience-comments/:id/reply", requireAdmin, async (req, res) => {
     try {
       const { reply } = req.body;

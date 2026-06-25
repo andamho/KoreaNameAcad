@@ -37,6 +37,7 @@ export interface IStorage {
   createExperienceComment(comment: InsertExperienceComment): Promise<ExperienceComment>;
   deleteExperienceComment(id: string): Promise<void>;
   replyToExperienceComment(id: string, reply: string): Promise<ExperienceComment>;
+  editExperienceCommentReply(id: string, index: number, text: string): Promise<ExperienceComment>;
 }
 
 export class MemStorage implements IStorage {
@@ -184,6 +185,7 @@ export class MemStorage implements IStorage {
   }
   async deleteExperienceComment(_id: string): Promise<void> {}
   async replyToExperienceComment(_id: string, _reply: string): Promise<ExperienceComment> { throw new Error("Not implemented"); }
+  async editExperienceCommentReply(_id: string, _index: number, _text: string): Promise<ExperienceComment> { throw new Error("Not implemented"); }
 }
 
 // DB row → Consultation type 변환 헬퍼
@@ -505,6 +507,31 @@ export class DatabaseStorage implements IStorage {
       await this.db.delete(experienceComments).where(eq(experienceComments.id, id));
     } catch (error: any) {
       throw new DatabaseError(`댓글 삭제 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async editExperienceCommentReply(id: string, index: number, text: string): Promise<ExperienceComment> {
+    await this.ensureDbReady();
+    try {
+      const [existing] = await this.db.select().from(experienceComments).where(eq(experienceComments.id, id));
+      let replies: Array<{ text: string; createdAt: string }> = [];
+      if (existing?.reply) {
+        try {
+          const parsed = JSON.parse(existing.reply);
+          replies = Array.isArray(parsed) ? parsed : [{ text: existing.reply, createdAt: existing.repliedAt?.toISOString() ?? new Date().toISOString() }];
+        } catch {
+          replies = [{ text: existing.reply, createdAt: existing.repliedAt?.toISOString() ?? new Date().toISOString() }];
+        }
+      }
+      if (index < 0 || index >= replies.length) throw new Error("Invalid reply index");
+      replies[index] = { ...replies[index], text };
+      const [result] = await this.db.update(experienceComments)
+        .set({ reply: JSON.stringify(replies) })
+        .where(eq(experienceComments.id, id))
+        .returning();
+      return result;
+    } catch (error: any) {
+      throw new DatabaseError(`답글 수정 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
   }
 
