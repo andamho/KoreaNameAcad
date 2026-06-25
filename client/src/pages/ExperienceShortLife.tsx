@@ -563,7 +563,7 @@ export default function ExperienceShortLife() {
                 <p className="text-center text-muted-foreground text-base py-8">아직 진단 기록이 없습니다.</p>
               )}
               {comments.map(c => c.isPrivate && !isAdmin ? null : (
-                <div key={c.id} className={`rounded-2xl p-4 space-y-2 ${c.isPrivate ? 'bg-muted/40 border border-dashed border-border' : 'bg-card border border-border/50'}`}
+                <div key={c.id} id={`comment-${c.id}`} className={`rounded-2xl p-4 space-y-2 ${c.isPrivate ? 'bg-muted/40 border border-dashed border-border' : 'bg-card border border-border/50'}`}
                   style={{ boxShadow:'0 1px 8px rgba(0,0,0,0.04)' }}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">

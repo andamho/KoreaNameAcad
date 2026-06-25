@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage, DatabaseError } from "./storage";
 import { insertConsultationSchema, insertNameStorySchema, insertContentSchema, contentCategoryEnum, type ContentCategory } from "@shared/schema";
-import { sendConsultationNotification } from "./email";
+import { sendConsultationNotification, sendCommentNotification } from "./email";
 import crypto from "crypto";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 
@@ -308,6 +308,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalStrokes: totalStrokes ?? null,
         content: content.trim(),
         isPrivate: !!isPrivate,
+      });
+      sendCommentNotification({
+        id: comment.id,
+        pageId: comment.pageId,
+        nickname: comment.nickname,
+        content: comment.content,
+        totalStrokes: comment.totalStrokes,
+        isPrivate: comment.isPrivate,
       });
       return res.json(comment);
     } catch (error: any) {

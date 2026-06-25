@@ -6,6 +6,58 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const RECIPIENT_EMAIL = 'iimooii1000@gmail.com';
 const FROM_EMAIL = 'onboarding@resend.dev'; // Resend의 테스트 발신자
 
+const SITE_URL = 'https://korea-name-acad.com';
+
+const PAGE_NAMES: Record<string, string> = {
+  'alone-fate':     '혼자살 팔자',
+  'husband-luck':   '남편복',
+  'short-life':     '단명수',
+  'children-luck':  '자식복',
+  'name-rank':      '전국 이름 순위',
+};
+
+export async function sendCommentNotification(comment: {
+  id: string;
+  pageId: string;
+  nickname: string;
+  content: string;
+  totalStrokes: number | null;
+  isPrivate: boolean;
+}): Promise<void> {
+  try {
+    const pageName = PAGE_NAMES[comment.pageId] ?? comment.pageId;
+    const pageUrl = `${SITE_URL}/experience-zone/${comment.pageId}#comment-${comment.id}`;
+
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: RECIPIENT_EMAIL,
+      subject: `[한국이름학교] 새 댓글 - ${pageName} (${comment.nickname})`,
+      html: `
+        <div style="font-family:'Malgun Gothic',sans-serif;max-width:500px;margin:0 auto;padding:24px;">
+          <h2 style="color:#18a999;margin-bottom:4px;">💬 새 댓글이 달렸습니다</h2>
+          <p style="color:#888;margin-top:0;margin-bottom:20px;font-size:14px;">체험존 · ${pageName}</p>
+          <div style="background:#f8f9fa;border-left:4px solid #18a999;border-radius:4px;padding:16px;margin-bottom:24px;">
+            <p style="margin:0 0 8px 0;font-size:13px;color:#888;">
+              <strong style="color:#333;">${comment.nickname}</strong>
+              ${comment.totalStrokes ? ` &nbsp;·&nbsp; 총운 ${comment.totalStrokes}획` : ''}
+              ${comment.isPrivate ? ' &nbsp;·&nbsp; 🔒 비공개' : ''}
+            </p>
+            <p style="margin:0;font-size:15px;color:#222;line-height:1.6;">${comment.content}</p>
+          </div>
+          <a href="${pageUrl}"
+            style="display:inline-block;background:#18a999;color:white;text-decoration:none;
+                   padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;">
+            댓글 바로가기 →
+          </a>
+        </div>
+      `,
+    });
+    console.log(`✅ 댓글 알림 이메일 전송 완료: ${comment.id}`);
+  } catch (error) {
+    console.error('❌ 댓글 알림 이메일 전송 실패:', error);
+  }
+}
+
 export async function sendConsultationNotification(consultation: Consultation): Promise<void> {
   try {
     const typeLabel = consultation.type === 'analysis' ? '이름분석' : '이름감명';
