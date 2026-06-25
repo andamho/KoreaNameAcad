@@ -563,9 +563,12 @@ export default function ExperienceShortLife() {
                 <p className="text-center text-muted-foreground text-base py-8">아직 진단 기록이 없습니다.</p>
               )}
               {comments.map(c => c.isPrivate && !isAdmin ? (
-                <div key={c.id} id={`comment-${c.id}`} className="rounded-2xl px-4 py-3 bg-muted/30 border border-dashed border-border/50 flex items-center gap-2 text-sm text-muted-foreground">
-                  <Lock className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span>비밀 댓글입니다.</span>
+                <div key={c.id} id={`comment-${c.id}`} className="rounded-2xl px-4 py-3 bg-muted/30 border border-dashed border-border/50 flex items-center justify-between text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Lock className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span>비밀 댓글입니다.</span>
+                  </div>
+                  <span className="text-xs">{new Date(c.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</span>
                 </div>
               ) : (
                 <div key={c.id} id={`comment-${c.id}`} className={`rounded-2xl p-4 space-y-2 ${c.isPrivate ? 'bg-muted/40 border border-dashed border-border' : 'bg-card border border-border/50'}`}
