@@ -63,13 +63,13 @@ export default function Inquiry() {
               </div>
             ) : (
               <div className="space-y-4">
-                {/* 성함 */}
+                {/* 이름 */}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-foreground">성함 (Name)</label>
+                  <label className="text-sm font-medium text-foreground">이름 (Name)</label>
                   <input
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    placeholder="성함을 입력해주세요"
+                    placeholder="이름을 입력해주세요"
                     maxLength={20}
                     className="w-full border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition"
                   />
@@ -105,7 +105,7 @@ export default function Inquiry() {
                   <input
                     value={contact}
                     onChange={e => setContact(e.target.value)}
-                    placeholder={contactType === "sms" ? "연락처 번록 or 이메일" : "이메일 주소"}
+                    placeholder={contactType === "sms" ? "전화번호 (010-1234-5678 또는 01012345678)" : "이메일 주소"}
                     maxLength={100}
                     className="w-full border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition"
                   />
