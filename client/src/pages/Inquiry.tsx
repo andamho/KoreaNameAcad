@@ -155,7 +155,7 @@ export default function Inquiry() {
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#18a999] text-white font-bold text-sm hover:bg-[#149085] disabled:opacity-50 transition"
                 >
                   <Send className="w-4 h-4" />
-                  {submitting ? "제출 중..." : "문의 제출하기"}
+                  {submitting ? "등록 중..." : "문의 등록하기"}
                 </button>
               </div>
             )}
