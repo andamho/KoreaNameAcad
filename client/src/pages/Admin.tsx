@@ -287,7 +287,7 @@ export default function Admin() {
             ) : (
               <div className="rounded-xl border border-border">
                 {/* 헤더 */}
-                <div className="grid grid-cols-[1fr_160px_100px_80px] gap-2 px-4 py-2.5 bg-muted/50 text-xs font-bold text-muted-foreground border-b border-border rounded-t-xl">
+                <div className="grid grid-cols-[1fr_160px_100px_120px] gap-2 px-4 py-2.5 bg-muted/50 text-xs font-bold text-muted-foreground border-b border-border rounded-t-xl">
                   <span>작성자</span>
                   <span>문의 일시</span>
                   <span>상태</span>
@@ -295,20 +295,36 @@ export default function Admin() {
                 </div>
                 {inquiries.map((inq, idx) => (
                   <div key={inq.id} className={idx !== 0 ? "border-t border-border/50" : ""}>
-                    <div className="grid grid-cols-[1fr_160px_100px_80px] gap-2 items-center px-4 py-3">
+                    <div className="grid grid-cols-[1fr_160px_100px_120px] gap-2 items-center px-4 py-3">
                       <span className="font-medium text-sm">{maskName(inq.name)} 님</span>
                       <span className="text-xs text-muted-foreground">{formatDateTime(inq.createdAt)}</span>
                       <Badge variant={inq.status === "답변완료" ? "secondary" : "default"}
                         className={inq.status === "접수완료" ? "bg-[#18a999] text-white hover:bg-[#18a999]" : ""}>
                         {inq.status}
                       </Badge>
-                      <button
-                        type="button"
-                        className="text-xs text-[#18a999] hover:underline font-medium text-left"
-                        onClick={() => setExpandedInquiry(expandedInquiry === inq.id ? null : inq.id)}
-                      >
-                        {expandedInquiry === inq.id ? "닫기" : "내용보기"}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          className="text-xs text-[#18a999] hover:underline font-medium"
+                          onClick={() => setExpandedInquiry(expandedInquiry === inq.id ? null : inq.id)}
+                        >
+                          {expandedInquiry === inq.id ? "닫기" : "내용보기"}
+                        </button>
+                        <button
+                          type="button"
+                          title="삭제"
+                          className="text-red-400 hover:text-red-600 transition"
+                          onClick={async () => {
+                            if (!confirm("정말 삭제하시겠습니까?")) return;
+                            const token = localStorage.getItem("kna_admin_token");
+                            await fetch(`/api/inquiries/${inq.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+                            fetchInquiries();
+                            if (expandedInquiry === inq.id) setExpandedInquiry(null);
+                          }}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                     {expandedInquiry === inq.id && (
                       <div className="px-4 pb-4 pt-2 bg-muted/10 border-t border-border/30 space-y-4">
