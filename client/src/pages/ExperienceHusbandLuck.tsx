@@ -539,7 +539,7 @@ export default function ExperienceHusbandLuck() {
           <div className="rounded-2xl bg-slate-900 dark:bg-slate-800 p-6 text-center space-y-3">
             <p className="text-white font-bold text-lg">더 정확한 분석이 필요하신가요?</p>
             <p className="text-white/50 text-base">오행 관계 외 16가지 운을 모두 확인하세요</p>
-            <button onClick={() => setLocation('/inquiry')}
+            <button onClick={() => setLocation('/services')}
               className="mt-1 inline-block px-6 py-2.5 rounded-full bg-[#18a999] text-white text-sm font-bold hover:bg-[#149085] transition-colors">
               이름 분석 상담 신청
             </button>

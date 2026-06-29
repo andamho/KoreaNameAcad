@@ -107,7 +107,7 @@ export function Footer() {
         {/* CTA 버튼 영역 - 히어로 섹션 스타일 */}
         <div className="flex items-center justify-center gap-6 my-12">
           <button
-            onClick={() => setLocation('/inquiry')}
+            onClick={() => setLocation('/services')}
             className="px-5 py-1 bg-white text-black font-semibold rounded-full text-sm hover:bg-gray-200 transition-colors flex items-center gap-1"
             data-testid="button-footer-apply"
           >
