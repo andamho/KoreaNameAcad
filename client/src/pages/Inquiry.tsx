@@ -65,7 +65,7 @@ export default function Inquiry() {
               <div className="space-y-4">
                 {/* 이름 */}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-foreground">이름 (Name)</label>
+                  <label className="text-sm font-medium text-foreground">이름</label>
                   <input
                     value={name}
                     onChange={e => setName(e.target.value)}
@@ -78,7 +78,7 @@ export default function Inquiry() {
                 {/* 연락처 */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-foreground">연락처 (Contact)</label>
+                    <label className="text-sm font-medium text-foreground">연락처</label>
                     <div className="flex items-center gap-3 text-sm">
                       <label className="flex items-center gap-1.5 cursor-pointer">
                         <input
@@ -105,7 +105,7 @@ export default function Inquiry() {
                   <input
                     value={contact}
                     onChange={e => setContact(e.target.value)}
-                    placeholder={contactType === "sms" ? "전화번호 (010-1234-5678 또는 01012345678)" : "이메일 주소"}
+                    placeholder={contactType === "sms" ? "01012345678" : "이메일 주소"}
                     maxLength={100}
                     className="w-full border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition"
                   />
@@ -117,7 +117,7 @@ export default function Inquiry() {
 
                 {/* 문의 내용 */}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-foreground">문의 상세 내용 (Inquiry Details)</label>
+                  <label className="text-sm font-medium text-foreground">문의 상세 내용</label>
                   <textarea
                     value={content}
                     onChange={e => setContent(e.target.value)}
