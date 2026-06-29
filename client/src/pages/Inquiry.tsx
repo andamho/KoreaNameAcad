@@ -1,7 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Lock, Send, CheckCircle2 } from "lucide-react";
+import { Send, CheckCircle2 } from "lucide-react";
+
+interface PublicInquiry {
+  id: string;
+  maskedName: string;
+  status: string;
+  createdAt: string;
+}
+
+function formatDateTime(dateStr: string) {
+  const d = new Date(dateStr);
+  const y = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const h = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  return `${y}-${mo}-${day} ${h}:${mi}`;
+}
 
 export default function Inquiry() {
   const [name, setName] = useState("");
@@ -12,6 +29,14 @@ export default function Inquiry() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [publicList, setPublicList] = useState<PublicInquiry[]>([]);
+
+  useEffect(() => {
+    fetch("/api/inquiries/public")
+      .then(r => r.json())
+      .then(data => setPublicList(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, [submitted]);
 
   async function handleSubmit() {
     if (!name.trim() || !contact.trim() || !content.trim()) {
@@ -45,8 +70,8 @@ export default function Inquiry() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <main className="flex-1 flex items-start justify-center py-20 px-4">
-        <div className="w-full max-w-md">
+      <main className="flex-1 py-20 px-4">
+        <div className="w-full max-w-md mx-auto">
           <div className="rounded-2xl bg-card border border-border/50 p-8 space-y-6 shadow-sm">
             <div className="text-center space-y-1">
               <p className="text-sm text-muted-foreground">한국이름학교</p>
@@ -158,6 +183,29 @@ export default function Inquiry() {
               </div>
             )}
           </div>
+          {/* 문의 현황 게시판 */}
+          {publicList.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-sm font-semibold text-muted-foreground mb-3">문의 현황</h2>
+              <div className="rounded-xl border border-border overflow-hidden text-sm">
+                <div className="grid grid-cols-[1fr_140px_80px] px-4 py-2 bg-muted/50 text-xs font-bold text-muted-foreground border-b border-border">
+                  <span>작성자</span>
+                  <span>문의 일시</span>
+                  <span>상태</span>
+                </div>
+                {publicList.map((inq, idx) => (
+                  <div key={inq.id}
+                    className={`grid grid-cols-[1fr_140px_80px] px-4 py-3 items-center ${idx !== 0 ? "border-t border-border/40" : ""}`}>
+                    <span className="font-medium text-foreground">{inq.maskedName} 님</span>
+                    <span className="text-xs text-muted-foreground">{formatDateTime(inq.createdAt)}</span>
+                    <span className={`text-xs font-medium ${inq.status === "답변완료" ? "text-muted-foreground" : "text-[#18a999]"}`}>
+                      {inq.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </main>
       <Footer />

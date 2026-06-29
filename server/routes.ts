@@ -380,6 +380,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 공개용 - 마스킹된 목록만 반환 (내용/연락처 제외)
+  app.get("/api/inquiries/public", async (req, res) => {
+    try {
+      const list = await storage.getAllInquiries();
+      const masked = list.map(inq => ({
+        id: inq.id,
+        maskedName: (inq.name[0] ?? "?") + "**",
+        status: inq.status,
+        createdAt: inq.createdAt,
+      }));
+      return res.json(masked);
+    } catch (error: any) {
+      return handleDbError(error, res, "GET /api/inquiries/public");
+    }
+  });
+
   app.get("/api/inquiries", requireAdmin, async (req, res) => {
     try {
       const list = await storage.getAllInquiries();
