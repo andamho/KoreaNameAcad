@@ -114,7 +114,7 @@ export function Footer() {
             지금 신청 <span className="ml-1">›</span>
           </button>
           <button
-            onClick={() => setLocation('/inquiry')}
+            onClick={() => { setLocation('/inquiry'); window.scrollTo(0, 0); }}
             className="text-white font-semibold text-sm hover:opacity-70 transition-opacity flex items-center gap-1"
             data-testid="button-footer-kakao"
           >
