@@ -30,6 +30,8 @@ export default function Inquiry() {
   const [submitted, setSubmitted] = useState(false);
   const [publicList, setPublicList] = useState<PublicInquiry[]>([]);
 
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
   useEffect(() => {
     fetch("/api/inquiries/public")
       .then(r => r.json())
