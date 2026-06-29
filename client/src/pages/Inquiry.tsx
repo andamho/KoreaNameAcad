@@ -111,7 +111,7 @@ export default function Inquiry() {
                   />
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     입력하신 연락처 또는 이메일은 상담 답변 알림 발송 목적으로만 사용되며,
-                    상담 종료 후 안전하게 하기됩니다.
+                    상담 종료 후 안전하게 폐기됩니다.
                   </p>
                 </div>
 
