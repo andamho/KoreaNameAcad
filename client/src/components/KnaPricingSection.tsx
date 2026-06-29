@@ -154,7 +154,7 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
               지금 신청 <span className="ml-1">›</span>
             </Link>
             <Link to="/inquiry" className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition">
-              카톡 실시간 상담 <span className="ml-0.5">›</span>
+              실시간 상담 <span className="ml-0.5">›</span>
             </Link>
           </div>
         </div>
