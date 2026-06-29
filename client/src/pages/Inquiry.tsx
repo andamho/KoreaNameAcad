@@ -129,7 +129,7 @@ export default function Inquiry() {
                     maxLength={100}
                     className="w-full border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition"
                   />
-                  <p className="text-xs text-muted-foreground leading-relaxed">
+                  <p className="text-xs font-bold text-orange-500 leading-relaxed">
                     입력하신 연락처 또는 이메일은 상담 답변 알림 발송 목적으로만 사용되며,
                     상담 종료 후 안전하게 폐기됩니다.
                   </p>
