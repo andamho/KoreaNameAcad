@@ -98,7 +98,7 @@ export default function Inquiry() {
                 {/* 연락처 */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-foreground">상담 알림 연락처</label>
+                    <label className="text-sm font-medium text-foreground">답변 알림 연락처</label>
                     <div className="flex items-center gap-3 text-sm">
                       <label className="flex items-center gap-1.5 cursor-pointer">
                         <input
