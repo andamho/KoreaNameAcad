@@ -427,8 +427,8 @@ export function Navbar() {
     {
       icon: MessageCircle,
       label: "문의",
-      href: "https://pf.kakao.com/_Sxnvbb/chat",
-      description: "카카오톡 문의"
+      action: () => goToPage('/inquiry'),
+      description: "문의 및 상담 신청"
     }
   ];
 

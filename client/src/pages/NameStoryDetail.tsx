@@ -346,10 +346,8 @@ export default function NameStoryDetail() {
                       <span>[정확도 80% 이상]</span>
                     </div>
                     <div className="flex justify-center items-center gap-4">
-                      <a 
-                        href="https://korea-name-acad.com/services" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
+                      <a
+                        href="/inquiry"
                         className="px-4 py-1.5 bg-black text-white font-medium rounded-full text-sm hover:bg-gray-800 transition-colors flex items-center gap-0.5 no-underline"
                       >
                         지금 신청 <span>›</span>

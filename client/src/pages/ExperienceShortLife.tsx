@@ -537,7 +537,7 @@ export default function ExperienceShortLife() {
           <div className="rounded-2xl bg-slate-900 dark:bg-slate-800 p-6 text-center space-y-3">
             <p className="text-white font-bold text-lg">내 이름이 걱정되신다면?</p>
             <p className="text-white/50 text-base">전문 이름 분석으로 정확하게 확인하세요</p>
-            <button onClick={() => setLocation('/services')}
+            <button onClick={() => setLocation('/inquiry')}
               className="mt-1 inline-block px-6 py-2.5 rounded-full bg-[#18a999] text-white text-sm font-bold hover:bg-[#149085] transition-colors">
               이름 분석 상담 신청
             </button>

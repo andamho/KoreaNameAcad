@@ -107,18 +107,18 @@ export function Footer() {
         {/* CTA 버튼 영역 - 히어로 섹션 스타일 */}
         <div className="flex items-center justify-center gap-6 my-12">
           <button
-            onClick={() => setLocation('/services')}
+            onClick={() => setLocation('/inquiry')}
             className="px-5 py-1 bg-white text-black font-semibold rounded-full text-sm hover:bg-gray-200 transition-colors flex items-center gap-1"
             data-testid="button-footer-apply"
           >
             지금 신청 <span className="ml-1">›</span>
           </button>
           <button
-            onClick={handleKakaoClick}
+            onClick={() => setLocation('/inquiry')}
             className="text-white font-semibold text-sm hover:opacity-70 transition-opacity flex items-center gap-1"
             data-testid="button-footer-kakao"
           >
-            카톡 실시간 상담 <span>›</span>
+            문의하기 <span>›</span>
           </button>
         </div>
 
