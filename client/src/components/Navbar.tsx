@@ -426,7 +426,7 @@ export function Navbar() {
     },
     {
       icon: MessageCircle,
-      label: "문의",
+      label: "실시간 상담",
       action: () => goToPage('/inquiry'),
       description: "문의 및 상담 신청"
     }

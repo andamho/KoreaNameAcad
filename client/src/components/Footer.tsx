@@ -118,7 +118,7 @@ export function Footer() {
             className="text-white font-semibold text-sm hover:opacity-70 transition-opacity flex items-center gap-1"
             data-testid="button-footer-kakao"
           >
-            문의하기 <span>›</span>
+            실시간 상담 <span>›</span>
           </button>
         </div>
 
