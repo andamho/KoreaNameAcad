@@ -312,8 +312,7 @@ export default function Admin() {
                         </button>
                         <button
                           type="button"
-                          title="삭제"
-                          className="text-red-400 hover:text-red-600 transition"
+                          className="text-xs text-red-400 hover:text-red-600 font-medium transition"
                           onClick={async () => {
                             if (!confirm("정말 삭제하시겠습니까?")) return;
                             const token = localStorage.getItem("kna_admin_token");
@@ -322,7 +321,7 @@ export default function Admin() {
                             if (expandedInquiry === inq.id) setExpandedInquiry(null);
                           }}
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          삭제
                         </button>
                       </div>
                     </div>
