@@ -63,7 +63,7 @@ export default function Inquiry() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ backgroundImage: "url('/inquirybg.png')", backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }}>
       <Navbar />
       <main className="flex-1 py-20 px-4">
         <div className="w-full max-w-md mx-auto">
