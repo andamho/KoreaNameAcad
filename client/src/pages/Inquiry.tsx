@@ -138,7 +138,10 @@ export default function Inquiry() {
                   <span className="text-xs text-muted-foreground leading-relaxed">
                     <span className="font-medium text-foreground">개인정보 수집 및 이용 동의</span>
                     <br />
-                    개인정보 수집 및 이용 동의를 위한 상세보기 전문을 보시려면 클릭해주세요.
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer"
+                      className="underline text-[#18a999] hover:text-[#149085] transition">
+                      개인정보 수집 및 이용 동의 전문 보기
+                    </a>
                   </span>
                 </label>
 
