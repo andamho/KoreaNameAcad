@@ -108,7 +108,7 @@ export default function Inquiry() {
                           onChange={() => setContactType("sms")}
                           className="accent-[#18a999]"
                         />
-                        <span className="text-muted-foreground">문자 알림</span>
+                        <span className="text-muted-foreground">문자</span>
                       </label>
                       <label className="flex items-center gap-1.5 cursor-pointer">
                         <input
@@ -118,7 +118,7 @@ export default function Inquiry() {
                           onChange={() => setContactType("email")}
                           className="accent-[#18a999]"
                         />
-                        <span className="text-muted-foreground">이메일 알림</span>
+                        <span className="text-muted-foreground">이메일</span>
                       </label>
                     </div>
                   </div>

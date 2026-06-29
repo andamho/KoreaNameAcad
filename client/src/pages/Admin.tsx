@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -92,22 +92,31 @@ export default function Admin() {
   const [expandedInquiry, setExpandedInquiry] = useState<string | null>(null);
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [submittingReply, setSubmittingReply] = useState<string | null>(null);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [loadingInquiries, setLoadingInquiries] = useState(true);
+
+  const fetchInquiries = async () => {
+    setLoadingInquiries(true);
+    try {
+      const token = localStorage.getItem("kna_admin_token");
+      const res = await fetch("/api/inquiries", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setInquiries(Array.isArray(data) ? data : []);
+    } catch {
+      setInquiries([]);
+    } finally {
+      setLoadingInquiries(false);
+    }
+  };
 
   const { data: consultations, isLoading: loadingConsultations } = useQuery<Consultation[]>({
     queryKey: ["/api/consultations"],
   });
 
-  const { data: inquiries, isLoading: loadingInquiries } = useQuery<Inquiry[]>({
-    queryKey: ["/api/inquiries"],
-    queryFn: async () => {
-      const token = localStorage.getItem("kna_admin_token");
-      const res = await fetch("/api/inquiries", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to fetch inquiries");
-      return res.json();
-    },
-  });
+  useEffect(() => { fetchInquiries(); }, []);
 
   const { data: contents, isLoading: loadingContents } = useQuery<Content[]>({
     queryKey: ["/api/contents"],
@@ -349,7 +358,7 @@ export default function Admin() {
                                   if (!confirm("정말 삭제하시겠습니까?")) return;
                                   const token = localStorage.getItem("kna_admin_token");
                                   await fetch(`/api/inquiries/${inq.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
-                                  queryClient.invalidateQueries({ queryKey: ["/api/inquiries"] });
+                                  fetchInquiries();
                                   setExpandedInquiry(null);
                                 }}
                                 className="text-red-500 hover:text-red-600 border-red-200"
@@ -372,7 +381,7 @@ export default function Admin() {
                                       body: JSON.stringify({ reply: text }),
                                     });
                                     if (!res.ok) throw new Error();
-                                    queryClient.invalidateQueries({ queryKey: ["/api/inquiries"] });
+                                    fetchInquiries();
                                     setReplyTexts(prev => { const n = { ...prev }; delete n[inq.id]; return n; });
                                     setExpandedInquiry(null);
                                     toast({ title: `답변을 ${inq.contactType === "sms" ? "문자로" : "이메일로"} 발송했습니다.` });
@@ -396,7 +405,7 @@ export default function Admin() {
                                 if (!confirm("정말 삭제하시겠습니까?")) return;
                                 const token = localStorage.getItem("kna_admin_token");
                                 await fetch(`/api/inquiries/${inq.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
-                                queryClient.invalidateQueries({ queryKey: ["/api/inquiries"] });
+                                fetchInquiries();
                                 setExpandedInquiry(null);
                               }}
                               className="text-red-500 hover:text-red-600 border-red-200"
