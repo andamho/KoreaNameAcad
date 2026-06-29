@@ -99,6 +99,14 @@ export default function Admin() {
 
   const { data: inquiries, isLoading: loadingInquiries } = useQuery<Inquiry[]>({
     queryKey: ["/api/inquiries"],
+    queryFn: async () => {
+      const token = localStorage.getItem("kna_admin_token");
+      const res = await fetch("/api/inquiries", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch inquiries");
+      return res.json();
+    },
   });
 
   const { data: contents, isLoading: loadingContents } = useQuery<Content[]>({

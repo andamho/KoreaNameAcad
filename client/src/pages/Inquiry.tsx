@@ -25,7 +25,6 @@ export default function Inquiry() {
   const [contact, setContact] = useState("");
   const [contactType, setContactType] = useState<"sms" | "email">("sms");
   const [content, setContent] = useState("");
-  const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -41,10 +40,6 @@ export default function Inquiry() {
   async function handleSubmit() {
     if (!name.trim() || !contact.trim() || !content.trim()) {
       setError("모든 항목을 입력해주세요.");
-      return;
-    }
-    if (!agreed) {
-      setError("개인정보 수집 및 이용에 동의해주세요.");
       return;
     }
     setSubmitting(true);
@@ -103,7 +98,7 @@ export default function Inquiry() {
                 {/* 연락처 */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-foreground">연락처</label>
+                    <label className="text-sm font-medium text-foreground">상담 알림 연락처</label>
                     <div className="flex items-center gap-3 text-sm">
                       <label className="flex items-center gap-1.5 cursor-pointer">
                         <input
@@ -151,24 +146,6 @@ export default function Inquiry() {
                     className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition resize-none"
                   />
                 </div>
-
-                {/* 개인정보 동의 */}
-                <label className="flex items-start gap-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={agreed}
-                    onChange={e => setAgreed(e.target.checked)}
-                    className="mt-0.5 rounded accent-[#18a999] flex-shrink-0"
-                  />
-                  <span className="text-xs text-muted-foreground leading-relaxed">
-                    <span className="font-medium text-foreground">개인정보 수집 및 이용 동의</span>
-                    <br />
-                    <a href="/privacy" target="_blank" rel="noopener noreferrer"
-                      className="underline text-[#18a999] hover:text-[#149085] transition">
-                      개인정보 수집 및 이용 동의 전문 보기
-                    </a>
-                  </span>
-                </label>
 
                 {error && <p className="text-red-500 text-xs">{error}</p>}
 
