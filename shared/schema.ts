@@ -126,6 +126,27 @@ export const insertContentSchema = createInsertSchema(contents).omit({
 export type InsertContent = z.infer<typeof insertContentSchema>;
 export type Content = typeof contents.$inferSelect;
 
+// Inquiries table (문의 및 상담 신청)
+export const inquiries = pgTable("inquiries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  contact: text("contact").notNull(),          // 전화번호 or 이메일
+  contactType: text("contact_type").notNull(), // "sms" | "email"
+  content: text("content").notNull(),
+  status: text("status").notNull().default("접수완료"), // "접수완료" | "답변완료"
+  adminReply: text("admin_reply"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  repliedAt: timestamp("replied_at"),
+});
+
+export const insertInquirySchema = createInsertSchema(inquiries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertInquiry = z.infer<typeof insertInquirySchema>;
+export type Inquiry = typeof inquiries.$inferSelect;
+
 // Experience Zone 진단 로그 (댓글)
 export const experienceComments = pgTable("experience_comments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

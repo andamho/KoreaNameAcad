@@ -1,0 +1,163 @@
+import { useState } from "react";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { Lock, Send, CheckCircle2 } from "lucide-react";
+
+export default function Inquiry() {
+  const [name, setName] = useState("");
+  const [contact, setContact] = useState("");
+  const [contactType, setContactType] = useState<"sms" | "email">("sms");
+  const [content, setContent] = useState("");
+  const [agreed, setAgreed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  async function handleSubmit() {
+    if (!name.trim() || !contact.trim() || !content.trim()) {
+      setError("모든 항목을 입력해주세요.");
+      return;
+    }
+    if (!agreed) {
+      setError("개인정보 수집 및 이용에 동의해주세요.");
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), contact: contact.trim(), contactType, content: content.trim() }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "오류가 발생했습니다.");
+      }
+      setSubmitted(true);
+    } catch (e: any) {
+      setError(e.message || "제출에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <Navbar />
+      <main className="flex-1 flex items-start justify-center py-20 px-4">
+        <div className="w-full max-w-md">
+          <div className="rounded-2xl bg-card border border-border/50 p-8 space-y-6 shadow-sm">
+            <div className="text-center space-y-1">
+              <p className="text-sm text-muted-foreground">한국이름학교</p>
+              <h1 className="text-xl font-bold text-foreground">문의 및 상담 신청</h1>
+            </div>
+
+            {submitted ? (
+              <div className="py-8 text-center space-y-3">
+                <CheckCircle2 className="w-12 h-12 mx-auto text-[#18a999]" />
+                <p className="font-bold text-foreground text-lg">문의가 접수되었습니다</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  빠른 시일 내에 {contactType === "sms" ? "문자" : "이메일"}로 답변드리겠습니다.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* 성함 */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-foreground">성함 (Name)</label>
+                  <input
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="성함을 입력해주세요"
+                    maxLength={20}
+                    className="w-full border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition"
+                  />
+                </div>
+
+                {/* 연락처 */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-foreground">연락처 (Contact)</label>
+                    <div className="flex items-center gap-3 text-sm">
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="contactType"
+                          checked={contactType === "sms"}
+                          onChange={() => setContactType("sms")}
+                          className="accent-[#18a999]"
+                        />
+                        <span className="text-muted-foreground">문자 알림</span>
+                      </label>
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="contactType"
+                          checked={contactType === "email"}
+                          onChange={() => setContactType("email")}
+                          className="accent-[#18a999]"
+                        />
+                        <span className="text-muted-foreground">이메일 알림</span>
+                      </label>
+                    </div>
+                  </div>
+                  <input
+                    value={contact}
+                    onChange={e => setContact(e.target.value)}
+                    placeholder={contactType === "sms" ? "연락처 번록 or 이메일" : "이메일 주소"}
+                    maxLength={100}
+                    className="w-full border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition"
+                  />
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    입력하신 연락처 또는 이메일은 상담 답변 알림 발송 목적으로만 사용되며,
+                    상담 종료 후 안전하게 하기됩니다.
+                  </p>
+                </div>
+
+                {/* 문의 내용 */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-foreground">문의 상세 내용 (Inquiry Details)</label>
+                  <textarea
+                    value={content}
+                    onChange={e => setContent(e.target.value)}
+                    maxLength={1000}
+                    rows={5}
+                    className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition resize-none"
+                  />
+                </div>
+
+                {/* 개인정보 동의 */}
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={e => setAgreed(e.target.checked)}
+                    className="mt-0.5 rounded accent-[#18a999] flex-shrink-0"
+                  />
+                  <span className="text-xs text-muted-foreground leading-relaxed">
+                    <span className="font-medium text-foreground">개인정보 수입 및 이용 동의</span>
+                    <br />
+                    개인정보 수집 및 이용 동의를 위한 상세보기 전문을 보시려면 클릭해주세요.
+                  </span>
+                </label>
+
+                {error && <p className="text-red-500 text-xs">{error}</p>}
+
+                <button
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#18a999] text-white font-bold text-sm hover:bg-[#149085] disabled:opacity-50 transition"
+                >
+                  <Send className="w-4 h-4" />
+                  {submitting ? "제출 중..." : "문의 제출하기"}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}

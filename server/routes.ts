@@ -2,7 +2,8 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage, DatabaseError } from "./storage";
 import { insertConsultationSchema, insertNameStorySchema, insertContentSchema, contentCategoryEnum, type ContentCategory } from "@shared/schema";
-import { sendConsultationNotification, sendCommentNotification } from "./email";
+import { sendConsultationNotification, sendCommentNotification, sendInquiryNotification, sendInquiryReplyToUser } from "./email";
+import { sendSMS } from "./sms";
 import crypto from "crypto";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 
@@ -353,6 +354,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json(comment);
     } catch (error: any) {
       return handleDbError(error, res, "PUT /api/experience-comments/:id/reply");
+    }
+  });
+
+  // ── 문의 관리 ────────────────────────────────────────────────
+  app.post("/api/inquiries", async (req, res) => {
+    try {
+      const { name, contact, contactType, content } = req.body;
+      if (!name?.trim() || !contact?.trim() || !contactType || !content?.trim()) {
+        return res.status(400).json({ error: "필수 항목을 입력해주세요." });
+      }
+      if (!["sms", "email"].includes(contactType)) {
+        return res.status(400).json({ error: "연락 방법을 선택해주세요." });
+      }
+      const inquiry = await storage.createInquiry({
+        name: name.trim(),
+        contact: contact.trim(),
+        contactType,
+        content: content.trim(),
+      });
+      sendInquiryNotification(inquiry).catch(err => console.error("[이메일] 문의 알림 실패:", err));
+      return res.json(inquiry);
+    } catch (error: any) {
+      return handleDbError(error, res, "POST /api/inquiries");
+    }
+  });
+
+  app.get("/api/inquiries", requireAdmin, async (req, res) => {
+    try {
+      const list = await storage.getAllInquiries();
+      return res.json(list);
+    } catch (error: any) {
+      return handleDbError(error, res, "GET /api/inquiries");
+    }
+  });
+
+  app.put("/api/inquiries/:id/reply", requireAdmin, async (req, res) => {
+    try {
+      const { reply } = req.body;
+      if (!reply?.trim()) return res.status(400).json({ error: "답변 내용을 입력해주세요." });
+      const inquiry = await storage.getInquiry(req.params.id);
+      if (!inquiry) return res.status(404).json({ error: "문의를 찾을 수 없습니다." });
+      const updated = await storage.replyToInquiry(req.params.id, reply.trim());
+      if (updated.contactType === "sms") {
+        const smsText = `[한국이름학교] 문의하신 내용에 답변드렸습니다.\n\n${reply.trim()}`;
+        sendSMS(updated.contact, smsText).catch(err => console.error("[SMS] 문의 답변 발송 실패:", err));
+      } else {
+        sendInquiryReplyToUser(updated).catch(err => console.error("[이메일] 문의 답변 발송 실패:", err));
+      }
+      return res.json(updated);
+    } catch (error: any) {
+      return handleDbError(error, res, "PUT /api/inquiries/:id/reply");
+    }
+  });
+
+  app.delete("/api/inquiries/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteInquiry(req.params.id);
+      return res.json({ success: true });
+    } catch (error: any) {
+      return handleDbError(error, res, "DELETE /api/inquiries/:id");
     }
   });
 

@@ -11,12 +11,39 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Plus, Pencil, Trash2 } from "lucide-react";
+import { Download, Plus, Pencil, Trash2, ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { ImageManager } from "@/components/ImageManager";
 import type { Consultation, Content, InsertContent } from "@shared/schema";
+
+interface Inquiry {
+  id: string;
+  name: string;
+  contact: string;
+  contactType: string;
+  content: string;
+  status: string;
+  adminReply: string | null;
+  createdAt: string;
+  repliedAt: string | null;
+}
+
+function maskName(name: string) {
+  if (!name || name.length === 0) return "**";
+  return name[0] + "**";
+}
+
+function formatDateTime(dateStr: string) {
+  const d = new Date(dateStr);
+  const y = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const h = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  return `${y}-${mo}-${day} ${h}:${mi}`;
+}
 
 const categoryOptions = [
   { value: "review", label: "후기" },
@@ -62,8 +89,16 @@ export default function Admin() {
     },
   });
 
+  const [expandedInquiry, setExpandedInquiry] = useState<string | null>(null);
+  const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
+  const [submittingReply, setSubmittingReply] = useState<string | null>(null);
+
   const { data: consultations, isLoading: loadingConsultations } = useQuery<Consultation[]>({
     queryKey: ["/api/consultations"],
+  });
+
+  const { data: inquiries, isLoading: loadingInquiries } = useQuery<Inquiry[]>({
+    queryKey: ["/api/inquiries"],
   });
 
   const { data: contents, isLoading: loadingContents } = useQuery<Content[]>({
@@ -209,8 +244,12 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <h1 className="text-3xl font-bold text-foreground mb-8">관리자 페이지</h1>
 
-        <Tabs defaultValue="consultations" className="space-y-6">
+        <Tabs defaultValue="inquiries" className="space-y-6">
           <TabsList>
+            <TabsTrigger value="inquiries" data-testid="tab-inquiries">
+              <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
+              문의 관리 ({inquiries?.length || 0})
+            </TabsTrigger>
             <TabsTrigger value="consultations" data-testid="tab-consultations">
               신청서 관리 ({consultations?.length || 0})
             </TabsTrigger>
@@ -218,6 +257,153 @@ export default function Admin() {
               콘텐츠 관리 ({contents?.length || 0})
             </TabsTrigger>
           </TabsList>
+
+          {/* ── 문의 관리 탭 ────────────────────────────────── */}
+          <TabsContent value="inquiries">
+            {loadingInquiries ? (
+              <div className="text-center py-8 text-muted-foreground">로딩 중...</div>
+            ) : !inquiries?.length ? (
+              <Card className="p-12 text-center">
+                <MessageSquare className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" />
+                <p className="text-muted-foreground">아직 문의가 없습니다.</p>
+              </Card>
+            ) : (
+              <div className="rounded-xl border border-border overflow-hidden">
+                {/* 헤더 */}
+                <div className="grid grid-cols-[1fr_160px_100px_32px] gap-2 px-4 py-2.5 bg-muted/50 text-xs font-bold text-muted-foreground border-b border-border">
+                  <span>작성자</span>
+                  <span>문의 일시</span>
+                  <span>상태</span>
+                  <span />
+                </div>
+                {inquiries.map((inq, idx) => (
+                  <div key={inq.id} className={idx !== 0 ? "border-t border-border/50" : ""}>
+                    <div
+                      className="grid grid-cols-[1fr_160px_100px_32px] gap-2 items-center px-4 py-3 cursor-pointer hover:bg-muted/30 transition"
+                      onClick={() => setExpandedInquiry(expandedInquiry === inq.id ? null : inq.id)}
+                    >
+                      <span className="font-medium text-sm">{maskName(inq.name)} 님</span>
+                      <span className="text-xs text-muted-foreground">{formatDateTime(inq.createdAt)}</span>
+                      <Badge variant={inq.status === "답변완료" ? "secondary" : "default"}
+                        className={inq.status === "접수완료" ? "bg-[#18a999] text-white hover:bg-[#18a999]" : ""}>
+                        {inq.status}
+                      </Badge>
+                      {expandedInquiry === inq.id
+                        ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                        : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                    </div>
+                    {expandedInquiry === inq.id && (
+                      <div className="px-4 pb-4 pt-2 bg-muted/10 border-t border-border/30 space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">성함</p>
+                            <p className="font-medium">{inq.name}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">연락처</p>
+                            <p className="font-medium">
+                              {inq.contact}
+                              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                                {inq.contactType === "sms" ? "📱 문자 알림" : "📧 이메일 알림"}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1.5">문의 내용</p>
+                          <p className="text-sm whitespace-pre-wrap bg-card border border-border/50 rounded-lg px-4 py-3 leading-relaxed">
+                            {inq.content}
+                          </p>
+                        </div>
+                        {inq.adminReply && (
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1.5">보낸 답변</p>
+                            <p className="text-sm whitespace-pre-wrap bg-[#18a999]/5 border border-[#18a999]/20 rounded-lg px-4 py-3 leading-relaxed">
+                              {inq.adminReply}
+                            </p>
+                          </div>
+                        )}
+                        {inq.status === "접수완료" && (
+                          <div className="space-y-2">
+                            <p className="text-xs text-muted-foreground">
+                              답변 작성 ({inq.contactType === "sms" ? "Solapi 문자로 발송됩니다" : "이메일로 발송됩니다"})
+                            </p>
+                            <textarea
+                              value={replyTexts[inq.id] || ""}
+                              onChange={e => setReplyTexts(prev => ({ ...prev, [inq.id]: e.target.value }))}
+                              placeholder={`${inq.name}님께 보낼 답변을 작성하세요`}
+                              className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[100px] bg-background"
+                            />
+                            <div className="flex items-center justify-between">
+                              <Button
+                                size="sm" variant="outline"
+                                onClick={async () => {
+                                  if (!confirm("정말 삭제하시겠습니까?")) return;
+                                  const token = localStorage.getItem("kna_admin_token");
+                                  await fetch(`/api/inquiries/${inq.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+                                  queryClient.invalidateQueries({ queryKey: ["/api/inquiries"] });
+                                  setExpandedInquiry(null);
+                                }}
+                                className="text-red-500 hover:text-red-600 border-red-200"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 mr-1" /> 삭제
+                              </Button>
+                              <Button
+                                size="sm"
+                                disabled={!replyTexts[inq.id]?.trim() || submittingReply === inq.id}
+                                className="bg-[#18a999] text-white hover:bg-[#149085]"
+                                onClick={async () => {
+                                  const text = replyTexts[inq.id]?.trim();
+                                  if (!text) return;
+                                  setSubmittingReply(inq.id);
+                                  try {
+                                    const token = localStorage.getItem("kna_admin_token");
+                                    const res = await fetch(`/api/inquiries/${inq.id}/reply`, {
+                                      method: "PUT",
+                                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                                      body: JSON.stringify({ reply: text }),
+                                    });
+                                    if (!res.ok) throw new Error();
+                                    queryClient.invalidateQueries({ queryKey: ["/api/inquiries"] });
+                                    setReplyTexts(prev => { const n = { ...prev }; delete n[inq.id]; return n; });
+                                    setExpandedInquiry(null);
+                                    toast({ title: `답변을 ${inq.contactType === "sms" ? "문자로" : "이메일로"} 발송했습니다.` });
+                                  } catch {
+                                    toast({ title: "발송에 실패했습니다.", variant: "destructive" });
+                                  } finally {
+                                    setSubmittingReply(null);
+                                  }
+                                }}
+                              >
+                                {submittingReply === inq.id ? "발송 중..." : "답변 발송"}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                        {inq.status === "답변완료" && (
+                          <div className="flex justify-end">
+                            <Button
+                              size="sm" variant="outline"
+                              onClick={async () => {
+                                if (!confirm("정말 삭제하시겠습니까?")) return;
+                                const token = localStorage.getItem("kna_admin_token");
+                                await fetch(`/api/inquiries/${inq.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+                                queryClient.invalidateQueries({ queryKey: ["/api/inquiries"] });
+                                setExpandedInquiry(null);
+                              }}
+                              className="text-red-500 hover:text-red-600 border-red-200"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 mr-1" /> 삭제
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
           <TabsContent value="consultations" className="space-y-4">
             {loadingConsultations ? (

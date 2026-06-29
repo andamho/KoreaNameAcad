@@ -1,5 +1,5 @@
 import { Resend } from 'resend';
-import type { Consultation } from '@shared/schema';
+import type { Consultation, Inquiry } from '@shared/schema';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -277,7 +277,77 @@ ${consultation.fileName ? `📎 첨부 파일: ${consultation.fileName}\n※ 첨
     console.log(`✅ 상담 신청 이메일 전송 완료: ${consultation.id}`);
   } catch (error) {
     console.error('❌ 이메일 전송 실패:', error);
-    // 이메일 전송 실패해도 상담 신청은 저장되도록 에러를 던지지 않음
-    // 대신 로그만 남김
+  }
+}
+
+// ── 새 문의 접수 → 관리자 알림 ──────────────────────────────
+export async function sendInquiryNotification(inquiry: Inquiry): Promise<void> {
+  try {
+    const typeLabel = inquiry.contactType === 'sms' ? '📱 문자 알림' : '📧 이메일 알림';
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: RECIPIENT_EMAIL,
+      subject: `[한국이름학교] 새 문의 - ${inquiry.name}`,
+      html: `
+        <div style="font-family:'Malgun Gothic',sans-serif;max-width:520px;margin:0 auto;padding:24px;">
+          <h2 style="color:#18a999;margin-bottom:4px;">📨 새 문의가 접수되었습니다</h2>
+          <p style="color:#888;margin-top:0;margin-bottom:20px;font-size:13px;">
+            ${new Date(inquiry.createdAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}
+          </p>
+          <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px;">
+            <tr>
+              <td style="padding:8px 12px;background:#f4f4f4;font-weight:bold;width:100px;">성함</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #eee;">${inquiry.name}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px;background:#f4f4f4;font-weight:bold;">연락처</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #eee;">${inquiry.contact} &nbsp;<span style="color:#888;font-size:12px;">${typeLabel}</span></td>
+            </tr>
+          </table>
+          <div style="background:#f8f9fa;border-left:4px solid #18a999;border-radius:4px;padding:16px;margin-bottom:24px;">
+            <p style="margin:0;font-size:13px;color:#888;margin-bottom:6px;">문의 내용</p>
+            <p style="margin:0;font-size:15px;color:#222;white-space:pre-wrap;line-height:1.7;">${inquiry.content}</p>
+          </div>
+          <a href="${SITE_URL}/admin"
+            style="display:inline-block;background:#18a999;color:white;text-decoration:none;
+                   padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;">
+            관리자 페이지에서 답변하기 →
+          </a>
+        </div>
+      `,
+    });
+    console.log(`✅ 문의 알림 이메일 전송 완료: ${inquiry.id}`);
+  } catch (error) {
+    console.error('❌ 문의 알림 이메일 전송 실패:', error);
+  }
+}
+
+// ── 관리자 답변 → 사용자에게 이메일 발송 ─────────────────────
+export async function sendInquiryReplyToUser(inquiry: Inquiry): Promise<void> {
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: inquiry.contact,
+      subject: '[한국이름학교] 문의하신 내용에 답변드렸습니다',
+      html: `
+        <div style="font-family:'Malgun Gothic',sans-serif;max-width:520px;margin:0 auto;padding:24px;">
+          <h2 style="color:#18a999;margin-bottom:4px;">안녕하세요, ${inquiry.name}님</h2>
+          <p style="color:#555;font-size:14px;margin-bottom:20px;">문의해 주셔서 감사합니다. 아래와 같이 답변드립니다.</p>
+          <div style="background:#f0fafa;border:1px solid #c4eeeb;border-radius:8px;padding:20px;margin-bottom:24px;">
+            <p style="margin:0 0 6px 0;font-size:12px;color:#18a999;font-weight:bold;">이름의신 답변</p>
+            <p style="margin:0;font-size:15px;color:#222;white-space:pre-wrap;line-height:1.7;">${inquiry.adminReply ?? ''}</p>
+          </div>
+          <div style="background:#f8f9fa;border-radius:8px;padding:16px;margin-bottom:20px;">
+            <p style="margin:0 0 4px 0;font-size:12px;color:#888;">원래 문의 내용</p>
+            <p style="margin:0;font-size:13px;color:#555;white-space:pre-wrap;">${inquiry.content}</p>
+          </div>
+          <p style="font-size:13px;color:#888;">추가 문의가 있으시면 언제든지 다시 문의해 주세요.</p>
+          <p style="font-size:13px;color:#18a999;font-weight:bold;">한국이름학교 드림</p>
+        </div>
+      `,
+    });
+    console.log(`✅ 문의 답변 이메일 발송 완료: ${inquiry.id} → ${inquiry.contact}`);
+  } catch (error) {
+    console.error('❌ 문의 답변 이메일 발송 실패:', error);
   }
 }
