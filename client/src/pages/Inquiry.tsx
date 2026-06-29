@@ -136,7 +136,7 @@ export default function Inquiry() {
                     className="mt-0.5 rounded accent-[#18a999] flex-shrink-0"
                   />
                   <span className="text-xs text-muted-foreground leading-relaxed">
-                    <span className="font-medium text-foreground">개인정보 수입 및 이용 동의</span>
+                    <span className="font-medium text-foreground">개인정보 수집 및 이용 동의</span>
                     <br />
                     개인정보 수집 및 이용 동의를 위한 상세보기 전문을 보시려면 클릭해주세요.
                   </span>
