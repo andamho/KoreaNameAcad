@@ -59,20 +59,6 @@ export default function Inquiry() {
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  // 관리자 여부 확인
-  useEffect(() => {
-    const token = localStorage.getItem("kna_admin_token");
-    if (!token) return;
-    fetch("/api/admin/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
-    })
-      .then(r => r.json())
-      .then(data => { if (data.valid) setIsAdmin(true); })
-      .catch(() => {});
-  }, []);
-
   // 관리자용 전체 목록 조회
   const fetchAdminInquiries = async () => {
     const token = localStorage.getItem("kna_admin_token");
@@ -82,20 +68,32 @@ export default function Inquiry() {
     setAdminInquiries(Array.isArray(data) ? data : []);
   };
 
+  // 마운트 시 공개 목록 + 관리자 확인을 병렬로 즉시 실행
   useEffect(() => {
-    if (isAdmin) {
-      fetchAdminInquiries();
-    }
-  }, [isAdmin, submitted]);
-
-  // 공개 목록 조회 (비관리자용)
-  useEffect(() => {
-    if (isAdmin) return;
+    // 공개 목록 즉시 로드
     fetch("/api/inquiries/public")
       .then(r => r.json())
       .then(data => setPublicList(Array.isArray(data) ? data : []))
       .catch(() => {});
-  }, [submitted, isAdmin]);
+
+    // 관리자 토큰 있으면 병렬로 확인 + 전체 목록 로드
+    const token = localStorage.getItem("kna_admin_token");
+    if (token) {
+      fetch("/api/admin/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.valid) {
+            setIsAdmin(true);
+            fetchAdminInquiries();
+          }
+        })
+        .catch(() => {});
+    }
+  }, [submitted]);
 
   async function handleSubmit() {
     if (!name.trim() || !contact.trim() || !content.trim()) {
