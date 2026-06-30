@@ -212,13 +212,14 @@ export default function Inquiry() {
             adminInquiries.length > 0 && (
               <div className="mt-8">
                 <h2 className="text-sm font-semibold text-muted-foreground mb-3">문의 관리 <span className="text-[#18a999]">(관리자)</span></h2>
-                <div className="rounded-xl border border-border bg-card text-sm">
-                  <div className="grid grid-cols-[1fr_130px_80px_50px] px-4 py-2 bg-muted/50 text-xs font-bold text-muted-foreground border-b border-border rounded-t-xl">
+                <div className="rounded-xl border border-border bg-card text-sm overflow-hidden">
+                  <div className="grid grid-cols-[1fr_130px_80px_50px] px-4 py-2 bg-muted/50 text-xs font-bold text-muted-foreground border-b border-border">
                     <span>작성자</span>
                     <span>문의 일시</span>
                     <span>상태</span>
                     <span />
                   </div>
+                  <div className="overflow-y-auto" style={{ maxHeight: "250px" }}>
                   {adminInquiries.map((inq, idx) => (
                     <div key={inq.id} className={idx !== 0 ? "border-t border-border/50" : ""}>
                       <div
@@ -321,6 +322,7 @@ export default function Inquiry() {
                       )}
                     </div>
                   ))}
+                  </div>
                 </div>
               </div>
             )
@@ -335,6 +337,7 @@ export default function Inquiry() {
                     <span>문의 일시</span>
                     <span>상태</span>
                   </div>
+                  <div className="overflow-y-auto" style={{ maxHeight: "250px" }}>
                   {publicList.map((inq, idx) => (
                     <div key={inq.id}
                       className={`grid grid-cols-[1fr_140px_80px] px-4 py-3 items-center ${idx !== 0 ? "border-t border-border/40" : ""}`}>
@@ -345,6 +348,7 @@ export default function Inquiry() {
                       </span>
                     </div>
                   ))}
+                  </div>
                 </div>
               </div>
             )
