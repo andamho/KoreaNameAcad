@@ -33,6 +33,9 @@ export default function ExperienceNameRank() {
   const [nickname, setNickname] = useState('');
   const [commentText, setCommentText] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
+  const [wantsNotify, setWantsNotify] = useState(false);
+  const [notifyContact, setNotifyContact] = useState('');
+  const [notifyContactType, setNotifyContactType] = useState<'sms' | 'email'>('sms');
   const [submitting, setSubmitting] = useState(false);
   const [commentError, setCommentError] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -64,12 +67,12 @@ export default function ExperienceNameRank() {
     try {
       const res = await fetch('/api/experience-comments', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pageId: 'name-rank', nickname: nickname.trim(), totalStrokes: null, content: commentText.trim(), isPrivate }),
+        body: JSON.stringify({ pageId: 'name-rank', nickname: nickname.trim(), totalStrokes: null, content: commentText.trim(), isPrivate, notifyContact: wantsNotify ? notifyContact.trim() : null, notifyContactType: wantsNotify ? notifyContactType : null }),
       });
       if (!res.ok) throw new Error();
       const newComment = await res.json();
       setComments(prev => [newComment, ...prev]);
-      setNickname(''); setCommentText(''); setIsPrivate(false);
+      setNickname(''); setCommentText(''); setIsPrivate(false); setWantsNotify(false); setNotifyContact(''); setNotifyContactType('sms');
     } catch { setCommentError('저장에 실패했습니다. 다시 시도해주세요.'); }
     finally { setSubmitting(false); }
   }
@@ -164,6 +167,23 @@ export default function ExperienceNameRank() {
               <textarea value={commentText} onChange={e => setCommentText(e.target.value)}
                 placeholder={`야호 1등!!!\n저 7위요 ㅋㅋㅋ\n내 이름은 없다능~ 찾기힘들다능\n내이름 없음 ㅋ ㅋ 어머니 아버지 감사합니다!\n지혜인데 너무 흔해서 개명 고민 중ㅋㅋㅋ`}
                 className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[90px]" maxLength={300} />
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+                  <input type="checkbox" checked={wantsNotify} onChange={e => setWantsNotify(e.target.checked)} className="rounded accent-[#18a999]" />
+                  답변 알림 받기
+                </label>
+                {wantsNotify && (
+                  <div className="flex items-center gap-2 pl-5">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground flex-shrink-0">
+                      <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="notifyType-namerank" checked={notifyContactType === 'sms'} onChange={() => setNotifyContactType('sms')} className="accent-[#18a999]" />문자</label>
+                      <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="notifyType-namerank" checked={notifyContactType === 'email'} onChange={() => setNotifyContactType('email')} className="accent-[#18a999]" />이메일</label>
+                    </div>
+                    <input value={notifyContact} onChange={e => setNotifyContact(e.target.value)}
+                      placeholder={notifyContactType === 'sms' ? '01012345678' : '이메일 주소'} maxLength={100}
+                      className="flex-1 bg-background border border-border rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-[#18a999] transition" />
+                  </div>
+                )}
+              </div>
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
                   <input type="checkbox" checked={isPrivate} onChange={e => setIsPrivate(e.target.checked)} className="rounded" />

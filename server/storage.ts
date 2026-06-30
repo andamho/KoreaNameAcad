@@ -187,7 +187,7 @@ export class MemStorage implements IStorage {
 
   async getExperienceComments(_pageId: string): Promise<ExperienceComment[]> { return []; }
   async createExperienceComment(comment: InsertExperienceComment): Promise<ExperienceComment> {
-    return { ...comment, id: randomUUID(), createdAt: new Date(), isPrivate: comment.isPrivate ?? false, totalStrokes: comment.totalStrokes ?? null, reply: null, repliedAt: null };
+    return { ...comment, id: randomUUID(), createdAt: new Date(), isPrivate: comment.isPrivate ?? false, totalStrokes: comment.totalStrokes ?? null, notifyContact: comment.notifyContact ?? null, notifyContactType: comment.notifyContactType ?? null, reply: null, repliedAt: null };
   }
   async deleteExperienceComment(_id: string): Promise<void> {}
   async replyToExperienceComment(_id: string, _reply: string): Promise<ExperienceComment> { throw new Error("Not implemented"); }

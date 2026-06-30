@@ -296,7 +296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/experience-comments", async (req, res) => {
     try {
-      const { pageId, nickname, totalStrokes, content, isPrivate } = req.body;
+      const { pageId, nickname, totalStrokes, content, isPrivate, notifyContact, notifyContactType } = req.body;
       if (!pageId || !nickname?.trim() || !content?.trim()) {
         return res.status(400).json({ error: "필수 항목을 입력해주세요." });
       }
@@ -309,6 +309,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalStrokes: totalStrokes ?? null,
         content: content.trim(),
         isPrivate: !!isPrivate,
+        notifyContact: notifyContact?.trim() || null,
+        notifyContactType: notifyContact?.trim() ? (notifyContactType || "sms") : null,
       });
       sendCommentNotification({
         id: comment.id,
@@ -351,6 +353,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { reply } = req.body;
       if (!reply?.trim()) return res.status(400).json({ error: "답글 내용을 입력해주세요." });
       const comment = await storage.replyToExperienceComment(req.params.id, reply.trim());
+      // 답변 알림 발송 (연락처 등록한 경우)
+      if (comment.notifyContact) {
+        if (comment.notifyContactType === "sms") {
+          const smsText = `[한국이름학교] 체험존 댓글에 이름의신이 답글을 달았습니다.\n\n${reply.trim()}`;
+          sendSMS(comment.notifyContact, smsText).catch(err => console.error("[SMS] 체험존 답글 알림 실패:", err));
+        } else {
+          sendInquiryReplyToUser({
+            contact: comment.notifyContact,
+            contactType: "email",
+            name: comment.nickname,
+            adminReply: reply.trim(),
+          } as any).catch(err => console.error("[이메일] 체험존 답글 알림 실패:", err));
+        }
+      }
       return res.json(comment);
     } catch (error: any) {
       return handleDbError(error, res, "PUT /api/experience-comments/:id/reply");
