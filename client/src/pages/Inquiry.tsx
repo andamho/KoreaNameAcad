@@ -154,7 +154,7 @@ export default function Inquiry() {
 
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm md:text-base font-medium text-foreground">답변 알림 연락처</label>
+                    <label className="text-sm md:text-base font-medium text-foreground">답변 알림 발송</label>
                     <div className="flex items-center gap-3 text-sm md:text-base">
                       <label className="flex items-center gap-1.5 cursor-pointer">
                         <input type="radio" name="contactType" checked={contactType === "sms"} onChange={() => setContactType("sms")} className="accent-[#18a999]" />
