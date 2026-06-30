@@ -7,6 +7,12 @@ import { sendSMS } from "./sms";
 import crypto from "crypto";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 
+// 공개 문의 목록 인메모리 캐시 (60초 TTL)
+let _publicInquiriesCache: any[] | null = null;
+let _publicInquiriesCacheAt = 0;
+const PUBLIC_INQUIRIES_TTL = 60_000;
+function invalidatePublicInquiriesCache() { _publicInquiriesCache = null; }
+
 function handleDbError(error: any, res: Response, route: string): Response {
   if (error instanceof DatabaseError) {
     console.error(`[503] DB 장애 | route=${route} code=${error.code} msg=${error.message} ts=${new Date().toISOString()}`);
@@ -390,15 +396,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: content.trim(),
       });
       sendInquiryNotification(inquiry).catch(err => console.error("[이메일] 문의 알림 실패:", err));
+      invalidatePublicInquiriesCache();
       return res.json(inquiry);
     } catch (error: any) {
       return handleDbError(error, res, "POST /api/inquiries");
     }
   });
 
-  // 공개용 - 마스킹된 목록만 반환 (내용/연락처 제외)
+  // 공개용 - 마스킹된 목록만 반환 (내용/연락처 제외) — 인메모리 캐시 적용
   app.get("/api/inquiries/public", async (req, res) => {
     try {
+      const now = Date.now();
+      if (_publicInquiriesCache && now - _publicInquiriesCacheAt < PUBLIC_INQUIRIES_TTL) {
+        return res.json(_publicInquiriesCache);
+      }
       const list = await storage.getAllInquiries();
       const masked = list.map(inq => ({
         id: inq.id,
@@ -406,6 +417,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: inq.status,
         createdAt: inq.createdAt,
       }));
+      _publicInquiriesCache = masked;
+      _publicInquiriesCacheAt = now;
       return res.json(masked);
     } catch (error: any) {
       return handleDbError(error, res, "GET /api/inquiries/public");
@@ -428,6 +441,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const inquiry = await storage.getInquiry(req.params.id);
       if (!inquiry) return res.status(404).json({ error: "문의를 찾을 수 없습니다." });
       const updated = await storage.replyToInquiry(req.params.id, reply.trim());
+      invalidatePublicInquiriesCache();
       if (updated.contactType === "sms") {
         const smsText = `[한국이름학교] 문의하신 내용에 답변드렸습니다.\n\n${reply.trim()}`;
         sendSMS(updated.contact, smsText).catch(err => console.error("[SMS] 문의 답변 발송 실패:", err));
@@ -443,6 +457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/inquiries/:id", requireAdmin, async (req, res) => {
     try {
       await storage.deleteInquiry(req.params.id);
+      invalidatePublicInquiriesCache();
       return res.json({ success: true });
     } catch (error: any) {
       return handleDbError(error, res, "DELETE /api/inquiries/:id");

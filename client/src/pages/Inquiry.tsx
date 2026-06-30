@@ -49,6 +49,7 @@ export default function Inquiry() {
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [publicList, setPublicList] = useState<PublicInquiry[]>([]);
+  const [publicListLoading, setPublicListLoading] = useState(true);
 
   // 관리자 상태
   const [isAdmin, setIsAdmin] = useState(false);
@@ -70,11 +71,22 @@ export default function Inquiry() {
 
   // 마운트 시 공개 목록 + 관리자 확인을 병렬로 즉시 실행
   useEffect(() => {
-    // 공개 목록 즉시 로드
+    // 캐시된 공개 목록 즉시 표시 (로딩 느낌 없애기)
+    const cached = localStorage.getItem("kna_public_inquiries");
+    if (cached) {
+      try { setPublicList(JSON.parse(cached)); setPublicListLoading(false); } catch {}
+    }
+
+    // 공개 목록 API 호출 후 캐시 갱신
     fetch("/api/inquiries/public")
       .then(r => r.json())
-      .then(data => setPublicList(Array.isArray(data) ? data : []))
-      .catch(() => {});
+      .then(data => {
+        const list = Array.isArray(data) ? data : [];
+        setPublicList(list);
+        setPublicListLoading(false);
+        localStorage.setItem("kna_public_inquiries", JSON.stringify(list));
+      })
+      .catch(() => { setPublicListLoading(false); });
 
     // 관리자 토큰 있으면 병렬로 확인 + 전체 목록 로드
     const token = localStorage.getItem("kna_admin_token");
@@ -326,7 +338,7 @@ export default function Inquiry() {
             )
           ) : (
             /* 공개 뷰 */
-            publicList.length > 0 && (
+            (publicListLoading || publicList.length > 0) && (
               <div className="mt-8">
                 <h2 className="text-sm md:text-base font-semibold text-muted-foreground mb-3">문의 현황</h2>
                 <div className="rounded-xl border border-border overflow-hidden text-sm">
@@ -336,16 +348,26 @@ export default function Inquiry() {
                     <span>상태</span>
                   </div>
                   <div className="overflow-y-auto" style={{ maxHeight: "250px" }}>
-                  {publicList.map((inq, idx) => (
-                    <div key={inq.id}
-                      className={`grid grid-cols-[1fr_140px_80px] px-4 py-3 items-center ${idx !== 0 ? "border-t border-border/40" : ""}`}>
-                      <span className="font-medium text-sm md:text-base text-foreground">{inq.maskedName} 님</span>
-                      <span className="text-xs md:text-sm text-muted-foreground">{formatDateTime(inq.createdAt)}</span>
-                      <span className={`text-xs md:text-sm font-medium ${inq.status === "답변완료" ? "text-muted-foreground" : "text-[#18a999]"}`}>
-                        {inq.status}
-                      </span>
-                    </div>
-                  ))}
+                  {publicListLoading && publicList.length === 0 ? (
+                    [0,1,2].map(i => (
+                      <div key={i} className={`grid grid-cols-[1fr_140px_80px] px-4 py-3 items-center ${i !== 0 ? "border-t border-border/40" : ""}`}>
+                        <div className="h-3.5 w-20 rounded bg-muted/60 animate-pulse" />
+                        <div className="h-3 w-28 rounded bg-muted/50 animate-pulse" />
+                        <div className="h-3 w-12 rounded bg-muted/50 animate-pulse" />
+                      </div>
+                    ))
+                  ) : (
+                    publicList.map((inq, idx) => (
+                      <div key={inq.id}
+                        className={`grid grid-cols-[1fr_140px_80px] px-4 py-3 items-center ${idx !== 0 ? "border-t border-border/40" : ""}`}>
+                        <span className="font-medium text-sm md:text-base text-foreground">{inq.maskedName} 님</span>
+                        <span className="text-xs md:text-sm text-muted-foreground">{formatDateTime(inq.createdAt)}</span>
+                        <span className={`text-xs md:text-sm font-medium ${inq.status === "답변완료" ? "text-muted-foreground" : "text-[#18a999]"}`}>
+                          {inq.status}
+                        </span>
+                      </div>
+                    ))
+                  )}
                   </div>
                 </div>
               </div>
