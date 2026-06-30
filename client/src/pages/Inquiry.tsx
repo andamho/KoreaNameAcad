@@ -124,38 +124,38 @@ export default function Inquiry() {
     <div className="min-h-screen flex flex-col" style={{ backgroundImage: "url('/inquirybg.png')", backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }}>
       <Navbar />
       <main className="flex-1 py-20 px-4">
-        <div className="w-full max-w-md mx-auto">
+        <div className="w-full max-w-md md:max-w-lg mx-auto">
           <div className="rounded-2xl bg-card border border-border/50 p-8 space-y-6 shadow-sm">
             <div className="text-center space-y-1">
-              <p className="text-sm text-muted-foreground">한국이름학교</p>
-              <h1 className="text-xl font-bold text-foreground">문의 및 상담 신청</h1>
+              <p className="text-sm md:text-base text-muted-foreground">한국이름학교</p>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">문의 및 상담 신청</h1>
             </div>
 
             {submitted ? (
               <div className="py-8 text-center space-y-3">
                 <CheckCircle2 className="w-12 h-12 mx-auto text-[#18a999]" />
-                <p className="font-bold text-foreground text-lg">문의가 접수되었습니다</p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="font-bold text-foreground text-lg md:text-xl">문의가 접수되었습니다</p>
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
                   빠른 시일 내에 {contactType === "sms" ? "문자" : "이메일"}로 답변드리겠습니다.
                 </p>
               </div>
             ) : (
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-foreground">이름</label>
+                  <label className="text-sm md:text-base font-medium text-foreground">이름</label>
                   <input
                     value={name}
                     onChange={e => setName(e.target.value)}
                     placeholder="이름을 입력해주세요"
                     maxLength={20}
-                    className="w-full border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition"
+                    className="w-full border border-border rounded-xl px-4 py-2.5 text-sm md:text-base outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition"
                   />
                 </div>
 
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-foreground">답변 알림 연락처</label>
-                    <div className="flex items-center gap-3 text-sm">
+                    <label className="text-sm md:text-base font-medium text-foreground">답변 알림 연락처</label>
+                    <div className="flex items-center gap-3 text-sm md:text-base">
                       <label className="flex items-center gap-1.5 cursor-pointer">
                         <input type="radio" name="contactType" checked={contactType === "sms"} onChange={() => setContactType("sms")} className="accent-[#18a999]" />
                         <span className="text-muted-foreground">문자</span>
@@ -171,31 +171,31 @@ export default function Inquiry() {
                     onChange={e => setContact(e.target.value)}
                     placeholder={contactType === "sms" ? "01012345678" : "이메일 주소"}
                     maxLength={100}
-                    className="w-full border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition"
+                    className="w-full border border-border rounded-xl px-4 py-2.5 text-sm md:text-base outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition"
                   />
-                  <p className="text-xs text-muted-foreground leading-relaxed">
+                  <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
                     입력하신 연락처 또는 이메일은 <span className="font-bold text-orange-500">상담 답변 알림 발송 목적</span>으로만 사용되며,
                     상담 종료 후 안전하게 폐기됩니다.
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-foreground">문의 상세 내용</label>
+                  <label className="text-sm md:text-base font-medium text-foreground">문의 상세 내용</label>
                   <textarea
                     value={content}
                     onChange={e => setContent(e.target.value)}
                     maxLength={1000}
                     rows={5}
-                    className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition resize-none"
+                    className="w-full border border-border rounded-xl px-4 py-3 text-sm md:text-base outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition resize-none"
                   />
                 </div>
 
-                {error && <p className="text-red-500 text-xs">{error}</p>}
+                {error && <p className="text-red-500 text-xs md:text-sm">{error}</p>}
 
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#18a999] text-white font-bold text-sm hover:bg-[#149085] disabled:opacity-50 transition"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#18a999] text-white font-bold text-sm md:text-base hover:bg-[#149085] disabled:opacity-50 transition"
                 >
                   <Send className="w-4 h-4" />
                   {submitting ? "등록 중..." : "문의 등록하기"}
@@ -209,9 +209,9 @@ export default function Inquiry() {
             /* 관리자 뷰 */
             adminInquiries.length > 0 && (
               <div className="mt-8">
-                <h2 className="text-sm font-semibold text-muted-foreground mb-3">문의 관리 <span className="text-[#18a999]">(관리자)</span></h2>
+                <h2 className="text-sm md:text-base font-semibold text-muted-foreground mb-3">문의 관리 <span className="text-[#18a999]">(관리자)</span></h2>
                 <div className="rounded-xl border border-border bg-card text-sm overflow-hidden">
-                  <div className="grid grid-cols-[1fr_130px_80px_50px] px-4 py-2 bg-muted/50 text-xs font-bold text-muted-foreground border-b border-border">
+                  <div className="grid grid-cols-[1fr_130px_80px_50px] px-4 py-2 bg-muted/50 text-xs md:text-sm font-bold text-muted-foreground border-b border-border">
                     <span>작성자</span>
                     <span>문의 일시</span>
                     <span>상태</span>
@@ -224,15 +224,15 @@ export default function Inquiry() {
                         className="grid grid-cols-[1fr_130px_80px_50px] px-4 py-3 items-center cursor-pointer hover:bg-muted/20 transition"
                         onClick={() => setExpandedInquiry(expandedInquiry === inq.id ? null : inq.id)}
                       >
-                        <span className="font-medium text-sm">{maskName(inq.name)} 님</span>
-                        <span className="text-xs text-muted-foreground">{formatDateTime(inq.createdAt)}</span>
+                        <span className="font-medium text-sm md:text-base">{maskName(inq.name)} 님</span>
+                        <span className="text-xs md:text-sm text-muted-foreground">{formatDateTime(inq.createdAt)}</span>
                         <Badge variant={inq.status === "답변완료" ? "secondary" : "default"}
-                          className={inq.status === "접수완료" ? "bg-[#18a999] text-white hover:bg-[#18a999] text-xs" : "text-xs"}>
+                          className={inq.status === "접수완료" ? "bg-[#18a999] text-white hover:bg-[#18a999] text-xs md:text-sm" : "text-xs md:text-sm"}>
                           {inq.status}
                         </Badge>
                         <button
                           type="button"
-                          className="text-xs text-red-400 hover:text-red-600 font-medium text-right"
+                          className="text-xs md:text-sm text-red-400 hover:text-red-600 font-medium text-right"
                           onClick={async (e) => {
                             e.stopPropagation();
                             if (!confirm("정말 삭제하시겠습니까?")) return;
@@ -247,47 +247,47 @@ export default function Inquiry() {
                       </div>
                       {expandedInquiry === inq.id && (
                         <div className="px-4 pb-4 pt-2 bg-muted/10 border-t border-border/30 space-y-3">
-                          <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div className="grid grid-cols-2 gap-3 text-sm md:text-base">
                             <div>
-                              <p className="text-xs text-muted-foreground mb-0.5">성함</p>
+                              <p className="text-xs md:text-sm text-muted-foreground mb-0.5">성함</p>
                               <p className="font-medium">{inq.name}</p>
                             </div>
                             <div>
-                              <p className="text-xs text-muted-foreground mb-0.5">연락처</p>
-                              <p className="font-medium text-xs">
+                              <p className="text-xs md:text-sm text-muted-foreground mb-0.5">연락처</p>
+                              <p className="font-medium text-xs md:text-sm">
                                 {inq.contact} <span className="text-muted-foreground">{inq.contactType === "sms" ? "📱 문자" : "📧 이메일"}</span>
                               </p>
                             </div>
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground mb-1">문의 내용</p>
-                            <p className="text-sm whitespace-pre-wrap bg-background border border-border/50 rounded-lg px-3 py-2 leading-relaxed">
+                            <p className="text-xs md:text-sm text-muted-foreground mb-1">문의 내용</p>
+                            <p className="text-sm md:text-base whitespace-pre-wrap bg-background border border-border/50 rounded-lg px-3 py-2 leading-relaxed">
                               {inq.content}
                             </p>
                           </div>
                           {inq.adminReply && (
                             <div>
-                              <p className="text-xs text-muted-foreground mb-1">보낸 답변</p>
-                              <p className="text-sm whitespace-pre-wrap bg-[#18a999]/5 border border-[#18a999]/20 rounded-lg px-3 py-2 leading-relaxed">
+                              <p className="text-xs md:text-sm text-muted-foreground mb-1">보낸 답변</p>
+                              <p className="text-sm md:text-base whitespace-pre-wrap bg-[#18a999]/5 border border-[#18a999]/20 rounded-lg px-3 py-2 leading-relaxed">
                                 {inq.adminReply}
                               </p>
                             </div>
                           )}
                           {inq.status === "접수완료" && (
                             <div className="space-y-2">
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-xs md:text-sm text-muted-foreground">
                                 답변 작성 ({inq.contactType === "sms" ? "문자 발송" : "이메일 발송"})
                               </p>
                               <textarea
                                 value={replyTexts[inq.id] || ""}
                                 onChange={e => setReplyTexts(prev => ({ ...prev, [inq.id]: e.target.value }))}
                                 placeholder={`${inq.name}님께 보낼 답변을 작성하세요`}
-                                className="w-full border border-border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[80px] bg-background"
+                                className="w-full border border-border rounded-xl px-3 py-2 text-sm md:text-base outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[80px] bg-background"
                               />
                               <div className="flex justify-end">
                                 <button
                                   disabled={!replyTexts[inq.id]?.trim() || submittingReply === inq.id}
-                                  className="px-4 py-1.5 text-sm rounded-lg bg-[#18a999] text-white font-bold hover:bg-[#149085] disabled:opacity-50 transition"
+                                  className="px-4 py-1.5 text-sm md:text-base rounded-lg bg-[#18a999] text-white font-bold hover:bg-[#149085] disabled:opacity-50 transition"
                                   onClick={async () => {
                                     const text = replyTexts[inq.id]?.trim();
                                     if (!text) return;
@@ -328,9 +328,9 @@ export default function Inquiry() {
             /* 공개 뷰 */
             publicList.length > 0 && (
               <div className="mt-8">
-                <h2 className="text-sm font-semibold text-muted-foreground mb-3">문의 현황</h2>
+                <h2 className="text-sm md:text-base font-semibold text-muted-foreground mb-3">문의 현황</h2>
                 <div className="rounded-xl border border-border overflow-hidden text-sm">
-                  <div className="grid grid-cols-[1fr_140px_80px] px-4 py-2 bg-muted/50 text-xs font-bold text-muted-foreground border-b border-border">
+                  <div className="grid grid-cols-[1fr_140px_80px] px-4 py-2 bg-muted/50 text-xs md:text-sm font-bold text-muted-foreground border-b border-border">
                     <span>작성자</span>
                     <span>문의 일시</span>
                     <span>상태</span>
@@ -339,9 +339,9 @@ export default function Inquiry() {
                   {publicList.map((inq, idx) => (
                     <div key={inq.id}
                       className={`grid grid-cols-[1fr_140px_80px] px-4 py-3 items-center ${idx !== 0 ? "border-t border-border/40" : ""}`}>
-                      <span className="font-medium text-foreground">{inq.maskedName} 님</span>
-                      <span className="text-xs text-muted-foreground">{formatDateTime(inq.createdAt)}</span>
-                      <span className={`text-xs font-medium ${inq.status === "답변완료" ? "text-muted-foreground" : "text-[#18a999]"}`}>
+                      <span className="font-medium text-sm md:text-base text-foreground">{inq.maskedName} 님</span>
+                      <span className="text-xs md:text-sm text-muted-foreground">{formatDateTime(inq.createdAt)}</span>
+                      <span className={`text-xs md:text-sm font-medium ${inq.status === "답변완료" ? "text-muted-foreground" : "text-[#18a999]"}`}>
                         {inq.status}
                       </span>
                     </div>
