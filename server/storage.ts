@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Consultation, type InsertConsultation, type NameStory, type InsertNameStory, nameStories, type Content, type InsertContent, type ContentCategory, contents, consultations, type ExperienceComment, type InsertExperienceComment, experienceComments, type Inquiry, type InsertInquiry, inquiries } from "@shared/schema";
+import { type User, type InsertUser, type Consultation, type InsertConsultation, type NameStory, type InsertNameStory, nameStories, type Content, type InsertContent, type ContentCategory, contents, consultations, type ExperienceComment, type InsertExperienceComment, experienceComments, type Inquiry, type InsertInquiry, inquiries, type ReviewDraft, type InsertReviewDraft, reviewDrafts, type BotPreference, botPreferences } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { eq, desc, sql } from "drizzle-orm";
 
@@ -44,6 +44,17 @@ export interface IStorage {
   getInquiry(id: string): Promise<Inquiry | undefined>;
   replyToInquiry(id: string, reply: string): Promise<Inquiry>;
   deleteInquiry(id: string): Promise<void>;
+
+  // 후기 자동화 초안
+  createReviewDraft(draft: InsertReviewDraft): Promise<ReviewDraft>;
+  getReviewDraft(id: string): Promise<ReviewDraft | undefined>;
+  updateReviewDraft(id: string, data: Partial<InsertReviewDraft>): Promise<ReviewDraft | undefined>;
+  getLatestReviewDraftByChat(chatId: string): Promise<ReviewDraft | undefined>;
+
+  // 채팅별 취향/지침 메모리
+  getPreferences(chatId: string): Promise<BotPreference[]>;
+  addPreference(chatId: string, instruction: string): Promise<BotPreference>;
+  deletePreference(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -198,6 +209,43 @@ export class MemStorage implements IStorage {
   async getInquiry(_id: string): Promise<Inquiry | undefined> { return undefined; }
   async replyToInquiry(_id: string, _reply: string): Promise<Inquiry> { throw new Error("Not implemented"); }
   async deleteInquiry(_id: string): Promise<void> {}
+
+  private reviewDraftsMap: Map<string, ReviewDraft> = new Map();
+  async createReviewDraft(draft: InsertReviewDraft): Promise<ReviewDraft> {
+    const id = randomUUID();
+    const now = new Date();
+    const row = { id, createdAt: now, updatedAt: now, ...draft } as unknown as ReviewDraft;
+    this.reviewDraftsMap.set(id, row);
+    return row;
+  }
+  async getReviewDraft(id: string): Promise<ReviewDraft | undefined> { return this.reviewDraftsMap.get(id); }
+  async updateReviewDraft(id: string, data: Partial<InsertReviewDraft>): Promise<ReviewDraft | undefined> {
+    const existing = this.reviewDraftsMap.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, ...data, updatedAt: new Date() } as ReviewDraft;
+    this.reviewDraftsMap.set(id, updated);
+    return updated;
+  }
+  async getLatestReviewDraftByChat(chatId: string): Promise<ReviewDraft | undefined> {
+    return Array.from(this.reviewDraftsMap.values())
+      .filter(d => d.chatId === chatId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+  }
+
+  private preferencesMap: Map<string, BotPreference> = new Map();
+  async getPreferences(chatId: string): Promise<BotPreference[]> {
+    return Array.from(this.preferencesMap.values())
+      .filter(p => p.chatId === chatId)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  }
+  async addPreference(chatId: string, instruction: string): Promise<BotPreference> {
+    const row: BotPreference = { id: randomUUID(), chatId, instruction, createdAt: new Date() };
+    this.preferencesMap.set(row.id, row);
+    return row;
+  }
+  async deletePreference(id: string): Promise<boolean> {
+    return this.preferencesMap.delete(id);
+  }
 }
 
 // DB row → Consultation type 변환 헬퍼
@@ -601,6 +649,84 @@ export class DatabaseStorage implements IStorage {
       await this.db.delete(inquiries).where(eq(inquiries.id, id));
     } catch (error: any) {
       throw new DatabaseError(`문의 삭제 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async createReviewDraft(draft: InsertReviewDraft): Promise<ReviewDraft> {
+    await this.ensureDbReady();
+    try {
+      const [row] = await this.db.insert(reviewDrafts).values(draft).returning();
+      console.log(`[DB] createReviewDraft 성공: ${row.id}`);
+      return row;
+    } catch (error: any) {
+      throw new DatabaseError(`후기 초안 저장 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async getReviewDraft(id: string): Promise<ReviewDraft | undefined> {
+    await this.ensureDbReady();
+    try {
+      const [row] = await this.db.select().from(reviewDrafts).where(eq(reviewDrafts.id, id));
+      return row;
+    } catch (error: any) {
+      throw new DatabaseError(`후기 초안 조회 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async updateReviewDraft(id: string, data: Partial<InsertReviewDraft>): Promise<ReviewDraft | undefined> {
+    await this.ensureDbReady();
+    try {
+      const [row] = await this.db.update(reviewDrafts)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(reviewDrafts.id, id))
+        .returning();
+      return row;
+    } catch (error: any) {
+      throw new DatabaseError(`후기 초안 수정 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async getLatestReviewDraftByChat(chatId: string): Promise<ReviewDraft | undefined> {
+    await this.ensureDbReady();
+    try {
+      const [row] = await this.db.select().from(reviewDrafts)
+        .where(eq(reviewDrafts.chatId, chatId))
+        .orderBy(desc(reviewDrafts.createdAt))
+        .limit(1);
+      return row;
+    } catch (error: any) {
+      throw new DatabaseError(`후기 초안 조회 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async getPreferences(chatId: string): Promise<BotPreference[]> {
+    await this.ensureDbReady();
+    try {
+      return await this.db.select().from(botPreferences)
+        .where(eq(botPreferences.chatId, chatId))
+        .orderBy(botPreferences.createdAt);
+    } catch (error: any) {
+      throw new DatabaseError(`취향 조회 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async addPreference(chatId: string, instruction: string): Promise<BotPreference> {
+    await this.ensureDbReady();
+    try {
+      const [row] = await this.db.insert(botPreferences).values({ chatId, instruction }).returning();
+      return row;
+    } catch (error: any) {
+      throw new DatabaseError(`취향 저장 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async deletePreference(id: string): Promise<boolean> {
+    await this.ensureDbReady();
+    try {
+      const result = await this.db.delete(botPreferences).where(eq(botPreferences.id, id)).returning();
+      return result.length > 0;
+    } catch (error: any) {
+      throw new DatabaseError(`취향 삭제 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
   }
 

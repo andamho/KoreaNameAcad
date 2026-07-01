@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { startTelegramBot } from "./telegramBot";
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -75,12 +76,13 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  // reusePort 는 Windows에서 미지원(ENOTSUP) → 비-Windows에서만 사용
+  const listenOpts: { port: number; host: string; reusePort?: boolean } = { port, host: "0.0.0.0" };
+  if (process.platform !== "win32") listenOpts.reusePort = true;
+  server.listen(listenOpts, () => {
     log(`serving on port ${port} in ${process.env.NODE_ENV || 'development'} mode`);
+    // 후기 자동화 텔레그램 봇 기동 (TELEGRAM_BOT_TOKEN 있을 때만)
+    startTelegramBot();
   });
 })().catch((err) => {
   console.error("Failed to start server:", err);

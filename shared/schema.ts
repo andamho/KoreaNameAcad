@@ -126,6 +126,71 @@ export const insertContentSchema = createInsertSchema(contents).omit({
 export type InsertContent = z.infer<typeof insertContentSchema>;
 export type Content = typeof contents.$inferSelect;
 
+// ── 후기 자동화: 검수 대기 초안 (텔레그램 파이프라인) ──
+// status 흐름: processing → review → publishing → published / failed
+export const reviewDrafts = pgTable("review_drafts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  status: text("status").notNull().default("processing"),
+  source: text("source").notNull().default("telegram"), // telegram | web
+  chatId: text("chat_id"),                               // 텔레그램 채팅 ID
+  originalImagePath: text("original_image_path"),        // R2 /objects/... 원본
+  maskedImagePath: text("masked_image_path"),            // R2 마스킹본
+  extractedText: text("extracted_text"),                 // OCR 원문
+  polishedContent: text("polished_content"),             // 다듬은 본문(편집 가능)
+  thumbnailLabel: text("thumbnail_label"),               // 썸네일 메인 제목 위 분류 라벨(예: 이름분석 상담후기 / 개명후기)
+  redactionBoxes: text("redaction_boxes"),               // JSON: [{x,y,w,h,reason}] 정규화 0~1
+  titleCandidates: text("title_candidates"),             // JSON: string[] (게시 제목 5)
+  thumbnailTitleCandidates: text("thumbnail_title_candidates"), // JSON: string[] (썸네일 문구 5)
+  thumbnailCandidates: text("thumbnail_candidates"),     // JSON: [{url,thumbUrl,source,photographer,sourceUrl}]
+  thumbnailKeywords: text("thumbnail_keywords"),         // 현재 썸네일 검색 키워드(재검색용)
+  thumbnailPage: integer("thumbnail_page").default(1).notNull(), // 다음 페이지 요청용
+  selectedTitle: text("selected_title"),
+  selectedThumbnailTitle: text("selected_thumbnail_title"),
+  selectedThumbnailUrl: text("selected_thumbnail_url"),  // 고른 스톡 원본 URL
+  composedThumbnailPath: text("composed_thumbnail_path"), // R2 합성 썸네일
+  publishedContentId: varchar("published_content_id"),   // 게시 후 contents.id
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertReviewDraftSchema = createInsertSchema(reviewDrafts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertReviewDraft = z.infer<typeof insertReviewDraftSchema>;
+export type ReviewDraft = typeof reviewDrafts.$inferSelect;
+
+// 마스킹 박스 (정규화 좌표 0~1)
+export type RedactionBox = { x: number; y: number; w: number; h: number; reason?: string };
+// 썸네일 후보
+export type ThumbnailCandidate = {
+  url: string;        // 원본(또는 large) 이미지 URL
+  thumbUrl: string;   // 미리보기 URL
+  source: string;     // "pexels" | "pixabay"
+  photographer?: string;
+  sourceUrl?: string; // 출처 페이지
+};
+
+// ── 후기 자동화: 채팅별 취향/지침 메모리 ──
+// 매 후기 처리 때 Gemini 프롬프트에 주입되는 표준 지침
+export const botPreferences = pgTable("bot_preferences", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatId: text("chat_id").notNull(),
+  instruction: text("instruction").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertBotPreferenceSchema = createInsertSchema(botPreferences).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertBotPreference = z.infer<typeof insertBotPreferenceSchema>;
+export type BotPreference = typeof botPreferences.$inferSelect;
+
 // Inquiries table (문의 및 상담 신청)
 export const inquiries = pgTable("inquiries", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
