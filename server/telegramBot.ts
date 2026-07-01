@@ -261,13 +261,18 @@ async function runActions(chatId: string, draftId: string, actions: IntentAction
 
 async function sendPreview(chatId: string, draft: ReviewDraft) {
   if (!draft.selectedThumbnailUrl && !j.parse<ThumbnailCandidate[]>(draft.thumbnailCandidates, []).length) {
-    await sendMessage(chatId, "ℹ️ 합성할 썸네일 이미지가 없어요. 마스킹 이미지를 썸네일로 사용합니다.");
+    await sendMessage(chatId, "ℹ️ 합성할 썸네일 이미지가 없어요. 먼저 썸네일을 골라주세요(🔄 다른 썸네일 더 찾기).");
     return;
   }
   await sendMessage(chatId, "🖼 썸네일 합성 중…");
-  const d = await composeSelectedThumbnail(draft);
-  const buf = await objectPathToBuffer(d.composedThumbnailPath!);
-  await sendPhotoBuffer(chatId, buf, `🖼 미리보기\n제목: ${d.selectedTitle || "-"}`, mainActionKeyboard(d));
+  try {
+    const d = await composeSelectedThumbnail(draft);
+    const buf = await objectPathToBuffer(d.composedThumbnailPath!);
+    await sendPhotoBuffer(chatId, buf, `🖼 미리보기\n라벨: ${d.thumbnailLabel || "-"}\n제목: ${d.selectedTitle || "-"}`, mainActionKeyboard(d));
+  } catch (e: any) {
+    console.error("[bot] 미리보기 실패:", e);
+    await sendMessage(chatId, "❌ 미리보기 실패: " + (e?.message || e));
+  }
 }
 
 async function doPublishFlow(chatId: string, draft: ReviewDraft) {
