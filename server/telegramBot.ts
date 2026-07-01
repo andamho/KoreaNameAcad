@@ -316,7 +316,7 @@ async function listPreferences(chatId: string) {
     return;
   }
   const lines = prefs.map((p, i) => `${i + 1}. ${escapeHtml(p.instruction)}`).join("\n");
-  await sendMessage(chatId, `📌 <b>현재 취향 지침</b> (매 후기 자동 적용)\n${lines}\n\n삭제: <code>/취향 삭제 2</code>`);
+  await sendMessage(chatId, `📌 <b>현재 취향 지침</b> (매 후기 자동 적용)\n${lines}\n\n삭제: <code>/취향 삭제 2</code>  ·  전체삭제: <code>/취향 전체삭제</code>`);
 }
 
 /** /취향 관련 명령이면 처리하고 true 반환 */
@@ -326,6 +326,14 @@ async function handlePreferenceCommand(chatId: string, text: string): Promise<bo
   const rest = t.replace(/^취향\s*/, "").trim();
 
   if (rest === "" || rest === "목록" || rest === "보기") { await listPreferences(chatId); return true; }
+
+  // 전체 삭제
+  if (/^(전체삭제|삭제전체|모두삭제|다삭제|전체|초기화|리셋|clear|reset|all)$/i.test(rest.replace(/\s+/g, ""))) {
+    const prefs = await storage.getPreferences(chatId);
+    for (const p of prefs) await storage.deletePreference(p.id);
+    await sendMessage(chatId, `🗑️ 저장된 취향 ${prefs.length}개를 전부 삭제했어요.`);
+    return true;
+  }
 
   const addMatch = rest.match(/^(추가|add)\s+([\s\S]+)/);
   if (addMatch) {
