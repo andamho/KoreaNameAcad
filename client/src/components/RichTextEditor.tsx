@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback, useState } from "react";
-import { Bold, ChevronDown, ImagePlus } from "lucide-react";
+import { Bold, ChevronDown, ImagePlus, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ImageBlurModal } from "@/components/ImageBlurModal";
 
 interface RichTextEditorProps {
   value: string;
@@ -154,6 +155,9 @@ export function RichTextEditor({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [sizeMenuOpen, setSizeMenuOpen] = useState(false);
   const [isImageUploading, setIsImageUploading] = useState(false);
+  const [hasSelectedImg, setHasSelectedImg] = useState(false);
+  const [blurSrc, setBlurSrc] = useState<string | null>(null);
+  const selectedImgRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     if (editorRef.current) {
@@ -347,6 +351,38 @@ export function RichTextEditor({
     [onUploadImage, insertImageAtCursor]
   );
 
+  const handleEditorClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    setSizeMenuOpen(false);
+    const target = e.target as HTMLElement;
+    // Deselect previous image
+    if (selectedImgRef.current) {
+      selectedImgRef.current.style.outline = "";
+      selectedImgRef.current.style.boxShadow = "";
+    }
+    if (target.tagName === "IMG") {
+      const img = target as HTMLImageElement;
+      img.style.outline = "2.5px solid #18a999";
+      img.style.boxShadow = "0 0 0 4px rgba(24,169,153,0.18)";
+      selectedImgRef.current = img;
+      setHasSelectedImg(true);
+    } else {
+      selectedImgRef.current = null;
+      setHasSelectedImg(false);
+    }
+  }, []);
+
+  const handleBlurApply = useCallback((newSrc: string) => {
+    if (selectedImgRef.current) {
+      selectedImgRef.current.src = newSrc;
+      selectedImgRef.current.style.outline = "";
+      selectedImgRef.current.style.boxShadow = "";
+      selectedImgRef.current = null;
+      setHasSelectedImg(false);
+      emitChange();
+    }
+    setBlurSrc(null);
+  }, [emitChange]);
+
   const handlePaste = useCallback(
     (e: React.ClipboardEvent) => {
       e.preventDefault();
@@ -443,6 +479,25 @@ export function RichTextEditor({
               />
             </>
           )}
+
+          {hasSelectedImg && (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onPointerDown={(e) => {
+                e.preventDefault();
+                if (selectedImgRef.current) {
+                  setBlurSrc(selectedImgRef.current.src);
+                }
+              }}
+              className="h-8 px-2.5 flex items-center gap-1 text-xs text-[#18a999]"
+              data-testid="button-blur-image"
+            >
+              <EyeOff className="w-3.5 h-3.5" />
+              블러
+            </Button>
+          )}
         </div>
 
         <span className="text-xs text-muted-foreground ml-auto hidden sm:inline">
@@ -464,7 +519,7 @@ export function RichTextEditor({
             saveRange();
           }}
           onPaste={handlePaste}
-          onClick={() => setSizeMenuOpen(false)}
+          onClick={handleEditorClick}
           className={`kna-nanum-editor w-full rounded-b-md border border-border bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 overflow-auto whitespace-pre-wrap break-words ${className || ""}`}
           style={{ minHeight: "150px", fontFamily: "'Nanum Square', sans-serif" }}
           data-testid={testId}
@@ -475,6 +530,14 @@ export function RichTextEditor({
           </div>
         )}
       </div>
+
+      {blurSrc && (
+        <ImageBlurModal
+          src={blurSrc}
+          onApply={handleBlurApply}
+          onClose={() => setBlurSrc(null)}
+        />
+      )}
     </div>
   );
 }
