@@ -255,14 +255,33 @@ export async function publishReview(draft: ReviewDraft): Promise<{ contentId: st
   return { contentId: created.id, draft: updated! };
 }
 
+// 네이버 블로그 본문 하단에 항상 붙이는 홍보/신청 블록
+const NAVER_FOOTER = `😩고달픈 인생,
+이름 하나로 이유와 해결책을!
+
+🔍한글.한자이름만으로 운명상담
+[정확도 80%👆]
+
+🌸운이 술술 풀리는 이름으로
+인생역전!
+
+🔮이름상담 및 작명 [신청방법]
+아래 링크통해
+진행해주시면 됩니다~
+
+📊 18년간 45만명 임상
+
+#한국이름학교 #와츠유어네임이름연구협회 #이름분석 #이름풀이 #이름감명 #작명 #개명잘하는곳 #개명효과 #개명상담 #작명소 #운세상담`;
+
 /** 네이버 블로그 복붙용 패키지 (제목 + 일반 텍스트 본문 + 이미지 URL 목록) */
 export function buildNaverPackage(draft: ReviewDraft, originBase: string) {
   const abs = (p?: string | null) => (p ? (p.startsWith("http") ? p : `${originBase}${p}`) : "");
-  const images = [abs(draft.composedThumbnailPath), abs(draft.maskedImagePath)].filter(Boolean);
-  const plainBody = (draft.polishedContent || "").replace(/[*_#>`]/g, "");
+  const images = maskedList(draft).map(abs).filter(Boolean);
+  const plainBody = (draft.polishedContent || "").replace(/[*_>`]/g, ""); // 해시태그 #는 유지
+  const body = `${plainBody}\n\n${NAVER_FOOTER}`.trim();
   return {
     title: titleWithLabel(draft.thumbnailLabel, draft.selectedTitle || "고객 후기"),
-    body: plainBody,
+    body,
     thumbnailTitle: draft.selectedThumbnailTitle || "",
     images,
   };
