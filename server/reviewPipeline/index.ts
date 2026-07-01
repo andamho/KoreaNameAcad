@@ -26,6 +26,19 @@ const j = {
 
 export const draftJson = j;
 
+/** 본문에 줄바꿈이 없으면 문장 2개씩 묶어 문단으로 나눈다(안전장치) */
+export function formatParagraphs(text?: string | null): string {
+  const t = (text || "").trim();
+  if (!t) return "";
+  if (/\n/.test(t)) return t; // 이미 줄바꿈 있으면 그대로
+  const sentences = t.match(/[^.!?…]+[.!?…]+['"”’]?|\S+$/g) || [t];
+  const paras: string[] = [];
+  for (let i = 0; i < sentences.length; i += 2) {
+    paras.push(sentences.slice(i, i + 2).join(" ").trim());
+  }
+  return paras.filter(Boolean).join("\n\n");
+}
+
 /** 게시 제목 앞에 분류 라벨을 붙인다: "[이름분석 상담후기] 원제목" (이미 붙어있으면 그대로) */
 export function titleWithLabel(label?: string | null, title?: string | null): string {
   const t = (title || "").trim();
@@ -71,7 +84,7 @@ export async function processNewReview(
     originalImagePath,
     maskedImagePath,
     extractedText: vision.extractedText,
-    polishedContent: vision.polishedContent,
+    polishedContent: formatParagraphs(vision.polishedContent),
     thumbnailLabel: labelForReviewType(vision.reviewType),
     redactionBoxes: j.str(vision.redactionBoxes),
     titleCandidates: j.str(vision.titleCandidates),

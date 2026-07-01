@@ -6,7 +6,7 @@
 import { storage } from "./storage";
 import {
   processNewReview, regenerateMask, composeSelectedThumbnail,
-  publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, titleWithLabel, draftJson as j,
+  publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, titleWithLabel, formatParagraphs, draftJson as j,
 } from "./reviewPipeline";
 import { parseIntent, applyBodyEdit, type IntentAction, type DraftSummary } from "./reviewPipeline/intent";
 import type { ReviewDraft, ThumbnailCandidate } from "@shared/schema";
@@ -223,9 +223,9 @@ async function runActions(chatId: string, draftId: string, actions: IntentAction
         break;
       }
       case "editBody": {
-        if (a.newText) { d = (await storage.updateReviewDraft(d.id, { polishedContent: a.newText }))!; notes.push("본문 교체"); }
+        if (a.newText) { d = (await storage.updateReviewDraft(d.id, { polishedContent: formatParagraphs(a.newText) }))!; notes.push("본문 교체"); }
         else if (a.instruction) {
-          const edited = await applyBodyEdit(d.polishedContent || "", a.instruction);
+          const edited = formatParagraphs(await applyBodyEdit(d.polishedContent || "", a.instruction));
           d = (await storage.updateReviewDraft(d.id, { polishedContent: edited }))!;
           await sendMessage(chatId, `📝 <b>수정된 본문</b>\n\n${escapeHtml(edited)}`);
         }
