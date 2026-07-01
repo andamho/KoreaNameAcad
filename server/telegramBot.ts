@@ -163,6 +163,7 @@ async function sendThumbnailChoices(chatId: string, d: ReviewDraft) {
     ik([
       thumbs.map((_, i) => ({ text: `${i + 1}`, data: `TH|${d.id}|${i}` })),
       [{ text: "🔄 다른 썸네일 더 찾기", data: `MT|${d.id}` }],
+      [{ text: "🔎 제목으로 다시 찾기", data: `MTT|${d.id}` }],
     ]));
 }
 
@@ -209,8 +210,8 @@ async function runActions(chatId: string, draftId: string, actions: IntentAction
         break;
       }
       case "moreThumbnails": {
-        await sendMessage(chatId, a.keywords ? `🔄 "${a.keywords}"(으)로 다른 썸네일 찾는 중…` : "🔄 다른 썸네일 찾는 중…");
-        const r = await moreThumbnails(d, a.keywords);
+        await sendMessage(chatId, a.fromTitle ? "🔎 제목의 핵심 단어로 썸네일 찾는 중…" : a.keywords ? `🔄 "${a.keywords}"(으)로 다른 썸네일 찾는 중…` : "🔄 다른 썸네일 찾는 중…");
+        const r = await moreThumbnails(d, a.keywords, a.fromTitle);
         d = r.draft;
         if (r.candidates.length) await sendThumbnailChoices(chatId, d);
         else await sendMessage(chatId, "😶 더 찾은 결과가 없어요. 다른 키워드로 시도해보세요 (예: \"바다 느낌으로 찾아줘\").");
@@ -399,6 +400,7 @@ async function handleUpdate(update: any) {
       TT: { type: "setThumbnailTitle", index: (idx ?? 0) + 1 },
       TH: { type: "setThumbnail", index: (idx ?? 0) + 1 },
       MTI: { type: "moreTitles" },
+      MTT: { type: "moreThumbnails", fromTitle: true },
       MT: { type: "moreThumbnails" },
       MM: { type: "maskMore" },
       PV: { type: "preview" },

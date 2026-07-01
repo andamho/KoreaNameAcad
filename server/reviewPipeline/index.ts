@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { storage } from "../storage";
 import { ObjectStorageService } from "../replit_integrations/object_storage/objectStorage";
-import { analyzeReviewImage, labelForReviewType, generateMoreTitles } from "./vision";
+import { analyzeReviewImage, labelForReviewType, generateMoreTitles, keywordsFromTitle } from "./vision";
 import { maskImage, composeThumbnail } from "./imaging";
 import { searchThumbnails, fetchImageBuffer } from "./thumbnails";
 import type { ReviewDraft, RedactionBox, ThumbnailCandidate, InsertContent } from "@shared/schema";
@@ -107,10 +107,15 @@ export async function moreTitles(draft: ReviewDraft): Promise<{ draft: ReviewDra
  * newKeywords(영문) 주면 새 키워드로 1페이지부터, 없으면 기존 키워드의 다음 페이지.
  * 목록이 바뀌므로 기존 썸네일 선택은 초기화.
  */
-export async function moreThumbnails(draft: ReviewDraft, newKeywords?: string): Promise<{ draft: ReviewDraft; candidates: ThumbnailCandidate[] }> {
+export async function moreThumbnails(draft: ReviewDraft, newKeywords?: string, fromTitle = false): Promise<{ draft: ReviewDraft; candidates: ThumbnailCandidate[] }> {
   let keywords: string[];
   let page: number;
-  if (newKeywords && newKeywords.trim()) {
+  if (fromTitle) {
+    // 현재 선택된 제목에서 핵심 단어 추출
+    const tk = await keywordsFromTitle(draft.selectedTitle || "");
+    keywords = tk.length ? tk : j.parse<string[]>(draft.thumbnailKeywords, []);
+    page = 1;
+  } else if (newKeywords && newKeywords.trim()) {
     keywords = newKeywords.trim().split(/[\s,]+/).filter(Boolean).slice(0, 4);
     page = 1;
   } else {

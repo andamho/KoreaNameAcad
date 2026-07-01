@@ -12,7 +12,7 @@ export type IntentAction =
   | { type: "setThumbnailTitle"; index?: number; text?: string }
   | { type: "setThumbnail"; index: number }
   | { type: "moreTitles" }
-  | { type: "moreThumbnails"; keywords?: string }
+  | { type: "moreThumbnails"; keywords?: string; fromTitle?: boolean }
   | { type: "setLabel"; labelType: "consultation" | "rename" }
   | { type: "editBody"; newText?: string; instruction?: string }
   | { type: "maskMore" }
@@ -48,6 +48,7 @@ const SCHEMA = {
           index: { type: "INTEGER" },
           text: { type: "STRING" },
           keywords: { type: "STRING", description: "moreThumbnails에서 새 검색어(영어). 예: sea, family, sunset" },
+          fromTitle: { type: "BOOLEAN", description: "moreThumbnails에서 현재 제목의 핵심단어로 찾을 때 true" },
           labelType: { type: "STRING", enum: ["consultation", "rename"], description: "setLabel에서 후기 종류" },
           newText: { type: "STRING" },
           instruction: { type: "STRING" },
@@ -72,7 +73,7 @@ export async function parseIntent(message: string, draft: DraftSummary): Promise
 - "제목 2번" → {type:setTitle, index:2}. "제목을 ○○로" → {type:setTitle, text:"○○"}.
 - "제목 다른 거/다시 추천/제목 마음에 안 들어/다른 제목 5개" → {type:moreTitles} (제목 후보 새로 5개 생성).
 - "썸네일 문구/카피 N번" → {type:setThumbnailTitle, index:N}. "썸네일 문구를 '○○'로/○○로 바꿔/수정" 처럼 직접 문구를 주면 → {type:setThumbnailTitle, text:"○○"}. "썸네일/이미지 N번" → {type:setThumbnail, index:N}.
-- "썸네일 다른 거/더 찾아줘/다시 찾아/마음에 안 들어" → {type:moreThumbnails}. "바다 느낌으로/가족 사진으로 다시" 처럼 소재를 지정하면 {type:moreThumbnails, keywords:"<영어 검색어>"} (예: 바다→"sea ocean", 가족→"family").
+- "썸네일 다른 거/더 찾아줘/다시 찾아/마음에 안 들어" → {type:moreThumbnails}. "바다 느낌으로/가족 사진으로 다시" 처럼 소재를 지정하면 {type:moreThumbnails, keywords:"<영어 검색어>"} (예: 바다→"sea ocean", 가족→"family"). "제목으로 찾아줘/제목 기반으로/제목에 맞게 썸네일" → {type:moreThumbnails, fromTitle:true}.
 - "개명후기로 (바꿔)" → {type:setLabel, labelType:"rename"}. "상담후기로/이름분석으로 (바꿔)" → {type:setLabel, labelType:"consultation"}. (썸네일 위 분류 라벨 변경)
 - "본문/내용 ~로 바꿔/고쳐" → editBody (전체 교체면 newText, 부분 수정 지시면 instruction).
 - "더 가려/이름 더 가려" → maskMore. "마스킹 다시/처음부터" → remask.
