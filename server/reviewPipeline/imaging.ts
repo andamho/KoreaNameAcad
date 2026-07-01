@@ -77,16 +77,39 @@ export async function maskImage(input: Buffer, boxes: RedactionBox[], expand = 0
 const THUMB = 1080;       // 정사각형 한 변 (홈페이지 후기 카드가 1:1)
 const TEXT_W = 940;       // 좌우 여백
 
-// 문구 길이에 따른 메인 제목 폰트 크기(px, dpi 72 기준). 정사각형 기준.
+// 문구 길이에 따른 메인 제목 폰트 크기(px, dpi 72 기준). 정사각형 기준. (크게)
 function pickFontSize(title: string): number {
   const n = title.length;
-  if (n <= 8) return 110;
-  if (n <= 16) return 92;
-  if (n <= 26) return 74;
-  return 60;
+  if (n <= 8) return 134;
+  if (n <= 14) return 114;
+  if (n <= 22) return 96;
+  if (n <= 30) return 82;
+  return 70;
 }
 
 type Rendered = { buf: Buffer; w: number; h: number };
+
+// 공백(단어) 기준 균형 줄바꿈 — 한글 단어가 중간에 잘리지 않게 직접 개행 삽입
+function wrapKo(text: string, maxChars: number): string {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let cur = "";
+  for (const w of words) {
+    const cand = cur ? cur + " " + w : w;
+    if (!cur || cand.length <= maxChars) {
+      cur = cand;
+    } else {
+      lines.push(cur);
+      cur = w;
+    }
+    while (cur.length > maxChars) { // 한 단어가 너무 길면 강제 분할
+      lines.push(cur.slice(0, maxChars));
+      cur = cur.slice(maxChars);
+    }
+  }
+  if (cur) lines.push(cur);
+  return lines.join("\n");
+}
 
 // 코트라 볼드로 텍스트를 렌더해 {버퍼, 폭, 높이} 반환. 실패 시 null.
 async function renderText(text: string, color: string, size: number): Promise<Rendered | null> {
@@ -154,33 +177,38 @@ export async function composeThumbnail(imageBuffer: Buffer, title: string, label
   const safeLabel = (label || "").trim();
   if (!safeTitle) return sharp(base).jpeg({ quality: 90 }).toBuffer();
 
-  // 크기 결정 (제목+라벨 블록이 세로로 넘치면 한 단계 축소)
+  // 크기 결정 (제목+라벨 블록이 세로로 넘치면 한 단계 축소). 폭에 맞춰 균형 줄바꿈.
+  const maxCharsFor = (s: number) => Math.max(4, Math.floor(920 / s));
   let size = pickFontSize(safeTitle);
   let titleImg: Rendered | null = null;
   let labelH = 0;
+  let wrappedTitle = safeTitle;
+  let wrappedLabel = safeLabel;
   const gap = () => Math.round(size * 0.22);
   for (;;) {
-    titleImg = await renderText(safeTitle, "#ffffff", size);
     const labelSize = Math.round(size * 0.6);
-    const labelImg = safeLabel ? await renderText(safeLabel, "#ffffff", labelSize) : null;
+    wrappedTitle = wrapKo(safeTitle, maxCharsFor(size));
+    wrappedLabel = safeLabel ? wrapKo(safeLabel, maxCharsFor(labelSize)) : "";
+    titleImg = await renderText(wrappedTitle, "#ffffff", size);
+    const labelImg = wrappedLabel ? await renderText(wrappedLabel, "#ffffff", labelSize) : null;
     labelH = labelImg ? labelImg.h : 0;
-    const blockH = (safeLabel ? labelH + gap() : 0) + (titleImg?.h || 0);
-    if (!titleImg || blockH <= Math.round(THUMB * 0.5) || size <= 44) break;
-    size -= 10;
+    const blockH = (wrappedLabel ? labelH + gap() : 0) + (titleImg?.h || 0);
+    if (!titleImg || blockH <= Math.round(THUMB * 0.58) || size <= 48) break;
+    size -= 8;
   }
   if (!titleImg) return sharp(base).jpeg({ quality: 90 }).toBuffer();
 
   const labelSize = Math.round(size * 0.6);
-  const blockH = (safeLabel ? labelH + gap() : 0) + titleImg.h;
+  const blockH = (wrappedLabel ? labelH + gap() : 0) + titleImg.h;
   // 텍스트 블록을 살짝 위쪽에 배치(핵심 이미지가 아래로 보이게)
-  let cursor = Math.max(44, Math.round(THUMB * TEXT_CENTER_Y - blockH / 2));
+  let cursor = Math.max(40, Math.round(THUMB * TEXT_CENTER_Y - blockH / 2));
 
   const layers: sharp.OverlayOptions[] = [];
-  if (safeLabel) {
-    const h = await pushTextLine(layers, safeLabel, "#ffffff", labelSize, cursor);
+  if (wrappedLabel) {
+    const h = await pushTextLine(layers, wrappedLabel, "#ffffff", labelSize, cursor);
     cursor += h + gap();
   }
-  await pushTextLine(layers, safeTitle, "#ffffff", size, cursor);
+  await pushTextLine(layers, wrappedTitle, "#ffffff", size, cursor);
 
   return sharp(base).composite(layers).jpeg({ quality: 90 }).toBuffer();
 }
