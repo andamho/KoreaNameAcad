@@ -6,7 +6,7 @@
 import { storage } from "./storage";
 import {
   processNewReview, regenerateMask, composeSelectedThumbnail,
-  publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, draftJson as j,
+  publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, titleWithLabel, draftJson as j,
 } from "./reviewPipeline";
 import { parseIntent, applyBodyEdit, type IntentAction, type DraftSummary } from "./reviewPipeline/intent";
 import type { ReviewDraft, ThumbnailCandidate } from "@shared/schema";
@@ -84,7 +84,7 @@ function summaryText(d: ReviewDraft): string {
   return [
     `📋 <b>현재 선택</b>`,
     `• 분류 라벨: ${d.thumbnailLabel ? `<b>${escapeHtml(d.thumbnailLabel)}</b>` : "-"}`,
-    `• 제목: ${d.selectedTitle ? `<b>${escapeHtml(d.selectedTitle)}</b>` : "미선택"}`,
+    `• 게시 제목: ${d.selectedTitle ? `<b>${escapeHtml(titleWithLabel(d.thumbnailLabel, d.selectedTitle))}</b>` : "미선택"}`,
     `• 썸네일 문구: ${d.selectedThumbnailTitle ? `<b>${escapeHtml(d.selectedThumbnailTitle)}</b>` : "미선택"}`,
     `• 썸네일 이미지: ${d.selectedThumbnailUrl ? "선택됨 ✅" : "미선택"}`,
   ].join("\n");
@@ -268,7 +268,7 @@ async function sendPreview(chatId: string, draft: ReviewDraft) {
   try {
     const d = await composeSelectedThumbnail(draft);
     const buf = await objectPathToBuffer(d.composedThumbnailPath!);
-    await sendPhotoBuffer(chatId, buf, `🖼 미리보기\n라벨: ${d.thumbnailLabel || "-"}\n제목: ${d.selectedTitle || "-"}`, mainActionKeyboard(d));
+    await sendPhotoBuffer(chatId, buf, `🖼 미리보기\n게시 제목: ${titleWithLabel(d.thumbnailLabel, d.selectedTitle) || "-"}`, mainActionKeyboard(d));
   } catch (e: any) {
     console.error("[bot] 미리보기 실패:", e);
     await sendMessage(chatId, "❌ 미리보기 실패: " + (e?.message || e));
@@ -280,7 +280,7 @@ async function doPublishFlow(chatId: string, draft: ReviewDraft) {
   await sendMessage(chatId, "🏠 홈페이지에 게시하는 중…");
   try {
     const { draft: published } = await publishReview(draft);
-    await sendMessage(chatId, `✅ <b>홈페이지 후기에 게시 완료!</b>\n제목: ${escapeHtml(published.selectedTitle || "")}`);
+    await sendMessage(chatId, `✅ <b>홈페이지 후기에 게시 완료!</b>\n제목: ${escapeHtml(titleWithLabel(published.thumbnailLabel, published.selectedTitle))}`);
     await sendNaverPackage(chatId, published);
   } catch (e: any) {
     await sendMessage(chatId, "❌ 게시 실패: " + e?.message);

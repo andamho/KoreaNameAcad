@@ -26,6 +26,15 @@ const j = {
 
 export const draftJson = j;
 
+/** 게시 제목 앞에 분류 라벨을 붙인다: "[이름분석 상담후기] 원제목" (이미 붙어있으면 그대로) */
+export function titleWithLabel(label?: string | null, title?: string | null): string {
+  const t = (title || "").trim();
+  const l = (label || "").trim();
+  if (!l) return t;
+  if (t.startsWith(l)) return t;
+  return `${l} ${t}`;
+}
+
 /**
  * 새 후기 이미지를 받아 전체 파이프라인 실행 후 검수 대기(draft) 생성.
  * 1) Claude Vision  2) 마스킹  3) 스톡 썸네일 5  4) R2 업로드  5) draft 저장
@@ -151,7 +160,7 @@ export async function publishReview(draft: ReviewDraft): Promise<{ contentId: st
   const body = `![후기 이미지](${d.maskedImagePath})\n\n${d.polishedContent || ""}`.trim();
   const content: InsertContent = {
     category: "review",
-    title: d.selectedTitle || "고객 후기",
+    title: titleWithLabel(d.thumbnailLabel, d.selectedTitle || "고객 후기"),
     thumbnail: d.composedThumbnailPath || d.maskedImagePath,
     content: body,
     videoUrl: null,
@@ -172,7 +181,7 @@ export function buildNaverPackage(draft: ReviewDraft, originBase: string) {
   const images = [abs(draft.composedThumbnailPath), abs(draft.maskedImagePath)].filter(Boolean);
   const plainBody = (draft.polishedContent || "").replace(/[*_#>`]/g, "");
   return {
-    title: draft.selectedTitle || "고객 후기",
+    title: titleWithLabel(draft.thumbnailLabel, draft.selectedTitle || "고객 후기"),
     body: plainBody,
     thumbnailTitle: draft.selectedThumbnailTitle || "",
     images,
