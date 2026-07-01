@@ -64,6 +64,28 @@ export function labelForReviewType(t: string): string {
   return t === "rename" ? "[개명후기]" : "[이름분석 상담후기]";
 }
 
+const TITLES_SCHEMA = {
+  type: "OBJECT",
+  properties: { titles: { type: "ARRAY", items: { type: "STRING" } } },
+  required: ["titles"],
+};
+
+/**
+ * 후기 본문을 바탕으로 게시 제목 5개를 새로 생성.
+ * avoid: 이미 제안한 제목(중복 회피), preferences: 채팅별 취향 지침.
+ */
+export async function generateMoreTitles(content: string, preferences: string[] = [], avoid: string[] = []): Promise<string[]> {
+  const prefBlock = preferences.length ? `\n[사용자 표준 지침 — 반드시 반영]\n${preferences.map(p => `- ${p}`).join("\n")}` : "";
+  const avoidBlock = avoid.length ? `\n[이미 제안한 제목 — 이것들과 겹치지 말고 새로운 각도로]\n${avoid.map(t => `- ${t}`).join("\n")}` : "";
+  const system = `당신은 "한국이름학교"(작명·이름분석 상담소)의 후기 편집자입니다.
+아래 후기 본문을 바탕으로, 홈페이지/블로그 게시글 제목 후보를 정확히 5개 새로 지어 titles 배열로 출력하세요.
+- 자연스럽고 클릭하고 싶게. 개인정보(실명 등) 없이. 한국어.
+- 내용을 과장하거나 없는 사실을 지어내지 않습니다.${prefBlock}${avoidBlock}`;
+
+  const out = await geminiJson<{ titles: string[] }>(system, [{ text: content || "" }], TITLES_SCHEMA, 500);
+  return (out.titles || []).slice(0, 5);
+}
+
 /** 이미지 버퍼를 받아 후기 가공 결과를 반환. preferences: 채팅별 표준 지침 */
 export async function analyzeReviewImage(imageBuffer: Buffer, mediaType: string, preferences: string[] = []): Promise<VisionResult> {
   const mt = ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(mediaType) ? mediaType : "image/jpeg";

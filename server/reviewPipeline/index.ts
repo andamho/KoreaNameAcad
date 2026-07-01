@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { storage } from "../storage";
 import { ObjectStorageService } from "../replit_integrations/object_storage/objectStorage";
-import { analyzeReviewImage, labelForReviewType } from "./vision";
+import { analyzeReviewImage, labelForReviewType, generateMoreTitles } from "./vision";
 import { maskImage, composeThumbnail } from "./imaging";
 import { searchThumbnails, fetchImageBuffer } from "./thumbnails";
 import type { ReviewDraft, RedactionBox, ThumbnailCandidate, InsertContent } from "@shared/schema";
@@ -78,6 +78,19 @@ export async function processNewReview(
     errorMessage: null,
   });
   return draft;
+}
+
+/** 게시 제목 5개 다시 생성 (기존 후보와 겹치지 않게, 취향 반영) */
+export async function moreTitles(draft: ReviewDraft): Promise<{ draft: ReviewDraft; titles: string[] }> {
+  const prefs = draft.chatId ? (await storage.getPreferences(draft.chatId)).map(p => p.instruction) : [];
+  const avoid = j.parse<string[]>(draft.titleCandidates, []);
+  let titles = await generateMoreTitles(draft.polishedContent || "", prefs, avoid);
+  if (!titles.length) titles = avoid; // 실패 시 기존 유지
+  const updated = (await storage.updateReviewDraft(draft.id, {
+    titleCandidates: j.str(titles),
+    selectedTitle: titles[0] ?? draft.selectedTitle,
+  }))!;
+  return { draft: updated, titles };
 }
 
 /**

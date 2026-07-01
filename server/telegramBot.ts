@@ -6,7 +6,7 @@
 import { storage } from "./storage";
 import {
   processNewReview, regenerateMask, composeSelectedThumbnail,
-  publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, draftJson as j,
+  publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, draftJson as j,
 } from "./reviewPipeline";
 import { parseIntent, applyBodyEdit, type IntentAction, type DraftSummary } from "./reviewPipeline/intent";
 import type { ReviewDraft, ThumbnailCandidate } from "@shared/schema";
@@ -104,9 +104,7 @@ function mainActionKeyboard(d: ReviewDraft) {
 
 /** 처리 완료 후 검수 화면 일괄 전송 */
 async function presentDraft(chatId: string, d: ReviewDraft) {
-  const titles = j.parse<string[]>(d.titleCandidates, []);
   const thumbTitles = j.parse<string[]>(d.thumbnailTitleCandidates, []);
-  const thumbs = j.parse<ThumbnailCandidate[]>(d.thumbnailCandidates, []);
 
   // 1) 마스킹 이미지
   try {
@@ -121,12 +119,7 @@ async function presentDraft(chatId: string, d: ReviewDraft) {
     `📝 <b>다듬은 본문</b>\n\n${escapeHtml(d.polishedContent || "")}\n\n<i>본문을 고치려면 새 내용을 그냥 메시지로 보내주세요. (예: "더 짧게 해줘")</i>`);
 
   // 3) 제목 후보
-  if (titles.length) {
-    await sendMessage(chatId, "📌 <b>게시 제목</b>을 골라주세요 (또는 직접 입력해 보내기):",
-      ik([
-        ...titles.map((t, i) => [{ text: `${i + 1}) ${short(t)}`, data: `T|${d.id}|${i}` }]),
-      ]));
-  }
+  await sendTitleChoices(chatId, d);
 
   // 4) 썸네일 문구 후보
   if (thumbTitles.length) {
@@ -141,6 +134,20 @@ async function presentDraft(chatId: string, d: ReviewDraft) {
 
   // 6) 현재 상태 + 액션
   await sendMessage(chatId, summaryText(d), mainActionKeyboard(d));
+}
+
+/** 게시 제목 후보 + 선택/재생성 버튼 전송 (초기·재추천 공용) */
+async function sendTitleChoices(chatId: string, d: ReviewDraft) {
+  const titles = j.parse<string[]>(d.titleCandidates, []);
+  if (!titles.length) {
+    await sendMessage(chatId, "📌 제목 후보가 없어요.", ik([[{ text: "🔄 제목 5개 추천", data: `MTI|${d.id}` }]]));
+    return;
+  }
+  await sendMessage(chatId, "📌 <b>게시 제목</b>을 고르거나(직접 입력해 보내도 됨), 마음에 안 들면 다시 추천받으세요:",
+    ik([
+      ...titles.map((t, i) => [{ text: `${i + 1}) ${short(t)}`, data: `T|${d.id}|${i}` }]),
+      [{ text: "🔄 다른 제목 5개 추천", data: `MTI|${d.id}` }],
+    ]));
 }
 
 /** 썸네일 후보 미디어그룹 + 선택/재검색 버튼 전송 (초기·재검색 공용) */
@@ -168,7 +175,7 @@ async function runActions(chatId: string, draftId: string, actions: IntentAction
   const thumbTitles = j.parse<string[]>(d.thumbnailTitleCandidates, []);
   const thumbs = j.parse<ThumbnailCandidate[]>(d.thumbnailCandidates, []);
   const notes: string[] = [];
-  let doPreview = false, doPublish = false, doNaver = false, thumbsReloaded = false;
+  let doPreview = false, doPublish = false, doNaver = false, choicesResent = false;
 
   for (const a of actions) {
     switch (a.type) {
@@ -193,13 +200,21 @@ async function runActions(chatId: string, draftId: string, actions: IntentAction
         notes.push(`분류 라벨 → ${lab}`);
         break;
       }
+      case "moreTitles": {
+        await sendMessage(chatId, "🔄 다른 제목 5개 생성 중…");
+        const r = await moreTitles(d);
+        d = r.draft;
+        await sendTitleChoices(chatId, d);
+        choicesResent = true;
+        break;
+      }
       case "moreThumbnails": {
         await sendMessage(chatId, a.keywords ? `🔄 "${a.keywords}"(으)로 다른 썸네일 찾는 중…` : "🔄 다른 썸네일 찾는 중…");
         const r = await moreThumbnails(d, a.keywords);
         d = r.draft;
         if (r.candidates.length) await sendThumbnailChoices(chatId, d);
         else await sendMessage(chatId, "😶 더 찾은 결과가 없어요. 다른 키워드로 시도해보세요 (예: \"바다 느낌으로 찾아줘\").");
-        thumbsReloaded = true;
+        choicesResent = true;
         break;
       }
       case "editBody": {
@@ -241,7 +256,7 @@ async function runActions(chatId: string, draftId: string, actions: IntentAction
   if (doPreview) await sendPreview(chatId, d);
   if (doPublish) { await doPublishFlow(chatId, d); return; }
   if (doNaver) { await sendNaverPackage(chatId, d); return; }
-  if (!doPreview && !thumbsReloaded) await sendMessage(chatId, summaryText(d), mainActionKeyboard(d));
+  if (!doPreview && !choicesResent) await sendMessage(chatId, summaryText(d), mainActionKeyboard(d));
 }
 
 async function sendPreview(chatId: string, draft: ReviewDraft) {
@@ -370,6 +385,7 @@ async function handleUpdate(update: any) {
       T: { type: "setTitle", index: (idx ?? 0) + 1 },
       TT: { type: "setThumbnailTitle", index: (idx ?? 0) + 1 },
       TH: { type: "setThumbnail", index: (idx ?? 0) + 1 },
+      MTI: { type: "moreTitles" },
       MT: { type: "moreThumbnails" },
       MM: { type: "maskMore" },
       PV: { type: "preview" },

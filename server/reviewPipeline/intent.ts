@@ -11,6 +11,7 @@ export type IntentAction =
   | { type: "setTitle"; index?: number; text?: string }
   | { type: "setThumbnailTitle"; index?: number; text?: string }
   | { type: "setThumbnail"; index: number }
+  | { type: "moreTitles" }
   | { type: "moreThumbnails"; keywords?: string }
   | { type: "setLabel"; labelType: "consultation" | "rename" }
   | { type: "editBody"; newText?: string; instruction?: string }
@@ -42,7 +43,7 @@ const SCHEMA = {
         properties: {
           type: {
             type: "STRING",
-            enum: ["setTitle", "setThumbnailTitle", "setThumbnail", "moreThumbnails", "setLabel", "editBody", "maskMore", "remask", "publish", "naverPackage", "preview", "savePreference", "help", "unknown"],
+            enum: ["setTitle", "setThumbnailTitle", "setThumbnail", "moreTitles", "moreThumbnails", "setLabel", "editBody", "maskMore", "remask", "publish", "naverPackage", "preview", "savePreference", "help", "unknown"],
           },
           index: { type: "INTEGER" },
           text: { type: "STRING" },
@@ -69,6 +70,7 @@ export async function parseIntent(message: string, draft: DraftSummary): Promise
 
 규칙:
 - "제목 2번" → {type:setTitle, index:2}. "제목을 ○○로" → {type:setTitle, text:"○○"}.
+- "제목 다른 거/다시 추천/제목 마음에 안 들어/다른 제목 5개" → {type:moreTitles} (제목 후보 새로 5개 생성).
 - "썸네일 문구/카피 N번" → setThumbnailTitle. "썸네일/이미지 N번" → {type:setThumbnail, index:N}.
 - "썸네일 다른 거/더 찾아줘/다시 찾아/마음에 안 들어" → {type:moreThumbnails}. "바다 느낌으로/가족 사진으로 다시" 처럼 소재를 지정하면 {type:moreThumbnails, keywords:"<영어 검색어>"} (예: 바다→"sea ocean", 가족→"family").
 - "개명후기로 (바꿔)" → {type:setLabel, labelType:"rename"}. "상담후기로/이름분석으로 (바꿔)" → {type:setLabel, labelType:"consultation"}. (썸네일 위 분류 라벨 변경)
