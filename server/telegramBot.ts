@@ -108,8 +108,12 @@ async function presentDraft(chatId: string, d: ReviewDraft) {
 
   // 1) 마스킹 이미지
   try {
+    const boxCount = j.parse<unknown[]>(d.redactionBoxes, []).length;
+    const cap = boxCount > 0
+      ? `🖼 개인정보 ${boxCount}곳을 블러 처리했어요. 빠진 데가 있으면 "더 가려줘"라고 하세요.`
+      : `⚠️ 개인정보 위치를 자동으로 못 찾았어요. 이미지에 이름·연락처가 보이면 사진을 다시 보내주세요(재분석).`;
     const masked = await objectPathToBuffer(d.maskedImagePath!);
-    await sendPhotoBuffer(chatId, masked, "🖼 이름·개인정보를 가린 후기 이미지예요.");
+    await sendPhotoBuffer(chatId, masked, cap);
   } catch (e: any) {
     await sendMessage(chatId, "⚠️ 마스킹 이미지 전송 실패: " + e?.message);
   }

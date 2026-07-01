@@ -51,8 +51,8 @@ export async function processNewReview(
   const prefs = (await storage.getPreferences(chatId)).map(p => p.instruction);
   const vision = await analyzeReviewImage(imageBuffer, mediaType, prefs);
 
-  // 3) 마스킹 이미지 생성·업로드
-  const masked = await maskImage(imageBuffer, vision.redactionBoxes);
+  // 3) 마스킹 이미지 생성·업로드 (박스를 조금 넉넉하게 확장해 확실히 덮음)
+  const masked = await maskImage(imageBuffer, vision.redactionBoxes, 0.15);
   const maskedImagePath = await uploadBuffer(masked, "image/jpeg", "reviews/masked");
 
   // 4) 스톡 썸네일 검색
@@ -162,9 +162,8 @@ export async function publishReview(draft: ReviewDraft): Promise<{ contentId: st
   if (!d.composedThumbnailPath) {
     d = await composeSelectedThumbnail(d);
   }
-  // 본문 순서: ① 썸네일 → ② 블러 처리한 실제 후기 이미지 → ③ 추출한 후기 텍스트
+  // 본문 순서: ① (썸네일은 thumbnail 필드로 상세페이지 최상단에 자동 표시) → ② 블러 후기 이미지 → ③ 후기 텍스트
   const parts: string[] = [];
-  if (d.composedThumbnailPath) parts.push(`![썸네일](${d.composedThumbnailPath})`);
   if (d.maskedImagePath) parts.push(`![후기 이미지](${d.maskedImagePath})`);
   if (d.polishedContent) parts.push(d.polishedContent);
   const body = parts.join("\n\n").trim();
