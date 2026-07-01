@@ -162,7 +162,12 @@ export async function publishReview(draft: ReviewDraft): Promise<{ contentId: st
   if (!d.composedThumbnailPath) {
     d = await composeSelectedThumbnail(d);
   }
-  const body = `![후기 이미지](${d.maskedImagePath})\n\n${d.polishedContent || ""}`.trim();
+  // 본문 순서: ① 썸네일 → ② 블러 처리한 실제 후기 이미지 → ③ 추출한 후기 텍스트
+  const parts: string[] = [];
+  if (d.composedThumbnailPath) parts.push(`![썸네일](${d.composedThumbnailPath})`);
+  if (d.maskedImagePath) parts.push(`![후기 이미지](${d.maskedImagePath})`);
+  if (d.polishedContent) parts.push(d.polishedContent);
+  const body = parts.join("\n\n").trim();
   const content: InsertContent = {
     category: "review",
     title: titleWithLabel(d.thumbnailLabel, d.selectedTitle || "고객 후기"),
