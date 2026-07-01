@@ -47,14 +47,13 @@ export async function maskImage(input: Buffer, boxes: RedactionBox[], expand = 0
 
   const overlays: sharp.OverlayOptions[] = [];
   for (const b of boxes) {
-    // AI 좌표 오차 대비: 개인정보가 있는 "줄 전체(가로)"를 덮고, 세로도 넉넉히.
-    const padH = b.h * expand + b.h * 0.7; // 세로 여유 크게(줄 위치 오차 흡수)
-    const cy = b.y + b.h / 2;              // 박스 세로 중심
-    const halfH = (b.h + padH) / 2;
-    let top = Math.round(Math.max(0, cy - halfH) * H);
-    let height = Math.round(Math.min(1, cy + halfH) * H) - top;
-    let left = Math.round(0.02 * W);       // 가로는 거의 전체
-    let width = Math.round(0.96 * W);
+    // 박스 단위 블러 (OCR 정밀 박스: 여유 조금 / 수동 박스: 이미 가로 전체)
+    const padW = b.w * expand + b.w * 0.2;
+    const padH = b.h * expand + b.h * 0.4;
+    let left = Math.round(Math.max(0, b.x - padW / 2) * W);
+    let top = Math.round(Math.max(0, b.y - padH / 2) * H);
+    let width = Math.round(Math.min(1, b.w + padW) * W);
+    let height = Math.round(Math.min(1, b.h + padH) * H);
     width = Math.min(width, W - left);
     height = Math.min(height, H - top);
     if (width < 2 || height < 2) continue;

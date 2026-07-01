@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { storage } from "../storage";
 import { ObjectStorageService } from "../replit_integrations/object_storage/objectStorage";
 import { analyzeReviewImages, labelForReviewType, generateMoreTitles, keywordsFromTitle } from "./vision";
+import { detectPIIBoxes, visionAvailable } from "./ocr";
 import { maskImage, composeThumbnail } from "./imaging";
 import { searchThumbnails, fetchImageBuffer } from "./thumbnails";
 import type { ReviewDraft, RedactionBox, ThumbnailCandidate, InsertContent } from "@shared/schema";
@@ -67,11 +68,25 @@ export async function processNewReview(
   const prefs = (await storage.getPreferences(chatId)).map(p => p.instruction);
   const vision = await analyzeReviewImages(imageBuffers, mediaType, prefs);
 
-  // 3) 각 이미지를 자기 박스로 마스킹 (입력 순서)
+  // 3) 개인정보 박스 계산: Google Vision OCR(정확한 위치) 우선, 실패 시 Gemini 박스
+  const pii = vision.detectedPersonalInfo || [];
+  const useOcr = visionAvailable();
+  const boxesByInput: RedactionBox[] = [];
+  for (let i = 0; i < n; i++) {
+    let boxes: RedactionBox[] = [];
+    if (useOcr) {
+      try { boxes = await detectPIIBoxes(imageBuffers[i], pii, i); }
+      catch (e: any) { console.error(`[ocr] 이미지 ${i} 실패:`, e?.message); }
+    }
+    if (!boxes.length) boxes = vision.redactionBoxes.filter((b) => (b.image ?? 0) === i); // OCR 미검출 시 대체
+    boxesByInput.push(...boxes);
+  }
+
+  // 각 이미지 마스킹 (OCR 정밀 박스라 확장 작게)
   const maskedPaths: string[] = [];
   for (let i = 0; i < n; i++) {
-    const boxes = vision.redactionBoxes.filter((b) => (b.image ?? 0) === i);
-    const masked = await maskImage(imageBuffers[i], boxes, 0.15);
+    const boxes = boxesByInput.filter((b) => (b.image ?? 0) === i);
+    const masked = await maskImage(imageBuffers[i], boxes, 0.12);
     maskedPaths.push(await uploadBuffer(masked, "image/jpeg", "reviews/masked"));
   }
 
@@ -80,7 +95,7 @@ export async function processNewReview(
   const posOf = new Map<number, number>(order.map((oldI, newI) => [oldI, newI]));
   const orderedOriginal = order.map((i) => originalPaths[i]).filter(Boolean);
   const orderedMasked = order.map((i) => maskedPaths[i]).filter(Boolean);
-  const remappedBoxes = vision.redactionBoxes.map((b) => ({ ...b, image: posOf.get(b.image ?? 0) ?? 0 }));
+  const remappedBoxes = boxesByInput.map((b) => ({ ...b, image: posOf.get(b.image ?? 0) ?? 0 }));
 
   // 5) 스톡 썸네일 검색
   let thumbnails: ThumbnailCandidate[] = [];
