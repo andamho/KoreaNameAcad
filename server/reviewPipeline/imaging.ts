@@ -47,12 +47,14 @@ export async function maskImage(input: Buffer, boxes: RedactionBox[], expand = 0
 
   const overlays: sharp.OverlayOptions[] = [];
   for (const b of boxes) {
-    const padW = b.w * expand;
-    const padH = b.h * expand;
-    let left = Math.round(Math.max(0, b.x - padW / 2) * W);
-    let top = Math.round(Math.max(0, b.y - padH / 2) * H);
-    let width = Math.round(Math.min(1, b.w + padW) * W);
-    let height = Math.round(Math.min(1, b.h + padH) * H);
+    // AI 좌표 오차 대비: 개인정보가 있는 "줄 전체(가로)"를 덮고, 세로도 넉넉히.
+    const padH = b.h * expand + b.h * 0.7; // 세로 여유 크게(줄 위치 오차 흡수)
+    const cy = b.y + b.h / 2;              // 박스 세로 중심
+    const halfH = (b.h + padH) / 2;
+    let top = Math.round(Math.max(0, cy - halfH) * H);
+    let height = Math.round(Math.min(1, cy + halfH) * H) - top;
+    let left = Math.round(0.02 * W);       // 가로는 거의 전체
+    let width = Math.round(0.96 * W);
     width = Math.min(width, W - left);
     height = Math.min(height, H - top);
     if (width < 2 || height < 2) continue;
@@ -75,7 +77,10 @@ export async function maskImage(input: Buffer, boxes: RedactionBox[], expand = 0
 }
 
 const THUMB = 1080;       // 정사각형 한 변 (홈페이지 후기 카드가 1:1)
-const TEXT_W = 940;       // 좌우 여백
+const TEXT_W = 1030;      // 렌더 캔버스 폭(재줄바꿈 방지용, FILL_W보다 큼)
+const FILL_W = 1000;      // 글자가 채울 목표 가로 폭
+const MAX_SIZE = 150;     // 폰트 크기 상한
+const MIN_SIZE = 46;      // 폰트 크기 하한
 
 // 문구 길이에 따른 메인 제목 폰트 크기(px, dpi 72 기준). 정사각형 기준. (크게)
 function pickFontSize(title: string): number {
@@ -105,6 +110,30 @@ function wrapKo(text: string, maxChars: number): string {
     while (cur.length > maxChars) { // 한 단어가 너무 길면 강제 분할
       lines.push(cur.slice(0, maxChars));
       cur = cur.slice(maxChars);
+    }
+  }
+  if (cur) lines.push(cur);
+  return lines.join("\n");
+}
+
+// 단어를 k줄에 균형 있게 배분 (각 줄 글자 수가 비슷하게)
+function balancedWrap(text: string, k: number): string {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (k <= 1 || words.length <= 1) return words.join(" ");
+  const kk = Math.min(k, words.length);
+  const target = words.join(" ").length / kk;
+  const lines: string[] = [];
+  let cur = "";
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    const cand = cur ? cur + " " + w : w;
+    const linesLeft = kk - lines.length;
+    const wordsLeft = words.length - i;
+    if (cur && cand.length > target * 1.05 && linesLeft > 1 && wordsLeft >= linesLeft) {
+      lines.push(cur);
+      cur = w;
+    } else {
+      cur = cand;
     }
   }
   if (cur) lines.push(cur);
@@ -177,36 +206,50 @@ export async function composeThumbnail(imageBuffer: Buffer, title: string, label
   const safeLabel = (label || "").trim();
   if (!safeTitle) return sharp(base).jpeg({ quality: 90 }).toBuffer();
 
-  // 크기 결정 (제목+라벨 블록이 세로로 넘치면 한 단계 축소). 폭에 맞춰 균형 줄바꿈.
-  const maxCharsFor = (s: number) => Math.max(4, Math.floor(920 / s));
-  let size = pickFontSize(safeTitle);
-  let titleImg: Rendered | null = null;
-  let labelH = 0;
-  let wrappedTitle = safeTitle;
-  let wrappedLabel = safeLabel;
-  const gap = () => Math.round(size * 0.22);
-  for (;;) {
-    const labelSize = Math.round(size * 0.6);
-    wrappedTitle = wrapKo(safeTitle, maxCharsFor(size));
-    wrappedLabel = safeLabel ? wrapKo(safeLabel, maxCharsFor(labelSize)) : "";
-    titleImg = await renderText(wrappedTitle, "#ffffff", size);
-    const labelImg = wrappedLabel ? await renderText(wrappedLabel, "#ffffff", labelSize) : null;
-    labelH = labelImg ? labelImg.h : 0;
-    const blockH = (wrappedLabel ? labelH + gap() : 0) + (titleImg?.h || 0);
-    if (!titleImg || blockH <= Math.round(THUMB * 0.58) || size <= 48) break;
-    size -= 8;
+  // 제목 높이 예산(라벨 있으면 줄임). 텍스트가 상단 절반 정도만 쓰게.
+  const titleBudgetH = Math.round(THUMB * (safeLabel ? 0.42 : 0.48));
+
+  // 줄 수별로 균형 줄바꿈 → 폭(FILL_W)과 높이 예산에 맞춰 최대 폰트 크기 계산 → 가장 큰 것 선택
+  const wordCount = safeTitle.split(/\s+/).filter(Boolean).length;
+  const maxLines = Math.min(4, Math.max(1, wordCount));
+  let best: { size: number; text: string } | null = null;
+  for (let k = 1; k <= maxLines; k++) {
+    const wrapped = balancedWrap(safeTitle, k);
+    const probe = await renderText(wrapped, "#ffffff", 100);
+    if (!probe || !probe.w || !probe.h) continue;
+    const byW = (FILL_W / probe.w) * 100;
+    const byH = (titleBudgetH / probe.h) * 100;
+    const size = Math.max(MIN_SIZE, Math.min(Math.floor(Math.min(byW, byH)), MAX_SIZE));
+    if (!best || size > best.size) best = { size, text: wrapped };
   }
+  if (!best) best = { size: pickFontSize(safeTitle), text: wrapKo(safeTitle, 9) };
+  const size = best.size;
+  const wrappedTitle = best.text;
+
+  // 라벨 크기(제목의 60%) — 폭 넘치면 축소
+  let labelSize = Math.round(size * 0.6);
+  let labelH = 0;
+  if (safeLabel) {
+    let limg = await renderText(safeLabel, "#ffffff", labelSize);
+    if (limg && limg.w > FILL_W) {
+      labelSize = Math.max(MIN_SIZE, Math.floor((labelSize * FILL_W) / limg.w));
+      limg = await renderText(safeLabel, "#ffffff", labelSize);
+    }
+    labelH = limg ? limg.h : 0;
+  }
+
+  const titleImg = await renderText(wrappedTitle, "#ffffff", size);
   if (!titleImg) return sharp(base).jpeg({ quality: 90 }).toBuffer();
 
-  const labelSize = Math.round(size * 0.6);
-  const blockH = (wrappedLabel ? labelH + gap() : 0) + titleImg.h;
+  const gap = Math.round(size * 0.18);
+  const blockH = (safeLabel ? labelH + gap : 0) + titleImg.h;
   // 텍스트 블록을 살짝 위쪽에 배치(핵심 이미지가 아래로 보이게)
   let cursor = Math.max(40, Math.round(THUMB * TEXT_CENTER_Y - blockH / 2));
 
   const layers: sharp.OverlayOptions[] = [];
-  if (wrappedLabel) {
-    const h = await pushTextLine(layers, wrappedLabel, "#ffffff", labelSize, cursor);
-    cursor += h + gap();
+  if (safeLabel) {
+    const h = await pushTextLine(layers, safeLabel, "#ffffff", labelSize, cursor);
+    cursor += h + gap;
   }
   await pushTextLine(layers, wrappedTitle, "#ffffff", size, cursor);
 

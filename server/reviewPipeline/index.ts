@@ -188,6 +188,18 @@ export async function regenerateMask(draft: ReviewDraft, expand: number): Promis
   }))!;
 }
 
+/** 사용자가 지정한 세로 구간(가로 전체)을 추가로 블러 (AI가 놓친 부분 수동 커버) */
+export async function addManualMaskBand(draft: ReviewDraft, imageIndex: number, top: number, bottom: number): Promise<ReviewDraft> {
+  const boxes = j.parse<RedactionBox[]>(draft.redactionBoxes, []);
+  const t = Math.max(0, Math.min(1, Math.min(top, bottom)));
+  const b = Math.max(0, Math.min(1, Math.max(top, bottom)));
+  const imgN = originalList(draft).length || 1;
+  const idx = Math.max(0, Math.min(imgN - 1, imageIndex));
+  boxes.push({ x: 0.02, y: t, w: 0.96, h: Math.max(0.04, b - t), image: idx, reason: "수동 지정" });
+  const updated = (await storage.updateReviewDraft(draft.id, { redactionBoxes: j.str(boxes) }))!;
+  return regenerateMask(updated, 0);
+}
+
 /** 선택된 썸네일 이미지 + 문구로 합성 썸네일 생성·업로드 */
 export async function composeSelectedThumbnail(draft: ReviewDraft): Promise<ReviewDraft> {
   const thumbs = j.parse<ThumbnailCandidate[]>(draft.thumbnailCandidates, []);

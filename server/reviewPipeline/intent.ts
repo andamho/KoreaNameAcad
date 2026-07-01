@@ -16,6 +16,7 @@ export type IntentAction =
   | { type: "setLabel"; labelType: "consultation" | "rename" }
   | { type: "editBody"; newText?: string; instruction?: string }
   | { type: "maskMore" }
+  | { type: "maskRegion"; index?: number; top: number; bottom: number }
   | { type: "remask" }
   | { type: "publish" }
   | { type: "naverPackage" }
@@ -43,13 +44,15 @@ const SCHEMA = {
         properties: {
           type: {
             type: "STRING",
-            enum: ["setTitle", "setThumbnailTitle", "setThumbnail", "moreTitles", "moreThumbnails", "setLabel", "editBody", "maskMore", "remask", "publish", "naverPackage", "preview", "savePreference", "help", "unknown"],
+            enum: ["setTitle", "setThumbnailTitle", "setThumbnail", "moreTitles", "moreThumbnails", "setLabel", "editBody", "maskMore", "maskRegion", "remask", "publish", "naverPackage", "preview", "savePreference", "help", "unknown"],
           },
           index: { type: "INTEGER" },
           text: { type: "STRING" },
           keywords: { type: "STRING", description: "moreThumbnails에서 새 검색어(영어). 예: sea, family, sunset" },
           fromTitle: { type: "BOOLEAN", description: "moreThumbnails에서 현재 제목의 핵심단어로 찾을 때 true" },
           labelType: { type: "STRING", enum: ["consultation", "rename"], description: "setLabel에서 후기 종류" },
+          top: { type: "NUMBER", description: "maskRegion 세로 시작 위치(0=맨위,1=맨아래)" },
+          bottom: { type: "NUMBER", description: "maskRegion 세로 끝 위치(0~1)" },
           newText: { type: "STRING" },
           instruction: { type: "STRING" },
           note: { type: "STRING" },
@@ -77,6 +80,7 @@ export async function parseIntent(message: string, draft: DraftSummary): Promise
 - "개명후기로 (바꿔)" → {type:setLabel, labelType:"rename"}. "상담후기로/이름분석으로 (바꿔)" → {type:setLabel, labelType:"consultation"}. (썸네일 위 분류 라벨 변경)
 - "본문/내용 ~로 바꿔/고쳐" → editBody (전체 교체면 newText, 부분 수정 지시면 instruction).
 - "더 가려/이름 더 가려" → maskMore. "마스킹 다시/처음부터" → remask.
+- "위에서 30% 가려줘 / 위 20~40% 가려줘 / N번째 줄도 가려줘" 처럼 특정 세로 구간을 가리라는 요청 → {type:maskRegion, top, bottom}. top/bottom은 0~1(위=0). "위에서 30%"는 top≈0.26 bottom≈0.35 처럼 좁은 띠로. "N번째 줄"은 대략 위치를 추정(예: 3번째 줄≈0.22~0.30). "○번 이미지"라 하면 index=그 번호.
 - "게시/올려/홈페이지" → publish. "네이버/블로그용/복붙" → naverPackage. "미리보기" → preview.
 - "앞으로/항상/매번/늘/계속 ~해줘" 처럼 앞으로 모든 후기에 적용할 표준 지침이면 → {type:savePreference, text:"<핵심 지침만 간결히>"} (예: "이모지 쓰지 마", "제목은 12자 이내"). 단 "이번엔/이건" 같은 1회성은 savePreference가 아니라 해당 동작(editBody 등)으로 처리.
 - 한 문장에 "앞으로 항상 짧게 하고 이번 건 게시해줘" 처럼 표준 지침+동작이 섞이면 savePreference와 해당 동작을 모두 actions에 넣습니다.

@@ -6,7 +6,7 @@
 import { storage } from "./storage";
 import {
   processNewReview, regenerateMask, composeSelectedThumbnail,
-  publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, titleWithLabel, formatParagraphs, draftJson as j,
+  publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, titleWithLabel, formatParagraphs, addManualMaskBand, draftJson as j,
 } from "./reviewPipeline";
 import { parseIntent, applyBodyEdit, type IntentAction, type DraftSummary } from "./reviewPipeline/intent";
 import { toEnglishKeywords } from "./reviewPipeline/vision";
@@ -124,9 +124,10 @@ async function presentDraft(chatId: string, d: ReviewDraft) {
   // 1) 마스킹 이미지(들)
   const boxCount = j.parse<unknown[]>(d.redactionBoxes, []).length;
   const imgCount = j.parse<string[]>(d.maskedImagePaths, d.maskedImagePath ? [d.maskedImagePath] : []).length;
+  const hint = `\n놓친 곳이 있으면 "더 가려줘" 또는 "위에서 30% 가려줘"처럼 말하세요.`;
   const cap = boxCount > 0
-    ? `🖼 후기 이미지 ${imgCount}장, 개인정보 ${boxCount}곳을 블러 처리했어요. 빠진 데가 있으면 "더 가려줘".`
-    : `⚠️ 개인정보 위치를 자동으로 못 찾았어요. 보이면 사진을 다시 보내주세요(재분석).`;
+    ? `🖼 후기 이미지 ${imgCount}장, 개인정보 ${boxCount}곳을 블러 처리했어요.${hint}`
+    : `⚠️ 개인정보 위치를 자동으로 못 찾았어요.${hint}`;
   await sendMaskedImages(chatId, d, cap);
 
   // 2) 다듬은 본문
@@ -248,6 +249,13 @@ async function runActions(chatId: string, draftId: string, actions: IntentAction
         await sendMessage(chatId, "🙈 더 넓게 가리는 중…");
         d = await regenerateMask(d, 0.6);
         await sendMaskedImages(chatId, d, "🖼 더 가린 버전이에요.");
+        break;
+      }
+      case "maskRegion": {
+        await sendMessage(chatId, "🙈 지정한 구간을 가리는 중…");
+        const imageIndex = a.index ? a.index - 1 : 0;
+        d = await addManualMaskBand(d, imageIndex, a.top ?? 0, a.bottom ?? 0);
+        await sendMaskedImages(chatId, d, "🖼 지정한 구간을 추가로 가렸어요.");
         break;
       }
       case "remask": {
