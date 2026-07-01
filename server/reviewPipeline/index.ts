@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { storage } from "../storage";
 import { ObjectStorageService } from "../replit_integrations/object_storage/objectStorage";
-import { analyzeReviewImage, labelForReviewType, generateMoreTitles, keywordsFromTitle } from "./vision";
+import { analyzeReviewImages, labelForReviewType, generateMoreTitles, keywordsFromTitle } from "./vision";
 import { maskImage, composeThumbnail } from "./imaging";
 import { searchThumbnails, fetchImageBuffer } from "./thumbnails";
 import type { ReviewDraft, RedactionBox, ThumbnailCandidate, InsertContent } from "@shared/schema";
@@ -53,22 +53,36 @@ export function titleWithLabel(label?: string | null, title?: string | null): st
  * 1) Claude Vision  2) 마스킹  3) 스톡 썸네일 5  4) R2 업로드  5) draft 저장
  */
 export async function processNewReview(
-  imageBuffer: Buffer,
+  imageBuffers: Buffer[],
   mediaType: string,
   chatId: string,
 ): Promise<ReviewDraft> {
-  // 1) 원본 업로드
-  const originalImagePath = await uploadBuffer(imageBuffer, mediaType, "reviews/original");
+  const n = imageBuffers.length;
 
-  // 2) AI 분석 (채팅별 취향 지침 주입)
+  // 1) 원본 업로드 (입력 순서)
+  const originalPaths: string[] = [];
+  for (const buf of imageBuffers) originalPaths.push(await uploadBuffer(buf, mediaType, "reviews/original"));
+
+  // 2) AI 분석 (여러 장 통합, 취향 주입)
   const prefs = (await storage.getPreferences(chatId)).map(p => p.instruction);
-  const vision = await analyzeReviewImage(imageBuffer, mediaType, prefs);
+  const vision = await analyzeReviewImages(imageBuffers, mediaType, prefs);
 
-  // 3) 마스킹 이미지 생성·업로드 (박스를 조금 넉넉하게 확장해 확실히 덮음)
-  const masked = await maskImage(imageBuffer, vision.redactionBoxes, 0.15);
-  const maskedImagePath = await uploadBuffer(masked, "image/jpeg", "reviews/masked");
+  // 3) 각 이미지를 자기 박스로 마스킹 (입력 순서)
+  const maskedPaths: string[] = [];
+  for (let i = 0; i < n; i++) {
+    const boxes = vision.redactionBoxes.filter((b) => (b.image ?? 0) === i);
+    const masked = await maskImage(imageBuffers[i], boxes, 0.15);
+    maskedPaths.push(await uploadBuffer(masked, "image/jpeg", "reviews/masked"));
+  }
 
-  // 4) 스톡 썸네일 검색
+  // 4) imageOrder(내용→증빙)로 재정렬 + 박스 image 인덱스도 새 위치로 리맵
+  const order = (vision.imageOrder && vision.imageOrder.length === n) ? vision.imageOrder : originalPaths.map((_, i) => i);
+  const posOf = new Map<number, number>(order.map((oldI, newI) => [oldI, newI]));
+  const orderedOriginal = order.map((i) => originalPaths[i]).filter(Boolean);
+  const orderedMasked = order.map((i) => maskedPaths[i]).filter(Boolean);
+  const remappedBoxes = vision.redactionBoxes.map((b) => ({ ...b, image: posOf.get(b.image ?? 0) ?? 0 }));
+
+  // 5) 스톡 썸네일 검색
   let thumbnails: ThumbnailCandidate[] = [];
   try {
     thumbnails = await searchThumbnails(vision.thumbnailKeywords);
@@ -76,17 +90,19 @@ export async function processNewReview(
     console.error("[pipeline] 썸네일 검색 실패:", e?.message);
   }
 
-  // 5) draft 저장
+  // 6) draft 저장
   const draft = await storage.createReviewDraft({
     status: "review",
     source: "telegram",
     chatId,
-    originalImagePath,
-    maskedImagePath,
+    originalImagePath: orderedOriginal[0] ?? null,
+    maskedImagePath: orderedMasked[0] ?? null,
+    originalImagePaths: j.str(orderedOriginal),
+    maskedImagePaths: j.str(orderedMasked),
     extractedText: vision.extractedText,
     polishedContent: formatParagraphs(vision.polishedContent),
     thumbnailLabel: labelForReviewType(vision.reviewType),
-    redactionBoxes: j.str(vision.redactionBoxes),
+    redactionBoxes: j.str(remappedBoxes),
     titleCandidates: j.str(vision.titleCandidates),
     thumbnailTitleCandidates: j.str(vision.thumbnailTitleCandidates),
     thumbnailCandidates: j.str(thumbnails),
@@ -146,15 +162,30 @@ export async function moreThumbnails(draft: ReviewDraft, newKeywords?: string, f
   return { draft: updated, candidates };
 }
 
-/** 마스킹 재생성 (expand>0 → 더 넓게 가림) */
+/** 다중 이미지 경로 헬퍼 (신규 배열 우선, 없으면 단일 값) */
+function maskedList(d: ReviewDraft): string[] {
+  return j.parse<string[]>(d.maskedImagePaths, d.maskedImagePath ? [d.maskedImagePath] : []);
+}
+function originalList(d: ReviewDraft): string[] {
+  return j.parse<string[]>(d.originalImagePaths, d.originalImagePath ? [d.originalImagePath] : []);
+}
+
+/** 마스킹 재생성 (expand>0 → 더 넓게 가림) — 모든 장 재마스킹 */
 export async function regenerateMask(draft: ReviewDraft, expand: number): Promise<ReviewDraft> {
-  if (!draft.originalImagePath) throw new Error("원본 이미지가 없습니다.");
-  const key = draft.originalImagePath.replace("/objects/", "");
-  const { buffer } = await fetchObjectBuffer(key);
-  const boxes = j.parse<RedactionBox[]>(draft.redactionBoxes, []);
-  const masked = await maskImage(buffer, boxes, expand);
-  const maskedImagePath = await uploadBuffer(masked, "image/jpeg", "reviews/masked");
-  return (await storage.updateReviewDraft(draft.id, { maskedImagePath }))!;
+  const originals = originalList(draft);
+  if (!originals.length) throw new Error("원본 이미지가 없습니다.");
+  const boxesAll = j.parse<RedactionBox[]>(draft.redactionBoxes, []);
+  const maskedPaths: string[] = [];
+  for (let i = 0; i < originals.length; i++) {
+    const buffer = await objectPathToBuffer(originals[i]);
+    const boxes = boxesAll.filter((b) => (b.image ?? 0) === i);
+    const masked = await maskImage(buffer, boxes, expand);
+    maskedPaths.push(await uploadBuffer(masked, "image/jpeg", "reviews/masked"));
+  }
+  return (await storage.updateReviewDraft(draft.id, {
+    maskedImagePaths: j.str(maskedPaths),
+    maskedImagePath: maskedPaths[0] ?? null,
+  }))!;
 }
 
 /** 선택된 썸네일 이미지 + 문구로 합성 썸네일 생성·업로드 */
@@ -175,9 +206,9 @@ export async function publishReview(draft: ReviewDraft): Promise<{ contentId: st
   if (!d.composedThumbnailPath) {
     d = await composeSelectedThumbnail(d);
   }
-  // 본문 순서: ① (썸네일은 thumbnail 필드로 상세페이지 최상단에 자동 표시) → ② 블러 후기 이미지 → ③ 후기 텍스트
+  // 본문 순서: ① (썸네일은 thumbnail 필드로 상세페이지 최상단 자동 표시) → ② 블러 후기 이미지들(내용→증빙 순) → ③ 후기 텍스트
   const parts: string[] = [];
-  if (d.maskedImagePath) parts.push(`![후기 이미지](${d.maskedImagePath})`);
+  for (const m of maskedList(d)) parts.push(`![후기 이미지](${m})`);
   if (d.polishedContent) parts.push(d.polishedContent);
   const body = parts.join("\n\n").trim();
   const content: InsertContent = {

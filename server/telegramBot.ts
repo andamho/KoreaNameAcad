@@ -102,21 +102,31 @@ function mainActionKeyboard(d: ReviewDraft) {
   ]);
 }
 
+/** 마스킹된 후기 이미지들(내용→증빙 순)을 순서대로 전송 */
+async function sendMaskedImages(chatId: string, d: ReviewDraft, firstCaption?: string) {
+  const paths = j.parse<string[]>(d.maskedImagePaths, d.maskedImagePath ? [d.maskedImagePath] : []);
+  for (let i = 0; i < paths.length; i++) {
+    try {
+      const buf = await objectPathToBuffer(paths[i]);
+      const cap = i === 0 ? firstCaption : (paths.length > 1 ? `(${i + 1}/${paths.length})` : undefined);
+      await sendPhotoBuffer(chatId, buf, cap);
+    } catch (e: any) {
+      await sendMessage(chatId, `⚠️ 이미지 ${i + 1} 전송 실패: ${e?.message}`);
+    }
+  }
+}
+
 /** 처리 완료 후 검수 화면 일괄 전송 */
 async function presentDraft(chatId: string, d: ReviewDraft) {
   const thumbTitles = j.parse<string[]>(d.thumbnailTitleCandidates, []);
 
-  // 1) 마스킹 이미지
-  try {
-    const boxCount = j.parse<unknown[]>(d.redactionBoxes, []).length;
-    const cap = boxCount > 0
-      ? `🖼 개인정보 ${boxCount}곳을 블러 처리했어요. 빠진 데가 있으면 "더 가려줘"라고 하세요.`
-      : `⚠️ 개인정보 위치를 자동으로 못 찾았어요. 이미지에 이름·연락처가 보이면 사진을 다시 보내주세요(재분석).`;
-    const masked = await objectPathToBuffer(d.maskedImagePath!);
-    await sendPhotoBuffer(chatId, masked, cap);
-  } catch (e: any) {
-    await sendMessage(chatId, "⚠️ 마스킹 이미지 전송 실패: " + e?.message);
-  }
+  // 1) 마스킹 이미지(들)
+  const boxCount = j.parse<unknown[]>(d.redactionBoxes, []).length;
+  const imgCount = j.parse<string[]>(d.maskedImagePaths, d.maskedImagePath ? [d.maskedImagePath] : []).length;
+  const cap = boxCount > 0
+    ? `🖼 후기 이미지 ${imgCount}장, 개인정보 ${boxCount}곳을 블러 처리했어요. 빠진 데가 있으면 "더 가려줘".`
+    : `⚠️ 개인정보 위치를 자동으로 못 찾았어요. 보이면 사진을 다시 보내주세요(재분석).`;
+  await sendMaskedImages(chatId, d, cap);
 
   // 2) 다듬은 본문
   await sendMessage(chatId,
@@ -234,15 +244,13 @@ async function runActions(chatId: string, draftId: string, actions: IntentAction
       case "maskMore": {
         await sendMessage(chatId, "🙈 더 넓게 가리는 중…");
         d = await regenerateMask(d, 0.6);
-        const buf = await objectPathToBuffer(d.maskedImagePath!);
-        await sendPhotoBuffer(chatId, buf, "🖼 더 가린 버전이에요.");
+        await sendMaskedImages(chatId, d, "🖼 더 가린 버전이에요.");
         break;
       }
       case "remask": {
         await sendMessage(chatId, "🙈 마스킹을 다시 적용하는 중…");
         d = await regenerateMask(d, 0);
-        const buf = await objectPathToBuffer(d.maskedImagePath!);
-        await sendPhotoBuffer(chatId, buf, "🖼 마스킹 재적용본");
+        await sendMaskedImages(chatId, d, "🖼 마스킹 재적용본");
         break;
       }
       case "preview": doPreview = true; break;
@@ -297,16 +305,17 @@ async function sendNaverPackage(chatId: string, draft: ReviewDraft) {
     let d = draft;
     if (!d.composedThumbnailPath) d = await composeSelectedThumbnail(d);
     const pkg = buildNaverPackage(d, process.env.PUBLIC_BASE_URL || "");
+    const maskedPaths = j.parse<string[]>(d.maskedImagePaths, d.maskedImagePath ? [d.maskedImagePath] : []);
     await sendMessage(chatId,
-      `📋 <b>네이버 블로그 복붙용</b>\n\n<b>[제목]</b>\n${escapeHtml(pkg.title)}\n\n<b>[본문]</b>\n${escapeHtml(pkg.body)}\n\n<i>아래 이미지 2장을 저장해 네이버 글에 넣으세요.</i>`);
-    // 이미지(썸네일+마스킹본)를 문서로 첨부 → 원본 화질 저장 가능
+      `📋 <b>네이버 블로그 복붙용</b>\n\n<b>[제목]</b>\n${escapeHtml(pkg.title)}\n\n<b>[본문]</b>\n${escapeHtml(pkg.body)}\n\n<i>아래 이미지들(썸네일 + 후기 ${maskedPaths.length}장)을 저장해 순서대로 넣으세요.</i>`);
+    // 이미지(썸네일 + 마스킹본들)를 문서로 첨부 → 원본 화질 저장 가능
     if (d.composedThumbnailPath) {
       const tBuf = await objectPathToBuffer(d.composedThumbnailPath);
       await sendDocumentBuffer(chatId, tBuf, "thumbnail.jpg", "썸네일");
     }
-    if (d.maskedImagePath) {
-      const mBuf = await objectPathToBuffer(d.maskedImagePath);
-      await sendDocumentBuffer(chatId, mBuf, "review.jpg", "후기 이미지");
+    for (let i = 0; i < maskedPaths.length; i++) {
+      const mBuf = await objectPathToBuffer(maskedPaths[i]);
+      await sendDocumentBuffer(chatId, mBuf, `review_${i + 1}.jpg`, `후기 이미지 ${i + 1}`);
     }
   } catch (e: any) {
     await sendMessage(chatId, "❌ 네이버 패키지 생성 실패: " + e?.message);
@@ -386,6 +395,42 @@ function authorized(chatId: string): boolean {
   return ALLOWED.length === 0 || ALLOWED.includes(chatId);
 }
 
+// ── 여러 장(앨범) 모아서 처리 ─────────────────────────────────
+type PendingGroup = { chatId: string; fileIds: string[]; timer: ReturnType<typeof setTimeout> | null; notified: boolean };
+const pendingGroups = new Map<string, PendingGroup>();
+
+/** fileId들의 이미지를 받아 한 후기로 처리 */
+async function handleReviewPhotos(chatId: string, fileIds: string[]) {
+  try {
+    const buffers: Buffer[] = [];
+    let mediaType = "image/jpeg";
+    for (const fid of fileIds) {
+      const r = await getFileBuffer(fid);
+      buffers.push(r.buffer);
+      mediaType = r.mediaType;
+    }
+    const draft = await processNewReview(buffers, mediaType, chatId);
+    await presentDraft(chatId, draft);
+  } catch (e: any) {
+    console.error("[bot] 사진 처리 실패:", e);
+    await sendMessage(chatId, "❌ 처리 중 오류: " + (e?.message || e));
+  }
+}
+
+/** 같은 media_group_id의 사진을 모아 디바운스 후 한 번에 처리 */
+function queueAlbumPhoto(chatId: string, groupId: string, fileId: string) {
+  let g = pendingGroups.get(groupId);
+  if (!g) { g = { chatId, fileIds: [], timer: null, notified: false }; pendingGroups.set(groupId, g); }
+  g.fileIds.push(fileId);
+  if (!g.notified) { g.notified = true; sendMessage(chatId, "⏳ 여러 장 후기를 모아 분석하는 중이에요… (20~40초)"); }
+  if (g.timer) clearTimeout(g.timer);
+  g.timer = setTimeout(() => {
+    const grp = pendingGroups.get(groupId);
+    pendingGroups.delete(groupId);
+    if (grp) handleReviewPhotos(grp.chatId, grp.fileIds).catch(e => console.error("[bot] 앨범 처리 오류:", e));
+  }, 2500);
+}
+
 async function handleUpdate(update: any) {
   // 콜백(버튼)
   if (update.callback_query) {
@@ -424,30 +469,15 @@ async function handleUpdate(update: any) {
     return;
   }
 
-  // 사진 수신 → 파이프라인
-  if (msg.photo?.length) {
-    await sendMessage(chatId, "⏳ 후기를 분석하는 중이에요… (10~20초)");
-    try {
-      const fileId = msg.photo[msg.photo.length - 1].file_id; // 최고 해상도
-      const { buffer, mediaType } = await getFileBuffer(fileId);
-      const draft = await processNewReview(buffer, mediaType, chatId);
-      await presentDraft(chatId, draft);
-    } catch (e: any) {
-      console.error("[bot] 사진 처리 실패:", e);
-      await sendMessage(chatId, "❌ 처리 중 오류: " + (e?.message || e));
-    }
-    return;
-  }
-
-  // 문서로 보낸 이미지도 허용
-  if (msg.document?.mime_type?.startsWith("image/")) {
-    await sendMessage(chatId, "⏳ 후기를 분석하는 중이에요…");
-    try {
-      const { buffer, mediaType } = await getFileBuffer(msg.document.file_id);
-      const draft = await processNewReview(buffer, mediaType, chatId);
-      await presentDraft(chatId, draft);
-    } catch (e: any) {
-      await sendMessage(chatId, "❌ 처리 중 오류: " + (e?.message || e));
+  // 사진/이미지 문서 수신 → (앨범이면 모아서) 파이프라인
+  const fileId = msg.photo?.length ? msg.photo[msg.photo.length - 1].file_id
+    : (msg.document?.mime_type?.startsWith("image/") ? msg.document.file_id : null);
+  if (fileId) {
+    if (msg.media_group_id) {
+      queueAlbumPhoto(chatId, String(msg.media_group_id), fileId);
+    } else {
+      await sendMessage(chatId, "⏳ 후기를 분석하는 중이에요… (10~20초)");
+      await handleReviewPhotos(chatId, [fileId]);
     }
     return;
   }

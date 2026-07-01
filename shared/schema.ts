@@ -133,8 +133,10 @@ export const reviewDrafts = pgTable("review_drafts", {
   status: text("status").notNull().default("processing"),
   source: text("source").notNull().default("telegram"), // telegram | web
   chatId: text("chat_id"),                               // 텔레그램 채팅 ID
-  originalImagePath: text("original_image_path"),        // R2 /objects/... 원본
-  maskedImagePath: text("masked_image_path"),            // R2 마스킹본
+  originalImagePath: text("original_image_path"),        // R2 /objects/... 원본(첫 장)
+  maskedImagePath: text("masked_image_path"),            // R2 마스킹본(첫 장)
+  originalImagePaths: text("original_image_paths"),      // JSON string[] 원본 여러 장
+  maskedImagePaths: text("masked_image_paths"),          // JSON string[] 마스킹본 여러 장
   extractedText: text("extracted_text"),                 // OCR 원문
   polishedContent: text("polished_content"),             // 다듬은 본문(편집 가능)
   thumbnailLabel: text("thumbnail_label"),               // 썸네일 메인 제목 위 분류 라벨(예: 이름분석 상담후기 / 개명후기)
@@ -164,7 +166,7 @@ export type InsertReviewDraft = z.infer<typeof insertReviewDraftSchema>;
 export type ReviewDraft = typeof reviewDrafts.$inferSelect;
 
 // 마스킹 박스 (정규화 좌표 0~1)
-export type RedactionBox = { x: number; y: number; w: number; h: number; reason?: string };
+export type RedactionBox = { x: number; y: number; w: number; h: number; reason?: string; image?: number };
 // 썸네일 후보
 export type ThumbnailCandidate = {
   url: string;        // 원본(또는 large) 이미지 URL
