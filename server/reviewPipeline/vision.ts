@@ -140,6 +140,18 @@ export async function generateMoreTitles(content: string, preferences: string[] 
   return (out.titles || []).slice(0, 5);
 }
 
+/** 후기 본문 기반으로 썸네일에 얹을 짧은 문구 5개를 새로 생성 */
+export async function generateMoreThumbnailTitles(content: string, preferences: string[] = [], avoid: string[] = []): Promise<string[]> {
+  const prefBlock = preferences.length ? `\n[사용자 표준 지침 — 반드시 반영]\n${preferences.map(p => `- ${p}`).join("\n")}` : "";
+  const avoidBlock = avoid.length ? `\n[이미 제안한 문구 — 겹치지 말고 새로운 각도로]\n${avoid.map(t => `- ${t}`).join("\n")}` : "";
+  const system = `당신은 "한국이름학교" 후기 썸네일 카피라이터입니다.
+아래 후기 본문을 바탕으로, 썸네일 이미지에 크게 얹을 짧고 임팩트 있는 문구를 정확히 5개 새로 지어 titles 배열로 출력하세요.
+- 각 6~16자 정도로 짧게, 클릭하고 싶게. 개인정보 없이. 한국어.
+- 과장하거나 없는 사실을 지어내지 않습니다.${prefBlock}${avoidBlock}`;
+  const out = await geminiJson<{ titles: string[] }>(system, [{ text: content || "" }], TITLES_SCHEMA, 400);
+  return (out.titles || []).slice(0, 5);
+}
+
 /** 여러 장(또는 한 장)의 후기 이미지를 함께 분석해 통합 결과를 반환. preferences: 채팅별 표준 지침 */
 export async function analyzeReviewImages(imageBuffers: Buffer[], mediaType: string, preferences: string[] = []): Promise<VisionResult> {
   const mt = ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(mediaType) ? mediaType : "image/jpeg";

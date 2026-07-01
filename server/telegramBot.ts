@@ -6,7 +6,7 @@
 import { storage } from "./storage";
 import {
   processNewReview, regenerateMask, composeSelectedThumbnail,
-  publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, titleWithLabel, formatParagraphs, addManualMaskBand, draftJson as j,
+  publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, moreThumbnailTitles, titleWithLabel, formatParagraphs, addManualMaskBand, draftJson as j,
 } from "./reviewPipeline";
 import { parseIntent, applyBodyEdit, type IntentAction, type DraftSummary } from "./reviewPipeline/intent";
 import { toEnglishKeywords } from "./reviewPipeline/vision";
@@ -119,8 +119,6 @@ async function sendMaskedImages(chatId: string, d: ReviewDraft, firstCaption?: s
 
 /** 처리 완료 후 검수 화면 일괄 전송 */
 async function presentDraft(chatId: string, d: ReviewDraft) {
-  const thumbTitles = j.parse<string[]>(d.thumbnailTitleCandidates, []);
-
   // 1) 마스킹 이미지(들)
   const boxCount = j.parse<unknown[]>(d.redactionBoxes, []).length;
   const imgCount = j.parse<string[]>(d.maskedImagePaths, d.maskedImagePath ? [d.maskedImagePath] : []).length;
@@ -138,12 +136,7 @@ async function presentDraft(chatId: string, d: ReviewDraft) {
   await sendTitleChoices(chatId, d);
 
   // 4) 썸네일 문구 후보
-  if (thumbTitles.length) {
-    await sendMessage(chatId, "🏷️ <b>썸네일 문구</b>를 골라주세요:",
-      ik([
-        ...thumbTitles.map((t, i) => [{ text: `${i + 1}) ${short(t)}`, data: `TT|${d.id}|${i}` }]),
-      ]));
-  }
+  await sendThumbTitleChoices(chatId, d);
 
   // 5) 썸네일 이미지 후보
   await sendThumbnailChoices(chatId, d);
@@ -161,9 +154,24 @@ async function sendTitleChoices(chatId: string, d: ReviewDraft) {
   }
   await sendMessage(chatId, "📌 <b>게시 제목</b>을 고르거나, 마음에 안 들면 다시 추천/직접 입력하세요:",
     ik([
-      ...titles.map((t, i) => [{ text: `${i + 1}) ${short(t)}`, data: `T|${d.id}|${i}` }]),
+      ...titles.map((t, i) => [{ text: `${i + 1}) ${t}`, data: `T|${d.id}|${i}` }]),
       [{ text: "🔄 다른 제목 5개 추천", data: `MTI|${d.id}` }],
       [{ text: "✏️ 제목 직접 입력하기", data: `INT|${d.id}` }],
+    ]));
+}
+
+/** 썸네일 문구 후보 + 재생성/직접입력 버튼 (전체 문구 표시) */
+async function sendThumbTitleChoices(chatId: string, d: ReviewDraft) {
+  const tt = j.parse<string[]>(d.thumbnailTitleCandidates, []);
+  if (!tt.length) {
+    await sendMessage(chatId, "🏷️ 썸네일 문구 후보가 없어요.", ik([[{ text: "🔄 썸네일 문구 5개 추천", data: `MTC|${d.id}` }]]));
+    return;
+  }
+  await sendMessage(chatId, "🏷️ <b>썸네일 문구</b>를 고르거나, 다시 추천/직접 입력하세요:",
+    ik([
+      ...tt.map((t, i) => [{ text: `${i + 1}) ${t}`, data: `TT|${d.id}|${i}` }]),
+      [{ text: "🔄 다른 문구 5개 추천", data: `MTC|${d.id}` }],
+      [{ text: "✏️ 썸네일 문구 직접 입력", data: `INC|${d.id}` }],
     ]));
 }
 
@@ -224,6 +232,14 @@ async function runActions(chatId: string, draftId: string, actions: IntentAction
         const r = await moreTitles(d);
         d = r.draft;
         await sendTitleChoices(chatId, d);
+        choicesResent = true;
+        break;
+      }
+      case "moreThumbnailTitles": {
+        await sendMessage(chatId, "🔄 다른 썸네일 문구 5개 생성 중…");
+        const r = await moreThumbnailTitles(d);
+        d = r.draft;
+        await sendThumbTitleChoices(chatId, d);
         choicesResent = true;
         break;
       }
@@ -407,7 +423,7 @@ function authorized(chatId: string): boolean {
 }
 
 // 직접 입력 대기 상태 (버튼 → 다음 메시지를 그 값으로 받음)
-type PendingInput = { mode: "title" | "keywords"; draftId: string };
+type PendingInput = { mode: "title" | "keywords" | "thumbTitle"; draftId: string };
 const pendingInput = new Map<string, PendingInput>();
 
 // ── 여러 장(앨범) 모아서 처리 ─────────────────────────────────
@@ -469,11 +485,17 @@ async function handleUpdate(update: any) {
       await sendMessage(chatId, "✏️ 썸네일 검색 <b>키워드</b>를 띄어쓰기로 보내주세요.\n예: <code>축소판 하늘 바다</code>");
       return;
     }
+    if (kind === "INC") { // 썸네일 문구 직접 입력
+      pendingInput.set(chatId, { mode: "thumbTitle", draftId });
+      await sendMessage(chatId, "✏️ 썸네일에 넣을 <b>문구</b>를 입력해서 보내주세요.");
+      return;
+    }
     const map: Record<string, IntentAction> = {
       T: { type: "setTitle", index: (idx ?? 0) + 1 },
       TT: { type: "setThumbnailTitle", index: (idx ?? 0) + 1 },
       TH: { type: "setThumbnail", index: (idx ?? 0) + 1 },
       MTI: { type: "moreTitles" },
+      MTC: { type: "moreThumbnailTitles" },
       MTT: { type: "moreThumbnails", fromTitle: true },
       MT: { type: "moreThumbnails" },
       MM: { type: "maskMore" },
@@ -519,6 +541,8 @@ async function handleUpdate(update: any) {
       if (/^(취소|cancel)$/i.test(text)) { await sendMessage(chatId, "입력을 취소했어요."); return; }
       if (pending.mode === "title") {
         await runActions(chatId, pending.draftId, [{ type: "setTitle", text }]);
+      } else if (pending.mode === "thumbTitle") {
+        await runActions(chatId, pending.draftId, [{ type: "setThumbnailTitle", text }]);
       } else {
         await sendMessage(chatId, "🔎 입력한 키워드로 썸네일 찾는 중…");
         const eng = await toEnglishKeywords(text);

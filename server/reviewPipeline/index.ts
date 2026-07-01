@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { storage } from "../storage";
 import { ObjectStorageService } from "../replit_integrations/object_storage/objectStorage";
-import { analyzeReviewImages, labelForReviewType, generateMoreTitles, keywordsFromTitle } from "./vision";
+import { analyzeReviewImages, labelForReviewType, generateMoreTitles, generateMoreThumbnailTitles, keywordsFromTitle } from "./vision";
 import { detectPIIBoxes, visionAvailable } from "./ocr";
 import { maskImage, composeThumbnail } from "./imaging";
 import { searchThumbnails, fetchImageBuffer } from "./thumbnails";
@@ -142,6 +142,20 @@ export async function moreTitles(draft: ReviewDraft): Promise<{ draft: ReviewDra
   const updated = (await storage.updateReviewDraft(draft.id, {
     titleCandidates: j.str(titles),
     selectedTitle: titles[0] ?? draft.selectedTitle,
+  }))!;
+  return { draft: updated, titles };
+}
+
+/** 썸네일 문구 5개 다시 생성 */
+export async function moreThumbnailTitles(draft: ReviewDraft): Promise<{ draft: ReviewDraft; titles: string[] }> {
+  const prefs = draft.chatId ? (await storage.getPreferences(draft.chatId)).map(p => p.instruction) : [];
+  const avoid = j.parse<string[]>(draft.thumbnailTitleCandidates, []);
+  let titles = await generateMoreThumbnailTitles(draft.polishedContent || "", prefs, avoid);
+  if (!titles.length) titles = avoid;
+  const updated = (await storage.updateReviewDraft(draft.id, {
+    thumbnailTitleCandidates: j.str(titles),
+    selectedThumbnailTitle: titles[0] ?? draft.selectedThumbnailTitle,
+    composedThumbnailPath: null,
   }))!;
   return { draft: updated, titles };
 }
