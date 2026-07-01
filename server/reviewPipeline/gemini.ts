@@ -30,6 +30,8 @@ async function call(systemText: string, parts: GeminiPart[], cfg: GenConfig): Pr
     generationConfig: {
       temperature: 0.4,
       maxOutputTokens: cfg.maxOutputTokens ?? 2048,
+      // 2.5 flash의 thinking이 출력 토큰을 소모해 JSON이 잘리는 것 방지(비활성화)
+      thinkingConfig: { thinkingBudget: 0 },
       ...(cfg.responseSchema
         ? { responseMimeType: "application/json", responseSchema: cfg.responseSchema }
         : {}),
@@ -63,9 +65,16 @@ export async function geminiJson<T>(systemText: string, parts: GeminiPart[], res
   text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
   try {
     return JSON.parse(text) as T;
-  } catch {
-    throw new Error("Gemini JSON 파싱 실패: " + text.slice(0, 200));
+  } catch { /* 아래에서 재시도 */ }
+  // 앞뒤 잡음 제거 후 첫 { ~ 마지막 } 추출 재시도
+  const s = text.indexOf("{");
+  const e = text.lastIndexOf("}");
+  if (s >= 0 && e > s) {
+    try {
+      return JSON.parse(text.slice(s, e + 1)) as T;
+    } catch { /* 잘림 등 */ }
   }
+  throw new Error("Gemini JSON 파싱 실패(응답이 잘렸을 수 있음): " + text.slice(0, 300));
 }
 
 /** 일반 텍스트 응답 */

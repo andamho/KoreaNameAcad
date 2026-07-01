@@ -9,6 +9,7 @@ import {
   publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, titleWithLabel, formatParagraphs, draftJson as j,
 } from "./reviewPipeline";
 import { parseIntent, applyBodyEdit, type IntentAction, type DraftSummary } from "./reviewPipeline/intent";
+import { toEnglishKeywords } from "./reviewPipeline/vision";
 import type { ReviewDraft, ThumbnailCandidate } from "@shared/schema";
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN?.trim() || "";
@@ -157,10 +158,11 @@ async function sendTitleChoices(chatId: string, d: ReviewDraft) {
     await sendMessage(chatId, "📌 제목 후보가 없어요.", ik([[{ text: "🔄 제목 5개 추천", data: `MTI|${d.id}` }]]));
     return;
   }
-  await sendMessage(chatId, "📌 <b>게시 제목</b>을 고르거나(직접 입력해 보내도 됨), 마음에 안 들면 다시 추천받으세요:",
+  await sendMessage(chatId, "📌 <b>게시 제목</b>을 고르거나, 마음에 안 들면 다시 추천/직접 입력하세요:",
     ik([
       ...titles.map((t, i) => [{ text: `${i + 1}) ${short(t)}`, data: `T|${d.id}|${i}` }]),
       [{ text: "🔄 다른 제목 5개 추천", data: `MTI|${d.id}` }],
+      [{ text: "✏️ 제목 직접 입력하기", data: `INT|${d.id}` }],
     ]));
 }
 
@@ -178,6 +180,7 @@ async function sendThumbnailChoices(chatId: string, d: ReviewDraft) {
       thumbs.map((_, i) => ({ text: `${i + 1}`, data: `TH|${d.id}|${i}` })),
       [{ text: "🔄 다른 썸네일 더 찾기", data: `MT|${d.id}` }],
       [{ text: "🔎 제목으로 다시 찾기", data: `MTT|${d.id}` }],
+      [{ text: "✏️ 키워드 직접 입력하기", data: `INK|${d.id}` }],
     ]));
 }
 
@@ -395,6 +398,10 @@ function authorized(chatId: string): boolean {
   return ALLOWED.length === 0 || ALLOWED.includes(chatId);
 }
 
+// 직접 입력 대기 상태 (버튼 → 다음 메시지를 그 값으로 받음)
+type PendingInput = { mode: "title" | "keywords"; draftId: string };
+const pendingInput = new Map<string, PendingInput>();
+
 // ── 여러 장(앨범) 모아서 처리 ─────────────────────────────────
 type PendingGroup = { chatId: string; fileIds: string[]; timer: ReturnType<typeof setTimeout> | null; notified: boolean };
 const pendingGroups = new Map<string, PendingGroup>();
@@ -444,6 +451,16 @@ async function handleUpdate(update: any) {
       await runActions(chatId, draftId, [{ type: "setLabel", labelType: idxStr === "rename" ? "rename" : "consultation" }]);
       return;
     }
+    if (kind === "INT") { // 제목 직접 입력
+      pendingInput.set(chatId, { mode: "title", draftId });
+      await sendMessage(chatId, "✏️ 새 <b>게시 제목</b>을 입력해서 보내주세요. (라벨은 자동으로 앞에 붙어요)");
+      return;
+    }
+    if (kind === "INK") { // 썸네일 키워드 직접 입력
+      pendingInput.set(chatId, { mode: "keywords", draftId });
+      await sendMessage(chatId, "✏️ 썸네일 검색 <b>키워드</b>를 띄어쓰기로 보내주세요.\n예: <code>축소판 하늘 바다</code>");
+      return;
+    }
     const map: Record<string, IntentAction> = {
       T: { type: "setTitle", index: (idx ?? 0) + 1 },
       TT: { type: "setThumbnailTitle", index: (idx ?? 0) + 1 },
@@ -485,7 +502,22 @@ async function handleUpdate(update: any) {
   // 텍스트
   if (msg.text) {
     const text = msg.text.trim();
-    if (text === "/start" || text === "/help") { await sendHelp(chatId); return; }
+    if (text === "/start" || text === "/help") { pendingInput.delete(chatId); await sendHelp(chatId); return; }
+
+    // 직접 입력 대기(제목/키워드) 처리 — 버튼 누른 뒤 다음 메시지
+    const pending = pendingInput.get(chatId);
+    if (pending) {
+      pendingInput.delete(chatId);
+      if (/^(취소|cancel)$/i.test(text)) { await sendMessage(chatId, "입력을 취소했어요."); return; }
+      if (pending.mode === "title") {
+        await runActions(chatId, pending.draftId, [{ type: "setTitle", text }]);
+      } else {
+        await sendMessage(chatId, "🔎 입력한 키워드로 썸네일 찾는 중…");
+        const eng = await toEnglishKeywords(text);
+        await runActions(chatId, pending.draftId, [{ type: "moreThumbnails", keywords: eng.join(" ") }]);
+      }
+      return;
+    }
 
     // 취향(표준 지침) 명령 — 초안 없이도 동작
     if (await handlePreferenceCommand(chatId, text)) return;

@@ -92,6 +92,22 @@ const KEYWORDS_SCHEMA = {
   required: ["keywords"],
 };
 
+/** 사용자가 띄어쓰기로 입력한 키워드(한글 등)를 영어 스톡 검색어로 변환 */
+export async function toEnglishKeywords(input: string): Promise<string[]> {
+  const t = (input || "").trim();
+  if (!t) return [];
+  const system = `사용자가 띄어쓰기로 나열한 이미지 검색 키워드를 영어 스톡 사진 검색어로 변환하세요.
+- 각 단어를 자연스러운 영어로(예: 축소판→miniature, 하늘→sky, 바다→sea, 가족→family). 이미 영어면 그대로.
+- keywords 배열로 출력.`;
+  try {
+    const out = await geminiJson<{ keywords: string[] }>(system, [{ text: t }], KEYWORDS_SCHEMA, 200);
+    const kw = (out.keywords || []).map((k) => k.trim()).filter(Boolean);
+    return kw.length ? kw.slice(0, 6) : t.split(/\s+/).slice(0, 6);
+  } catch {
+    return t.split(/\s+/).slice(0, 6);
+  }
+}
+
 /** 제목에서 이미지로 표현할 핵심 단어 → 영어 스톡 검색어 2~4개 */
 export async function keywordsFromTitle(title: string): Promise<string[]> {
   if (!title || !title.trim()) return [];
@@ -143,7 +159,7 @@ export async function analyzeReviewImages(imageBuffers: Buffer[], mediaType: str
       : "이 후기 이미지를 가공해 스키마에 맞는 JSON으로 출력하세요.",
   });
 
-  const out = await geminiJson<VisionResult>(system, parts, SCHEMA, n > 1 ? 3500 : 2048);
+  const out = await geminiJson<VisionResult>(system, parts, SCHEMA, n > 1 ? 6000 : 2500);
 
   // 방어적 정규화
   out.reviewType = out.reviewType === "rename" ? "rename" : "consultation";
