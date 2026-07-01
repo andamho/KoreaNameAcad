@@ -112,14 +112,19 @@ async function renderText(text: string, color: string, size: number): Promise<Re
   }
 }
 
+// 텍스트를 상단에 두므로 위쪽을 어둡게(가독성), 아래는 밝게(핵심 이미지 노출)
 const GRADIENT_SVG = `<svg width="${THUMB}" height="${THUMB}" xmlns="http://www.w3.org/2000/svg">
   <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#000000" stop-opacity="0.22"/>
-    <stop offset="0.55" stop-color="#000000" stop-opacity="0.44"/>
-    <stop offset="1" stop-color="#000000" stop-opacity="0.68"/>
+    <stop offset="0" stop-color="#000000" stop-opacity="0.66"/>
+    <stop offset="0.42" stop-color="#000000" stop-opacity="0.34"/>
+    <stop offset="0.7" stop-color="#000000" stop-opacity="0.10"/>
+    <stop offset="1" stop-color="#000000" stop-opacity="0.05"/>
   </linearGradient></defs>
   <rect width="${THUMB}" height="${THUMB}" fill="url(#g)"/>
 </svg>`;
+
+// 텍스트 블록의 세로 중심 위치(0=맨위, 1=맨아래). 살짝 위쪽.
+const TEXT_CENTER_Y = 0.30;
 
 // 텍스트 1줄(그림자+흰색)을 layers에 추가하고 차지한 높이를 반환
 async function pushTextLine(layers: sharp.OverlayOptions[], text: string, color: string, size: number, top: number): Promise<number> {
@@ -160,14 +165,15 @@ export async function composeThumbnail(imageBuffer: Buffer, title: string, label
     const labelImg = safeLabel ? await renderText(safeLabel, "#ffffff", labelSize) : null;
     labelH = labelImg ? labelImg.h : 0;
     const blockH = (safeLabel ? labelH + gap() : 0) + (titleImg?.h || 0);
-    if (!titleImg || blockH <= THUMB - 120 || size <= 44) break;
+    if (!titleImg || blockH <= Math.round(THUMB * 0.5) || size <= 44) break;
     size -= 10;
   }
   if (!titleImg) return sharp(base).jpeg({ quality: 90 }).toBuffer();
 
   const labelSize = Math.round(size * 0.6);
   const blockH = (safeLabel ? labelH + gap() : 0) + titleImg.h;
-  let cursor = Math.round((THUMB - blockH) / 2);
+  // 텍스트 블록을 살짝 위쪽에 배치(핵심 이미지가 아래로 보이게)
+  let cursor = Math.max(44, Math.round(THUMB * TEXT_CENTER_Y - blockH / 2));
 
   const layers: sharp.OverlayOptions[] = [];
   if (safeLabel) {
