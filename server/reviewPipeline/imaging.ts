@@ -31,40 +31,47 @@ function escapeXml(s: string): string {
 }
 
 /**
- * 개인정보 마스킹.
+ * 개인정보 마스킹 — 해당 영역을 강한 블러로 처리(검정 박스 대신).
  * @param boxes 정규화(0~1) 박스. expand>0 이면 각 박스를 확대해 더 넓게 가림("더 가려줘").
  */
 export async function maskImage(input: Buffer, boxes: RedactionBox[], expand = 0): Promise<Buffer> {
-  const img = sharp(input, { failOn: "none" }).rotate(); // EXIF 회전 반영
-  const meta = await img.metadata();
+  // EXIF 회전을 먼저 확정(좌표와 정렬되게) 후 버퍼로 고정
+  const base = await sharp(input, { failOn: "none" }).rotate().toBuffer();
+  const meta = await sharp(base).metadata();
   const W = meta.width || 1000;
   const H = meta.height || 1000;
 
   if (!boxes.length) {
-    return img.jpeg({ quality: 90 }).toBuffer();
+    return sharp(base).jpeg({ quality: 90 }).toBuffer();
   }
 
-  const rects = boxes
-    .map((b) => {
-      const padW = b.w * expand;
-      const padH = b.h * expand;
-      let x = Math.max(0, (b.x - padW / 2)) * W;
-      let y = Math.max(0, (b.y - padH / 2)) * H;
-      let w = Math.min(1, b.w + padW) * W;
-      let h = Math.min(1, b.h + padH) * H;
-      // 경계 보정
-      w = Math.min(w, W - x);
-      h = Math.min(h, H - y);
-      const r = Math.min(10, h / 3);
-      return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="${r.toFixed(1)}" fill="#1a1a1a"/>`;
-    })
-    .join("");
+  const overlays: sharp.OverlayOptions[] = [];
+  for (const b of boxes) {
+    const padW = b.w * expand;
+    const padH = b.h * expand;
+    let left = Math.round(Math.max(0, b.x - padW / 2) * W);
+    let top = Math.round(Math.max(0, b.y - padH / 2) * H);
+    let width = Math.round(Math.min(1, b.w + padW) * W);
+    let height = Math.round(Math.min(1, b.h + padH) * H);
+    width = Math.min(width, W - left);
+    height = Math.min(height, H - top);
+    if (width < 2 || height < 2) continue;
 
-  const svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">${rects}</svg>`;
-  return img
-    .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
-    .jpeg({ quality: 90 })
-    .toBuffer();
+    // 영역 크기에 비례한 강한 블러(안 읽히게). 최소 sigma 16.
+    const sigma = Math.min(80, Math.max(16, Math.round(Math.min(width, height) / 2.5)));
+    try {
+      const region = await sharp(base)
+        .extract({ left, top, width, height })
+        .blur(sigma)
+        .toBuffer();
+      overlays.push({ input: region, left, top });
+    } catch (e: any) {
+      console.error("[mask] 블러 영역 처리 실패:", e?.message);
+    }
+  }
+
+  if (!overlays.length) return sharp(base).jpeg({ quality: 90 }).toBuffer();
+  return sharp(base).composite(overlays).jpeg({ quality: 90 }).toBuffer();
 }
 
 const THUMB = 1080;       // 정사각형 한 변 (홈페이지 후기 카드가 1:1)
