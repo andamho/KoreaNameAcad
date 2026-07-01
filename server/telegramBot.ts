@@ -98,7 +98,7 @@ function escapeHtml(s: string) {
 function mainActionKeyboard(d: ReviewDraft) {
   return ik([
     [{ text: "🏷 상담후기", data: `LB|${d.id}|consultation` }, { text: "🏷 개명후기", data: `LB|${d.id}|rename` }],
-    [{ text: "🖼 미리보기", data: `PV|${d.id}` }, { text: "🙈 더 가려줘", data: `MM|${d.id}` }],
+    [{ text: "🖼 미리보기", data: `PV|${d.id}` }],
     [{ text: "🏠 홈페이지 게시", data: `PUB|${d.id}` }, { text: "📋 네이버용 받기", data: `NV|${d.id}` }],
   ]);
 }
@@ -124,7 +124,7 @@ async function presentDraft(chatId: string, d: ReviewDraft) {
   // 1) 마스킹 이미지(들)
   const boxCount = j.parse<unknown[]>(d.redactionBoxes, []).length;
   const imgCount = j.parse<string[]>(d.maskedImagePaths, d.maskedImagePath ? [d.maskedImagePath] : []).length;
-  const hint = `\n놓친 곳이 있으면 "더 가려줘" 또는 "위에서 30% 가려줘"처럼 말하세요.`;
+  const hint = `\n혹시 놓친 곳이 있으면 "위에서 30% 가려줘"처럼 말하면 그 부분을 추가로 가려요.`;
   const cap = boxCount > 0
     ? `🖼 후기 이미지 ${imgCount}장, 개인정보 ${boxCount}곳을 블러 처리했어요.${hint}`
     : `⚠️ 개인정보 위치를 자동으로 못 찾았어요.${hint}`;
