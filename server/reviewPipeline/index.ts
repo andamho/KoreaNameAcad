@@ -1,7 +1,8 @@
 import { randomUUID } from "crypto";
 import { storage } from "../storage";
 import { ObjectStorageService } from "../replit_integrations/object_storage/objectStorage";
-import { analyzeReviewImages, labelForReviewType, generateMoreTitles, generateMoreThumbnailTitles, keywordsFromTitle } from "./vision";
+import { analyzeReviewImages, analyzeNameStoryText, labelForReviewType, generateMoreTitles, generateMoreThumbnailTitles, keywordsFromTitle } from "./vision";
+import type { ContentCategory } from "@shared/schema";
 import { detectPIIBoxes, visionAvailable } from "./ocr";
 import { maskImage, composeThumbnail } from "./imaging";
 import { searchThumbnails, fetchImageBuffer } from "./thumbnails";
@@ -133,6 +134,42 @@ export async function processNewReview(
   return draft;
 }
 
+/** 이름이야기(텍스트) → 검수 대기 draft 생성. 마스킹/이미지 없음, category=nameStory, 라벨 없음. */
+export async function processNameStory(text: string, chatId: string): Promise<ReviewDraft> {
+  const prefs = (await storage.getPreferences(chatId)).map(p => p.instruction);
+  const meta = await analyzeNameStoryText(text, prefs);
+
+  let thumbnails: ThumbnailCandidate[] = [];
+  try { thumbnails = await searchThumbnails(meta.thumbnailKeywords); }
+  catch (e: any) { console.error("[namestory] 썸네일 검색 실패:", e?.message); }
+
+  return storage.createReviewDraft({
+    status: "review",
+    category: "nameStory",
+    source: "telegram",
+    chatId,
+    originalImagePath: null,
+    maskedImagePath: null,
+    originalImagePaths: j.str([]),
+    maskedImagePaths: j.str([]),
+    extractedText: text,
+    polishedContent: formatParagraphs(text),
+    thumbnailLabel: null, // 라벨 없음(글제목·썸네일에 안 붙임)
+    redactionBoxes: j.str([]),
+    titleCandidates: j.str(meta.titleCandidates),
+    thumbnailTitleCandidates: j.str(meta.thumbnailTitleCandidates),
+    thumbnailCandidates: j.str(thumbnails),
+    thumbnailKeywords: j.str(meta.thumbnailKeywords),
+    thumbnailPage: 1,
+    selectedTitle: meta.titleCandidates[0] ?? null,
+    selectedThumbnailTitle: meta.thumbnailTitleCandidates[0] ?? null,
+    selectedThumbnailUrl: null,
+    composedThumbnailPath: null,
+    publishedContentId: null,
+    errorMessage: null,
+  });
+}
+
 /** 게시 제목 5개 다시 생성 (기존 후보와 겹치지 않게, 취향 반영) */
 export async function moreTitles(draft: ReviewDraft): Promise<{ draft: ReviewDraft; titles: string[] }> {
   const prefs = draft.chatId ? (await storage.getPreferences(draft.chatId)).map(p => p.instruction) : [];
@@ -253,8 +290,8 @@ export async function publishReview(draft: ReviewDraft): Promise<{ contentId: st
   if (d.polishedContent) parts.push(d.polishedContent);
   const body = parts.join("\n\n").trim();
   const content: InsertContent = {
-    category: "review",
-    title: titleWithLabel(d.thumbnailLabel, d.selectedTitle || "고객 후기"),
+    category: ((d.category === "nameStory" ? "nameStory" : "review") as ContentCategory),
+    title: titleWithLabel(d.thumbnailLabel, d.selectedTitle || (d.category === "nameStory" ? "이름 이야기" : "고객 후기")),
     thumbnail: d.composedThumbnailPath || d.maskedImagePath,
     content: body,
     videoUrl: null,

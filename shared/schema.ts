@@ -131,6 +131,7 @@ export type Content = typeof contents.$inferSelect;
 export const reviewDrafts = pgTable("review_drafts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   status: text("status").notNull().default("processing"),
+  category: text("category").notNull().default("review"), // review | nameStory(이름이야기)
   source: text("source").notNull().default("telegram"), // telegram | web
   chatId: text("chat_id"),                               // 텔레그램 채팅 ID
   originalImagePath: text("original_image_path"),        // R2 /objects/... 원본(첫 장)

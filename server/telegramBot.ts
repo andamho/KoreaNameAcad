@@ -5,7 +5,7 @@
  */
 import { storage } from "./storage";
 import {
-  processNewReview, regenerateMask, composeSelectedThumbnail,
+  processNewReview, processNameStory, regenerateMask, composeSelectedThumbnail,
   publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, moreThumbnailTitles, titleWithLabel, formatParagraphs, addManualMaskBand, draftJson as j,
 } from "./reviewPipeline";
 import { parseIntent, applyBodyEdit, type IntentAction, type DraftSummary } from "./reviewPipeline/intent";
@@ -84,7 +84,9 @@ const LABEL_TEXT: Record<string, string> = { consultation: "[이름분석 상담
 function summaryText(d: ReviewDraft): string {
   return [
     `📋 <b>현재 선택</b>`,
-    `• 분류 라벨: ${d.thumbnailLabel ? `<b>${escapeHtml(d.thumbnailLabel)}</b>` : "-"}`,
+    d.category === "nameStory"
+      ? `• 분류: <b>이름이야기</b>`
+      : `• 분류 라벨: ${d.thumbnailLabel ? `<b>${escapeHtml(d.thumbnailLabel)}</b>` : "-"}`,
     `• 게시 제목: ${d.selectedTitle ? `<b>${escapeHtml(titleWithLabel(d.thumbnailLabel, d.selectedTitle))}</b>` : "미선택"}`,
     `• 썸네일 문구: ${d.selectedThumbnailTitle ? `<b>${escapeHtml(d.selectedThumbnailTitle)}</b>` : "미선택"}`,
     `• 썸네일 이미지: ${d.selectedThumbnailUrl ? "선택됨 ✅" : "미선택"}`,
@@ -96,11 +98,14 @@ function escapeHtml(s: string) {
 }
 
 function mainActionKeyboard(d: ReviewDraft) {
-  return ik([
-    [{ text: "🏷 상담후기", data: `LB|${d.id}|consultation` }, { text: "🏷 개명후기", data: `LB|${d.id}|rename` }],
-    [{ text: "🖼 미리보기", data: `PV|${d.id}` }],
-    [{ text: "🏠 홈페이지 게시", data: `PUB|${d.id}` }, { text: "📋 네이버용 받기", data: `NV|${d.id}` }],
-  ]);
+  const rows: Array<Array<{ text: string; data: string }>> = [];
+  // 후기만 상담후기/개명후기 라벨 선택. 이름이야기는 라벨 없음.
+  if (d.category !== "nameStory") {
+    rows.push([{ text: "🏷 상담후기", data: `LB|${d.id}|consultation` }, { text: "🏷 개명후기", data: `LB|${d.id}|rename` }]);
+  }
+  rows.push([{ text: "🖼 미리보기", data: `PV|${d.id}` }]);
+  rows.push([{ text: "🏠 홈페이지 게시", data: `PUB|${d.id}` }, { text: "📋 네이버용 받기", data: `NV|${d.id}` }]);
+  return ik(rows);
 }
 
 /** 마스킹된 후기 이미지들(내용→증빙 순)을 순서대로 전송 */
@@ -119,18 +124,21 @@ async function sendMaskedImages(chatId: string, d: ReviewDraft, firstCaption?: s
 
 /** 처리 완료 후 검수 화면 일괄 전송 */
 async function presentDraft(chatId: string, d: ReviewDraft) {
-  // 1) 마스킹 이미지(들)
-  const boxCount = j.parse<unknown[]>(d.redactionBoxes, []).length;
-  const imgCount = j.parse<string[]>(d.maskedImagePaths, d.maskedImagePath ? [d.maskedImagePath] : []).length;
-  const hint = `\n혹시 놓친 곳이 있으면 "위에서 30% 가려줘"처럼 말하면 그 부분을 추가로 가려요.`;
-  const cap = boxCount > 0
-    ? `🖼 후기 이미지 ${imgCount}장, 개인정보 ${boxCount}곳을 블러 처리했어요.${hint}`
-    : `⚠️ 개인정보 위치를 자동으로 못 찾았어요.${hint}`;
-  await sendMaskedImages(chatId, d, cap);
+  // 1) 마스킹 이미지(들) — 후기만
+  if (d.category !== "nameStory") {
+    const boxCount = j.parse<unknown[]>(d.redactionBoxes, []).length;
+    const imgCount = j.parse<string[]>(d.maskedImagePaths, d.maskedImagePath ? [d.maskedImagePath] : []).length;
+    const hint = `\n혹시 놓친 곳이 있으면 "위에서 30% 가려줘"처럼 말하면 그 부분을 추가로 가려요.`;
+    const cap = boxCount > 0
+      ? `🖼 후기 이미지 ${imgCount}장, 개인정보 ${boxCount}곳을 블러 처리했어요.${hint}`
+      : `⚠️ 개인정보 위치를 자동으로 못 찾았어요.${hint}`;
+    await sendMaskedImages(chatId, d, cap);
+  }
 
-  // 2) 다듬은 본문
+  // 2) 본문
+  const bodyLabel = d.category === "nameStory" ? "📖 <b>이름이야기 본문</b>" : "📝 <b>다듬은 본문</b>";
   await sendMessage(chatId,
-    `📝 <b>다듬은 본문</b>\n\n${escapeHtml(d.polishedContent || "")}\n\n<i>본문을 고치려면 새 내용을 그냥 메시지로 보내주세요. (예: "더 짧게 해줘")</i>`);
+    `${bodyLabel}\n\n${escapeHtml(d.polishedContent || "")}\n\n<i>본문을 고치려면 새 내용을 그냥 메시지로 보내주세요.</i>`);
 
   // 3) 제목 후보
   await sendTitleChoices(chatId, d);
@@ -407,6 +415,7 @@ async function sendHelp(chatId: string) {
   await sendMessage(chatId,
     `👋 <b>후기 자동화 봇</b>\n\n` +
     `1. 후기 캡처 <b>사진</b>을 보내면 자동으로 분석합니다.\n` +
+    `   • <b>이름이야기</b> 글을 올리려면 <code>/이야기</code> 뒤에 내용을 붙여 보내세요(마스킹 없이 제목·썸네일 생성 → 이름이야기 카테고리 게시).\n` +
     `2. 제목·썸네일 문구·썸네일 이미지를 <b>버튼</b>으로 고르거나, <b>말로</b> 지시하세요.\n` +
     `   예: "2번 제목으로 하고 썸네일은 3번, 더 가려주고 게시해줘"\n` +
     `3. <b>본문 수정</b>은 새 내용/지시를 그냥 메시지로 보내면 됩니다.\n` +
@@ -423,7 +432,7 @@ function authorized(chatId: string): boolean {
 }
 
 // 직접 입력 대기 상태 (버튼 → 다음 메시지를 그 값으로 받음)
-type PendingInput = { mode: "title" | "keywords" | "thumbTitle"; draftId: string };
+type PendingInput = { mode: "title" | "keywords" | "thumbTitle" | "nameStory"; draftId: string };
 const pendingInput = new Map<string, PendingInput>();
 
 // ── 여러 장(앨범) 모아서 처리 ─────────────────────────────────
@@ -444,6 +453,18 @@ async function handleReviewPhotos(chatId: string, fileIds: string[]) {
     await presentDraft(chatId, draft);
   } catch (e: any) {
     console.error("[bot] 사진 처리 실패:", e);
+    await sendMessage(chatId, "❌ 처리 중 오류: " + (e?.message || e));
+  }
+}
+
+/** 이름이야기 텍스트를 처리해 검수 화면 전송 */
+async function handleNameStory(chatId: string, content: string) {
+  await sendMessage(chatId, "⏳ 이름이야기를 만드는 중이에요… (제목·썸네일 생성)");
+  try {
+    const draft = await processNameStory(content, chatId);
+    await presentDraft(chatId, draft);
+  } catch (e: any) {
+    console.error("[bot] 이름이야기 처리 실패:", e);
     await sendMessage(chatId, "❌ 처리 중 오류: " + (e?.message || e));
   }
 }
@@ -534,12 +555,26 @@ async function handleUpdate(update: any) {
     const text = msg.text.trim();
     if (text === "/start" || text === "/help") { pendingInput.delete(chatId); await sendHelp(chatId); return; }
 
+    // /이야기 — 이름이야기(텍스트 콘텐츠) 만들기
+    if (text === "/이야기" || text.startsWith("/이야기 ") || text.startsWith("/이야기\n")) {
+      const content = text.replace(/^\/이야기\s*/, "").trim();
+      if (content) {
+        await handleNameStory(chatId, content);
+      } else {
+        pendingInput.set(chatId, { mode: "nameStory", draftId: "" });
+        await sendMessage(chatId, "📖 <b>이름이야기</b> 내용을 보내주세요. (다음 메시지가 본문이 됩니다)");
+      }
+      return;
+    }
+
     // 직접 입력 대기(제목/키워드) 처리 — 버튼 누른 뒤 다음 메시지
     const pending = pendingInput.get(chatId);
     if (pending) {
       pendingInput.delete(chatId);
       if (/^(취소|cancel)$/i.test(text)) { await sendMessage(chatId, "입력을 취소했어요."); return; }
-      if (pending.mode === "title") {
+      if (pending.mode === "nameStory") {
+        await handleNameStory(chatId, text);
+      } else if (pending.mode === "title") {
         await runActions(chatId, pending.draftId, [{ type: "setTitle", text }]);
       } else if (pending.mode === "thumbTitle") {
         await runActions(chatId, pending.draftId, [{ type: "setThumbnailTitle", text }]);

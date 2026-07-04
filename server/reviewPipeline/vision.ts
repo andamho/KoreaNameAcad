@@ -93,6 +93,33 @@ const KEYWORDS_SCHEMA = {
   required: ["keywords"],
 };
 
+const NAMESTORY_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    titleCandidates: { type: "ARRAY", items: { type: "STRING" } },
+    thumbnailTitleCandidates: { type: "ARRAY", items: { type: "STRING" } },
+    thumbnailKeywords: { type: "ARRAY", items: { type: "STRING" } },
+  },
+  required: ["titleCandidates", "thumbnailTitleCandidates", "thumbnailKeywords"],
+};
+
+/** 이름이야기(사용자가 쓴 글) → 제목5·썸네일문구5·썸네일 검색어. 글 내용은 바꾸지 않음. */
+export async function analyzeNameStoryText(text: string, preferences: string[] = []): Promise<{ titleCandidates: string[]; thumbnailTitleCandidates: string[]; thumbnailKeywords: string[] }> {
+  const prefBlock = preferences.length ? `\n[사용자 표준 지침 — 제목·문구에 반영]\n${preferences.map(p => `- ${p}`).join("\n")}` : "";
+  const system = `당신은 "한국이름학교"의 "이름이야기" 콘텐츠 편집자입니다. 아래 글을 바탕으로 게시용 메타데이터만 생성하세요(글 내용 자체는 바꾸지 않음).
+- titleCandidates: 게시글 제목 후보 정확히 5개. 자연스럽고 클릭하고 싶게. 한국어.
+- thumbnailTitleCandidates: 썸네일에 크게 얹을 짧은 문구 정확히 5개(각 6~16자).
+- thumbnailKeywords: 첫 제목(titleCandidates[0])의 핵심 단어를 영어 스톡 사진 검색어 2~4개로. 구체 명사 우선.${prefBlock}`;
+  const out = await geminiJson<{ titleCandidates: string[]; thumbnailTitleCandidates: string[]; thumbnailKeywords: string[] }>(
+    system, [{ text: text || "" }], NAMESTORY_SCHEMA, 700,
+  );
+  return {
+    titleCandidates: (out.titleCandidates || []).slice(0, 5),
+    thumbnailTitleCandidates: (out.thumbnailTitleCandidates || []).slice(0, 5),
+    thumbnailKeywords: (out.thumbnailKeywords || []).slice(0, 6),
+  };
+}
+
 /** 사용자가 띄어쓰기로 입력한 키워드(한글 등)를 영어 스톡 검색어로 변환 */
 export async function toEnglishKeywords(input: string): Promise<string[]> {
   const t = (input || "").trim();
