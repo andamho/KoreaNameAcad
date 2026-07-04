@@ -415,7 +415,7 @@ async function sendHelp(chatId: string) {
   await sendMessage(chatId,
     `👋 <b>후기 자동화 봇</b>\n\n` +
     `1. 후기 캡처 <b>사진</b>을 보내면 자동으로 분석합니다.\n` +
-    `   • <b>이름이야기</b> 글을 올리려면 <code>/이야기</code> 뒤에 내용을 붙여 보내세요(마스킹 없이 제목·썸네일 생성 → 이름이야기 카테고리 게시).\n` +
+    `   • <b>이름이야기</b> 글을 올리려면 <code>/이</code> 뒤에 내용을 붙여 보내세요(마스킹 없이 제목·썸네일 생성 → 이름이야기 카테고리 게시).\n` +
     `2. 제목·썸네일 문구·썸네일 이미지를 <b>버튼</b>으로 고르거나, <b>말로</b> 지시하세요.\n` +
     `   예: "2번 제목으로 하고 썸네일은 3번, 더 가려주고 게시해줘"\n` +
     `3. <b>본문 수정</b>은 새 내용/지시를 그냥 메시지로 보내면 됩니다.\n` +
@@ -555,9 +555,9 @@ async function handleUpdate(update: any) {
     const text = msg.text.trim();
     if (text === "/start" || text === "/help") { pendingInput.delete(chatId); await sendHelp(chatId); return; }
 
-    // /이야기 — 이름이야기(텍스트 콘텐츠) 만들기
-    if (text === "/이야기" || text.startsWith("/이야기 ") || text.startsWith("/이야기\n")) {
-      const content = text.replace(/^\/이야기\s*/, "").trim();
+    // /이 — 이름이야기(텍스트 콘텐츠) 만들기
+    if (text === "/이" || text.startsWith("/이 ") || text.startsWith("/이\n")) {
+      const content = text.replace(/^\/이\s*/, "").trim();
       if (content) {
         await handleNameStory(chatId, content);
       } else {
