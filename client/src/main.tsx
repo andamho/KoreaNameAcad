@@ -18,9 +18,10 @@ loadKoreaUnivFont();
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.getRegistrations().then((registrations) => {
-      for (const registration of registrations) {
-        registration.unregister();
-        console.log('Service Worker unregistered');
+      if (registrations.length > 0) {
+        Promise.all(registrations.map(r => r.unregister())).then(() => {
+          window.location.reload();
+        });
       }
     });
   });
