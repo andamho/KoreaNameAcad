@@ -801,39 +801,39 @@ export default function Reviews() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {allAnalysisTestimonials.slice(0, 4).map((testimonial, index) => (
+            {allAnalysisTestimonials.map((testimonial, index) => (
               <Card
                 key={index}
-                className="kna-nanum-editor p-6 hover-elevate relative"
+                className="kna-nanum-editor p-3 md:p-6 hover-elevate relative"
                 data-testid={`analysis-testimonial-card-${index}`}
               >
                 {/* Quote Icon */}
-                <Quote className="absolute top-6 right-6 w-12 h-12 text-muted-foreground/20" />
-                
+                <Quote className="absolute top-3 right-3 md:top-6 md:right-6 w-8 h-8 md:w-12 md:h-12 text-muted-foreground/20" />
+
                 {/* Name */}
-                <h3 className="text-xl font-bold text-foreground mb-1">
+                <h3 className="text-base md:text-xl font-bold text-foreground mb-0.5">
                   {testimonial.name}
                 </h3>
-                
+
                 {/* Service Type */}
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-xs md:text-sm text-muted-foreground mb-1.5 md:mb-4">
                   {testimonial.service}
                 </p>
-                
+
                 {/* Rating Stars */}
-                <div className="flex gap-1 mb-4">
+                <div className="flex gap-0.5 md:gap-1 mb-1.5 md:mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="w-3.5 h-3.5 md:w-5 md:h-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                
+
                 {/* Content */}
-                <p className="text-lg leading-relaxed text-foreground mb-6">
+                <p className="text-sm md:text-lg leading-snug md:leading-relaxed text-foreground mb-2 md:mb-6">
                   "{testimonial.content}"
                 </p>
-                
+
                 {/* Date */}
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs md:text-sm text-muted-foreground">
                   {testimonial.date}
                 </p>
               </Card>
@@ -852,39 +852,39 @@ export default function Reviews() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {allNameChangeTestimonials.slice(0, 4).map((testimonial, index) => (
+            {allNameChangeTestimonials.map((testimonial, index) => (
               <Card
                 key={index}
-                className="kna-nanum-editor p-6 hover-elevate relative"
+                className="kna-nanum-editor p-3 md:p-6 hover-elevate relative"
                 data-testid={`testimonial-card-${index}`}
               >
                 {/* Quote Icon */}
-                <Quote className="absolute top-6 right-6 w-12 h-12 text-muted-foreground/20" />
-                
+                <Quote className="absolute top-3 right-3 md:top-6 md:right-6 w-8 h-8 md:w-12 md:h-12 text-muted-foreground/20" />
+
                 {/* Name */}
-                <h3 className="text-xl font-bold text-foreground mb-1">
+                <h3 className="text-base md:text-xl font-bold text-foreground mb-0.5">
                   {testimonial.name}
                 </h3>
-                
+
                 {/* Service Type */}
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-xs md:text-sm text-muted-foreground mb-1.5 md:mb-4">
                   {testimonial.service}
                 </p>
-                
+
                 {/* Rating Stars */}
-                <div className="flex gap-1 mb-4">
+                <div className="flex gap-0.5 md:gap-1 mb-1.5 md:mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="w-3.5 h-3.5 md:w-5 md:h-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                
+
                 {/* Content */}
-                <p className="text-lg leading-relaxed text-foreground mb-6">
+                <p className="text-sm md:text-lg leading-snug md:leading-relaxed text-foreground mb-2 md:mb-6">
                   "{testimonial.content}"
                 </p>
-                
+
                 {/* Date */}
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs md:text-sm text-muted-foreground">
                   {testimonial.date}
                 </p>
               </Card>
