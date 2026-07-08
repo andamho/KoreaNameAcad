@@ -340,14 +340,15 @@ async function sendNaverPackage(chatId: string, draft: ReviewDraft) {
     let d = draft;
     if (!d.composedThumbnailPath) d = await composeSelectedThumbnail(d);
     const pkg = buildNaverPackage(d, process.env.PUBLIC_BASE_URL || "");
-    const maskedPaths = j.parse<string[]>(d.maskedImagePaths, d.maskedImagePath ? [d.maskedImagePath] : []);
-    await sendMessage(chatId,
-      `📋 <b>네이버 블로그 복붙용</b>\n\n<b>[제목]</b>\n${escapeHtml(pkg.title)}\n\n<b>[본문]</b>\n${escapeHtml(pkg.body)}\n\n<i>아래 이미지들(썸네일 + 후기 ${maskedPaths.length}장)을 저장해 순서대로 넣으세요.</i>`);
+    // 복붙용: 장식 없이 제목·본문만 각각 별도 메시지로(각 메시지 길게 눌러 복사)
+    await sendMessage(chatId, escapeHtml(pkg.title));
+    await sendMessage(chatId, escapeHtml(pkg.body));
     // 이미지(썸네일 + 마스킹본들)를 문서로 첨부 → 원본 화질 저장 가능
     if (d.composedThumbnailPath) {
       const tBuf = await objectPathToBuffer(d.composedThumbnailPath);
       await sendDocumentBuffer(chatId, tBuf, "thumbnail.jpg", "썸네일");
     }
+    const maskedPaths = j.parse<string[]>(d.maskedImagePaths, d.maskedImagePath ? [d.maskedImagePath] : []);
     for (let i = 0; i < maskedPaths.length; i++) {
       const mBuf = await objectPathToBuffer(maskedPaths[i]);
       await sendDocumentBuffer(chatId, mBuf, `review_${i + 1}.jpg`, `후기 이미지 ${i + 1}`);
