@@ -823,7 +823,7 @@ export default function Reviews() {
                 </div>
 
                 {/* Content */}
-                <p className="text-xs md:text-sm leading-snug md:leading-relaxed text-foreground mb-2 md:mb-6">
+                <p className="text-[13px] sm:text-[18px] md:text-[24px] leading-snug md:leading-relaxed text-foreground mb-2 md:mb-6">
                   "{testimonial.content}"
                 </p>
 
@@ -869,7 +869,7 @@ export default function Reviews() {
                 </div>
 
                 {/* Content */}
-                <p className="text-xs md:text-sm leading-snug md:leading-relaxed text-foreground mb-2 md:mb-6">
+                <p className="text-[13px] sm:text-[18px] md:text-[24px] leading-snug md:leading-relaxed text-foreground mb-2 md:mb-6">
                   "{testimonial.content}"
                 </p>
 
