@@ -811,14 +811,9 @@ export default function Reviews() {
                 <Quote className="absolute top-3 right-3 md:top-6 md:right-6 w-8 h-8 md:w-12 md:h-12 text-muted-foreground/20" />
 
                 {/* Name */}
-                <h3 className="text-base md:text-xl font-bold text-foreground mb-0.5">
+                <h3 className="text-xs md:text-sm font-bold text-foreground mb-0.5">
                   {testimonial.name}
                 </h3>
-
-                {/* Service Type */}
-                <p className="text-xs md:text-sm text-muted-foreground mb-1.5 md:mb-4">
-                  {testimonial.service}
-                </p>
 
                 {/* Rating Stars */}
                 <div className="flex gap-0.5 md:gap-1 mb-1.5 md:mb-4">
@@ -828,7 +823,7 @@ export default function Reviews() {
                 </div>
 
                 {/* Content */}
-                <p className="text-sm md:text-lg leading-snug md:leading-relaxed text-foreground mb-2 md:mb-6">
+                <p className="text-xs md:text-sm leading-snug md:leading-relaxed text-foreground mb-2 md:mb-6">
                   "{testimonial.content}"
                 </p>
 
@@ -862,14 +857,9 @@ export default function Reviews() {
                 <Quote className="absolute top-3 right-3 md:top-6 md:right-6 w-8 h-8 md:w-12 md:h-12 text-muted-foreground/20" />
 
                 {/* Name */}
-                <h3 className="text-base md:text-xl font-bold text-foreground mb-0.5">
+                <h3 className="text-xs md:text-sm font-bold text-foreground mb-0.5">
                   {testimonial.name}
                 </h3>
-
-                {/* Service Type */}
-                <p className="text-xs md:text-sm text-muted-foreground mb-1.5 md:mb-4">
-                  {testimonial.service}
-                </p>
 
                 {/* Rating Stars */}
                 <div className="flex gap-0.5 md:gap-1 mb-1.5 md:mb-4">
@@ -879,7 +869,7 @@ export default function Reviews() {
                 </div>
 
                 {/* Content */}
-                <p className="text-sm md:text-lg leading-snug md:leading-relaxed text-foreground mb-2 md:mb-6">
+                <p className="text-xs md:text-sm leading-snug md:leading-relaxed text-foreground mb-2 md:mb-6">
                   "{testimonial.content}"
                 </p>
 
