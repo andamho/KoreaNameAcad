@@ -115,6 +115,26 @@ function wrapKo(text: string, maxChars: number): string {
   return lines.join("\n");
 }
 
+/**
+ * 이미지 상/하단 자르기 (가로 전체 유지, 세로 [top..bottom]만 남김).
+ * top/bottom 은 0~1 정규화. 유효하지 않으면 원본 그대로.
+ */
+export async function cropTopBottom(input: Buffer, top: number, bottom: number): Promise<Buffer> {
+  const meta = await sharp(input, { failOn: "none" }).metadata();
+  const W = meta.width || 1000;
+  const H = meta.height || 1000;
+  const t = Math.max(0, Math.min(1, top));
+  const b = Math.max(0, Math.min(1, bottom));
+  if (b - t < 0.05) return input; // 너무 좁으면 자르지 않음
+  const topPx = Math.round(t * H);
+  const heightPx = Math.min(H - topPx, Math.round((b - t) * H));
+  if (heightPx < 20 || (topPx === 0 && heightPx >= H - 2)) return input; // 자를 게 없으면 그대로
+  return sharp(input, { failOn: "none" })
+    .extract({ left: 0, top: topPx, width: W, height: heightPx })
+    .jpeg({ quality: 90 })
+    .toBuffer();
+}
+
 // 단어를 k줄에 균형 있게 배분 (각 줄 글자 수가 비슷하게)
 function balancedWrap(text: string, k: number): string {
   const words = text.trim().split(/\s+/).filter(Boolean);

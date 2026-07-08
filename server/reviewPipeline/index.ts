@@ -1,10 +1,11 @@
 import { randomUUID } from "crypto";
+import sharp from "sharp";
 import { storage } from "../storage";
 import { ObjectStorageService } from "../replit_integrations/object_storage/objectStorage";
 import { analyzeReviewImages, analyzeNameStoryText, labelForReviewType, generateMoreTitles, generateMoreThumbnailTitles, keywordsFromTitle } from "./vision";
 import type { ContentCategory } from "@shared/schema";
 import { detectPIIBoxes, visionAvailable } from "./ocr";
-import { maskImage, composeThumbnail } from "./imaging";
+import { maskImage, composeThumbnail, cropTopBottom } from "./imaging";
 import { searchThumbnails, fetchImageBuffer } from "./thumbnails";
 import type { ReviewDraft, RedactionBox, ThumbnailCandidate, InsertContent } from "@shared/schema";
 
@@ -61,33 +62,41 @@ export async function processNewReview(
 ): Promise<ReviewDraft> {
   const n = imageBuffers.length;
 
-  // 1) 원본 업로드 (입력 순서)
-  const originalPaths: string[] = [];
-  for (const buf of imageBuffers) originalPaths.push(await uploadBuffer(buf, mediaType, "reviews/original"));
-
-  // 2) AI 분석 (여러 장 통합, 취향 주입)
+  // 1) AI 분석 (원본 전체로) — 내용·마스킹 대상·자르기 위치(crops) 파악
   const prefs = (await storage.getPreferences(chatId)).map(p => p.instruction);
   const vision = await analyzeReviewImages(imageBuffers, mediaType, prefs);
 
-  // 3) 개인정보 박스 계산: Google Vision OCR(정확한 위치) 우선, 실패 시 Gemini 박스
+  // 2) 방향 보정 + 상/하단 자르기 → "잘린 원본" (이후 OCR·마스킹·수동보정이 모두 이 기준)
+  const crops = vision.crops || [];
+  const croppedBuffers: Buffer[] = [];
+  for (let i = 0; i < n; i++) {
+    let buf = await sharp(imageBuffers[i], { failOn: "none" }).rotate().jpeg({ quality: 92 }).toBuffer();
+    const crop = crops.find((c) => c.image === i);
+    if (crop) buf = await cropTopBottom(buf, crop.top / 1000, crop.bottom / 1000);
+    croppedBuffers.push(buf);
+  }
+  const originalPaths: string[] = [];
+  for (const buf of croppedBuffers) originalPaths.push(await uploadBuffer(buf, "image/jpeg", "reviews/original"));
+
+  // 3) 개인정보 박스 계산: Google Vision OCR(잘린 이미지 기준 정확한 위치) 우선
   const pii = vision.detectedPersonalInfo || [];
   const useOcr = visionAvailable();
   const boxesByInput: RedactionBox[] = [];
   for (let i = 0; i < n; i++) {
     let boxes: RedactionBox[] = [];
     if (useOcr) {
-      try { boxes = await detectPIIBoxes(imageBuffers[i], pii, i); }
+      try { boxes = await detectPIIBoxes(croppedBuffers[i], pii, i); }
       catch (e: any) { console.error(`[ocr] 이미지 ${i} 실패:`, e?.message); }
     }
-    if (!boxes.length) boxes = vision.redactionBoxes.filter((b) => (b.image ?? 0) === i); // OCR 미검출 시 대체
+    if (!boxes.length && !crops.find((c) => c.image === i)) boxes = vision.redactionBoxes.filter((b) => (b.image ?? 0) === i); // 자르기 없을 때만 Gemini 박스 대체
     boxesByInput.push(...boxes);
   }
 
-  // 각 이미지 마스킹 (OCR 정밀 박스라 확장 작게)
+  // 각 이미지 마스킹 (잘린 원본 기준)
   const maskedPaths: string[] = [];
   for (let i = 0; i < n; i++) {
     const boxes = boxesByInput.filter((b) => (b.image ?? 0) === i);
-    const masked = await maskImage(imageBuffers[i], boxes, 0.12);
+    const masked = await maskImage(croppedBuffers[i], boxes, 0.12);
     maskedPaths.push(await uploadBuffer(masked, "image/jpeg", "reviews/masked"));
   }
 
