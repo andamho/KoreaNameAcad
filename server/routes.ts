@@ -6,6 +6,11 @@ import { sendConsultationNotification, sendCommentNotification, sendInquiryNotif
 import { sendSMS } from "./sms";
 import crypto from "crypto";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
+import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutubeStatus, uploadYoutubeVideo } from "./youtube";
+import { ObjectStorageService } from "./replit_integrations/object_storage/objectStorage";
+import { db } from "./db";
+import { videoJobs, reviewDrafts, contents } from "@shared/schema";
+import { desc as drizzleDesc, eq } from "drizzle-orm";
 
 // 공개 문의 목록 인메모리 캐시 (60초 TTL)
 let _publicInquiriesCache: any[] | null = null;
@@ -389,17 +394,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!["sms", "email"].includes(contactType)) {
         return res.status(400).json({ error: "연락 방법을 선택해주세요." });
       }
+      const accessToken = crypto.randomBytes(10).toString("hex"); // 20자 고유 토큰
       const inquiry = await storage.createInquiry({
         name: name.trim(),
         contact: contact.trim(),
         contactType,
         content: content.trim(),
+        accessToken,
       });
       sendInquiryNotification(inquiry).catch(err => console.error("[이메일] 문의 알림 실패:", err));
       invalidatePublicInquiriesCache();
       return res.json(inquiry);
     } catch (error: any) {
       return handleDbError(error, res, "POST /api/inquiries");
+    }
+  });
+
+  // 사용자용 스레드 조회 (토큰 기반)
+  app.get("/api/inquiry/thread/:token", async (req, res) => {
+    try {
+      const inquiry = await storage.getInquiryByToken(req.params.token);
+      if (!inquiry) return res.status(404).json({ error: "문의를 찾을 수 없습니다." });
+      const messages = await storage.getInquiryMessages(inquiry.id);
+      // 기존 adminReply가 있고 메시지가 없으면 호환성을 위해 가상 메시지 추가
+      if (inquiry.adminReply && messages.length === 0) {
+        messages.push({
+          id: "__legacy__",
+          inquiryId: inquiry.id,
+          senderType: "admin",
+          content: inquiry.adminReply,
+          createdAt: inquiry.repliedAt ?? inquiry.createdAt,
+        });
+      }
+      return res.json({
+        inquiry: {
+          id: inquiry.id,
+          name: inquiry.name,
+          content: inquiry.content,
+          status: inquiry.status,
+          createdAt: inquiry.createdAt,
+        },
+        messages,
+      });
+    } catch (error: any) {
+      return handleDbError(error, res, "GET /api/inquiry/thread/:token");
+    }
+  });
+
+  // 사용자 답글 등록 (토큰 기반, 인증 불필요)
+  app.post("/api/inquiry/thread/:token", async (req, res) => {
+    try {
+      const inquiry = await storage.getInquiryByToken(req.params.token);
+      if (!inquiry) return res.status(404).json({ error: "문의를 찾을 수 없습니다." });
+      const { content } = req.body;
+      if (!content?.trim()) return res.status(400).json({ error: "내용을 입력해주세요." });
+      const message = await storage.addInquiryMessage(inquiry.id, "user", content.trim());
+      // 어드민에게 새 메시지 알림 이메일
+      sendInquiryNotification({ ...inquiry, content: `[추가 문의]\n${content.trim()}` }).catch(() => {});
+      return res.json(message);
+    } catch (error: any) {
+      return handleDbError(error, res, "POST /api/inquiry/thread/:token");
     }
   });
 
@@ -441,6 +495,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const inquiry = await storage.getInquiry(req.params.id);
       if (!inquiry) return res.status(404).json({ error: "문의를 찾을 수 없습니다." });
       const updated = await storage.replyToInquiry(req.params.id, reply.trim());
+      // 스레드에도 어드민 메시지 저장
+      storage.addInquiryMessage(req.params.id, "admin", reply.trim()).catch(() => {});
       invalidatePublicInquiriesCache();
       if (updated.contactType === "sms") {
         const smsText = `[한국이름학교] 문의하신 내용에 답변드렸습니다.\n\n${reply.trim()}`;
@@ -454,6 +510,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 어드민 추가 메시지 (SMS/이메일 발송 없이 스레드에만 추가)
+  app.post("/api/inquiries/:id/thread", requireAdmin, async (req, res) => {
+    try {
+      const { content } = req.body;
+      if (!content?.trim()) return res.status(400).json({ error: "내용을 입력해주세요." });
+      const inquiry = await storage.getInquiry(req.params.id);
+      if (!inquiry) return res.status(404).json({ error: "문의를 찾을 수 없습니다." });
+      const message = await storage.addInquiryMessage(req.params.id, "admin", content.trim());
+      return res.json(message);
+    } catch (error: any) {
+      return handleDbError(error, res, "POST /api/inquiries/:id/thread");
+    }
+  });
+
+  // 어드민용 스레드 메시지 목록 조회
+  app.get("/api/inquiries/:id/thread", requireAdmin, async (req, res) => {
+    try {
+      const inquiry = await storage.getInquiry(req.params.id);
+      if (!inquiry) return res.status(404).json({ error: "문의를 찾을 수 없습니다." });
+      const messages = await storage.getInquiryMessages(req.params.id);
+      if (inquiry.adminReply && messages.length === 0) {
+        messages.push({
+          id: "__legacy__",
+          inquiryId: inquiry.id,
+          senderType: "admin",
+          content: inquiry.adminReply,
+          createdAt: inquiry.repliedAt ?? inquiry.createdAt,
+        });
+      }
+      return res.json(messages);
+    } catch (error: any) {
+      return handleDbError(error, res, "GET /api/inquiries/:id/thread");
+    }
+  });
+
   app.delete("/api/inquiries/:id", requireAdmin, async (req, res) => {
     try {
       await storage.deleteInquiry(req.params.id);
@@ -461,6 +552,206 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json({ success: true });
     } catch (error: any) {
       return handleDbError(error, res, "DELETE /api/inquiries/:id");
+    }
+  });
+
+  // ── YouTube OAuth 연결 (숏폼 자동배포) ──
+  // 브라우저 리디렉션 흐름이라 연결 시작은 ?token= 쿼리로 관리자 인증, CSRF는 state로 방지
+  const ytPendingStates = new Map<string, number>(); // state -> 만료 timestamp
+  const cleanYtStates = () => {
+    const now = Date.now();
+    ytPendingStates.forEach((exp, s) => {
+      if (exp < now) ytPendingStates.delete(s);
+    });
+  };
+  const escapeHtml = (s: string) =>
+    s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+
+  // 연결 상태 조회 (관리자 UI용)
+  app.get("/api/admin/youtube/status", requireAdmin, async (_req, res) => {
+    try {
+      const st = await getYoutubeStatus();
+      res.json({ configured: youtubeConfigured(), ...st });
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "status error" });
+    }
+  });
+
+  // 연결 시작 → 구글 동의 화면으로 리디렉션
+  app.get("/api/auth/youtube", (req, res) => {
+    const token = (req.query.token as string) || "";
+    const valid = getValidAdminToken();
+    if (!valid || token !== valid) return res.status(401).send("Unauthorized");
+    if (!youtubeConfigured()) return res.status(400).send("YOUTUBE_CLIENT_ID / SECRET 미설정");
+    cleanYtStates();
+    const state = crypto.randomBytes(16).toString("hex");
+    ytPendingStates.set(state, Date.now() + 10 * 60 * 1000);
+    res.redirect(getYoutubeAuthUrl(state));
+  });
+
+  // 구글 콜백 → code 교환 → 토큰 저장
+  app.get("/api/auth/youtube/callback", async (req, res) => {
+    try {
+      const { code, state, error } = req.query as Record<string, string>;
+      if (error) return res.status(400).send(`인증 취소/오류: ${escapeHtml(error)}`);
+      cleanYtStates();
+      if (!state || !ytPendingStates.has(state)) {
+        return res.status(400).send("state 불일치 — 연결을 처음부터 다시 시도하세요.");
+      }
+      ytPendingStates.delete(state);
+      if (!code) return res.status(400).send("code가 없습니다.");
+      const { channelTitle } = await handleYoutubeCallback(code);
+      res.send(
+        `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>YouTube 연결 완료</title></head>` +
+          `<body style="font-family:system-ui,sans-serif;max-width:520px;margin:60px auto;padding:0 20px;line-height:1.6">` +
+          `<h2 style="color:#1f8a5b">✅ YouTube 연결 완료</h2>` +
+          `<p>연결된 채널: <b>${escapeHtml(channelTitle ?? "(채널명 조회 실패)")}</b></p>` +
+          `<p><a href="/admin" style="display:inline-block;margin-top:12px;padding:10px 18px;background:#111;color:#fff;border-radius:8px;text-decoration:none">관리자 페이지로 돌아가기</a></p></body></html>`,
+      );
+    } catch (error: any) {
+      console.error("[youtube callback]", error);
+      res.status(500).send("YouTube 연결 실패: " + escapeHtml(error?.message || "unknown"));
+    }
+  });
+
+  // 유튜브/소셜 제목 뒤에 붙는 고정 해시태그
+  const FIXED_HASHTAGS = "#한국이름학교 #와츠유어네임이름연구협회 #작명 #개명 #이름분석 #이름풀이";
+
+  // 영상 안 올라간 최근 글 10개 (배포 폼의 '연결할 글' 선택용)
+  app.get("/api/admin/video/candidates", requireAdmin, async (_req, res) => {
+    try {
+      if (!db) return res.json([]);
+      const rows = await db
+        .select({ id: contents.id, title: contents.title, category: contents.category, createdAt: contents.createdAt })
+        .from(contents)
+        .where(eq(contents.isVideo, false))
+        .orderBy(drizzleDesc(contents.createdAt))
+        .limit(10);
+      res.json(rows);
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "candidates error" });
+    }
+  });
+
+  // ── 숏폼 영상 배포 (업로드 → 유튜브 게시 → 선택한 기존 글에 링크 삽입) ──
+  app.post("/api/admin/video/deploy", requireAdmin, async (req, res) => {
+    try {
+      if (!db) return res.status(503).json({ error: "DB 사용 불가" });
+      const { objectPath, contentId, titleOverride, privacyStatus = "public" } = req.body || {};
+
+      if (!objectPath || typeof objectPath !== "string" || !objectPath.startsWith("/objects/")) {
+        return res.status(400).json({ error: "유효한 영상 objectPath가 필요합니다." });
+      }
+      const r2Key = objectPath.replace("/objects/", "");
+
+      // 제목 결정: 선택한 글의 '썸네일 제목'(review_drafts.selectedThumbnailTitle) 우선, 없으면 글 제목
+      let content: any = null;
+      let thumbnailTitle = "";
+      if (contentId) {
+        content = await storage.getContent(contentId);
+        if (!content) return res.status(404).json({ error: "선택한 글을 찾을 수 없습니다." });
+        const drafts = await db
+          .select()
+          .from(reviewDrafts)
+          .where(eq(reviewDrafts.publishedContentId, contentId))
+          .limit(1);
+        thumbnailTitle = drafts[0]?.selectedThumbnailTitle || content.title;
+      } else {
+        thumbnailTitle = String(titleOverride || "").trim();
+      }
+      if (!thumbnailTitle) {
+        return res.status(400).json({ error: "제목을 정할 수 없습니다. 글을 선택하거나 제목을 입력하세요." });
+      }
+
+      // 유튜브 제목 = 썸네일 제목 + 고정 해시태그 (100자 제한 보정: 해시태그는 보존)
+      let ytTitle = `${thumbnailTitle} ${FIXED_HASHTAGS}`;
+      if (ytTitle.length > 100) {
+        const room = Math.max(0, 100 - FIXED_HASHTAGS.length - 1);
+        ytTitle = `${thumbnailTitle.slice(0, room)} ${FIXED_HASHTAGS}`.trim();
+      }
+      const tags = FIXED_HASHTAGS.split(/\s+/).map((t) => t.replace(/^#/, "")).filter(Boolean);
+      const willInsertHomepage = !!contentId;
+
+      const [job] = await db
+        .insert(videoJobs)
+        .values({
+          videoR2Key: r2Key,
+          title: ytTitle,
+          caption: null,
+          hashtags: FIXED_HASHTAGS,
+          targetYoutube: true,
+          targetInstagram: false,
+          targetTiktok: false,
+          targetHomepage: willInsertHomepage,
+          homepageCategory: content?.category || "nameStory",
+          targetContentId: contentId || null,
+          ytStatus: "queued",
+          igStatus: "skipped",
+          ttStatus: "skipped",
+          hpStatus: willInsertHomepage ? "queued" : "skipped",
+        })
+        .returning();
+
+      const errors: Record<string, string> = {};
+      let ytVideoId: string | null = null;
+
+      // 1) YouTube 업로드
+      try {
+        await db.update(videoJobs).set({ ytStatus: "uploading", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+        const objectStorage = new ObjectStorageService();
+        const { buffer, contentType } = await objectStorage.getObjectBuffer(r2Key);
+        const result = await uploadYoutubeVideo({
+          video: buffer,
+          mimeType: contentType,
+          title: ytTitle,
+          description: FIXED_HASHTAGS,
+          tags,
+          privacyStatus: (["public", "private", "unlisted"].includes(privacyStatus) ? privacyStatus : "public") as any,
+        });
+        ytVideoId = result.videoId;
+        await db.update(videoJobs).set({ ytStatus: "published", ytVideoId, updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+      } catch (e: any) {
+        errors.youtube = e?.message || "youtube upload failed";
+        await db.update(videoJobs).set({ ytStatus: "failed", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+      }
+
+      // 2) 선택한 기존 글에 유튜브 링크 삽입 (새 글 생성 아님 — videoUrl만 채움)
+      if (willInsertHomepage) {
+        try {
+          if (!ytVideoId) throw new Error("YouTube 업로드가 실패하여 링크를 넣을 수 없습니다.");
+          const videoUrl = `https://youtu.be/${ytVideoId}`;
+          await storage.updateContent(contentId, { videoUrl, isVideo: true } as any);
+          await db.update(videoJobs).set({ hpStatus: "published", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+        } catch (e: any) {
+          errors.homepage = e?.message || "homepage update failed";
+          await db.update(videoJobs).set({ hpStatus: "failed", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+        }
+      }
+
+      if (Object.keys(errors).length) {
+        await db.update(videoJobs).set({ errorLog: JSON.stringify(errors), updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+      }
+
+      res.json({
+        jobId: job.id,
+        youtubeTitle: ytTitle,
+        youtube: ytVideoId ? { ok: true, videoId: ytVideoId, url: `https://youtu.be/${ytVideoId}` } : { ok: false, error: errors.youtube },
+        homepage: willInsertHomepage ? (errors.homepage ? { ok: false, error: errors.homepage } : { ok: true, contentId }) : null,
+      });
+    } catch (error: any) {
+      console.error("[video deploy]", error);
+      res.status(500).json({ error: error?.message || "deploy failed" });
+    }
+  });
+
+  // 최근 배포 잡 목록 (관리자 UI용)
+  app.get("/api/admin/video/jobs", requireAdmin, async (_req, res) => {
+    try {
+      if (!db) return res.json([]);
+      const rows = await db.select().from(videoJobs).orderBy(drizzleDesc(videoJobs.createdAt)).limit(20);
+      res.json(rows);
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "jobs error" });
     }
   });
 

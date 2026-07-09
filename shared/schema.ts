@@ -166,6 +166,58 @@ export const insertReviewDraftSchema = createInsertSchema(reviewDrafts).omit({
 export type InsertReviewDraft = z.infer<typeof insertReviewDraftSchema>;
 export type ReviewDraft = typeof reviewDrafts.$inferSelect;
 
+// ── 숏폼 영상 자동배포 잡 (유튜브 / 인스타 / 틱톡 / 홈페이지) ──
+// 채널별 status 흐름(독립): queued → uploading → processing → published / failed / skipped
+export const videoJobs = pgTable("video_jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  videoR2Key: text("video_r2_key").notNull(),          // R2에 저장된 원본 세로영상 키
+  title: text("title").notNull(),
+  caption: text("caption"),                            // 공통 설명/캡션
+  hashtags: text("hashtags"),                          // 쉼표/공백 구분 해시태그
+  // 배포 대상 채널 선택
+  targetYoutube: boolean("target_youtube").default(true).notNull(),
+  targetInstagram: boolean("target_instagram").default(false).notNull(),
+  targetTiktok: boolean("target_tiktok").default(false).notNull(),
+  targetHomepage: boolean("target_homepage").default(true).notNull(),
+  // 홈페이지 삽입: 게시할 카테고리 + 게시 후 연결된 글 id
+  homepageCategory: text("homepage_category").default("nameStory").notNull(),
+  targetContentId: varchar("target_content_id"),       // 배포 완료 후 contents.id
+  // 채널별 상태
+  ytStatus: text("yt_status").default("queued").notNull(),
+  igStatus: text("ig_status").default("queued").notNull(),
+  ttStatus: text("tt_status").default("queued").notNull(),
+  hpStatus: text("hp_status").default("queued").notNull(),
+  // 배포 성공 시 각 플랫폼이 반환한 식별자
+  ytVideoId: text("yt_video_id"),
+  igMediaId: text("ig_media_id"),
+  ttPublishId: text("tt_publish_id"),
+  errorLog: text("error_log"),                         // JSON: 채널별 실패 사유
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertVideoJobSchema = createInsertSchema(videoJobs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertVideoJob = z.infer<typeof insertVideoJobSchema>;
+export type VideoJob = typeof videoJobs.$inferSelect;
+
+// ── 소셜 OAuth 토큰 저장 (provider별 1행: youtube / instagram / tiktok) ──
+export const oauthTokens = pgTable("oauth_tokens", {
+  provider: varchar("provider").primaryKey(),          // "youtube" | "instagram" | "tiktok"
+  refreshToken: text("refresh_token"),                 // 장기 리프레시 토큰
+  accessToken: text("access_token"),                   // 단기 액세스 토큰(캐시)
+  expiresAt: timestamp("expires_at"),                  // 액세스 토큰 만료시각
+  scope: text("scope"),                                // 승인된 범위
+  accountLabel: text("account_label"),                 // 연결된 계정 표시용(채널명 등)
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type OAuthToken = typeof oauthTokens.$inferSelect;
+
 // 마스킹 박스 (정규화 좌표 0~1)
 export type RedactionBox = { x: number; y: number; w: number; h: number; reason?: string; image?: number };
 // 썸네일 후보
@@ -203,6 +255,7 @@ export const inquiries = pgTable("inquiries", {
   content: text("content").notNull(),
   status: text("status").notNull().default("접수완료"), // "접수완료" | "답변완료"
   adminReply: text("admin_reply"),
+  accessToken: text("access_token").unique(), // 사용자 스레드 접근용 고유 토큰
   createdAt: timestamp("created_at").defaultNow().notNull(),
   repliedAt: timestamp("replied_at"),
 });
@@ -214,6 +267,23 @@ export const insertInquirySchema = createInsertSchema(inquiries).omit({
 
 export type InsertInquiry = z.infer<typeof insertInquirySchema>;
 export type Inquiry = typeof inquiries.$inferSelect;
+
+// Inquiry Messages table (문의 스레드 메시지)
+export const inquiryMessages = pgTable("inquiry_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  inquiryId: varchar("inquiry_id").notNull(),
+  senderType: text("sender_type").notNull(), // "user" | "admin"
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertInquiryMessageSchema = createInsertSchema(inquiryMessages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertInquiryMessage = z.infer<typeof insertInquiryMessageSchema>;
+export type InquiryMessage = typeof inquiryMessages.$inferSelect;
 
 // Experience Zone 진단 로그 (댓글)
 export const experienceComments = pgTable("experience_comments", {

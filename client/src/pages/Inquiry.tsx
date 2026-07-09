@@ -48,6 +48,8 @@ export default function Inquiry() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [threadToken, setThreadToken] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [publicList, setPublicList] = useState<PublicInquiry[]>([]);
   const [publicListLoading, setPublicListLoading] = useState(true);
 
@@ -124,6 +126,8 @@ export default function Inquiry() {
         const data = await res.json();
         throw new Error(data.error || "오류가 발생했습니다.");
       }
+      const data = await res.json();
+      if (data.accessToken) setThreadToken(data.accessToken);
       setSubmitted(true);
     } catch (e: any) {
       setError(e.message || "제출에 실패했습니다. 다시 시도해주세요.");
@@ -144,12 +148,43 @@ export default function Inquiry() {
             </div>
 
             {submitted ? (
-              <div className="py-8 text-center space-y-3">
+              <div className="py-6 text-center space-y-4">
                 <CheckCircle2 className="w-12 h-12 mx-auto text-[#18a999]" />
                 <p className="font-bold text-foreground text-lg md:text-xl">문의가 접수되었습니다</p>
                 <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
                   빠른 시일 내에 {contactType === "sms" ? "문자" : "이메일"}로 답변드리겠습니다.
                 </p>
+                {threadToken && (
+                  <div className="mt-2 space-y-3 text-left bg-muted/40 rounded-xl p-4">
+                    <p className="text-xs md:text-sm font-semibold text-foreground">내 문의 대화방 링크</p>
+                    <p className="text-[11px] md:text-xs text-muted-foreground leading-relaxed">
+                      이 링크를 저장해두시면 답변 확인 및 추가 문의를 이어서 하실 수 있습니다.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        readOnly
+                        value={`${window.location.origin}/inquiry/thread/${threadToken}`}
+                        className="flex-1 text-xs border border-border rounded-lg px-2 py-1.5 bg-background text-foreground outline-none truncate"
+                      />
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/inquiry/thread/${threadToken}`);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        }}
+                        className="shrink-0 px-3 py-1.5 rounded-lg bg-[#18a999] text-white text-xs font-bold hover:bg-[#149085] transition"
+                      >
+                        {copied ? "복사됨" : "복사"}
+                      </button>
+                    </div>
+                    <a
+                      href={`/inquiry/thread/${threadToken}`}
+                      className="block w-full text-center py-2 rounded-xl border border-[#18a999] text-[#18a999] text-sm font-bold hover:bg-[#18a999]/5 transition"
+                    >
+                      대화방 바로가기
+                    </a>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-4">

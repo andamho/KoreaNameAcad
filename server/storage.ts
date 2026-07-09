@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Consultation, type InsertConsultation, type NameStory, type InsertNameStory, nameStories, type Content, type InsertContent, type ContentCategory, contents, consultations, type ExperienceComment, type InsertExperienceComment, experienceComments, type Inquiry, type InsertInquiry, inquiries, type ReviewDraft, type InsertReviewDraft, reviewDrafts, type BotPreference, botPreferences } from "@shared/schema";
+import { type User, type InsertUser, type Consultation, type InsertConsultation, type NameStory, type InsertNameStory, nameStories, type Content, type InsertContent, type ContentCategory, contents, consultations, type ExperienceComment, type InsertExperienceComment, experienceComments, type Inquiry, type InsertInquiry, inquiries, type InquiryMessage, inquiryMessages, type ReviewDraft, type InsertReviewDraft, reviewDrafts, type BotPreference, botPreferences } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { eq, desc, sql } from "drizzle-orm";
 
@@ -42,8 +42,11 @@ export interface IStorage {
   createInquiry(inquiry: InsertInquiry): Promise<Inquiry>;
   getAllInquiries(): Promise<Inquiry[]>;
   getInquiry(id: string): Promise<Inquiry | undefined>;
+  getInquiryByToken(token: string): Promise<Inquiry | undefined>;
   replyToInquiry(id: string, reply: string): Promise<Inquiry>;
   deleteInquiry(id: string): Promise<void>;
+  addInquiryMessage(inquiryId: string, senderType: string, content: string): Promise<InquiryMessage>;
+  getInquiryMessages(inquiryId: string): Promise<InquiryMessage[]>;
 
   // 후기 자동화 초안
   createReviewDraft(draft: InsertReviewDraft): Promise<ReviewDraft>;
@@ -207,8 +210,11 @@ export class MemStorage implements IStorage {
   async createInquiry(_inquiry: InsertInquiry): Promise<Inquiry> { throw new Error("Not implemented"); }
   async getAllInquiries(): Promise<Inquiry[]> { return []; }
   async getInquiry(_id: string): Promise<Inquiry | undefined> { return undefined; }
+  async getInquiryByToken(_token: string): Promise<Inquiry | undefined> { return undefined; }
   async replyToInquiry(_id: string, _reply: string): Promise<Inquiry> { throw new Error("Not implemented"); }
   async deleteInquiry(_id: string): Promise<void> {}
+  async addInquiryMessage(_inquiryId: string, _senderType: string, _content: string): Promise<InquiryMessage> { throw new Error("Not implemented"); }
+  async getInquiryMessages(_inquiryId: string): Promise<InquiryMessage[]> { return []; }
 
   private reviewDraftsMap: Map<string, ReviewDraft> = new Map();
   async createReviewDraft(draft: InsertReviewDraft): Promise<ReviewDraft> {
@@ -604,6 +610,7 @@ export class DatabaseStorage implements IStorage {
         contactType: insertInquiry.contactType,
         content: insertInquiry.content,
         status: "접수완료",
+        accessToken: insertInquiry.accessToken ?? null,
       }).returning();
       return row;
     } catch (error: any) {
@@ -630,6 +637,16 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getInquiryByToken(token: string): Promise<Inquiry | undefined> {
+    await this.ensureDbReady();
+    try {
+      const [row] = await this.db.select().from(inquiries).where(eq(inquiries.accessToken, token));
+      return row;
+    } catch (error: any) {
+      throw new DatabaseError(`문의 토큰 조회 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
   async replyToInquiry(id: string, reply: string): Promise<Inquiry> {
     await this.ensureDbReady();
     try {
@@ -649,6 +666,27 @@ export class DatabaseStorage implements IStorage {
       await this.db.delete(inquiries).where(eq(inquiries.id, id));
     } catch (error: any) {
       throw new DatabaseError(`문의 삭제 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async addInquiryMessage(inquiryId: string, senderType: string, content: string): Promise<InquiryMessage> {
+    await this.ensureDbReady();
+    try {
+      const [row] = await this.db.insert(inquiryMessages).values({ inquiryId, senderType, content }).returning();
+      return row;
+    } catch (error: any) {
+      throw new DatabaseError(`문의 메시지 저장 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async getInquiryMessages(inquiryId: string): Promise<InquiryMessage[]> {
+    await this.ensureDbReady();
+    try {
+      return await this.db.select().from(inquiryMessages)
+        .where(eq(inquiryMessages.inquiryId, inquiryId))
+        .orderBy(inquiryMessages.createdAt);
+    } catch (error: any) {
+      throw new DatabaseError(`문의 메시지 조회 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
   }
 
