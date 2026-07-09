@@ -495,8 +495,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const inquiry = await storage.getInquiry(req.params.id);
       if (!inquiry) return res.status(404).json({ error: "문의를 찾을 수 없습니다." });
       const updated = await storage.replyToInquiry(req.params.id, reply.trim());
-      // 스레드에도 어드민 메시지 저장
-      storage.addInquiryMessage(req.params.id, "admin", reply.trim()).catch(() => {});
+      // 스레드에도 어드민 메시지 저장 (awaited - race condition 방지)
+      await storage.addInquiryMessage(req.params.id, "admin", reply.trim());
       invalidatePublicInquiriesCache();
       if (updated.contactType === "sms") {
         const smsText = `[한국이름학교] 문의하신 내용에 답변드렸습니다.\n\n${reply.trim()}`;

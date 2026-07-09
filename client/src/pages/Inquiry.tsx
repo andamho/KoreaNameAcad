@@ -354,13 +354,13 @@ export default function Inquiry() {
                           <div className="space-y-2">
                             <p className="text-xs md:text-sm text-muted-foreground">
                               {inq.status === "접수완료"
-                                ? `답변 작성 (${inq.contactType === "sms" ? "문자 발송" : "이메일 발송"})`
-                                : "추가 메시지"}
+                                ? `첫 답변 (${inq.contactType === "sms" ? "문자 알림 발송" : "이메일 알림 발송"})`
+                                : "댓글 입력"}
                             </p>
                             <textarea
                               value={replyTexts[inq.id] || ""}
                               onChange={e => setReplyTexts(prev => ({ ...prev, [inq.id]: e.target.value }))}
-                              placeholder={inq.status === "접수완료" ? `${inq.name}님께 보낼 답변을 작성하세요` : "추가 메시지를 입력하세요"}
+                              placeholder={inq.status === "접수완료" ? `${inq.name}님께 보낼 답변을 작성하세요` : "댓글을 입력하세요"}
                               className="w-full border border-border rounded-xl px-3 py-2 text-sm md:text-base outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[80px] bg-background"
                             />
                             <div className="flex justify-end">
@@ -374,6 +374,7 @@ export default function Inquiry() {
                                   try {
                                     const token = localStorage.getItem("kna_admin_token");
                                     if (inq.status === "접수완료") {
+                                      // 첫 답변: 문자/이메일 알림 발송
                                       const res = await fetch(`/api/inquiries/${inq.id}/reply`, {
                                         method: "PUT",
                                         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -382,17 +383,29 @@ export default function Inquiry() {
                                       if (!res.ok) throw new Error();
                                       toast({ title: `답변을 ${inq.contactType === "sms" ? "문자로" : "이메일로"} 발송했습니다.` });
                                       fetchAdminInquiries();
+                                      // 즉시 화면에 반영
+                                      setThreadMessages(prev => ({
+                                        ...prev,
+                                        [inq.id]: [...(prev[inq.id] ?? []), { id: `__tmp__${Date.now()}`, inquiryId: inq.id, senderType: "admin", content: text, createdAt: new Date().toISOString() }],
+                                      }));
                                     } else {
+                                      // 이후 댓글: 알림 발송 없이 스레드에만 저장
                                       const res = await fetch(`/api/inquiries/${inq.id}/thread`, {
                                         method: "POST",
                                         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                                         body: JSON.stringify({ content: text }),
                                       });
                                       if (!res.ok) throw new Error();
-                                      toast({ title: "메시지를 추가했습니다." });
+                                      const newMsg = await res.json();
+                                      // 즉시 화면에 반영
+                                      setThreadMessages(prev => ({
+                                        ...prev,
+                                        [inq.id]: [...(prev[inq.id] ?? []), newMsg],
+                                      }));
+                                      toast({ title: "댓글이 등록되었습니다." });
                                     }
                                     setReplyTexts(prev => { const n = { ...prev }; delete n[inq.id]; return n; });
-                                    fetchThreadMessages(inq.id);
+                                    fetchThreadMessages(inq.id); // 서버와 동기화
                                   } catch {
                                     toast({ title: "실패했습니다.", variant: "destructive" });
                                   } finally {
@@ -400,7 +413,7 @@ export default function Inquiry() {
                                   }
                                 }}
                               >
-                                {submittingReply === inq.id ? "처리 중..." : inq.status === "접수완료" ? "답변 발송" : "메시지 추가"}
+                                {submittingReply === inq.id ? "처리 중..." : inq.status === "접수완료" ? "답변 발송" : "댓글 입력"}
                               </button>
                             </div>
                           </div>
