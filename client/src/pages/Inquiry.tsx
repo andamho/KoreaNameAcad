@@ -395,7 +395,10 @@ export default function Inquiry() {
                                         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                                         body: JSON.stringify({ content: text }),
                                       });
-                                      if (!res.ok) throw new Error();
+                                      if (!res.ok) {
+                                        const errData = await res.json().catch(() => ({}));
+                                        throw new Error(errData.error || `HTTP ${res.status}`);
+                                      }
                                       const newMsg = await res.json();
                                       // 즉시 화면에 반영
                                       setThreadMessages(prev => ({
@@ -406,8 +409,8 @@ export default function Inquiry() {
                                     }
                                     setReplyTexts(prev => { const n = { ...prev }; delete n[inq.id]; return n; });
                                     fetchThreadMessages(inq.id); // 서버와 동기화
-                                  } catch {
-                                    toast({ title: "실패했습니다.", variant: "destructive" });
+                                  } catch (e: any) {
+                                    toast({ title: `실패: ${e?.message || "알 수 없는 오류"}`, variant: "destructive" });
                                   } finally {
                                     setSubmittingReply(null);
                                   }
