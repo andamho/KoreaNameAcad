@@ -35,6 +35,15 @@ export class ObjectStorageService {
     await r2Client.send(command);
   }
 
+  // R2 객체 전체를 버퍼로 읽기 (유튜브 등 외부 업로드용)
+  async getObjectBuffer(key: string): Promise<{ buffer: Buffer; contentType: string }> {
+    const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key });
+    const resp = await r2Client.send(command);
+    if (!resp.Body) throw new ObjectNotFoundError();
+    const bytes = await (resp.Body as any).transformToByteArray();
+    return { buffer: Buffer.from(bytes), contentType: resp.ContentType || "video/mp4" };
+  }
+
   async getObjectEntityUploadURL(): Promise<string> {
     const objectId = randomUUID();
     const objectKey = `uploads/${objectId}`;

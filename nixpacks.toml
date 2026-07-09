@@ -1,0 +1,4 @@
+# Railway(Nixpacks) 빌드 설정
+# 기본 자동감지(Node) 패키지에 ffmpeg 추가 — 인스타 H.264 변환 / 유튜브 썸네일 프레임 추출에 필요
+[phases.setup]
+nixPkgs = ["...", "ffmpeg"]

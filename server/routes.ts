@@ -6,7 +6,9 @@ import { sendConsultationNotification, sendCommentNotification, sendInquiryNotif
 import { sendSMS } from "./sms";
 import crypto from "crypto";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
-import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutubeStatus, uploadYoutubeVideo } from "./youtube";
+import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutubeStatus, uploadYoutubeVideo, setYoutubeThumbnail } from "./youtube";
+import { instagramConfigured, getInstagramStatus, publishInstagramReel } from "./instagram";
+import { transcodeToH264, extractFrameJpeg } from "./videoTools";
 import { ObjectStorageService } from "./replit_integrations/object_storage/objectStorage";
 import { db } from "./db";
 import { videoJobs, reviewDrafts, contents } from "@shared/schema";
@@ -621,6 +623,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 유튜브/소셜 제목 뒤에 붙는 고정 해시태그
   const FIXED_HASHTAGS = "#한국이름학교 #와츠유어네임이름연구협회 #작명 #개명 #이름분석 #이름풀이";
 
+  // 인스타 캡션 맨 아래 항상 붙는 고정 문구 (사용자 지정)
+  const INSTAGRAM_CAPTION_FOOTER = `😩고달픈 인생,
+이름 하나로 이유와 해결책을!
+
+🔍한글.한자이름만으로 운명상담
+[정확도 80%👆]
+
+🌸운이 술술 풀리는 이름으로
+인생역전!
+
+🔮이름상담 및 작명 [신청방법]
+프로필 링크통해
+진행해주시면 됩니다~
+
+@whats_ur_name.777
+@whats_ur_name.777
+@whats_ur_name.777
+
+📊 18년간 45만명 임상`;
+
+  // 인스타 캡션 맨 아래 고정 해시태그
+  const INSTAGRAM_HASHTAGS = "#한국이름학교 #와츠유어네임이름연구협회 #이름분석 #작명 #개명";
+
+  // 인스타 연결 상태 (관리자 UI용)
+  app.get("/api/admin/instagram/status", requireAdmin, async (_req, res) => {
+    try {
+      const st = await getInstagramStatus();
+      res.json({ configured: instagramConfigured(), ...st });
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "status error" });
+    }
+  });
+
+  // 인스타/페북 등 외부가 접근할 미디어 공개 베이스 URL (R2 객체를 실서버 /objects/로 서빙)
+  const PUBLIC_MEDIA_BASE_URL = (process.env.PUBLIC_MEDIA_BASE_URL || "https://korea-name-acad.com").replace(/\/$/, "");
+
   // 영상 안 올라간 최근 글 10개 (배포 폼의 '연결할 글' 선택용)
   app.get("/api/admin/video/candidates", requireAdmin, async (_req, res) => {
     try {
@@ -641,7 +679,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/video/deploy", requireAdmin, async (req, res) => {
     try {
       if (!db) return res.status(503).json({ error: "DB 사용 불가" });
-      const { objectPath, contentId, titleOverride, privacyStatus = "public" } = req.body || {};
+      const { objectPath, contentId, titleOverride, privacyStatus = "public", thumbnailObjectPath, targetInstagram = false, instagramCaption } = req.body || {};
 
       if (!objectPath || typeof objectPath !== "string" || !objectPath.startsWith("/objects/")) {
         return res.status(400).json({ error: "유효한 영상 objectPath가 필요합니다." });
@@ -684,13 +722,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           caption: null,
           hashtags: FIXED_HASHTAGS,
           targetYoutube: true,
-          targetInstagram: false,
+          targetInstagram: !!targetInstagram,
           targetTiktok: false,
           targetHomepage: willInsertHomepage,
           homepageCategory: content?.category || "nameStory",
           targetContentId: contentId || null,
           ytStatus: "queued",
-          igStatus: "skipped",
+          igStatus: targetInstagram ? "queued" : "skipped",
           ttStatus: "skipped",
           hpStatus: willInsertHomepage ? "queued" : "skipped",
         })
@@ -699,24 +737,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const errors: Record<string, string> = {};
       let ytVideoId: string | null = null;
 
-      // 1) YouTube 업로드
+      // 원본 영상 1회 로드 (유튜브 업로드 / 썸네일 추출 / 인스타 변환에 재사용)
+      const objectStorage = new ObjectStorageService();
+      let videoBuffer: Buffer | null = null;
+      let videoContentType = "video/mp4";
       try {
-        await db.update(videoJobs).set({ ytStatus: "uploading", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
-        const objectStorage = new ObjectStorageService();
-        const { buffer, contentType } = await objectStorage.getObjectBuffer(r2Key);
-        const result = await uploadYoutubeVideo({
-          video: buffer,
-          mimeType: contentType,
-          title: ytTitle,
-          description: FIXED_HASHTAGS,
-          tags,
-          privacyStatus: (["public", "private", "unlisted"].includes(privacyStatus) ? privacyStatus : "public") as any,
-        });
-        ytVideoId = result.videoId;
-        await db.update(videoJobs).set({ ytStatus: "published", ytVideoId, updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+        const g = await objectStorage.getObjectBuffer(r2Key);
+        videoBuffer = g.buffer;
+        videoContentType = g.contentType;
       } catch (e: any) {
-        errors.youtube = e?.message || "youtube upload failed";
-        await db.update(videoJobs).set({ ytStatus: "failed", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+        errors.youtube = "영상 로드 실패: " + (e?.message || "");
+      }
+
+      // 1) YouTube 업로드 (원본 그대로 — 유튜브는 HEVC도 허용)
+      if (videoBuffer) {
+        try {
+          await db.update(videoJobs).set({ ytStatus: "uploading", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+          const result = await uploadYoutubeVideo({
+            video: videoBuffer,
+            mimeType: videoContentType,
+            title: ytTitle,
+            description: FIXED_HASHTAGS,
+            tags,
+            privacyStatus: (["public", "private", "unlisted"].includes(privacyStatus) ? privacyStatus : "public") as any,
+          });
+          ytVideoId = result.videoId;
+          await db.update(videoJobs).set({ ytStatus: "published", ytVideoId, updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+        } catch (e: any) {
+          errors.youtube = e?.message || "youtube upload failed";
+          await db.update(videoJobs).set({ ytStatus: "failed", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+        }
+      }
+
+      // 1-b) 커스텀 썸네일: 영상 맨 앞(0.25초) 프레임을 ffmpeg로 추출해 설정
+      let thumbnailSet = false;
+      if (ytVideoId && videoBuffer) {
+        try {
+          const frame = await extractFrameJpeg(videoBuffer, 0.25);
+          await setYoutubeThumbnail(ytVideoId, frame, "image/jpeg");
+          thumbnailSet = true;
+        } catch (e: any) {
+          errors.thumbnail = e?.message || "thumbnail set failed";
+        }
       }
 
       // 2) 선택한 기존 글에 유튜브 링크 삽입 (새 글 생성 아님 — videoUrl만 채움)
@@ -732,6 +794,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // 3) 인스타그램 릴스 게시 — 인스타는 H.264만 지원 → 변환 후 공개 URL로 전달
+      let igMediaId: string | null = null;
+      if (targetInstagram) {
+        try {
+          if (!videoBuffer) throw new Error("영상 로드 실패로 인스타 게시 불가");
+          await db.update(videoJobs).set({ igStatus: "uploading", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+          // HEVC 등 → H.264 변환 후 R2에 업로드, 그 공개 URL을 인스타에 전달
+          const h264 = await transcodeToH264(videoBuffer);
+          const igKey = `uploads/ig-${crypto.randomUUID()}.mp4`;
+          await objectStorage.putObject(igKey, h264, "video/mp4");
+          const publicVideoUrl = `${PUBLIC_MEDIA_BASE_URL}/objects/${igKey}`;
+          // 캡션 = 직접 입력한 본문 + 항상 붙는 고정 문구 + 고정 해시태그
+          const igCaption = [String(instagramCaption || "").trim(), INSTAGRAM_CAPTION_FOOTER, INSTAGRAM_HASHTAGS]
+            .filter(Boolean)
+            .join("\n\n");
+          const result = await publishInstagramReel({ videoUrl: publicVideoUrl, caption: igCaption });
+          igMediaId = result.mediaId;
+          await db.update(videoJobs).set({ igStatus: "published", igMediaId, updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+        } catch (e: any) {
+          errors.instagram = e?.message || "instagram publish failed";
+          await db.update(videoJobs).set({ igStatus: "failed", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+        }
+      }
+
       if (Object.keys(errors).length) {
         await db.update(videoJobs).set({ errorLog: JSON.stringify(errors), updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
       }
@@ -740,6 +826,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         jobId: job.id,
         youtubeTitle: ytTitle,
         youtube: ytVideoId ? { ok: true, videoId: ytVideoId, url: `https://youtu.be/${ytVideoId}` } : { ok: false, error: errors.youtube },
+        thumbnail: ytVideoId ? (thumbnailSet ? { ok: true } : { ok: false, error: errors.thumbnail || "설정 안됨" }) : null,
+        instagram: targetInstagram ? (igMediaId ? { ok: true, mediaId: igMediaId } : { ok: false, error: errors.instagram }) : null,
         homepage: willInsertHomepage ? (errors.homepage ? { ok: false, error: errors.homepage } : { ok: true, contentId }) : null,
       });
     } catch (error: any) {

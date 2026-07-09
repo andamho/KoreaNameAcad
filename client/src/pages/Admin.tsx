@@ -274,6 +274,9 @@ export default function Admin() {
             <TabsTrigger value="contents" data-testid="tab-contents">
               콘텐츠 관리 ({contents?.length || 0})
             </TabsTrigger>
+            <TabsTrigger value="video" data-testid="tab-video">
+              숏폼 배포
+            </TabsTrigger>
           </TabsList>
 
           {/* ── 문의 관리 탭 ────────────────────────────────── */}
@@ -731,8 +734,324 @@ export default function Admin() {
               </div>
             )}
           </TabsContent>
+
+          {/* ── 숏폼 배포 탭 ────────────────────────────────── */}
+          <TabsContent value="video" className="space-y-4">
+            <VideoDeployPanel />
+          </TabsContent>
         </Tabs>
       </div>
+    </div>
+  );
+}
+
+// ── 숏폼 자동배포 패널 (채널 연결 + 배포) ──
+interface YtStatus { configured: boolean; connected: boolean; channelTitle?: string }
+
+interface IgStatus { configured: boolean; connected: boolean; username?: string }
+
+function VideoDeployPanel() {
+  const [yt, setYt] = useState<YtStatus | null>(null);
+  const [ig, setIg] = useState<IgStatus | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchStatus = async () => {
+    setLoading(true);
+    const token = localStorage.getItem("kna_admin_token");
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      const res = await fetch("/api/admin/youtube/status", { headers });
+      setYt(res.ok ? await res.json() : null);
+    } catch {
+      setYt(null);
+    }
+    try {
+      const igRes = await fetch("/api/admin/instagram/status", { headers });
+      setIg(igRes.ok ? await igRes.json() : null);
+    } catch {
+      setIg(null);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchStatus();
+  }, []);
+
+  const connectYoutube = () => {
+    const token = localStorage.getItem("kna_admin_token");
+    if (!token) return;
+    // 현재 탭에서 구글 동의 화면으로 이동 (팝업 차단 회피). 완료 후 콜백 페이지에서 관리자로 복귀
+    window.location.href = `/api/auth/youtube?token=${encodeURIComponent(token)}`;
+  };
+
+  // ── 배포 폼 상태 ──
+  const { toast } = useToast();
+  const [file, setFile] = useState<File | null>(null);
+  const [candidates, setCandidates] = useState<Array<{ id: string; title: string; category: string }>>([]);
+  const [selectedContentId, setSelectedContentId] = useState("");
+  const [vPrivacy, setVPrivacy] = useState("public");
+  const [toInstagram, setToInstagram] = useState(false);
+  const [igCaptionText, setIgCaptionText] = useState("");
+  const [deploying, setDeploying] = useState(false);
+  const [result, setResult] = useState<any>(null);
+
+  const fetchCandidates = async () => {
+    try {
+      const token = localStorage.getItem("kna_admin_token");
+      const res = await fetch("/api/admin/video/candidates", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error();
+      setCandidates(await res.json());
+    } catch {
+      setCandidates([]);
+    }
+  };
+  useEffect(() => {
+    fetchCandidates();
+  }, []);
+
+  const deploy = async () => {
+    if (!file) { toast({ title: "영상 파일을 선택하세요.", variant: "destructive" }); return; }
+    if (!selectedContentId) { toast({ title: "연결할 글을 선택하세요.", variant: "destructive" }); return; }
+    setDeploying(true);
+    setResult(null);
+    try {
+      const token = localStorage.getItem("kna_admin_token");
+      // 1) 영상 R2 업로드
+      const up = await fetch("/api/uploads/upload", {
+        method: "POST",
+        headers: { "Content-Type": file.type || "video/mp4" },
+        body: file,
+      });
+      if (!up.ok) throw new Error("영상 업로드 실패");
+      const { objectPath } = await up.json();
+
+      // 2) 배포 실행 (선택한 글에 유튜브 링크 삽입). 썸네일은 서버가 영상 맨 앞 프레임으로 자동 설정.
+      const dep = await fetch("/api/admin/video/deploy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          objectPath,
+          contentId: selectedContentId,
+          privacyStatus: vPrivacy,
+          targetInstagram: toInstagram,
+          instagramCaption: igCaptionText,
+        }),
+      });
+      const data = await dep.json();
+      if (!dep.ok) throw new Error(data.error || "배포 실패");
+      setResult(data);
+      toast({ title: "배포 완료" });
+      setSelectedContentId("");
+      setFile(null);
+      fetchCandidates(); // 방금 영상 넣은 글은 목록에서 제외됨
+    } catch (e: any) {
+      setResult({ error: e?.message || "배포 실패" });
+      toast({ title: "배포 실패", description: e?.message, variant: "destructive" });
+    } finally {
+      setDeploying(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold mb-1">채널 연결</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          영상을 자동으로 올리려면 각 플랫폼 계정을 먼저 연결해야 합니다.
+        </p>
+
+        {/* YouTube */}
+        <div className="flex items-center justify-between border rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: "#D93B3B" }} />
+            <div>
+              <div className="font-medium">YouTube</div>
+              {loading ? (
+                <div className="text-xs text-muted-foreground">확인 중…</div>
+              ) : !yt?.configured ? (
+                <div className="text-xs text-amber-600">API 키 미설정 (.env)</div>
+              ) : yt?.connected ? (
+                <div className="text-xs text-emerald-600">
+                  연결됨{yt.channelTitle ? ` · ${yt.channelTitle}` : ""}
+                </div>
+              ) : (
+                <div className="text-xs text-muted-foreground">연결 안 됨</div>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {yt?.connected ? (
+              <Badge variant="secondary">✓ 연결됨</Badge>
+            ) : (
+              <Button size="sm" onClick={connectYoutube} disabled={!yt?.configured}>
+                YouTube 연결
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" onClick={fetchStatus}>
+              새로고침
+            </Button>
+          </div>
+        </div>
+
+        {/* Instagram */}
+        <div className="flex items-center justify-between border rounded-lg p-4 mt-3">
+          <div className="flex items-center gap-3">
+            <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: "#B33089" }} />
+            <div>
+              <div className="font-medium">Instagram</div>
+              {loading ? (
+                <div className="text-xs text-muted-foreground">확인 중…</div>
+              ) : ig?.connected ? (
+                <div className="text-xs text-emerald-600">연결됨{ig.username ? ` · @${ig.username}` : ""}</div>
+              ) : (
+                <div className="text-xs text-amber-600">토큰 미설정 (.env)</div>
+              )}
+            </div>
+          </div>
+          {ig?.connected ? <Badge variant="secondary">✓ 연결됨</Badge> : <Badge variant="outline">미연결</Badge>}
+        </div>
+
+        {/* TikTok — 심사 대기 */}
+        <div className="flex items-center justify-between border rounded-lg p-4 mt-3 opacity-60">
+          <div className="flex items-center gap-3">
+            <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: "#0E9BAE" }} />
+            <div>
+              <div className="font-medium">TikTok</div>
+              <div className="text-xs text-muted-foreground">API 오디트 준비 중</div>
+            </div>
+          </div>
+          <Badge variant="outline">준비 중</Badge>
+        </div>
+      </Card>
+
+      <Card className="p-6 space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold mb-1">영상 배포</h2>
+          <p className="text-sm text-muted-foreground">
+            세로 숏폼 영상을 유튜브에 올리고, 선택한 홈페이지 글에 그 영상 링크를 자동으로 넣습니다.
+            <br />(글 수정 → "동영상 콘텐츠" 켜기 → 주소 입력 → 저장, 이 과정을 자동화합니다.)
+          </p>
+        </div>
+
+        {!yt?.connected && (
+          <div className="text-sm text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded-md p-3">
+            먼저 위에서 YouTube를 연결해야 배포할 수 있습니다.
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <Label>연결할 글 <span className="text-xs text-muted-foreground">(영상 없는 최근 글 10개)</span></Label>
+          <Select value={selectedContentId} onValueChange={setSelectedContentId}>
+            <SelectTrigger><SelectValue placeholder="글 선택" /></SelectTrigger>
+            <SelectContent>
+              {candidates.length === 0 ? (
+                <div className="px-2 py-1.5 text-sm text-muted-foreground">영상 없는 글이 없습니다</div>
+              ) : (
+                candidates.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            유튜브 제목 = 이 글의 <b>썸네일 제목</b> + 고정 해시태그로 자동 생성됩니다.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label>영상 파일 (세로 mp4)</Label>
+          <Input
+            type="file"
+            accept="video/*"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+          />
+          {file && <p className="text-xs text-muted-foreground">{file.name} · {(file.size / 1024 / 1024).toFixed(1)}MB</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label>YouTube 공개 설정</Label>
+          <Select value={vPrivacy} onValueChange={setVPrivacy}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="public">공개</SelectItem>
+              <SelectItem value="unlisted">일부공개(링크)</SelectItem>
+              <SelectItem value="private">비공개</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Instagram 릴스 동시 배포 */}
+        <div className="border rounded-lg p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: "#B33089" }} />
+              <span className="text-sm font-medium">Instagram 릴스에도 올리기</span>
+            </div>
+            <Switch checked={toInstagram} onCheckedChange={setToInstagram} disabled={!ig?.connected} />
+          </div>
+          {!ig?.connected && <div className="text-xs text-amber-600">인스타 토큰 미설정(.env) — 연결 후 사용 가능</div>}
+          {toInstagram && (
+            <div className="space-y-2">
+              <Label>인스타 본문 (영상 내용)</Label>
+              <textarea
+                className="w-full min-h-24 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={igCaptionText}
+                onChange={(e) => setIgCaptionText(e.target.value)}
+                placeholder="이 영상의 내용을 적어주세요. (아래 고정 문구·해시태그는 자동으로 붙습니다)"
+              />
+              <div className="text-xs text-muted-foreground">본문 아래에 고정 홍보 문구 + 해시태그(#한국이름학교 …)가 자동으로 붙습니다.</div>
+            </div>
+          )}
+        </div>
+
+        <div className="text-xs text-muted-foreground border rounded-md p-3 space-y-1">
+          <div>유튜브 제목 해시태그: #한국이름학교 #와츠유어네임이름연구협회 #작명 #개명 #이름분석 #이름풀이</div>
+          <div>· 유튜브 게시 후 선택한 글의 <b>동영상 콘텐츠</b>가 켜지고 영상 링크가 자동 삽입됩니다.</div>
+          <div>· 틱톡은 API 오디트 후 추가 예정.</div>
+        </div>
+
+        <Button className="w-full" onClick={deploy} disabled={deploying || !yt?.connected}>
+          {deploying ? "배포 중… (영상 업로드에 시간이 걸릴 수 있습니다)" : "배포하기"}
+        </Button>
+
+        {result && (
+          <div className="text-sm border rounded-lg p-4 space-y-1">
+            {result.error && <div className="text-red-600">오류: {result.error}</div>}
+            {result.youtubeTitle && <div className="text-muted-foreground">제목: {result.youtubeTitle}</div>}
+            {result.youtube && (
+              <div>
+                YouTube: {result.youtube.ok
+                  ? <a href={result.youtube.url} target="_blank" rel="noreferrer" className="text-blue-600 underline">{result.youtube.url}</a>
+                  : <span className="text-red-600">실패 — {result.youtube.error}</span>}
+              </div>
+            )}
+            {result.thumbnail && (
+              <div>
+                썸네일: {result.thumbnail.ok
+                  ? <span className="text-emerald-600">맨 앞 프레임으로 설정됨</span>
+                  : <span className="text-amber-600">자동설정 실패({result.thumbnail.error}) — 유튜브 기본 썸네일 사용</span>}
+              </div>
+            )}
+            {result.instagram && (
+              <div>
+                Instagram: {result.instagram.ok
+                  ? <span className="text-emerald-600">릴스 게시 완료</span>
+                  : <span className="text-red-600">실패 — {result.instagram.error}</span>}
+              </div>
+            )}
+            {result.homepage && (
+              <div>
+                홈페이지 글: {result.homepage.ok
+                  ? <span className="text-emerald-600">영상 링크 삽입 완료</span>
+                  : <span className="text-red-600">실패 — {result.homepage.error}</span>}
+              </div>
+            )}
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

@@ -82,7 +82,12 @@ app.use((req, res, next) => {
   server.listen(listenOpts, () => {
     log(`serving on port ${port} in ${process.env.NODE_ENV || 'development'} mode`);
     // 후기 자동화 텔레그램 봇 기동 (TELEGRAM_BOT_TOKEN 있을 때만)
-    startTelegramBot();
+    // 로컬 개발 시 운영 봇과 폴링 충돌 방지: DISABLE_TELEGRAM_BOT=1 이면 기동 생략
+    if (process.env.DISABLE_TELEGRAM_BOT === "1") {
+      log("텔레그램 봇 기동 생략 (DISABLE_TELEGRAM_BOT=1)");
+    } else {
+      startTelegramBot();
+    }
   });
 })().catch((err) => {
   console.error("Failed to start server:", err);
