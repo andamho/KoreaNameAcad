@@ -373,42 +373,28 @@ export default function Inquiry() {
                                   setSubmittingReply(inq.id);
                                   try {
                                     const token = localStorage.getItem("kna_admin_token");
-                                    if (inq.status === "접수완료") {
-                                      // 첫 답변: 문자/이메일 알림 발송
-                                      const res = await fetch(`/api/inquiries/${inq.id}/reply`, {
-                                        method: "PUT",
-                                        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                                        body: JSON.stringify({ reply: text }),
-                                      });
-                                      if (!res.ok) throw new Error();
+                                    const res = await fetch(`/api/inquiries/${inq.id}/reply`, {
+                                      method: "PUT",
+                                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                                      body: JSON.stringify({ reply: text }),
+                                    });
+                                    if (!res.ok) {
+                                      const errData = await res.json().catch(() => ({}));
+                                      throw new Error(errData.error || `HTTP ${res.status}`);
+                                    }
+                                    const result = await res.json();
+                                    if (result.isFirstReply) {
                                       toast({ title: `답변을 ${inq.contactType === "sms" ? "문자로" : "이메일로"} 발송했습니다.` });
                                       fetchAdminInquiries();
-                                      // 즉시 화면에 반영
-                                      setThreadMessages(prev => ({
-                                        ...prev,
-                                        [inq.id]: [...(prev[inq.id] ?? []), { id: `__tmp__${Date.now()}`, inquiryId: inq.id, senderType: "admin", content: text, createdAt: new Date().toISOString() }],
-                                      }));
                                     } else {
-                                      // 이후 댓글: 알림 발송 없이 스레드에만 저장
-                                      const res = await fetch(`/api/inquiries/${inq.id}/thread`, {
-                                        method: "POST",
-                                        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                                        body: JSON.stringify({ content: text }),
-                                      });
-                                      if (!res.ok) {
-                                        const errData = await res.json().catch(() => ({}));
-                                        throw new Error(errData.error || `HTTP ${res.status}`);
-                                      }
-                                      const newMsg = await res.json();
-                                      // 즉시 화면에 반영
-                                      setThreadMessages(prev => ({
-                                        ...prev,
-                                        [inq.id]: [...(prev[inq.id] ?? []), newMsg],
-                                      }));
                                       toast({ title: "댓글이 등록되었습니다." });
                                     }
+                                    setThreadMessages(prev => ({
+                                      ...prev,
+                                      [inq.id]: [...(prev[inq.id] ?? []), { id: `__tmp__${Date.now()}`, senderType: "admin", content: text, createdAt: new Date().toISOString() }],
+                                    }));
                                     setReplyTexts(prev => { const n = { ...prev }; delete n[inq.id]; return n; });
-                                    fetchThreadMessages(inq.id); // 서버와 동기화
+                                    fetchThreadMessages(inq.id);
                                   } catch (e: any) {
                                     toast({ title: `실패: ${e?.message || "알 수 없는 오류"}`, variant: "destructive" });
                                   } finally {

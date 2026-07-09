@@ -494,17 +494,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!reply?.trim()) return res.status(400).json({ error: "답변 내용을 입력해주세요." });
       const inquiry = await storage.getInquiry(req.params.id);
       if (!inquiry) return res.status(404).json({ error: "문의를 찾을 수 없습니다." });
+      const isFirstReply = !inquiry.adminReply;
       const updated = await storage.replyToInquiry(req.params.id, reply.trim());
-      // 스레드에도 어드민 메시지 저장 (awaited - race condition 방지)
+      // 스레드 메시지 저장
       await storage.addInquiryMessage(req.params.id, "admin", reply.trim());
       invalidatePublicInquiriesCache();
-      if (updated.contactType === "sms") {
-        const smsText = `[한국이름학교] 문의하신 내용에 답변드렸습니다.\n\n${reply.trim()}`;
-        sendSMS(updated.contact, smsText).catch(err => console.error("[SMS] 문의 답변 발송 실패:", err));
-      } else {
-        sendInquiryReplyToUser(updated).catch(err => console.error("[이메일] 문의 답변 발송 실패:", err));
+      // 첫 번째 답변만 문자/이메일 알림 발송
+      if (isFirstReply) {
+        if (updated.contactType === "sms") {
+          const smsText = `[한국이름학교] 문의하신 내용에 답변드렸습니다.\n\n${reply.trim()}`;
+          sendSMS(updated.contact, smsText).catch(err => console.error("[SMS] 문의 답변 발송 실패:", err));
+        } else {
+          sendInquiryReplyToUser(updated).catch(err => console.error("[이메일] 문의 답변 발송 실패:", err));
+        }
       }
-      return res.json(updated);
+      return res.json({ ...updated, isFirstReply });
     } catch (error: any) {
       return handleDbError(error, res, "PUT /api/inquiries/:id/reply");
     }

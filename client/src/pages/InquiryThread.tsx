@@ -87,10 +87,10 @@ export default function InquiryThread() {
     try {
       let res;
       if (isAdmin) {
-        res = await fetch(`/api/inquiries/${data.inquiry.id}/thread`, {
-          method: "POST",
+        res = await fetch(`/api/inquiries/${data.inquiry.id}/reply`, {
+          method: "PUT",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken}` },
-          body: JSON.stringify({ content: replyText.trim() }),
+          body: JSON.stringify({ reply: replyText.trim() }),
         });
       } else {
         res = await fetch(`/api/inquiry/thread/${token}`, {
@@ -100,7 +100,7 @@ export default function InquiryThread() {
         });
       }
       if (!res.ok) {
-        const d = await res.json();
+        const d = await res.json().catch(() => ({}));
         throw new Error(d.error || "오류가 발생했습니다.");
       }
       setReplyText("");
