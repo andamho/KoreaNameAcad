@@ -20,6 +20,7 @@ interface AdminInquiry {
   content: string;
   status: string;
   adminReply: string | null;
+  accessToken?: string;
   createdAt: string;
   repliedAt: string | null;
 }
@@ -60,6 +61,9 @@ export default function Inquiry() {
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [submittingReply, setSubmittingReply] = useState<string | null>(null);
   const [threadMessages, setThreadMessages] = useState<Record<string, Array<{id: string; senderType: string; content: string; createdAt: string}>>>({});
+  const [adminLoginVisible, setAdminLoginVisible] = useState(false);
+  const [adminPw, setAdminPw] = useState("");
+  const [adminLoginErr, setAdminLoginErr] = useState("");
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -70,6 +74,36 @@ export default function Inquiry() {
     if (!res.ok) return;
     const data = await res.json();
     setAdminInquiries(Array.isArray(data) ? data : []);
+  };
+
+  const handleAdminLogin = async () => {
+    setAdminLoginErr("");
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: adminPw }),
+      });
+      const data = await res.json();
+      if (data.token) {
+        localStorage.setItem("kna_admin_token", data.token);
+        setIsAdmin(true);
+        setAdminLoginVisible(false);
+        setAdminPw("");
+        fetchAdminInquiries();
+      } else {
+        setAdminLoginErr("비밀번호가 올바르지 않습니다.");
+      }
+    } catch {
+      setAdminLoginErr("로그인에 실패했습니다.");
+    }
+  };
+
+  const handleAdminLogout = () => {
+    localStorage.removeItem("kna_admin_token");
+    setIsAdmin(false);
+    setAdminInquiries([]);
+    setExpandedInquiry(null);
   };
 
   const fetchThreadMessages = async (id: string) => {
@@ -267,7 +301,10 @@ export default function Inquiry() {
             /* 관리자 뷰 */
             adminInquiries.length > 0 && (
               <div className="mt-8">
-                <h2 className="text-sm md:text-base font-semibold text-muted-foreground mb-3">문의 관리 <span className="text-[#18a999]">(관리자)</span></h2>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm md:text-base font-semibold text-muted-foreground">문의 관리 <span className="text-[#18a999]">(관리자)</span></h2>
+                  <button onClick={handleAdminLogout} className="text-xs text-muted-foreground hover:text-red-500 transition">로그아웃</button>
+                </div>
                 <div className="rounded-xl border border-border bg-card text-sm overflow-hidden">
                   <div className="grid grid-cols-[1fr_130px_80px_50px] px-4 py-2 bg-muted/50 text-xs md:text-sm font-bold text-muted-foreground border-b border-border">
                     <span>작성자</span>
@@ -321,6 +358,16 @@ export default function Inquiry() {
                               </p>
                             </div>
                           </div>
+                          {inq.accessToken && (
+                            <a
+                              href={`/inquiry/thread/${inq.accessToken}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-block text-xs text-[#18a999] underline underline-offset-2"
+                            >
+                              대화방 열기 →
+                            </a>
+                          )}
                           <div>
                             <p className="text-xs md:text-sm text-muted-foreground mb-1">문의 내용</p>
                             <p className="text-sm md:text-base whitespace-pre-wrap bg-background border border-border/50 rounded-lg px-3 py-2 leading-relaxed">
@@ -450,6 +497,47 @@ export default function Inquiry() {
                 </div>
               </div>
             )
+          )}
+          {/* 관리자 로그인 (비로그인 상태에서만) */}
+          {!isAdmin && (
+            <div className="mt-10 text-center">
+              {!adminLoginVisible ? (
+                <button
+                  onClick={() => setAdminLoginVisible(true)}
+                  className="text-xs text-muted-foreground/30 hover:text-muted-foreground/60 transition"
+                >
+                  관리자
+                </button>
+              ) : (
+                <div className="inline-flex flex-col items-center gap-2 p-4 border border-border rounded-xl bg-card shadow-sm">
+                  <p className="text-xs font-semibold text-muted-foreground">관리자 로그인</p>
+                  <input
+                    type="password"
+                    value={adminPw}
+                    onChange={e => setAdminPw(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleAdminLogin()}
+                    placeholder="비밀번호"
+                    className="border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background w-44"
+                    autoFocus
+                  />
+                  {adminLoginErr && <p className="text-xs text-red-500">{adminLoginErr}</p>}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleAdminLogin}
+                      className="px-4 py-1.5 rounded-lg bg-[#18a999] text-white text-sm font-bold hover:bg-[#149085] transition"
+                    >
+                      로그인
+                    </button>
+                    <button
+                      onClick={() => { setAdminLoginVisible(false); setAdminPw(""); setAdminLoginErr(""); }}
+                      className="px-4 py-1.5 rounded-lg border border-border text-sm text-muted-foreground hover:bg-muted/30 transition"
+                    >
+                      취소
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </main>
