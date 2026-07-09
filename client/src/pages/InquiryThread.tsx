@@ -42,9 +42,23 @@ export default function InquiryThread() {
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminToken, setAdminToken] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("kna_admin_token");
+    if (!token) return;
+    fetch("/api/admin/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    }).then(r => r.json()).then(d => {
+      if (d.valid) { setIsAdmin(true); setAdminToken(token); }
+    }).catch(() => {});
+  }, []);
 
   const fetchThread = async () => {
     try {
@@ -67,15 +81,24 @@ export default function InquiryThread() {
   }, [data?.messages]);
 
   const handleSend = async () => {
-    if (!replyText.trim()) return;
+    if (!replyText.trim() || !data) return;
     setSending(true);
     setSendError("");
     try {
-      const res = await fetch(`/api/inquiry/thread/${token}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: replyText.trim() }),
-      });
+      let res;
+      if (isAdmin) {
+        res = await fetch(`/api/inquiries/${data.inquiry.id}/thread`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken}` },
+          body: JSON.stringify({ content: replyText.trim() }),
+        });
+      } else {
+        res = await fetch(`/api/inquiry/thread/${token}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: replyText.trim() }),
+        });
+      }
       if (!res.ok) {
         const d = await res.json();
         throw new Error(d.error || "오류가 발생했습니다.");
@@ -127,26 +150,32 @@ export default function InquiryThread() {
                 <div className="rounded-2xl bg-card border border-border/50 p-5 space-y-3">
                   <p className="text-xs font-semibold text-muted-foreground">대화 내역</p>
                   <div className="space-y-3">
-                    {data.messages.map((msg) => (
-                      <div
-                        key={msg.id}
-                        className={`flex flex-col gap-1 ${msg.senderType === "user" ? "items-end" : "items-start"}`}
-                      >
-                        <p className={`text-[10px] font-medium ${msg.senderType === "user" ? "text-muted-foreground" : "text-[#18a999]"}`}>
-                          {msg.senderType === "user" ? data.inquiry.name : "한국이름학교"}
-                        </p>
+                    {data.messages.map((msg) => {
+                      const isRight = isAdmin ? msg.senderType === "admin" : msg.senderType === "user";
+                      const label = isAdmin
+                        ? (msg.senderType === "admin" ? "관리자 (나)" : data.inquiry.name)
+                        : (msg.senderType === "user" ? data.inquiry.name : "한국이름학교");
+                      return (
                         <div
-                          className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm md:text-base whitespace-pre-wrap leading-relaxed ${
-                            msg.senderType === "user"
-                              ? "bg-[#18a999] text-white rounded-tr-sm"
-                              : "bg-muted text-foreground rounded-tl-sm"
-                          }`}
+                          key={msg.id}
+                          className={`flex flex-col gap-1 ${isRight ? "items-end" : "items-start"}`}
                         >
-                          {msg.content}
+                          <p className={`text-[10px] font-medium ${isRight ? "text-muted-foreground" : "text-[#18a999]"}`}>
+                            {label}
+                          </p>
+                          <div
+                            className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm md:text-base whitespace-pre-wrap leading-relaxed ${
+                              isRight
+                                ? "bg-[#18a999] text-white rounded-tr-sm"
+                                : "bg-muted text-foreground rounded-tl-sm"
+                            }`}
+                          >
+                            {msg.content}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">{formatDateTime(msg.createdAt)}</p>
                         </div>
-                        <p className="text-[10px] text-muted-foreground">{formatDateTime(msg.createdAt)}</p>
-                      </div>
-                    ))}
+                      );
+                    })}
                     <div ref={bottomRef} />
                   </div>
                 </div>
@@ -154,11 +183,14 @@ export default function InquiryThread() {
 
               {/* 답글 입력 */}
               <div className="rounded-2xl bg-card border border-border/50 p-5 space-y-3">
-                <p className="text-xs font-semibold text-muted-foreground">추가 문의 또는 답글</p>
+                <p className="text-xs font-semibold text-muted-foreground">
+                  {isAdmin ? "관리자 답글" : "추가 문의 또는 답글"}
+                  {isAdmin && <span className="ml-2 text-[#18a999]">(관리자 로그인 중)</span>}
+                </p>
                 <textarea
                   value={replyText}
                   onChange={e => setReplyText(e.target.value)}
-                  placeholder="메시지를 입력하세요"
+                  placeholder={isAdmin ? "관리자 메시지를 입력하세요" : "메시지를 입력하세요"}
                   maxLength={1000}
                   rows={4}
                   className="w-full border border-border rounded-xl px-4 py-3 text-sm md:text-base outline-none focus:ring-2 focus:ring-[#18a999] bg-background transition resize-none"

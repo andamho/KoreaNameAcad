@@ -59,6 +59,7 @@ export default function Inquiry() {
   const [expandedInquiry, setExpandedInquiry] = useState<string | null>(null);
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [submittingReply, setSubmittingReply] = useState<string | null>(null);
+  const [threadMessages, setThreadMessages] = useState<Record<string, Array<{id: string; senderType: string; content: string; createdAt: string}>>>({});
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -69,6 +70,16 @@ export default function Inquiry() {
     if (!res.ok) return;
     const data = await res.json();
     setAdminInquiries(Array.isArray(data) ? data : []);
+  };
+
+  const fetchThreadMessages = async (id: string) => {
+    const token = localStorage.getItem("kna_admin_token");
+    try {
+      const res = await fetch(`/api/inquiries/${id}/thread`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return;
+      const data = await res.json();
+      setThreadMessages(prev => ({ ...prev, [id]: Array.isArray(data) ? data : [] }));
+    } catch {}
   };
 
   // 마운트 시 공개 목록 + 관리자 확인을 병렬로 즉시 실행
@@ -269,7 +280,11 @@ export default function Inquiry() {
                     <div key={inq.id} className={idx !== 0 ? "border-t border-border/50" : ""}>
                       <div
                         className="grid grid-cols-[1fr_130px_80px_50px] px-4 py-3 items-center cursor-pointer hover:bg-muted/20 transition"
-                        onClick={() => setExpandedInquiry(expandedInquiry === inq.id ? null : inq.id)}
+                        onClick={() => {
+                          const next = expandedInquiry === inq.id ? null : inq.id;
+                          setExpandedInquiry(next);
+                          if (next) fetchThreadMessages(next);
+                        }}
                       >
                         <span className="font-medium text-sm md:text-base">{maskName(inq.name)} 님</span>
                         <span className="text-xs md:text-sm text-muted-foreground">{formatDateTime(inq.createdAt)}</span>
@@ -312,57 +327,83 @@ export default function Inquiry() {
                               {inq.content}
                             </p>
                           </div>
-                          {inq.adminReply && (
-                            <div>
-                              <p className="text-xs md:text-sm text-muted-foreground mb-1">보낸 답변</p>
-                              <p className="text-sm md:text-base whitespace-pre-wrap bg-[#18a999]/5 border border-[#18a999]/20 rounded-lg px-3 py-2 leading-relaxed">
-                                {inq.adminReply}
-                              </p>
+                          {/* 스레드 메시지 */}
+                          {(threadMessages[inq.id] ?? []).length > 0 && (
+                            <div className="space-y-1.5">
+                              <p className="text-xs md:text-sm text-muted-foreground">대화 내역</p>
+                              <div className="space-y-2 max-h-52 overflow-y-auto bg-background border border-border/40 rounded-lg p-3">
+                                {(threadMessages[inq.id] ?? []).map(msg => (
+                                  <div key={msg.id} className={`flex flex-col gap-0.5 ${msg.senderType === "admin" ? "items-end" : "items-start"}`}>
+                                    <p className={`text-[10px] font-medium ${msg.senderType === "admin" ? "text-[#18a999]" : "text-muted-foreground"}`}>
+                                      {msg.senderType === "admin" ? "관리자" : inq.name}
+                                    </p>
+                                    <div className={`max-w-[85%] rounded-xl px-3 py-2 text-xs md:text-sm whitespace-pre-wrap leading-relaxed ${
+                                      msg.senderType === "admin"
+                                        ? "bg-[#18a999] text-white"
+                                        : "bg-muted/60 text-foreground"
+                                    }`}>
+                                      {msg.content}
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground">{formatDateTime(msg.createdAt)}</p>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
-                          {inq.status === "접수완료" && (
-                            <div className="space-y-2">
-                              <p className="text-xs md:text-sm text-muted-foreground">
-                                답변 작성 ({inq.contactType === "sms" ? "문자 발송" : "이메일 발송"})
-                              </p>
-                              <textarea
-                                value={replyTexts[inq.id] || ""}
-                                onChange={e => setReplyTexts(prev => ({ ...prev, [inq.id]: e.target.value }))}
-                                placeholder={`${inq.name}님께 보낼 답변을 작성하세요`}
-                                className="w-full border border-border rounded-xl px-3 py-2 text-sm md:text-base outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[80px] bg-background"
-                              />
-                              <div className="flex justify-end">
-                                <button
-                                  disabled={!replyTexts[inq.id]?.trim() || submittingReply === inq.id}
-                                  className="px-4 py-1.5 text-sm md:text-base rounded-lg bg-[#18a999] text-white font-bold hover:bg-[#149085] disabled:opacity-50 transition"
-                                  onClick={async () => {
-                                    const text = replyTexts[inq.id]?.trim();
-                                    if (!text) return;
-                                    setSubmittingReply(inq.id);
-                                    try {
-                                      const token = localStorage.getItem("kna_admin_token");
+                          {/* 입력창 — 항상 표시 */}
+                          <div className="space-y-2">
+                            <p className="text-xs md:text-sm text-muted-foreground">
+                              {inq.status === "접수완료"
+                                ? `답변 작성 (${inq.contactType === "sms" ? "문자 발송" : "이메일 발송"})`
+                                : "추가 메시지 (스레드에만 저장)"}
+                            </p>
+                            <textarea
+                              value={replyTexts[inq.id] || ""}
+                              onChange={e => setReplyTexts(prev => ({ ...prev, [inq.id]: e.target.value }))}
+                              placeholder={inq.status === "접수완료" ? `${inq.name}님께 보낼 답변을 작성하세요` : "추가 메시지를 입력하세요"}
+                              className="w-full border border-border rounded-xl px-3 py-2 text-sm md:text-base outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[80px] bg-background"
+                            />
+                            <div className="flex justify-end">
+                              <button
+                                disabled={!replyTexts[inq.id]?.trim() || submittingReply === inq.id}
+                                className="px-4 py-1.5 text-sm md:text-base rounded-lg bg-[#18a999] text-white font-bold hover:bg-[#149085] disabled:opacity-50 transition"
+                                onClick={async () => {
+                                  const text = replyTexts[inq.id]?.trim();
+                                  if (!text) return;
+                                  setSubmittingReply(inq.id);
+                                  try {
+                                    const token = localStorage.getItem("kna_admin_token");
+                                    if (inq.status === "접수완료") {
                                       const res = await fetch(`/api/inquiries/${inq.id}/reply`, {
                                         method: "PUT",
                                         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                                         body: JSON.stringify({ reply: text }),
                                       });
                                       if (!res.ok) throw new Error();
-                                      fetchAdminInquiries();
-                                      setReplyTexts(prev => { const n = { ...prev }; delete n[inq.id]; return n; });
-                                      setExpandedInquiry(null);
                                       toast({ title: `답변을 ${inq.contactType === "sms" ? "문자로" : "이메일로"} 발송했습니다.` });
-                                    } catch {
-                                      toast({ title: "발송에 실패했습니다.", variant: "destructive" });
-                                    } finally {
-                                      setSubmittingReply(null);
+                                      fetchAdminInquiries();
+                                    } else {
+                                      const res = await fetch(`/api/inquiries/${inq.id}/thread`, {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                                        body: JSON.stringify({ content: text }),
+                                      });
+                                      if (!res.ok) throw new Error();
+                                      toast({ title: "메시지를 추가했습니다." });
                                     }
-                                  }}
-                                >
-                                  {submittingReply === inq.id ? "발송 중..." : "답변 발송"}
-                                </button>
-                              </div>
+                                    setReplyTexts(prev => { const n = { ...prev }; delete n[inq.id]; return n; });
+                                    fetchThreadMessages(inq.id);
+                                  } catch {
+                                    toast({ title: "실패했습니다.", variant: "destructive" });
+                                  } finally {
+                                    setSubmittingReply(null);
+                                  }
+                                }}
+                              >
+                                {submittingReply === inq.id ? "처리 중..." : inq.status === "접수완료" ? "답변 발송" : "메시지 추가"}
+                              </button>
                             </div>
-                          )}
+                          </div>
                         </div>
                       )}
                     </div>
