@@ -1,4 +1,5 @@
 # Railway(Nixpacks) 빌드 설정
-# 기본 자동감지(Node) 패키지에 ffmpeg 추가 — 인스타 H.264 변환 / 유튜브 썸네일 프레임 추출에 필요
+# ffmpeg를 apt로 /usr/bin에 설치 → spawn("ffmpeg")가 런타임 PATH에서 확실히 찾음
+# (인스타 H.264 변환 / 유튜브 썸네일 프레임 추출에 필요)
 [phases.setup]
-nixPkgs = ["...", "ffmpeg"]
+aptPkgs = ["ffmpeg"]
