@@ -355,7 +355,7 @@ export default function Inquiry() {
                             <p className="text-xs md:text-sm text-muted-foreground">
                               {inq.status === "접수완료"
                                 ? `답변 작성 (${inq.contactType === "sms" ? "문자 발송" : "이메일 발송"})`
-                                : "추가 메시지 (스레드에만 저장)"}
+                                : "추가 메시지"}
                             </p>
                             <textarea
                               value={replyTexts[inq.id] || ""}
