@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { Send, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useAdmin } from "@/contexts/AdminContext";
 
 interface PublicInquiry {
   id: string;
@@ -54,8 +55,8 @@ export default function Inquiry() {
   const [publicList, setPublicList] = useState<PublicInquiry[]>([]);
   const [publicListLoading, setPublicListLoading] = useState(true);
 
-  // 관리자 상태
-  const [isAdmin, setIsAdmin] = useState(false);
+  // 관리자 상태 — AdminContext에서 전역으로 관리 (네비바 로그인과 동기화)
+  const { isAdmin, token: adminToken, login: adminContextLogin, logout: adminContextLogout } = useAdmin();
   const [adminInquiries, setAdminInquiries] = useState<AdminInquiry[]>([]);
   const [expandedInquiry, setExpandedInquiry] = useState<string | null>(null);
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
@@ -69,8 +70,7 @@ export default function Inquiry() {
 
   // 관리자용 전체 목록 조회
   const fetchAdminInquiries = async () => {
-    const token = localStorage.getItem("kna_admin_token");
-    const res = await fetch("/api/inquiries", { headers: { Authorization: `Bearer ${token}` } });
+    const res = await fetch("/api/inquiries", { headers: { Authorization: `Bearer ${adminToken}` } });
     if (!res.ok) return;
     const data = await res.json();
     setAdminInquiries(Array.isArray(data) ? data : []);
@@ -79,18 +79,10 @@ export default function Inquiry() {
   const handleAdminLogin = async () => {
     setAdminLoginErr("");
     try {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: adminPw }),
-      });
-      const data = await res.json();
-      if (data.token) {
-        localStorage.setItem("kna_admin_token", data.token);
-        setIsAdmin(true);
+      const ok = await adminContextLogin(adminPw);
+      if (ok) {
         setAdminLoginVisible(false);
         setAdminPw("");
-        fetchAdminInquiries();
       } else {
         setAdminLoginErr("비밀번호가 올바르지 않습니다.");
       }
@@ -100,31 +92,26 @@ export default function Inquiry() {
   };
 
   const handleAdminLogout = () => {
-    localStorage.removeItem("kna_admin_token");
-    setIsAdmin(false);
+    adminContextLogout();
     setAdminInquiries([]);
     setExpandedInquiry(null);
   };
 
   const fetchThreadMessages = async (id: string) => {
-    const token = localStorage.getItem("kna_admin_token");
     try {
-      const res = await fetch(`/api/inquiries/${id}/thread`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`/api/inquiries/${id}/thread`, { headers: { Authorization: `Bearer ${adminToken}` } });
       if (!res.ok) return;
       const data = await res.json();
       setThreadMessages(prev => ({ ...prev, [id]: Array.isArray(data) ? data : [] }));
     } catch {}
   };
 
-  // 마운트 시 공개 목록 + 관리자 확인을 병렬로 즉시 실행
+  // 공개 목록 로드
   useEffect(() => {
-    // 캐시된 공개 목록 즉시 표시 (로딩 느낌 없애기)
     const cached = localStorage.getItem("kna_public_inquiries");
     if (cached) {
       try { setPublicList(JSON.parse(cached)); setPublicListLoading(false); } catch {}
     }
-
-    // 공개 목록 API 호출 후 캐시 갱신
     fetch("/api/inquiries/public")
       .then(r => r.json())
       .then(data => {
@@ -134,25 +121,17 @@ export default function Inquiry() {
         localStorage.setItem("kna_public_inquiries", JSON.stringify(list));
       })
       .catch(() => { setPublicListLoading(false); });
-
-    // 관리자 토큰 있으면 병렬로 확인 + 전체 목록 로드
-    const token = localStorage.getItem("kna_admin_token");
-    if (token) {
-      fetch("/api/admin/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-      })
-        .then(r => r.json())
-        .then(data => {
-          if (data.valid) {
-            setIsAdmin(true);
-            fetchAdminInquiries();
-          }
-        })
-        .catch(() => {});
-    }
   }, [submitted]);
+
+  // 관리자 상태 변경 시 문의 목록 로드 (네비바 로그인 포함 즉시 반영)
+  useEffect(() => {
+    if (isAdmin) {
+      fetchAdminInquiries();
+    } else {
+      setAdminInquiries([]);
+      setExpandedInquiry(null);
+    }
+  }, [isAdmin]);
 
   async function handleSubmit() {
     if (!name.trim() || !contact.trim() || !content.trim()) {
@@ -335,8 +314,7 @@ export default function Inquiry() {
                           onClick={async (e) => {
                             e.stopPropagation();
                             if (!confirm("정말 삭제하시겠습니까?")) return;
-                            const token = localStorage.getItem("kna_admin_token");
-                            await fetch(`/api/inquiries/${inq.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+                            await fetch(`/api/inquiries/${inq.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${adminToken}` } });
                             fetchAdminInquiries();
                             if (expandedInquiry === inq.id) setExpandedInquiry(null);
                           }}
@@ -419,10 +397,9 @@ export default function Inquiry() {
                                   if (!text) return;
                                   setSubmittingReply(inq.id);
                                   try {
-                                    const token = localStorage.getItem("kna_admin_token");
                                     const res = await fetch(`/api/inquiries/${inq.id}/reply`, {
                                       method: "PUT",
-                                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken}` },
                                       body: JSON.stringify({ reply: text }),
                                     });
                                     if (!res.ok) {
