@@ -275,7 +275,7 @@ export default function Inquiry() {
                     <span>상태</span>
                     <span />
                   </div>
-                  <div className="overflow-y-auto" style={{ maxHeight: "250px" }}>
+                  <div>
                   {adminInquiries.map((inq, idx) => (
                     <div key={inq.id} className={idx !== 0 ? "border-t border-border/50" : ""}>
                       <div
