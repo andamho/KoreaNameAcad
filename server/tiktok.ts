@@ -27,14 +27,17 @@ function getRedirectUri(): string {
 
 /** 동의 화면 URL */
 export function getTiktokAuthUrl(state: string): string {
-  const params = new URLSearchParams({
-    client_key: process.env.TIKTOK_CLIENT_KEY || "",
-    scope: SCOPES,
-    response_type: "code",
-    redirect_uri: getRedirectUri(),
-    state,
-  });
-  return `${AUTH_BASE}?${params.toString()}`;
+  const clientKey = process.env.TIKTOK_CLIENT_KEY || "";
+  const redirectUri = getRedirectUri();
+  // 주의: scope의 콤마는 인코딩하면 안 됨(TikTok이 %2C를 스코프의 일부로 취급 → scope 오류).
+  // scope 값(user.info.basic / video.upload)은 특수문자가 없어 그대로 붙여도 안전.
+  return (
+    `${AUTH_BASE}?client_key=${encodeURIComponent(clientKey)}` +
+    `&scope=${SCOPES}` +
+    `&response_type=code` +
+    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+    `&state=${encodeURIComponent(state)}`
+  );
 }
 
 /** 콜백: code → 토큰 교환 후 저장 */
