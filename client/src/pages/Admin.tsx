@@ -749,10 +749,12 @@ export default function Admin() {
 interface YtStatus { configured: boolean; connected: boolean; channelTitle?: string }
 
 interface IgStatus { configured: boolean; connected: boolean; username?: string }
+interface TtStatus { configured: boolean; connected: boolean; displayName?: string }
 
 function VideoDeployPanel() {
   const [yt, setYt] = useState<YtStatus | null>(null);
   const [ig, setIg] = useState<IgStatus | null>(null);
+  const [tt, setTt] = useState<TtStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchStatus = async () => {
@@ -771,6 +773,12 @@ function VideoDeployPanel() {
     } catch {
       setIg(null);
     }
+    try {
+      const ttRes = await fetch("/api/admin/tiktok/status", { headers });
+      setTt(ttRes.ok ? await ttRes.json() : null);
+    } catch {
+      setTt(null);
+    }
     setLoading(false);
   };
 
@@ -785,6 +793,12 @@ function VideoDeployPanel() {
     window.location.href = `/api/auth/youtube?token=${encodeURIComponent(token)}`;
   };
 
+  const connectTiktok = () => {
+    const token = localStorage.getItem("kna_admin_token");
+    if (!token) return;
+    window.location.href = `/api/auth/tiktok?token=${encodeURIComponent(token)}`;
+  };
+
   // ── 배포 폼 상태 ──
   const { toast } = useToast();
   const [file, setFile] = useState<File | null>(null);
@@ -793,6 +807,7 @@ function VideoDeployPanel() {
   const [vPrivacy, setVPrivacy] = useState("public");
   const [toInstagram, setToInstagram] = useState(false);
   const [igCaptionText, setIgCaptionText] = useState("");
+  const [toTiktok, setToTiktok] = useState(false);
   const [deploying, setDeploying] = useState(false);
   const [result, setResult] = useState<any>(null);
 
@@ -838,6 +853,7 @@ function VideoDeployPanel() {
           privacyStatus: vPrivacy,
           targetInstagram: toInstagram,
           instagramCaption: igCaptionText,
+          targetTiktok: toTiktok,
         }),
       });
       const data = await dep.json();
@@ -914,16 +930,32 @@ function VideoDeployPanel() {
           {ig?.connected ? <Badge variant="secondary">✓ 연결됨</Badge> : <Badge variant="outline">미연결</Badge>}
         </div>
 
-        {/* TikTok — 심사 대기 */}
-        <div className="flex items-center justify-between border rounded-lg p-4 mt-3 opacity-60">
+        {/* TikTok */}
+        <div className="flex items-center justify-between border rounded-lg p-4 mt-3">
           <div className="flex items-center gap-3">
             <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: "#0E9BAE" }} />
             <div>
-              <div className="font-medium">TikTok</div>
-              <div className="text-xs text-muted-foreground">API 오디트 준비 중</div>
+              <div className="font-medium">TikTok <span className="text-xs text-muted-foreground">(초안 전송)</span></div>
+              {loading ? (
+                <div className="text-xs text-muted-foreground">확인 중…</div>
+              ) : !tt?.configured ? (
+                <div className="text-xs text-amber-600">API 키 미설정 (.env)</div>
+              ) : tt?.connected ? (
+                <div className="text-xs text-emerald-600">연결됨{tt.displayName ? ` · ${tt.displayName}` : ""}</div>
+              ) : (
+                <div className="text-xs text-muted-foreground">연결 안 됨</div>
+              )}
             </div>
           </div>
-          <Badge variant="outline">준비 중</Badge>
+          <div className="flex items-center gap-2">
+            {tt?.connected ? (
+              <Badge variant="secondary">✓ 연결됨</Badge>
+            ) : (
+              <Button size="sm" onClick={connectTiktok} disabled={!tt?.configured}>
+                TikTok 연결
+              </Button>
+            )}
+          </div>
         </div>
       </Card>
 
@@ -1007,6 +1039,19 @@ function VideoDeployPanel() {
           )}
         </div>
 
+        {/* TikTok 동시 배포 (초안) */}
+        <div className="border rounded-lg p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: "#0E9BAE" }} />
+              <span className="text-sm font-medium">TikTok에도 올리기 <span className="text-xs text-muted-foreground">(초안 전송)</span></span>
+            </div>
+            <Switch checked={toTiktok} onCheckedChange={setToTiktok} disabled={!tt?.connected} />
+          </div>
+          {!tt?.connected && <div className="text-xs text-amber-600">틱톡 미연결 — 위에서 연결 후 사용 가능</div>}
+          {toTiktok && <div className="text-xs text-muted-foreground">영상이 틱톡 앱 알림/초안으로 전송됩니다. 앱에서 탭 한 번으로 게시하세요. (완전 자동 게시는 틱톡 심사 통과 후)</div>}
+        </div>
+
         <div className="text-xs text-muted-foreground border rounded-md p-3 space-y-1">
           <div>유튜브 제목 해시태그: #한국이름학교 #와츠유어네임이름연구협회 #작명 #개명 #이름분석 #이름풀이</div>
           <div>· 유튜브 게시 후 선택한 글의 <b>동영상 콘텐츠</b>가 켜지고 영상 링크가 자동 삽입됩니다.</div>
@@ -1040,6 +1085,13 @@ function VideoDeployPanel() {
                 Instagram: {result.instagram.ok
                   ? <span className="text-emerald-600">릴스 게시 완료</span>
                   : <span className="text-red-600">실패 — {result.instagram.error}</span>}
+              </div>
+            )}
+            {result.tiktok && (
+              <div>
+                TikTok: {result.tiktok.ok
+                  ? <span className="text-emerald-600">초안 전송 완료 (틱톡 앱에서 게시)</span>
+                  : <span className="text-red-600">실패 — {result.tiktok.error}</span>}
               </div>
             )}
             {result.homepage && (

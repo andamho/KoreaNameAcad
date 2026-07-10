@@ -8,6 +8,7 @@ import crypto from "crypto";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutubeStatus, uploadYoutubeVideo, setYoutubeThumbnail } from "./youtube";
 import { instagramConfigured, getInstagramStatus, publishInstagramReel } from "./instagram";
+import { tiktokConfigured, getTiktokAuthUrl, handleTiktokCallback, getTiktokStatus, uploadTiktokDraft } from "./tiktok";
 import { transcodeToH264, extractFrameJpeg } from "./videoTools";
 import { ObjectStorageService } from "./replit_integrations/object_storage/objectStorage";
 import { db } from "./db";
@@ -620,6 +621,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ── TikTok OAuth 연결 ──
+  const ttPendingStates = new Map<string, number>();
+  const cleanTtStates = () => {
+    const now = Date.now();
+    ttPendingStates.forEach((exp, s) => {
+      if (exp < now) ttPendingStates.delete(s);
+    });
+  };
+
+  app.get("/api/auth/tiktok", (req, res) => {
+    const token = (req.query.token as string) || "";
+    const valid = getValidAdminToken();
+    if (!valid || token !== valid) return res.status(401).send("Unauthorized");
+    if (!tiktokConfigured()) return res.status(400).send("TIKTOK_CLIENT_KEY / SECRET 미설정");
+    cleanTtStates();
+    const state = crypto.randomBytes(16).toString("hex");
+    ttPendingStates.set(state, Date.now() + 10 * 60 * 1000);
+    res.redirect(getTiktokAuthUrl(state));
+  });
+
+  app.get("/api/auth/tiktok/callback", async (req, res) => {
+    try {
+      const { code, state, error } = req.query as Record<string, string>;
+      if (error) return res.status(400).send(`인증 취소/오류: ${escapeHtml(error)}`);
+      cleanTtStates();
+      if (!state || !ttPendingStates.has(state)) {
+        return res.status(400).send("state 불일치 — 연결을 처음부터 다시 시도하세요.");
+      }
+      ttPendingStates.delete(state);
+      if (!code) return res.status(400).send("code가 없습니다.");
+      const { displayName } = await handleTiktokCallback(code);
+      res.send(
+        `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TikTok 연결 완료</title></head>` +
+          `<body style="font-family:system-ui,sans-serif;max-width:520px;margin:60px auto;padding:0 20px;line-height:1.6">` +
+          `<h2 style="color:#1f8a5b">✅ TikTok 연결 완료</h2>` +
+          `<p>연결된 계정: <b>${escapeHtml(displayName ?? "(이름 조회 실패)")}</b></p>` +
+          `<p><a href="/admin" style="display:inline-block;margin-top:12px;padding:10px 18px;background:#111;color:#fff;border-radius:8px;text-decoration:none">관리자 페이지로 돌아가기</a></p></body></html>`,
+      );
+    } catch (error: any) {
+      console.error("[tiktok callback]", error);
+      res.status(500).send("TikTok 연결 실패: " + escapeHtml(error?.message || "unknown"));
+    }
+  });
+
   // 유튜브/소셜 제목 뒤에 붙는 고정 해시태그
   const FIXED_HASHTAGS = "#한국이름학교 #와츠유어네임이름연구협회 #작명 #개명 #이름분석 #이름풀이";
 
@@ -656,6 +701,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 틱톡 연결 상태 (관리자 UI용)
+  app.get("/api/admin/tiktok/status", requireAdmin, async (_req, res) => {
+    try {
+      const st = await getTiktokStatus();
+      res.json({ configured: tiktokConfigured(), ...st });
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "status error" });
+    }
+  });
+
   // 인스타/페북 등 외부가 접근할 미디어 공개 베이스 URL (R2 객체를 실서버 /objects/로 서빙)
   const PUBLIC_MEDIA_BASE_URL = (process.env.PUBLIC_MEDIA_BASE_URL || "https://korea-name-acad.com").replace(/\/$/, "");
 
@@ -679,7 +734,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/video/deploy", requireAdmin, async (req, res) => {
     try {
       if (!db) return res.status(503).json({ error: "DB 사용 불가" });
-      const { objectPath, contentId, titleOverride, privacyStatus = "public", thumbnailObjectPath, targetInstagram = false, instagramCaption } = req.body || {};
+      const { objectPath, contentId, titleOverride, privacyStatus = "public", thumbnailObjectPath, targetInstagram = false, instagramCaption, targetTiktok = false } = req.body || {};
 
       if (!objectPath || typeof objectPath !== "string" || !objectPath.startsWith("/objects/")) {
         return res.status(400).json({ error: "유효한 영상 objectPath가 필요합니다." });
@@ -723,13 +778,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           hashtags: FIXED_HASHTAGS,
           targetYoutube: true,
           targetInstagram: !!targetInstagram,
-          targetTiktok: false,
+          targetTiktok: !!targetTiktok,
           targetHomepage: willInsertHomepage,
           homepageCategory: content?.category || "nameStory",
           targetContentId: contentId || null,
           ytStatus: "queued",
           igStatus: targetInstagram ? "queued" : "skipped",
-          ttStatus: "skipped",
+          ttStatus: targetTiktok ? "queued" : "skipped",
           hpStatus: willInsertHomepage ? "queued" : "skipped",
         })
         .returning();
@@ -794,14 +849,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // 3) 인스타그램 릴스 게시 — 인스타는 H.264만 지원 → 변환 후 공개 URL로 전달
+      // 3) 인스타/틱톡: 둘 다 HEVC 거부 → H.264로 1회만 변환해 재사용
+      let h264: Buffer | null = null;
+      if ((targetInstagram || targetTiktok) && videoBuffer) {
+        try {
+          h264 = await transcodeToH264(videoBuffer);
+        } catch (e: any) {
+          const msg = "H.264 변환 실패: " + (e?.message || "");
+          if (targetInstagram) errors.instagram = msg;
+          if (targetTiktok) errors.tiktok = msg;
+        }
+      }
+
+      // 3-a) 인스타그램 릴스 게시 (변환본을 R2 공개 URL로 전달)
       let igMediaId: string | null = null;
       if (targetInstagram) {
         try {
-          if (!videoBuffer) throw new Error("영상 로드 실패로 인스타 게시 불가");
+          if (!h264) throw new Error(errors.instagram || "변환 영상 없음");
           await db.update(videoJobs).set({ igStatus: "uploading", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
-          // HEVC 등 → H.264 변환 후 R2에 업로드, 그 공개 URL을 인스타에 전달
-          const h264 = await transcodeToH264(videoBuffer);
           const igKey = `uploads/ig-${crypto.randomUUID()}.mp4`;
           await objectStorage.putObject(igKey, h264, "video/mp4");
           const publicVideoUrl = `${PUBLIC_MEDIA_BASE_URL}/objects/${igKey}`;
@@ -818,6 +883,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // 3-b) 틱톡 초안(inbox) 업로드 — 바이트 직접 전송. 사용자가 틱톡 앱에서 탭 한 번으로 게시
+      let ttPublishId: string | null = null;
+      if (targetTiktok) {
+        try {
+          if (!h264) throw new Error(errors.tiktok || "변환 영상 없음");
+          await db.update(videoJobs).set({ ttStatus: "uploading", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+          const result = await uploadTiktokDraft(h264);
+          ttPublishId = result.publishId;
+          await db.update(videoJobs).set({ ttStatus: "draft", ttPublishId, updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+        } catch (e: any) {
+          errors.tiktok = e?.message || "tiktok upload failed";
+          await db.update(videoJobs).set({ ttStatus: "failed", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+        }
+      }
+
       if (Object.keys(errors).length) {
         await db.update(videoJobs).set({ errorLog: JSON.stringify(errors), updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
       }
@@ -828,6 +908,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         youtube: ytVideoId ? { ok: true, videoId: ytVideoId, url: `https://youtu.be/${ytVideoId}` } : { ok: false, error: errors.youtube },
         thumbnail: ytVideoId ? (thumbnailSet ? { ok: true } : { ok: false, error: errors.thumbnail || "설정 안됨" }) : null,
         instagram: targetInstagram ? (igMediaId ? { ok: true, mediaId: igMediaId } : { ok: false, error: errors.instagram }) : null,
+        tiktok: targetTiktok ? (ttPublishId ? { ok: true, draft: true, publishId: ttPublishId } : { ok: false, error: errors.tiktok }) : null,
         homepage: willInsertHomepage ? (errors.homepage ? { ok: false, error: errors.homepage } : { ok: true, contentId }) : null,
       });
     } catch (error: any) {
