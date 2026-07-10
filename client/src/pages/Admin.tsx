@@ -805,9 +805,7 @@ function VideoDeployPanel() {
   const [candidates, setCandidates] = useState<Array<{ id: string; title: string; category: string }>>([]);
   const [selectedContentId, setSelectedContentId] = useState("");
   const [vPrivacy, setVPrivacy] = useState("public");
-  const [toInstagram, setToInstagram] = useState(false);
   const [igCaptionText, setIgCaptionText] = useState("");
-  const [toTiktok, setToTiktok] = useState(false);
   const [deploying, setDeploying] = useState(false);
   const [result, setResult] = useState<any>(null);
 
@@ -851,9 +849,9 @@ function VideoDeployPanel() {
           objectPath,
           contentId: selectedContentId,
           privacyStatus: vPrivacy,
-          targetInstagram: toInstagram,
+          targetInstagram: !!ig?.connected,
           instagramCaption: igCaptionText,
-          targetTiktok: toTiktok,
+          targetTiktok: !!tt?.connected,
         }),
       });
       const data = await dep.json();
@@ -1015,47 +1013,34 @@ function VideoDeployPanel() {
           </Select>
         </div>
 
-        {/* Instagram 릴스 동시 배포 */}
-        <div className="border rounded-lg p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: "#B33089" }} />
-              <span className="text-sm font-medium">Instagram 릴스에도 올리기</span>
-            </div>
-            <Switch checked={toInstagram} onCheckedChange={setToInstagram} disabled={!ig?.connected} />
+        {/* 본문 (영상 대본) — 인스타/틱톡 캡션 공통 */}
+        <div className="space-y-2">
+          <Label>본문 (영상 대본)</Label>
+          <textarea
+            className="w-full min-h-32 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            value={igCaptionText}
+            onChange={(e) => setIgCaptionText(e.target.value)}
+            placeholder="영상 대본을 그대로 붙여넣으세요. (아래 고정 홍보문구 + 해시태그가 자동으로 붙습니다)"
+          />
+          <div className="text-xs text-muted-foreground">
+            인스타 캡션 = <b>대본</b> + 고정 홍보문구(@계정 포함) + 해시태그. 자동으로 붙습니다.
           </div>
-          {!ig?.connected && <div className="text-xs text-amber-600">인스타 토큰 미설정(.env) — 연결 후 사용 가능</div>}
-          {toInstagram && (
-            <div className="space-y-2">
-              <Label>인스타 본문 (영상 내용)</Label>
-              <textarea
-                className="w-full min-h-24 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={igCaptionText}
-                onChange={(e) => setIgCaptionText(e.target.value)}
-                placeholder="이 영상의 내용을 적어주세요. (아래 고정 문구·해시태그는 자동으로 붙습니다)"
-              />
-              <div className="text-xs text-muted-foreground">본문 아래에 고정 홍보 문구 + 해시태그(#한국이름학교 …)가 자동으로 붙습니다.</div>
-            </div>
-          )}
         </div>
 
-        {/* TikTok 동시 배포 (초안) */}
-        <div className="border rounded-lg p-4 space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: "#0E9BAE" }} />
-              <span className="text-sm font-medium">TikTok에도 올리기 <span className="text-xs text-muted-foreground">(초안 전송)</span></span>
-            </div>
-            <Switch checked={toTiktok} onCheckedChange={setToTiktok} disabled={!tt?.connected} />
+        {/* 동시 배포 대상 (토글 없이 항상 자동) */}
+        <div className="border rounded-lg p-3 text-xs space-y-1.5">
+          <div className="font-medium text-sm">동시 배포 (자동)</div>
+          <div className="flex items-center gap-2"><span className="inline-block w-2 h-2 rounded-full" style={{ background: "#D93B3B" }} />YouTube — 항상</div>
+          <div className="flex items-center gap-2"><span className="inline-block w-2 h-2 rounded-full" style={{ background: "#2E7D5B" }} />홈페이지 글 삽입 — 항상</div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full" style={{ background: "#B33089" }} />
+            Instagram — {ig?.connected ? "자동 배포됨" : <span className="text-amber-600">미연결</span>}
           </div>
-          {!tt?.connected && <div className="text-xs text-amber-600">틱톡 미연결 — 위에서 연결 후 사용 가능</div>}
-          {toTiktok && <div className="text-xs text-muted-foreground">영상이 틱톡 앱 알림/초안으로 전송됩니다. 앱에서 탭 한 번으로 게시하세요. (완전 자동 게시는 틱톡 심사 통과 후)</div>}
-        </div>
-
-        <div className="text-xs text-muted-foreground border rounded-md p-3 space-y-1">
-          <div>유튜브 제목 해시태그: #한국이름학교 #와츠유어네임이름연구협회 #작명 #개명 #이름분석 #이름풀이</div>
-          <div>· 유튜브 게시 후 선택한 글의 <b>동영상 콘텐츠</b>가 켜지고 영상 링크가 자동 삽입됩니다.</div>
-          <div>· 틱톡은 API 오디트 후 추가 예정.</div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full" style={{ background: "#0E9BAE" }} />
+            TikTok — {tt?.connected ? "자동 배포됨(초안)" : <span className="text-muted-foreground">심사 통과 후 자동 합류</span>}
+          </div>
+          <div className="text-muted-foreground pt-1">유튜브 제목 해시태그: #한국이름학교 #와츠유어네임이름연구협회 #작명 #개명 #이름분석 #이름풀이</div>
         </div>
 
         <Button className="w-full" onClick={deploy} disabled={deploying || !yt?.connected}>
