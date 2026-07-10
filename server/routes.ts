@@ -51,6 +51,11 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // TikTok 도메인 소유 확인용 서명 파일 (URL prefix 검증)
+  app.get("/tiktokQsb2NwuHJYh9gxVv6wWxl8KGZ1hm9UDd.txt", (_req, res) => {
+    res.type("text/plain").send("tiktok-developers-site-verification=Qsb2NwuHJYh9gxVv6wWxl8KGZ1hm9UDd\n");
+  });
+
   // Health check endpoint
   app.get("/api/health", async (req, res) => {
     try {
