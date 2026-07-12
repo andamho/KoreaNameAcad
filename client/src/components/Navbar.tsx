@@ -33,7 +33,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   
   // Admin state
-  const { isAdmin, login, logout } = useAdmin();
+  const { isAdmin, login, logout, pendingOtp, verifyOtp } = useAdmin();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -41,6 +41,8 @@ export function Navbar() {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [loginPassword, setLoginPassword] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpError, setOtpError] = useState("");
   
   // Write dialog
   const [showWriteDialog, setShowWriteDialog] = useState(false);
@@ -200,14 +202,33 @@ export function Navbar() {
       return;
     }
     setIsLoggingIn(true);
-    const success = await login(loginPassword);
+    const result = await login(loginPassword);
     setIsLoggingIn(false);
-    if (success) {
+    if (result === "ok") {
       setShowLoginDialog(false);
       setLoginPassword("");
       toast({ title: "관리자로 로그인되었습니다." });
+    } else if (result === "otp_required") {
+      setOtpCode("");
+      setOtpError("");
+      // pendingOtp=true 이므로 다이얼로그가 OTP 입력창으로 전환됨
     } else {
       toast({ title: "비밀번호가 틀렸습니다.", variant: "destructive" });
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpCode.trim()) return;
+    setIsLoggingIn(true);
+    const ok = await verifyOtp(otpCode.trim());
+    setIsLoggingIn(false);
+    if (ok) {
+      setShowLoginDialog(false);
+      setLoginPassword("");
+      setOtpCode("");
+      toast({ title: "관리자로 로그인되었습니다." });
+    } else {
+      setOtpError("코드가 올바르지 않거나 만료되었습니다.");
     }
   };
   
@@ -620,36 +641,70 @@ export function Navbar() {
       )}
       
       {/* 관리자 로그인 다이얼로그 */}
-      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+      <Dialog open={showLoginDialog} onOpenChange={(open) => {
+        setShowLoginDialog(open);
+        if (!open) { setOtpCode(""); setOtpError(""); }
+      }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Lock className="w-5 h-5" />
-              관리자 로그인
+              {pendingOtp ? "2단계 인증" : "관리자 로그인"}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="admin-password">비밀번호</Label>
-              <Input
-                id="admin-password"
-                type="password"
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                placeholder="비밀번호를 입력하세요"
-                data-testid="input-admin-password"
-              />
+          {pendingOtp ? (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                텔레그램으로 전송된 6자리 인증 코드를 입력하세요.
+              </p>
+              <div>
+                <Label htmlFor="otp-code">인증 코드</Label>
+                <Input
+                  id="otp-code"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={otpCode}
+                  onChange={(e) => { setOtpCode(e.target.value); setOtpError(""); }}
+                  onKeyDown={(e) => e.key === "Enter" && handleVerifyOtp()}
+                  placeholder="000000"
+                  className="text-center tracking-widest text-lg"
+                  autoFocus
+                />
+                {otpError && <p className="text-sm text-destructive mt-1">{otpError}</p>}
+              </div>
+              <Button
+                onClick={handleVerifyOtp}
+                disabled={isLoggingIn || otpCode.length < 6}
+                className="w-full"
+              >
+                {isLoggingIn ? "확인 중..." : "인증 확인"}
+              </Button>
             </div>
-            <Button 
-              onClick={handleLogin} 
-              disabled={isLoggingIn}
-              className="w-full"
-              data-testid="button-admin-login-submit"
-            >
-              {isLoggingIn ? "로그인 중..." : "로그인"}
-            </Button>
-          </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="admin-password">비밀번호</Label>
+                <Input
+                  id="admin-password"
+                  type="password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                  placeholder="비밀번호를 입력하세요"
+                  data-testid="input-admin-password"
+                />
+              </div>
+              <Button
+                onClick={handleLogin}
+                disabled={isLoggingIn}
+                className="w-full"
+                data-testid="button-admin-login-submit"
+              >
+                {isLoggingIn ? "로그인 중..." : "로그인"}
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
       

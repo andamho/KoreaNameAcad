@@ -56,7 +56,7 @@ export default function Inquiry() {
   const [publicListLoading, setPublicListLoading] = useState(true);
 
   // 관리자 상태 — AdminContext에서 전역으로 관리 (네비바 로그인과 동기화)
-  const { isAdmin, token: adminToken, login: adminContextLogin, logout: adminContextLogout } = useAdmin();
+  const { isAdmin, token: adminToken, login: adminContextLogin, logout: adminContextLogout, pendingOtp, verifyOtp } = useAdmin();
   const [adminInquiries, setAdminInquiries] = useState<AdminInquiry[]>([]);
   const [expandedInquiry, setExpandedInquiry] = useState<string | null>(null);
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
@@ -65,6 +65,8 @@ export default function Inquiry() {
   const [adminLoginVisible, setAdminLoginVisible] = useState(false);
   const [adminPw, setAdminPw] = useState("");
   const [adminLoginErr, setAdminLoginErr] = useState("");
+  const [adminOtpCode, setAdminOtpCode] = useState("");
+  const [adminOtpErr, setAdminOtpErr] = useState("");
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -79,15 +81,30 @@ export default function Inquiry() {
   const handleAdminLogin = async () => {
     setAdminLoginErr("");
     try {
-      const ok = await adminContextLogin(adminPw);
-      if (ok) {
+      const result = await adminContextLogin(adminPw);
+      if (result === "ok") {
         setAdminLoginVisible(false);
         setAdminPw("");
+      } else if (result === "otp_required") {
+        setAdminOtpCode("");
+        setAdminOtpErr("");
       } else {
         setAdminLoginErr("비밀번호가 올바르지 않습니다.");
       }
     } catch {
       setAdminLoginErr("로그인에 실패했습니다.");
+    }
+  };
+
+  const handleAdminOtpVerify = async () => {
+    setAdminOtpErr("");
+    const ok = await verifyOtp(adminOtpCode.trim());
+    if (ok) {
+      setAdminLoginVisible(false);
+      setAdminPw("");
+      setAdminOtpCode("");
+    } else {
+      setAdminOtpErr("코드가 올바르지 않거나 만료되었습니다.");
     }
   };
 
@@ -487,31 +504,66 @@ export default function Inquiry() {
                 </button>
               ) : (
                 <div className="inline-flex flex-col items-center gap-2 p-4 border border-border rounded-xl bg-card shadow-sm">
-                  <p className="text-xs font-semibold text-muted-foreground">관리자 로그인</p>
-                  <input
-                    type="password"
-                    value={adminPw}
-                    onChange={e => setAdminPw(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && handleAdminLogin()}
-                    placeholder="비밀번호"
-                    className="border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background w-44"
-                    autoFocus
-                  />
-                  {adminLoginErr && <p className="text-xs text-red-500">{adminLoginErr}</p>}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleAdminLogin}
-                      className="px-4 py-1.5 rounded-lg bg-[#18a999] text-white text-sm font-bold hover:bg-[#149085] transition"
-                    >
-                      로그인
-                    </button>
-                    <button
-                      onClick={() => { setAdminLoginVisible(false); setAdminPw(""); setAdminLoginErr(""); }}
-                      className="px-4 py-1.5 rounded-lg border border-border text-sm text-muted-foreground hover:bg-muted/30 transition"
-                    >
-                      취소
-                    </button>
-                  </div>
+                  {pendingOtp ? (
+                    <>
+                      <p className="text-xs font-semibold text-muted-foreground">2단계 인증</p>
+                      <p className="text-xs text-muted-foreground">텔레그램으로 전송된 코드를 입력하세요</p>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        value={adminOtpCode}
+                        onChange={e => { setAdminOtpCode(e.target.value); setAdminOtpErr(""); }}
+                        onKeyDown={e => e.key === "Enter" && handleAdminOtpVerify()}
+                        placeholder="000000"
+                        className="border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background w-44 text-center tracking-widest"
+                        autoFocus
+                      />
+                      {adminOtpErr && <p className="text-xs text-red-500">{adminOtpErr}</p>}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleAdminOtpVerify}
+                          className="px-4 py-1.5 rounded-lg bg-[#18a999] text-white text-sm font-bold hover:bg-[#149085] transition"
+                        >
+                          확인
+                        </button>
+                        <button
+                          onClick={() => { setAdminLoginVisible(false); setAdminPw(""); setAdminOtpCode(""); setAdminOtpErr(""); }}
+                          className="px-4 py-1.5 rounded-lg border border-border text-sm text-muted-foreground hover:bg-muted/30 transition"
+                        >
+                          취소
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs font-semibold text-muted-foreground">관리자 로그인</p>
+                      <input
+                        type="password"
+                        value={adminPw}
+                        onChange={e => setAdminPw(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && handleAdminLogin()}
+                        placeholder="비밀번호"
+                        className="border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#18a999] bg-background w-44"
+                        autoFocus
+                      />
+                      {adminLoginErr && <p className="text-xs text-red-500">{adminLoginErr}</p>}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleAdminLogin}
+                          className="px-4 py-1.5 rounded-lg bg-[#18a999] text-white text-sm font-bold hover:bg-[#149085] transition"
+                        >
+                          로그인
+                        </button>
+                        <button
+                          onClick={() => { setAdminLoginVisible(false); setAdminPw(""); setAdminLoginErr(""); }}
+                          className="px-4 py-1.5 rounded-lg border border-border text-sm text-muted-foreground hover:bg-muted/30 transition"
+                        >
+                          취소
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>

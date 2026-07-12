@@ -619,6 +619,16 @@ async function handleUpdate(update: any) {
 
 // ── 롱폴링 루프 ────────────────────────────────────────────────
 let _running = false;
+export async function sendAdminOtp(code: string): Promise<void> {
+  const chatId = ALLOWED[0];
+  if (!chatId || !TOKEN) { console.error("[OTP] 텔레그램 미설정"); return; }
+  await tg("sendMessage", {
+    chat_id: chatId,
+    text: `🔐 <b>한국이름학교 관리자 로그인</b>\n\n인증 코드: <code>${code}</code>\n\n5분 안에 입력하세요.`,
+    parse_mode: "HTML",
+  });
+}
+
 export function startTelegramBot() {
   if (!TOKEN) { console.log("[bot] TELEGRAM_BOT_TOKEN 미설정 → 봇 비활성화"); return; }
   if (_running) return;

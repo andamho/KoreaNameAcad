@@ -10,6 +10,7 @@ import { registerKnopRoutes } from "./knop/routes";
 import { knopStore } from "./knop/store";
 import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutubeStatus, uploadYoutubeVideo, setYoutubeThumbnail } from "./youtube";
 import { instagramConfigured, getInstagramStatus, publishInstagramReel } from "./instagram";
+import { sendAdminOtp } from "./telegramBot";
 import { tiktokConfigured, getTiktokAuthUrl, handleTiktokCallback, getTiktokStatus, uploadTiktokDraft } from "./tiktok";
 import { transcodeToH264, extractFrameJpeg } from "./videoTools";
 import { ObjectStorageService } from "./object_storage/objectStorage";
@@ -31,6 +32,11 @@ function handleDbError(error: any, res: Response, route: string): Response {
   console.error(`[500] 서버 오류 | route=${route} msg=${error?.message} ts=${new Date().toISOString()}`);
   return res.status(500).json({ error: "Internal server error" });
 }
+
+// OTP 저장소 (메모리, 5분 TTL)
+const adminOtpStore = new Map<string, { code: string; expiresAt: number }>();
+// 신뢰 기기 토큰 저장소 (메모리, 30일)
+const trustedDevices = new Map<string, number>(); // token -> expiresAt
 
 // 관리자 비밀번호 기반 영구 토큰 생성 (서버 재시작 후에도 유효)
 function getValidAdminToken(): string | null {
@@ -76,29 +82,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 관리자 인증 API
+  // 관리자 인증 API (2FA)
   app.post("/api/admin/login", async (req, res) => {
     try {
-      const { password } = req.body;
+      const { password, trustedDeviceToken } = req.body;
       const adminPassword = process.env.ADMIN_PASSWORD?.trim();
       const inputPassword = password?.trim();
-      
-      console.log("Admin login attempt - password configured:", !!adminPassword, "input provided:", !!inputPassword);
-      
-      if (!adminPassword) {
-        return res.status(500).json({ error: "Admin password not configured" });
+
+      if (!adminPassword) return res.status(500).json({ error: "Admin password not configured" });
+      if (inputPassword !== adminPassword) return res.status(401).json({ error: "비밀번호가 올바르지 않습니다." });
+
+      // 신뢰 기기 토큰이 유효하면 OTP 생략
+      if (trustedDeviceToken) {
+        const expiresAt = trustedDevices.get(trustedDeviceToken);
+        if (expiresAt && Date.now() < expiresAt) {
+          const token = getValidAdminToken();
+          return res.json({ token });
+        }
       }
-      
-      if (inputPassword === adminPassword) {
-        // 영구 토큰 반환 (비밀번호 해시 기반)
-        const token = getValidAdminToken();
-        return res.json({ success: true, token });
-      }
-      
-      return res.status(401).json({ error: "Invalid password" });
+
+      // OTP 생성 후 텔레그램 발송
+      const code = String(Math.floor(100000 + Math.random() * 900000));
+      adminOtpStore.set("admin", { code, expiresAt: Date.now() + 5 * 60 * 1000 });
+      await sendAdminOtp(code);
+      return res.json({ requiresOtp: true });
     } catch (error) {
       console.error("Admin login error:", error);
       return res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  // OTP 검증 + 신뢰 기기 토큰 발급
+  app.post("/api/admin/verify-otp", async (req, res) => {
+    try {
+      const { code } = req.body;
+      const entry = adminOtpStore.get("admin");
+      if (!entry || Date.now() > entry.expiresAt || entry.code !== code?.trim()) {
+        return res.status(401).json({ error: "코드가 올바르지 않거나 만료되었습니다." });
+      }
+      adminOtpStore.delete("admin");
+      const token = getValidAdminToken();
+      const trustedDeviceToken = crypto.randomBytes(32).toString("hex");
+      trustedDevices.set(trustedDeviceToken, Date.now() + 30 * 24 * 60 * 60 * 1000); // 30일
+      return res.json({ token, trustedDeviceToken });
+    } catch (error) {
+      return res.status(500).json({ error: "OTP 검증 실패" });
     }
   });
   
