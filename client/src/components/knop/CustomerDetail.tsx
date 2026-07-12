@@ -434,7 +434,9 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
             </div>
             <div className="space-y-2">
               {files.length === 0 && <p className="text-sm text-gray-400">첨부된 파일이 없습니다.</p>}
-              {files.map((f) => (
+              {files.map((f) => {
+                const isImg = (f.fileType || "").startsWith("image/");
+                return (
                 <div
                   key={f.id}
                   className="flex items-center justify-between gap-2 rounded-lg border border-gray-100 px-3 py-2"
@@ -445,7 +447,11 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                     rel="noreferrer"
                     className="flex items-center gap-2 min-w-0 text-sm text-gray-700 hover:text-[#3fc4ca]"
                   >
-                    <FileText className="w-4 h-4 shrink-0 text-gray-400" />
+                    {isImg ? (
+                      <img src={f.fileUrl} alt={f.fileName} loading="lazy" className="w-11 h-14 object-cover rounded border border-gray-200 shrink-0 bg-white" />
+                    ) : (
+                      <FileText className="w-4 h-4 shrink-0 text-gray-400" />
+                    )}
                     <span className="truncate">{f.fileName}</span>
                   </a>
                   <div className="flex items-center gap-1 shrink-0">
@@ -462,7 +468,8 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                     </button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </Card>
 
