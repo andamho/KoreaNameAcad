@@ -287,6 +287,34 @@ export const knopStore = {
     }
   },
 
+  // 자동동기화용: 이름분석 리포트 한 명 고객 생성 (없을 때). 가족규칙+PDF날짜+코드.
+  async createCustomerForReport(bn: string, family: boolean, regDate: Date | null): Promise<Customer> {
+    const d = requireDb();
+    try {
+      const name = family ? `${bn}가족` : bn;
+      const dt = regDate || new Date();
+      const y = dt.getFullYear();
+      const m = dt.getMonth() + 1;
+      const prefix = monthPrefix(y, m);
+      const rows = await d.select().from(customers).where(like(customers.customerCode, `${prefix}%`));
+      const code = formatCode(y, m, rows.length + 1);
+      const [row] = await d
+        .insert(customers)
+        .values({ customerCode: code, name, phone: "미입력", normalizedPhone: "", memo: "이름분석 PDF 기반 자동생성", createdAt: dt })
+        .returning();
+      await d.insert(projects).values({
+        customerId: row.id,
+        type: family ? "가족 개명" : "이름분석",
+        title: `${name} ${family ? "가족 개명" : "이름분석"}`,
+        status: "상담 신청",
+      });
+      await logTimeline({ customerId: row.id, type: "customer_created", title: "고객 등록 (이름분석 자동)", content: `${code} · ${name}` });
+      return row;
+    } catch (e) {
+      fail("리포트 고객 생성", e);
+    }
+  },
+
   // 이름분석 PDF 폴더 → 빠진 고객 파일 자동생성 (가족 분석이면 "{이름}가족"). PDF·녹음은 이름으로 자동 연결됨.
   async createCustomersFromReports(
     dryRun: boolean

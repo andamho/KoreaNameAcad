@@ -25,6 +25,7 @@ import { processThread } from "./intakeProcess";
 import { JOURNEY, nextStage } from "./stateMachine";
 import { previewBackfill, applyBackfill } from "./phoneBackfill";
 import { reportsAvailable, reportsForName, resolveReportPath } from "./reports";
+import { syncReports, startReportSync } from "./reportSync";
 import { recordingsAvailable, recordingsForCustomer, resolveRecordingPath } from "./recordings";
 import crypto from "crypto";
 import fs from "fs";
@@ -73,6 +74,7 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     .then((n) => n && console.log(`[KNOP SMS] 표준 템플릿 ${n}개 시드됨`))
     .catch(() => {});
   startSmsScheduler();
+  startReportSync(); // 이름분석 폴더 자동 동기화 (로컬만; 배포는 no-op)
 
   // ── 문자 자동화: 템플릿 ──
   app.get(`${P}/sms/templates`, requireAdmin, async (_req, res) => {
@@ -303,6 +305,14 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       res.json({ available: true, reports: name ? reportsForName(name) : [] });
     } catch (e) {
       handle(res, "GET reports", e);
+    }
+  });
+  // 이름분석 폴더 수동 동기화 (새 PDF → 이미지 → 고객 저장)
+  app.post(`${P}/reports/sync`, requireAdmin, async (_req, res) => {
+    try {
+      res.json(await syncReports());
+    } catch (e) {
+      handle(res, "POST reports sync", e);
     }
   });
   // PDF 열기 (브라우저 새 탭 — 헤더 대신 ?token= 로 인증)
