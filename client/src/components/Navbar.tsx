@@ -1,4 +1,4 @@
-import { MessageCircle, FileText, Star, DollarSign, BookOpen, PenSquare, Lock, LogOut, User, FileEdit, Upload, ImageIcon, Building2, Sparkles } from "lucide-react";
+import { MessageCircle, FileText, Star, DollarSign, BookOpen, PenSquare, Lock, LogOut, User, FileEdit, Upload, ImageIcon, Building2, Sparkles, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect, useRef } from "react";
@@ -387,10 +387,17 @@ export function Navbar() {
     window.scrollTo(0, 0);
   };
 
-  const menuItems = [
-    { 
-      icon: FileText, 
-      label: "전문서비스", 
+  type MenuItem = {
+    icon: LucideIcon;
+    label: string;
+    description: string;
+    action?: () => void;
+    href?: string;
+  };
+  const menuItems: MenuItem[] = [
+    {
+      icon: FileText,
+      label: "전문서비스",
       action: () => goToPage('/services'),
       description: "이름 분석 · 작명"
     },

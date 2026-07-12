@@ -7,3 +7,5 @@ vite.config.ts.*
 .env
 .env.*
 google-vision-credentials.json
+zeus-calendar-key.json
+*-firebase-adminsdk-*.json

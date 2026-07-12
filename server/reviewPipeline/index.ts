@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import sharp from "sharp";
 import { storage } from "../storage";
-import { ObjectStorageService } from "../replit_integrations/object_storage/objectStorage";
+import { ObjectStorageService } from "../object_storage/objectStorage";
 import { analyzeReviewImages, analyzeNameStoryText, labelForReviewType, generateMoreTitles, generateMoreThumbnailTitles, keywordsFromTitle } from "./vision";
 import type { ContentCategory } from "@shared/schema";
 import { detectPIIBoxes, visionAvailable } from "./ocr";

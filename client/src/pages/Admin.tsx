@@ -17,6 +17,9 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { ImageManager } from "@/components/ImageManager";
+import { KnopApp } from "@/components/knop/KnopApp";
+import { knopApi } from "@/lib/knopApi";
+import { LayoutDashboard, UserPlus } from "lucide-react";
 import type { Consultation, Content, InsertContent } from "@shared/schema";
 
 interface Inquiry {
@@ -249,6 +252,19 @@ export default function Admin() {
     document.body.removeChild(link);
   };
 
+  const [convertingId, setConvertingId] = useState<string | null>(null);
+  const handleConvertConsultation = async (id: string) => {
+    setConvertingId(id);
+    try {
+      const { customer } = await knopApi.convertConsultation(id);
+      toast({ title: "고객으로 전환되었습니다.", description: `${customer.name} · 운영(KNOP) 탭에서 확인하세요.` });
+    } catch (e: any) {
+      toast({ title: "전환 실패", description: e?.message, variant: "destructive" });
+    } finally {
+      setConvertingId(null);
+    }
+  };
+
   const formatConsultationTime = (time: string) => {
     if (time === "weekday") return "주중 2시";
     if (time === "weekend") return "주말 2시";
@@ -262,8 +278,12 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <h1 className="text-3xl font-bold text-foreground mb-8">관리자 페이지</h1>
 
-        <Tabs defaultValue="inquiries" className="space-y-6">
+        <Tabs defaultValue="knop" className="space-y-6">
           <TabsList>
+            <TabsTrigger value="knop" data-testid="tab-knop">
+              <LayoutDashboard className="w-3.5 h-3.5 mr-1.5" />
+              운영 (KNOP)
+            </TabsTrigger>
             <TabsTrigger value="inquiries" data-testid="tab-inquiries">
               <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
               문의 관리 ({inquiries?.length || 0})
@@ -278,6 +298,11 @@ export default function Admin() {
               숏폼 배포
             </TabsTrigger>
           </TabsList>
+
+          {/* ── 운영 플랫폼 (KNOP) 탭 ─────────────────────────── */}
+          <TabsContent value="knop">
+            <KnopApp />
+          </TabsContent>
 
           {/* ── 문의 관리 탭 ────────────────────────────────── */}
           <TabsContent value="inquiries">
@@ -461,6 +486,17 @@ export default function Admin() {
                         <span className="text-sm text-muted-foreground">
                           {new Date(consultation.createdAt).toLocaleString("ko-KR")}
                         </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="ml-auto"
+                          disabled={convertingId === consultation.id}
+                          onClick={() => handleConvertConsultation(consultation.id)}
+                          data-testid={`button-convert-${consultation.id}`}
+                        >
+                          <UserPlus className="w-4 h-4 mr-1.5" />
+                          {convertingId === consultation.id ? "전환 중…" : "고객으로 전환"}
+                        </Button>
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

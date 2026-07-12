@@ -307,3 +307,371 @@ export const insertExperienceCommentSchema = createInsertSchema(experienceCommen
 
 export type InsertExperienceComment = z.infer<typeof insertExperienceCommentSchema>;
 export type ExperienceComment = typeof experienceComments.$inferSelect;
+
+// ============================================================================
+// KNOP (Korea Name Operation Platform) — 운영 플랫폼 MVP1
+// 구조: Customer → Project → Timeline / Files / Calendar
+// ============================================================================
+
+// 전화번호 정규화: 숫자만 남김 (010-1234-5678 == 01012345678)
+export function normalizePhone(phone: string): string {
+  return (phone || "").replace(/\D/g, "");
+}
+
+// 프로젝트 유형 (설계서 §Customer 예시)
+export const KNOP_PROJECT_TYPES = [
+  "이름분석",
+  "개인 개명",
+  "가족 개명",
+  "전화번호 작명",
+  "차량번호 분석",
+  "사업자명",
+  "자녀 작명",
+  "교육",
+] as const;
+
+// 프로젝트/구성원 상태값 (설계서 §24)
+export const KNOP_STATUSES = [
+  "상담 신청",
+  "상담비 결제대기",
+  "상담비 결제확인 대기",
+  "상담비 결제완료",
+  "상담예약 완료",
+  "이름분석 상담 완료",
+  "개명의뢰 접수",
+  "개명비 결제대기",
+  "개명비 결제확인 대기",
+  "개명비 결제완료",
+  "이름작업 진행중",
+  "새 이름 상담 예정",
+  "새 이름 상담 완료",
+  "전화번호 상담 예정",
+  "전화번호 상담 완료",
+  "개명 신청 안내 완료",
+  "개명 신청 전",
+  "개명 신청 완료",
+  "법원 허가 대기",
+  "법원 허가 완료",
+  "생활정보 변경 확인 중",
+  "변화 확인",
+  "후기 요청",
+  "장기관리",
+  "보류",
+  "연락 중지",
+  "관리 완료",
+] as const;
+
+// 결제 상태
+export const KNOP_PAYMENT_STATUSES = ["미결제", "결제확인중", "결제완료"] as const;
+
+// 달력 일정 유형 (설계서 §20)
+export const KNOP_EVENT_TYPES = [
+  "상담예약",
+  "이름분석 상담",
+  "새 이름 상담",
+  "전화번호 상담",
+  "개명 신청 확인",
+  "법원 허가 확인",
+  "변화 확인",
+  "후기 요청",
+  "장기관리",
+  "전화 약속",
+  "문자 예약",
+  "기타",
+] as const;
+
+// 달력 일정 상태
+export const KNOP_EVENT_STATUSES = ["예정", "확정", "완료", "취소"] as const;
+
+// ── customers: 고객 (최상위) ──
+export const customers = pgTable("customers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerCode: text("customer_code").unique(),          // 고객번호 K26-0102 (불변 앵커, 개명·번호변경에도 유지)
+  kind: text("kind"),                                    // 개명 | 상담 (구분, 편집가능) — 작명완료 있으면 개명
+  phoneNaming: boolean("phone_naming").default(false).notNull(), // 전화번호 작명 여부(선택 서비스, 새이름과 병렬). 나중에 문자로 자동감지
+  name: text("name").notNull(),
+  phone: text("phone").notNull(),
+  normalizedPhone: text("normalized_phone").notNull(),
+  phoneHistory: text("phone_history"),                   // JSON [{phone,normalized,changedAt}] 옛 번호(번호변경 추적)
+  nameHistory: text("name_history"),                     // JSON [{name,changedAt}] 옛 이름(개명 추적)
+  email: text("email"),
+  memo: text("memo"),
+  tags: text("tags"),                                   // JSON string[] (선택)
+  sourceConsultationId: varchar("source_consultation_id"), // 상담신청에서 전환된 경우 원본 id
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertCustomerSchema = z.object({
+  name: z.string().min(1),
+  phone: z.string().min(1),
+  kind: z.string().optional().nullable(),
+  phoneNaming: z.boolean().optional(),
+  email: z.string().optional().nullable(),
+  memo: z.string().optional().nullable(),
+  tags: z.array(z.string()).optional(),
+  sourceConsultationId: z.string().optional().nullable(),
+});
+export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
+export type Customer = typeof customers.$inferSelect;
+
+// ── projects: 프로젝트/케이스 (업무 단위) ──
+export const projects = pgTable("projects", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerId: varchar("customer_id").notNull(),
+  type: text("type").notNull(),                         // KNOP_PROJECT_TYPES
+  title: text("title").notNull(),
+  status: text("status").notNull().default("상담 신청"), // KNOP_STATUSES
+  paymentStatus: text("payment_status").notNull().default("미결제"),
+  consultDate: timestamp("consult_date"),
+  nextActionDate: timestamp("next_action_date"),
+  memo: text("memo"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertProjectSchema = z.object({
+  customerId: z.string().min(1),
+  type: z.string().min(1),
+  title: z.string().min(1),
+  status: z.string().optional(),
+  paymentStatus: z.string().optional(),
+  consultDate: z.string().optional().nullable(),
+  nextActionDate: z.string().optional().nullable(),
+  memo: z.string().optional().nullable(),
+});
+export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type Project = typeof projects.$inferSelect;
+
+// ── timeline_events: 통합 타임라인 (설계서 §17) ──
+export const timelineEvents = pgTable("timeline_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerId: varchar("customer_id").notNull(),
+  projectId: varchar("project_id"),
+  type: text("type").notNull(),                         // note | status_change | file | call | message | event ...
+  title: text("title").notNull(),
+  content: text("content"),
+  metadata: text("metadata"),                           // JSON string (선택)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertTimelineEventSchema = z.object({
+  customerId: z.string().min(1),
+  projectId: z.string().optional().nullable(),
+  type: z.string().min(1),
+  title: z.string().min(1),
+  content: z.string().optional().nullable(),
+  metadata: z.record(z.any()).optional().nullable(),
+});
+export type InsertTimelineEvent = z.infer<typeof insertTimelineEventSchema>;
+export type TimelineEvent = typeof timelineEvents.$inferSelect;
+
+// ── crm_files: 파일 첨부 (기존 이름분석표/자료 연결, 설계서 §19) ──
+export const crmFiles = pgTable("crm_files", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerId: varchar("customer_id").notNull(),
+  projectId: varchar("project_id"),
+  fileName: text("file_name").notNull(),
+  fileType: text("file_type"),
+  fileUrl: text("file_url").notNull(),                  // /objects/... 경로
+  memo: text("memo"),
+  uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
+});
+
+export const insertCrmFileSchema = z.object({
+  customerId: z.string().min(1),
+  projectId: z.string().optional().nullable(),
+  fileName: z.string().min(1),
+  fileType: z.string().optional().nullable(),
+  fileUrl: z.string().min(1),
+  memo: z.string().optional().nullable(),
+});
+export type InsertCrmFile = z.infer<typeof insertCrmFileSchema>;
+export type CrmFile = typeof crmFiles.$inferSelect;
+
+// ── calendar_events: 전용 달력 (설계서 §20) ──
+export const calendarEvents = pgTable("calendar_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerId: varchar("customer_id"),
+  projectId: varchar("project_id"),
+  title: text("title").notNull(),
+  type: text("type").notNull().default("기타"),          // KNOP_EVENT_TYPES
+  startAt: timestamp("start_at").notNull(),
+  endAt: timestamp("end_at"),
+  status: text("status").notNull().default("예정"),      // KNOP_EVENT_STATUSES
+  memo: text("memo"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertCalendarEventSchema = z.object({
+  customerId: z.string().optional().nullable(),
+  projectId: z.string().optional().nullable(),
+  title: z.string().min(1),
+  type: z.string().optional(),
+  startAt: z.string().min(1),   // ISO
+  endAt: z.string().optional().nullable(),
+  status: z.string().optional(),
+  memo: z.string().optional().nullable(),
+});
+export type InsertCalendarEvent = z.infer<typeof insertCalendarEventSchema>;
+export type CalendarEvent = typeof calendarEvents.$inferSelect;
+
+// ── ai_inbox: 결제 문자 AI 분석·매칭 (설계서 §4·16) ──
+// status: pending(추천) → approved(승인) / dismissed(무시)
+export const aiInbox = pgTable("ai_inbox", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  source: text("source").notNull().default("sms"),      // sms | manual | card
+  sender: text("sender"),                               // 발신번호/발신처 (선택)
+  rawText: text("raw_text").notNull(),                  // 원문 문자
+  parsed: text("parsed"),                               // JSON: {isPayment,kind,depositorName,amount,method,institution,occurredAt}
+  suggestions: text("suggestions"),                     // JSON: [{customerId,customerName,projectId,projectTitle,score}]
+  suggestedCustomerId: varchar("suggested_customer_id"),
+  suggestedProjectId: varchar("suggested_project_id"),
+  confidence: integer("confidence").default(0).notNull(), // 0~100
+  status: text("status").notNull().default("pending"),  // pending | approved | dismissed
+  approvedCustomerId: varchar("approved_customer_id"),
+  approvedProjectId: varchar("approved_project_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  resolvedAt: timestamp("resolved_at"),
+});
+
+export const insertAiInboxSchema = z.object({
+  source: z.string().optional(),
+  sender: z.string().optional().nullable(),
+  rawText: z.string().min(1),
+});
+export type InsertAiInbox = z.infer<typeof insertAiInboxSchema>;
+export type AiInbox = typeof aiInbox.$inferSelect;
+
+// AI가 파싱한 결제 정보
+export type ParsedPayment = {
+  isPayment: boolean;
+  kind: string;          // 입금 | 카드결제 | 기타
+  depositorName: string; // 입금자/결제자 (없으면 "")
+  amount: number;        // 원 (없으면 0)
+  method: string;        // 현금 | 카드 | 기타
+  institution: string;   // 은행/카드사 (없으면 "")
+  occurredAt: string;    // 원문의 시간 문자열 (없으면 "")
+};
+
+// 매칭 후보
+export type InboxSuggestion = {
+  customerId: string;
+  customerName: string;
+  projectId: string | null;
+  projectTitle: string | null;
+  score: number; // 0~100
+};
+
+// ── calls: 통화 녹음 + STT/AI 요약 (설계서 §18) ──
+export const calls = pgTable("calls", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerId: varchar("customer_id").notNull(),
+  projectId: varchar("project_id"),
+  phone: text("phone"),
+  direction: text("direction").default("수신").notNull(), // 수신 | 발신
+  callDate: timestamp("call_date"),
+  durationSeconds: integer("duration_seconds"),
+  audioFileUrl: text("audio_file_url"),                  // /objects/... 경로
+  transcriptText: text("transcript_text"),               // 전사 원문
+  summaryText: text("summary_text"),                     // AI 요약
+  actionItems: text("action_items"),                     // JSON string[]
+  words: text("words"),                                  // JSON: [{word,start,end,speaker?}] 음성연동/화자구분용
+  memo: text("memo"),
+  status: text("status").default("done").notNull(),      // processing | done | failed
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// 전사 단어 (음성 연동 + 화자 구분)
+export type TranscriptWord = { word: string; start: number; end: number; speaker?: string };
+
+// ── sms_templates: 문자 템플릿 (설계서 §23) ──
+export const smsTemplates = pgTable("sms_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),                    // 예: "상담 하루 전 안내"
+  category: text("category").notNull().default("기타"),
+  content: text("content").notNull(),              // {이름} {날짜} {시간} 등 변수 사용 가능
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertSmsTemplateSchema = z.object({
+  name: z.string().min(1),
+  category: z.string().optional(),
+  content: z.string().min(1),
+});
+export type InsertSmsTemplate = z.infer<typeof insertSmsTemplateSchema>;
+export type SmsTemplate = typeof smsTemplates.$inferSelect;
+
+// ── scheduled_messages: 예약/발송 문자 (설계서 §5·17·25) ──
+// status: scheduled(예약) → sent(발송완료) / failed(실패) / canceled(취소)
+export const scheduledMessages = pgTable("scheduled_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerId: varchar("customer_id"),
+  projectId: varchar("project_id"),
+  phone: text("phone").notNull(),
+  content: text("content").notNull(),
+  templateId: varchar("template_id"),
+  direction: text("direction").default("발신").notNull(),
+  status: text("status").notNull().default("scheduled"),
+  scheduledAt: timestamp("scheduled_at").notNull(),  // 예약 시각(즉시는 now)
+  sentAt: timestamp("sent_at"),
+  error: text("error"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertScheduledMessageSchema = z.object({
+  customerId: z.string().optional().nullable(),
+  projectId: z.string().optional().nullable(),
+  phone: z.string().min(1),
+  content: z.string().min(1),
+  templateId: z.string().optional().nullable(),
+  scheduledAt: z.string().optional().nullable(),     // ISO, 없으면 즉시
+});
+export type InsertScheduledMessage = z.infer<typeof insertScheduledMessageSchema>;
+export type ScheduledMessage = typeof scheduledMessages.$inferSelect;
+
+// 문자 템플릿 카테고리
+export const SMS_TEMPLATE_CATEGORIES = [
+  "상담 안내",
+  "결제 안내",
+  "새 이름 상담",
+  "전화번호 상담",
+  "개명 후속",
+  "후기/장기관리",
+  "기타",
+] as const;
+
+export const insertCallSchema = z.object({
+  customerId: z.string().min(1),
+  projectId: z.string().optional().nullable(),
+  audioFileUrl: z.string().min(1),
+  phone: z.string().optional().nullable(),
+  direction: z.string().optional(),
+  callDate: z.string().optional().nullable(),
+  memo: z.string().optional().nullable(),
+});
+export type InsertCall = z.infer<typeof insertCallSchema>;
+export type Call = typeof calls.$inferSelect;
+
+// ── 문자→달력 자동등록: 안드로이드 문자전달 앱이 보내는 수신 문자 누적 ──
+export const incomingSms = pgTable("incoming_sms", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  contactName: text("contact_name"),                    // 연락처 저장명 "홍길동 260711 홍익" (앱이 보내주면)
+  phone: text("phone").notNull(),                        // 발신번호 (스레드 키)
+  body: text("body").notNull(),                          // 문자 본문
+  direction: text("direction").default("수신").notNull(), // 수신 | 발신
+  receivedAt: timestamp("received_at").defaultNow().notNull(),
+  processed: boolean("processed").default(false).notNull(), // 이 스레드로 달력 이벤트 생성됨 여부
+  createdEventDate: text("created_event_date"),          // 생성된 상담 이벤트 날짜(중복방지)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export const insertIncomingSmsSchema = z.object({
+  contactName: z.string().optional().nullable(),
+  phone: z.string().min(1),
+  body: z.string().min(1),
+  direction: z.string().optional(),
+  receivedAt: z.string().optional().nullable(),  // ISO, 없으면 now
+});
+export type InsertIncomingSms = z.infer<typeof insertIncomingSmsSchema>;
+export type IncomingSms = typeof incomingSms.$inferSelect;

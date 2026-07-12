@@ -5,12 +5,14 @@ import { insertConsultationSchema, insertNameStorySchema, insertContentSchema, c
 import { sendConsultationNotification, sendCommentNotification, sendInquiryNotification, sendInquiryReplyToUser } from "./email";
 import { sendSMS } from "./sms";
 import crypto from "crypto";
-import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
+import { registerObjectStorageRoutes } from "./object_storage";
+import { registerKnopRoutes } from "./knop/routes";
+import { knopStore } from "./knop/store";
 import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutubeStatus, uploadYoutubeVideo, setYoutubeThumbnail } from "./youtube";
 import { instagramConfigured, getInstagramStatus, publishInstagramReel } from "./instagram";
 import { tiktokConfigured, getTiktokAuthUrl, handleTiktokCallback, getTiktokStatus, uploadTiktokDraft } from "./tiktok";
 import { transcodeToH264, extractFrameJpeg } from "./videoTools";
-import { ObjectStorageService } from "./replit_integrations/object_storage/objectStorage";
+import { ObjectStorageService } from "./object_storage/objectStorage";
 import { db } from "./db";
 import { videoJobs, reviewDrafts, contents } from "@shared/schema";
 import { desc as drizzleDesc, eq } from "drizzle-orm";
@@ -119,7 +121,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Received consultation data:", JSON.stringify(req.body, null, 2));
       const validatedData = insertConsultationSchema.parse(req.body);
       const consultation = await storage.createConsultation(validatedData);
-      
+
+      // KNOP 고객 자동 등록 (비동기, 실패해도 상담 신청은 성공) — 전화번호 중복이면 기존 고객 유지
+      knopStore.ensureCustomerFromConsultation(consultation).catch((error) => {
+        console.error("KNOP 고객 자동등록 실패 (상담 신청은 저장됨):", error?.message);
+      });
+
       // 이메일 알림 전송 (비동기, 실패해도 상담 신청은 성공)
       sendConsultationNotification(consultation).catch(error => {
         console.error("이메일 전송 실패 (상담 신청은 저장됨):", error);
@@ -932,6 +939,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: error?.message || "jobs error" });
     }
   });
+
+  // KNOP 운영 플랫폼 라우트 (관리자 전용)
+  registerKnopRoutes(app, requireAdmin);
 
   // Register object storage routes for file uploads
   registerObjectStorageRoutes(app);

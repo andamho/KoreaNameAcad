@@ -16,6 +16,48 @@ const PAGE_NAMES: Record<string, string> = {
   'name-rank':      '전국 이름 순위',
 };
 
+// ── KNOP: 문자→달력 상담일정 자동등록 알림 (개명여부/인원 확인 요청) ──
+export async function sendCalendarCheckNotification(p: {
+  name: string;
+  date: string;
+  time?: string;
+  phone: string;
+  hongik: boolean;
+  summary?: string;
+  calendarLink: string;
+}): Promise<void> {
+  try {
+    const when = p.time ? `${p.date} ${p.time}` : p.date;
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: RECIPIENT_EMAIL,
+      subject: `[KNOP] 상담일정 등록 · ${p.name}님 (${p.date}) — 개명여부/인원 확인 필요`,
+      html: `
+        <div style="font-family:'Malgun Gothic',sans-serif;max-width:520px;margin:0 auto;padding:24px;">
+          <h2 style="color:#18a999;margin-bottom:4px;">📅 상담일정이 자동 등록되었습니다</h2>
+          <p style="color:#888;margin-top:0;margin-bottom:20px;font-size:13px;">문자 분석 → 달력 등록 완료 · <b>개명여부와 상담인원</b>만 확인해 주세요.</p>
+          <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px;">
+            <tr><td style="padding:8px 12px;background:#f4f4f4;font-weight:bold;width:96px;">의뢰인</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${p.name}</td></tr>
+            <tr><td style="padding:8px 12px;background:#f4f4f4;font-weight:bold;">상담일시</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${when}</td></tr>
+            <tr><td style="padding:8px 12px;background:#f4f4f4;font-weight:bold;">전화번호</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${p.phone}</td></tr>
+            <tr><td style="padding:8px 12px;background:#f4f4f4;font-weight:bold;">홍익</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${p.hongik ? "✅ 체크됨" : "—"}</td></tr>
+            ${p.summary ? `<tr><td style="padding:8px 12px;background:#f4f4f4;font-weight:bold;">요약</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${p.summary}</td></tr>` : ""}
+          </table>
+          <div style="background:#fff7e6;border-left:4px solid #f5a623;border-radius:4px;padding:12px 16px;margin-bottom:20px;font-size:14px;color:#7a5a10;">
+            ⚠️ <b>개명여부</b>와 <b>상담인원</b>은 아직 비어 있습니다. 아래 버튼으로 해당 일정에서 채워주세요.
+          </div>
+          <a href="${p.calendarLink}" style="display:inline-block;background:#18a999;color:white;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;">
+            달력에서 ${p.date} 일정 확인 →
+          </a>
+        </div>
+      `,
+    });
+    console.log(`✅ KNOP 상담일정 알림 이메일 전송: ${p.name} ${p.date}`);
+  } catch (error) {
+    console.error("❌ KNOP 상담일정 알림 이메일 실패:", error);
+  }
+}
+
 export async function sendCommentNotification(comment: {
   id: string;
   pageId: string;

@@ -103,14 +103,14 @@ Preferred communication style: Simple, everyday language.
 - POST `/api/admin/login` - Admin login with password, returns token
 - POST `/api/admin/verify` - Verify admin token validity
 - Token stored in localStorage as `kna_admin_token`
-- Environment variable: `ADMIN_PASSWORD` (managed via Replit Secrets)
+- Environment variable: `ADMIN_PASSWORD` (managed via `.env`)
 
 **Email Notification System**
 - Resend integration for transactional emails
 - Automatic notification to `iimooii1000@gmail.com` when consultations are submitted
 - Non-blocking email sending (consultation saved even if email fails)
 - HTML and text email templates with full consultation details
-- Environment variable: `RESEND_API_KEY` (managed via Replit Secrets)
+- Environment variable: `RESEND_API_KEY` (managed via `.env`)
 
 **Data Models**
 - User model with username/password authentication structure
@@ -129,8 +129,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Development Environment
 
-**Replit Integration**
-- Custom Vite plugins for Replit-specific features (runtime error overlay, cartographer, dev banner)
+**Dev Server**
 - Development server with HMR (Hot Module Replacement)
 - Middleware mode for Vite integration with Express
 
