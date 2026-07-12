@@ -586,6 +586,19 @@ export const calls = pgTable("calls", {
 // 전사 단어 (음성 연동 + 화자 구분)
 export type TranscriptWord = { word: string; start: number; end: number; speaker?: string };
 
+// ── correction_rules: 공유 학습 교정사전 (KNOP↔영상봇, 어디서 고치든 DB에 누적) ──
+// 로컬 서버가 전사 직전 DB→<video-caption-bot>/learned_corrections.json 로 내려받아 correct.py 에 반영.
+export const correctionRules = pgTable("correction_rules", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  wrong: text("wrong").notNull().unique(),          // 틀린말
+  right: text("right").notNull(),                    // 맞는말
+  count: integer("count").default(0).notNull(),      // 누적 횟수
+  enabled: boolean("enabled").default(true).notNull(),
+  source: text("source").default("learned").notNull(), // learned | manual
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // ── sms_templates: 문자 템플릿 (설계서 §23) ──
 export const smsTemplates = pgTable("sms_templates", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

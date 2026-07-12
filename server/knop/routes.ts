@@ -4,7 +4,7 @@ import { knopStore } from "./store";
 import { parsePaymentSms, matchPayment } from "./paymentAi";
 import { transcribeCall, summarizeTranscript } from "./callAi";
 import { transcribeLocal, localTranscribeAvailable } from "./localTranscribe";
-import { learnFromEdit, listRules, upsertManualRule, setRuleEnabled, deleteRule, analyzeRules } from "./learnedDict";
+import { learnFromEdit, listRules, upsertManualRule, setRuleEnabled, deleteRule, analyzeRules, seedRulesFromJsonOnce, exportLearnedToJson } from "./learnedDict";
 import { smsStore, startSmsScheduler } from "./sms";
 import {
   calendarAvailable,
@@ -75,6 +75,11 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     .catch(() => {});
   startSmsScheduler();
   startReportSync(); // 이름분석 폴더 자동 동기화 (로컬만; 배포는 no-op)
+
+  // 교정사전: 기존 로컬 JSON 규칙을 DB로 1회 이관 후, DB→로컬 JSON 재생성(어디서 고쳐도 반영)
+  seedRulesFromJsonOnce()
+    .then(() => exportLearnedToJson())
+    .catch(() => {});
 
   // ── 문자 자동화: 템플릿 ──
   app.get(`${P}/sms/templates`, requireAdmin, async (_req, res) => {

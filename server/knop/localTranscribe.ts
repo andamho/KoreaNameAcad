@@ -8,6 +8,7 @@ import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
 import { randomUUID } from "crypto";
+import { exportLearnedToJson } from "./learnedDict";
 
 const WHISPER_DIR =
   process.env.KNOP_WHISPER_DIR?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot";
@@ -131,6 +132,8 @@ export async function transcribeLocal(audio: Buffer, srcExt: string): Promise<Lo
         180 * 60 * 1000,
       );
       // 2) 성명학 고정 교정사전 적용 (대본 없는 통화는 domain_snap은 자동 no-op)
+      // 전사 직전 DB→learned_corrections.json 내려받아 인터넷/로컬 어디서 고친 교정도 반영
+      await exportLearnedToJson().catch(() => {});
       await run(WHISPER_PY, [path.join(WHISPER_DIR, "correct.py"), wordsJson], job, 5 * 60 * 1000).catch(
         (e) => {
           // 교정 실패해도 전사 자체는 살림

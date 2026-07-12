@@ -1,11 +1,15 @@
 // 공유 학습 교정 사전 (KNOP 통화 전사 ↔ 영상편집 봇 공용)
-// 저장 위치: <video-caption-bot>/learned_corrections.json  (correct.py 가 같은 파일을 읽음)
-// KNOP에서 전사문을 고치면 원본↔수정본 diff로 "틀린말→맞는말"을 자동 학습해 누적.
+// 원천(source of truth): 공유 DB(correction_rules) — 인터넷 사이트/로컬 어디서 고쳐도 여기에 누적.
+// correct.py 는 <video-caption-bot>/learned_corrections.json 을 읽으므로, 로컬 서버가 DB→JSON 으로 내려받아 반영.
 import { promises as fs } from "fs";
 import path from "path";
-import { localTranscribeConfig } from "./localTranscribe";
+import { db } from "../db";
+import { correctionRules } from "@shared/schema";
+import { eq, sql } from "drizzle-orm";
 
-const LEARNED_PATH = path.join(localTranscribeConfig().dir, "learned_corrections.json");
+// correct.py 가 읽는 로컬 파일. localTranscribe 와 같은 폴더 규칙(순환 import 방지 위해 직접 계산).
+const WHISPER_DIR = process.env.KNOP_WHISPER_DIR?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot";
+const LEARNED_PATH = path.join(WHISPER_DIR, "learned_corrections.json");
 
 export type CorrectionRule = {
   wrong: string;
@@ -17,20 +21,99 @@ export type CorrectionRule = {
   updatedAt: string;
 };
 
-type Store = { rules: CorrectionRule[] };
+function toRule(row: typeof correctionRules.$inferSelect): CorrectionRule {
+  return {
+    wrong: row.wrong,
+    right: row.right,
+    count: row.count,
+    enabled: row.enabled,
+    source: (row.source as "learned" | "manual") || "learned",
+    createdAt: (row.createdAt as any)?.toISOString?.() || String(row.createdAt),
+    updatedAt: (row.updatedAt as any)?.toISOString?.() || String(row.updatedAt),
+  };
+}
 
+// 원천: DB. (DB 없으면 로컬 JSON 폴백 — 개발/오프라인 안전)
 export async function loadRules(): Promise<CorrectionRule[]> {
+  if (db) {
+    try {
+      const rows = await db.select().from(correctionRules);
+      return rows.map(toRule);
+    } catch (e: any) {
+      console.error(`[KNOP] 교정사전 DB 조회 실패, JSON 폴백: ${e?.message}`);
+    }
+  }
   try {
     const raw = await fs.readFile(LEARNED_PATH, "utf-8");
-    const data = JSON.parse(raw) as Store;
+    const data = JSON.parse(raw) as { rules: CorrectionRule[] };
     return Array.isArray(data.rules) ? data.rules : [];
   } catch {
     return [];
   }
 }
 
-async function saveRules(rules: CorrectionRule[]): Promise<void> {
-  await fs.writeFile(LEARNED_PATH, JSON.stringify({ rules }, null, 2), "utf-8");
+// DB → 로컬 JSON 내려받기 (correct.py 가 읽는 파일 갱신). 폴더 접근 가능할 때만(=로컬 서버).
+export async function exportLearnedToJson(): Promise<boolean> {
+  try {
+    const rules = await loadRules();
+    await fs.writeFile(LEARNED_PATH, JSON.stringify({ rules }, null, 2), "utf-8");
+    return true;
+  } catch {
+    return false; // 클라우드엔 폴더가 없음 → 조용히 무시(전사도 클라우드에선 안 돌아감)
+  }
+}
+
+// 최초 1회: 로컬 JSON 에만 있던 기존 규칙을 DB 로 이관(DB 가 비어있을 때).
+export async function seedRulesFromJsonOnce(): Promise<number> {
+  if (!db) return 0;
+  try {
+    const [{ n }] = await db.select({ n: sql<number>`count(*)::int` }).from(correctionRules);
+    if (n > 0) return 0;
+    const raw = await fs.readFile(LEARNED_PATH, "utf-8").catch(() => "");
+    if (!raw) return 0;
+    const data = JSON.parse(raw) as { rules: CorrectionRule[] };
+    const rules = Array.isArray(data.rules) ? data.rules : [];
+    if (!rules.length) return 0;
+    for (const r of rules) {
+      const w = (r.wrong || "").trim();
+      const rt = (r.right || "").trim();
+      if (!w || !rt) continue;
+      await db
+        .insert(correctionRules)
+        .values({
+          wrong: w,
+          right: rt,
+          count: r.count ?? 0,
+          enabled: r.enabled ?? true,
+          source: r.source === "manual" ? "manual" : "learned",
+        })
+        .onConflictDoNothing({ target: correctionRules.wrong });
+    }
+    console.log(`[KNOP] 교정사전 ${rules.length}개 DB로 이관 완료`);
+    return rules.length;
+  } catch (e: any) {
+    console.error(`[KNOP] 교정사전 이관 실패: ${e?.message}`);
+    return 0;
+  }
+}
+
+// 규칙 하나 upsert (wrong 기준). learned=count 증가, manual=count 유지.
+async function upsertRule(wrong: string, right: string, source: "learned" | "manual"): Promise<void> {
+  if (!db) return;
+  const now = new Date();
+  await db
+    .insert(correctionRules)
+    .values({ wrong, right, count: source === "learned" ? 1 : 0, enabled: true, source })
+    .onConflictDoUpdate({
+      target: correctionRules.wrong,
+      set: {
+        right,
+        enabled: true,
+        updatedAt: now,
+        // learned 로 다시 학습되면 횟수 +1, manual 편집이면 그대로
+        count: source === "learned" ? sql`${correctionRules.count} + 1` : correctionRules.count,
+      },
+    });
 }
 
 // ── 한글 자모 분해 + 발음 유사도 (오타=발음비슷 필터용) ──
@@ -135,10 +218,7 @@ export async function learnFromEdit(oldText: string, newText: string): Promise<L
   if (!o || !n || o === n) return result;
 
   const blocks = diffReplaces(o.split(/\s+/), n.split(/\s+/));
-  const rules = await loadRules();
-  const byWrong = new Map(rules.map((r) => [r.wrong, r]));
   let changed = false;
-  const now = new Date().toISOString();
 
   for (const b of blocks) {
     // 1:1 단어 치환만(가장 신뢰도 높음)
@@ -154,22 +234,12 @@ export async function learnFromEdit(oldText: string, newText: string): Promise<L
     if (/^\d+$/.test(wrong) || /^\d+$/.test(right)) { result.skipped++; continue; }
     if (phonSim(wrong, right) < 0.4) { result.skipped++; continue; } // 발음 안 비슷하면 오타 아님(재작성)
 
-    const ex = byWrong.get(wrong);
-    if (ex) {
-      ex.right = right; // 최신 수정 반영
-      ex.count += 1;
-      ex.updatedAt = now;
-      ex.enabled = true;
-    } else {
-      const r: CorrectionRule = { wrong, right, count: 1, enabled: true, source: "learned", createdAt: now, updatedAt: now };
-      rules.push(r);
-      byWrong.set(wrong, r);
-    }
+    await upsertRule(wrong, right, "learned");
     changed = true;
     result.learned.push({ wrong, right });
   }
 
-  if (changed) await saveRules(rules);
+  if (changed) await exportLearnedToJson(); // 로컬 JSON 갱신(correct.py 반영)
   return result;
 }
 
@@ -181,27 +251,24 @@ export async function listRules(): Promise<CorrectionRule[]> {
 export async function upsertManualRule(wrong: string, right: string): Promise<CorrectionRule[]> {
   const w = wrong.trim(), r = right.trim();
   if (!w || !r) return loadRules();
-  const rules = await loadRules();
-  const ex = rules.find((x) => x.wrong === w);
-  const now = new Date().toISOString();
-  if (ex) {
-    ex.right = r; ex.enabled = true; ex.updatedAt = now;
-  } else {
-    rules.push({ wrong: w, right: r, count: 0, enabled: true, source: "manual", createdAt: now, updatedAt: now });
-  }
-  await saveRules(rules);
-  return rules;
+  await upsertRule(w, r, "manual");
+  await exportLearnedToJson();
+  return loadRules();
 }
 
 export async function setRuleEnabled(wrong: string, enabled: boolean): Promise<void> {
-  const rules = await loadRules();
-  const ex = rules.find((x) => x.wrong === wrong);
-  if (ex) { ex.enabled = enabled; ex.updatedAt = new Date().toISOString(); await saveRules(rules); }
+  if (!db) return;
+  await db
+    .update(correctionRules)
+    .set({ enabled, updatedAt: new Date() })
+    .where(eq(correctionRules.wrong, wrong));
+  await exportLearnedToJson();
 }
 
 export async function deleteRule(wrong: string): Promise<void> {
-  const rules = (await loadRules()).filter((x) => x.wrong !== wrong);
-  await saveRules(rules);
+  if (!db) return;
+  await db.delete(correctionRules).where(eq(correctionRules.wrong, wrong));
+  await exportLearnedToJson();
 }
 
 // ── 오류 패턴 분석 / 우선순위 ──
