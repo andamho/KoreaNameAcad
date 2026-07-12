@@ -17,6 +17,7 @@ import {
   SpellCheck,
   MessageSquare,
   Inbox,
+  Trash2,
 } from "lucide-react";
 import { knopApi } from "@/lib/knopApi";
 import { useToast } from "@/hooks/use-toast";
@@ -202,6 +203,24 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
     mutationFn: ({ id, on }: { id: string; on: boolean }) => knopApi.updateCustomer(id, { phoneNaming: on }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["knop-board"] }),
   });
+  const [showTrash, setShowTrash] = useState(false);
+  const { data: trash } = useQuery({ queryKey: ["knop-trash"], queryFn: () => knopApi.listTrash(), enabled: showTrash });
+  const refreshAll = () => {
+    qc.invalidateQueries({ queryKey: ["knop-board"] });
+    qc.invalidateQueries({ queryKey: ["knop-trash"] });
+  };
+  const trashMut = useMutation({
+    mutationFn: (id: string) => knopApi.deleteCustomer(id),
+    onSuccess: () => { refreshAll(); toast({ title: "휴지통으로 이동" }); },
+  });
+  const restoreMut = useMutation({
+    mutationFn: (id: string) => knopApi.restoreCustomer(id),
+    onSuccess: () => { refreshAll(); toast({ title: "복원됨" }); },
+  });
+  const purgeMut = useMutation({
+    mutationFn: (id: string) => knopApi.permanentDeleteCustomer(id),
+    onSuccess: () => { refreshAll(); toast({ title: "완전 삭제됨" }); },
+  });
 
   const months = Array.from(new Set((board || []).map((c) => codeMonth(c.customerCode)).filter(Boolean))).sort().reverse();
   let rows = (board || []).filter((c) => {
@@ -251,8 +270,39 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
           </button>
         ))}
         <span className="ml-auto text-xs text-gray-400">총 {rows.length}명</span>
+        <button
+          onClick={() => setShowTrash((v) => !v)}
+          className={`${selCls} ml-1 flex items-center gap-1 ${showTrash ? "bg-gray-200 text-gray-700" : "text-gray-400 hover:text-gray-600"}`}
+        >
+          <Trash2 className="w-3.5 h-3.5" /> 휴지통
+        </button>
       </div>
 
+      {/* 휴지통 뷰 */}
+      {showTrash ? (
+        <div className="space-y-1.5 pt-1">
+          {(!trash || trash.length === 0) && <p className="text-sm text-gray-400 py-8 text-center">휴지통이 비어 있습니다.</p>}
+          {trash?.map((c) => (
+            <div key={c.id} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-100 bg-gray-50/50">
+              <span className="text-[11px] text-gray-400 w-20 shrink-0">{c.customerCode}</span>
+              <span className="text-sm text-gray-700 flex-1 truncate">{cleanName(c.name)}</span>
+              <Button size="sm" variant="outline" onClick={() => restoreMut.mutate(c.id)} disabled={restoreMut.isPending}>
+                복원
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-red-500 border-red-200 hover:bg-red-50"
+                onClick={() => { if (confirm(`${cleanName(c.name)} 완전 삭제? (복구 불가)`)) purgeMut.mutate(c.id); }}
+                disabled={purgeMut.isPending}
+              >
+                완전삭제
+              </Button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
       {/* 마일스톤 헤더 */}
       <div className="grid items-center px-2 pb-2 border-b border-gray-200 text-[11px] text-gray-400" style={GRID}>
         <span>고객</span>
@@ -269,7 +319,14 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
 
       {/* 행 */}
       {rows.map((c) => (
-        <div key={c.id} className="grid items-center px-2 pt-2.5 pb-6 border-b border-gray-100 hover:bg-gray-50/70 transition" style={GRID}>
+        <div key={c.id} className="relative group grid items-center px-2 pt-2.5 pb-6 border-b border-gray-100 hover:bg-gray-50/70 transition" style={GRID}>
+          <button
+            title="휴지통으로"
+            onClick={(e) => { e.stopPropagation(); trashMut.mutate(c.id); }}
+            className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition p-1 z-10"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
           <button className="text-left min-w-0" onClick={() => onOpenCustomer(c.id)}>
             <div className="text-[11px] text-gray-400">{c.customerCode}</div>
             <div className="text-sm font-medium text-gray-900 truncate flex items-center gap-1.5">
@@ -328,6 +385,8 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
           })}
         </div>
       ))}
+        </>
+      )}
 
       <NewCustomerDialog open={newOpen} onOpenChange={setNewOpen} onCreated={(c) => onOpenCustomer(c.id)} />
     </div>

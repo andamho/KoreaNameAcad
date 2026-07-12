@@ -94,7 +94,8 @@ export const knopStore = {
   async listCustomers(query?: string): Promise<Customer[]> {
     const d = requireDb();
     try {
-      const rows = await d.select().from(customers).orderBy(desc(customers.updatedAt));
+      const all = await d.select().from(customers).orderBy(desc(customers.updatedAt));
+      const rows = all.filter((c) => !c.deletedAt); // 휴지통 제외
       if (!query) return rows;
       const q = query.trim().toLowerCase();
       const nq = normalizePhone(query);
@@ -515,7 +516,8 @@ export const knopStore = {
   async customerBoard(): Promise<Array<Customer & { projectId: string | null; status: string | null; milestone: number }>> {
     const d = requireDb();
     try {
-      const custs = await d.select().from(customers).orderBy(desc(customers.createdAt));
+      const allC = await d.select().from(customers).orderBy(desc(customers.createdAt));
+      const custs = allC.filter((c) => !c.deletedAt); // 휴지통 제외
       const projs = await d.select().from(projects).orderBy(desc(projects.updatedAt));
       const byCust = new Map<string, (typeof projs)[number]>();
       for (const p of projs) if (!byCust.has(p.customerId)) byCust.set(p.customerId, p);
@@ -636,18 +638,52 @@ export const knopStore = {
     }
   },
 
+  // 휴지통으로 이동 (soft delete)
   async deleteCustomer(id: string): Promise<boolean> {
     const d = requireDb();
     try {
-      // 연결 데이터 정리
+      const res = await d.update(customers).set({ deletedAt: new Date() }).where(eq(customers.id, id)).returning();
+      return res.length > 0;
+    } catch (e) {
+      fail("고객 휴지통 이동", e);
+    }
+  },
+
+  // 휴지통에서 복원
+  async restoreCustomer(id: string): Promise<boolean> {
+    const d = requireDb();
+    try {
+      const res = await d.update(customers).set({ deletedAt: null }).where(eq(customers.id, id)).returning();
+      return res.length > 0;
+    } catch (e) {
+      fail("고객 복원", e);
+    }
+  },
+
+  // 휴지통 목록 (삭제된 고객)
+  async listTrash(): Promise<Customer[]> {
+    const d = requireDb();
+    try {
+      const all = await d.select().from(customers).orderBy(desc(customers.updatedAt));
+      return all.filter((c) => !!c.deletedAt);
+    } catch (e) {
+      fail("휴지통 목록", e);
+    }
+  },
+
+  // 완전 삭제 (연결 데이터까지 영구 삭제)
+  async permanentDeleteCustomer(id: string): Promise<boolean> {
+    const d = requireDb();
+    try {
       await d.delete(timelineEvents).where(eq(timelineEvents.customerId, id));
       await d.delete(crmFiles).where(eq(crmFiles.customerId, id));
       await d.delete(calendarEvents).where(eq(calendarEvents.customerId, id));
+      await d.delete(calls).where(eq(calls.customerId, id));
       await d.delete(projects).where(eq(projects.customerId, id));
       const res = await d.delete(customers).where(eq(customers.id, id)).returning();
       return res.length > 0;
     } catch (e) {
-      fail("고객 삭제", e);
+      fail("고객 완전삭제", e);
     }
   },
 

@@ -141,7 +141,10 @@ export const knopApi = {
   }) => req<Customer>("POST", "/api/knop/customers", data),
   updateCustomer: (id: string, data: Record<string, unknown>) =>
     req<Customer>("PATCH", `/api/knop/customers/${id}`, data),
-  deleteCustomer: (id: string) => req<{ ok: boolean }>("DELETE", `/api/knop/customers/${id}`),
+  deleteCustomer: (id: string) => req<{ ok: boolean }>("DELETE", `/api/knop/customers/${id}`), // 휴지통으로
+  listTrash: () => req<Customer[]>("GET", "/api/knop/customers-trash"),
+  restoreCustomer: (id: string) => req<{ ok: boolean }>("POST", `/api/knop/customers/${id}/restore`),
+  permanentDeleteCustomer: (id: string) => req<{ ok: boolean }>("DELETE", `/api/knop/customers/${id}/permanent`),
 
   // Projects
   createProject: (data: {

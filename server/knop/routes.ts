@@ -491,10 +491,34 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
 
   app.delete(`${P}/customers/:id`, requireAdmin, async (req, res) => {
     try {
-      const ok = await knopStore.deleteCustomer(req.params.id);
+      const ok = await knopStore.deleteCustomer(req.params.id); // 휴지통으로
       res.json({ ok });
     } catch (e) {
       handle(res, "DELETE customer", e);
+    }
+  });
+  // 휴지통 목록
+  app.get(`${P}/customers-trash`, requireAdmin, async (_req, res) => {
+    try {
+      res.json(await knopStore.listTrash());
+    } catch (e) {
+      handle(res, "GET trash", e);
+    }
+  });
+  // 복원
+  app.post(`${P}/customers/:id/restore`, requireAdmin, async (req, res) => {
+    try {
+      res.json({ ok: await knopStore.restoreCustomer(req.params.id) });
+    } catch (e) {
+      handle(res, "POST restore", e);
+    }
+  });
+  // 완전삭제
+  app.delete(`${P}/customers/:id/permanent`, requireAdmin, async (req, res) => {
+    try {
+      res.json({ ok: await knopStore.permanentDeleteCustomer(req.params.id) });
+    } catch (e) {
+      handle(res, "DELETE permanent", e);
     }
   });
 

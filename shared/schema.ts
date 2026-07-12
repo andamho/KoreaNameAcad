@@ -398,6 +398,7 @@ export const customers = pgTable("customers", {
   memo: text("memo"),
   tags: text("tags"),                                   // JSON string[] (선택)
   sourceConsultationId: varchar("source_consultation_id"), // 상담신청에서 전환된 경우 원본 id
+  deletedAt: timestamp("deleted_at"),                    // 휴지통(soft delete). null=활성, 값 있으면 삭제됨
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
