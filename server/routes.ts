@@ -12,11 +12,46 @@ import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutube
 import { instagramConfigured, getInstagramStatus, publishInstagramReel } from "./instagram";
 import { sendAdminOtp } from "./telegramBot";
 import { tiktokConfigured, getTiktokAuthUrl, handleTiktokCallback, getTiktokStatus, uploadTiktokDraft } from "./tiktok";
-import { transcodeToH264, extractFrameJpeg } from "./videoTools";
-import { ObjectStorageService } from "./object_storage/objectStorage";
+import { transcodeToH264, extractFrameJpeg, transcodeR2VideoToH264 } from "./videoTools";
+import { ObjectStorageService, validateR2VideoKey } from "./object_storage/objectStorage";
 import { db } from "./db";
-import { videoJobs, reviewDrafts, contents } from "@shared/schema";
-import { desc as drizzleDesc, eq } from "drizzle-orm";
+import { videoJobs, reviewDrafts, contents, captionScripts, transcodeDiagnostics } from "@shared/schema";
+
+// ── transcode 진단 실행(비게시) — 게시/DB 게시상태 안 건드림. RSS 피크 샘플링(1초) ──
+// 주의: process RSS는 ffmpeg 자식 프로세스 메모리를 포함하지 않음(결과에 명시).
+async function runTranscodeDiagnostic(id: string, key: string): Promise<void> {
+  let peakRss = 0;
+  const rss0 = process.memoryUsage().rss;
+  const sampler = setInterval(() => {
+    peakRss = Math.max(peakRss, process.memoryUsage().rss);
+  }, 1000);
+  const t0 = Date.now();
+  const result: any = { r2Key: key, note: "Node RSS는 ffmpeg 자식 프로세스 메모리 미포함(별도)" };
+  try {
+    const out = await transcodeR2VideoToH264(key); // 스트림→임시파일→변환(1080 다운스케일)
+    result.ok = true;
+    result.outputMB = (out.length / 1024 / 1024).toFixed(2);
+  } catch (e: any) {
+    result.ok = false;
+    // 에러엔 code/signal/killed/pid/실행시간/입력ffprobe/stderr(tail)/다운로드구분 포함
+    result.error = String(e?.message || e).slice(0, 20000);
+  } finally {
+    clearInterval(sampler);
+    result.elapsedSec = ((Date.now() - t0) / 1000).toFixed(1);
+    result.rssStartMB = (rss0 / 1024 / 1024).toFixed(0);
+    result.rssPeakMB = (peakRss / 1024 / 1024).toFixed(0);
+    result.rssEndMB = (process.memoryUsage().rss / 1024 / 1024).toFixed(0);
+    console.log(`[diag] ${id} ${result.ok ? "done" : "failed"} elapsed=${result.elapsedSec}s rssPeak=${result.rssPeakMB}MB`);
+    if (db) {
+      await db
+        .update(transcodeDiagnostics)
+        .set({ status: result.ok ? "done" : "failed", result: JSON.stringify(result), updatedAt: new Date() })
+        .where(eq(transcodeDiagnostics.id, id))
+        .catch(() => {});
+    }
+  }
+}
+import { desc as drizzleDesc, eq, and, sql as dsql } from "drizzle-orm";
 
 // 공개 문의 목록 인메모리 캐시 (60초 TTL)
 let _publicInquiriesCache: any[] | null = null;
@@ -33,10 +68,16 @@ function handleDbError(error: any, res: Response, route: string): Response {
   return res.status(500).json({ error: "Internal server error" });
 }
 
-// OTP 저장소 (메모리, 5분 TTL)
-const adminOtpStore = new Map<string, { code: string; expiresAt: number }>();
+// OTP 저장소 (메모리, 5분 TTL) — 코드 원문 대신 SHA-256 해시 저장
+const adminOtpStore = new Map<string, { codeHash: string; expiresAt: number }>();
 // 신뢰 기기 토큰 저장소 (메모리, 30일)
 const trustedDevices = new Map<string, number>(); // token -> expiresAt
+// OTP 실패 횟수 잠금 (10분 TTL)
+const otpFailStore = { count: 0, lockedUntil: 0 };
+
+function hashOtp(code: string): string {
+  return crypto.createHash("sha256").update(`otp_${code}`).digest("hex");
+}
 
 // 관리자 비밀번호 기반 영구 토큰 생성 (서버 재시작 후에도 유효)
 function getValidAdminToken(): string | null {
@@ -101,9 +142,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // OTP 생성 후 텔레그램 발송
+      // OTP 생성 후 텔레그램 발송 (해시만 저장, 원문은 버림)
       const code = String(Math.floor(100000 + Math.random() * 900000));
-      adminOtpStore.set("admin", { code, expiresAt: Date.now() + 5 * 60 * 1000 });
+      adminOtpStore.set("admin", { codeHash: hashOtp(code), expiresAt: Date.now() + 5 * 60 * 1000 });
+      otpFailStore.count = 0; // 새 OTP 발급 시 실패 횟수 초기화
+      otpFailStore.lockedUntil = 0;
       await sendAdminOtp(code);
       return res.json({ requiresOtp: true });
     } catch (error) {
@@ -115,12 +158,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // OTP 검증 + 신뢰 기기 토큰 발급
   app.post("/api/admin/verify-otp", async (req, res) => {
     try {
+      // 잠금 확인
+      if (Date.now() < otpFailStore.lockedUntil) {
+        const remaining = Math.ceil((otpFailStore.lockedUntil - Date.now()) / 60000);
+        return res.status(429).json({ error: `너무 많이 틀렸습니다. ${remaining}분 후 다시 시도하세요.` });
+      }
+
       const { code } = req.body;
       const entry = adminOtpStore.get("admin");
-      if (!entry || Date.now() > entry.expiresAt || entry.code !== code?.trim()) {
-        return res.status(401).json({ error: "코드가 올바르지 않거나 만료되었습니다." });
+      const inputHash = hashOtp(code?.trim() ?? "");
+
+      if (!entry || Date.now() > entry.expiresAt || entry.codeHash !== inputHash) {
+        otpFailStore.count += 1;
+        if (otpFailStore.count >= 5) {
+          otpFailStore.lockedUntil = Date.now() + 10 * 60 * 1000; // 10분 잠금
+          adminOtpStore.delete("admin"); // 코드도 폐기
+          return res.status(429).json({ error: "5회 이상 틀렸습니다. 10분 후 다시 시도하세요." });
+        }
+        return res.status(401).json({ error: `코드가 올바르지 않습니다. (${otpFailStore.count}/5)` });
       }
+
+      // 성공 — OTP 폐기 및 실패 횟수 초기화
       adminOtpStore.delete("admin");
+      otpFailStore.count = 0;
+      otpFailStore.lockedUntil = 0;
+
       const token = getValidAdminToken();
       const trustedDeviceToken = crypto.randomBytes(32).toString("hex");
       trustedDevices.set(trustedDeviceToken, Date.now() + 30 * 24 * 60 * 60 * 1000); // 30일
@@ -741,6 +803,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ── 캡션봇 → 대본 수신 (PC의 캡션봇이 편집 끝나면 밀어넣음) ──
+  // 인증: SCRIPT_PUSH_SECRET 헤더 (관리자 로그인 불필요 — 봇이 자동 호출)
+  app.post("/api/scripts/push", async (req, res) => {
+    try {
+      const secret = process.env.SCRIPT_PUSH_SECRET;
+      const given = (req.headers["x-push-secret"] as string) || (req.query.secret as string) || "";
+      if (!secret || given !== secret) return res.status(401).json({ error: "Unauthorized" });
+      if (!db) return res.status(503).json({ error: "DB 사용 불가" });
+      const { videoName, script } = req.body || {};
+      if (!script || typeof script !== "string" || !script.trim()) {
+        return res.status(400).json({ error: "script가 비어있습니다." });
+      }
+      await db.insert(captionScripts).values({ videoName: videoName || null, script: script.trim() });
+      // 최근 20개만 유지 (오래된 것 정리)
+      const all = await db.select({ id: captionScripts.id }).from(captionScripts).orderBy(drizzleDesc(captionScripts.createdAt));
+      const stale = all.slice(20).map((r) => r.id);
+      for (const id of stale) await db.delete(captionScripts).where(eq(captionScripts.id, id));
+      res.json({ ok: true });
+    } catch (error: any) {
+      console.error("[scripts push]", error);
+      res.status(500).json({ error: error?.message || "push failed" });
+    }
+  });
+
+  // 최근 대본 목록 (배포 폼 자동채움/선택용)
+  app.get("/api/admin/scripts", requireAdmin, async (_req, res) => {
+    try {
+      if (!db) return res.json([]);
+      const rows = await db
+        .select()
+        .from(captionScripts)
+        .orderBy(drizzleDesc(captionScripts.createdAt))
+        .limit(20);
+      res.json(rows);
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "scripts error" });
+    }
+  });
+
   // 틱톡 연결 상태 (관리자 UI용)
   app.get("/api/admin/tiktok/status", requireAdmin, async (_req, res) => {
     try {
@@ -814,7 +915,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .values({
           videoR2Key: r2Key,
           title: ytTitle,
-          caption: null,
+          caption: String(instagramCaption || "").trim() || null, // 인스타 본문(재시도용 보관)
           hashtags: FIXED_HASHTAGS,
           targetYoutube: true,
           targetInstagram: !!targetInstagram,
@@ -954,6 +1055,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("[video deploy]", error);
       res.status(500).json({ error: error?.message || "deploy failed" });
+    }
+  });
+
+  // ── 인스타 단독 재시도 (유튜브/홈페이지 절대 안 건드림) ──
+  // 원자적 조건부 UPDATE로 실행권 확보(경쟁조건 방지). ig_status='failed'일 때만 실행.
+  // 원본 영상=R2(영구저장, Railway 임시디스크 아님). 캡션=요청 override 또는 job.caption(임의생성 금지).
+  app.post("/api/admin/video/retry-instagram", requireAdmin, async (req, res) => {
+    try {
+      if (!db) return res.status(503).json({ error: "DB 사용 불가" });
+      const { jobId, instagramCaption } = req.body || {};
+      if (!jobId || typeof jobId !== "string") return res.status(400).json({ error: "jobId가 필요합니다." });
+
+      // 1) 원자적 소유권 확보: 'failed'→'retrying' 단일 조건부 UPDATE (SELECT 후 UPDATE 금지)
+      const claimed = await db
+        .update(videoJobs)
+        .set({
+          igStatus: "retrying",
+          igRetryCount: dsql`${videoJobs.igRetryCount} + 1`,
+          igRetryStartedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(and(eq(videoJobs.id, jobId), eq(videoJobs.igStatus, "failed")))
+        .returning();
+      if (claimed.length === 0) {
+        const cur = await db.select({ igStatus: videoJobs.igStatus }).from(videoJobs).where(eq(videoJobs.id, jobId)).limit(1);
+        return res.status(409).json({
+          error: "재시도 불가 (failed 상태가 아니거나 이미 처리중/없음)",
+          currentStatus: cur[0]?.igStatus ?? "not_found",
+        });
+      }
+      const job = claimed[0];
+
+      // 2) 캡션 복원: 요청 override → job.caption(배포시 저장분). 없으면 본문 없이(고정문구+해시태그만).
+      const body = (typeof instagramCaption === "string" ? instagramCaption : job.caption ?? "").trim();
+
+      // 3) 인스타만 재수행 (유튜브/홈페이지 함수 호출 없음)
+      let igMediaId: string | null = null;
+      let errMsg: string | undefined;
+      const t0 = Date.now();
+      try {
+        const objectStorage = new ObjectStorageService();
+        // 스트리밍 변환(전체 Buffer 미생성) + 1080 다운스케일
+        const h264 = await transcodeR2VideoToH264(job.videoR2Key);
+        const igKey = `uploads/ig-${crypto.randomUUID()}.mp4`;
+        await objectStorage.putObject(igKey, h264, "video/mp4");
+        const publicVideoUrl = `${PUBLIC_MEDIA_BASE_URL}/objects/${igKey}`;
+        const igCaption = [body, INSTAGRAM_CAPTION_FOOTER, INSTAGRAM_HASHTAGS].filter(Boolean).join("\n\n");
+        const result = await publishInstagramReel({ videoUrl: publicVideoUrl, caption: igCaption });
+        igMediaId = result.mediaId;
+        await db.update(videoJobs).set({ igStatus: "published", igMediaId, errorLog: null, updatedAt: new Date() }).where(eq(videoJobs.id, jobId));
+      } catch (e: any) {
+        errMsg = e?.message || "retry failed";
+        // 이력 보존: 기존 errorLog에 이번 시도를 append (완전 덮어쓰지 않음)
+        const entry = { attempt: job.igRetryCount, at: new Date().toISOString(), instagram: errMsg };
+        let log: any = { retries: [entry] };
+        try {
+          const prev = job.errorLog ? JSON.parse(job.errorLog) : {};
+          log = { ...(prev && typeof prev === "object" ? prev : {}), retries: [...(prev?.retries || []), entry] };
+        } catch { /* prev 파싱 실패 시 새 이력만 */ }
+        await db.update(videoJobs).set({ igStatus: "failed", errorLog: JSON.stringify(log), updatedAt: new Date() }).where(eq(videoJobs.id, jobId));
+      }
+      res.json({
+        jobId,
+        retryCount: job.igRetryCount,
+        elapsedSec: ((Date.now() - t0) / 1000).toFixed(1),
+        instagram: igMediaId ? { ok: true, mediaId: igMediaId } : { ok: false, error: errMsg },
+      });
+    } catch (error: any) {
+      console.error("[retry-instagram]", error);
+      res.status(500).json({ error: error?.message || "retry failed" });
+    }
+  });
+
+  // ── transcode 진단 (비게시): 원본 R2키로 변환만 돌려 자원/시간/종료 기록. 게시/DB 게시상태 안 건드림 ──
+  app.post("/api/admin/transcode-diagnostic", requireAdmin, async (req, res) => {
+    try {
+      if (!db) return res.status(503).json({ error: "DB 사용 불가" });
+      let key: string;
+      try {
+        key = validateR2VideoKey((req.body || {}).r2Key);
+      } catch (e: any) {
+        return res.status(400).json({ error: e?.message });
+      }
+      const [row] = await db.insert(transcodeDiagnostics).values({ r2Key: key, status: "running" }).returning();
+      // 비동기 실행: 요청은 즉시 202 반환(프록시 timeout 혼입 방지). 게시상태 절대 안 건드림.
+      runTranscodeDiagnostic(row.id, key).catch((e) => console.error("[diag]", e));
+      res.status(202).json({ diagnosticId: row.id, status: "running" });
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message });
+    }
+  });
+
+  app.get("/api/admin/transcode-diagnostic/:id", requireAdmin, async (req, res) => {
+    try {
+      if (!db) return res.status(503).json({ error: "DB 사용 불가" });
+      const rows = await db.select().from(transcodeDiagnostics).where(eq(transcodeDiagnostics.id, req.params.id)).limit(1);
+      if (!rows[0]) return res.status(404).json({ error: "not found" });
+      res.json(rows[0]);
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message });
     }
   });
 

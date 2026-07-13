@@ -9,7 +9,7 @@ interface AdminContextType {
   token: string | null;
   pendingOtp: boolean;
   login: (password: string) => Promise<"ok" | "otp_required" | "error">;
-  verifyOtp: (code: string) => Promise<boolean>;
+  verifyOtp: (code: string) => Promise<{ ok: true } | { ok: false; error: string }>;
   logout: () => void;
 }
 
@@ -73,15 +73,17 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const verifyOtp = async (code: string): Promise<boolean> => {
+  const verifyOtp = async (code: string): Promise<{ ok: true } | { ok: false; error: string }> => {
     try {
       const response = await fetch("/api/admin/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),
       });
-      if (!response.ok) return false;
       const data = await response.json();
+      if (!response.ok) {
+        return { ok: false, error: data.error ?? "코드가 올바르지 않거나 만료되었습니다." };
+      }
       if (data.token) {
         localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
         if (data.trustedDeviceToken) {
@@ -90,11 +92,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         setToken(data.token);
         setIsAdmin(true);
         setPendingOtp(false);
-        return true;
+        return { ok: true };
       }
-      return false;
+      return { ok: false, error: "코드가 올바르지 않거나 만료되었습니다." };
     } catch {
-      return false;
+      return { ok: false, error: "네트워크 오류가 발생했습니다." };
     }
   };
 

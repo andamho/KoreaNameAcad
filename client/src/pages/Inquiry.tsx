@@ -98,13 +98,13 @@ export default function Inquiry() {
 
   const handleAdminOtpVerify = async () => {
     setAdminOtpErr("");
-    const ok = await verifyOtp(adminOtpCode.trim());
-    if (ok) {
+    const result = await verifyOtp(adminOtpCode.trim());
+    if (result.ok) {
       setAdminLoginVisible(false);
       setAdminPw("");
       setAdminOtpCode("");
     } else {
-      setAdminOtpErr("코드가 올바르지 않거나 만료되었습니다.");
+      setAdminOtpErr(result.error);
     }
   };
 

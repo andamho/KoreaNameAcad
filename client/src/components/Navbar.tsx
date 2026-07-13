@@ -220,15 +220,15 @@ export function Navbar() {
   const handleVerifyOtp = async () => {
     if (!otpCode.trim()) return;
     setIsLoggingIn(true);
-    const ok = await verifyOtp(otpCode.trim());
+    const result = await verifyOtp(otpCode.trim());
     setIsLoggingIn(false);
-    if (ok) {
+    if (result.ok) {
       setShowLoginDialog(false);
       setLoginPassword("");
       setOtpCode("");
       toast({ title: "관리자로 로그인되었습니다." });
     } else {
-      setOtpError("코드가 올바르지 않거나 만료되었습니다.");
+      setOtpError(result.error);
     }
   };
   
