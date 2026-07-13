@@ -172,24 +172,40 @@ function handleDbError(error: any, res: Response, route: string): Response {
   return res.status(500).json({ error: "Internal server error" });
 }
 
-// 신뢰 기기 토큰 저장소 (메모리, 30일)
-const trustedDevices = new Map<string, number>(); // token -> expiresAt
+const TRUSTED_DEVICE_COOKIE = "kna_td";
+const TRUSTED_DEVICE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+// 신뢰 기기 토큰 저장소: SHA-256 해시만 보관
+const trustedDevices = new Map<string, number>(); // tokenHash -> expiresAt
+
+function hashTrustedToken(raw: string): string {
+  return crypto.createHash("sha256").update(raw).digest("hex");
+}
+
+// OTP 발급 전역 쿨다운 (단일 관리자 계정 기준)
+let lastOtpIssuedAt = 0;
+const OTP_ISSUANCE_COOLDOWN_MS = 60_000; // 1분
 
 // 관리자 비밀번호 기반 영구 토큰 생성 (서버 재시작 후에도 유효)
 function getValidAdminToken(): string | null {
   const adminPassword = process.env.ADMIN_PASSWORD?.trim();
   if (!adminPassword) return null;
-  // 비밀번호 해시 기반 토큰 생성 (항상 동일한 토큰 생성)
   return crypto.createHash("sha256").update(`admin_token_${adminPassword}`).digest("hex");
 }
 
-// Admin verification middleware
+// Admin verification middleware (timingSafeEqual로 타이밍 공격 방지)
 function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
   const validToken = getValidAdminToken();
-  
-  if (!token || !validToken || token !== validToken) {
+  if (!token || !validToken) return res.status(401).json({ error: "Unauthorized" });
+  try {
+    const a = Buffer.from(token.padEnd(64, " "), "utf8");
+    const b = Buffer.from(validToken.padEnd(64, " "), "utf8");
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+  } catch {
     return res.status(401).json({ error: "Unauthorized" });
   }
   next();
@@ -237,20 +253,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 관리자 인증 API (2FA)
   app.post("/api/admin/login", adminLoginLimiter, async (req, res) => {
     try {
-      const { password, trustedDeviceToken } = req.body;
+      const { password } = req.body;
       const adminPassword = process.env.ADMIN_PASSWORD?.trim();
       const inputPassword = password?.trim();
 
       if (!adminPassword) return res.status(500).json({ error: "Admin password not configured" });
       if (inputPassword !== adminPassword) return res.status(401).json({ error: "비밀번호가 올바르지 않습니다." });
 
-      // 신뢰 기기 토큰이 유효하면 OTP 생략
-      if (trustedDeviceToken) {
-        const expiresAt = trustedDevices.get(trustedDeviceToken);
+      // 신뢰 기기 쿠키 확인 (HttpOnly 쿠키에서 읽음)
+      const rawTrustedToken = (req as any).cookies?.[TRUSTED_DEVICE_COOKIE];
+      if (rawTrustedToken) {
+        const tokenHash = hashTrustedToken(rawTrustedToken);
+        const expiresAt = trustedDevices.get(tokenHash);
         if (expiresAt && Date.now() < expiresAt) {
           const token = getValidAdminToken();
           return res.json({ token });
         }
+      }
+
+      // OTP 발급 쿨다운 (1분 1회)
+      if (Date.now() - lastOtpIssuedAt < OTP_ISSUANCE_COOLDOWN_MS) {
+        return res.status(429).json({ error: "OTP는 1분에 한 번만 요청할 수 있습니다." });
       }
 
       // OTP 생성: 암호학적 난수, HMAC 해시만 저장, 원문은 발송 후 즉시 버림
@@ -259,6 +282,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const codeHash = computeOtpHash(challengeId, code);
       otpStore.create(challengeId, codeHash, Date.now() + OTP_TTL_MS);
       await sendAdminOtp(code); // 원문은 여기서만 사용 — 로그 금지
+      lastOtpIssuedAt = Date.now();
       return res.json({ requiresOtp: true, challengeId });
     } catch (error) {
       console.error("Admin login error:", error);
@@ -291,18 +315,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const token = getValidAdminToken();
-      const trustedDeviceToken = crypto.randomBytes(32).toString("hex");
-      trustedDevices.set(trustedDeviceToken, Date.now() + 30 * 24 * 60 * 60 * 1000); // 30일
-      return res.json({ token, trustedDeviceToken });
+      const rawTrustedToken = crypto.randomBytes(32).toString("base64url");
+      const tokenHash = hashTrustedToken(rawTrustedToken);
+      trustedDevices.set(tokenHash, Date.now() + TRUSTED_DEVICE_TTL_MS);
+      res.cookie(TRUSTED_DEVICE_COOKIE, rawTrustedToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: TRUSTED_DEVICE_TTL_MS,
+        path: "/",
+      });
+      return res.json({ token });
     } catch (error) {
       return res.status(500).json({ error: "OTP 검증 실패" });
     }
   });
   
-  // 로그아웃: 신뢰 기기 토큰 서버에서 즉시 폐기
+  // 로그아웃: 신뢰 기기 쿠키 폐기
   app.post("/api/admin/logout", (req, res) => {
-    const { trustedDeviceToken } = req.body;
-    if (trustedDeviceToken) trustedDevices.delete(trustedDeviceToken);
+    const rawToken = (req as any).cookies?.[TRUSTED_DEVICE_COOKIE];
+    if (rawToken) trustedDevices.delete(hashTrustedToken(rawToken));
+    res.clearCookie(TRUSTED_DEVICE_COOKIE, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
     return res.json({ ok: true });
   });
 
@@ -344,7 +382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/consultations", async (req, res, next) => {
+  app.get("/api/consultations", requireAdmin, async (req, res, next) => {
     try {
       const consultations = await storage.getAllConsultations();
       return res.json(consultations);
@@ -353,7 +391,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/consultations/:id", async (req, res, next) => {
+  app.get("/api/consultations/:id", requireAdmin, async (req, res, next) => {
     try {
       const consultation = await storage.getConsultation(req.params.id);
       if (!consultation) return res.status(404).json({ error: "Consultation not found" });

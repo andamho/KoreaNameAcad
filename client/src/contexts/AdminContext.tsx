@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 
 const ADMIN_TOKEN_KEY = "kna_admin_token";
-const TRUSTED_DEVICE_KEY = "kna_trusted_device";
 
 interface AdminContextType {
   isAdmin: boolean;
@@ -50,11 +49,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const login = async (password: string): Promise<"ok" | "otp_required" | "error"> => {
     try {
-      const trustedDeviceToken = localStorage.getItem(TRUSTED_DEVICE_KEY);
       const response = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password, trustedDeviceToken }),
+        body: JSON.stringify({ password }),
       });
       if (!response.ok) return "error";
       const data = await response.json();
@@ -88,9 +86,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       }
       if (data.token) {
         localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
-        if (data.trustedDeviceToken) {
-          localStorage.setItem(TRUSTED_DEVICE_KEY, data.trustedDeviceToken);
-        }
         setToken(data.token);
         setIsAdmin(true);
         setPendingOtp(false);
@@ -104,16 +99,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    const trustedDeviceToken = localStorage.getItem(TRUSTED_DEVICE_KEY);
-    if (trustedDeviceToken) {
-      fetch("/api/admin/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trustedDeviceToken }),
-      }).catch(() => {});
-    }
+    fetch("/api/admin/logout", { method: "POST" }).catch(() => {});
     localStorage.removeItem(ADMIN_TOKEN_KEY);
-    localStorage.removeItem(TRUSTED_DEVICE_KEY);
     setToken(null);
     setIsAdmin(false);
     setPendingOtp(false);
