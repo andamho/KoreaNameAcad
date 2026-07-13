@@ -43,6 +43,7 @@ export function Navbar() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [otpError, setOtpError] = useState("");
+  const [trustDevice, setTrustDevice] = useState(false);
   
   // Write dialog
   const [showWriteDialog, setShowWriteDialog] = useState(false);
@@ -220,7 +221,7 @@ export function Navbar() {
   const handleVerifyOtp = async () => {
     if (!otpCode.trim()) return;
     setIsLoggingIn(true);
-    const result = await verifyOtp(otpCode.trim());
+    const result = await verifyOtp(otpCode.trim(), trustDevice);
     setIsLoggingIn(false);
     if (result.ok) {
       setShowLoginDialog(false);
@@ -643,7 +644,7 @@ export function Navbar() {
       {/* 관리자 로그인 다이얼로그 */}
       <Dialog open={showLoginDialog} onOpenChange={(open) => {
         setShowLoginDialog(open);
-        if (!open) { setOtpCode(""); setOtpError(""); }
+        if (!open) { setOtpCode(""); setOtpError(""); setTrustDevice(false); }
       }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
@@ -673,6 +674,15 @@ export function Navbar() {
                 />
                 {otpError && <p className="text-sm text-destructive mt-1">{otpError}</p>}
               </div>
+              <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={trustDevice}
+                  onChange={(e) => setTrustDevice(e.target.checked)}
+                  className="w-4 h-4 accent-primary"
+                />
+                이 기기를 30일간 신뢰
+              </label>
               <Button
                 onClick={handleVerifyOtp}
                 disabled={isLoggingIn || otpCode.length < 6}

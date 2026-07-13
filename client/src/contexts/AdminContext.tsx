@@ -8,7 +8,7 @@ interface AdminContextType {
   token: string | null;
   pendingOtp: boolean;
   login: (password: string) => Promise<"ok" | "otp_required" | "error">;
-  verifyOtp: (code: string) => Promise<{ ok: true } | { ok: false; error: string }>;
+  verifyOtp: (code: string, trustDevice?: boolean) => Promise<{ ok: true } | { ok: false; error: string }>;
   logout: () => void;
 }
 
@@ -73,12 +73,12 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const verifyOtp = async (code: string): Promise<{ ok: true } | { ok: false; error: string }> => {
+  const verifyOtp = async (code: string, trustDevice = false): Promise<{ ok: true } | { ok: false; error: string }> => {
     try {
       const response = await fetch("/api/admin/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ challengeId: pendingChallengeId, code }),
+        body: JSON.stringify({ challengeId: pendingChallengeId, code, trustDevice }),
       });
       const data = await response.json();
       if (!response.ok) {

@@ -67,6 +67,7 @@ export default function Inquiry() {
   const [adminLoginErr, setAdminLoginErr] = useState("");
   const [adminOtpCode, setAdminOtpCode] = useState("");
   const [adminOtpErr, setAdminOtpErr] = useState("");
+  const [adminTrustDevice, setAdminTrustDevice] = useState(false);
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -98,11 +99,12 @@ export default function Inquiry() {
 
   const handleAdminOtpVerify = async () => {
     setAdminOtpErr("");
-    const result = await verifyOtp(adminOtpCode.trim());
+    const result = await verifyOtp(adminOtpCode.trim(), adminTrustDevice);
     if (result.ok) {
       setAdminLoginVisible(false);
       setAdminPw("");
       setAdminOtpCode("");
+      setAdminTrustDevice(false);
     } else {
       setAdminOtpErr(result.error);
     }
@@ -520,6 +522,15 @@ export default function Inquiry() {
                         autoFocus
                       />
                       {adminOtpErr && <p className="text-xs text-red-500">{adminOtpErr}</p>}
+                      <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={adminTrustDevice}
+                          onChange={(e) => setAdminTrustDevice(e.target.checked)}
+                          className="w-3.5 h-3.5 accent-[#18a999]"
+                        />
+                        이 기기를 30일간 신뢰
+                      </label>
                       <div className="flex gap-2">
                         <button
                           onClick={handleAdminOtpVerify}
@@ -528,7 +539,7 @@ export default function Inquiry() {
                           확인
                         </button>
                         <button
-                          onClick={() => { setAdminLoginVisible(false); setAdminPw(""); setAdminOtpCode(""); setAdminOtpErr(""); }}
+                          onClick={() => { setAdminLoginVisible(false); setAdminPw(""); setAdminOtpCode(""); setAdminOtpErr(""); setAdminTrustDevice(false); }}
                           className="px-4 py-1.5 rounded-lg border border-border text-sm text-muted-foreground hover:bg-muted/30 transition"
                         >
                           취소

@@ -314,17 +314,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(statusMap[result.reason] ?? 401).json({ error: msgMap[result.reason] });
       }
 
+      const { trustDevice } = req.body;
       const token = getValidAdminToken();
-      const rawTrustedToken = crypto.randomBytes(32).toString("base64url");
-      const tokenHash = hashTrustedToken(rawTrustedToken);
-      trustedDevices.set(tokenHash, Date.now() + TRUSTED_DEVICE_TTL_MS);
-      res.cookie(TRUSTED_DEVICE_COOKIE, rawTrustedToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: TRUSTED_DEVICE_TTL_MS,
-        path: "/",
-      });
+      if (trustDevice === true) {
+        const rawTrustedToken = crypto.randomBytes(32).toString("base64url");
+        const tokenHash = hashTrustedToken(rawTrustedToken);
+        trustedDevices.set(tokenHash, Date.now() + TRUSTED_DEVICE_TTL_MS);
+        res.cookie(TRUSTED_DEVICE_COOKIE, rawTrustedToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: TRUSTED_DEVICE_TTL_MS,
+          path: "/",
+        });
+      }
       return res.json({ token });
     } catch (error) {
       return res.status(500).json({ error: "OTP 검증 실패" });
