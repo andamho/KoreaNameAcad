@@ -20,6 +20,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [isVerifying, setIsVerifying] = useState(true);
   const [token, setToken] = useState<string | null>(null);
   const [pendingOtp, setPendingOtp] = useState(false);
+  const [pendingChallengeId, setPendingChallengeId] = useState<string | null>(null);
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -59,6 +60,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       if (data.requiresOtp) {
         setPendingOtp(true);
+        setPendingChallengeId(data.challengeId ?? null);
         return "otp_required";
       }
       if (data.token) {
@@ -78,7 +80,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       const response = await fetch("/api/admin/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ challengeId: pendingChallengeId, code }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -92,6 +94,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         setToken(data.token);
         setIsAdmin(true);
         setPendingOtp(false);
+        setPendingChallengeId(null);
         return { ok: true };
       }
       return { ok: false, error: "코드가 올바르지 않거나 만료되었습니다." };
@@ -105,6 +108,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setIsAdmin(false);
     setPendingOtp(false);
+    setPendingChallengeId(null);
   };
 
   return (

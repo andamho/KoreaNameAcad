@@ -3,6 +3,9 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { startTelegramBot } from "./telegramBot";
+import { validateOtpConfig } from "./otpStore";
+
+validateOtpConfig(); // OTP_HMAC_SECRET 누락 시 즉시 종료
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));

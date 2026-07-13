@@ -11,24 +11,106 @@ import { knopStore } from "./knop/store";
 import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutubeStatus, uploadYoutubeVideo, setYoutubeThumbnail } from "./youtube";
 import { instagramConfigured, getInstagramStatus, publishInstagramReel } from "./instagram";
 import { sendAdminOtp } from "./telegramBot";
+import { otpStore, generateOtp, computeOtpHash, verifyOtpCode, OTP_TTL_MS } from "./otpStore";
 import { tiktokConfigured, getTiktokAuthUrl, handleTiktokCallback, getTiktokStatus, uploadTiktokDraft } from "./tiktok";
 import { transcodeToH264, extractFrameJpeg, transcodeR2VideoToH264 } from "./videoTools";
 import { ObjectStorageService, validateR2VideoKey } from "./object_storage/objectStorage";
 import { db } from "./db";
-import { videoJobs, reviewDrafts, contents, captionScripts, transcodeDiagnostics } from "@shared/schema";
+import { videoJobs, reviewDrafts, contents, transcodeDiagnostics } from "@shared/schema";
 
-// ── transcode 진단 실행(비게시) — 게시/DB 게시상태 안 건드림. RSS 피크 샘플링(1초) ──
-// 주의: process RSS는 ffmpeg 자식 프로세스 메모리를 포함하지 않음(결과에 명시).
+import { desc as drizzleDesc, eq, and, or, isNull, lt, sql as dsql } from "drizzle-orm";
+
+// heartbeat가 이 시간 이상 끊기면 stalled/abandoned 후보로 본다.
+const DIAG_STALE_MS = 3 * 60 * 1000;
+// 어느 인스턴스/프로세스가 실행했는지(로그·다중 replica 구분용).
+const DIAG_INSTANCE_ID = process.env.RAILWAY_REPLICA_ID || process.env.HOSTNAME || `pid-${process.pid}`;
+
+// ── YouTube 업로드 + 썸네일: 대형 원본 Buffer를 이 함수 스코프 안에서만 참조한다. ──
+// 반환되면 videoBuffer 참조가 사라져(강한 참조 종료) 뒤이은 Instagram ffmpeg 변환 동안 붙들지 않는다.
+// (GC 시점은 보장 못 하지만 불필요한 강한 참조는 제거된다.)
+// 최초 R2 로드(getObjectBuffer)의 순간 이중메모리는 YouTube 때문에 여전히 남는다 — 전체 해결 아님.
+async function publishYoutubeAndThumbnailFromBuffer(opts: {
+  r2Key: string;
+  jobId: string;
+  ytTitle: string;
+  description: string;
+  tags: string[];
+  privacyStatus: string;
+}): Promise<{ ytVideoId: string | null; thumbnailSet: boolean; errors: { youtube?: string; thumbnail?: string } }> {
+  const { r2Key, jobId, ytTitle, description, tags, privacyStatus } = opts;
+  const errors: { youtube?: string; thumbnail?: string } = {};
+  let ytVideoId: string | null = null;
+  let thumbnailSet = false;
+
+  const objectStorage = new ObjectStorageService();
+  let videoBuffer: Buffer;
+  let videoContentType = "video/mp4";
+  try {
+    const g = await objectStorage.getObjectBuffer(r2Key);
+    videoBuffer = g.buffer;
+    videoContentType = g.contentType;
+  } catch (e: any) {
+    errors.youtube = "영상 로드 실패: " + (e?.message || "");
+    return { ytVideoId, thumbnailSet, errors };
+  }
+
+  // YouTube 업로드 (원본 그대로 — 유튜브는 HEVC도 허용)
+  try {
+    if (db) await db.update(videoJobs).set({ ytStatus: "uploading", updatedAt: new Date() }).where(eq(videoJobs.id, jobId));
+    const result = await uploadYoutubeVideo({
+      video: videoBuffer,
+      mimeType: videoContentType,
+      title: ytTitle,
+      description,
+      tags,
+      privacyStatus: (["public", "private", "unlisted"].includes(privacyStatus) ? privacyStatus : "public") as any,
+    });
+    ytVideoId = result.videoId;
+    if (db) await db.update(videoJobs).set({ ytStatus: "published", ytVideoId, updatedAt: new Date() }).where(eq(videoJobs.id, jobId));
+  } catch (e: any) {
+    errors.youtube = e?.message || "youtube upload failed";
+    if (db) await db.update(videoJobs).set({ ytStatus: "failed", updatedAt: new Date() }).where(eq(videoJobs.id, jobId));
+  }
+
+  // 커스텀 썸네일: 영상 맨 앞(0.25초) 프레임(같은 buffer, 단일 프레임)
+  if (ytVideoId) {
+    try {
+      const frame = await extractFrameJpeg(videoBuffer, 0.25);
+      await setYoutubeThumbnail(ytVideoId, frame, "image/jpeg");
+      thumbnailSet = true;
+    } catch (e: any) {
+      errors.thumbnail = e?.message || "thumbnail set failed";
+    }
+  }
+  return { ytVideoId, thumbnailSet, errors };
+}
+
+// ── transcode 진단 실행(비게시) — 게시/DB 게시상태 안 건드림 ──
+// [주의] 내구성 작업 큐가 아님. 같은 Node 프로세스의 비동기 작업이다. 컨테이너가 죽으면 이 함수도 사라진다.
+// heartbeat/phase/pid/instanceId를 기록해 "행이 영구 running으로 남는 문제"를 완화하고,
+// 어느 단계에서 멈췄는지·어느 인스턴스였는지를 Railway 로그와 시간대조할 수 있게 한다.
+// [주의] Node RSS는 ffmpeg 자식 프로세스 메모리를 포함하지 않음(결과 note에 명시).
 async function runTranscodeDiagnostic(id: string, key: string): Promise<void> {
   let peakRss = 0;
   const rss0 = process.memoryUsage().rss;
+  const touch = (fields: Record<string, any>) => {
+    if (!db) return;
+    db.update(transcodeDiagnostics)
+      .set({ heartbeatAt: new Date(), updatedAt: new Date(), ...fields })
+      .where(eq(transcodeDiagnostics.id, id))
+      .catch(() => {});
+  };
+  // 긴 ffmpeg 변환 중에도 생존신호를 남긴다(5초). RSS 피크도 여기서 샘플링.
   const sampler = setInterval(() => {
     peakRss = Math.max(peakRss, process.memoryUsage().rss);
-  }, 1000);
+    touch({});
+  }, 5000);
   const t0 = Date.now();
-  const result: any = { r2Key: key, note: "Node RSS는 ffmpeg 자식 프로세스 메모리 미포함(별도)" };
+  const result: any = { r2Key: key, note: "Node RSS only — ffmpeg 자식 프로세스 메모리 미포함(별도)" };
+  touch({ startedAt: new Date(), pid: process.pid, instanceId: DIAG_INSTANCE_ID, phase: "downloading" });
   try {
-    const out = await transcodeR2VideoToH264(key); // 스트림→임시파일→변환(1080 다운스케일)
+    // phase 전이(downloading→probing→transcoding)를 콜백으로 받아 heartbeat와 함께 기록
+    const out = await transcodeR2VideoToH264(key, { onPhase: (p) => touch({ phase: p }) });
     result.ok = true;
     result.outputMB = (out.length / 1024 / 1024).toFixed(2);
   } catch (e: any) {
@@ -45,13 +127,18 @@ async function runTranscodeDiagnostic(id: string, key: string): Promise<void> {
     if (db) {
       await db
         .update(transcodeDiagnostics)
-        .set({ status: result.ok ? "done" : "failed", result: JSON.stringify(result), updatedAt: new Date() })
+        .set({
+          status: result.ok ? "done" : "failed",
+          phase: result.ok ? "completed" : "failed",
+          result: JSON.stringify(result),
+          heartbeatAt: new Date(),
+          updatedAt: new Date(),
+        })
         .where(eq(transcodeDiagnostics.id, id))
         .catch(() => {});
     }
   }
 }
-import { desc as drizzleDesc, eq, and, sql as dsql } from "drizzle-orm";
 
 // 공개 문의 목록 인메모리 캐시 (60초 TTL)
 let _publicInquiriesCache: any[] | null = null;
@@ -68,16 +155,8 @@ function handleDbError(error: any, res: Response, route: string): Response {
   return res.status(500).json({ error: "Internal server error" });
 }
 
-// OTP 저장소 (메모리, 5분 TTL) — 코드 원문 대신 SHA-256 해시 저장
-const adminOtpStore = new Map<string, { codeHash: string; expiresAt: number }>();
 // 신뢰 기기 토큰 저장소 (메모리, 30일)
 const trustedDevices = new Map<string, number>(); // token -> expiresAt
-// OTP 실패 횟수 잠금 (10분 TTL)
-const otpFailStore = { count: 0, lockedUntil: 0 };
-
-function hashOtp(code: string): string {
-  return crypto.createHash("sha256").update(`otp_${code}`).digest("hex");
-}
 
 // 관리자 비밀번호 기반 영구 토큰 생성 (서버 재시작 후에도 유효)
 function getValidAdminToken(): string | null {
@@ -142,13 +221,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // OTP 생성 후 텔레그램 발송 (해시만 저장, 원문은 버림)
-      const code = String(Math.floor(100000 + Math.random() * 900000));
-      adminOtpStore.set("admin", { codeHash: hashOtp(code), expiresAt: Date.now() + 5 * 60 * 1000 });
-      otpFailStore.count = 0; // 새 OTP 발급 시 실패 횟수 초기화
-      otpFailStore.lockedUntil = 0;
-      await sendAdminOtp(code);
-      return res.json({ requiresOtp: true });
+      // OTP 생성: 암호학적 난수, HMAC 해시만 저장, 원문은 발송 후 즉시 버림
+      const code = generateOtp();
+      const challengeId = crypto.randomUUID();
+      const codeHash = computeOtpHash(challengeId, code);
+      otpStore.create(challengeId, codeHash, Date.now() + OTP_TTL_MS);
+      await sendAdminOtp(code); // 원문은 여기서만 사용 — 로그 금지
+      return res.json({ requiresOtp: true, challengeId });
     } catch (error) {
       console.error("Admin login error:", error);
       return res.status(500).json({ error: "Login failed" });
@@ -158,30 +237,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // OTP 검증 + 신뢰 기기 토큰 발급
   app.post("/api/admin/verify-otp", async (req, res) => {
     try {
-      // 잠금 확인
-      if (Date.now() < otpFailStore.lockedUntil) {
-        const remaining = Math.ceil((otpFailStore.lockedUntil - Date.now()) / 60000);
-        return res.status(429).json({ error: `너무 많이 틀렸습니다. ${remaining}분 후 다시 시도하세요.` });
+      const { challengeId, code } = req.body;
+      const result = verifyOtpCode(challengeId ?? "", code ?? "", otpStore);
+
+      if (!result.ok) {
+        const statusMap: Record<string, number> = {
+          NOT_FOUND: 401,
+          EXPIRED: 401,
+          INVALID_FORMAT: 400,
+          INVALID_CODE: 401,
+          EXHAUSTED: 429,
+        };
+        const msgMap: Record<string, string> = {
+          NOT_FOUND: "인증 요청이 없거나 만료되었습니다.",
+          EXPIRED: "인증 코드가 만료되었습니다.",
+          INVALID_FORMAT: "6자리 숫자를 입력해주세요.",
+          INVALID_CODE: "코드가 올바르지 않습니다.",
+          EXHAUSTED: "5회 이상 틀렸습니다. 새로 로그인하세요.",
+        };
+        return res.status(statusMap[result.reason] ?? 401).json({ error: msgMap[result.reason] });
       }
-
-      const { code } = req.body;
-      const entry = adminOtpStore.get("admin");
-      const inputHash = hashOtp(code?.trim() ?? "");
-
-      if (!entry || Date.now() > entry.expiresAt || entry.codeHash !== inputHash) {
-        otpFailStore.count += 1;
-        if (otpFailStore.count >= 5) {
-          otpFailStore.lockedUntil = Date.now() + 10 * 60 * 1000; // 10분 잠금
-          adminOtpStore.delete("admin"); // 코드도 폐기
-          return res.status(429).json({ error: "5회 이상 틀렸습니다. 10분 후 다시 시도하세요." });
-        }
-        return res.status(401).json({ error: `코드가 올바르지 않습니다. (${otpFailStore.count}/5)` });
-      }
-
-      // 성공 — OTP 폐기 및 실패 횟수 초기화
-      adminOtpStore.delete("admin");
-      otpFailStore.count = 0;
-      otpFailStore.lockedUntil = 0;
 
       const token = getValidAdminToken();
       const trustedDeviceToken = crypto.randomBytes(32).toString("hex");
@@ -803,45 +878,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ── 캡션봇 → 대본 수신 (PC의 캡션봇이 편집 끝나면 밀어넣음) ──
-  // 인증: SCRIPT_PUSH_SECRET 헤더 (관리자 로그인 불필요 — 봇이 자동 호출)
-  app.post("/api/scripts/push", async (req, res) => {
-    try {
-      const secret = process.env.SCRIPT_PUSH_SECRET;
-      const given = (req.headers["x-push-secret"] as string) || (req.query.secret as string) || "";
-      if (!secret || given !== secret) return res.status(401).json({ error: "Unauthorized" });
-      if (!db) return res.status(503).json({ error: "DB 사용 불가" });
-      const { videoName, script } = req.body || {};
-      if (!script || typeof script !== "string" || !script.trim()) {
-        return res.status(400).json({ error: "script가 비어있습니다." });
-      }
-      await db.insert(captionScripts).values({ videoName: videoName || null, script: script.trim() });
-      // 최근 20개만 유지 (오래된 것 정리)
-      const all = await db.select({ id: captionScripts.id }).from(captionScripts).orderBy(drizzleDesc(captionScripts.createdAt));
-      const stale = all.slice(20).map((r) => r.id);
-      for (const id of stale) await db.delete(captionScripts).where(eq(captionScripts.id, id));
-      res.json({ ok: true });
-    } catch (error: any) {
-      console.error("[scripts push]", error);
-      res.status(500).json({ error: error?.message || "push failed" });
-    }
-  });
-
-  // 최근 대본 목록 (배포 폼 자동채움/선택용)
-  app.get("/api/admin/scripts", requireAdmin, async (_req, res) => {
-    try {
-      if (!db) return res.json([]);
-      const rows = await db
-        .select()
-        .from(captionScripts)
-        .orderBy(drizzleDesc(captionScripts.createdAt))
-        .limit(20);
-      res.json(rows);
-    } catch (error: any) {
-      res.status(500).json({ error: error?.message || "scripts error" });
-    }
-  });
-
   // 틱톡 연결 상태 (관리자 UI용)
   app.get("/api/admin/tiktok/status", requireAdmin, async (_req, res) => {
     try {
@@ -931,53 +967,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .returning();
 
       const errors: Record<string, string> = {};
-      let ytVideoId: string | null = null;
+      const objectStorage = new ObjectStorageService(); // 인스타 변환본 putObject용
 
-      // 원본 영상 1회 로드 (유튜브 업로드 / 썸네일 추출 / 인스타 변환에 재사용)
-      const objectStorage = new ObjectStorageService();
-      let videoBuffer: Buffer | null = null;
-      let videoContentType = "video/mp4";
-      try {
-        const g = await objectStorage.getObjectBuffer(r2Key);
-        videoBuffer = g.buffer;
-        videoContentType = g.contentType;
-      } catch (e: any) {
-        errors.youtube = "영상 로드 실패: " + (e?.message || "");
-      }
+      // 1) YouTube + 썸네일: 대형 원본 Buffer는 헬퍼 스코프에서만 생존 → 반환 후 강한 참조 종료.
+      //    이렇게 하면 뒤이은 (긴) Instagram ffmpeg 변환 동안 475MB Buffer를 붙들지 않는다.
+      //    [주의] getObjectBuffer 자체의 순간 이중메모리(transformToByteArray+Buffer.from)는
+      //    YouTube·썸네일 때문에 그대로 남는다. GC 시점도 보장 못 함 → "Instagram 변환 경로 개선"이지
+      //    "대형 Buffer 문제 전체 해결"이 아니다. (YouTube 완전 스트리밍화는 후속 리팩터.)
+      const yt = await publishYoutubeAndThumbnailFromBuffer({
+        r2Key,
+        jobId: job.id,
+        ytTitle,
+        description: FIXED_HASHTAGS,
+        tags,
+        privacyStatus,
+      });
+      const ytVideoId = yt.ytVideoId;
+      const thumbnailSet = yt.thumbnailSet;
+      if (yt.errors.youtube) errors.youtube = yt.errors.youtube;
+      if (yt.errors.thumbnail) errors.thumbnail = yt.errors.thumbnail;
 
-      // 1) YouTube 업로드 (원본 그대로 — 유튜브는 HEVC도 허용)
-      if (videoBuffer) {
-        try {
-          await db.update(videoJobs).set({ ytStatus: "uploading", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
-          const result = await uploadYoutubeVideo({
-            video: videoBuffer,
-            mimeType: videoContentType,
-            title: ytTitle,
-            description: FIXED_HASHTAGS,
-            tags,
-            privacyStatus: (["public", "private", "unlisted"].includes(privacyStatus) ? privacyStatus : "public") as any,
-          });
-          ytVideoId = result.videoId;
-          await db.update(videoJobs).set({ ytStatus: "published", ytVideoId, updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
-        } catch (e: any) {
-          errors.youtube = e?.message || "youtube upload failed";
-          await db.update(videoJobs).set({ ytStatus: "failed", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
-        }
-      }
-
-      // 1-b) 커스텀 썸네일: 영상 맨 앞(0.25초) 프레임을 ffmpeg로 추출해 설정
-      let thumbnailSet = false;
-      if (ytVideoId && videoBuffer) {
-        try {
-          const frame = await extractFrameJpeg(videoBuffer, 0.25);
-          await setYoutubeThumbnail(ytVideoId, frame, "image/jpeg");
-          thumbnailSet = true;
-        } catch (e: any) {
-          errors.thumbnail = e?.message || "thumbnail set failed";
-        }
-      }
-
-      // 2) 선택한 기존 글에 유튜브 링크 삽입 (새 글 생성 아님 — videoUrl만 채움)
+      // 2) 선택한 기존 글에 유튜브 링크 삽입 (Buffer 미사용 — videoUrl만 채움)
       if (willInsertHomepage) {
         try {
           if (!ytVideoId) throw new Error("YouTube 업로드가 실패하여 링크를 넣을 수 없습니다.");
@@ -990,11 +1000,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // 3) 인스타/틱톡: 둘 다 HEVC 거부 → H.264로 1회만 변환해 재사용
+      // 3) 인스타/틱톡: 둘 다 HEVC 거부 → R2 스트리밍 변환(전체 Buffer 미생성·미재사용) + 1080 다운스케일.
+      //    최초 배포와 재시도가 동일한 공통 함수(transcodeR2VideoToH264)를 사용 → 경로 이원화 제거.
       let h264: Buffer | null = null;
-      if ((targetInstagram || targetTiktok) && videoBuffer) {
+      if (targetInstagram || targetTiktok) {
         try {
-          h264 = await transcodeToH264(videoBuffer);
+          h264 = await transcodeR2VideoToH264(r2Key);
         } catch (e: any) {
           const msg = "H.264 변환 실패: " + (e?.message || "");
           if (targetInstagram) errors.instagram = msg;
