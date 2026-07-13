@@ -12,8 +12,25 @@ import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutube
 import { instagramConfigured, getInstagramStatus, publishInstagramReel } from "./instagram";
 import { sendAdminOtp } from "./telegramBot";
 import { otpStore, generateOtp, computeOtpHash, verifyOtpCode, OTP_TTL_MS } from "./otpStore";
+import rateLimit from "express-rate-limit";
+
+const adminLoginLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "로그인 시도가 너무 많습니다. 10분 후 다시 시도해주세요." },
+});
+
+const otpVerifyLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "OTP 시도가 너무 많습니다. 10분 후 다시 시도해주세요." },
+});
 import { tiktokConfigured, getTiktokAuthUrl, handleTiktokCallback, getTiktokStatus, uploadTiktokDraft } from "./tiktok";
-import { transcodeToH264, extractFrameJpeg, transcodeR2VideoToH264 } from "./videoTools";
+import { extractFrameJpeg, transcodeR2VideoToH264 } from "./videoTools";
 import { ObjectStorageService, validateR2VideoKey } from "./object_storage/objectStorage";
 import { db } from "./db";
 import { videoJobs, reviewDrafts, contents, transcodeDiagnostics } from "@shared/schema";
@@ -218,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 관리자 인증 API (2FA)
-  app.post("/api/admin/login", async (req, res) => {
+  app.post("/api/admin/login", adminLoginLimiter, async (req, res) => {
     try {
       const { password, trustedDeviceToken } = req.body;
       const adminPassword = process.env.ADMIN_PASSWORD?.trim();
@@ -250,7 +267,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // OTP 검증 + 신뢰 기기 토큰 발급
-  app.post("/api/admin/verify-otp", async (req, res) => {
+  app.post("/api/admin/verify-otp", otpVerifyLimiter, async (req, res) => {
     try {
       const { challengeId, code } = req.body;
       const result = verifyOtpCode(challengeId ?? "", code ?? "", otpStore);
