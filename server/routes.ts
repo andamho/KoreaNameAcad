@@ -299,6 +299,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // 로그아웃: 신뢰 기기 토큰 서버에서 즉시 폐기
+  app.post("/api/admin/logout", (req, res) => {
+    const { trustedDeviceToken } = req.body;
+    if (trustedDeviceToken) trustedDevices.delete(trustedDeviceToken);
+    return res.json({ ok: true });
+  });
+
   // 토큰 검증 API
   app.post("/api/admin/verify", async (req, res) => {
     try {

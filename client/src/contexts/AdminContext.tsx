@@ -104,7 +104,16 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    const trustedDeviceToken = localStorage.getItem(TRUSTED_DEVICE_KEY);
+    if (trustedDeviceToken) {
+      fetch("/api/admin/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trustedDeviceToken }),
+      }).catch(() => {});
+    }
     localStorage.removeItem(ADMIN_TOKEN_KEY);
+    localStorage.removeItem(TRUSTED_DEVICE_KEY);
     setToken(null);
     setIsAdmin(false);
     setPendingOtp(false);
