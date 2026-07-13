@@ -30,9 +30,6 @@ export function isSetKey(k: string): k is SetKey {
   return k === "gaemyeong_request" || k === "gaemyeong_approved";
 }
 
-const SAVE_GUIDE =
-  "\n─────────────\n📌 이미지 저장 방법\n· 휴대폰: 링크를 열고 이미지를 꾹 눌러 “이미지 저장”\n· 한국이름학교(korea-name-acad.com) 공식 링크입니다";
-
 function requireDb() {
   if (!db) throw new Error("DB 사용 불가");
   return db;
@@ -127,13 +124,12 @@ export async function getSetPageUrl(setKey: SetKey): Promise<string> {
   return shortUrl(link.slug);
 }
 
-// 안내(step 0)에만 첨부를 붙임. 문구 + (이미지·영상 모아보기 링크 1개) + 저장방법.
+// 안내(step 0)에만 첨부를 붙임. 문구 뒤 맨 마지막에 모아보기 링크 1개(저장방법은 페이지 안에 있음).
 async function renderStep(setKey: SetKey, stepBody: string, step: number, name: string, assets: AssetView[]): Promise<string> {
   let out = applyVars(stepBody, name).trim();
   if (step === 0 && assets.length) {
     const pageUrl = await getSetPageUrl(setKey);
-    out += `\n\n🎁 아래 링크에서 이미지와 영상을 한 번에 보실 수 있어요 ▶\n${pageUrl}`;
-    if (assets.some((a) => a.kind === "image")) out += SAVE_GUIDE;
+    out += `\n\n${pageUrl}`;
   }
   return out.trim();
 }
