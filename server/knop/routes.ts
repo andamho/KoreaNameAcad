@@ -1016,6 +1016,19 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     }
   });
 
+  // ── 개명 안내 뷰어 페이지 (공개): 이미지·영상 한 화면 ──
+  app.get("/view/:setKey", async (req, res) => {
+    try {
+      const setKey = req.params.setKey;
+      if (!isSetKey(setKey)) return res.status(404).send("페이지를 찾을 수 없습니다");
+      res.set("Content-Type", "text/html; charset=utf-8");
+      res.set("Cache-Control", "public, max-age=300");
+      res.send(await gm.renderViewerHtml(setKey));
+    } catch (e) {
+      res.status(500).send("오류가 발생했습니다");
+    }
+  });
+
   // ── 개명 자동관리 2세트 (미용감사 / 정화하기) ──
   app.get(`${P}/notice/:setKey`, requireAdmin, async (req, res) => {
     try {

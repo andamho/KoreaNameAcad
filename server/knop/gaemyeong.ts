@@ -117,18 +117,59 @@ export async function assetsForSet(setKey: SetKey): Promise<AssetView[]> {
   return rows.map((r) => ({ ...r, url: shortUrl(r.slug) }));
 }
 
-// 안내(step 0)에만 첨부를 붙임. 문구 + (링크들) + 저장방법.
-function renderBody(stepBody: string, name: string, assets: AssetView[]): string {
+// 세트의 뷰어 페이지(이미지·영상 한 화면) 짧은 링크. 없으면 생성해 재사용(세트당 1개 고정).
+export async function getSetPageUrl(setKey: SetKey): Promise<string> {
+  const d = requireDb();
+  const target = `/view/${setKey}`;
+  const [ex] = await d.select().from(shortLinks).where(eq(shortLinks.target, target));
+  if (ex) return shortUrl(ex.slug);
+  const link = await createShortLink(target, `${setKey}:뷰어페이지`, "page");
+  return shortUrl(link.slug);
+}
+
+// 안내(step 0)에만 첨부를 붙임. 문구 + (이미지·영상 모아보기 링크 1개) + 저장방법.
+async function renderStep(setKey: SetKey, stepBody: string, step: number, name: string, assets: AssetView[]): Promise<string> {
   let out = applyVars(stepBody, name).trim();
-  if (assets.length) {
-    out += "\n\n";
-    for (const a of assets) {
-      const icon = a.kind === "video" ? "🎬" : "🖼️";
-      out += `${icon} ${a.title}\n${a.url}\n`;
-    }
+  if (step === 0 && assets.length) {
+    const pageUrl = await getSetPageUrl(setKey);
+    out += `\n\n🎁 아래 링크에서 이미지와 영상을 한 번에 보실 수 있어요 ▶\n${pageUrl}`;
     if (assets.some((a) => a.kind === "image")) out += SAVE_GUIDE;
   }
   return out.trim();
+}
+
+const esc = (s: string) =>
+  (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+// 뷰어 페이지 HTML (이미지 여러 장 + 영상 한 화면, 모바일 최적화, 자체완결)
+export async function renderViewerHtml(setKey: SetKey): Promise<string> {
+  const assets = await assetsForSet(setKey);
+  const label = NOTICE_SETS[setKey]?.label || "한국이름학교";
+  const blocks = assets
+    .map((a) =>
+      a.kind === "video"
+        ? `<figure><video src="${esc(a.target)}" controls playsinline preload="metadata"></video><figcaption>${esc(a.title)}</figcaption></figure>`
+        : `<figure><img src="${esc(a.target)}" alt="${esc(a.title)}" loading="lazy"><figcaption>${esc(a.title)}</figcaption></figure>`,
+    )
+    .join("\n");
+  const hasImage = assets.some((a) => a.kind === "image");
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>한국이름학교</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:#f6f8f9;color:#222;-webkit-text-size-adjust:100%}
+.wrap{max-width:640px;margin:0 auto;padding:16px}
+header{text-align:center;padding:18px 0 8px}header .b{display:inline-block;font-weight:700;color:#3fc4ca;letter-spacing:.02em}header h1{font-size:16px;margin:6px 0 0;font-weight:600;color:#333}
+figure{margin:0 0 16px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+figure img,figure video{display:block;width:100%;height:auto;background:#000}
+figcaption{padding:8px 12px;font-size:13px;color:#666}
+.tip{margin:8px 2px 20px;font-size:12.5px;color:#8a8f93;line-height:1.6;text-align:center}
+.empty{padding:60px 0;text-align:center;color:#aaa}
+</style></head><body><div class="wrap">
+<header><span class="b">한국이름학교</span><h1>${esc(label)}</h1></header>
+${blocks || '<div class="empty">준비 중입니다.</div>'}
+${hasImage ? '<div class="tip">📌 이미지를 저장하려면 사진을 길게 누른 뒤 “이미지 저장”을 선택하세요.</div>' : ""}
+</div></body></html>`;
 }
 
 export type StepView = {
@@ -226,12 +267,14 @@ function randomMorningKST(days: number): Date {
 export async function preview(setKey: SetKey, sampleName = "홍길동"): Promise<Array<{ step: number; name: string; offsetDays: number; content: string }>> {
   const steps = await getSteps(setKey);
   const assets = NOTICE_SETS[setKey].hasAssets ? await assetsForSet(setKey) : [];
-  return steps.map((s) => ({
-    step: s.step,
-    name: s.name,
-    offsetDays: s.offsetDays,
-    content: renderBody(s.body, sampleName, s.step === 0 ? assets : []),
-  }));
+  return Promise.all(
+    steps.map(async (s) => ({
+      step: s.step,
+      name: s.name,
+      offsetDays: s.offsetDays,
+      content: await renderStep(setKey, s.body, s.step, sampleName, assets),
+    })),
+  );
 }
 
 // 내 번호로 직접 테스트 발송(전역 LIVE 게이트 우회, 자동 시퀀스는 계속 시뮬레이션 유지)
@@ -239,8 +282,8 @@ export async function testSend(setKey: SetKey, step: number, phone: string, samp
   const steps = await getSteps(setKey);
   const s = steps.find((x) => x.step === step);
   if (!s) throw new Error("단계를 찾을 수 없습니다");
-  const assets = s.step === 0 && NOTICE_SETS[setKey].hasAssets ? await assetsForSet(setKey) : [];
-  const content = renderBody(s.body, sampleName, assets);
+  const assets = NOTICE_SETS[setKey].hasAssets ? await assetsForSet(setKey) : [];
+  const content = await renderStep(setKey, s.body, s.step, sampleName, assets);
   await sendSMS(phone, content); // 직접 발송(테스트)
   return { content };
 }
@@ -252,7 +295,7 @@ async function scheduleMessages(cust: Customer, setKey: SetKey): Promise<string[
   const dates: string[] = [];
   for (const s of steps) {
     const when = randomMorningKST(s.offsetDays);
-    const content = renderBody(s.body, cust.name, s.step === 0 ? assets : []);
+    const content = await renderStep(setKey, s.body, s.step, cust.name, assets);
     await smsStore.createMessage({ customerId: cust.id, phone: cust.phone, content, scheduledAt: when.toISOString() });
     dates.push(when.toISOString());
   }

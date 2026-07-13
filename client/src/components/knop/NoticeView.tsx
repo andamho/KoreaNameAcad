@@ -300,7 +300,20 @@ function AssetEditor({ cfg, onChange }: { cfg: NoticeConfig; onChange: () => voi
 
   return (
     <Card className="p-4 space-y-3">
-      <div className="text-sm font-semibold text-gray-800">안내 문자 첨부 (이미지·영상 → 짧은 링크)</div>
+      <div className="flex items-center gap-2">
+        <div className="text-sm font-semibold text-gray-800">안내 문자 첨부 (이미지·영상 → 한 링크로 모아보기)</div>
+        <a
+          href={`/view/${cfg.setKey}`}
+          target="_blank"
+          rel="noreferrer"
+          className="ml-auto inline-flex items-center gap-1 text-xs text-[#3fc4ca] hover:underline"
+        >
+          <Eye className="w-3.5 h-3.5" /> 모아보기 페이지 열기
+        </a>
+      </div>
+      <p className="text-xs text-gray-400 -mt-1">
+        올린 이미지·영상은 <b>링크 하나</b>로 묶여 한 화면에서 보여집니다. 문자엔 이 링크만 들어갑니다.
+      </p>
       <div className="flex flex-wrap gap-2">
         {cfg.assets.map((a) => (
           <div key={a.id} className="flex items-center gap-2 rounded-lg border border-gray-200 px-2.5 py-1.5">
