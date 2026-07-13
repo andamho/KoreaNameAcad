@@ -191,7 +191,9 @@ export const videoJobs = pgTable("video_jobs", {
   ytVideoId: text("yt_video_id"),
   igMediaId: text("ig_media_id"),
   ttPublishId: text("tt_publish_id"),
-  errorLog: text("error_log"),                         // JSON: 채널별 실패 사유
+  errorLog: text("error_log"),                         // JSON: 채널별 실패 사유 + 재시도 이력
+  igRetryCount: integer("ig_retry_count").default(0).notNull(), // 인스타 재시도 횟수
+  igRetryStartedAt: timestamp("ig_retry_started_at"),  // 마지막 인스타 재시도 시작시각
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -217,6 +219,25 @@ export const oauthTokens = pgTable("oauth_tokens", {
 });
 
 export type OAuthToken = typeof oauthTokens.$inferSelect;
+
+// ── transcode 진단(비게시) — 원본으로 변환만 돌려 자원/시간/종료를 기록. 게시 상태 안 건드림 ──
+// 주의: 내구성 작업 큐가 아님. 같은 Node 프로세스의 비동기 작업이며, heartbeat/phase/abandoned로
+//       "행이 영구 running으로 남는 문제"만 완화한다(컨테이너 사망 원인 완전 기록은 보장 못 함).
+export const transcodeDiagnostics = pgTable("transcode_diagnostics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  r2Key: text("r2_key").notNull(),
+  status: text("status").notNull().default("running"), // running | done | failed | abandoned
+  phase: text("phase").default("queued"),              // queued|downloading|probing|transcoding|completed|failed|abandoned
+  result: text("result"),        // JSON: 다운로드/변환/ffprobe/RSS피크/시간/code/signal/stderr
+  pid: integer("pid"),                                  // 실행 프로세스 PID(로그 시간대조용)
+  instanceId: text("instance_id"),                     // Railway replica/hostname(어느 인스턴스인지)
+  startedAt: timestamp("started_at"),                  // 실제 변환 시작시각
+  heartbeatAt: timestamp("heartbeat_at"),              // 마지막 생존신호(끊기면 stalled/abandoned)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type TranscodeDiagnostic = typeof transcodeDiagnostics.$inferSelect;
 
 // 마스킹 박스 (정규화 좌표 0~1)
 export type RedactionBox = { x: number; y: number; w: number; h: number; reason?: string; image?: number };

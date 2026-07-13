@@ -179,6 +179,21 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // 부팅 시 정리: heartbeat가 끊긴(또는 없는) running 진단 = 이전에 죽은 인스턴스의 잔여 → abandoned.
+  // heartbeat 신선도로 거르므로 다른 살아있는 replica의 진행중 행은 건드리지 않는다(다중 인스턴스 안전).
+  if (db) {
+    const staleBefore = new Date(Date.now() - DIAG_STALE_MS);
+    db.update(transcodeDiagnostics)
+      .set({ status: "abandoned", phase: "abandoned", updatedAt: new Date() })
+      .where(
+        and(
+          eq(transcodeDiagnostics.status, "running"),
+          or(isNull(transcodeDiagnostics.heartbeatAt), lt(transcodeDiagnostics.heartbeatAt, staleBefore)),
+        ),
+      )
+      .catch(() => {});
+  }
+
   // TikTok 도메인 소유 확인용 서명 파일 (URL prefix 검증)
   app.get("/tiktokQsb2NwuHJYh9gxVv6wWxl8KGZ1hm9UDd.txt", (_req, res) => {
     res.type("text/plain").send("tiktok-developers-site-verification=Qsb2NwuHJYh9gxVv6wWxl8KGZ1hm9UDd\n");
@@ -1139,18 +1154,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ── transcode 진단 (비게시): 원본 R2키로 변환만 돌려 자원/시간/종료 기록. 게시/DB 게시상태 안 건드림 ──
+  // ── transcode 진단 (비게시): job ID의 원본으로 변환만 돌려 자원/시간/종료 기록. 게시/DB 게시상태 안 건드림 ──
+  // 입력은 임의 r2Key가 아니라 video_job ID. 서버가 job.video_r2_key를 조회 → uploads/ 검증(SSRF 방지).
   app.post("/api/admin/transcode-diagnostic", requireAdmin, async (req, res) => {
     try {
       if (!db) return res.status(503).json({ error: "DB 사용 불가" });
+      const { jobId } = req.body || {};
+      if (!jobId || typeof jobId !== "string") return res.status(400).json({ error: "jobId가 필요합니다." });
+      const jobs = await db.select({ videoR2Key: videoJobs.videoR2Key }).from(videoJobs).where(eq(videoJobs.id, jobId)).limit(1);
+      if (!jobs[0]) return res.status(404).json({ error: "job을 찾을 수 없습니다." });
       let key: string;
       try {
-        key = validateR2VideoKey((req.body || {}).r2Key);
+        key = validateR2VideoKey(jobs[0].videoR2Key);
       } catch (e: any) {
-        return res.status(400).json({ error: e?.message });
+        return res.status(400).json({ error: "job의 videoR2Key가 유효하지 않음: " + e?.message });
       }
-      const [row] = await db.insert(transcodeDiagnostics).values({ r2Key: key, status: "running" }).returning();
+
+      // 중복 방지: 같은 key로 살아있는(running + heartbeat 신선) 진단이 있으면 그 ID 반환(409).
+      // heartbeat가 끊긴 running은 죽은 인스턴스의 잔여로 보고 새로 시작하게 둔다(부팅 정리가 abandoned 처리).
+      const staleBefore = new Date(Date.now() - DIAG_STALE_MS);
+      const running = await db
+        .select()
+        .from(transcodeDiagnostics)
+        .where(and(eq(transcodeDiagnostics.r2Key, key), eq(transcodeDiagnostics.status, "running")))
+        .limit(1);
+      if (running[0] && running[0].heartbeatAt && running[0].heartbeatAt >= staleBefore) {
+        return res.status(409).json({ error: "이미 진단 실행중(중복 방지)", diagnosticId: running[0].id });
+      }
+
+      const [row] = await db
+        .insert(transcodeDiagnostics)
+        .values({ r2Key: key, status: "running", phase: "queued" })
+        .returning();
       // 비동기 실행: 요청은 즉시 202 반환(프록시 timeout 혼입 방지). 게시상태 절대 안 건드림.
+      // [주의] 내구성 큐 아님 — 컨테이너 사망 시 이 작업은 사라지고 heartbeat가 끊긴다(부팅 시/GET에서 abandoned·stalled 처리).
       runTranscodeDiagnostic(row.id, key).catch((e) => console.error("[diag]", e));
       res.status(202).json({ diagnosticId: row.id, status: "running" });
     } catch (error: any) {
@@ -1162,8 +1199,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       if (!db) return res.status(503).json({ error: "DB 사용 불가" });
       const rows = await db.select().from(transcodeDiagnostics).where(eq(transcodeDiagnostics.id, req.params.id)).limit(1);
-      if (!rows[0]) return res.status(404).json({ error: "not found" });
-      res.json(rows[0]);
+      const row = rows[0];
+      if (!row) return res.status(404).json({ error: "not found" });
+      // heartbeat가 오래 끊긴 running은 stalled로 표기(DB는 안 바꿈 — 부팅 시 정리가 실제 abandoned 처리).
+      const staleBefore = Date.now() - DIAG_STALE_MS;
+      const hb = row.heartbeatAt ? new Date(row.heartbeatAt).getTime() : 0;
+      const liveness = row.status !== "running" ? row.status : hb && hb >= staleBefore ? "live" : "stalled";
+      res.json({ ...row, liveness });
     } catch (error: any) {
       res.status(500).json({ error: error?.message });
     }
