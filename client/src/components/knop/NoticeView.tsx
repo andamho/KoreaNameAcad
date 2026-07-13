@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Image as ImageIcon, Video, Eye, Send, CheckCircle2, XCircle, Clock, CalendarDays } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useUpload } from "@/hooks/use-upload";
 import {
   knopApi,
   type NoticeConfig,
@@ -250,8 +251,8 @@ function StepEditor({ step, onSaved }: { step: NoticeStep; onSaved: () => void }
 
 function AssetEditor({ cfg, onChange }: { cfg: NoticeConfig; onChange: () => void }) {
   const { toast } = useToast();
-  const [videoTitle, setVideoTitle] = useState("안내영상");
-  const [videoUrl, setVideoUrl] = useState("");
+  const { uploadFile } = useUpload({ onError: () => toast({ title: "업로드 실패", variant: "destructive" }) });
+  const [videoBusy, setVideoBusy] = useState(false);
 
   const addImage = useMutation({
     mutationFn: async (file: File) => {
@@ -273,15 +274,25 @@ function AssetEditor({ cfg, onChange }: { cfg: NoticeConfig; onChange: () => voi
     },
     onError: (e: any) => toast({ title: "업로드 실패", description: e?.message, variant: "destructive" }),
   });
-  const addVideo = useMutation({
-    mutationFn: () => knopApi.addNoticeVideo(cfg.setKey, { title: videoTitle.trim() || "안내영상", url: videoUrl.trim() }),
-    onSuccess: () => {
-      setVideoUrl("");
+  // 영상 원본 업로드 → R2 → 첨부 등록
+  const uploadVideo = async (file: File) => {
+    setVideoBusy(true);
+    try {
+      const up = await uploadFile(file);
+      if (!up?.objectPath) throw new Error("업로드 실패");
+      await knopApi.addNoticeAssetFile(cfg.setKey, {
+        title: file.name.replace(/\.[^.]+$/, ""),
+        objectPath: up.objectPath,
+        kind: "video",
+      });
       onChange();
-      toast({ title: "영상 링크 추가됨" });
-    },
-    onError: (e: any) => toast({ title: "추가 실패", description: e?.message, variant: "destructive" }),
-  });
+      toast({ title: "영상 추가됨", description: file.name });
+    } catch (e: any) {
+      toast({ title: "영상 추가 실패", description: e?.message, variant: "destructive" });
+    } finally {
+      setVideoBusy(false);
+    }
+  };
   const delMut = useMutation({
     mutationFn: (id: string) => knopApi.deleteNoticeAsset(id),
     onSuccess: onChange,
@@ -325,18 +336,24 @@ function AssetEditor({ cfg, onChange }: { cfg: NoticeConfig; onChange: () => voi
             }}
           />
         </label>
-        <div className="flex items-center gap-1.5">
-          <Input value={videoTitle} onChange={(e) => setVideoTitle(e.target.value)} className="h-9 w-28 text-sm" placeholder="영상 제목" />
-          <Input
-            value={videoUrl}
-            onChange={(e) => setVideoUrl(e.target.value)}
-            className="h-9 w-64 text-sm"
-            placeholder="영상 링크 (https://…)"
+        <label
+          className={`inline-flex items-center gap-1.5 text-sm rounded-md border border-gray-200 px-3 py-1.5 hover:border-[#56D5DB] ${
+            videoBusy ? "opacity-50 pointer-events-none" : "cursor-pointer"
+          }`}
+        >
+          <Video className="w-4 h-4" /> {videoBusy ? "영상 올리는 중…" : "영상 업로드"}
+          <input
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) uploadVideo(f);
+              e.target.value = "";
+            }}
           />
-          <Button size="sm" className="h-9" disabled={!videoUrl.trim() || addVideo.isPending} onClick={() => addVideo.mutate()}>
-            <Video className="w-4 h-4 mr-1" /> 영상 추가
-          </Button>
-        </div>
+        </label>
+        <span className="text-xs text-gray-400">영상 원본을 올리면 자동으로 짧은 링크로 만들어 문자에 넣습니다.</span>
       </div>
     </Card>
   );

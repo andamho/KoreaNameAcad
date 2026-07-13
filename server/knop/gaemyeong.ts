@@ -183,6 +183,18 @@ export async function addVideoAsset(setKey: SetKey, title: string, videoUrl: str
   return { id: row.id, kind: "video", title, slug: link.slug, url: shortUrl(link.slug), target: url, sortOrder: row.sortOrder };
 }
 
+// 이미 업로드된 R2 경로(/objects/...)를 첨부로 등록 (영상 원본 업로드용)
+export async function addAssetFromPath(setKey: SetKey, title: string, objectPath: string, kind: "image" | "video"): Promise<AssetView> {
+  const d = requireDb();
+  if (!objectPath.startsWith("/objects/")) throw new Error("업로드 경로가 올바르지 않습니다");
+  const link = await createShortLink(objectPath, `${setKey}:${title}`, kind);
+  const [row] = await d
+    .insert(noticeAssets)
+    .values({ setKey, kind, title, shortLinkId: link.id, sortOrder: Date.now() % 100000 })
+    .returning();
+  return { id: row.id, kind, title, slug: link.slug, url: shortUrl(link.slug), target: objectPath, sortOrder: row.sortOrder };
+}
+
 export async function deleteAsset(id: string): Promise<boolean> {
   const d = requireDb();
   const res = await d.delete(noticeAssets).where(eq(noticeAssets.id, id)).returning();

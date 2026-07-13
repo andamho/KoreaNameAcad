@@ -328,6 +328,8 @@ export const knopApi = {
     req<NoticeAsset>("POST", `/api/knop/notice/${setKey}/image`, data),
   addNoticeVideo: (setKey: string, data: { title: string; url: string }) =>
     req<NoticeAsset>("POST", `/api/knop/notice/${setKey}/video`, data),
+  addNoticeAssetFile: (setKey: string, data: { title: string; objectPath: string; kind: "image" | "video" }) =>
+    req<NoticeAsset>("POST", `/api/knop/notice/${setKey}/asset-file`, data),
   deleteNoticeAsset: (id: string) => req<{ ok: boolean }>("DELETE", `/api/knop/notice/asset/${id}`),
   previewNotice: (setKey: string, name?: string) =>
     req<NoticePreview[]>("GET", `/api/knop/notice/${setKey}/preview${name ? `?name=${encodeURIComponent(name)}` : ""}`),

@@ -1064,6 +1064,20 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     }
   });
 
+  // 업로드된 원본(이미지/영상) 경로를 첨부로 등록
+  app.post(`${P}/notice/:setKey/asset-file`, requireAdmin, async (req, res) => {
+    try {
+      const setKey = req.params.setKey;
+      if (!isSetKey(setKey)) return res.status(400).json({ error: "bad_set" });
+      const { title, objectPath, kind } = req.body || {};
+      if (!title || !objectPath) return res.status(400).json({ error: "title_objectPath_required" });
+      const k = kind === "image" ? "image" : "video";
+      res.json(await gm.addAssetFromPath(setKey, String(title), String(objectPath), k));
+    } catch (e) {
+      handle(res, "POST notice asset-file", e);
+    }
+  });
+
   app.delete(`${P}/notice/asset/:id`, requireAdmin, async (req, res) => {
     try {
       res.json({ ok: await gm.deleteAsset(req.params.id) });
