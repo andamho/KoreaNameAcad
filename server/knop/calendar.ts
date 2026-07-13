@@ -87,6 +87,24 @@ export async function appendConsultEvent(
   return { written: true, event: withId };
 }
 
+// 일반 이벤트를 달력에 추가 (cat 지정 유지). 새이름 일정 등 상담 외 이벤트용.
+export async function appendEvent(
+  evt: CalEvent,
+  opts: { dryRun?: boolean } = {}
+): Promise<{ written: boolean; event: CalEvent }> {
+  const withId: CalEvent = { id: evt.id || `knop_${Date.now()}`, gaemyeong: 0, cat: "상담", ...evt };
+  if (opts.dryRun) return { written: false, event: withId };
+  const ref = await getDataRef();
+  await db().runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const data = (snap.data() || {}) as { events?: CalEvent[] };
+    const events = Array.isArray(data.events) ? data.events : [];
+    events.push(withId);
+    tx.set(ref, { ...data, events }, { merge: true });
+  });
+  return { written: true, event: withId };
+}
+
 // 여러 이벤트에 전화번호 되쓰기 (번호 없는 것만). id 또는 (date+title)로 매칭.
 export async function applyEventPhones(
   updates: Array<{ id?: string; date?: string; title?: string; phone: string }>,

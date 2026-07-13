@@ -319,4 +319,53 @@ export const knopApi = {
       "POST",
       `/api/knop/convert-consultation/${consultationId}`,
     ),
+
+  // 개명 자동관리 2세트 (미용감사 / 정화하기)
+  getNotice: (setKey: string) => req<NoticeConfig>("GET", `/api/knop/notice/${setKey}`),
+  updateNoticeStep: (id: string, data: { name?: string; body?: string; offsetDays?: number }) =>
+    req<NoticeStep>("PATCH", `/api/knop/notice/step/${id}`, data),
+  addNoticeImage: (setKey: string, data: { title: string; base64: string; contentType: string }) =>
+    req<NoticeAsset>("POST", `/api/knop/notice/${setKey}/image`, data),
+  addNoticeVideo: (setKey: string, data: { title: string; url: string }) =>
+    req<NoticeAsset>("POST", `/api/knop/notice/${setKey}/video`, data),
+  deleteNoticeAsset: (id: string) => req<{ ok: boolean }>("DELETE", `/api/knop/notice/asset/${id}`),
+  previewNotice: (setKey: string, name?: string) =>
+    req<NoticePreview[]>("GET", `/api/knop/notice/${setKey}/preview${name ? `?name=${encodeURIComponent(name)}` : ""}`),
+  testNotice: (setKey: string, data: { phone: string; step?: number; name?: string }) =>
+    req<{ content: string }>("POST", `/api/knop/notice/${setKey}/test`, data),
+  startSequence: (customerId: string, setKey: string) =>
+    req<{ ok: boolean; scheduled: number; reason?: string; dates: string[] }>(
+      "POST",
+      `/api/knop/customers/${customerId}/start-sequence`,
+      { setKey },
+    ),
+  getSequences: (customerId: string) =>
+    req<Record<string, string>>("GET", `/api/knop/customers/${customerId}/sequences`),
+
+  // 개명의뢰 확인 대기 (최종점검)
+  listNoticePending: () => req<NoticePending[]>("GET", "/api/knop/notice-pending"),
+  confirmNoticePending: (id: string, nameDate?: string) =>
+    req<{ ok: boolean; scheduled: number; reason?: string; dates: string[]; calendar?: { date: string; title: string } }>(
+      "POST",
+      `/api/knop/notice-pending/${id}/confirm`,
+      { nameDate },
+    ),
+  cancelNoticePending: (id: string) => req<{ ok: boolean }>("POST", `/api/knop/notice-pending/${id}/cancel`),
 };
+
+export type NoticePending = {
+  id: string;
+  customerId: string;
+  customerName: string;
+  phone: string;
+  setKey: string;
+  setLabel: string;
+  reason: string | null;
+  nameDate: string | null;
+  flaggedAt: string;
+};
+
+export type NoticeStep = { id: string; setKey: string; step: number; name: string; body: string; offsetDays: number };
+export type NoticeAsset = { id: string; kind: string; title: string; slug: string; url: string; target: string; sortOrder: number };
+export type NoticeConfig = { setKey: string; label: string; hasAssets: boolean; steps: NoticeStep[]; assets: NoticeAsset[] };
+export type NoticePreview = { step: number; name: string; offsetDays: number; content: string };

@@ -33,7 +33,7 @@ import { tiktokConfigured, getTiktokAuthUrl, handleTiktokCallback, getTiktokStat
 import { extractFrameJpeg, transcodeR2VideoToH264 } from "./videoTools";
 import { ObjectStorageService, validateR2VideoKey } from "./object_storage/objectStorage";
 import { db } from "./db";
-import { videoJobs, reviewDrafts, contents, transcodeDiagnostics } from "@shared/schema";
+import { videoJobs, reviewDrafts, contents, transcodeDiagnostics, shortLinks } from "@shared/schema";
 
 import { desc as drizzleDesc, eq, and, or, isNull, lt, sql as dsql } from "drizzle-orm";
 
@@ -1292,6 +1292,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register object storage routes for file uploads
   registerObjectStorageRoutes(app);
+
+  // 짧은 링크: /s/:slug → 실제 목적지로 302 (문자 발송용, 공개)
+  app.get("/s/:slug", async (req, res) => {
+    try {
+      if (!db) return res.status(404).send("Not found");
+      const slug = String(req.params.slug || "");
+      const [row] = await db.select().from(shortLinks).where(eq(shortLinks.slug, slug));
+      if (!row) return res.status(404).send("링크를 찾을 수 없습니다");
+      db.update(shortLinks).set({ clicks: (row.clicks ?? 0) + 1 }).where(eq(shortLinks.id, row.id)).catch(() => {});
+      const target = row.target.startsWith("/") ? `${req.protocol}://${req.get("host")}${row.target}` : row.target;
+      return res.redirect(302, target);
+    } catch {
+      return res.status(500).send("오류");
+    }
+  });
 
   const httpServer = createServer(app);
 

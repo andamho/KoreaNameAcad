@@ -5,6 +5,8 @@ import { parsePaymentSms, matchPayment } from "./paymentAi";
 import { transcribeCall, summarizeTranscript } from "./callAi";
 import { transcribeLocal, localTranscribeAvailable } from "./localTranscribe";
 import { learnFromEdit, listRules, upsertManualRule, setRuleEnabled, deleteRule, analyzeRules, seedRulesFromJsonOnce, exportLearnedToJson } from "./learnedDict";
+import * as gm from "./gaemyeong";
+import { isSetKey } from "./gaemyeong";
 import { smsStore, startSmsScheduler } from "./sms";
 import {
   calendarAvailable,
@@ -730,7 +732,13 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     try {
       const { customerId, projectId, paymentLabel } = req.body || {};
       if (!customerId || !projectId) return res.status(400).json({ error: "customerId_projectId_required" });
-      res.json(await knopStore.approveInbox(req.params.id, customerId, projectId, paymentLabel || "결제"));
+      const result = await knopStore.approveInbox(req.params.id, customerId, projectId, paymentLabel || "결제");
+      // 개명비 결제확인 → "개명의뢰 확인 대기"에 등록(즉시 발송 X). 원장님 최종점검 후 확정.
+      let pending: any = null;
+      if (paymentLabel === "개명비") {
+        pending = await gm.flagPending(customerId, "gaemyeong_request", "개명비 결제확인").catch((e) => ({ ok: false, reason: e?.message }));
+      }
+      res.json({ ...result, pending });
     } catch (e) {
       handle(res, "POST inbox approve", e);
     }
@@ -1005,6 +1013,131 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       res.json(await knopStore.convertConsultation(req.params.id));
     } catch (e) {
       handle(res, "POST convert-consultation", e);
+    }
+  });
+
+  // ── 개명 자동관리 2세트 (미용감사 / 정화하기) ──
+  app.get(`${P}/notice/:setKey`, requireAdmin, async (req, res) => {
+    try {
+      const setKey = req.params.setKey;
+      if (!isSetKey(setKey)) return res.status(400).json({ error: "bad_set" });
+      const [steps, assets] = await Promise.all([
+        gm.getSteps(setKey),
+        gm.NOTICE_SETS[setKey].hasAssets ? gm.assetsForSet(setKey) : Promise.resolve([]),
+      ]);
+      res.json({ setKey, label: gm.NOTICE_SETS[setKey].label, hasAssets: gm.NOTICE_SETS[setKey].hasAssets, steps, assets });
+    } catch (e) {
+      handle(res, "GET notice", e);
+    }
+  });
+
+  app.patch(`${P}/notice/step/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { name, body, offsetDays } = req.body || {};
+      res.json(await gm.updateStep(req.params.id, { name, body, offsetDays }));
+    } catch (e) {
+      handle(res, "PATCH notice step", e);
+    }
+  });
+
+  app.post(`${P}/notice/:setKey/image`, requireAdmin, async (req, res) => {
+    try {
+      const setKey = req.params.setKey;
+      if (!isSetKey(setKey)) return res.status(400).json({ error: "bad_set" });
+      const { title, base64, contentType } = req.body || {};
+      if (!title || !base64) return res.status(400).json({ error: "title_base64_required" });
+      res.json(await gm.addImageAsset(setKey, String(title), String(base64), String(contentType || "image/png")));
+    } catch (e) {
+      handle(res, "POST notice image", e);
+    }
+  });
+
+  app.post(`${P}/notice/:setKey/video`, requireAdmin, async (req, res) => {
+    try {
+      const setKey = req.params.setKey;
+      if (!isSetKey(setKey)) return res.status(400).json({ error: "bad_set" });
+      const { title, url } = req.body || {};
+      if (!title || !url) return res.status(400).json({ error: "title_url_required" });
+      res.json(await gm.addVideoAsset(setKey, String(title), String(url)));
+    } catch (e) {
+      handle(res, "POST notice video", e);
+    }
+  });
+
+  app.delete(`${P}/notice/asset/:id`, requireAdmin, async (req, res) => {
+    try {
+      res.json({ ok: await gm.deleteAsset(req.params.id) });
+    } catch (e) {
+      handle(res, "DELETE notice asset", e);
+    }
+  });
+
+  app.get(`${P}/notice/:setKey/preview`, requireAdmin, async (req, res) => {
+    try {
+      const setKey = req.params.setKey;
+      if (!isSetKey(setKey)) return res.status(400).json({ error: "bad_set" });
+      const sample = typeof req.query.name === "string" && req.query.name ? req.query.name : "홍길동";
+      res.json(await gm.preview(setKey, sample));
+    } catch (e) {
+      handle(res, "GET notice preview", e);
+    }
+  });
+
+  // 내 번호로 테스트 발송 (전역 LIVE 무관, 직접 발송)
+  app.post(`${P}/notice/:setKey/test`, requireAdmin, async (req, res) => {
+    try {
+      const setKey = req.params.setKey;
+      if (!isSetKey(setKey)) return res.status(400).json({ error: "bad_set" });
+      const { phone, step = 0, name = "홍길동" } = req.body || {};
+      if (!phone) return res.status(400).json({ error: "phone_required" });
+      res.json(await gm.testSend(setKey, Number(step), String(phone), String(name)));
+    } catch (e) {
+      handle(res, "POST notice test", e);
+    }
+  });
+
+  // 고객에게 시퀀스 시작(4건 예약)
+  app.post(`${P}/customers/:id/start-sequence`, requireAdmin, async (req, res) => {
+    try {
+      const { setKey } = req.body || {};
+      if (!isSetKey(setKey)) return res.status(400).json({ error: "bad_set" });
+      res.json(await gm.startSequence(req.params.id, setKey));
+    } catch (e) {
+      handle(res, "POST start-sequence", e);
+    }
+  });
+
+  app.get(`${P}/customers/:id/sequences`, requireAdmin, async (req, res) => {
+    try {
+      res.json(await gm.sequenceStatus(req.params.id));
+    } catch (e) {
+      handle(res, "GET sequences", e);
+    }
+  });
+
+  // 개명의뢰 확인 대기 (개명비 입금 자동감지분) — 최종점검
+  app.get(`${P}/notice-pending`, requireAdmin, async (_req, res) => {
+    try {
+      res.json(await gm.listPending());
+    } catch (e) {
+      handle(res, "GET notice-pending", e);
+    }
+  });
+
+  app.post(`${P}/notice-pending/:id/confirm`, requireAdmin, async (req, res) => {
+    try {
+      const { nameDate } = req.body || {};
+      res.json(await gm.confirmPending(req.params.id, { nameDate }));
+    } catch (e) {
+      handle(res, "POST notice-pending confirm", e);
+    }
+  });
+
+  app.post(`${P}/notice-pending/:id/cancel`, requireAdmin, async (req, res) => {
+    try {
+      res.json({ ok: await gm.cancelPending(req.params.id) });
+    } catch (e) {
+      handle(res, "POST notice-pending cancel", e);
     }
   });
 }

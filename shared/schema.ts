@@ -607,6 +607,53 @@ export const calls = pgTable("calls", {
 // 전사 단어 (음성 연동 + 화자 구분)
 export type TranscriptWord = { word: string; start: number; end: number; speaker?: string };
 
+// ── short_links: 긴 /objects/ 주소를 /s/{slug} 짧은 링크로 (문자 발송용) ──
+export const shortLinks = pgTable("short_links", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  slug: varchar("slug").notNull().unique(),          // 짧은 코드 (예: a1B2c3)
+  target: text("target").notNull(),                   // 실제 목적지 (/objects/... 또는 외부 URL)
+  label: text("label"),                               // 관리용 이름
+  kind: text("kind").default("other").notNull(),      // image | video | other
+  clicks: integer("clicks").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ── notice_steps: 개명 자동관리 2세트 × 4단계(안내+3주 점검) 문구 ──
+// setKey: gaemyeong_request(개명의뢰/미용감사) | gaemyeong_approved(개명허가/정화하기)
+export const noticeSteps = pgTable("notice_steps", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  setKey: text("set_key").notNull(),
+  step: integer("step").notNull(),                    // 0=안내, 1/2/3=주차 점검
+  name: text("name").notNull(),                       // 예: "미용감사 안내"
+  body: text("body").notNull().default(""),           // 문구(원장님 편집)
+  offsetDays: integer("offset_days").notNull(),       // 트리거로부터 며칠 뒤 발송
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ── notice_assets: 세트 안내문자에 붙는 이미지/영상(짧은 링크) — 개명의뢰 안내에만 사용 ──
+export const noticeAssets = pgTable("notice_assets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  setKey: text("set_key").notNull(),
+  kind: text("kind").notNull(),                       // image | video
+  title: text("title").notNull(),                     // 예: "이름분석표", "안내영상"
+  shortLinkId: varchar("short_link_id").notNull(),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ── notice_runs: 고객별 시퀀스 상태(중복 방지) ──
+// status: pending(개명의뢰 확인 대기) | active(예약 발송 시작됨)
+export const noticeRuns = pgTable("notice_runs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerId: varchar("customer_id").notNull(),
+  setKey: text("set_key").notNull(),
+  status: text("status").default("active").notNull(),
+  reason: text("reason"),                             // 감지 근거(예: "개명비 220만원 입금")
+  nameDate: text("name_date"),                        // 새이름 내어주기 제안일(입금+2개월, YYYY-MM-DD)
+  flaggedAt: timestamp("flagged_at").defaultNow().notNull(),
+  startedAt: timestamp("started_at"),                 // active 전환(예약 생성) 시각
+});
+
 // ── correction_rules: 공유 학습 교정사전 (KNOP↔영상봇, 어디서 고치든 DB에 누적) ──
 // 로컬 서버가 전사 직전 DB→<video-caption-bot>/learned_corrections.json 로 내려받아 correct.py 에 반영.
 export const correctionRules = pgTable("correction_rules", {
