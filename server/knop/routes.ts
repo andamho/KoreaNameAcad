@@ -692,8 +692,8 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     }
   });
 
-  // 전화/이름 → 고객ID (달력 iframe 클릭 이동용)
-  app.get(`${P}/customers/resolve`, requireAdmin, async (req, res) => {
+  // 전화/이름 → 고객ID (달력 iframe 클릭 이동용). 하이픈: /customers/:id 충돌 회피
+  app.get(`${P}/customers-resolve`, requireAdmin, async (req, res) => {
     try {
       const phone = typeof req.query.phone === "string" ? req.query.phone : "";
       const name = typeof req.query.name === "string" ? req.query.name : "";

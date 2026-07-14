@@ -155,7 +155,12 @@ export const knopStore = {
       const nm = bare(name || "");
       if (nm && nm.length >= 2) {
         const all = await d.select().from(customers);
-        const hit = all.find((c) => bare(c.name) === nm);
+        const key3 = (s: string) => bare(s).slice(0, 3); // 앞 세글자(한국 이름)
+        const tk = nm.slice(0, 3);
+        const hit =
+          all.find((c) => bare(c.name) === nm) || // 정확 일치
+          all.find((c) => bare(c.name).length >= 2 && nm.startsWith(bare(c.name))) || // 고객명이 제목 앞부분
+          (tk.length >= 2 ? all.find((c) => key3(c.name) === tk) : undefined); // 앞 세글자 일치
         if (hit) return hit.id;
       }
       return null;

@@ -349,7 +349,7 @@ export const knopApi = {
   resolveCustomer: (phone: string, name: string) =>
     req<{ customerId: string | null }>(
       "GET",
-      `/api/knop/customers/resolve?phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}`,
+      `/api/knop/customers-resolve?phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}`,
     ),
 
   // 개명의뢰 확인 대기 (최종점검)
