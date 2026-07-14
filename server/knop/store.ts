@@ -50,6 +50,8 @@ import {
   type ParsedPayment,
   type InboxSuggestion,
   type Call,
+  incomingSms,
+  scheduledMessages,
 } from "@shared/schema";
 
 function requireDb() {
@@ -1239,6 +1241,56 @@ export const knopStore = {
       return await d.select().from(calls).where(eq(calls.customerId, customerId)).orderBy(desc(calls.createdAt));
     } catch (e) {
       fail("통화 목록", e);
+    }
+  },
+
+  // 고객과 주고받은 문자 전체(받은=incoming_sms, 보낸=scheduled_messages)를 시간순으로
+  async customerMessages(
+    customerId: string,
+  ): Promise<Array<{ id: string; direction: "받음" | "보냄"; body: string; at: string | null; status?: string }>> {
+    const d = requireDb();
+    try {
+      const cust = await this.getCustomer(customerId);
+      if (!cust) return [];
+      // 현재 번호 + 과거 번호(번호 변경 대응) 모두 매칭
+      const phoneSet = new Set<string>();
+      if (cust.normalizedPhone) phoneSet.add(cust.normalizedPhone);
+      for (const h of safeJsonArr(cust.phoneHistory)) {
+        const n = normalizePhone(typeof h === "string" ? h : h?.phone || "");
+        if (n) phoneSet.add(n);
+      }
+
+      const out: Array<{ id: string; direction: "받음" | "보냄"; body: string; at: string | null; status?: string }> = [];
+
+      // 받은 문자
+      const inRows = await d.select().from(incomingSms);
+      for (const r of inRows) {
+        if (!phoneSet.has(normalizePhone(r.phone))) continue;
+        out.push({
+          id: r.id,
+          direction: r.direction === "발신" ? "보냄" : "받음",
+          body: r.body,
+          at: (r.receivedAt || r.createdAt) ? new Date((r.receivedAt || r.createdAt) as any).toISOString() : null,
+        });
+      }
+
+      // 보낸 문자(KNOP 발송분)
+      const sent = await d.select().from(scheduledMessages).where(eq(scheduledMessages.customerId, customerId));
+      for (const s of sent) {
+        if (s.status !== "sent") continue; // 실제 발송된 것만
+        out.push({
+          id: s.id,
+          direction: "보냄",
+          body: s.content,
+          at: s.sentAt ? new Date(s.sentAt as any).toISOString() : null,
+          status: s.status,
+        });
+      }
+
+      out.sort((a, b) => (a.at || "").localeCompare(b.at || ""));
+      return out;
+    } catch (e) {
+      fail("고객 문자 대화", e);
     }
   },
 

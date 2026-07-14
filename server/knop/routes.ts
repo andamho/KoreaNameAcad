@@ -1150,6 +1150,15 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     }
   });
 
+  // 고객과 주고받은 문자 전체(시간순 대화)
+  app.get(`${P}/customers/:id/messages`, requireAdmin, async (req, res) => {
+    try {
+      res.json(await knopStore.customerMessages(req.params.id));
+    } catch (e) {
+      handle(res, "GET customer messages", e);
+    }
+  });
+
   // 개명의뢰 확인 대기 (개명비 입금 자동감지분) — 최종점검
   app.get(`${P}/notice-pending`, requireAdmin, async (_req, res) => {
     try {

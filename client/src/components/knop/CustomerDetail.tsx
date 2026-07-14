@@ -18,6 +18,7 @@ import {
   Download,
   ExternalLink,
   MessageSquarePlus,
+  MessageSquare,
   CalendarPlus,
   Mic,
   Loader2,
@@ -412,6 +413,9 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
             </Card>
           )}
 
+          {/* 문자 대화 (주고받은 문자 시간순) */}
+          <MessagesCard customerId={customerId} />
+
           {/* 파일 */}
           <Card className="p-5">
             <div className="flex items-center justify-between mb-3">
@@ -653,5 +657,67 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
         onSent={refresh}
       />
     </div>
+  );
+}
+
+// 주고받은 문자 대화 (받음=왼쪽 회색, 보냄=오른쪽 민트, 시간순)
+function MessagesCard({ customerId }: { customerId: string }) {
+  const { data: msgs, isLoading } = useQuery({
+    queryKey: ["knop-customer-messages", customerId],
+    queryFn: () => knopApi.customerMessages(customerId),
+    refetchInterval: 60000,
+  });
+
+  const fmt = (at: string | null) => {
+    if (!at) return "";
+    try {
+      return new Date(at).toLocaleString("ko-KR", {
+        month: "numeric",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return "";
+    }
+  };
+
+  return (
+    <Card className="p-5">
+      <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+        <MessageSquare className="w-4 h-4 text-[#56D5DB]" /> 문자 대화 {msgs?.length ? `(${msgs.length})` : ""}
+      </h3>
+      {isLoading ? (
+        <p className="text-sm text-gray-400">불러오는 중…</p>
+      ) : !msgs || msgs.length === 0 ? (
+        <p className="text-sm text-gray-400">
+          주고받은 문자가 없습니다. (받은 문자는 폰 연동 이후분, 보낸 문자는 KNOP 발송분이 표시됩니다)
+        </p>
+      ) : (
+        <div className="space-y-2 max-h-[28rem] overflow-y-auto pr-1">
+          {msgs.map((m) => {
+            const mine = m.direction === "보냄";
+            return (
+              <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[80%] ${mine ? "items-end" : "items-start"} flex flex-col`}>
+                  <div
+                    className={`rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words ${
+                      mine
+                        ? "bg-[#56D5DB]/20 text-gray-800 rounded-br-sm"
+                        : "bg-gray-100 text-gray-800 rounded-bl-sm"
+                    }`}
+                  >
+                    {m.body}
+                  </div>
+                  <span className="text-[11px] text-gray-400 mt-0.5 px-1">
+                    {mine ? "보냄" : "받음"} · {fmt(m.at)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Card>
   );
 }
