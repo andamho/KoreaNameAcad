@@ -214,10 +214,18 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       const secret = process.env.KNOP_SMS_WEBHOOK_SECRET || "";
       const given = String(req.headers["x-knop-secret"] || req.query.secret || "");
       if (!secret || given !== secret) return res.status(401).json({ error: "unauthorized" });
-      // MacroDroid 등: JSON 본문 또는 쿼리 파라미터 어느 쪽으로 와도 받음
-      const q = (req.query || {}) as Record<string, any>;
-      const b = (req.body || {}) as Record<string, any>;
-      const pick = (k: string) => (b[k] !== undefined && b[k] !== "" ? b[k] : q[k]);
+      // MacroDroid 등: JSON 본문 또는 쿼리 파라미터 어느 쪽으로 와도, 키 대소문자 무관하게 받음
+      const lower = (o: Record<string, any>) => {
+        const m: Record<string, any> = {};
+        for (const k of Object.keys(o || {})) m[k.toLowerCase()] = o[k];
+        return m;
+      };
+      const q = lower((req.query || {}) as Record<string, any>);
+      const b = lower((req.body || {}) as Record<string, any>);
+      const pick = (k: string) => {
+        const kk = k.toLowerCase();
+        return b[kk] !== undefined && b[kk] !== "" ? b[kk] : q[kk];
+      };
       const parsed = insertIncomingSmsSchema.parse({
         contactName: pick("contactName") ?? null,
         phone: pick("phone"),
