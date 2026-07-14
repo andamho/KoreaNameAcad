@@ -144,11 +144,18 @@ export const knopStore = {
         const c = await this.findCustomerByPhone(phone);
         if (c) return c.id;
       }
-      const nm = (name || "").replace(/\(.*?\)/g, "").replace(/\s*\d+\s*명.*$/, "").replace(/\s*가족\s*$/, "").trim();
-      if (nm) {
+      // 제목 앞뒤 숫자·기호·괄호·"가족" 제거 → 한글 이름만 남김 (예: "2이창훈"→이창훈, "정연희2"→정연희)
+      const bare = (s: string) =>
+        (s || "")
+          .replace(/\(.*?\)/g, "")
+          .replace(/\s*가족\s*$/, "")
+          .replace(/^[^가-힣]+/, "")
+          .replace(/[^가-힣]+$/, "")
+          .trim();
+      const nm = bare(name || "");
+      if (nm && nm.length >= 2) {
         const all = await d.select().from(customers);
-        const bare = (s: string) => (s || "").replace(/\s*가족\s*$/, "").replace(/\(.*?\)/g, "").trim();
-        const hit = all.find((c) => bare(c.name) === nm) || all.find((c) => bare(c.name) === bare(name || ""));
+        const hit = all.find((c) => bare(c.name) === nm);
         if (hit) return hit.id;
       }
       return null;
