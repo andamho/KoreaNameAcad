@@ -99,20 +99,29 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
     if (idx !== curIdx) setCurIdx(idx);
   };
 
+  // 저장은 즉시(요약 재생성 안 함). 학습은 서버가 백그라운드로 처리.
   const editMut = useMutation({
     mutationFn: (payload: { transcript: string; words: W[] }) =>
-      knopApi.editCallTranscript(call.id, payload.transcript, true, payload.words),
-    onSuccess: (data) => {
-      const learned = data.learned?.learned || [];
+      knopApi.editCallTranscript(call.id, payload.transcript, false, payload.words),
+    onSuccess: () => {
       setEditTurn(null);
       onSaved();
-      toast(
-        learned.length
-          ? { title: `교정 ${learned.length}개 학습됨`, description: learned.map((l) => `${l.wrong}→${l.right}`).join(", ") }
-          : { title: "저장됨" },
-      );
+      toast({ title: "저장됨" });
     },
     onError: (e: any) => toast({ title: "저장 실패", description: e?.message, variant: "destructive" }),
+  });
+
+  // 요약 갱신(느린 AI 호출) — 원할 때만 수동으로
+  const summarizeMut = useMutation({
+    mutationFn: () => {
+      const text = words.length > 0 ? words.map((w) => w.word).join(" ") : call.transcriptText || "";
+      return knopApi.editCallTranscript(call.id, text, true, words.length > 0 ? words : undefined);
+    },
+    onSuccess: () => {
+      onSaved();
+      toast({ title: "요약 갱신됨" });
+    },
+    onError: (e: any) => toast({ title: "요약 실패", description: e?.message, variant: "destructive" }),
   });
 
   const saveTurn = () => {
@@ -148,8 +157,19 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
 
   return (
     <div className="space-y-2">
-      <div className="text-xs font-medium text-gray-500">
-        전사{words.length > 0 && " · 클릭=위치 이동 · 더블클릭=그 줄 바로 수정"}
+      <div className="flex items-center gap-2">
+        <div className="text-xs font-medium text-gray-500">
+          전사{words.length > 0 && " · 클릭=위치 이동 · 더블클릭=그 줄 바로 수정"}
+        </div>
+        <button
+          type="button"
+          onClick={() => summarizeMut.mutate()}
+          disabled={summarizeMut.isPending}
+          className="ml-auto text-xs text-gray-400 hover:text-[#3fc4ca] disabled:opacity-50"
+          title="AI 요약을 다시 생성합니다(몇 초 걸림)"
+        >
+          {summarizeMut.isPending ? "요약 갱신 중…" : "요약 갱신"}
+        </button>
       </div>
 
       {call.audioFileUrl && (

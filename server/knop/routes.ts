@@ -852,14 +852,9 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       if (typeof transcriptText !== "string") return res.status(400).json({ error: "transcriptText_required" });
       const old = await knopStore.getCall(req.params.id);
       if (!old) return res.status(404).json({ error: "not_found" });
+      const oldText = old.transcriptText || "";
 
-      // 학습: 이전 전사문과 수정본 비교
-      const learned = await learnFromEdit(old.transcriptText || "", transcriptText).catch((e) => {
-        console.error(`[KNOP] 학습 실패: ${e?.message}`);
-        return { learned: [], skipped: 0 };
-      });
-
-      // 재요약(선택)
+      // 재요약은 명시적으로 요청했을 때만(느린 Gemini 호출). 기본 저장은 건너뜀 → 빠름.
       let summaryText: string | undefined;
       let actionItems: string[] | undefined;
       if (resummarize) {
@@ -878,7 +873,12 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
         actionItems,
         words: Array.isArray(words) ? words : undefined, // 음성연동/화자 유지용 갱신
       });
-      res.json({ call, learned });
+      // 즉시 응답. 교정 학습은 응답 후 백그라운드(저장 속도에 영향 없음).
+      res.json({ call, learned: { learned: [], skipped: 0 } });
+      learnFromEdit(oldText, transcriptText).catch((e) =>
+        console.error(`[KNOP] 학습 실패(백그라운드): ${e?.message}`),
+      );
+      return;
     } catch (e) {
       handle(res, "PATCH calls", e);
     }
