@@ -351,6 +351,7 @@ export const knopApi = {
       "GET",
       `/api/knop/customers-resolve?phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}`,
     ),
+  hongikCustomerIds: () => req<string[]>("GET", "/api/knop/customers-hongik"),
 
   // 개명의뢰 확인 대기 (최종점검)
   listNoticePending: () => req<NoticePending[]>("GET", "/api/knop/notice-pending"),

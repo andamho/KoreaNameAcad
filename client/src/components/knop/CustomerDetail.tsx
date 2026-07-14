@@ -54,6 +54,8 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
         : false,
   });
   const { data: journey } = useQuery({ queryKey: ["knop-journey"], queryFn: () => knopApi.listJourney() });
+  const { data: hongikIds } = useQuery({ queryKey: ["knop-hongik"], queryFn: () => knopApi.hongikCustomerIds() });
+  const isHongik = (hongikIds || []).includes(customerId);
   const { data: reportsData } = useQuery({
     queryKey: ["knop-reports", data?.customer.name],
     queryFn: () => knopApi.reportsForName(data!.customer.name),
@@ -223,7 +225,17 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
       <Card className="p-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">{customer.name}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              {customer.name}
+              {isHongik && (
+                <span
+                  className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-600 text-white text-sm font-bold shrink-0"
+                  title="홍익 (달력 홍익 체크)"
+                >
+                  홍
+                </span>
+              )}
+            </h2>
             <div className="mt-2 flex flex-col gap-1 text-sm text-gray-600">
               <span className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-gray-400" /> {customer.phone}

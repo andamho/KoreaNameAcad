@@ -169,6 +169,41 @@ export const knopStore = {
     }
   },
 
+  // 달력에서 홍익(hongik) 체크된 일정의 고객 ID 목록 (이름 옆 "홍" 배지용)
+  async hongikCustomerIds(): Promise<string[]> {
+    const d = requireDb();
+    try {
+      const events = await readEvents();
+      const hongik = events.filter((e) => e.hongik && e.title);
+      if (!hongik.length) return [];
+      const all = await d.select().from(customers);
+      const bare = (s: string) =>
+        (s || "").replace(/\(.*?\)/g, "").replace(/\s*가족\s*$/, "").replace(/^[^가-힣]+/, "").replace(/[^가-힣]+$/, "").trim();
+      const byPhone = new Map<string, string>();
+      const byName = new Map<string, string>();
+      const byKey3 = new Map<string, string>();
+      for (const c of all) {
+        if (c.normalizedPhone) byPhone.set(c.normalizedPhone, c.id);
+        const b = bare(c.name);
+        if (b && !byName.has(b)) byName.set(b, c.id);
+        if (b.length >= 2 && !byKey3.has(b.slice(0, 3))) byKey3.set(b.slice(0, 3), c.id);
+      }
+      const ids = new Set<string>();
+      for (const e of hongik) {
+        let id: string | undefined;
+        if (e.clientPhone) id = byPhone.get(normalizePhone(e.clientPhone));
+        if (!id) {
+          const nm = bare(e.title!);
+          id = byName.get(nm) || (nm.length >= 2 ? byKey3.get(nm.slice(0, 3)) : undefined);
+        }
+        if (id) ids.add(id);
+      }
+      return Array.from(ids);
+    } catch (e) {
+      fail("홍익 고객 조회", e);
+    }
+  },
+
   async createCustomer(input: InsertCustomer): Promise<Customer> {
     const d = requireDb();
     try {

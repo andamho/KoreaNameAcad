@@ -703,6 +703,19 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     }
   });
 
+  // 홍익 체크된 고객 ID 목록(이름 옆 "홍" 배지용). 60초 캐시(Firestore 읽기 절약)
+  let hongikCache: { at: number; ids: string[] } | null = null;
+  app.get(`${P}/customers-hongik`, requireAdmin, async (_req, res) => {
+    try {
+      if (!hongikCache || Date.now() - hongikCache.at > 60000) {
+        hongikCache = { at: Date.now(), ids: calendarAvailable() ? await knopStore.hongikCustomerIds() : [] };
+      }
+      res.json(hongikCache.ids);
+    } catch (e) {
+      handle(res, "GET customers hongik", e);
+    }
+  });
+
   // ── AI Inbox (결제 문자 분석·매칭) ──
   // 공통: 원문 → Gemini 파싱 → 고객 매칭 → inbox 저장
   async function ingest(rawText: string, sender: string | null, source: string) {
