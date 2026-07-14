@@ -345,6 +345,7 @@ export const knopApi = {
     req<Record<string, string>>("GET", `/api/knop/customers/${customerId}/sequences`),
   customerMessages: (customerId: string) =>
     req<CustomerMessage[]>("GET", `/api/knop/customers/${customerId}/messages`),
+  calendarAgenda: () => req<CalendarAgendaItem[]>("GET", "/api/knop/calendar/agenda"),
 
   // 개명의뢰 확인 대기 (최종점검)
   listNoticePending: () => req<NoticePending[]>("GET", "/api/knop/notice-pending"),
@@ -355,6 +356,15 @@ export const knopApi = {
       { nameDate },
     ),
   cancelNoticePending: (id: string) => req<{ ok: boolean }>("POST", `/api/knop/notice-pending/${id}/cancel`),
+};
+
+export type CalendarAgendaItem = {
+  date: string | null;
+  title: string;
+  cat: string | null;
+  phoneChange: boolean;
+  customerId: string | null;
+  customerName: string | null;
 };
 
 export type CustomerMessage = {

@@ -1026,6 +1026,49 @@ export const knopStore = {
   },
 
   // ── 대시보드: 오늘 해야 할 일 (설계서 §21) ──
+  // 달력(Firebase 바른이름 달력) 일정 목록 + 각 일정을 고객과 매칭 (클릭→고객 이동용)
+  async calendarAgenda(): Promise<
+    Array<{ date: string | null; title: string; cat: string | null; phoneChange: boolean; customerId: string | null; customerName: string | null }>
+  > {
+    const d = requireDb();
+    try {
+      const events = await readEvents();
+      const custs = await d.select().from(customers);
+      const bare = (s: string) =>
+        (s || "")
+          .replace(/\s*가족\s*$/, "")
+          .replace(/\(.*?\)/g, "")
+          .replace(/\s*\d+\s*명.*$/, "")
+          .replace(/[·\s]+$/, "")
+          .trim();
+      const byPhone = new Map<string, (typeof custs)[number]>();
+      const byName = new Map<string, (typeof custs)[number]>();
+      for (const c of custs) {
+        if (c.normalizedPhone) byPhone.set(c.normalizedPhone, c);
+        const bn = bare(c.name);
+        if (bn && !byName.has(bn)) byName.set(bn, c);
+      }
+      return events.map((e) => {
+        let cust: (typeof custs)[number] | undefined;
+        if (e.clientPhone) cust = byPhone.get(normalizePhone(e.clientPhone));
+        if (!cust && e.title) {
+          const nm = parseNameCount(e.title).name;
+          cust = byName.get(bare(nm)) || byName.get(bare(e.title));
+        }
+        return {
+          date: e.date ?? null,
+          title: e.title ?? "",
+          cat: e.cat ?? null,
+          phoneChange: !!e.phoneChange,
+          customerId: cust?.id ?? null,
+          customerName: cust?.name ?? null,
+        };
+      });
+    } catch (e) {
+      fail("달력 일정 조회", e);
+    }
+  },
+
   async getToday(startISO: string, endISO: string) {
     const d = requireDb();
     try {

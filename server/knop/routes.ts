@@ -682,6 +682,16 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     }
   });
 
+  // 달력 일정 목록(고객 매칭 포함) — 클릭 시 고객 이동용
+  app.get(`${P}/calendar/agenda`, requireAdmin, async (_req, res) => {
+    try {
+      if (!calendarAvailable()) return res.json([]);
+      res.json(await knopStore.calendarAgenda());
+    } catch (e) {
+      handle(res, "GET calendar agenda", e);
+    }
+  });
+
   // ── AI Inbox (결제 문자 분석·매칭) ──
   // 공통: 원문 → Gemini 파싱 → 고객 매칭 → inbox 저장
   async function ingest(rawText: string, sender: string | null, source: string) {

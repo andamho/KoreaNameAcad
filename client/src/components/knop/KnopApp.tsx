@@ -94,7 +94,7 @@ export function KnopApp() {
       {view === "sms-inbox" && <SmsInboxView />}
       {view === "sms" && <SmsView />}
       {view === "notice" && <NoticeView />}
-      {view === "calendar" && <CalendarView />}
+      {view === "calendar" && <CalendarView onOpenCustomer={setSelectedCustomer} />}
       {view === "corrections" && <CorrectionsView />}
     </div>
   );
@@ -398,13 +398,24 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
 }
 
 // ── 달력: 실제 운영 "바른이름 달력" 임베드 (Firebase 실시간 동기화) ──
-function CalendarView() {
+function CalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void }) {
+  const { data: agenda } = useQuery({
+    queryKey: ["knop-calendar-agenda"],
+    queryFn: () => knopApi.calendarAgenda(),
+  });
+
+  // 오늘 이후 일정만, 날짜순
+  const today = new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD (KST 로컬)
+  const upcoming = (agenda || [])
+    .filter((e) => (e.date || "") >= today)
+    .sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-gray-900">바른이름 달력</h2>
-          <p className="text-sm text-gray-400">상담 · 이름상담 예약 · Firebase 실시간 동기화</p>
+          <p className="text-sm text-gray-400">일정을 누르면 해당 고객 자료로 이동합니다</p>
         </div>
         <a href={CALENDAR_URL} target="_blank" rel="noreferrer">
           <Button variant="outline" size="sm">
@@ -412,6 +423,45 @@ function CalendarView() {
           </Button>
         </a>
       </div>
+
+      {/* 클릭 가능한 일정 목록 (고객 매칭) */}
+      <Card className="p-4">
+        <h3 className="font-semibold text-gray-800 mb-2 flex items-center gap-2 text-sm">
+          <CalendarDays className="w-4 h-4 text-[#56D5DB]" /> 예정 일정 ({upcoming.length})
+        </h3>
+        {upcoming.length === 0 ? (
+          <p className="text-sm text-gray-400">예정된 일정이 없습니다.</p>
+        ) : (
+          <div className="space-y-1 max-h-80 overflow-y-auto pr-1">
+            {upcoming.map((e, i) => {
+              const clickable = !!e.customerId;
+              return (
+                <button
+                  key={i}
+                  disabled={!clickable}
+                  onClick={() => e.customerId && onOpenCustomer(e.customerId)}
+                  className={`w-full flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm transition ${
+                    clickable
+                      ? "border-gray-100 hover:border-[#56D5DB]/60 hover:bg-[#56D5DB]/5 cursor-pointer"
+                      : "border-gray-100 opacity-60 cursor-default"
+                  }`}
+                >
+                  <span className="shrink-0 w-14 text-xs text-gray-400 tabular-nums">
+                    {(e.date || "").slice(5)}
+                  </span>
+                  <span className="flex-1 truncate text-gray-800">{e.title}</span>
+                  {e.phoneChange && <Phone className="w-3.5 h-3.5 shrink-0 text-orange-400" />}
+                  {clickable ? (
+                    <span className="shrink-0 text-xs text-[#3fc4ca]">{e.customerName} ›</span>
+                  ) : (
+                    <span className="shrink-0 text-xs text-gray-300">미등록</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </Card>
 
       <Card className="overflow-hidden p-0">
         <div className="mx-auto w-full max-w-[460px]">
