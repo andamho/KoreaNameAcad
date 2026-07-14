@@ -346,6 +346,11 @@ export const knopApi = {
   customerMessages: (customerId: string) =>
     req<CustomerMessage[]>("GET", `/api/knop/customers/${customerId}/messages`),
   calendarAgenda: () => req<CalendarAgendaItem[]>("GET", "/api/knop/calendar/agenda"),
+  resolveCustomer: (phone: string, name: string) =>
+    req<{ customerId: string | null }>(
+      "GET",
+      `/api/knop/customers/resolve?phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}`,
+    ),
 
   // 개명의뢰 확인 대기 (최종점검)
   listNoticePending: () => req<NoticePending[]>("GET", "/api/knop/notice-pending"),

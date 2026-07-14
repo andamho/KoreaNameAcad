@@ -1,5 +1,5 @@
 // KNOP 운영 플랫폼 루트 — 오늘 / 고객 / 달력 + 고객 상세
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,8 +19,6 @@ import {
   Inbox,
   Trash2,
   Sparkles,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { knopApi } from "@/lib/knopApi";
 import { useToast } from "@/hooks/use-toast";
@@ -401,130 +399,49 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
 
 // ── 달력: 실제 운영 "바른이름 달력" 임베드 (Firebase 실시간 동기화) ──
 function CalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void }) {
-  const { data: agenda } = useQuery({
-    queryKey: ["knop-calendar-agenda"],
-    queryFn: () => knopApi.calendarAgenda(),
-  });
+  const { toast } = useToast();
 
-  const now = new Date();
-  const [ym, setYm] = useState({ y: now.getFullYear(), m: now.getMonth() }); // m: 0-11
-  const todayStr = now.toLocaleDateString("sv-SE");
-
-  // 날짜별 일정 묶기
-  const byDate = new Map<string, typeof agenda>();
-  for (const e of agenda || []) {
-    if (!e.date) continue;
-    const arr = byDate.get(e.date) || [];
-    arr.push(e);
-    byDate.set(e.date, arr as any);
-  }
-
-  // 이번 달 그리드 (앞 빈칸 + 날짜들, 7의 배수로)
-  const first = new Date(ym.y, ym.m, 1);
-  const lead = first.getDay(); // 0=일
-  const daysIn = new Date(ym.y, ym.m + 1, 0).getDate();
-  const cells: Array<{ d: number; key: string } | null> = [];
-  for (let i = 0; i < lead; i++) cells.push(null);
-  for (let d = 1; d <= daysIn; d++) {
-    const key = `${ym.y}-${String(ym.m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    cells.push({ d, key });
-  }
-  while (cells.length % 7 !== 0) cells.push(null);
-
-  const move = (delta: number) => {
-    const nm = ym.m + delta;
-    setYm({ y: ym.y + Math.floor(nm / 12), m: ((nm % 12) + 12) % 12 });
-  };
-  const matchedCount = (agenda || []).filter(
-    (e) => e.customerId && (e.date || "").startsWith(`${ym.y}-${String(ym.m + 1).padStart(2, "0")}`),
-  ).length;
+  // 달력 앱(iframe)에서 일정 클릭 시 보내는 신호 수신 → 고객 매칭 → 이동
+  useEffect(() => {
+    const onMsg = async (ev: MessageEvent) => {
+      const d = ev.data;
+      if (!d || d.source !== "baruncal" || d.type !== "open-customer") return;
+      try {
+        const { customerId } = await knopApi.resolveCustomer(d.phone || "", d.name || d.title || "");
+        if (customerId) onOpenCustomer(customerId);
+        else toast({ title: "연결된 고객이 없습니다", description: d.name || d.title || d.phone || "" });
+      } catch {
+        toast({ title: "고객 이동 실패", variant: "destructive" });
+      }
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, [onOpenCustomer, toast]);
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-gray-900">바른이름 달력</h2>
-          <p className="text-sm text-gray-400">일정을 누르면 해당 고객 자료로 이동합니다 · 이달 고객일정 {matchedCount}</p>
+          <p className="text-sm text-gray-400">일정을 열어 "고객 보기"를 누르면 해당 고객 자료로 이동합니다</p>
         </div>
         <a href={CALENDAR_URL} target="_blank" rel="noreferrer">
           <Button variant="outline" size="sm">
-            <ExternalLink className="w-4 h-4 mr-1" /> 편집(외부 달력)
+            <ExternalLink className="w-4 h-4 mr-1" /> 새 창에서 열기
           </Button>
         </a>
       </div>
 
-      <Card className="p-3 sm:p-4">
-        {/* 월 네비 */}
-        <div className="flex items-center justify-center gap-4 mb-3">
-          <button onClick={() => move(-1)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <span className="font-bold text-gray-900 tabular-nums w-28 text-center">
-            {ym.y}년 {ym.m + 1}월
-          </span>
-          <button onClick={() => move(1)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500">
-            <ChevronRight className="w-5 h-5" />
-          </button>
+      <Card className="overflow-hidden p-0">
+        <div className="mx-auto w-full max-w-[460px]">
+          <iframe
+            src={CALENDAR_URL}
+            title="바른이름 달력"
+            className="block w-full border-0"
+            style={{ height: "calc(100vh - 210px)", minHeight: 560 }}
+            allow="clipboard-read; clipboard-write"
+          />
         </div>
-
-        {/* 요일 헤더 */}
-        <div className="grid grid-cols-7 text-center text-xs font-semibold mb-1">
-          {["일", "월", "화", "수", "목", "금", "토"].map((w, i) => (
-            <div key={w} className={i === 0 ? "text-red-400" : i === 6 ? "text-blue-400" : "text-gray-400"}>
-              {w}
-            </div>
-          ))}
-        </div>
-
-        {/* 날짜 그리드 */}
-        <div className="grid grid-cols-7 gap-1">
-          {cells.map((c, i) => {
-            if (!c) return <div key={i} className="min-h-[68px]" />;
-            const evts = (byDate.get(c.key) || []) as NonNullable<typeof agenda>;
-            const isToday = c.key === todayStr;
-            const dow = i % 7;
-            return (
-              <div
-                key={i}
-                className={`min-h-[68px] rounded-lg border p-1 ${isToday ? "border-[#56D5DB] bg-[#56D5DB]/5" : "border-gray-100"}`}
-              >
-                <div
-                  className={`text-[11px] font-medium mb-0.5 px-0.5 ${
-                    isToday ? "text-[#3fc4ca]" : dow === 0 ? "text-red-400" : dow === 6 ? "text-blue-400" : "text-gray-500"
-                  }`}
-                >
-                  {c.d}
-                </div>
-                <div className="space-y-0.5">
-                  {evts.slice(0, 4).map((e, j) => {
-                    const clickable = !!e.customerId;
-                    return (
-                      <button
-                        key={j}
-                        disabled={!clickable}
-                        onClick={() => e.customerId && onOpenCustomer(e.customerId)}
-                        title={e.title + (e.customerName ? ` → ${e.customerName}` : "")}
-                        className={`w-full flex items-center gap-0.5 rounded px-1 py-0.5 text-[10px] leading-tight truncate text-left ${
-                          clickable
-                            ? "bg-[#56D5DB]/20 text-gray-800 hover:bg-[#56D5DB]/40 cursor-pointer"
-                            : "bg-gray-100 text-gray-500 cursor-default"
-                        }`}
-                      >
-                        {e.phoneChange && <Phone className="w-2.5 h-2.5 shrink-0 text-orange-400" />}
-                        <span className="truncate">{e.title}</span>
-                      </button>
-                    );
-                  })}
-                  {evts.length > 4 && <div className="text-[9px] text-gray-400 px-1">+{evts.length - 4}</div>}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <p className="text-[11px] text-gray-400 mt-3 text-center">
-          민트색 일정 = 고객 연결됨(클릭 시 이동) · 회색 = 개인/미등록 일정
-        </p>
       </Card>
     </div>
   );

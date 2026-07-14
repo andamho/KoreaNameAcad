@@ -692,6 +692,17 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     }
   });
 
+  // 전화/이름 → 고객ID (달력 iframe 클릭 이동용)
+  app.get(`${P}/customers/resolve`, requireAdmin, async (req, res) => {
+    try {
+      const phone = typeof req.query.phone === "string" ? req.query.phone : "";
+      const name = typeof req.query.name === "string" ? req.query.name : "";
+      res.json({ customerId: await knopStore.resolveCustomerId(phone, name) });
+    } catch (e) {
+      handle(res, "GET customers resolve", e);
+    }
+  });
+
   // ── AI Inbox (결제 문자 분석·매칭) ──
   // 공통: 원문 → Gemini 파싱 → 고객 매칭 → inbox 저장
   async function ingest(rawText: string, sender: string | null, source: string) {

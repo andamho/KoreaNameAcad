@@ -136,6 +136,27 @@ export const knopStore = {
     }
   },
 
+  // 달력 일정 → 고객 매칭(전화 우선, 없으면 이름). 클릭 이동용.
+  async resolveCustomerId(phone?: string | null, name?: string | null): Promise<string | null> {
+    const d = requireDb();
+    try {
+      if (phone) {
+        const c = await this.findCustomerByPhone(phone);
+        if (c) return c.id;
+      }
+      const nm = (name || "").replace(/\(.*?\)/g, "").replace(/\s*\d+\s*명.*$/, "").replace(/\s*가족\s*$/, "").trim();
+      if (nm) {
+        const all = await d.select().from(customers);
+        const bare = (s: string) => (s || "").replace(/\s*가족\s*$/, "").replace(/\(.*?\)/g, "").trim();
+        const hit = all.find((c) => bare(c.name) === nm) || all.find((c) => bare(c.name) === bare(name || ""));
+        if (hit) return hit.id;
+      }
+      return null;
+    } catch (e) {
+      fail("고객 매칭", e);
+    }
+  },
+
   async createCustomer(input: InsertCustomer): Promise<Customer> {
     const d = requireDb();
     try {
