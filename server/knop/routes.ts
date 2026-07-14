@@ -404,14 +404,15 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     try {
       const customer = await knopStore.getCustomer(req.params.id);
       if (!customer) return res.status(404).json({ error: "not_found" });
-      const [projects, timeline, files, events, calls] = await Promise.all([
+      const [projects, timeline, files, events, calls, referral] = await Promise.all([
         knopStore.listProjects(customer.id),
         knopStore.listTimeline(customer.id),
         knopStore.listFiles(customer.id),
         knopStore.listEventsForCustomer(customer.id),
         knopStore.listCalls(customer.id),
+        knopStore.getReferral(customer.id),
       ]);
-      res.json({ customer, projects, timeline, files, events, calls });
+      res.json({ customer, projects, timeline, files, events, calls, referral });
     } catch (e) {
       handle(res, "GET customer detail", e);
     }

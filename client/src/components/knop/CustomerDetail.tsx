@@ -246,6 +246,15 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                 </span>
               )}
               <span className="text-xs text-gray-400">등록 {fmtDate(customer.createdAt)}</span>
+              {data.referral?.referralSource && (
+                <span className="mt-1 inline-flex items-center gap-1.5 text-xs">
+                  <span className="text-gray-400">문의경로</span>
+                  <span className="px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 font-medium">
+                    {data.referral.referralSource}
+                    {data.referral.referrerName ? ` · ${data.referral.referrerName}` : ""}
+                  </span>
+                </span>
+              )}
             </div>
           </div>
           <div className="flex gap-2">
@@ -428,10 +437,10 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
           {/* 문자 대화 (주고받은 문자 시간순) */}
           <MessagesCard customerId={customerId} />
 
-          {/* 파일 */}
+          {/* 이름분석표 (업로드 파일) */}
           <Card className="p-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-800">파일 ({files.length})</h3>
+              <h3 className="font-semibold text-gray-800">이름분석표 ({files.length})</h3>
               <Button
                 variant="outline"
                 size="sm"

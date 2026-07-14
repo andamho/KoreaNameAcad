@@ -204,6 +204,32 @@ export const knopStore = {
     }
   },
 
+  // 상담신청서의 문의경로/소개자 (고객 정보 표시용)
+  async getReferral(customerId: string): Promise<{ referralSource: string | null; referrerName: string | null } | null> {
+    const d = requireDb();
+    try {
+      const cust = await this.getCustomer(customerId);
+      if (!cust) return null;
+      let con: any;
+      if (cust.sourceConsultationId) {
+        [con] = await d.select().from(consultations).where(eq(consultations.id, cust.sourceConsultationId));
+      }
+      if (!con && cust.phone) {
+        const rows = await d
+          .select()
+          .from(consultations)
+          .where(eq(consultations.phone, cust.phone))
+          .orderBy(desc(consultations.createdAt))
+          .limit(1);
+        con = rows[0];
+      }
+      if (!con) return null;
+      return { referralSource: con.referralSource ?? null, referrerName: con.referrerName ?? null };
+    } catch (e) {
+      fail("문의경로 조회", e);
+    }
+  },
+
   async createCustomer(input: InsertCustomer): Promise<Customer> {
     const d = requireDb();
     try {

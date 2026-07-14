@@ -86,6 +86,7 @@ export interface CustomerDetail {
   files: CrmFile[];
   events: CalendarEvent[];
   calls: Call[];
+  referral?: { referralSource: string | null; referrerName: string | null } | null;
 }
 
 export interface TodayData {
