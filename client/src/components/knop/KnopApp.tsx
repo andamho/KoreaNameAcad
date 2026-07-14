@@ -19,6 +19,8 @@ import {
   Inbox,
   Trash2,
   Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { knopApi } from "@/lib/knopApi";
 import { useToast } from "@/hooks/use-toast";
@@ -404,75 +406,125 @@ function CalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void
     queryFn: () => knopApi.calendarAgenda(),
   });
 
-  // 오늘 이후 일정만, 날짜순
-  const today = new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD (KST 로컬)
-  const upcoming = (agenda || [])
-    .filter((e) => (e.date || "") >= today)
-    .sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+  const now = new Date();
+  const [ym, setYm] = useState({ y: now.getFullYear(), m: now.getMonth() }); // m: 0-11
+  const todayStr = now.toLocaleDateString("sv-SE");
+
+  // 날짜별 일정 묶기
+  const byDate = new Map<string, typeof agenda>();
+  for (const e of agenda || []) {
+    if (!e.date) continue;
+    const arr = byDate.get(e.date) || [];
+    arr.push(e);
+    byDate.set(e.date, arr as any);
+  }
+
+  // 이번 달 그리드 (앞 빈칸 + 날짜들, 7의 배수로)
+  const first = new Date(ym.y, ym.m, 1);
+  const lead = first.getDay(); // 0=일
+  const daysIn = new Date(ym.y, ym.m + 1, 0).getDate();
+  const cells: Array<{ d: number; key: string } | null> = [];
+  for (let i = 0; i < lead; i++) cells.push(null);
+  for (let d = 1; d <= daysIn; d++) {
+    const key = `${ym.y}-${String(ym.m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    cells.push({ d, key });
+  }
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const move = (delta: number) => {
+    const nm = ym.m + delta;
+    setYm({ y: ym.y + Math.floor(nm / 12), m: ((nm % 12) + 12) % 12 });
+  };
+  const matchedCount = (agenda || []).filter(
+    (e) => e.customerId && (e.date || "").startsWith(`${ym.y}-${String(ym.m + 1).padStart(2, "0")}`),
+  ).length;
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-gray-900">바른이름 달력</h2>
-          <p className="text-sm text-gray-400">일정을 누르면 해당 고객 자료로 이동합니다</p>
+          <p className="text-sm text-gray-400">일정을 누르면 해당 고객 자료로 이동합니다 · 이달 고객일정 {matchedCount}</p>
         </div>
         <a href={CALENDAR_URL} target="_blank" rel="noreferrer">
           <Button variant="outline" size="sm">
-            <ExternalLink className="w-4 h-4 mr-1" /> 새 창에서 열기
+            <ExternalLink className="w-4 h-4 mr-1" /> 편집(외부 달력)
           </Button>
         </a>
       </div>
 
-      {/* 클릭 가능한 일정 목록 (고객 매칭) */}
-      <Card className="p-4">
-        <h3 className="font-semibold text-gray-800 mb-2 flex items-center gap-2 text-sm">
-          <CalendarDays className="w-4 h-4 text-[#56D5DB]" /> 예정 일정 ({upcoming.length})
-        </h3>
-        {upcoming.length === 0 ? (
-          <p className="text-sm text-gray-400">예정된 일정이 없습니다.</p>
-        ) : (
-          <div className="space-y-1 max-h-80 overflow-y-auto pr-1">
-            {upcoming.map((e, i) => {
-              const clickable = !!e.customerId;
-              return (
-                <button
-                  key={i}
-                  disabled={!clickable}
-                  onClick={() => e.customerId && onOpenCustomer(e.customerId)}
-                  className={`w-full flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm transition ${
-                    clickable
-                      ? "border-gray-100 hover:border-[#56D5DB]/60 hover:bg-[#56D5DB]/5 cursor-pointer"
-                      : "border-gray-100 opacity-60 cursor-default"
+      <Card className="p-3 sm:p-4">
+        {/* 월 네비 */}
+        <div className="flex items-center justify-center gap-4 mb-3">
+          <button onClick={() => move(-1)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500">
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <span className="font-bold text-gray-900 tabular-nums w-28 text-center">
+            {ym.y}년 {ym.m + 1}월
+          </span>
+          <button onClick={() => move(1)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500">
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* 요일 헤더 */}
+        <div className="grid grid-cols-7 text-center text-xs font-semibold mb-1">
+          {["일", "월", "화", "수", "목", "금", "토"].map((w, i) => (
+            <div key={w} className={i === 0 ? "text-red-400" : i === 6 ? "text-blue-400" : "text-gray-400"}>
+              {w}
+            </div>
+          ))}
+        </div>
+
+        {/* 날짜 그리드 */}
+        <div className="grid grid-cols-7 gap-1">
+          {cells.map((c, i) => {
+            if (!c) return <div key={i} className="min-h-[68px]" />;
+            const evts = (byDate.get(c.key) || []) as NonNullable<typeof agenda>;
+            const isToday = c.key === todayStr;
+            const dow = i % 7;
+            return (
+              <div
+                key={i}
+                className={`min-h-[68px] rounded-lg border p-1 ${isToday ? "border-[#56D5DB] bg-[#56D5DB]/5" : "border-gray-100"}`}
+              >
+                <div
+                  className={`text-[11px] font-medium mb-0.5 px-0.5 ${
+                    isToday ? "text-[#3fc4ca]" : dow === 0 ? "text-red-400" : dow === 6 ? "text-blue-400" : "text-gray-500"
                   }`}
                 >
-                  <span className="shrink-0 w-14 text-xs text-gray-400 tabular-nums">
-                    {(e.date || "").slice(5)}
-                  </span>
-                  <span className="flex-1 truncate text-gray-800">{e.title}</span>
-                  {e.phoneChange && <Phone className="w-3.5 h-3.5 shrink-0 text-orange-400" />}
-                  {clickable ? (
-                    <span className="shrink-0 text-xs text-[#3fc4ca]">{e.customerName} ›</span>
-                  ) : (
-                    <span className="shrink-0 text-xs text-gray-300">미등록</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </Card>
-
-      <Card className="overflow-hidden p-0">
-        <div className="mx-auto w-full max-w-[460px]">
-          <iframe
-            src={CALENDAR_URL}
-            title="바른이름 달력"
-            className="block w-full border-0"
-            style={{ height: "calc(100vh - 210px)", minHeight: 560 }}
-            allow="clipboard-read; clipboard-write"
-          />
+                  {c.d}
+                </div>
+                <div className="space-y-0.5">
+                  {evts.slice(0, 4).map((e, j) => {
+                    const clickable = !!e.customerId;
+                    return (
+                      <button
+                        key={j}
+                        disabled={!clickable}
+                        onClick={() => e.customerId && onOpenCustomer(e.customerId)}
+                        title={e.title + (e.customerName ? ` → ${e.customerName}` : "")}
+                        className={`w-full flex items-center gap-0.5 rounded px-1 py-0.5 text-[10px] leading-tight truncate text-left ${
+                          clickable
+                            ? "bg-[#56D5DB]/20 text-gray-800 hover:bg-[#56D5DB]/40 cursor-pointer"
+                            : "bg-gray-100 text-gray-500 cursor-default"
+                        }`}
+                      >
+                        {e.phoneChange && <Phone className="w-2.5 h-2.5 shrink-0 text-orange-400" />}
+                        <span className="truncate">{e.title}</span>
+                      </button>
+                    );
+                  })}
+                  {evts.length > 4 && <div className="text-[9px] text-gray-400 px-1">+{evts.length - 4}</div>}
+                </div>
+              </div>
+            );
+          })}
         </div>
+
+        <p className="text-[11px] text-gray-400 mt-3 text-center">
+          민트색 일정 = 고객 연결됨(클릭 시 이동) · 회색 = 개인/미등록 일정
+        </p>
       </Card>
     </div>
   );
