@@ -595,7 +595,8 @@ export const calls = pgTable("calls", {
   callDate: timestamp("call_date"),
   durationSeconds: integer("duration_seconds"),
   audioFileUrl: text("audio_file_url"),                  // /objects/... 경로
-  transcriptText: text("transcript_text"),               // 전사 원문
+  transcriptText: text("transcript_text"),               // 전사 원문(수정 반영 최신본)
+  originalTranscript: text("original_transcript"),       // 최초 기계 전사(수정률 계산 기준, 불변)
   summaryText: text("summary_text"),                     // AI 요약
   actionItems: text("action_items"),                     // JSON string[]
   words: text("words"),                                  // JSON: [{word,start,end,speaker?}] 음성연동/화자구분용

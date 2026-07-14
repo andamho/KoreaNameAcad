@@ -806,7 +806,7 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
         actionItems = a.actionItems;
       }
 
-      await knopStore.updateCall(callId, { transcriptText: transcript, summaryText: summary, actionItems, words, status: "done" });
+      await knopStore.updateCall(callId, { transcriptText: transcript, originalTranscript: transcript, summaryText: summary, actionItems, words, status: "done" });
       console.log(`[KNOP] 통화 전사 완료 callId=${callId} (${transcript.length}자)`);
     } catch (e: any) {
       console.error(`[KNOP] 통화 전사 실패 callId=${callId}: ${e?.message}`);

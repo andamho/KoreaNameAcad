@@ -1381,6 +1381,7 @@ export const knopStore = {
     id: string,
     patch: {
       transcriptText?: string | null;
+      originalTranscript?: string | null;
       summaryText?: string | null;
       actionItems?: string[];
       words?: unknown[];
@@ -1392,6 +1393,7 @@ export const knopStore = {
     try {
       const set: any = {};
       if (patch.transcriptText !== undefined) set.transcriptText = patch.transcriptText;
+      if (patch.originalTranscript !== undefined) set.originalTranscript = patch.originalTranscript;
       if (patch.summaryText !== undefined) set.summaryText = patch.summaryText;
       if (patch.actionItems !== undefined) set.actionItems = JSON.stringify(patch.actionItems);
       if (patch.words !== undefined) set.words = JSON.stringify(patch.words);

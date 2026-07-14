@@ -58,6 +58,29 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
 
   const turnText = (ti: number) => turns[ti].items.map((x) => x.w.word).join(" ");
 
+  // 수정률: 최초 기계전사(originalTranscript) 대비 현재본에서 바뀐 단어 비율 (순서무관 단어 다중집합 비교 → 빠름)
+  const stats = useMemo(() => {
+    const orig = (call.originalTranscript || "").trim();
+    const cur = (words.length > 0 ? words.map((w) => w.word).join(" ") : call.transcriptText || "").trim();
+    if (!orig || !cur) return null;
+    const ow = orig.split(/\s+/).filter(Boolean);
+    const cw = cur.split(/\s+/).filter(Boolean);
+    if (!cw.length) return null;
+    const freq = new Map<string, number>();
+    for (const w of ow) freq.set(w, (freq.get(w) || 0) + 1);
+    let common = 0;
+    for (const w of cw) {
+      const n = freq.get(w) || 0;
+      if (n > 0) {
+        common++;
+        freq.set(w, n - 1);
+      }
+    }
+    const changed = cw.length - common;
+    const pct = Math.round((changed / cw.length) * 100);
+    return { changed, total: cw.length, pct };
+  }, [call.originalTranscript, call.transcriptText, words]);
+
   useEffect(() => {
     if (editTurn !== null && editRef.current) {
       editRef.current.focus();
@@ -157,10 +180,18 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <div className="text-xs font-medium text-gray-500">
           전사{words.length > 0 && " · 클릭=위치 이동 · 더블클릭=그 줄 바로 수정"}
         </div>
+        {stats && (
+          <span
+            className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#56D5DB]/15 text-[#2fa8ae]"
+            title={`최초 기계전사 대비 ${stats.changed}단어 수정 / 전체 ${stats.total}단어`}
+          >
+            수정 {stats.pct}% · {stats.changed}/{stats.total}단어
+          </span>
+        )}
         <button
           type="button"
           onClick={() => summarizeMut.mutate()}
