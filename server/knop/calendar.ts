@@ -10,7 +10,7 @@ let _db: FirebaseFirestore.Firestore | null = null;
 // 키 로드: env KNOP_FIREBASE_KEY (JSON 문자열 또는 파일경로) 우선, 없으면 로컬 파일. 배포(Railway)는 env로.
 function loadKey(): any | null {
   try {
-    const env = process.env.KNOP_FIREBASE_KEY?.trim();
+    const env = (process.env.KOP_FIREBASE_KEY || process.env.KNOP_FIREBASE_KEY)?.trim();
     if (env) {
       if (env.startsWith("{")) return JSON.parse(env); // JSON 문자열
       if (fs.existsSync(env)) return JSON.parse(fs.readFileSync(env, "utf-8")); // 파일경로

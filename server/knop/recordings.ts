@@ -3,7 +3,7 @@
 import fs from "fs";
 import path from "path";
 
-const DIR = process.env.KNOP_RECORDINGS_DIR?.trim() || "C:/Users/iimoo/Desktop/상담녹음";
+const DIR = (process.env.KOP_RECORDINGS_DIR || process.env.KNOP_RECORDINGS_DIR)?.trim() || "C:/Users/iimoo/Desktop/상담녹음";
 
 export function recordingsAvailable(): boolean {
   try {

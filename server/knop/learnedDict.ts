@@ -8,7 +8,7 @@ import { correctionRules } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 
 // correct.py 가 읽는 로컬 파일. localTranscribe 와 같은 폴더 규칙(순환 import 방지 위해 직접 계산).
-const WHISPER_DIR = process.env.KNOP_WHISPER_DIR?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot";
+const WHISPER_DIR = (process.env.KOP_WHISPER_DIR || process.env.KNOP_WHISPER_DIR)?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot";
 const LEARNED_PATH = path.join(WHISPER_DIR, "learned_corrections.json");
 
 export type CorrectionRule = {

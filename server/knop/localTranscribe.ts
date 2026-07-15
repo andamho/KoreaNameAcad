@@ -11,12 +11,12 @@ import { randomUUID } from "crypto";
 import { exportLearnedToJson } from "./learnedDict";
 
 const WHISPER_DIR =
-  process.env.KNOP_WHISPER_DIR?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot";
+  (process.env.KOP_WHISPER_DIR || process.env.KNOP_WHISPER_DIR)?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot";
 const WHISPER_PY =
-  process.env.KNOP_WHISPER_PY?.trim() || path.join(WHISPER_DIR, "venv", "Scripts", "python.exe");
-const MODEL = process.env.KNOP_WHISPER_MODEL?.trim() || "large-v3";
-const DEVICE = process.env.KNOP_WHISPER_DEVICE?.trim() || "cuda"; // GPU 기본, 실패 시 스크립트가 cpu 폴백
-const COMPUTE = process.env.KNOP_WHISPER_COMPUTE?.trim() || "float16";
+  (process.env.KOP_WHISPER_PY || process.env.KNOP_WHISPER_PY)?.trim() || path.join(WHISPER_DIR, "venv", "Scripts", "python.exe");
+const MODEL = (process.env.KOP_WHISPER_MODEL || process.env.KNOP_WHISPER_MODEL)?.trim() || "large-v3";
+const DEVICE = (process.env.KOP_WHISPER_DEVICE || process.env.KNOP_WHISPER_DEVICE)?.trim() || "cuda"; // GPU 기본, 실패 시 스크립트가 cpu 폴백
+const COMPUTE = (process.env.KOP_WHISPER_COMPUTE || process.env.KNOP_WHISPER_COMPUTE)?.trim() || "float16";
 // KNOP 전용 GPU 전사 스크립트 (원장님 영상 파이프라인 미변경). venv 파이썬으로 실행.
 const GPU_SCRIPT = fileURLToPath(new URL("./py/transcribe_gpu.py", import.meta.url));
 

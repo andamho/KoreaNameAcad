@@ -3,7 +3,7 @@
 import fs from "fs";
 import path from "path";
 
-const DIR = process.env.KNOP_REPORTS_DIR?.trim() || "C:/Users/iimoo/Documents/이름분석";
+const DIR = (process.env.KOP_REPORTS_DIR || process.env.KNOP_REPORTS_DIR)?.trim() || "C:/Users/iimoo/Documents/이름분석";
 
 export function reportsDir(): string {
   return DIR;

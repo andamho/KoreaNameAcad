@@ -20,7 +20,7 @@ import {
   type Report,
 } from "./reports";
 
-const PY = process.env.KNOP_WHISPER_PY?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot/venv/Scripts/python.exe";
+const PY = (process.env.KOP_WHISPER_PY || process.env.KNOP_WHISPER_PY)?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot/venv/Scripts/python.exe";
 const RENDER = fileURLToPath(new URL("./py/render_pdf.py", import.meta.url));
 const PREFIX = "이름분석표:";
 const store = new ObjectStorageService();

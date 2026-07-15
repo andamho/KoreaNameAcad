@@ -212,7 +212,7 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
   app.post(`${P}/sms-webhook`, async (req, res) => {
     try {
       // KOP_ 우선, 기존 KNOP_ 도 인식(환경변수 이름 바꿔도 안 끊기게)
-      const secret = process.env.KOP_SMS_WEBHOOK_SECRET || process.env.KNOP_SMS_WEBHOOK_SECRET || "";
+      const secret = (process.env.KOP_SMS_WEBHOOK_SECRET || process.env.KNOP_SMS_WEBHOOK_SECRET) || "";
       const given = String(req.headers["x-knop-secret"] || req.query.secret || "");
       if (!secret || given !== secret) return res.status(401).json({ error: "unauthorized" });
       // MacroDroid 등: JSON 본문 또는 쿼리 파라미터 어느 쪽으로 와도, 키 대소문자 무관하게 받음
@@ -237,8 +237,8 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       const row = await intakeStore.add(parsed);
       // 자동처리(옵션): KNOP_INTAKE_AUTO=1 → 스레드 분석. 실제 기록/이메일은 KNOP_INTAKE_LIVE=1 일 때만
       let auto: any = null;
-      if (process.env.KNOP_INTAKE_AUTO === "1") {
-        const live = process.env.KNOP_INTAKE_LIVE === "1";
+      if ((process.env.KOP_INTAKE_AUTO || process.env.KNOP_INTAKE_AUTO) === "1") {
+        const live = (process.env.KOP_INTAKE_LIVE || process.env.KNOP_INTAKE_LIVE) === "1";
         auto = await processThread(row.phone, { dryRun: !live, sendEmail: live, requireHighConfidence: true }).catch((e) => ({
           ok: false,
           note: "자동처리 오류: " + e?.message,
@@ -749,7 +749,7 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
   // 폰 SMS 전달 앱용 웹훅 (관리자 토큰 대신 공유 시크릿). 설정: env KNOP_INBOX_SECRET
   app.post(`${P}/inbox/ingest`, async (req: Request, res: Response) => {
     try {
-      const secret = process.env.KNOP_INBOX_SECRET?.trim();
+      const secret = (process.env.KOP_INBOX_SECRET || process.env.KNOP_INBOX_SECRET)?.trim();
       const provided = (req.headers["x-inbox-secret"] as string) || (req.query.key as string) || "";
       if (!secret || provided !== secret) return res.status(401).json({ error: "unauthorized" });
       // 전달 앱마다 필드명이 다를 수 있어 관대하게 수용

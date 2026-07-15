@@ -13,7 +13,7 @@ import {
   type ScheduledMessage,
 } from "@shared/schema";
 
-const LIVE = process.env.KNOP_SMS_LIVE === "1";
+const LIVE = (process.env.KOP_SMS_LIVE || process.env.KNOP_SMS_LIVE) === "1";
 
 function requireDb() {
   if (!db) throw new DatabaseError("DB 사용 불가", "DATABASE_UNAVAILABLE");
