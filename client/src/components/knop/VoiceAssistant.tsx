@@ -19,6 +19,7 @@ export function VoiceAssistant({
   const [on, setOn] = useState(false);
   const [status, setStatus] = useState("");
   const [heard, setHeard] = useState("");
+  const [img, setImg] = useState<{ url: string; title: string } | null>(null);
 
   const onRef = useRef(false);
   const recRef = useRef<any>(null);
@@ -43,8 +44,16 @@ export function VoiceAssistant({
     busyRef.current = true;
     setStatus("처리 중: " + t);
     try {
-      // 1) 일정/스케줄 (상담 일정, 오늘 일정, 이번 주 일정 등)
-      if (/(일정|스케줄|약속|예약|상담)/.test(t) && !/(문자|대화|메시지)/.test(t)) {
+      // 0) 달력 열기
+      if (/달력/.test(t) && !/(이름|분석표|문자|대화)/.test(t)) {
+        onNavigate("calendar");
+        setStatus("달력 열기");
+        speak("달력을 엽니다.");
+        return;
+      }
+
+      // 1) 일정/스케줄 (상담 일정, 오늘 일정, 이번 주 일정 등) → 달력 열고 읽어줌
+      if (/(일정|스케줄|약속|예약|상담)/.test(t) && !/(문자|대화|메시지|이름|분석표)/.test(t)) {
         const agenda = await knopApi.calendarAgenda();
         const todayStr = new Date().toLocaleDateString("sv-SE");
         let list = agenda;
@@ -64,7 +73,7 @@ export function VoiceAssistant({
           const endStr = end.toLocaleDateString("sv-SE");
           list = agenda.filter((e) => (e.date || "") >= todayStr && (e.date || "") <= endStr);
         }
-        onNavigate(range === "오늘" ? "today" : "calendar");
+        onNavigate("calendar");
         if (!list.length) {
           setStatus(`${range} 일정 없음`);
           speak(`${range} 일정이 없습니다.`);
@@ -81,6 +90,7 @@ export function VoiceAssistant({
 
       // 2) 고객/이름분석표/문자 — 이름 추출
       const wantMsg = /(문자|대화|메시지)/.test(t);
+      const wantReport = /(이름\s*분석표|이름분석표|분석표)/.test(t);
       const name = t
         .replace(/(이름\s*분석표|이름분석표|분석표|고객|자료|정보|파일|열어줘|열어|띄워줘|보여줘|찾아줘|알려줘|해줘|줘|좀|의|씨|님|문자|대화|메시지|내용)/g, "")
         .replace(/[^가-힣]/g, "")
@@ -94,7 +104,22 @@ export function VoiceAssistant({
           return;
         }
         onOpenCustomer(customerId);
-        if (wantMsg) {
+        if (wantReport) {
+          // 이름분석표 이미지를 실제로 열기
+          const detail = await knopApi.getCustomer(customerId);
+          const files = detail.files || [];
+          const rep =
+            files.find((f) => (f.memo || "").startsWith("이름분석표")) ||
+            files.find((f) => (f.fileType || "").startsWith("image/"));
+          if (rep) {
+            setImg({ url: rep.fileUrl, title: `${name} 이름분석표` });
+            setStatus(`${name} 이름분석표 열기`);
+            speak(`${name}님 이름분석표를 엽니다.`);
+          } else {
+            setStatus(`${name} 이름분석표 없음`);
+            speak(`${name}님 이름분석표가 없습니다.`);
+          }
+        } else if (wantMsg) {
           const msgs = await knopApi.customerMessages(customerId);
           setStatus(`${name} · 문자 ${msgs.length}건`);
           speak(`${name}님 자료를 엽니다. 주고받은 문자 ${msgs.length}건입니다.`);
@@ -197,6 +222,18 @@ export function VoiceAssistant({
   }, [on]);
 
   return (
+    <>
+      {/* 이름분석표 전체화면 보기 */}
+      {img && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/85 flex flex-col items-center justify-center p-4"
+          onClick={() => setImg(null)}
+        >
+          <div className="text-white text-sm mb-2 font-medium">{img.title} · 화면을 탭하면 닫힘</div>
+          <img src={img.url} alt={img.title} className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" />
+        </div>
+      )}
+
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2">
       {on && (
         <div className="w-[250px] rounded-xl bg-white shadow-lg border border-gray-200 px-3 py-2 text-xs">
@@ -230,5 +267,6 @@ export function VoiceAssistant({
         {on ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
       </button>
     </div>
+    </>
   );
 }
