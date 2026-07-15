@@ -58,12 +58,18 @@ function handle(res: Response, route: string, error: any) {
 }
 
 // 하루의 시작/끝 (기본 KST). 클라이언트가 ISO 범위를 넘겨주면 그걸 사용.
+// 서버가 UTC(Railway)라 "오늘"을 한국(KST=UTC+9) 기준으로 계산해야 함
+export function kstToday(): string {
+  return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+}
+
+// 해당 날짜(KST)의 00:00~23:59:59 구간을 UTC ISO로 (KST 00:00 = UTC 전날 15:00)
 function dayRange(dateISO?: string): { start: string; end: string } {
-  const base = dateISO ? new Date(dateISO) : new Date();
-  const start = new Date(base);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(base);
-  end.setHours(23, 59, 59, 999);
+  const dayStr = (dateISO || kstToday()).slice(0, 10);
+  const [y, m, d] = dayStr.split("-").map(Number);
+  const KST = 9 * 3600 * 1000;
+  const start = new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0) - KST);
+  const end = new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999) - KST);
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
@@ -679,8 +685,8 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       const date = typeof req.query.date === "string" ? req.query.date : undefined;
       const { start, end } = dayRange(date);
       const data = await knopStore.getToday(start, end);
-      // 바른이름 달력(Firebase) 일정도 합쳐서 보여줌 (KNOP DB 일정 + 달력 일정)
-      const dayStr = (date || new Date().toLocaleDateString("sv-SE")).slice(0, 10);
+      // 바른이름 달력(Firebase) 일정도 합쳐서 보여줌 (KNOP DB 일정 + 달력 일정). 날짜는 KST 기준.
+      const dayStr = (date || kstToday()).slice(0, 10);
       const fb = calendarAvailable() ? await knopStore.firebaseEventsForDate(dayStr) : [];
       const events = [...(data.events || []), ...fb].sort(
         (a: any, b: any) => new Date(a.startAt || 0).getTime() - new Date(b.startAt || 0).getTime(),
@@ -875,6 +881,38 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       res.json(call);
     } catch (e) {
       handle(res, "POST calls", e);
+    }
+  });
+
+  // 전사 재시작: 중단된(처리중) 통화 이어서 전사. body {customerId} 주면 그 고객 것만, 없으면 통화 1건.
+  app.post(`${P}/calls/:id/retranscribe`, requireAdmin, async (req, res) => {
+    try {
+      const call = await knopStore.getCall(req.params.id);
+      if (!call) return res.status(404).json({ error: "not_found" });
+      if (!call.audioFileUrl) return res.status(400).json({ error: "no_audio" });
+      await knopStore.updateCall(call.id, { status: "processing" });
+      processCallInBackground(call.id, call.audioFileUrl); // await 안 함(백그라운드 큐)
+      res.json({ ok: true, id: call.id });
+    } catch (e) {
+      handle(res, "POST retranscribe", e);
+    }
+  });
+
+  // 전사 재시작(일괄): 처리중/실패 상태로 멈춘 통화들을 큐에 다시 넣음. customerId 주면 그 고객만.
+  app.post(`${P}/calls-retranscribe-pending`, requireAdmin, async (req, res) => {
+    try {
+      const { customerId } = req.body || {};
+      const rows = customerId
+        ? await knopStore.listCalls(String(customerId))
+        : await knopStore.listAllCalls();
+      const targets = rows.filter((c) => c.audioFileUrl && (c.status === "processing" || c.status === "failed"));
+      for (const c of targets) {
+        await knopStore.updateCall(c.id, { status: "processing" });
+        processCallInBackground(c.id, c.audioFileUrl!);
+      }
+      res.json({ queued: targets.length });
+    } catch (e) {
+      handle(res, "POST calls-retranscribe-pending", e);
     }
   });
 

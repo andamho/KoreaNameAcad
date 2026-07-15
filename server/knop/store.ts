@@ -82,10 +82,15 @@ async function logTimeline(ev: InsertTimelineEvent): Promise<void> {
   }
 }
 
+// 서버가 UTC(Railway)라 고객번호의 연/월은 반드시 한국(KST=UTC+9) 기준으로 계산
+function kstYM(date: Date): { y: number; m: number } {
+  const k = new Date(date.getTime() + 9 * 3600 * 1000);
+  return { y: k.getUTCFullYear(), m: k.getUTCMonth() + 1 };
+}
+
 // 고객번호 다음 순번 계산 (그 달 몇 번째). 예: K26-0102
 async function nextCode(d: any, date: Date = new Date()): Promise<string> {
-  const y = date.getFullYear();
-  const m = date.getMonth() + 1;
+  const { y, m } = kstYM(date);
   const prefix = monthPrefix(y, m); // "K26-07"
   const rows = await d.select().from(customers).where(like(customers.customerCode, `${prefix}%`));
   return formatCode(y, m, rows.length + 1);
@@ -276,8 +281,7 @@ export const knopStore = {
       for (const c of all) {
         if (c.customerCode) continue;
         const dt = c.createdAt ? new Date(c.createdAt) : new Date();
-        const y = dt.getFullYear();
-        const m = dt.getMonth() + 1;
+        const { y, m } = kstYM(dt);
         const p = monthPrefix(y, m);
         const seq = (seqByPrefix.get(p) || 0) + 1;
         seqByPrefix.set(p, seq);
@@ -300,8 +304,7 @@ export const knopStore = {
       let updated = 0;
       for (const c of custs) {
         const dt = c.createdAt ? new Date(c.createdAt) : new Date();
-        const y = dt.getFullYear();
-        const m = dt.getMonth() + 1;
+        const { y, m } = kstYM(dt);
         const p = monthPrefix(y, m);
         const seq = (seqByPrefix.get(p) || 0) + 1;
         seqByPrefix.set(p, seq);
@@ -389,8 +392,7 @@ export const knopStore = {
     try {
       const name = family ? `${bn}가족` : bn;
       const dt = regDate || new Date();
-      const y = dt.getFullYear();
-      const m = dt.getMonth() + 1;
+      const { y, m } = kstYM(dt);
       const prefix = monthPrefix(y, m);
       const rows = await d.select().from(customers).where(like(customers.customerCode, `${prefix}%`));
       const code = formatCode(y, m, rows.length + 1);
@@ -445,8 +447,7 @@ export const knopStore = {
         }
       }
       const now = new Date();
-      const y = now.getFullYear();
-      const m = now.getMonth() + 1;
+      const { y, m } = kstYM(now);
       const prefix = monthPrefix(y, m);
       let created = 0;
       const samples: string[] = [];
@@ -459,8 +460,7 @@ export const knopStore = {
         created++;
         if (samples.length < 12) samples.push(name + (phone !== "미입력" ? ` (…${phone.slice(-4)})` : ""));
         if (!dryRun) {
-          const ry = regDate.getFullYear();
-          const rm = regDate.getMonth() + 1;
+          const { y: ry, m: rm } = kstYM(regDate);
           const rprefix = monthPrefix(ry, rm);
           const seq = (seqByPrefix.get(rprefix) || 0) + 1;
           seqByPrefix.set(rprefix, seq);
@@ -524,8 +524,7 @@ export const knopStore = {
           continue;
         }
         const dt = c.createdAt ? new Date(c.createdAt) : new Date();
-        const y = dt.getFullYear();
-        const m = dt.getMonth() + 1;
+        const { y, m } = kstYM(dt);
         const prefix = monthPrefix(y, m);
         const seq = (seqByPrefix.get(prefix) || 0) + 1;
         seqByPrefix.set(prefix, seq);
@@ -1423,6 +1422,16 @@ export const knopStore = {
       return await d.select().from(calls).where(eq(calls.customerId, customerId)).orderBy(desc(calls.createdAt));
     } catch (e) {
       fail("통화 목록", e);
+    }
+  },
+
+  // 전체 통화(전사 재시작용)
+  async listAllCalls(): Promise<Call[]> {
+    const d = requireDb();
+    try {
+      return await d.select().from(calls).orderBy(desc(calls.createdAt));
+    } catch (e) {
+      fail("전체 통화 목록", e);
     }
   },
 
