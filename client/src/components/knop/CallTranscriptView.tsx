@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Play } from "lucide-react";
+import { Play, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { knopApi, type Call } from "@/lib/knopApi";
 
@@ -24,6 +24,8 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
   const [curIdx, setCurIdx] = useState(-1);
   const [editTurn, setEditTurn] = useState<number | null>(null);
   const [editVal, setEditVal] = useState("");
+  const [query, setQuery] = useState("");
+  const [matchPos, setMatchPos] = useState(0);
 
   const words: W[] = useMemo(() => {
     try {
@@ -141,6 +143,41 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
     if (!a) return;
     a.currentTime = Math.max(0, start - 0.02);
     a.play().catch(() => {});
+  };
+
+  // ── 전사문 검색 ──
+  const matches = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [] as number[];
+    const out: number[] = [];
+    words.forEach((w, i) => {
+      if ((w.word || "").toLowerCase().includes(q)) out.push(i);
+    });
+    return out;
+  }, [query, words]);
+  const matchSet = useMemo(() => new Set(matches), [matches]);
+  const curMatch = matches.length ? matches[matchPos % matches.length] : -1;
+
+  // 검색어 바꾸면 첫 번째 결과로 자동 이동
+  useEffect(() => {
+    if (!matches.length) return;
+    const idx = matches[0];
+    const w = words[idx];
+    if (w) seekTo(w.start, idx);
+    setTimeout(() => document.getElementById(`kw-${idx}`)?.scrollIntoView({ block: "center" }), 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]);
+
+  const goMatch = (pos: number) => {
+    if (!matches.length) return;
+    const p = ((pos % matches.length) + matches.length) % matches.length;
+    setMatchPos(p);
+    const idx = matches[p];
+    const w = words[idx];
+    if (w) seekTo(w.start, idx); // 음성도 그 지점으로
+    setTimeout(() => {
+      document.getElementById(`kw-${idx}`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+    }, 0);
   };
 
   // 편집창 커서 위치 → 그 자리 단어 (앞쪽 단어 수로 계산 → 수정 중에도 따라감)
@@ -270,6 +307,60 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
         </button>
       </div>
 
+      {/* 전사문 검색 */}
+      {words.length > 0 && (
+        <div className="flex items-center gap-1.5">
+          <div className="relative flex-1">
+            <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-gray-300" />
+            <input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setMatchPos(0);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  goMatch(e.shiftKey ? matchPos - 1 : matchPos + 1);
+                } else if (e.key === "Escape") setQuery("");
+              }}
+              placeholder="전사문 검색 (Enter=다음, Shift+Enter=이전)"
+              className="w-full text-xs rounded border border-gray-200 pl-7 pr-2 py-1.5 focus:outline-none focus:border-[#56D5DB]"
+            />
+          </div>
+          {query && (
+            <>
+              <span className="text-xs text-gray-500 tabular-nums shrink-0">
+                {matches.length ? `${(matchPos % matches.length) + 1}/${matches.length}` : "0"}
+              </span>
+              <button
+                type="button"
+                onClick={() => goMatch(matchPos - 1)}
+                disabled={!matches.length}
+                className="px-1.5 py-1 rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 text-xs"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={() => goMatch(matchPos + 1)}
+                disabled={!matches.length}
+                className="px-1.5 py-1 rounded text-gray-500 hover:bg-gray-100 disabled:opacity-30 text-xs"
+              >
+                ›
+              </button>
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="px-1.5 py-1 rounded text-gray-400 hover:bg-gray-100 text-xs"
+              >
+                ✕
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
       {call.audioFileUrl && (
         <audio ref={audioRef} controls src={call.audioFileUrl} className="w-full h-9" onTimeUpdate={onTime} />
       )}
@@ -347,14 +438,23 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
                         <p key={si2} className="text-sm leading-relaxed">
                           {sent.map(({ w, i }) => {
                             const idxInTurn = turn.items.findIndex((x) => x.i === i);
+                            const isHit = matchSet.has(i);
+                            const isCur = i === curMatch;
                             return (
                               <span
                                 key={i}
+                                id={`kw-${i}`}
                                 onClick={() => seekTo(w.start, i)}
                                 onDoubleClick={() => startEdit(ti, w.start, idxInTurn)}
                                 title="클릭: 위치 이동 · 더블클릭: 이 단어부터 수정"
                                 className={`cursor-text rounded px-0.5 hover:bg-[#56D5DB]/20 ${
-                                  i === curIdx ? "bg-[#56D5DB]/50 text-gray-900" : "text-gray-700"
+                                  isCur
+                                    ? "bg-orange-400 text-white font-semibold"
+                                    : isHit
+                                      ? "bg-yellow-200 text-gray-900"
+                                      : i === curIdx
+                                        ? "bg-[#56D5DB]/50 text-gray-900"
+                                        : "text-gray-700"
                                 }`}
                               >
                                 {w.word}{" "}
