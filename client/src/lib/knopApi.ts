@@ -209,17 +209,18 @@ export const knopApi = {
     memo?: string | null;
   }) => req<Call>("POST", "/api/kop/calls", data),
   deleteCall: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/calls/${id}`),
+  // 응답은 가볍게(전사문/words 미포함) — 저장 속도용
   editCallTranscript: (
     id: string,
     transcriptText: string,
     resummarize = false,
     words?: unknown[],
   ) =>
-    req<{ call: Call; learned: { learned: { wrong: string; right: string }[]; skipped: number } }>(
-      "PATCH",
-      `/api/kop/calls/${id}`,
-      { transcriptText, resummarize, words },
-    ),
+    req<{ ok: boolean; id: string; summaryText: string | null }>("PATCH", `/api/kop/calls/${id}`, {
+      transcriptText,
+      resummarize,
+      words,
+    }),
 
   // 공유 학습 교정사전
   listCorrections: () => req<CorrectionRule[]>("GET", "/api/kop/corrections"),

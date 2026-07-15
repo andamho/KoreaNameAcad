@@ -944,8 +944,8 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
         actionItems,
         words: Array.isArray(words) ? words : undefined, // 음성연동/화자 유지용 갱신
       });
-      // 즉시 응답. 교정 학습은 응답 후 백그라운드(저장 속도에 영향 없음).
-      res.json({ call, learned: { learned: [], skipped: 0 } });
+      // 응답은 가볍게(전사문/words 수백KB를 되돌려주지 않음 → 저장 체감속도 개선)
+      res.json({ ok: true, id: req.params.id, summaryText: call?.summaryText ?? null });
       learnFromEdit(oldText, transcriptText).catch((e) =>
         console.error(`[KNOP] 학습 실패(백그라운드): ${e?.message}`),
       );

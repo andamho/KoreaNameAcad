@@ -1,6 +1,6 @@
 // 통화 전사: 화자 구분 화면 + 음성 연동(클릭=이동, 더블클릭=그 줄 바로 수정) + 편집 시 자동 학습
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Play, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +18,7 @@ const SPK = [
 
 export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () => void }) {
   const { toast } = useToast();
+  const qc = useQueryClient();
   const audioRef = useRef<HTMLAudioElement>(null);
   const editRef = useRef<HTMLTextAreaElement>(null);
   const caretRef = useRef<[number, number] | null>(null); // 더블클릭한 단어의 문자 범위
@@ -227,12 +228,23 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
   };
 
   // 저장은 즉시(요약 재생성 안 함). 학습은 서버가 백그라운드로 처리.
+  // 저장 후 고객 자료 전체(수백KB)를 다시 받지 않고 화면 캐시만 갱신 → 체감 즉시
   const editMut = useMutation({
     mutationFn: (payload: { transcript: string; words: W[] }) =>
       knopApi.editCallTranscript(call.id, payload.transcript, false, payload.words),
-    onSuccess: () => {
+    onSuccess: (_res, payload) => {
+      qc.setQueryData(["knop-customer", call.customerId], (old: any) => {
+        if (!old?.calls) return old;
+        return {
+          ...old,
+          calls: old.calls.map((c: any) =>
+            c.id === call.id
+              ? { ...c, transcriptText: payload.transcript, words: JSON.stringify(payload.words) }
+              : c,
+          ),
+        };
+      });
       setEditTurn(null);
-      onSaved();
       toast({ title: "저장됨" });
     },
     onError: (e: any) => toast({ title: "저장 실패", description: e?.message, variant: "destructive" }),
