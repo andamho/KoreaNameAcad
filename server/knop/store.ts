@@ -6,7 +6,7 @@ import { and, desc, eq, gte, lte, like } from "drizzle-orm";
 import { formatCode, monthPrefix, parseCode } from "./customerCode";
 import { parseContact } from "./smsIntake";
 import { statusRank, stageOf, statusToMilestone } from "./stateMachine";
-import { readEvents, parseNameCount } from "./calendar";
+import { readEvents, parseNameCount, eventStartAt } from "./calendar";
 import { listReports, baseName, reportDateForName } from "./reports";
 import { sql } from "drizzle-orm";
 
@@ -1160,6 +1160,51 @@ export const knopStore = {
       });
     } catch (e) {
       fail("달력 일정 조회", e);
+    }
+  },
+
+  // 특정 날짜(YYYY-MM-DD)의 바른이름 달력(Firebase) 일정 → 오늘탭 형식(고객 매칭 포함)
+  async firebaseEventsForDate(dateStr: string): Promise<any[]> {
+    const d = requireDb();
+    try {
+      const events = await readEvents();
+      const day = events.filter((e) => e.date === dateStr && e.title);
+      if (!day.length) return [];
+      const all = await d.select().from(customers);
+      const bare = (s: string) =>
+        (s || "").replace(/\(.*?\)/g, "").replace(/\s*가족\s*$/, "").replace(/^[^가-힣]+/, "").replace(/[^가-힣]+$/, "").trim();
+      const byPhone = new Map<string, string>();
+      const byName = new Map<string, string>();
+      const byKey3 = new Map<string, string>();
+      for (const c of all) {
+        if (c.normalizedPhone) byPhone.set(c.normalizedPhone, c.id);
+        const b = bare(c.name);
+        if (b && !byName.has(b)) byName.set(b, c.id);
+        if (b.length >= 2 && !byKey3.has(b.slice(0, 3))) byKey3.set(b.slice(0, 3), c.id);
+      }
+      return day.map((e, i) => {
+        let cid: string | undefined;
+        if (e.clientPhone) cid = byPhone.get(normalizePhone(e.clientPhone));
+        if (!cid) {
+          const nm = bare(parseNameCount(e.title!).name) || bare(e.title!);
+          if (nm.length >= 2) cid = byName.get(nm) || byKey3.get(nm.slice(0, 3));
+        }
+        return {
+          id: `fb_${e.id || i}`,
+          customerId: cid ?? null,
+          projectId: null,
+          title: e.title || "",
+          type: e.cat || "상담",
+          startAt: eventStartAt(e),
+          endAt: null,
+          status: "예정",
+          memo: e.memo ?? null,
+          createdAt: new Date(),
+        };
+      });
+    } catch (e: any) {
+      console.error(`[KOP] 달력 오늘일정 조회 실패: ${e?.message}`);
+      return [];
     }
   },
 

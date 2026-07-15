@@ -154,6 +154,31 @@ function getAmPm(hour: number): { ampm: string; hour24: number } {
   return { ampm: "오후", hour24: hour + 12 };
 }
 
+// 달력 이벤트의 시작 시각(제목 앞 숫자=시간, 예 "430김유진"→오후 4시 30분). 시간 없으면 오후 2시 기본.
+export function eventStartAt(evt: CalEvent): Date | null {
+  if (!evt.date) return null;
+  const [y, mo, d] = evt.date.split("-").map(Number);
+  if (!y || !mo || !d) return null;
+  let hour24 = 14;
+  let min = 0;
+  const m = (evt.title || "").match(/^(\d{1,4})/);
+  if (m) {
+    const tp = m[1];
+    let hour: number;
+    if (tp.length <= 2) {
+      hour = parseInt(tp, 10);
+      min = 0;
+    } else {
+      min = parseInt(tp.slice(-2), 10);
+      hour = parseInt(tp.slice(0, -2), 10);
+    }
+    if (hour >= 1 && hour <= 23 && min >= 0 && min < 60) hour24 = getAmPm(hour).hour24;
+    else min = 0;
+  }
+  const dt = new Date(y, mo - 1, d, hour24, min);
+  return isNaN(dt.getTime()) ? null : dt;
+}
+
 // 상담 이벤트 파싱: 제목 "시간 이름 인원" (예: "2 홍길동 3")
 export function parseConsult(evt: CalEvent): { timeStr: string; name: string; people: number; duration: number } {
   const title = evt.title || "";

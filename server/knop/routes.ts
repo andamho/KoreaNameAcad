@@ -678,7 +678,14 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     try {
       const date = typeof req.query.date === "string" ? req.query.date : undefined;
       const { start, end } = dayRange(date);
-      res.json(await knopStore.getToday(start, end));
+      const data = await knopStore.getToday(start, end);
+      // 바른이름 달력(Firebase) 일정도 합쳐서 보여줌 (KNOP DB 일정 + 달력 일정)
+      const dayStr = (date || new Date().toLocaleDateString("sv-SE")).slice(0, 10);
+      const fb = calendarAvailable() ? await knopStore.firebaseEventsForDate(dayStr) : [];
+      const events = [...(data.events || []), ...fb].sort(
+        (a: any, b: any) => new Date(a.startAt || 0).getTime() - new Date(b.startAt || 0).getTime(),
+      );
+      res.json({ ...data, events });
     } catch (e) {
       handle(res, "GET today", e);
     }
