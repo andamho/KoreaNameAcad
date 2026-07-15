@@ -28,6 +28,7 @@ import { CustomerDetailView } from "./CustomerDetail";
 import { InboxView } from "./InboxView";
 import { CorrectionsView } from "./CorrectionsView";
 import { NoticeView } from "./NoticeView";
+import { VoiceAssistant } from "./VoiceAssistant";
 import { SmsView } from "./SmsView";
 import { SmsInboxView } from "./SmsInboxView";
 import { NewCustomerDialog } from "./dialogs";
@@ -51,10 +52,6 @@ export function KnopApp() {
     );
   }
 
-  if (selectedCustomer) {
-    return <CustomerDetailView customerId={selectedCustomer} onBack={() => setSelectedCustomer(null)} />;
-  }
-
   const tabs: { key: View; label: string; icon: typeof Sun }[] = [
     { key: "today", label: "오늘", icon: Sun },
     { key: "customers", label: "고객", icon: Users },
@@ -67,9 +64,14 @@ export function KnopApp() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-1 border-b border-gray-200">
-        {tabs.map((t) => {
+    <>
+      <VoiceAssistant onOpenCustomer={setSelectedCustomer} />
+      {selectedCustomer ? (
+        <CustomerDetailView customerId={selectedCustomer} onBack={() => setSelectedCustomer(null)} />
+      ) : (
+        <div className="space-y-6">
+          <div className="flex items-center gap-1 border-b border-gray-200">
+            {tabs.map((t) => {
           const Icon = t.icon;
           const active = view === t.key;
           return (
@@ -94,9 +96,11 @@ export function KnopApp() {
       {view === "sms-inbox" && <SmsInboxView />}
       {view === "sms" && <SmsView />}
       {view === "notice" && <NoticeView />}
-      {view === "calendar" && <CalendarView onOpenCustomer={setSelectedCustomer} />}
-      {view === "corrections" && <CorrectionsView />}
-    </div>
+          {view === "calendar" && <CalendarView onOpenCustomer={setSelectedCustomer} />}
+          {view === "corrections" && <CorrectionsView />}
+        </div>
+      )}
+    </>
   );
 }
 
