@@ -65,7 +65,13 @@ export function KnopApp() {
 
   return (
     <>
-      <VoiceAssistant onOpenCustomer={setSelectedCustomer} />
+      <VoiceAssistant
+        onOpenCustomer={setSelectedCustomer}
+        onNavigate={(v) => {
+          setSelectedCustomer(null);
+          setView(v as View);
+        }}
+      />
       {selectedCustomer ? (
         <CustomerDetailView customerId={selectedCustomer} onBack={() => setSelectedCustomer(null)} />
       ) : (

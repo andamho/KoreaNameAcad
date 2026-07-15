@@ -8,7 +8,13 @@ import { knopApi } from "@/lib/knopApi";
 // 웨이크워드(발음 오인식 대비 여러 변형)
 const WAKE = /(헤이\s*)?(뉴미|누미|유미|늇미|뉴 미|new me|newme)/i;
 
-export function VoiceAssistant({ onOpenCustomer }: { onOpenCustomer: (id: string) => void }) {
+export function VoiceAssistant({
+  onOpenCustomer,
+  onNavigate,
+}: {
+  onOpenCustomer: (id: string) => void;
+  onNavigate: (view: string) => void;
+}) {
   const { toast } = useToast();
   const [on, setOn] = useState(false);
   const [status, setStatus] = useState("");
@@ -44,23 +50,43 @@ export function VoiceAssistant({ onOpenCustomer }: { onOpenCustomer: (id: string
     if (busyRef.current) return;
     busyRef.current = true;
     try {
-      // 오늘 일정
-      if (/오늘/.test(t) && /(일정|스케|뭐|약속|예약|있)/.test(t)) {
+      // 1) 일정/스케줄 (상담 일정, 오늘 일정, 이번 주 일정 등)
+      if (/(일정|스케줄|약속|예약|상담)/.test(t) && !/(문자|대화|메시지)/.test(t)) {
         const agenda = await knopApi.calendarAgenda();
-        const today = new Date().toLocaleDateString("sv-SE");
-        const list = agenda.filter((e) => (e.date || "") === today);
-        if (!list.length) {
-          setStatus("오늘 일정 없음");
-          speak("오늘 일정이 없습니다.");
+        const todayStr = new Date().toLocaleDateString("sv-SE");
+        let list = agenda;
+        let range = "다가오는";
+        if (/오늘/.test(t)) {
+          list = agenda.filter((e) => (e.date || "") === todayStr);
+          range = "오늘";
+        } else if (/이번\s*주|주간|이번주/.test(t)) {
+          const end = new Date();
+          end.setDate(end.getDate() + 7);
+          const endStr = end.toLocaleDateString("sv-SE");
+          list = agenda.filter((e) => (e.date || "") >= todayStr && (e.date || "") <= endStr);
+          range = "이번 주";
         } else {
-          const names = list.map((e) => e.title).slice(0, 12).join(", ");
-          setStatus(`오늘 일정 ${list.length}건`);
-          speak(`오늘 일정 ${list.length}건입니다. ${names}`);
+          const end = new Date();
+          end.setDate(end.getDate() + 14);
+          const endStr = end.toLocaleDateString("sv-SE");
+          list = agenda.filter((e) => (e.date || "") >= todayStr && (e.date || "") <= endStr);
         }
+        onNavigate(range === "오늘" ? "today" : "calendar");
+        if (!list.length) {
+          setStatus(`${range} 일정 없음`);
+          speak(`${range} 일정이 없습니다.`);
+          return;
+        }
+        const top = list
+          .slice(0, 8)
+          .map((e) => `${(e.date || "").slice(5).replace("-", "월 ")}일 ${e.title}`)
+          .join(", ");
+        setStatus(`${range} 일정 ${list.length}건`);
+        speak(`${range} 일정 ${list.length}건입니다. ${top}`);
         return;
       }
 
-      // 이름 추출: 명령/조사 단어 제거 후 남는 한글
+      // 2) 고객/이름분석표/문자 — 이름 추출
       const wantMsg = /(문자|대화|메시지)/.test(t);
       const name = t
         .replace(/(이름\s*분석표|이름분석표|분석표|고객|자료|정보|파일|열어줘|열어|띄워줘|보여줘|찾아줘|알려줘|해줘|줘|좀|의|씨|님|문자|대화|메시지|내용)/g, "")
