@@ -24,6 +24,16 @@ export function VoiceAssistant({
   const onRef = useRef(false);
   const recRef = useRef<any>(null);
   const busyRef = useRef(false);
+  const idleTimer = useRef<any>(null);
+
+  // 10분 무음 시 자동 마이크 끄기 (말할 때마다 리셋)
+  const resetIdle = () => {
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    idleTimer.current = setTimeout(() => {
+      speak("10분간 말씀이 없어 마이크를 끕니다.");
+      setOn(false);
+    }, 10 * 60 * 1000);
+  };
 
   const speak = (text: string) => {
     try {
@@ -144,6 +154,14 @@ export function VoiceAssistant({
     const t = transcript.trim();
     if (!t) return;
     setHeard(t);
+    resetIdle(); // 말을 들었으니 무음 타이머 리셋
+    // 마이크 끄기 / 음소거 명령
+    if (/음소거/.test(t) || (/(마이크|비서|뉴미)/.test(t) && /(꺼|끄|off|종료|그만|중지|닫)/.test(t))) {
+      setStatus("마이크 끔");
+      speak("네, 마이크를 끕니다.");
+      setTimeout(() => setOn(false), 600);
+      return;
+    }
     // 호출어(헤이 뉴미)는 있어도 되고 없어도 됨. 있으면 떼어냄.
     const cmd = t.replace(WAKE, "").trim();
     // 호출어만 말한 경우 → "네 주인님"
@@ -164,6 +182,7 @@ export function VoiceAssistant({
   useEffect(() => {
     onRef.current = on;
     if (!on) {
+      if (idleTimer.current) clearTimeout(idleTimer.current);
       try {
         recRef.current?.stop?.();
       } catch {
@@ -207,6 +226,7 @@ export function VoiceAssistant({
       rec.start();
       setStatus("대기 중 · 예: \"오늘 일정\", \"홍길동 열어줘\"");
       speak("음성 명령을 시작합니다. 바로 말씀하세요.");
+      resetIdle();
     } catch {
       /* noop */
     }
