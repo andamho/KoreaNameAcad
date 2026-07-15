@@ -41,6 +41,7 @@ export function VoiceAssistant({
     if (!t) return;
     if (busyRef.current) return;
     busyRef.current = true;
+    setStatus("처리 중: " + t);
     try {
       // 1) 일정/스케줄 (상담 일정, 오늘 일정, 이번 주 일정 등)
       if (/(일정|스케줄|약속|예약|상담)/.test(t) && !/(문자|대화|메시지)/.test(t)) {
@@ -197,11 +198,26 @@ export function VoiceAssistant({
 
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2">
-      {on && status && (
-        <div className="max-w-[240px] rounded-xl bg-white shadow-lg border border-gray-200 px-3 py-2 text-xs">
+      {on && (
+        <div className="w-[250px] rounded-xl bg-white shadow-lg border border-gray-200 px-3 py-2 text-xs">
           <div className="font-semibold text-[#3fc4ca]">🎤 뉴미</div>
-          <div className="text-gray-700 mt-0.5">{status}</div>
+          <div className="text-gray-700 mt-0.5">{status || "대기 중"}</div>
           {heard && <div className="text-gray-400 mt-0.5 truncate">들은 말: {heard}</div>}
+          {/* 글자로 명령 테스트(음성 안 될 때) */}
+          <input
+            placeholder="명령 입력 후 Enter (예: 오늘 일정)"
+            className="mt-2 w-full text-xs rounded border border-gray-200 px-2 py-1 focus:outline-none focus:border-[#56D5DB]"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const v = (e.target as HTMLInputElement).value.trim();
+                if (v) {
+                  setHeard(v);
+                  runCommand(v);
+                  (e.target as HTMLInputElement).value = "";
+                }
+              }
+            }}
+          />
         </div>
       )}
       <button
