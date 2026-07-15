@@ -211,7 +211,8 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
   // 앱 payload: { contactName?, phone, body, direction?, receivedAt? } + 헤더 x-knop-secret 또는 ?secret=
   app.post(`${P}/sms-webhook`, async (req, res) => {
     try {
-      const secret = process.env.KNOP_SMS_WEBHOOK_SECRET || "";
+      // KOP_ 우선, 기존 KNOP_ 도 인식(환경변수 이름 바꿔도 안 끊기게)
+      const secret = process.env.KOP_SMS_WEBHOOK_SECRET || process.env.KNOP_SMS_WEBHOOK_SECRET || "";
       const given = String(req.headers["x-knop-secret"] || req.query.secret || "");
       if (!secret || given !== secret) return res.status(401).json({ error: "unauthorized" });
       // MacroDroid 등: JSON 본문 또는 쿼리 파라미터 어느 쪽으로 와도, 키 대소문자 무관하게 받음
