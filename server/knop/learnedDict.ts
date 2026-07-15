@@ -6,6 +6,17 @@ import path from "path";
 import { db } from "../db";
 import { correctionRules } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
+import { FORTUNE_TERMS } from "./fortuneTerms";
+
+// 학습 금지: 이 말들은 "틀린말"로 배우면 안 됨(문맥상 고친 걸 전체 규칙으로 오해하는 것 방지)
+// 1) 주역/수리 정식 용어(FORTUNE_TERMS) 2) 아래 흔한 일반어
+const COMMON_STOP = new Set([
+  "오늘","내일","어제","지금","이제","그냥","정말","진짜","조금","그런","이런","저런","우리","제가","그게","이게",
+  "사람","이름","생각","이야기","말씀","선생","경우","때문","그거","여기","거기","저기","하나","둘째","자기","자녀",
+]);
+function blockedAsWrong(w: string): boolean {
+  return FORTUNE_TERMS.has(w) || COMMON_STOP.has(w);
+}
 
 // correct.py 가 읽는 로컬 파일. localTranscribe 와 같은 폴더 규칙(순환 import 방지 위해 직접 계산).
 const WHISPER_DIR = (process.env.KOP_WHISPER_DIR || process.env.KNOP_WHISPER_DIR)?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot";
@@ -233,6 +244,8 @@ export async function learnFromEdit(oldText: string, newText: string): Promise<L
     if (wrong.length < 2 || !hasHangul(wrong)) { result.skipped++; continue; } // 너무 짧으면 위험
     if (/^\d+$/.test(wrong) || /^\d+$/.test(right)) { result.skipped++; continue; }
     if (phonSim(wrong, right) < 0.4) { result.skipped++; continue; } // 발음 안 비슷하면 오타 아님(재작성)
+    // 정식 주역/수리 용어나 흔한 일반어를 "틀린말"로 배우면 다른 문맥을 망가뜨림 → 학습 금지
+    if (blockedAsWrong(wrong)) { result.skipped++; continue; }
 
     await upsertRule(wrong, right, "learned");
     changed = true;
