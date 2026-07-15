@@ -212,6 +212,14 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // URL 별칭: /api/kop/* → 내부적으로 /api/knop/* 로 처리 (둘 다 작동, 기존 웹훅 안 끊김)
+  app.use((req, _res, next) => {
+    if (req.url.startsWith("/api/kop/")) {
+      req.url = "/api/knop/" + req.url.slice("/api/kop/".length);
+    }
+    next();
+  });
+
   // 부팅 시 정리: heartbeat가 끊긴(또는 없는) running 진단 = 이전에 죽은 인스턴스의 잔여 → abandoned.
   // heartbeat 신선도로 거르므로 다른 살아있는 replica의 진행중 행은 건드리지 않는다(다중 인스턴스 안전).
   if (db) {

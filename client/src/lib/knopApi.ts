@@ -131,21 +131,21 @@ async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
 export const knopApi = {
   // Customers
   listCustomers: (q?: string) =>
-    req<Customer[]>("GET", `/api/knop/customers${q ? `?q=${encodeURIComponent(q)}` : ""}`),
-  getCustomer: (id: string) => req<CustomerDetail>("GET", `/api/knop/customers/${id}`),
+    req<Customer[]>("GET", `/api/kop/customers${q ? `?q=${encodeURIComponent(q)}` : ""}`),
+  getCustomer: (id: string) => req<CustomerDetail>("GET", `/api/kop/customers/${id}`),
   createCustomer: (data: {
     name: string;
     phone: string;
     email?: string | null;
     memo?: string | null;
     tags?: string[];
-  }) => req<Customer>("POST", "/api/knop/customers", data),
+  }) => req<Customer>("POST", "/api/kop/customers", data),
   updateCustomer: (id: string, data: Record<string, unknown>) =>
-    req<Customer>("PATCH", `/api/knop/customers/${id}`, data),
-  deleteCustomer: (id: string) => req<{ ok: boolean }>("DELETE", `/api/knop/customers/${id}`), // 휴지통으로
-  listTrash: () => req<Customer[]>("GET", "/api/knop/customers-trash"),
-  restoreCustomer: (id: string) => req<{ ok: boolean }>("POST", `/api/knop/customers/${id}/restore`),
-  permanentDeleteCustomer: (id: string) => req<{ ok: boolean }>("DELETE", `/api/knop/customers/${id}/permanent`),
+    req<Customer>("PATCH", `/api/kop/customers/${id}`, data),
+  deleteCustomer: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/customers/${id}`), // 휴지통으로
+  listTrash: () => req<Customer[]>("GET", "/api/kop/customers-trash"),
+  restoreCustomer: (id: string) => req<{ ok: boolean }>("POST", `/api/kop/customers/${id}/restore`),
+  permanentDeleteCustomer: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/customers/${id}/permanent`),
 
   // Projects
   createProject: (data: {
@@ -157,15 +157,15 @@ export const knopApi = {
     consultDate?: string | null;
     nextActionDate?: string | null;
     memo?: string | null;
-  }) => req<Project>("POST", "/api/knop/projects", data),
+  }) => req<Project>("POST", "/api/kop/projects", data),
   updateProject: (id: string, data: Record<string, unknown>) =>
-    req<Project>("PATCH", `/api/knop/projects/${id}`, data),
-  deleteProject: (id: string) => req<{ ok: boolean }>("DELETE", `/api/knop/projects/${id}`),
+    req<Project>("PATCH", `/api/kop/projects/${id}`, data),
+  deleteProject: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/projects/${id}`),
 
   // Timeline
   addNote: (data: { customerId: string; projectId?: string | null; title: string; content?: string }) =>
-    req<TimelineEvent>("POST", "/api/knop/timeline", { type: "note", ...data }),
-  deleteTimeline: (id: string) => req<{ ok: boolean }>("DELETE", `/api/knop/timeline/${id}`),
+    req<TimelineEvent>("POST", "/api/kop/timeline", { type: "note", ...data }),
+  deleteTimeline: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/timeline/${id}`),
 
   // Files
   addFile: (data: {
@@ -175,14 +175,14 @@ export const knopApi = {
     fileType?: string | null;
     fileUrl: string;
     memo?: string | null;
-  }) => req<CrmFile>("POST", "/api/knop/files", data),
-  deleteFile: (id: string) => req<{ ok: boolean }>("DELETE", `/api/knop/files/${id}`),
+  }) => req<CrmFile>("POST", "/api/kop/files", data),
+  deleteFile: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/files/${id}`),
 
   // Calendar
   listCalendar: (startISO: string, endISO: string) =>
     req<CalendarEvent[]>(
       "GET",
-      `/api/knop/calendar?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`,
+      `/api/kop/calendar?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`,
     ),
   createEvent: (data: {
     customerId?: string | null;
@@ -193,10 +193,10 @@ export const knopApi = {
     endAt?: string | null;
     status?: string;
     memo?: string | null;
-  }) => req<CalendarEvent>("POST", "/api/knop/calendar", data),
+  }) => req<CalendarEvent>("POST", "/api/kop/calendar", data),
   updateEvent: (id: string, data: Record<string, unknown>) =>
-    req<CalendarEvent>("PATCH", `/api/knop/calendar/${id}`, data),
-  deleteEvent: (id: string) => req<{ ok: boolean }>("DELETE", `/api/knop/calendar/${id}`),
+    req<CalendarEvent>("PATCH", `/api/kop/calendar/${id}`, data),
+  deleteEvent: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/calendar/${id}`),
 
   // Calls (통화 녹음)
   createCall: (data: {
@@ -207,8 +207,8 @@ export const knopApi = {
     direction?: string;
     callDate?: string | null;
     memo?: string | null;
-  }) => req<Call>("POST", "/api/knop/calls", data),
-  deleteCall: (id: string) => req<{ ok: boolean }>("DELETE", `/api/knop/calls/${id}`),
+  }) => req<Call>("POST", "/api/kop/calls", data),
+  deleteCall: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/calls/${id}`),
   editCallTranscript: (
     id: string,
     transcriptText: string,
@@ -217,42 +217,42 @@ export const knopApi = {
   ) =>
     req<{ call: Call; learned: { learned: { wrong: string; right: string }[]; skipped: number } }>(
       "PATCH",
-      `/api/knop/calls/${id}`,
+      `/api/kop/calls/${id}`,
       { transcriptText, resummarize, words },
     ),
 
   // 공유 학습 교정사전
-  listCorrections: () => req<CorrectionRule[]>("GET", "/api/knop/corrections"),
-  analyzeCorrections: () => req<CorrectionAnalysis>("GET", "/api/knop/corrections/analysis"),
+  listCorrections: () => req<CorrectionRule[]>("GET", "/api/kop/corrections"),
+  analyzeCorrections: () => req<CorrectionAnalysis>("GET", "/api/kop/corrections/analysis"),
   addCorrection: (wrong: string, right: string) =>
-    req<CorrectionRule[]>("POST", "/api/knop/corrections", { wrong, right }),
+    req<CorrectionRule[]>("POST", "/api/kop/corrections", { wrong, right }),
   toggleCorrection: (wrong: string, enabled: boolean) =>
-    req<{ ok: boolean }>("PATCH", "/api/knop/corrections", { wrong, enabled }),
+    req<{ ok: boolean }>("PATCH", "/api/kop/corrections", { wrong, enabled }),
   deleteCorrection: (wrong: string) =>
-    req<{ ok: boolean }>("DELETE", `/api/knop/corrections?wrong=${encodeURIComponent(wrong)}`),
+    req<{ ok: boolean }>("DELETE", `/api/kop/corrections?wrong=${encodeURIComponent(wrong)}`),
 
   // AI Inbox (결제 문자)
   submitInbox: (rawText: string, sender?: string) =>
-    req<AiInbox>("POST", "/api/knop/inbox", { rawText, sender, source: "manual" }),
+    req<AiInbox>("POST", "/api/kop/inbox", { rawText, sender, source: "manual" }),
   listInbox: (status = "pending") =>
-    req<AiInbox[]>("GET", `/api/knop/inbox?status=${encodeURIComponent(status)}`),
+    req<AiInbox[]>("GET", `/api/kop/inbox?status=${encodeURIComponent(status)}`),
   approveInbox: (id: string, customerId: string, projectId: string, paymentLabel: string) =>
-    req<{ inbox: AiInbox; project: Project }>("POST", `/api/knop/inbox/${id}/approve`, {
+    req<{ inbox: AiInbox; project: Project }>("POST", `/api/kop/inbox/${id}/approve`, {
       customerId,
       projectId,
       paymentLabel,
     }),
-  dismissInbox: (id: string) => req<{ ok: boolean }>("POST", `/api/knop/inbox/${id}/dismiss`),
+  dismissInbox: (id: string) => req<{ ok: boolean }>("POST", `/api/kop/inbox/${id}/dismiss`),
 
   // 문자 자동화
-  listSmsTemplates: () => req<SmsTemplate[]>("GET", "/api/knop/sms/templates"),
+  listSmsTemplates: () => req<SmsTemplate[]>("GET", "/api/kop/sms/templates"),
   createSmsTemplate: (name: string, category: string, content: string) =>
-    req<SmsTemplate>("POST", "/api/knop/sms/templates", { name, category, content }),
+    req<SmsTemplate>("POST", "/api/kop/sms/templates", { name, category, content }),
   updateSmsTemplate: (id: string, data: Partial<{ name: string; category: string; content: string }>) =>
-    req<SmsTemplate>("PATCH", `/api/knop/sms/templates/${id}`, data),
-  deleteSmsTemplate: (id: string) => req<{ ok: boolean }>("DELETE", `/api/knop/sms/templates/${id}`),
+    req<SmsTemplate>("PATCH", `/api/kop/sms/templates/${id}`, data),
+  deleteSmsTemplate: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/sms/templates/${id}`),
   listSmsMessages: (status?: string) =>
-    req<ScheduledMessage[]>("GET", `/api/knop/sms/messages${status ? `?status=${status}` : ""}`),
+    req<ScheduledMessage[]>("GET", `/api/kop/sms/messages${status ? `?status=${status}` : ""}`),
   createSmsMessage: (data: {
     customerId?: string | null;
     projectId?: string | null;
@@ -260,109 +260,109 @@ export const knopApi = {
     content: string;
     templateId?: string | null;
     scheduledAt?: string | null;
-  }) => req<ScheduledMessage>("POST", "/api/knop/sms/messages", data),
-  cancelSmsMessage: (id: string) => req<{ ok: boolean }>("POST", `/api/knop/sms/messages/${id}/cancel`),
+  }) => req<ScheduledMessage>("POST", "/api/kop/sms/messages", data),
+  cancelSmsMessage: (id: string) => req<{ ok: boolean }>("POST", `/api/kop/sms/messages/${id}/cancel`),
 
   // 이름분석표 PDF 연계
   reportsForName: (name: string) =>
     req<{ available: boolean; reports: Array<{ file: string; name: string; label: string }> }>(
       "GET",
-      `/api/knop/reports?name=${encodeURIComponent(name)}`,
+      `/api/kop/reports?name=${encodeURIComponent(name)}`,
     ),
   reportFileUrl: (file: string) => {
     const token = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
-    return `/api/knop/reports/file?name=${encodeURIComponent(file)}&token=${encodeURIComponent(token)}`;
+    return `/api/kop/reports/file?name=${encodeURIComponent(file)}&token=${encodeURIComponent(token)}`;
   },
 
   // 상담녹음 폴더 자동 연결 + 전사
   listRecordings: (customerId: string) =>
     req<{ available: boolean; recordings: Array<{ file: string; label: string; attached: boolean }> }>(
       "GET",
-      `/api/knop/recordings?customerId=${encodeURIComponent(customerId)}`,
+      `/api/kop/recordings?customerId=${encodeURIComponent(customerId)}`,
     ),
   attachRecordings: (customerId: string) =>
-    req<{ matched: number; attached: number }>("POST", "/api/knop/recordings/attach", { customerId }),
-  attachAllRecordings: () => req<{ attached: number; customers: number }>("POST", "/api/knop/recordings/attach-all"),
+    req<{ matched: number; attached: number }>("POST", "/api/kop/recordings/attach", { customerId }),
+  attachAllRecordings: () => req<{ attached: number; customers: number }>("POST", "/api/kop/recordings/attach-all"),
 
   // 파이프라인 보드
-  customerBoard: () => req<BoardCustomer[]>("GET", "/api/knop/customers/board"),
-  ensureCases: () => req<{ created: number }>("POST", "/api/knop/customers/ensure-cases"),
+  customerBoard: () => req<BoardCustomer[]>("GET", "/api/kop/customers/board"),
+  ensureCases: () => req<{ created: number }>("POST", "/api/kop/customers/ensure-cases"),
 
   // 여정 상태기계
   listJourney: () =>
     req<Array<{ rank: number; status: string; followup: { template: string; days: number } | null }>>(
       "GET",
-      "/api/knop/journey",
+      "/api/kop/journey",
     ),
   advanceStatus: (projectId: string, toStatus: string, force = false) =>
     req<{
       project: Project;
       nextFollowup: { template: string; days: number } | null;
       next: { status: string } | null;
-    }>("POST", `/api/knop/projects/${projectId}/advance`, { toStatus, force }),
+    }>("POST", `/api/kop/projects/${projectId}/advance`, { toStatus, force }),
 
   // 문자 수신 → 달력 자동등록 (스레드 목록/조회/처리/확인)
-  listSmsThreads: () => req<SmsThread[]>("GET", "/api/knop/sms-threads"),
+  listSmsThreads: () => req<SmsThread[]>("GET", "/api/kop/sms-threads"),
   getSmsThread: (phone: string) =>
-    req<IncomingSmsMsg[]>("GET", `/api/knop/sms-threads/${encodeURIComponent(phone)}`),
+    req<IncomingSmsMsg[]>("GET", `/api/kop/sms-threads/${encodeURIComponent(phone)}`),
   processSmsThread: (phone: string, opts: { dryRun: boolean; sendEmail: boolean }) =>
-    req<ThreadProcessResult>("POST", `/api/knop/sms-threads/${encodeURIComponent(phone)}/process`, opts),
+    req<ThreadProcessResult>("POST", `/api/kop/sms-threads/${encodeURIComponent(phone)}/process`, opts),
   confirmSmsThread: (
     phone: string,
     data: { customerId: string; setPhone: boolean; dryRun: boolean; sendEmail: boolean },
-  ) => req<ThreadProcessResult>("POST", `/api/knop/sms-threads/${encodeURIComponent(phone)}/confirm`, data),
+  ) => req<ThreadProcessResult>("POST", `/api/kop/sms-threads/${encodeURIComponent(phone)}/confirm`, data),
 
   // Dashboard / convert
   today: (dateISO?: string) =>
-    req<TodayData>("GET", `/api/knop/today${dateISO ? `?date=${encodeURIComponent(dateISO)}` : ""}`),
+    req<TodayData>("GET", `/api/kop/today${dateISO ? `?date=${encodeURIComponent(dateISO)}` : ""}`),
   convertConsultation: (consultationId: string) =>
     req<{ customer: Customer; project: Project }>(
       "POST",
-      `/api/knop/convert-consultation/${consultationId}`,
+      `/api/kop/convert-consultation/${consultationId}`,
     ),
 
   // 개명 자동관리 2세트 (미용감사 / 정화하기)
-  getNotice: (setKey: string) => req<NoticeConfig>("GET", `/api/knop/notice/${setKey}`),
+  getNotice: (setKey: string) => req<NoticeConfig>("GET", `/api/kop/notice/${setKey}`),
   updateNoticeStep: (id: string, data: { name?: string; body?: string; offsetDays?: number }) =>
-    req<NoticeStep>("PATCH", `/api/knop/notice/step/${id}`, data),
+    req<NoticeStep>("PATCH", `/api/kop/notice/step/${id}`, data),
   addNoticeImage: (setKey: string, data: { title: string; base64: string; contentType: string }) =>
-    req<NoticeAsset>("POST", `/api/knop/notice/${setKey}/image`, data),
+    req<NoticeAsset>("POST", `/api/kop/notice/${setKey}/image`, data),
   addNoticeVideo: (setKey: string, data: { title: string; url: string }) =>
-    req<NoticeAsset>("POST", `/api/knop/notice/${setKey}/video`, data),
+    req<NoticeAsset>("POST", `/api/kop/notice/${setKey}/video`, data),
   addNoticeAssetFile: (setKey: string, data: { title: string; objectPath: string; kind: "image" | "video" }) =>
-    req<NoticeAsset>("POST", `/api/knop/notice/${setKey}/asset-file`, data),
-  deleteNoticeAsset: (id: string) => req<{ ok: boolean }>("DELETE", `/api/knop/notice/asset/${id}`),
+    req<NoticeAsset>("POST", `/api/kop/notice/${setKey}/asset-file`, data),
+  deleteNoticeAsset: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/notice/asset/${id}`),
   previewNotice: (setKey: string, name?: string) =>
-    req<NoticePreview[]>("GET", `/api/knop/notice/${setKey}/preview${name ? `?name=${encodeURIComponent(name)}` : ""}`),
+    req<NoticePreview[]>("GET", `/api/kop/notice/${setKey}/preview${name ? `?name=${encodeURIComponent(name)}` : ""}`),
   testNotice: (setKey: string, data: { phone: string; step?: number; name?: string }) =>
-    req<{ content: string }>("POST", `/api/knop/notice/${setKey}/test`, data),
+    req<{ content: string }>("POST", `/api/kop/notice/${setKey}/test`, data),
   startSequence: (customerId: string, setKey: string) =>
     req<{ ok: boolean; scheduled: number; reason?: string; dates: string[] }>(
       "POST",
-      `/api/knop/customers/${customerId}/start-sequence`,
+      `/api/kop/customers/${customerId}/start-sequence`,
       { setKey },
     ),
   getSequences: (customerId: string) =>
-    req<Record<string, string>>("GET", `/api/knop/customers/${customerId}/sequences`),
+    req<Record<string, string>>("GET", `/api/kop/customers/${customerId}/sequences`),
   customerMessages: (customerId: string) =>
-    req<CustomerMessage[]>("GET", `/api/knop/customers/${customerId}/messages`),
-  calendarAgenda: () => req<CalendarAgendaItem[]>("GET", "/api/knop/calendar/agenda"),
+    req<CustomerMessage[]>("GET", `/api/kop/customers/${customerId}/messages`),
+  calendarAgenda: () => req<CalendarAgendaItem[]>("GET", "/api/kop/calendar/agenda"),
   resolveCustomer: (phone: string, name: string) =>
     req<{ customerId: string | null }>(
       "GET",
-      `/api/knop/customers-resolve?phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}`,
+      `/api/kop/customers-resolve?phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}`,
     ),
-  hongikCustomerIds: () => req<string[]>("GET", "/api/knop/customers-hongik"),
+  hongikCustomerIds: () => req<string[]>("GET", "/api/kop/customers-hongik"),
 
   // 개명의뢰 확인 대기 (최종점검)
-  listNoticePending: () => req<NoticePending[]>("GET", "/api/knop/notice-pending"),
+  listNoticePending: () => req<NoticePending[]>("GET", "/api/kop/notice-pending"),
   confirmNoticePending: (id: string, nameDate?: string) =>
     req<{ ok: boolean; scheduled: number; reason?: string; dates: string[]; calendar?: { date: string; title: string } }>(
       "POST",
-      `/api/knop/notice-pending/${id}/confirm`,
+      `/api/kop/notice-pending/${id}/confirm`,
       { nameDate },
     ),
-  cancelNoticePending: (id: string) => req<{ ok: boolean }>("POST", `/api/knop/notice-pending/${id}/cancel`),
+  cancelNoticePending: (id: string) => req<{ ok: boolean }>("POST", `/api/kop/notice-pending/${id}/cancel`),
 };
 
 export type CalendarAgendaItem = {
