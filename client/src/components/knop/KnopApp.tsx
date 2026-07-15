@@ -443,15 +443,13 @@ function CalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void
       </div>
 
       <Card className="overflow-hidden p-0">
-        <div className="mx-auto w-full max-w-[460px]">
-          <iframe
-            src={CALENDAR_URL}
-            title="바른이름 달력"
-            className="block w-full border-0"
-            style={{ height: "calc(100vh - 210px)", minHeight: 560 }}
-            allow="clipboard-read; clipboard-write"
-          />
-        </div>
+        <iframe
+          src={CALENDAR_URL}
+          title="바른이름 달력"
+          className="block w-full border-0"
+          style={{ height: "calc(100vh - 210px)", minHeight: 560 }}
+          allow="clipboard-read; clipboard-write"
+        />
       </Card>
     </div>
   );
