@@ -21,8 +21,6 @@ export function VoiceAssistant({
   const [heard, setHeard] = useState("");
 
   const onRef = useRef(false);
-  const awaitingRef = useRef(false); // 웨이크워드 후 명령 대기 상태
-  const awaitTimer = useRef<any>(null);
   const recRef = useRef<any>(null);
   const busyRef = useRef(false);
 
@@ -36,12 +34,6 @@ export function VoiceAssistant({
     } catch {
       /* noop */
     }
-  };
-
-  const setAwaiting = (v: boolean) => {
-    awaitingRef.current = v;
-    if (awaitTimer.current) clearTimeout(awaitTimer.current);
-    if (v) awaitTimer.current = setTimeout(() => (awaitingRef.current = false), 9000);
   };
 
   const runCommand = async (raw: string) => {
@@ -126,19 +118,20 @@ export function VoiceAssistant({
     const t = transcript.trim();
     if (!t) return;
     setHeard(t);
-    if (WAKE.test(t)) {
-      const cmd = t.replace(WAKE, "").trim();
-      if (cmd) {
-        setAwaiting(false);
-        runCommand(cmd);
-      } else {
-        setAwaiting(true);
-        setStatus("네, 주인님 · 명령을 말하세요");
-        speak("네, 주인님");
-      }
-    } else if (awaitingRef.current) {
-      setAwaiting(false);
-      runCommand(t);
+    // 호출어(헤이 뉴미)는 있어도 되고 없어도 됨. 있으면 떼어냄.
+    const cmd = t.replace(WAKE, "").trim();
+    // 호출어만 말한 경우 → "네 주인님"
+    if (WAKE.test(t) && !cmd) {
+      setStatus("네, 주인님 · 명령을 말하세요");
+      speak("네, 주인님");
+      return;
+    }
+    const c = cmd || t;
+    // 명령처럼 보일 때만 실행(주변 대화로 오작동 방지)
+    if (/(일정|스케줄|예약|약속|상담)/.test(c) || /(열어|열|보여|띄워|찾아|분석표|자료|정보|고객|문자|대화|메시지)/.test(c)) {
+      runCommand(c);
+    } else {
+      setStatus("대기 중 · 예: \"오늘 일정\", \"홍길동 열어줘\"");
     }
   };
 
@@ -186,8 +179,8 @@ export function VoiceAssistant({
     recRef.current = rec;
     try {
       rec.start();
-      setStatus("대기 중 · \"헤이 뉴미\"라고 불러주세요");
-      speak("음성 명령을 시작합니다. 헤이 뉴미, 라고 불러주세요.");
+      setStatus("대기 중 · 예: \"오늘 일정\", \"홍길동 열어줘\"");
+      speak("음성 명령을 시작합니다. 바로 말씀하세요.");
     } catch {
       /* noop */
     }
