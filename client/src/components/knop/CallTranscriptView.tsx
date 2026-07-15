@@ -143,6 +143,28 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
     a.play().catch(() => {});
   };
 
+  // 편집창 커서 위치 → 그 자리 단어 (앞쪽 단어 수로 계산 → 수정 중에도 따라감)
+  const itemAtCaret = () => {
+    const el = editRef.current;
+    if (el === null || editTurn === null) return null;
+    const pos = el.selectionStart ?? 0;
+    const idx = el.value.slice(0, pos).split(/\s+/).filter(Boolean).length - 1;
+    const items = turns[editTurn].items;
+    if (!items.length) return null;
+    return items[Math.min(Math.max(0, idx), items.length - 1)];
+  };
+  // 커서 옮기면 음성 위치도 그 자리로(재생은 안 함)
+  const seekToCaret = () => {
+    const it = itemAtCaret();
+    if (it) seekTo(it.w.start, it.i);
+  };
+  // 커서 위치부터 재생
+  const playFromCaret = () => {
+    const it = itemAtCaret();
+    if (it) playFrom(it.w.start);
+    else if (editTurn !== null) playFrom(turns[editTurn].items[0].w.start);
+  };
+
   // wordIdx: 턴 안에서 더블클릭한 단어 번호 → 그 단어를 편집창에서 선택
   const startEdit = (ti: number, wordStart: number, wordIdx: number) => {
     const { text, offsets } = buildTurnText(ti);
@@ -276,16 +298,31 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
                             setEditTurn(null);
                           }
                         }}
+                        onClick={seekToCaret}
+                        onSelect={seekToCaret}
+                        onKeyUp={(e) => {
+                          // 방향키로 커서 옮길 때도 음성 위치 따라가게
+                          if (e.key.startsWith("Arrow") || e.key === "Home" || e.key === "End") seekToCaret();
+                        }}
                         rows={Math.min(18, Math.max(3, editVal.split("\n").length + Math.ceil(editVal.length / 60)))}
                         className="w-full text-sm leading-relaxed rounded border border-[#56D5DB] px-2 py-1 focus:outline-none resize-y bg-white"
                       />
                       <div className="flex items-center gap-2">
                         <button
                           className="text-xs text-gray-500 hover:text-[#3fc4ca] flex items-center gap-1"
+                          onClick={playFromCaret}
+                          type="button"
+                          title="커서가 있는 위치부터 재생됩니다"
+                        >
+                          <Play className="w-3 h-3" /> 커서부터 듣기
+                        </button>
+                        <button
+                          className="text-xs text-gray-400 hover:text-[#3fc4ca] flex items-center gap-1"
                           onClick={() => playFrom(turn.items[0].w.start)}
                           type="button"
+                          title="이 줄 처음부터 재생"
                         >
-                          <Play className="w-3 h-3" /> 듣기
+                          <Play className="w-3 h-3" /> 처음부터
                         </button>
                         <button
                           className="text-xs text-[#3fc4ca] font-medium hover:underline"
