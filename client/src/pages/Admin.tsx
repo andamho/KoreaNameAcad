@@ -257,7 +257,7 @@ export default function Admin() {
     setConvertingId(id);
     try {
       const { customer } = await knopApi.convertConsultation(id);
-      toast({ title: "고객으로 전환되었습니다.", description: `${customer.name} · 운영(KNOP) 탭에서 확인하세요.` });
+      toast({ title: "고객으로 전환되었습니다.", description: `${customer.name} · 운영(KOP) 탭에서 확인하세요.` });
     } catch (e: any) {
       toast({ title: "전환 실패", description: e?.message, variant: "destructive" });
     } finally {
@@ -282,7 +282,7 @@ export default function Admin() {
           <TabsList>
             <TabsTrigger value="knop" data-testid="tab-knop">
               <LayoutDashboard className="w-3.5 h-3.5 mr-1.5" />
-              운영 (KNOP)
+              운영 (KOP)
             </TabsTrigger>
             <TabsTrigger value="inquiries" data-testid="tab-inquiries">
               <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
