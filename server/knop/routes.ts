@@ -924,6 +924,7 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     id: string;
     name: string;
     normalizedPhone: string;
+    createdAt?: Date | string | null;
   }): Promise<{ matched: number; attached: number }> {
     const recs = recordingsForCustomer(cust);
     if (!recs.length) return { matched: 0, attached: 0 };
