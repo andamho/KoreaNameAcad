@@ -20,6 +20,7 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement>(null);
   const editRef = useRef<HTMLTextAreaElement>(null);
+  const caretRef = useRef<[number, number] | null>(null); // 더블클릭한 단어의 문자 범위
   const [curIdx, setCurIdx] = useState(-1);
   const [editTurn, setEditTurn] = useState<number | null>(null);
   const [editVal, setEditVal] = useState("");
@@ -58,6 +59,38 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
 
   const turnText = (ti: number) => turns[ti].items.map((x) => x.w.word).join(" ");
 
+  // 문장 끝(. ? !) 판정 — 문단 나누기/줄바꿈용
+  const isSentenceEnd = (w: string) => /[.?!。]$/.test(w);
+
+  // 편집용 텍스트: 문장 끝마다 빈 줄. 각 단어의 문자 위치(offset)도 같이 계산 → 더블클릭한 단어에 커서
+  const buildTurnText = (ti: number) => {
+    const items = turns[ti].items;
+    let text = "";
+    const offsets: Array<[number, number]> = [];
+    items.forEach(({ w }, idx) => {
+      const start = text.length;
+      text += w.word;
+      offsets.push([start, text.length]);
+      if (idx < items.length - 1) text += isSentenceEnd(w.word) ? "\n\n" : " ";
+    });
+    return { text, offsets };
+  };
+
+  // 보기용: 턴을 문장 단위로 묶음 (문장마다 한 줄 띄워 표시)
+  const sentencesOf = (ti: number) => {
+    const out: Array<Array<{ w: W; i: number }>> = [];
+    let cur: Array<{ w: W; i: number }> = [];
+    for (const it of turns[ti].items) {
+      cur.push(it);
+      if (isSentenceEnd(it.w.word)) {
+        out.push(cur);
+        cur = [];
+      }
+    }
+    if (cur.length) out.push(cur);
+    return out;
+  };
+
   // 수정률: 최초 기계전사(originalTranscript) 대비 현재본에서 바뀐 단어 비율 (순서무관 단어 다중집합 비교 → 빠름)
   const stats = useMemo(() => {
     const orig = (call.originalTranscript || "").trim();
@@ -81,10 +114,19 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
     return { changed, total: cw.length, pct };
   }, [call.originalTranscript, call.transcriptText, words]);
 
+  // 편집창이 열리면 더블클릭한 그 단어를 선택(커서가 딱 그 자리로) + 화면에 보이게 스크롤
   useEffect(() => {
-    if (editTurn !== null && editRef.current) {
-      editRef.current.focus();
-      editRef.current.select();
+    if (editTurn === null || !editRef.current) return;
+    const el = editRef.current;
+    el.focus();
+    const r = caretRef.current;
+    if (r) {
+      el.setSelectionRange(r[0], r[1]);
+      // 선택 위치가 보이도록 스크롤
+      const ratio = r[0] / Math.max(1, el.value.length);
+      el.scrollTop = Math.max(0, ratio * el.scrollHeight - el.clientHeight / 2);
+    } else {
+      el.select();
     }
   }, [editTurn]);
 
@@ -101,9 +143,12 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
     a.play().catch(() => {});
   };
 
-  const startEdit = (ti: number, wordStart: number) => {
+  // wordIdx: 턴 안에서 더블클릭한 단어 번호 → 그 단어를 편집창에서 선택
+  const startEdit = (ti: number, wordStart: number, wordIdx: number) => {
+    const { text, offsets } = buildTurnText(ti);
+    caretRef.current = offsets[wordIdx] ?? null;
     setEditTurn(ti);
-    setEditVal(turnText(ti));
+    setEditVal(text);
     seekTo(wordStart); // 음성 위치만 맞춰둠(무음). 애매하면 '듣기'로 재생
   };
 
@@ -231,8 +276,8 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
                             setEditTurn(null);
                           }
                         }}
-                        rows={Math.max(1, Math.ceil(editVal.length / 40))}
-                        className="w-full text-sm rounded border border-[#56D5DB] px-2 py-1 focus:outline-none resize-none bg-white"
+                        rows={Math.min(18, Math.max(3, editVal.split("\n").length + Math.ceil(editVal.length / 60)))}
+                        className="w-full text-sm leading-relaxed rounded border border-[#56D5DB] px-2 py-1 focus:outline-none resize-y bg-white"
                       />
                       <div className="flex items-center gap-2">
                         <button
@@ -259,21 +304,29 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm leading-relaxed">
-                      {turn.items.map(({ w, i }) => (
-                        <span
-                          key={i}
-                          onClick={() => seekTo(w.start, i)}
-                          onDoubleClick={() => startEdit(ti, w.start)}
-                          title="클릭: 위치 이동 · 더블클릭: 이 줄 수정"
-                          className={`cursor-text rounded px-0.5 hover:bg-[#56D5DB]/20 ${
-                            i === curIdx ? "bg-[#56D5DB]/50 text-gray-900" : "text-gray-700"
-                          }`}
-                        >
-                          {w.word}{" "}
-                        </span>
+                    // 문장마다 한 줄 띄워 보기 편하게
+                    <div className="space-y-2">
+                      {sentencesOf(ti).map((sent, si2) => (
+                        <p key={si2} className="text-sm leading-relaxed">
+                          {sent.map(({ w, i }) => {
+                            const idxInTurn = turn.items.findIndex((x) => x.i === i);
+                            return (
+                              <span
+                                key={i}
+                                onClick={() => seekTo(w.start, i)}
+                                onDoubleClick={() => startEdit(ti, w.start, idxInTurn)}
+                                title="클릭: 위치 이동 · 더블클릭: 이 단어부터 수정"
+                                className={`cursor-text rounded px-0.5 hover:bg-[#56D5DB]/20 ${
+                                  i === curIdx ? "bg-[#56D5DB]/50 text-gray-900" : "text-gray-700"
+                                }`}
+                              >
+                                {w.word}{" "}
+                              </span>
+                            );
+                          })}
+                        </p>
                       ))}
-                    </p>
+                    </div>
                   )}
                 </div>
               </div>
