@@ -86,6 +86,7 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
   const [smsDialog, setSmsDialog] = useState(false);
   const [note, setNote] = useState("");
   const [memoDraft, setMemoDraft] = useState<string | null>(null);
+  const [phoneDraft, setPhoneDraft] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const [transcribing, setTranscribing] = useState(false);
@@ -104,6 +105,16 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
       refresh();
       toast({ title: "메모가 추가되었습니다." });
     },
+  });
+
+  const savePhoneMut = useMutation({
+    mutationFn: (phone: string) => knopApi.updateCustomer(customerId, { phone }),
+    onSuccess: () => {
+      setPhoneDraft(null);
+      refresh();
+      toast({ title: "전화번호 저장됨" });
+    },
+    onError: (e: any) => toast({ title: "저장 실패", description: e?.message, variant: "destructive" }),
   });
 
   const saveMemoMut = useMutation({
@@ -237,9 +248,37 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
               )}
             </h2>
             <div className="mt-2 flex flex-col gap-1 text-sm text-gray-600">
-              <span className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-gray-400" /> {customer.phone}
-              </span>
+              {phoneDraft === null ? (
+                <button
+                  className="flex items-center gap-2 text-left hover:text-[#3fc4ca] group"
+                  onClick={() => setPhoneDraft(customer.phone || "")}
+                  title="클릭하여 전화번호 수정"
+                >
+                  <Phone className="w-4 h-4 text-gray-400" /> {customer.phone || "번호 없음"}
+                  <span className="text-xs text-gray-300 group-hover:text-[#56D5DB]">✎</span>
+                </button>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <Phone className="w-4 h-4 text-gray-400 shrink-0" />
+                  <Input
+                    autoFocus
+                    value={phoneDraft}
+                    onChange={(e) => setPhoneDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") savePhoneMut.mutate(phoneDraft.trim());
+                      if (e.key === "Escape") setPhoneDraft(null);
+                    }}
+                    className="h-8 w-40 text-sm"
+                    placeholder="010-0000-0000"
+                  />
+                  <Button size="sm" className="h-8" disabled={savePhoneMut.isPending} onClick={() => savePhoneMut.mutate(phoneDraft.trim())}>
+                    저장
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-8" onClick={() => setPhoneDraft(null)}>
+                    취소
+                  </Button>
+                </div>
+              )}
               {customer.email && (
                 <span className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-gray-400" /> {customer.email}
@@ -278,17 +317,27 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
         <div className="mt-4">
           {memoDraft === null ? (
             <button
-              className="text-sm text-gray-500 hover:text-gray-800 text-left w-full"
+              className="text-sm text-gray-600 hover:bg-gray-50 text-left w-full rounded-lg border border-gray-100 p-3 group transition"
               onClick={() => setMemoDraft(customer.memo || "")}
+              title="클릭하여 메모 수정"
             >
-              <span className="text-gray-400">메모: </span>
-              {customer.memo || "클릭하여 메모 추가"}
+              <span className="flex items-center gap-1 text-xs font-medium text-gray-400 mb-1">
+                메모 <span className="text-gray-300 group-hover:text-[#56D5DB]">✎ 수정</span>
+              </span>
+              <span className="whitespace-pre-wrap leading-relaxed">{customer.memo || "클릭하여 메모 추가"}</span>
             </button>
           ) : (
             <div className="space-y-2">
-              <Textarea value={memoDraft} onChange={(e) => setMemoDraft(e.target.value)} rows={2} />
+              <div className="text-xs font-medium text-gray-400">메모 수정</div>
+              <Textarea
+                autoFocus
+                value={memoDraft}
+                onChange={(e) => setMemoDraft(e.target.value)}
+                rows={Math.min(14, Math.max(4, memoDraft.split("\n").length + 1))}
+                className="text-sm leading-relaxed"
+              />
               <div className="flex gap-2">
-                <Button size="sm" onClick={() => saveMemoMut.mutate(memoDraft)}>
+                <Button size="sm" disabled={saveMemoMut.isPending} onClick={() => saveMemoMut.mutate(memoDraft)}>
                   저장
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setMemoDraft(null)}>
