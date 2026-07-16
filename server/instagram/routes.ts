@@ -5,7 +5,7 @@ import { desc } from "drizzle-orm";
 import { db } from "../db";
 import { igEvents } from "@shared/schema";
 import { getIgToken, igAppId, igAppSecret, refreshIfNeeded, startIgTokenRefresh } from "./tokens";
-import { getMe, getSubscribedFields, subscribeWebhooks, IgApiError } from "./client";
+import { getMe, getSubscribedFields, subscribeWebhooks, getAppWebhookConfig, IgApiError } from "./client";
 import { authorizeUrl, completeOAuth, redirectUri, verifyState, IG_SCOPES } from "./oauth";
 import { signatureMatch, normalizeWebhook, storeEvents } from "./webhook";
 
@@ -211,6 +211,27 @@ export function registerInstagramRoutes(app: Express, requireAdmin: RequestHandl
       // 스코프 진단: 재인증이 필요한지 바로 알 수 있게
       const granted = (t?.scope ?? "").split(",").map((s) => s.trim()).filter(Boolean);
       out.missingScopes = t?.source === "db" ? IG_SCOPES.filter((s) => !granted.includes(s)) : null;
+
+      // 앱 단위 웹훅 설정 — 실제로 Meta가 우리 URL로 보낼 준비가 됐는지.
+      // (계정 구독은 켜졌는데 이게 비면 이벤트가 아예 안 온다)
+      try {
+        const cfg = await getAppWebhookConfig();
+        if (!cfg.ok) {
+          out.appWebhook = { error: cfg.error };
+        } else {
+          const ig = cfg.instagram;
+          out.appWebhook = {
+            configured: !!ig,
+            callbackUrl: ig?.callback_url ?? null,
+            active: ig?.active ?? null,
+            fields: (ig?.fields ?? []).map((f: any) => (typeof f === "string" ? f : `${f.name}${f.version ? "@" + f.version : ""}`)),
+            // 우리 서버 주소와 일치하는지
+            callbackMatches: ig?.callback_url === out.webhookUrl,
+          };
+        }
+      } catch (e: any) {
+        out.appWebhook = { error: e?.message };
+      }
 
       res.json(out);
     } catch (e) {

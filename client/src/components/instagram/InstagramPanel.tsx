@@ -19,6 +19,14 @@ type Diagnostics = {
   me?: { id?: string; username?: string; account_type?: string; error?: string };
   subscribedFields?: string[] | { error: string };
   missingScopes: string[] | null;
+  appWebhook?: {
+    configured?: boolean;
+    callbackUrl?: string | null;
+    active?: boolean | null;
+    fields?: string[];
+    callbackMatches?: boolean;
+    error?: string;
+  };
 };
 
 type IgEvent = {
@@ -226,6 +234,37 @@ export function InstagramPanel() {
           </p>
         )}
       </Card>
+
+      {/* ── 앱 단위 웹훅 설정 진단 (이벤트가 안 올 때 원인 확인) ── */}
+      {diag?.appWebhook && (
+        <Card className="p-5">
+          <h3 className="font-semibold mb-3">웹훅 전송 설정 (Meta 앱 단위)</h3>
+          {diag.appWebhook.error ? (
+            <div className="text-sm text-amber-600">
+              조회 불가: {diag.appWebhook.error}
+              {diag.appWebhook.error.includes("META_APP_ID") && " — Railway에 META_APP_ID=2882176862115913 추가 필요"}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Yes ok={!!diag.appWebhook.configured}>
+                Instagram 웹훅 등록됨 {diag.appWebhook.configured ? "" : "— ❗ 대시보드에서 콜백 URL 저장 안 됨"}
+              </Yes>
+              <Yes ok={diag.appWebhook.active === true}>
+                활성 상태 (active={String(diag.appWebhook.active)})
+              </Yes>
+              <Yes ok={!!diag.appWebhook.callbackMatches}>
+                콜백 URL 일치
+              </Yes>
+              <div className="text-xs text-muted-foreground break-all pl-6">
+                등록된 콜백: <code>{diag.appWebhook.callbackUrl || "(없음)"}</code>
+              </div>
+              <div className="text-xs text-muted-foreground pl-6">
+                구독 필드: {(diag.appWebhook.fields || []).join(", ") || "(없음)"}
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* ── Meta 대시보드 설정값 ── */}
       {diag?.webhookUrl && (

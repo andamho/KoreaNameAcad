@@ -99,3 +99,29 @@ export async function subscribeWebhooks(fields = ["comments", "messages"]): Prom
   });
   if (!j?.success) throw new IgApiError(`웹훅 구독 실패: ${JSON.stringify(j)}`, 500);
 }
+
+/**
+ * 앱 단위 웹훅 설정 조회 — 콜백 URL이 실제로 등록·활성인지 확인.
+ * 계정 단위 구독(/me/subscribed_apps)과 별개이며, 이게 없으면 Meta가 아무 데도 안 보낸다.
+ * graph.facebook.com 의 앱 subscriptions 엣지를 앱 액세스 토큰(app-id|app-secret)으로 조회.
+ */
+export async function getAppWebhookConfig(): Promise<
+  | { ok: true; instagram: any | null; all: any[] }
+  | { ok: false; error: string }
+> {
+  const appId = process.env.META_APP_ID?.trim();
+  const secret = process.env.META_APP_SECRET?.trim();
+  if (!appId) return { ok: false, error: "META_APP_ID 미설정" };
+  if (!secret) return { ok: false, error: "META_APP_SECRET 미설정" };
+
+  const appToken = `${appId}|${secret}`;
+  const url = `https://graph.facebook.com/v25.0/${appId}/subscriptions?access_token=${encodeURIComponent(appToken)}`;
+  const r = await fetch(url);
+  const j: any = await r.json().catch(() => ({}));
+  if (!r.ok || j?.error) {
+    return { ok: false, error: j?.error?.message || `조회 실패(${r.status})` };
+  }
+  const all = Array.isArray(j?.data) ? j.data : [];
+  const instagram = all.find((s: any) => s.object === "instagram") ?? null;
+  return { ok: true, instagram, all };
+}
