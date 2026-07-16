@@ -7,21 +7,42 @@ import { db } from "../db";
 import { igEvents } from "@shared/schema";
 import { igAppSecret } from "./tokens";
 
+/**
+ * 서명 검증에 시도할 후보 시크릿들.
+ * 인스타 로그인 앱에는 시크릿이 두 종류일 수 있다:
+ *  - INSTAGRAM_APP_SECRET      : OAuth 토큰 교환용(인스타 앱 시크릿)
+ *  - META_APP_SECRET           : 웹훅 서명용(Meta 앱 시크릿, 앱 설정>기본 설정)
+ * Meta가 어느 것으로 서명하는지 문서가 엇갈려서, 둘 중 하나라도 맞으면 통과시킨다.
+ */
+function candidateSecrets(): string[] {
+  const list = [igAppSecret(), process.env.META_APP_SECRET?.trim(), process.env.INSTAGRAM_WEBHOOK_APP_SECRET?.trim()];
+  return Array.from(new Set(list.filter((s): s is string => !!s)));
+}
+
+/** 서명이 어느 시크릿과 맞는지 반환(진단용). index<0 이면 불일치 */
+export function signatureMatch(
+  rawBody: Buffer | undefined,
+  header: string | undefined,
+): { ok: boolean; matchedIndex: number; hadHeader: boolean; secretCount: number } {
+  const secrets = candidateSecrets();
+  const hadHeader = !!header && header.startsWith("sha256=");
+  const base = { hadHeader, secretCount: secrets.length };
+  if (!rawBody || !hadHeader || secrets.length === 0) return { ok: false, matchedIndex: -1, ...base };
+
+  const given = Buffer.from(header!.slice("sha256=".length), "utf8");
+  for (let i = 0; i < secrets.length; i++) {
+    const expected = crypto.createHmac("sha256", secrets[i]).update(rawBody).digest("hex");
+    const exp = Buffer.from(expected, "utf8");
+    if (given.length === exp.length && crypto.timingSafeEqual(given, exp)) {
+      return { ok: true, matchedIndex: i, ...base };
+    }
+  }
+  return { ok: false, matchedIndex: -1, ...base };
+}
+
 /** X-Hub-Signature-256 검증. 반드시 파싱 전 원본 바이트로 계산해야 한다 */
 export function verifySignature(rawBody: Buffer | undefined, header: string | undefined): boolean {
-  const secret = igAppSecret();
-  if (!secret) {
-    console.error("[IG WEBHOOK] INSTAGRAM_APP_SECRET 미설정 — 서명 검증 불가로 거부");
-    return false;
-  }
-  if (!rawBody || !header) return false;
-  if (!header.startsWith("sha256=")) return false;
-
-  const expected = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
-  const a = Buffer.from(header.slice("sha256=".length), "utf8");
-  const b = Buffer.from(expected, "utf8");
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(a, b);
+  return signatureMatch(rawBody, header).ok;
 }
 
 export type NormalizedIgEvent = {

@@ -1,4 +1,5 @@
 // 인스타 자동화 라우트: 웹훅 수신(공개) + 연결/진단(관리자)
+import crypto from "crypto";
 import type { Express, RequestHandler, Request, Response } from "express";
 import { desc } from "drizzle-orm";
 import { db } from "../db";
@@ -6,7 +7,7 @@ import { igEvents } from "@shared/schema";
 import { getIgToken, igAppId, igAppSecret, refreshIfNeeded, startIgTokenRefresh } from "./tokens";
 import { getMe, getSubscribedFields, subscribeWebhooks, IgApiError } from "./client";
 import { authorizeUrl, completeOAuth, redirectUri, verifyState, IG_SCOPES } from "./oauth";
-import { verifySignature, normalizeWebhook, storeEvents } from "./webhook";
+import { signatureMatch, normalizeWebhook, storeEvents } from "./webhook";
 
 function handle(res: Response, route: string, e: any) {
   if (e instanceof IgApiError) {
@@ -46,8 +47,33 @@ export function registerInstagramRoutes(app: Express, requireAdmin: RequestHandl
   // ── 웹훅 수신 (공개, 서명으로 인증) ──
   app.post("/api/instagram/webhook", async (req: Request, res: Response) => {
     const raw = (req as any).rawBody as Buffer | undefined;
-    if (!verifySignature(raw, req.headers["x-hub-signature-256"] as string | undefined)) {
-      console.warn("[IG WEBHOOK] 서명 불일치 — 요청 거부");
+    const sigHeader = req.headers["x-hub-signature-256"] as string | undefined;
+    const m = signatureMatch(raw, sigHeader);
+
+    // 진단: 도착한 모든 요청을 흔적으로 남긴다("안 옴" vs "오는데 서명에서 막힘" 판별).
+    // INSTAGRAM_WEBHOOK_DIAG=1 일 때만. 판별 끝나면 끄면 된다.
+    if (process.env.INSTAGRAM_WEBHOOK_DIAG === "1" && db) {
+      const diag = {
+        hadHeader: m.hadHeader,
+        matched: m.ok,
+        matchedIndex: m.matchedIndex,
+        secretCount: m.secretCount,
+        bodyPreview: (raw ? raw.toString("utf8") : JSON.stringify(req.body ?? {})).slice(0, 400),
+      };
+      db.insert(igEvents)
+        .values({
+          kind: "diag",
+          dedupeKey: `diag:${Date.now()}:${crypto.randomBytes(4).toString("hex")}`,
+          text: `hadHeader=${diag.hadHeader} matched=${diag.matched} idx=${diag.matchedIndex} secrets=${diag.secretCount}`,
+          raw: JSON.stringify(diag),
+        })
+        .catch((e) => console.error(`[IG WEBHOOK] 진단 기록 실패: ${e?.message}`));
+    }
+
+    if (!m.ok) {
+      console.warn(
+        `[IG WEBHOOK] 서명 불일치 — 요청 거부 (헤더존재=${m.hadHeader}, 후보시크릿=${m.secretCount})`,
+      );
       return res.sendStatus(403);
     }
 
@@ -217,7 +243,8 @@ export function registerInstagramRoutes(app: Express, requireAdmin: RequestHandl
       if (!db) return res.status(503).json({ error: "DATABASE_UNAVAILABLE" });
       const limit = Math.min(Number(req.query.limit) || 50, 200);
       const rows = await db.select().from(igEvents).orderBy(desc(igEvents.receivedAt)).limit(limit);
-      res.json(rows);
+      // 진단 행(kind=diag)은 관리자 목록에서 숨긴다 — 실제 댓글/DM만 보이게
+      res.json(rows.filter((r) => r.kind !== "diag"));
     } catch (e) {
       handle(res, "events", e);
     }
