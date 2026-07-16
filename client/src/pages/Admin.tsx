@@ -18,8 +18,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { ImageManager } from "@/components/ImageManager";
 import { KnopApp } from "@/components/knop/KnopApp";
+import { InstagramPanel } from "@/components/instagram/InstagramPanel";
 import { knopApi } from "@/lib/knopApi";
-import { LayoutDashboard, UserPlus } from "lucide-react";
+import { LayoutDashboard, UserPlus, Instagram } from "lucide-react";
 import type { Consultation, Content, InsertContent } from "@shared/schema";
 
 interface Inquiry {
@@ -297,7 +298,16 @@ export default function Admin() {
             <TabsTrigger value="video" data-testid="tab-video">
               숏폼 배포
             </TabsTrigger>
+            <TabsTrigger value="instagram" data-testid="tab-instagram">
+              <Instagram className="w-3.5 h-3.5 mr-1.5" />
+              인스타 자동화
+            </TabsTrigger>
           </TabsList>
+
+          {/* ── 인스타 자동화 탭 ────────────────────────────── */}
+          <TabsContent value="instagram">
+            <InstagramPanel />
+          </TabsContent>
 
           {/* ── 운영 플랫폼 (KNOP) 탭 ─────────────────────────── */}
           <TabsContent value="knop">

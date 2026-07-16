@@ -165,6 +165,35 @@ describe("관리자 진단", () => {
     assert.equal(j.webhookUrl, "https://example.test/api/instagram/webhook");
   });
 
+  test("앱 시크릿 형식 검사: 32자리 16진수가 아니면 걸러낸다", async () => {
+    // 이 테스트의 시크릿("test_app_secret_123")은 존재하지만 형식이 틀림
+    const j: any = await (await fetch(`${base}/api/admin/instagram/diagnostics`)).json();
+    assert.equal(j.env.appSecret, true, "값은 있음");
+    assert.equal(j.env.appSecretLooksValid, false, "형식은 틀림 → 있다/맞다를 구분해야 함");
+  });
+
+  test("앱 시크릿 형식 검사: 진짜 형식이면 통과한다", async () => {
+    const original = process.env.INSTAGRAM_APP_SECRET;
+    process.env.INSTAGRAM_APP_SECRET = "a".repeat(32); // 32자리 16진수
+    try {
+      const j: any = await (await fetch(`${base}/api/admin/instagram/diagnostics`)).json();
+      assert.equal(j.env.appSecretLooksValid, true);
+    } finally {
+      process.env.INSTAGRAM_APP_SECRET = original;
+    }
+  });
+
+  test("앱 시크릿 형식 검사: 대시보드 마스킹 문자를 복사한 경우를 잡아낸다", async () => {
+    const original = process.env.INSTAGRAM_APP_SECRET;
+    process.env.INSTAGRAM_APP_SECRET = "•".repeat(9); // 실제로 겪은 실수
+    try {
+      const j: any = await (await fetch(`${base}/api/admin/instagram/diagnostics`)).json();
+      assert.equal(j.env.appSecretLooksValid, false, "마스킹 문자열이 초록불로 보이면 안 됨");
+    } finally {
+      process.env.INSTAGRAM_APP_SECRET = original;
+    }
+  });
+
   test("connect-url이 올바른 동의 화면 URL을 만든다", async () => {
     const r = await fetch(`${base}/api/admin/instagram/connect-url`);
     assert.equal(r.status, 200);

@@ -126,6 +126,10 @@ export function registerInstagramRoutes(app: Express, requireAdmin: RequestHandl
         env: {
           appId: !!igAppId(),
           appSecret: !!igAppSecret(),
+          // 값이 "있다"와 "맞다"는 다르다. 대시보드에서 가려진 표시(••••)를 그대로 복사해
+          // 넣는 실수가 흔한데, 그러면 서명 검증이 전부 조용히 실패한다.
+          // 실제 앱 시크릿은 32자리 16진수 → 형식만 검사(값은 절대 노출하지 않음).
+          appSecretLooksValid: /^[0-9a-f]{32}$/i.test(igAppSecret() ?? ""),
           webhookVerifyToken: !!verifyToken(),
           publicBaseUrl: process.env.PUBLIC_BASE_URL?.trim() || null,
         },
