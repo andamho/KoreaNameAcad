@@ -114,7 +114,26 @@ export function registerInstagramRoutes(app: Express, requireAdmin: RequestHandl
       );
     } catch (e: any) {
       console.error(`[IG OAuth] 콜백 실패: ${e?.message}`);
-      return page("연결 실패", `<h2>연결에 실패했습니다</h2><pre style="white-space:pre-wrap;color:#b00">${e?.message}</pre>`);
+      // 이 오류는 원인이 여러 개인데 메시지가 똑같이 나온다. 추측하지 않도록 실제 사용된
+      // redirect_uri 를 함께 보여준다(대시보드 등록값과 눈으로 대조 가능).
+      let used = "(PUBLIC_BASE_URL 미설정)";
+      try {
+        used = redirectUri();
+      } catch {}
+      const hint = String(e?.message ?? "").includes("verification code")
+        ? `<p style="margin-top:16px"><b>흔한 원인 두 가지</b></p>
+           <ol style="line-height:1.7">
+             <li>이 페이지를 <b>새로고침</b>했다 — 인증 코드는 일회용이라 재사용하면 항상 이 오류가 납니다.
+                 관리자 페이지에서 <b>"인스타 연결"을 새로 클릭</b>해 주세요.</li>
+             <li>Meta 대시보드의 <b>OAuth 리디렉션 URI</b>가 아래 값과 다르다 (슬래시 하나도 달라선 안 됨).</li>
+           </ol>
+           <p>서버가 사용한 redirect_uri:</p>
+           <code style="background:#f4f4f4;padding:6px 8px;border-radius:4px;display:inline-block">${used}</code>`
+        : "";
+      return page(
+        "연결 실패",
+        `<h2>연결에 실패했습니다</h2><pre style="white-space:pre-wrap;color:#b00">${e?.message}</pre>${hint}`,
+      );
     }
   });
 

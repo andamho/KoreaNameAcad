@@ -208,6 +208,9 @@ describe("관리자 진단", () => {
       assert.ok(scopes.includes(s), `스코프 ${s} 누락 — 재인증 시 기존 릴스 배포 권한까지 날아감`);
     }
     assert.ok(u.searchParams.get("state"), "CSRF state 필요");
+    // 이게 빠지면 동의 화면이 Facebook 로그인 경로로 빠져 코드 교환이
+    // "Error validating verification code" 로 실패한다. 실제로 겪은 문제라 고정한다.
+    assert.equal(u.searchParams.get("enable_fb_login"), "0", "순수 인스타 로그인으로 고정돼야 함");
   });
 });
 

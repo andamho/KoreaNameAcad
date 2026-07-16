@@ -60,6 +60,10 @@ export function authorizeUrl(): string {
     response_type: "code",
     scope: IG_SCOPES.join(","),
     state: makeState(),
+    // 순수 인스타 로그인으로 고정. 이게 없으면 동의 화면이 Facebook 로그인 경로로 빠질 수 있고,
+    // 그러면 발급된 코드가 Facebook 로그인 제품의 리디렉션 URI 기준으로 검증돼
+    // "Error validating verification code" 로 실패한다(이 앱엔 FB 이용 사례도 함께 있음).
+    enable_fb_login: "0",
     force_authentication: "1", // 다른 계정으로 잘못 연결되는 사고 방지
   });
   return `https://www.instagram.com/oauth/authorize?${q}`;
