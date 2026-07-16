@@ -758,3 +758,22 @@ export const insertIncomingSmsSchema = z.object({
 });
 export type InsertIncomingSms = z.infer<typeof insertIncomingSmsSchema>;
 export type IncomingSms = typeof incomingSms.$inferSelect;
+
+// ── 인스타 자동화: 웹훅 수신 원문 로그 ──
+// Meta는 응답이 늦거나 실패하면 같은 이벤트를 재전송한다. dedupeKey 유니크 제약으로
+// "댓글당 DM 1회" 정책을 앱 로직이 아닌 DB 레벨에서 강제한다(중복 발송 = 계정 제재 위험).
+export const igEvents = pgTable("ig_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  kind: text("kind").notNull(),                        // comment | message | other
+  dedupeKey: text("dedupe_key").notNull().unique(),    // 댓글=comment_id, DM=message.mid
+  igAccountId: text("ig_account_id"),                  // 이벤트를 받은 내 IG 계정 id
+  fromId: text("from_id"),                             // 보낸 사람 IGSID
+  fromUsername: text("from_username"),                 // 댓글 웹훅에만 포함(DM 웹훅엔 없음)
+  mediaId: text("media_id"),                           // 댓글이 달린 미디어
+  parentId: text("parent_id"),                         // 값이 있으면 대댓글, 없으면 최상위 댓글
+  text: text("text"),
+  isEcho: boolean("is_echo").default(false).notNull(), // 내가 보낸 DM의 메아리 → 자동응답 금지
+  raw: text("raw").notNull(),                          // 원문 JSON (실제 페이로드 형태 검증용)
+  receivedAt: timestamp("received_at").defaultNow().notNull(),
+});
+export type IgEvent = typeof igEvents.$inferSelect;

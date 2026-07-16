@@ -9,7 +9,17 @@ import { validateOtpConfig } from "./otpStore";
 validateOtpConfig(); // OTP_HMAC_SECRET 누락 시 즉시 종료
 
 const app = express();
-app.use(express.json({ limit: '10mb' }));
+// Meta 웹훅 서명(X-Hub-Signature-256)은 파싱 전 원본 바이트로 HMAC을 계산해야 검증된다.
+// JSON.stringify(req.body)로 재구성하면 키 순서/공백이 달라져 서명이 어긋난다.
+// 해당 경로에서만 원본을 남긴다(전 요청에 남기면 메모리 낭비).
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, _res, buf) => {
+    if ((req as any).url?.startsWith("/api/instagram/webhook")) {
+      (req as any).rawBody = Buffer.from(buf);
+    }
+  },
+}));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 app.use(cookieParser());
 

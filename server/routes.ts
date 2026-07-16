@@ -9,7 +9,8 @@ import { registerObjectStorageRoutes } from "./object_storage";
 import { registerKnopRoutes } from "./knop/routes";
 import { knopStore } from "./knop/store";
 import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutubeStatus, uploadYoutubeVideo, setYoutubeThumbnail } from "./youtube";
-import { instagramConfigured, getInstagramStatus, publishInstagramReel } from "./instagram";
+import { instagramConfigured, getInstagramStatus, publishInstagramReel } from "./instagram/publish";
+import { registerInstagramRoutes } from "./instagram/routes";
 import { sendAdminOtp } from "./telegramBot";
 import { otpStore, generateOtp, computeOtpHash, verifyOtpCode, OTP_TTL_MS } from "./otpStore";
 import rateLimit from "express-rate-limit";
@@ -960,7 +961,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/instagram/status", requireAdmin, async (_req, res) => {
     try {
       const st = await getInstagramStatus();
-      res.json({ configured: instagramConfigured(), ...st });
+      res.json({ configured: await instagramConfigured(), ...st });
     } catch (error: any) {
       res.status(500).json({ error: error?.message || "status error" });
     }
@@ -1297,6 +1298,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // KNOP 운영 플랫폼 라우트 (관리자 전용)
   registerKnopRoutes(app, requireAdmin);
+
+  // 인스타 자동화: 웹훅 수신(공개) + 연결/진단(관리자)
+  registerInstagramRoutes(app, requireAdmin);
 
   // Register object storage routes for file uploads
   registerObjectStorageRoutes(app);
