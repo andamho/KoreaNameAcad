@@ -404,7 +404,7 @@ export default function Inquiry() {
                           {(threadMessages[inq.id] ?? []).length > 0 && (
                             <div className="space-y-1.5">
                               <p className="text-xs md:text-sm text-muted-foreground">대화 내역</p>
-                              <div className="space-y-2 max-h-52 overflow-y-auto bg-background border border-border/40 rounded-lg p-3">
+                              <div className="space-y-2 bg-background border border-border/40 rounded-lg p-3">
                                 {(threadMessages[inq.id] ?? []).map(msg => (
                                   <div key={msg.id} className={`flex flex-col gap-0.5 ${msg.senderType === "admin" ? "items-end" : "items-start"}`}>
                                     <p className={`text-[10px] font-medium ${msg.senderType === "admin" ? "text-[#18a999]" : "text-muted-foreground"}`}>
