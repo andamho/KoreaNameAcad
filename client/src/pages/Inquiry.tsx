@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Linkify } from "@/lib/linkify";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Send, CheckCircle2 } from "lucide-react";
@@ -368,7 +369,7 @@ export default function Inquiry() {
                           <div>
                             <p className="text-xs md:text-sm text-muted-foreground mb-1">문의 내용</p>
                             <p className="text-sm md:text-base whitespace-pre-wrap bg-background border border-border/50 rounded-lg px-3 py-2 leading-relaxed">
-                              {inq.content}
+                              <Linkify>{inq.content}</Linkify>
                             </p>
                           </div>
                           {/* 스레드 메시지 */}
@@ -386,7 +387,15 @@ export default function Inquiry() {
                                         ? "bg-[#18a999] text-white"
                                         : "bg-muted/60 text-foreground"
                                     }`}>
-                                      {msg.content}
+                                      <Linkify
+                                        className={
+                                          msg.senderType === "admin"
+                                            ? "underline underline-offset-2 break-all font-medium"
+                                            : "text-[#18a999] underline underline-offset-2 hover:text-[#149085] break-all"
+                                        }
+                                      >
+                                        {msg.content}
+                                      </Linkify>
                                     </div>
                                     <p className="text-[10px] text-muted-foreground">{formatDateTime(msg.createdAt)}</p>
                                   </div>
