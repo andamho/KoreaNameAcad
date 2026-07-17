@@ -42,14 +42,33 @@ export function CorrectionsView() {
   });
   const toggleMut = useMutation({
     mutationFn: ({ w, e }: { w: string; e: boolean }) => knopApi.toggleCorrection(w, e),
-    onSuccess: refresh,
+    onSuccess: (_d, v) => {
+      refresh();
+      toast({ title: v.e ? "직접 승인 → 적용중" : "차단됨", description: v.e ? "재검증을 해도 유지됩니다." : undefined });
+    },
+    // 보호어·발음불일치 같은 안전규칙 위반은 서버가 거부한다
+    onError: (e: any) => {
+      refresh(); // 스위치를 원래 상태로 되돌림
+      toast({ title: "켤 수 없는 규칙입니다", description: e?.message, variant: "destructive" });
+    },
   });
   const delMut = useMutation({
-    mutationFn: (w: string) => knopApi.deleteCorrection(w),
+    mutationFn: (id: string) => knopApi.deleteCorrection(id),
     onSuccess: () => {
       refresh();
       toast({ title: "삭제됨" });
     },
+  });
+  const revalidateMut = useMutation({
+    mutationFn: () => knopApi.revalidateCorrections(),
+    onSuccess: (r) => {
+      refresh();
+      toast({
+        title: `재검증 완료 · 적용중 ${r.active}개`,
+        description: r.demoted.length ? `${r.demoted.length}개를 후보로 내렸습니다(삭제 아님)` : "변경 없음",
+      });
+    },
+    onError: (e: any) => toast({ title: "재검증 실패", description: e?.message, variant: "destructive" }),
   });
 
   return (
@@ -172,6 +191,21 @@ export function CorrectionsView() {
       </Card>
 
       {/* 규칙 목록 */}
+      <div className="flex items-center gap-2 text-xs text-gray-500">
+        <span>
+          <b className="text-emerald-700">적용중</b> = 전사에 실제 적용 · <b className="text-amber-700">후보</b> = 안전검증을
+          통과했지만 <b>서로 다른 통화 2건</b>의 증거가 아직 없음 · <b className="text-gray-600">차단</b> = 전역 치환하면
+          위험(보호어·발음 불일치 등) → 스위치로도 켤 수 없음
+        </span>
+        <button
+          onClick={() => revalidateMut.mutate()}
+          disabled={revalidateMut.isPending}
+          className="ml-auto shrink-0 text-xs px-2 py-1 rounded border border-gray-200 hover:border-[#56D5DB] disabled:opacity-50"
+          title="모든 규칙을 안전성 검증기로 다시 검사합니다(삭제하지 않고 후보로 내림)"
+        >
+          {revalidateMut.isPending ? "검사 중…" : "전체 재검증"}
+        </button>
+      </div>
       {isLoading && <p className="text-sm text-gray-400">불러오는 중…</p>}
       {rules && rules.length === 0 && (
         <p className="text-sm text-gray-400 py-6 text-center">
@@ -179,26 +213,50 @@ export function CorrectionsView() {
         </p>
       )}
       <div className="space-y-1.5">
-        {rules?.map((r) => (
-          <Card key={r.wrong} className="px-4 py-2.5 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className={`font-medium ${r.enabled ? "text-gray-400 line-through" : "text-gray-300"}`}>
-                {r.wrong}
-              </span>
-              <ArrowRight className="w-4 h-4 text-gray-300 shrink-0" />
-              <span className={`font-semibold ${r.enabled ? "text-gray-900" : "text-gray-300"}`}>{r.right}</span>
-              <Badge variant="outline" className="ml-1 text-gray-400 shrink-0">
-                {r.source === "manual" ? "수동" : `학습·${r.count}회`}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <Switch checked={r.enabled} onCheckedChange={(v) => toggleMut.mutate({ w: r.wrong, e: v })} />
-              <button className="text-gray-300 hover:text-red-500" onClick={() => delMut.mutate(r.wrong)}>
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          </Card>
-        ))}
+        {rules?.map((r) => {
+          const st = r.status || (r.enabled ? "active" : "disabled");
+          const badge =
+            st === "active"
+              ? { t: "적용중", c: "bg-emerald-50 text-emerald-700 border-emerald-200" }
+              : st === "pending"
+                ? { t: "후보", c: "bg-amber-50 text-amber-700 border-amber-200" }
+                : { t: "차단", c: "bg-gray-100 text-gray-500 border-gray-200" };
+          return (
+            <Card key={r.wrong} className="px-4 py-2.5">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                  <Badge variant="outline" className={`shrink-0 ${badge.c}`}>
+                    {badge.t}
+                  </Badge>
+                  <span className={`font-medium ${st === "active" ? "text-gray-400 line-through" : "text-gray-300"}`}>
+                    {r.wrong}
+                  </span>
+                  <ArrowRight className="w-4 h-4 text-gray-300 shrink-0" />
+                  <span className={`font-semibold ${st === "active" ? "text-gray-900" : "text-gray-400"}`}>
+                    {r.right}
+                  </span>
+                  <Badge variant="outline" className="ml-1 text-gray-400 shrink-0">
+                    {r.source === "manual" ? "수동" : `학습·${r.count}회`}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <Switch
+                    checked={st === "active"}
+                    onCheckedChange={(v) => toggleMut.mutate({ w: r.wrong, e: v })}
+                    title="켜면 전사에 적용(사람 판단 우선), 끄면 차단"
+                  />
+                  <button className="text-gray-300 hover:text-red-500" onClick={() => delMut.mutate(r.id)}>
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              {st !== "active" && r.blockReason && (
+                <div className="mt-1 text-xs text-amber-700">미적용 사유: {r.blockReason}</div>
+              )}
+              {r.sample && <div className="mt-0.5 text-xs text-gray-400 truncate">예문: …{r.sample}…</div>}
+            </Card>
+          );
+        })}
       </div>
       </>
       )}

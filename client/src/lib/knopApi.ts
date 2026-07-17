@@ -16,10 +16,14 @@ import type {
 export type { AiInbox, ParsedPayment, InboxSuggestion, Call, SmsTemplate, ScheduledMessage };
 
 export type CorrectionRule = {
+  id: string;
   wrong: string;
   right: string;
   count: number;
   enabled: boolean;
+  status: "active" | "pending" | "disabled";
+  blockReason: string | null;
+  sample: string | null;
   source: "learned" | "manual";
   createdAt: string;
   updatedAt: string;
@@ -121,7 +125,12 @@ async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
   }
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
-    throw new Error(`${res.status}: ${text}`);
+    // 서버가 사유를 주면(예: "안전 규칙 위반이라 강제 활성 불가") 그대로 보여준다
+    let msg = "";
+    try {
+      msg = JSON.parse(text)?.error || "";
+    } catch {}
+    throw new Error(msg || `${res.status}: ${text}`);
   }
   // 204/empty 대응
   const text = await res.text();
@@ -229,8 +238,13 @@ export const knopApi = {
     req<CorrectionRule[]>("POST", "/api/kop/corrections", { wrong, right }),
   toggleCorrection: (wrong: string, enabled: boolean) =>
     req<{ ok: boolean }>("PATCH", "/api/kop/corrections", { wrong, enabled }),
-  deleteCorrection: (wrong: string) =>
-    req<{ ok: boolean }>("DELETE", `/api/kop/corrections?wrong=${encodeURIComponent(wrong)}`),
+  deleteCorrection: (id: string) =>
+    req<{ ok: boolean }>("DELETE", `/api/kop/corrections?id=${encodeURIComponent(id)}`),
+  revalidateCorrections: () =>
+    req<{ checked: number; active: number; demoted: Array<{ wrong: string; right: string; reason: string }> }>(
+      "POST",
+      "/api/kop/corrections/revalidate",
+    ),
 
   // AI Inbox (결제 문자)
   submitInbox: (rawText: string, sender?: string) =>

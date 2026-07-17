@@ -659,10 +659,22 @@ export const noticeRuns = pgTable("notice_runs", {
 // 로컬 서버가 전사 직전 DB→<video-caption-bot>/learned_corrections.json 로 내려받아 correct.py 에 반영.
 export const correctionRules = pgTable("correction_rules", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  wrong: text("wrong").notNull().unique(),          // 틀린말
-  right: text("right").notNull(),                    // 맞는말
-  count: integer("count").default(0).notNull(),      // 누적 횟수
-  enabled: boolean("enabled").default(true).notNull(),
+  wrong: text("wrong").notNull().unique(),          // 틀린말(원문)
+  right: text("right").notNull(),                    // 맞는말(수정문)
+  count: integer("count").default(0).notNull(),      // 학습 횟수
+  // status: pending(후보·전사에 미적용) | active(적용) | disabled(구조적 위험/수동 차단)
+  status: text("status").default("pending").notNull(),
+  reasonCode: text("reason_code"),                   // 판정 코드(LOW_SIM, PROTECTED_TERM …)
+  blockReason: text("block_reason"),                 // 사람이 읽는 사유
+  needsReview: boolean("needs_review").default(false).notNull(), // 경계값 → 사람 확인 필요
+  // 독립 증거: [{sourceId, editSessionId, at}] — 같은 전사에서 여러 번 = 1건
+  sources: text("sources").default("[]").notNull(),
+  sample: text("sample"),                            // 학습된 문맥 예문
+  manualOverride: boolean("manual_override").default(false).notNull(), // 관리자 강제 활성(재검증이 못 끔)
+  overrideBy: text("override_by"),
+  overrideAt: timestamp("override_at"),
+  overrideReason: text("override_reason"),
+  enabled: boolean("enabled").default(false).notNull(), // = status==='active' (correct.py 호환용)
   source: text("source").default("learned").notNull(), // learned | manual
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
