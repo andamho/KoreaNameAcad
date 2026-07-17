@@ -18,12 +18,14 @@ export function tiktokConfigured(): boolean {
 }
 
 function getRedirectUri(): string {
-  const base =
+  const raw =
     process.env.PUBLIC_BASE_URL ||
     (process.env.NODE_ENV === "production"
       ? "https://korea-name-acad.com"
       : "http://localhost:5000");
-  return `${base.replace(/\/$/, "")}/api/auth/tiktok/callback`;
+  // env 값에 섞인 앞뒤 공백/탭/개행(%09 등) 제거 — TikTok redirect_uri 정확 일치용(불일치 시 로그인 실패).
+  const base = raw.trim().replace(/\s+/g, "").replace(/\/$/, "");
+  return `${base}/api/auth/tiktok/callback`;
 }
 
 /** 동의 화면 URL */
