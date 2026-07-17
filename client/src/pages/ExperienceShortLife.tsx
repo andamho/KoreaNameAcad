@@ -226,6 +226,20 @@ export default function ExperienceShortLife() {
     } catch {} finally { setReplySubmitting(false); }
   }
 
+  async function deleteReply(commentId: string, index: number) {
+    if (!confirm('이 답글을 삭제할까요?')) return;
+    const token = localStorage.getItem('kna_admin_token');
+    try {
+      const res = await fetch(`/api/experience-comments/${commentId}/reply/${index}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error();
+      const updated = await res.json();
+      setComments(prev => prev.map(c => c.id === commentId ? updated : c));
+    } catch {}
+  }
+
   async function submitEditReply(commentId: string, index: number) {
     if (!editReplyText.trim()) return;
     const token = localStorage.getItem('kna_admin_token');
@@ -639,8 +653,12 @@ export default function ExperienceShortLife() {
                       <div className="flex items-center justify-between">
                         <p className="text-xs font-bold text-[#18a999]">이름의신</p>
                         {isAdmin && (
-                          <button onClick={() => { setEditingReply({ commentId: c.id, index: i }); setEditReplyText(r.text); }}
-                            className="text-xs text-muted-foreground hover:text-[#18a999] transition">수정</button>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => { setEditingReply({ commentId: c.id, index: i }); setEditReplyText(r.text); }}
+                              className="text-xs text-muted-foreground hover:text-[#18a999] transition">수정</button>
+                            <button onClick={() => deleteReply(c.id, i)}
+                              className="text-xs text-muted-foreground hover:text-red-500 transition">삭제</button>
+                          </div>
                         )}
                       </div>
                       {editingReply?.commentId === c.id && editingReply.index === i ? (

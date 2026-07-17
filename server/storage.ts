@@ -38,6 +38,7 @@ export interface IStorage {
   deleteExperienceComment(id: string): Promise<void>;
   replyToExperienceComment(id: string, reply: string): Promise<ExperienceComment>;
   editExperienceCommentReply(id: string, index: number, text: string): Promise<ExperienceComment>;
+  deleteExperienceCommentReply(id: string, index: number): Promise<ExperienceComment>;
 
   createInquiry(inquiry: InsertInquiry): Promise<Inquiry>;
   getAllInquiries(): Promise<Inquiry[]>;
@@ -206,6 +207,7 @@ export class MemStorage implements IStorage {
   async deleteExperienceComment(_id: string): Promise<void> {}
   async replyToExperienceComment(_id: string, _reply: string): Promise<ExperienceComment> { throw new Error("Not implemented"); }
   async editExperienceCommentReply(_id: string, _index: number, _text: string): Promise<ExperienceComment> { throw new Error("Not implemented"); }
+  async deleteExperienceCommentReply(_id: string, _index: number): Promise<ExperienceComment> { throw new Error("Not implemented"); }
 
   async createInquiry(_inquiry: InsertInquiry): Promise<Inquiry> { throw new Error("Not implemented"); }
   async getAllInquiries(): Promise<Inquiry[]> { return []; }
@@ -598,6 +600,31 @@ export class DatabaseStorage implements IStorage {
       return result;
     } catch (error: any) {
       throw new DatabaseError(`답글 수정 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async deleteExperienceCommentReply(id: string, index: number): Promise<ExperienceComment> {
+    await this.ensureDbReady();
+    try {
+      const [existing] = await this.db.select().from(experienceComments).where(eq(experienceComments.id, id));
+      let replies: Array<{ text: string; createdAt: string }> = [];
+      if (existing?.reply) {
+        try {
+          const parsed = JSON.parse(existing.reply);
+          replies = Array.isArray(parsed) ? parsed : [{ text: existing.reply, createdAt: existing.repliedAt?.toISOString() ?? new Date().toISOString() }];
+        } catch {
+          replies = [{ text: existing.reply, createdAt: existing.repliedAt?.toISOString() ?? new Date().toISOString() }];
+        }
+      }
+      if (index < 0 || index >= replies.length) throw new Error("Invalid reply index");
+      replies.splice(index, 1); // 해당 답글만 제거
+      const [result] = await this.db.update(experienceComments)
+        .set({ reply: replies.length ? JSON.stringify(replies) : null })
+        .where(eq(experienceComments.id, id))
+        .returning();
+      return result;
+    } catch (error: any) {
+      throw new DatabaseError(`답글 삭제 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
   }
 
