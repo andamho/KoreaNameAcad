@@ -915,6 +915,42 @@ function VideoDeployPanel() {
     }
   };
 
+  // 틱톡만 게시 (유튜브/인스타/홈페이지 안 건드림). 심사 전 샌드박스는 비공개(SELF_ONLY)로 게시됨.
+  const tiktokOnly = async () => {
+    if (!file) { toast({ title: "영상 파일을 선택하세요.", variant: "destructive" }); return; }
+    setDeploying(true);
+    setResult(null);
+    try {
+      const token = localStorage.getItem("kna_admin_token");
+      const up = await fetch("/api/uploads/upload", {
+        method: "POST",
+        headers: { "Content-Type": file.type || "video/mp4" },
+        body: file,
+      });
+      if (!up.ok) throw new Error("영상 업로드 실패");
+      const { objectPath } = await up.json();
+
+      const r = await fetch("/api/admin/video/tiktok-only", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ objectPath, caption: igCaptionText }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || "틱톡 게시 실패");
+      setResult({ tiktokOnly: data });
+      toast({
+        title: "틱톡 게시 완료",
+        description: data.privacy === "SELF_ONLY" ? "심사 전이라 비공개로 게시됨(정상)" : `공개범위: ${data.privacy}`,
+      });
+      setFile(null);
+    } catch (e: any) {
+      setResult({ error: e?.message || "틱톡 게시 실패" });
+      toast({ title: "틱톡 게시 실패", description: e?.message, variant: "destructive" });
+    } finally {
+      setDeploying(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <Card className="p-6">
@@ -1093,9 +1129,27 @@ function VideoDeployPanel() {
           {deploying ? "배포 중… (영상 업로드에 시간이 걸릴 수 있습니다)" : "배포하기"}
         </Button>
 
+        {/* 틱톡 단독 게시 — 유튜브/인스타/홈페이지 안 건드림. 테스트·데모 녹화용 */}
+        <Button variant="outline" className="w-full" onClick={tiktokOnly} disabled={deploying || !tt?.connected}>
+          {deploying ? "처리 중…" : "틱톡만 게시 (유튜브·인스타 제외)"}
+        </Button>
+        <div className="text-xs text-muted-foreground -mt-2">
+          틱톡만 단독 게시합니다. 심사 통과 전에는 틱톡 정책상 <b>비공개(나만 보기)</b>로 올라갑니다.
+        </div>
+
         {result && (
           <div className="text-sm border rounded-lg p-4 space-y-1">
             {result.error && <div className="text-red-600">오류: {result.error}</div>}
+            {result.tiktokOnly && (
+              <div>
+                TikTok 단독 게시: <span className="text-emerald-600">성공</span>
+                {" · "}공개범위 <b>{result.tiktokOnly.privacy}</b>
+                {result.tiktokOnly.privacy === "SELF_ONLY" && <span className="text-muted-foreground"> (심사 전이라 비공개 — 정상)</span>}
+                <div className="text-muted-foreground">
+                  상태: {result.tiktokOnly.status} · 소요 {result.tiktokOnly.elapsedSec}s · publishId {result.tiktokOnly.publishId}
+                </div>
+              </div>
+            )}
             {result.youtubeTitle && <div className="text-muted-foreground">제목: {result.youtubeTitle}</div>}
             {result.youtube && (
               <div>

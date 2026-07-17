@@ -1241,6 +1241,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ── 틱톡 단독 게시 (유튜브/인스타/홈페이지 절대 안 건드림) ──
+  // 심사 전 Sandbox에서는 TikTok이 강제로 SELF_ONLY(비공개)로 게시 → 테스트/데모 녹화용으로 안전.
+  // videoJobs 행도 만들지 않음(순수 단독 게시). 캡션 = 본문 + 틱톡footer(@3줄 제거) + 해시태그.
+  app.post("/api/admin/video/tiktok-only", requireAdmin, async (req, res) => {
+    try {
+      const { objectPath, caption } = req.body || {};
+      if (!objectPath || typeof objectPath !== "string" || !objectPath.startsWith("/objects/")) {
+        return res.status(400).json({ error: "유효한 영상 objectPath가 필요합니다." });
+      }
+      let key: string;
+      try {
+        key = validateR2VideoKey(objectPath.replace("/objects/", ""));
+      } catch (e: any) {
+        return res.status(400).json({ error: "영상 키가 유효하지 않음: " + e?.message });
+      }
+      const ttCaption = [String(caption || "").trim(), TIKTOK_CAPTION_FOOTER, INSTAGRAM_HASHTAGS]
+        .filter(Boolean)
+        .join("\n\n");
+      const t0 = Date.now();
+      const h264 = await transcodeR2VideoToH264(key); // 스트리밍 변환 + 1080 다운스케일
+      const result = await publishTiktokVideo(h264, ttCaption);
+      res.json({
+        ok: true,
+        publishId: result.publishId,
+        privacy: result.privacy,
+        status: result.status,
+        elapsedSec: ((Date.now() - t0) / 1000).toFixed(1),
+        note: result.privacy === "SELF_ONLY" ? "심사 전이라 비공개(SELF_ONLY)로 게시됨 — 정상" : undefined,
+      });
+    } catch (error: any) {
+      console.error("[tiktok-only]", error);
+      res.status(500).json({ error: error?.message || "tiktok publish failed" });
+    }
+  });
+
   // ── transcode 진단 (비게시): job ID의 원본으로 변환만 돌려 자원/시간/종료 기록. 게시/DB 게시상태 안 건드림 ──
   // 입력은 임의 r2Key가 아니라 video_job ID. 서버가 job.video_r2_key를 조회 → uploads/ 검증(SSRF 방지).
   app.post("/api/admin/transcode-diagnostic", requireAdmin, async (req, res) => {
