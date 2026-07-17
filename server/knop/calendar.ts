@@ -154,14 +154,18 @@ function getAmPm(hour: number): { ampm: string; hour24: number } {
   return { ampm: "오후", hour24: hour + 12 };
 }
 
-// 달력 이벤트의 시작 시각(제목 앞 숫자=시간, 예 "430김유진"→오후 4시 30분). 시간 없으면 오후 2시 기본.
+// 달력 이벤트의 시작 시각(제목 앞 숫자=시간, 예 "430김유진"→오후 4시 30분).
+// 상담은 시간 표기가 없으면 오후 2시 기본. 상담이 아닌 일정은 시간 표기가 없으면 시각 없음(빈칸).
 export function eventStartAt(evt: CalEvent): Date | null {
   if (!evt.date) return null;
   const [y, mo, d] = evt.date.split("-").map(Number);
   if (!y || !mo || !d) return null;
+  const m = (evt.title || "").match(/^(\d{1,4})/);
+  // 상담이 아니고(=cat 이 상담 외로 명시됨) 제목 앞에 시간 숫자도 없으면 시각을 비운다.
+  const isConsult = !evt.cat || evt.cat === "상담";
+  if (!m && !isConsult) return null;
   let hour24 = 14;
   let min = 0;
-  const m = (evt.title || "").match(/^(\d{1,4})/);
   if (m) {
     const tp = m[1];
     let hour: number;
