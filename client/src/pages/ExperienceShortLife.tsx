@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Linkify } from "@/lib/linkify";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useLocation } from "wouter";
@@ -632,7 +633,7 @@ export default function ExperienceShortLife() {
                       )}
                     </div>
                   </div>
-                  <p className="text-sm text-foreground/80 leading-relaxed">{c.content}</p>
+                  <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap"><Linkify>{c.content}</Linkify></p>
                   {c.reply && parseReplies(c.reply).map((r, i) => (
                     <div key={i} className="mt-2 ml-3 pl-3 border-l-2 border-[#18a999]/30 space-y-0.5">
                       <div className="flex items-center justify-between">
@@ -654,7 +655,7 @@ export default function ExperienceShortLife() {
                             className="px-3 py-1.5 rounded-lg border border-border text-xs transition">취소</button>
                         </div>
                       ) : (
-                        <p className="text-sm text-foreground/80 leading-relaxed">{r.text}</p>
+                        <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap"><Linkify>{r.text}</Linkify></p>
                       )}
                     </div>
                   ))}

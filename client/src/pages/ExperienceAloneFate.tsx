@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Linkify } from "@/lib/linkify";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useLocation } from "wouter";
@@ -812,7 +813,7 @@ export default function ExperienceAloneFate() {
                         )}
                       </div>
                     </div>
-                    <p className="text-sm text-foreground/80 leading-relaxed">{c.content}</p>
+                    <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap"><Linkify>{c.content}</Linkify></p>
 
                     {/* 기존 답글 표시 */}
                     {c.reply && parseReplies(c.reply).map((r, i) => (
@@ -840,7 +841,7 @@ export default function ExperienceAloneFate() {
                               className="px-3 py-1.5 rounded-lg border border-border text-xs transition">취소</button>
                           </div>
                         ) : (
-                          <p className="text-sm text-foreground/80 leading-relaxed">{r.text}</p>
+                          <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap"><Linkify>{r.text}</Linkify></p>
                         )}
                       </div>
                     ))}

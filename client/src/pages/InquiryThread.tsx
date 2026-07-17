@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Linkify } from "@/lib/linkify";
 import { useParams } from "wouter";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -140,7 +141,7 @@ export default function InquiryThread() {
                   </span>
                 </div>
                 <div className="bg-muted/30 rounded-xl px-4 py-3">
-                  <p className="text-sm md:text-base whitespace-pre-wrap leading-relaxed text-foreground">{data.inquiry.content}</p>
+                  <p className="text-sm md:text-base whitespace-pre-wrap leading-relaxed text-foreground"><Linkify>{data.inquiry.content}</Linkify></p>
                   <p className="text-xs text-muted-foreground mt-2">{formatDateTime(data.inquiry.createdAt)}</p>
                 </div>
               </div>
@@ -170,7 +171,15 @@ export default function InquiryThread() {
                                 : "bg-muted text-foreground rounded-tl-sm"
                             }`}
                           >
-                            {msg.content}
+                            <Linkify
+                              className={
+                                isRight
+                                  ? "underline underline-offset-2 break-all font-medium"
+                                  : "text-[#18a999] underline underline-offset-2 hover:text-[#149085] break-all"
+                              }
+                            >
+                              {msg.content}
+                            </Linkify>
                           </div>
                           <p className="text-[10px] text-muted-foreground">{formatDateTime(msg.createdAt)}</p>
                         </div>
