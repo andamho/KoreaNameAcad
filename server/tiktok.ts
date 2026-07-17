@@ -263,10 +263,17 @@ export async function publishTiktokVideo(
   const accessToken = await getAccessToken();
   const size = video.length;
 
-  // 1) 크리에이터 정보 → 공개범위 결정(PUBLIC 우선, 없으면 허용된 첫 옵션=심사 전 SELF_ONLY)
+  // 1) 크리에이터 정보 → 공개범위 결정.
+  // [중요] TikTok은 심사 전(unaudited)에도 creator_info에 PUBLIC_TO_EVERYONE을 내려주지만,
+  // 실제로 PUBLIC을 요청하면 거부한다(unaudited_client_can_only_post_to_private_accounts).
+  // → 기본은 SELF_ONLY(비공개). 심사 통과 후 Railway env `TIKTOK_POST_PRIVACY=PUBLIC_TO_EVERYONE` 로 전환.
   const info = await getTiktokCreatorInfo(accessToken);
-  const privacy =
-    info.privacyOptions.find((p) => p === "PUBLIC_TO_EVERYONE") || info.privacyOptions[0] || "SELF_ONLY";
+  const want = (process.env.TIKTOK_POST_PRIVACY || "SELF_ONLY").trim();
+  const privacy = info.privacyOptions.includes(want)
+    ? want
+    : info.privacyOptions.includes("SELF_ONLY")
+      ? "SELF_ONLY"
+      : info.privacyOptions[0] || "SELF_ONLY";
   const title = (caption || "").slice(0, 2200); // TikTok title 최대 2200자
 
   // 2) 다이렉트 포스트 초기화 (post_info + FILE_UPLOAD 단일 청크)
