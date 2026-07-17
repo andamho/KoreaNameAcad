@@ -415,7 +415,9 @@ export default function Inquiry() {
                                         <textarea
                                           value={editingMsg.text}
                                           onChange={e => setEditingMsg({ id: msg.id, text: e.target.value })}
-                                          className="w-full border border-border rounded-lg px-3 py-2 text-xs md:text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[60px] bg-background"
+                                          // 내용 전체가 보이도록 높이를 자동 확장(최대 60vh, 넘으면 스크롤)
+                                          ref={el => { if (el) { el.style.height = "auto"; el.style.height = `${el.scrollHeight}px`; } }}
+                                          className="w-full border border-border rounded-lg px-3 py-2 text-xs md:text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition min-h-[120px] max-h-[60vh] overflow-y-auto bg-background"
                                           maxLength={2000} autoFocus
                                         />
                                         <div className="flex justify-end gap-2">
