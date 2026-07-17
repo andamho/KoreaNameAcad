@@ -9,9 +9,10 @@ import { oauthTokens } from "@shared/schema";
 const PROVIDER = "tiktok";
 const AUTH_BASE = "https://www.tiktok.com/v2/auth/authorize/";
 const API_BASE = "https://open.tiktokapis.com/v2";
-// video.upload=초안(inbox). video.publish=다이렉트 포스트(캡션 포함 자동 게시).
-// 심사(오디트) 전에는 다이렉트 포스트가 강제로 SELF_ONLY(비공개)로만 게시됨(TikTok 정책). 통과 후 PUBLIC 가능.
-const SCOPES = "user.info.basic,video.upload,video.publish";
+// Direct Post(video.publish)만 사용 → OAuth엔 user.info.basic + video.publish 만 요청.
+// video.upload(초안함)는 우리가 안 쓰는 별개 권한이라 제외(불필요 스코프가 OAuth 전체를 막을 수 있음 + 심사 지연 유발).
+// 미심사 클라이언트도 Direct Post는 사용 가능하나 게시물이 강제 SELF_ONLY(비공개)로 제한됨(공식). 심사 통과 후 PUBLIC.
+const SCOPES = "user.info.basic,video.publish";
 
 export function tiktokConfigured(): boolean {
   return !!(process.env.TIKTOK_CLIENT_KEY && process.env.TIKTOK_CLIENT_SECRET);
