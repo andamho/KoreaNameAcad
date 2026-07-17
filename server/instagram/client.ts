@@ -91,6 +91,37 @@ export async function getSubscribedFields(): Promise<string[]> {
   return fields.map((f: any) => (typeof f === "string" ? f : f?.name)).filter(Boolean);
 }
 
+/** 댓글에 공개 답글 달기. 반환: 생성된 답글 id */
+export async function replyToComment(commentId: string, message: string): Promise<{ id: string }> {
+  const j = await igGraph(`/${commentId}/replies`, { method: "POST", params: { message } });
+  if (!j?.id) throw new IgApiError(`답글 실패: ${JSON.stringify(j)}`, 502);
+  return { id: j.id };
+}
+
+/**
+ * 댓글 작성자에게 Private Reply DM. 댓글 후 7일 이내, 댓글당 1회만 허용.
+ * recipient를 comment_id로 지정하는 게 핵심(IGSID가 아니라).
+ * 반환: {recipient_id, message_id}
+ */
+export async function sendPrivateReply(commentId: string, text: string): Promise<{ recipientId?: string; messageId?: string }> {
+  const j = await igGraph(`/me/messages`, {
+    method: "POST",
+    params: { recipient: JSON.stringify({ comment_id: commentId }), message: JSON.stringify({ text }) },
+  });
+  if (j?.error) throw new IgApiError(`Private Reply 실패: ${JSON.stringify(j.error)}`, 502);
+  return { recipientId: j?.recipient_id, messageId: j?.message_id };
+}
+
+/** 일반 DM 발송 (IGSID 대상, 24시간 창 내). 반환: {recipient_id, message_id} */
+export async function sendDirectMessage(igsid: string, text: string): Promise<{ recipientId?: string; messageId?: string }> {
+  const j = await igGraph(`/me/messages`, {
+    method: "POST",
+    params: { recipient: JSON.stringify({ id: igsid }), message: JSON.stringify({ text }) },
+  });
+  if (j?.error) throw new IgApiError(`DM 발송 실패: ${JSON.stringify(j.error)}`, 502);
+  return { recipientId: j?.recipient_id, messageId: j?.message_id };
+}
+
 /** 웹훅 구독 (댓글 + DM) */
 export async function subscribeWebhooks(fields = ["comments", "messages"]): Promise<void> {
   const j = await igGraph("/me/subscribed_apps", {

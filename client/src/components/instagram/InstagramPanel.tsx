@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { RefreshCw, Link2, Radio, KeyRound, Copy, Check } from "lucide-react";
+import { RefreshCw, Link2, Radio, KeyRound, Copy, Check, Send } from "lucide-react";
 
 type Diagnostics = {
   env: {
@@ -27,6 +27,13 @@ type Diagnostics = {
     callbackMatches?: boolean;
     error?: string;
   };
+};
+
+type Rule = {
+  keyword: string;
+  commentReplies: string[];
+  dmText: string;
+  sendLive: boolean;
 };
 
 type IgEvent = {
@@ -90,6 +97,8 @@ export function InstagramPanel() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [live, setLive] = useState(false);
+  const [rule, setRule] = useState<Rule | null>(null);
+  const [testCommentId, setTestCommentId] = useState("");
 
   const loadDiag = useCallback(async () => {
     try {
@@ -108,9 +117,17 @@ export function InstagramPanel() {
     }
   }, []);
 
+  const loadRule = useCallback(async () => {
+    try {
+      setRule(await api("/api/admin/instagram/rule"));
+    } catch {
+      // 규칙 조회 실패는 조용히
+    }
+  }, []);
+
   useEffect(() => {
-    Promise.all([loadDiag(), loadEvents()]).finally(() => setLoading(false));
-  }, [loadDiag, loadEvents]);
+    Promise.all([loadDiag(), loadEvents(), loadRule()]).finally(() => setLoading(false));
+  }, [loadDiag, loadEvents, loadRule]);
 
   // 실시간 모드: 댓글을 달고 화면에서 바로 확인하기 위한 폴링
   useEffect(() => {
@@ -138,6 +155,30 @@ export function InstagramPanel() {
       await loadDiag();
     } catch (e: any) {
       toast({ title: "웹훅 구독 실패", description: e.message, variant: "destructive" });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const testSend = async () => {
+    const cid = testCommentId.trim();
+    if (!cid) return;
+    setBusy("test-send");
+    try {
+      const r = await api("/api/admin/instagram/test-send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ commentId: cid, force: true }),
+      });
+      const errs = (r.errors || []).length;
+      toast({
+        title: errs ? "일부 실패" : rule?.sendLive ? "발송 완료" : "드라이런 완료(실제 발송 안 함)",
+        description: errs ? r.errors.join("; ") : `답글=${r.replied?.id ?? "-"}, DM=${r.dm?.messageId ?? "-"}`,
+        variant: errs ? "destructive" : undefined,
+      });
+      await loadEvents();
+    } catch (e: any) {
+      toast({ title: "테스트 발송 실패", description: e.message, variant: "destructive" });
     } finally {
       setBusy(null);
     }
@@ -280,13 +321,61 @@ export function InstagramPanel() {
         </Card>
       )}
 
+      {/* ── 자동응답 규칙 + 테스트 발송 ── */}
+      {rule && (
+        <Card className="p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold">자동응답 규칙</h3>
+            <Badge variant={rule.sendLive ? "default" : "secondary"} className="text-[10px]">
+              {rule.sendLive ? "실제 발송 ON" : "드라이런 (실제 발송 안 함)"}
+            </Badge>
+          </div>
+          <div className="space-y-2 text-sm">
+            <div className="flex gap-2">
+              <span className="text-muted-foreground w-20 shrink-0">트리거</span>
+              <span>댓글에 <b>"{rule.keyword}"</b> 포함 시</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-muted-foreground w-20 shrink-0">공개 답글</span>
+              <span className="break-words">{rule.commentReplies[0]}</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-muted-foreground w-20 shrink-0">DM</span>
+              <span className="break-words">{rule.dmText}</span>
+            </div>
+          </div>
+
+          <div className="mt-5 pt-4 border-t">
+            <div className="text-xs font-medium text-muted-foreground mb-2">
+              테스트 발송 (심사 녹화용 · 댓글 ID를 넣으면 즉시 답글+DM)
+            </div>
+            <div className="flex gap-2">
+              <input
+                className="flex-1 text-sm border rounded-md px-3 py-1.5 bg-background"
+                placeholder="댓글 ID (예: 17892100113811950)"
+                value={testCommentId}
+                onChange={(e) => setTestCommentId(e.target.value)}
+              />
+              <Button size="sm" onClick={testSend} disabled={!testCommentId.trim() || busy === "test-send"}>
+                <Send className="w-3.5 h-3.5 mr-1.5" /> 발송
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              {rule.sendLive
+                ? "⚠️ 실제 발송 모드입니다. 이 댓글에 실제로 답글과 DM이 나갑니다."
+                : "드라이런 모드라 실제로는 안 나가고 로그/기록만 남습니다. 실제 발송하려면 Railway에 INSTAGRAM_SEND_LIVE=1 설정."}
+            </p>
+          </div>
+        </Card>
+      )}
+
       {/* ── 수신된 이벤트 ── */}
       <Card className="p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="font-semibold">수신된 댓글 / DM</h3>
+            <h3 className="font-semibold">수신된 댓글 / DM · 발송 기록</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              웹훅이 실제로 들어오는지 확인하는 곳입니다. 아직 자동 답글·DM은 보내지 않습니다.
+              웹훅 수신과 자동 발송 기록이 함께 표시됩니다.
             </p>
           </div>
           <Button size="sm" variant={live ? "default" : "outline"} onClick={() => setLive((v) => !v)}>
@@ -305,13 +394,16 @@ export function InstagramPanel() {
           <div className="space-y-2 max-h-[420px] overflow-y-auto">
             {events.map((e) => (
               <div key={e.id} className="flex items-start gap-3 text-sm border rounded-md p-2.5">
-                <Badge variant={e.kind === "comment" ? "default" : "secondary"} className="shrink-0 text-[10px]">
-                  {e.kind === "comment" ? "댓글" : "DM"}
+                <Badge
+                  variant={e.kind === "comment" ? "default" : e.kind === "action" ? "outline" : "secondary"}
+                  className="shrink-0 text-[10px]"
+                >
+                  {e.kind === "comment" ? "댓글" : e.kind === "action" ? "발송" : "DM"}
                 </Badge>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium">{e.fromUsername ? `@${e.fromUsername}` : e.fromId || "?"}</span>
-                    {e.parentId && <Badge variant="outline" className="text-[10px]">대댓글</Badge>}
+                    {e.kind !== "action" && e.parentId && <Badge variant="outline" className="text-[10px]">대댓글</Badge>}
                     {e.isEcho && <Badge variant="outline" className="text-[10px]">내가 보낸 것</Badge>}
                   </div>
                   <div className="text-muted-foreground break-words">{e.text || <i>(내용 없음)</i>}</div>

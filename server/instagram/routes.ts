@@ -8,6 +8,7 @@ import { getIgToken, igAppId, igAppSecret, refreshIfNeeded, startIgTokenRefresh 
 import { getMe, getSubscribedFields, subscribeWebhooks, getAppWebhookConfig, IgApiError } from "./client";
 import { authorizeUrl, completeOAuth, redirectUri, verifyState, IG_SCOPES } from "./oauth";
 import { signatureMatch, normalizeWebhook, storeEvents } from "./webhook";
+import { processComment, RULE, SEND_LIVE } from "./automation";
 
 function handle(res: Response, route: string, e: any) {
   if (e instanceof IgApiError) {
@@ -86,15 +87,32 @@ export function registerInstagramRoutes(app: Express, requireAdmin: RequestHandl
         console.log(`[IG WEBHOOK] 처리 대상 없는 이벤트: ${JSON.stringify(req.body).slice(0, 300)}`);
         return;
       }
-      const stored = await storeEvents(events);
+      const storedKeys = await storeEvents(events);
       for (const e of events) {
         console.log(
           `[IG WEBHOOK] ${e.kind} from=${e.fromUsername ?? e.fromId ?? "?"} ` +
             `${e.parentId ? "(대댓글) " : ""}${e.isEcho ? "(echo) " : ""}text=${(e.text ?? "").slice(0, 40)}`,
         );
       }
-      if (stored < events.length) {
-        console.log(`[IG WEBHOOK] ${events.length}건 중 ${events.length - stored}건은 중복이라 건너뜀`);
+      if (storedKeys.size < events.length) {
+        console.log(`[IG WEBHOOK] ${events.length}건 중 ${events.length - storedKeys.size}건은 중복이라 건너뜀`);
+      }
+
+      // ── 자동응답: "새로" 저장된 최상위 댓글만 처리 ──
+      // storedKeys 로 중복 처리를 막는다(같은 이벤트 재전송 시 두 번 발송 방지 = 댓글당 1회).
+      // 대댓글(parentId 있음)과 내 메아리(isEcho)는 제외.
+      for (const e of events) {
+        if (e.kind !== "comment" || e.parentId || e.isEcho) continue;
+        if (!storedKeys.has(e.dedupeKey)) continue; // 이미 처리했던 댓글 → 재발송 안 함
+        const commentId = e.dedupeKey.replace(/^comment:/, "");
+        try {
+          const r = await processComment({ commentId, text: e.text, fromUsername: e.fromUsername });
+          if (r.matched) {
+            console.log(`[IG AUTO] 댓글 ${commentId} 처리 (${r.live ? "LIVE" : "DRY"}) 오류=${r.errors.length}`);
+          }
+        } catch (err: any) {
+          console.error(`[IG AUTO] 처리 실패 ${commentId}: ${err?.message}`);
+        }
       }
     } catch (e: any) {
       console.error(`[IG WEBHOOK] 처리 오류: ${e?.message}`);
@@ -269,5 +287,28 @@ export function registerInstagramRoutes(app: Express, requireAdmin: RequestHandl
     } catch (e) {
       handle(res, "events", e);
     }
+  });
+
+  // ── 테스트 발송: 댓글 ID를 넣으면 답글 + Private Reply DM 발송 ──
+  // 심사 녹화용. force=true면 키워드 무시. SEND_LIVE 아니면 dry-run.
+  app.post("/api/admin/instagram/test-send", requireAdmin, async (req, res) => {
+    try {
+      const commentId = String(req.body?.commentId || "").trim();
+      if (!commentId) return res.status(400).json({ error: "commentId 필요" });
+      const r = await processComment({
+        commentId,
+        text: req.body?.text ?? null,
+        fromUsername: req.body?.fromUsername ?? null,
+        force: req.body?.force !== false, // 기본 true(테스트는 키워드 무시)
+      });
+      res.json(r);
+    } catch (e) {
+      handle(res, "test-send", e);
+    }
+  });
+
+  // ── 현재 자동응답 규칙/문구 조회 (화면 표시용) ──
+  app.get("/api/admin/instagram/rule", requireAdmin, (_req, res) => {
+    res.json({ ...RULE, sendLive: SEND_LIVE });
   });
 }

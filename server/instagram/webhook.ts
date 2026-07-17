@@ -108,11 +108,12 @@ export function normalizeWebhook(body: any): NormalizedIgEvent[] {
 
 /**
  * 이벤트 적재. 중복(dedupeKey)은 조용히 무시한다.
- * 반환: 실제로 새로 저장된 건수
+ * 반환: 실제로 "새로" 저장된 이벤트들의 dedupeKey 집합.
+ * 자동응답은 이 집합에 든 것만 처리해야 재전송 시 중복 발송을 막는다.
  */
-export async function storeEvents(events: NormalizedIgEvent[]): Promise<number> {
-  if (!db || events.length === 0) return 0;
-  let stored = 0;
+export async function storeEvents(events: NormalizedIgEvent[]): Promise<Set<string>> {
+  const storedKeys = new Set<string>();
+  if (!db || events.length === 0) return storedKeys;
   for (const e of events) {
     try {
       const rows = await db
@@ -131,11 +132,11 @@ export async function storeEvents(events: NormalizedIgEvent[]): Promise<number> 
         })
         .onConflictDoNothing({ target: igEvents.dedupeKey })
         .returning({ id: igEvents.id });
-      if (rows.length > 0) stored++;
+      if (rows.length > 0) storedKeys.add(e.dedupeKey);
     } catch (err: any) {
       // 한 건이 실패해도 나머지는 저장한다. 웹훅에는 200을 돌려줘야 Meta가 재전송을 멈춘다.
       console.error(`[IG WEBHOOK] 이벤트 저장 실패 ${e.dedupeKey}: ${err?.message}`);
     }
   }
-  return stored;
+  return storedKeys;
 }
