@@ -63,6 +63,34 @@ export default function Inquiry() {
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [submittingReply, setSubmittingReply] = useState<string | null>(null);
   const [threadMessages, setThreadMessages] = useState<Record<string, Array<{id: string; senderType: string; content: string; createdAt: string}>>>({});
+  const [editingMsg, setEditingMsg] = useState<{ id: string; text: string } | null>(null);
+
+  // 문의 대화 메시지 개별 수정
+  async function saveMsgEdit(inqId: string) {
+    if (!editingMsg?.text.trim()) return;
+    try {
+      const res = await fetch(`/api/inquiry-messages/${editingMsg.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken}` },
+        body: JSON.stringify({ content: editingMsg.text.trim() }),
+      });
+      if (!res.ok) throw new Error();
+      setEditingMsg(null);
+      fetchThreadMessages(inqId);
+    } catch { toast({ title: "수정 실패", variant: "destructive" }); }
+  }
+  // 문의 대화 메시지 개별 삭제
+  async function deleteMsg(inqId: string, msgId: string) {
+    if (!confirm("이 답글을 삭제할까요?")) return;
+    try {
+      const res = await fetch(`/api/inquiry-messages/${msgId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      if (!res.ok) throw new Error();
+      fetchThreadMessages(inqId);
+    } catch { toast({ title: "삭제 실패", variant: "destructive" }); }
+  }
   const [adminLoginVisible, setAdminLoginVisible] = useState(false);
   const [adminPw, setAdminPw] = useState("");
   const [adminLoginErr, setAdminLoginErr] = useState("");
@@ -382,22 +410,50 @@ export default function Inquiry() {
                                     <p className={`text-[10px] font-medium ${msg.senderType === "admin" ? "text-[#18a999]" : "text-muted-foreground"}`}>
                                       {msg.senderType === "admin" ? "관리자" : inq.name}
                                     </p>
-                                    <div className={`max-w-[85%] rounded-xl px-3 py-2 text-xs md:text-sm whitespace-pre-wrap leading-relaxed ${
-                                      msg.senderType === "admin"
-                                        ? "bg-[#18a999] text-white"
-                                        : "bg-muted/60 text-foreground"
-                                    }`}>
-                                      <Linkify
-                                        className={
-                                          msg.senderType === "admin"
-                                            ? "underline underline-offset-2 break-all font-medium"
-                                            : "text-[#18a999] underline underline-offset-2 hover:text-[#149085] break-all"
-                                        }
-                                      >
-                                        {msg.content}
-                                      </Linkify>
+                                    {editingMsg?.id === msg.id ? (
+                                      <div className="w-full flex flex-col gap-1.5">
+                                        <textarea
+                                          value={editingMsg.text}
+                                          onChange={e => setEditingMsg({ id: msg.id, text: e.target.value })}
+                                          className="w-full border border-border rounded-lg px-3 py-2 text-xs md:text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[60px] bg-background"
+                                          maxLength={2000} autoFocus
+                                        />
+                                        <div className="flex justify-end gap-2">
+                                          <button onClick={() => saveMsgEdit(inq.id)} disabled={!editingMsg.text.trim()}
+                                            className="px-3 py-1 rounded-lg bg-[#18a999] text-white text-xs font-bold disabled:opacity-50 transition">저장</button>
+                                          <button onClick={() => setEditingMsg(null)}
+                                            className="px-3 py-1 rounded-lg border border-border text-xs transition">취소</button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className={`max-w-[85%] rounded-xl px-3 py-2 text-xs md:text-sm whitespace-pre-wrap leading-relaxed ${
+                                        msg.senderType === "admin"
+                                          ? "bg-[#18a999] text-white"
+                                          : "bg-muted/60 text-foreground"
+                                      }`}>
+                                        <Linkify
+                                          className={
+                                            msg.senderType === "admin"
+                                              ? "underline underline-offset-2 break-all font-medium"
+                                              : "text-[#18a999] underline underline-offset-2 hover:text-[#149085] break-all"
+                                          }
+                                        >
+                                          {msg.content}
+                                        </Linkify>
+                                      </div>
+                                    )}
+                                    <div className="flex items-center gap-2">
+                                      <p className="text-[10px] text-muted-foreground">{formatDateTime(msg.createdAt)}</p>
+                                      {/* 관리자 메시지만 개별 수정·삭제 (임시 메시지는 새로고침 후) */}
+                                      {msg.senderType === "admin" && !msg.id.startsWith("__tmp__") && editingMsg?.id !== msg.id && (
+                                        <>
+                                          <button onClick={() => setEditingMsg({ id: msg.id, text: msg.content })}
+                                            className="text-[10px] text-muted-foreground hover:text-[#18a999] transition">수정</button>
+                                          <button onClick={() => deleteMsg(inq.id, msg.id)}
+                                            className="text-[10px] text-muted-foreground hover:text-red-500 transition">삭제</button>
+                                        </>
+                                      )}
                                     </div>
-                                    <p className="text-[10px] text-muted-foreground">{formatDateTime(msg.createdAt)}</p>
                                   </div>
                                 ))}
                               </div>

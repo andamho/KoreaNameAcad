@@ -808,6 +808,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 문의 대화 메시지 개별 수정 (관리자)
+  app.put("/api/inquiry-messages/:id", requireAdmin, async (req, res) => {
+    try {
+      const { content } = req.body;
+      if (!content?.trim()) return res.status(400).json({ error: "내용을 입력해주세요." });
+      const message = await storage.editInquiryMessage(req.params.id, content.trim());
+      return res.json(message);
+    } catch (error: any) {
+      return handleDbError(error, res, "PUT /api/inquiry-messages/:id");
+    }
+  });
+
+  // 문의 대화 메시지 개별 삭제 (관리자)
+  app.delete("/api/inquiry-messages/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteInquiryMessage(req.params.id);
+      return res.json({ success: true });
+    } catch (error: any) {
+      return handleDbError(error, res, "DELETE /api/inquiry-messages/:id");
+    }
+  });
+
   // 어드민용 스레드 메시지 목록 조회
   app.get("/api/inquiries/:id/thread", requireAdmin, async (req, res) => {
     try {
