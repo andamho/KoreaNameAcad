@@ -9,8 +9,9 @@ import { oauthTokens } from "@shared/schema";
 const PROVIDER = "tiktok";
 const AUTH_BASE = "https://www.tiktok.com/v2/auth/authorize/";
 const API_BASE = "https://open.tiktokapis.com/v2";
-// video.upload = 초안(inbox) 업로드. video.publish는 심사 후 추가.
-const SCOPES = "user.info.basic,video.upload";
+// video.upload=초안(inbox). video.publish=다이렉트 포스트(캡션 포함 자동 게시).
+// 심사(오디트) 전에는 다이렉트 포스트가 강제로 SELF_ONLY(비공개)로만 게시됨(TikTok 정책). 통과 후 PUBLIC 가능.
+const SCOPES = "user.info.basic,video.upload,video.publish";
 
 export function tiktokConfigured(): boolean {
   return !!(process.env.TIKTOK_CLIENT_KEY && process.env.TIKTOK_CLIENT_SECRET);
@@ -194,4 +195,131 @@ export async function uploadTiktokDraft(video: Buffer): Promise<{ publishId: str
     throw new Error(`TikTok 업로드 실패: ${put.status} ${await put.text()}`);
   }
   return { publishId };
+}
+
+/**
+ * 크리에이터 정보 조회 — 다이렉트 포스트 전 필수(TikTok 요구).
+ * 허용 공개범위(privacy_level_options)·상호작용 가능여부·최대영상길이 등을 돌려준다.
+ * 심사 전 앱은 보통 privacy_level_options=["SELF_ONLY"]만 반환(강제 비공개).
+ */
+async function getTiktokCreatorInfo(accessToken: string): Promise<{
+  privacyOptions: string[];
+  commentDisabled: boolean;
+  duetDisabled: boolean;
+  stitchDisabled: boolean;
+  maxDurationSec?: number;
+}> {
+  const r = await fetch(`${API_BASE}/post/publish/creator_info/query/`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json; charset=UTF-8",
+    },
+  });
+  const j: any = await r.json();
+  if (!r.ok || j?.error?.code !== "ok") {
+    throw new Error(`TikTok creator_info 실패: ${JSON.stringify(j?.error || j)}`);
+  }
+  const d = j.data || {};
+  return {
+    privacyOptions: Array.isArray(d.privacy_level_options) ? d.privacy_level_options : [],
+    commentDisabled: !!d.comment_disabled,
+    duetDisabled: !!d.duet_disabled,
+    stitchDisabled: !!d.stitch_disabled,
+    maxDurationSec: d.max_video_post_duration_sec,
+  };
+}
+
+/** 게시 상태 조회(다이렉트 포스트 확인용). PUBLISH_COMPLETE=완료, FAILED=실패. */
+async function fetchTiktokPublishStatus(
+  accessToken: string,
+  publishId: string,
+): Promise<{ status: string; failReason?: string; postIds?: string[] }> {
+  const r = await fetch(`${API_BASE}/post/publish/status/fetch/`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json; charset=UTF-8",
+    },
+    body: JSON.stringify({ publish_id: publishId }),
+  });
+  const j: any = await r.json();
+  const d = j?.data || {};
+  return { status: d.status || "UNKNOWN", failReason: d.fail_reason, postIds: d.publicaly_available_post_id || d.public_post_id };
+}
+
+/**
+ * 다이렉트 포스트(video.publish) — 캡션(title)·공개범위 포함 자동 게시.
+ * creator_info로 허용 공개범위 확인 → PUBLIC 가능하면 PUBLIC, 아니면(심사 전) SELF_ONLY.
+ * init(post_info) → 바이트 업로드 → 상태 폴링으로 완료/실패 확정. 반환: publishId·privacy·status.
+ */
+export async function publishTiktokVideo(
+  video: Buffer,
+  caption: string,
+): Promise<{ publishId: string; privacy: string; status: string }> {
+  const accessToken = await getAccessToken();
+  const size = video.length;
+
+  // 1) 크리에이터 정보 → 공개범위 결정(PUBLIC 우선, 없으면 허용된 첫 옵션=심사 전 SELF_ONLY)
+  const info = await getTiktokCreatorInfo(accessToken);
+  const privacy =
+    info.privacyOptions.find((p) => p === "PUBLIC_TO_EVERYONE") || info.privacyOptions[0] || "SELF_ONLY";
+  const title = (caption || "").slice(0, 2200); // TikTok title 최대 2200자
+
+  // 2) 다이렉트 포스트 초기화 (post_info + FILE_UPLOAD 단일 청크)
+  const init = await fetch(`${API_BASE}/post/publish/video/init/`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json; charset=UTF-8",
+    },
+    body: JSON.stringify({
+      post_info: {
+        title,
+        privacy_level: privacy,
+        disable_comment: false,
+        disable_duet: false,
+        disable_stitch: false,
+      },
+      source_info: {
+        source: "FILE_UPLOAD",
+        video_size: size,
+        chunk_size: size,
+        total_chunk_count: 1,
+      },
+    }),
+  });
+  const ij: any = await init.json();
+  const uploadUrl = ij?.data?.upload_url;
+  const publishId = ij?.data?.publish_id;
+  if (!init.ok || !uploadUrl || !publishId) {
+    throw new Error(`TikTok 다이렉트포스트 초기화 실패: ${JSON.stringify(ij?.error || ij)}`);
+  }
+
+  // 3) 바이트 업로드
+  const put = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "video/mp4",
+      "Content-Length": String(size),
+      "Content-Range": `bytes 0-${size - 1}/${size}`,
+    },
+    body: video,
+  });
+  if (!put.ok) {
+    throw new Error(`TikTok 업로드 실패: ${put.status} ${await put.text()}`);
+  }
+
+  // 4) 상태 폴링 — 완료/실패 확정(최대 ~40초). 타임아웃 시 PROCESSING으로 반환(게시는 계속 진행될 수 있음)
+  let status = "PROCESSING";
+  for (let i = 0; i < 20; i++) {
+    await new Promise((r) => setTimeout(r, 2000));
+    const s = await fetchTiktokPublishStatus(accessToken, publishId);
+    status = s.status;
+    if (status === "PUBLISH_COMPLETE") break;
+    if (status === "FAILED") {
+      throw new Error(`TikTok 게시 실패: ${s.failReason || "FAILED"} (privacy=${privacy})`);
+    }
+  }
+  return { publishId, privacy, status };
 }

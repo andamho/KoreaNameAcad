@@ -30,7 +30,7 @@ const otpVerifyLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: "OTP 시도가 너무 많습니다. 10분 후 다시 시도해주세요." },
 });
-import { tiktokConfigured, getTiktokAuthUrl, handleTiktokCallback, getTiktokStatus, uploadTiktokDraft } from "./tiktok";
+import { tiktokConfigured, getTiktokAuthUrl, handleTiktokCallback, getTiktokStatus, publishTiktokVideo } from "./tiktok";
 import { extractFrameJpeg, transcodeR2VideoToH264 } from "./videoTools";
 import { ObjectStorageService, validateR2VideoKey } from "./object_storage/objectStorage";
 import { db } from "./db";
@@ -957,6 +957,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 인스타 캡션 맨 아래 고정 해시태그
   const INSTAGRAM_HASHTAGS = "#한국이름학교 #와츠유어네임이름연구협회 #이름분석 #작명 #개명";
 
+  // 틱톡 캡션 footer = 인스타 footer에서 @whats_ur_name.777 3줄만 제거(요청사항). 해시태그는 인스타와 동일.
+  const TIKTOK_CAPTION_FOOTER = INSTAGRAM_CAPTION_FOOTER
+    .split("\n")
+    .filter((ln) => ln.trim() !== "@whats_ur_name.777")
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n"); // 3줄 제거로 생긴 빈 줄 정리
+
   // 인스타 연결 상태 (관리자 UI용)
   app.get("/api/admin/instagram/status", requireAdmin, async (_req, res) => {
     try {
@@ -1124,17 +1131,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // 3-b) 틱톡 초안(inbox) 업로드 — 바이트 직접 전송. 사용자가 틱톡 앱에서 탭 한 번으로 게시
+      // 3-b) 틱톡 다이렉트 포스트(video.publish) — 캡션 포함 자동 게시(탭 불필요).
+      //      캡션 = 대본 본문 + 틱톡 footer(@3줄 제거) + 해시태그. 심사 전엔 TikTok이 강제 SELF_ONLY(비공개)로 게시.
       let ttPublishId: string | null = null;
+      let ttPrivacy: string | undefined;
       if (targetTiktok) {
         try {
           if (!h264) throw new Error(errors.tiktok || "변환 영상 없음");
           await db.update(videoJobs).set({ ttStatus: "uploading", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
-          const result = await uploadTiktokDraft(h264);
+          const ttCaption = [String(instagramCaption || "").trim(), TIKTOK_CAPTION_FOOTER, INSTAGRAM_HASHTAGS]
+            .filter(Boolean)
+            .join("\n\n");
+          const result = await publishTiktokVideo(h264, ttCaption);
           ttPublishId = result.publishId;
-          await db.update(videoJobs).set({ ttStatus: "draft", ttPublishId, updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+          ttPrivacy = result.privacy;
+          await db.update(videoJobs).set({ ttStatus: "published", ttPublishId, updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
         } catch (e: any) {
-          errors.tiktok = e?.message || "tiktok upload failed";
+          errors.tiktok = e?.message || "tiktok publish failed";
           await db.update(videoJobs).set({ ttStatus: "failed", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
         }
       }
@@ -1149,7 +1162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         youtube: ytVideoId ? { ok: true, videoId: ytVideoId, url: `https://youtu.be/${ytVideoId}` } : { ok: false, error: errors.youtube },
         thumbnail: ytVideoId ? (thumbnailSet ? { ok: true } : { ok: false, error: errors.thumbnail || "설정 안됨" }) : null,
         instagram: targetInstagram ? (igMediaId ? { ok: true, mediaId: igMediaId } : { ok: false, error: errors.instagram }) : null,
-        tiktok: targetTiktok ? (ttPublishId ? { ok: true, draft: true, publishId: ttPublishId } : { ok: false, error: errors.tiktok }) : null,
+        tiktok: targetTiktok ? (ttPublishId ? { ok: true, publishId: ttPublishId, privacy: ttPrivacy } : { ok: false, error: errors.tiktok }) : null,
         homepage: willInsertHomepage ? (errors.homepage ? { ok: false, error: errors.homepage } : { ok: true, contentId }) : null,
       });
     } catch (error: any) {
