@@ -181,7 +181,7 @@ export default function ExperienceNameRank() {
                 className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition" />
               <textarea value={commentText} onChange={e => setCommentText(e.target.value)}
                 placeholder={`야호 1등!!!\n저 7위요 ㅋㅋㅋ\n내 이름은 없다능~ 찾기힘들다능\n내이름 없음 ㅋ ㅋ 어머니 아버지 감사합니다!\n지혜인데 너무 흔해서 개명 고민 중ㅋㅋㅋ`}
-                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[90px]" maxLength={300} />
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[90px]" maxLength={600} />
               <div className="space-y-1.5">
                 <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
                   <input type="checkbox" checked={wantsNotify} onChange={e => setWantsNotify(e.target.checked)} className="rounded accent-[#18a999]" />

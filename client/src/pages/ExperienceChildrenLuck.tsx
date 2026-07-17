@@ -566,7 +566,7 @@ export default function ExperienceChildrenLuck() {
                 className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition" />
               <textarea value={commentText} onChange={e => setCommentText(e.target.value)}
                 placeholder={'예: "안○○(상극) - 자식과 대화가 너무 안 돼요."'}
-                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[90px]" maxLength={300} />
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[90px]" maxLength={600} />
               <div className="space-y-1.5">
                 <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
                   <input type="checkbox" checked={wantsNotify} onChange={e => setWantsNotify(e.target.checked)} className="rounded accent-[#18a999]" />

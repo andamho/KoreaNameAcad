@@ -743,7 +743,7 @@ export default function ExperienceAloneFate() {
                 onChange={e => setCommentText(e.target.value)}
                 placeholder={'예: "홍길*(19획) - 소름 돋네요. 진짜 연애가 안 풀려요."'}
                 className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[90px]"
-                maxLength={300}
+                maxLength={600}
               />
               <div className="space-y-1.5">
                 <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
