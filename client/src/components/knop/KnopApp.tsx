@@ -72,40 +72,46 @@ export function KnopApp() {
           setView(v as View);
         }}
       />
-      {selectedCustomer ? (
-        <CustomerDetailView customerId={selectedCustomer} onBack={() => setSelectedCustomer(null)} />
-      ) : (
-        <div className="space-y-6">
-          <div className="flex items-center gap-1 border-b border-gray-200">
-            {tabs.map((t) => {
-          const Icon = t.icon;
-          const active = view === t.key;
-          return (
-            <button
-              key={t.key}
-              onClick={() => setView(t.key)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${
-                active
-                  ? "border-[#56D5DB] text-gray-900"
-                  : "border-transparent text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              <Icon className="w-4 h-4" /> {t.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {view === "today" && <TodayView onOpenCustomer={setSelectedCustomer} />}
-      {view === "customers" && <CustomersView onOpenCustomer={setSelectedCustomer} />}
-      {view === "inbox" && <InboxView onOpenCustomer={setSelectedCustomer} />}
-      {view === "sms-inbox" && <SmsInboxView />}
-      {view === "sms" && <SmsView />}
-      {view === "notice" && <NoticeView />}
-          {view === "calendar" && <CalendarView onOpenCustomer={setSelectedCustomer} />}
-          {view === "corrections" && <CorrectionsView />}
+      <div className="space-y-6">
+        {/* 상단 탭은 고객 상세를 열어도 항상 보이게 한다 — 탭을 누르면 고객 상세에서 빠져나온다 */}
+        <div className="flex items-center gap-1 border-b border-gray-200">
+          {tabs.map((t) => {
+            const Icon = t.icon;
+            const active = !selectedCustomer && view === t.key;
+            return (
+              <button
+                key={t.key}
+                onClick={() => {
+                  setSelectedCustomer(null);
+                  setView(t.key);
+                }}
+                className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${
+                  active
+                    ? "border-[#56D5DB] text-gray-900"
+                    : "border-transparent text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                <Icon className="w-4 h-4" /> {t.label}
+              </button>
+            );
+          })}
         </div>
-      )}
+
+        {selectedCustomer ? (
+          <CustomerDetailView customerId={selectedCustomer} onBack={() => setSelectedCustomer(null)} />
+        ) : (
+          <>
+            {view === "today" && <TodayView onOpenCustomer={setSelectedCustomer} />}
+            {view === "customers" && <CustomersView onOpenCustomer={setSelectedCustomer} />}
+            {view === "inbox" && <InboxView onOpenCustomer={setSelectedCustomer} />}
+            {view === "sms-inbox" && <SmsInboxView />}
+            {view === "sms" && <SmsView />}
+            {view === "notice" && <NoticeView />}
+            {view === "calendar" && <CalendarView onOpenCustomer={setSelectedCustomer} />}
+            {view === "corrections" && <CorrectionsView />}
+          </>
+        )}
+      </div>
     </>
   );
 }
