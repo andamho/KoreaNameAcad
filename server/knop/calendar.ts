@@ -175,7 +175,10 @@ export function eventStartAt(evt: CalEvent): Date | null {
     if (hour >= 1 && hour <= 23 && min >= 0 && min < 60) hour24 = getAmPm(hour).hour24;
     else min = 0;
   }
-  const dt = new Date(y, mo - 1, d, hour24, min);
+  // 제목의 시각은 한국시간(KST) 벽시계 값. 서버가 UTC(Railway)라 로컬로 만들면 9시간 어긋나므로
+  // KST(UTC+9) 기준 절대시각으로 변환한다. (예: 오후 2시 = 14:00 KST = 05:00 UTC)
+  const KST = 9 * 3600 * 1000;
+  const dt = new Date(Date.UTC(y, mo - 1, d, hour24, min) - KST);
   return isNaN(dt.getTime()) ? null : dt;
 }
 
