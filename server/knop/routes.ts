@@ -4,7 +4,8 @@ import { knopStore } from "./store";
 import { parsePaymentSms, matchPayment } from "./paymentAi";
 import { transcribeCall, summarizeTranscript } from "./callAi";
 import { transcribeLocal, localTranscribeAvailable } from "./localTranscribe";
-import { learnFromEdit, listRules, upsertManualRule, setRuleEnabled, deleteRule, analyzeRules, seedRulesFromJsonOnce, exportLearnedToJson } from "./learnedDict";
+import { randomUUID } from "crypto";
+import { learnFromEdit, listRules, upsertManualRule, setRuleEnabled, deleteRule, analyzeRules, seedRulesFromJsonOnce, exportLearnedToJson, revalidateAllRules } from "./learnedDict";
 import * as gm from "./gaemyeong";
 import { isSetKey } from "./gaemyeong";
 import { smsStore, startSmsScheduler } from "./sms";
@@ -86,7 +87,7 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
 
   // 교정사전: 기존 로컬 JSON 규칙을 DB로 1회 이관 후, DB→로컬 JSON 재생성(어디서 고쳐도 반영)
   seedRulesFromJsonOnce()
-    .then(() => exportLearnedToJson())
+    .then(() => exportLearnedToJson({ actor: "startup", trigger: "seed" }))
     .catch(() => {});
 
   // ── 문자 자동화: 템플릿 ──
@@ -946,8 +947,9 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       });
       // 응답은 가볍게(전사문/words 수백KB를 되돌려주지 않음 → 저장 체감속도 개선)
       res.json({ ok: true, id: req.params.id, summaryText: call?.summaryText ?? null });
-      learnFromEdit(oldText, transcriptText).catch((e) =>
-        console.error(`[KNOP] 학습 실패(백그라운드): ${e?.message}`),
+      // 독립 증거 단위 = 전사(통화) ID. 같은 전사를 여러 번 고쳐도 증거는 1건.
+      learnFromEdit(oldText, transcriptText, req.params.id, randomUUID()).catch((e) =>
+        console.error(`[KOP] 학습 실패(백그라운드): ${e?.message}`),
       );
       return;
     } catch (e) {
@@ -1057,6 +1059,17 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     }
   });
 
+  // 전체 규칙을 검증기로 재검사 → 통과 못하면 pending 으로 내림(삭제 안 함)
+  app.post(`${P}/corrections/revalidate`, requireAdmin, async (req, res) => {
+    try {
+      const r = await revalidateAllRules(String((req.body || {}).actor || "admin"));
+      if (r.locked) return res.status(409).json({ error: "already_running", ...r });
+      res.json(r);
+    } catch (e) {
+      handle(res, "POST corrections revalidate", e);
+    }
+  });
+
   app.get(`${P}/corrections/analysis`, requireAdmin, async (_req, res) => {
     try {
       res.json(await analyzeRules());
@@ -1077,9 +1090,10 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
 
   app.patch(`${P}/corrections`, requireAdmin, async (req, res) => {
     try {
-      const { wrong, enabled } = req.body || {};
+      const { wrong, enabled, actor, reason } = req.body || {};
       if (!wrong || typeof enabled !== "boolean") return res.status(400).json({ error: "wrong_enabled_required" });
-      await setRuleEnabled(String(wrong), enabled);
+      const r = await setRuleEnabled(String(wrong), enabled, String(actor || "admin"), reason ? String(reason) : undefined);
+      if (!r.ok) return res.status(400).json({ error: r.error }); // 보호어 위반 → 강제 활성 거부
       res.json({ ok: true });
     } catch (e) {
       handle(res, "PATCH corrections", e);
@@ -1088,9 +1102,11 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
 
   app.delete(`${P}/corrections`, requireAdmin, async (req, res) => {
     try {
-      const wrong = typeof req.query.wrong === "string" ? req.query.wrong : "";
-      if (!wrong) return res.status(400).json({ error: "wrong_required" });
-      await deleteRule(wrong);
+      // 명시적 ID 만 허용(문자열 조건 삭제 금지). 관리자 인증 + 감사 로그는 deleteRule 내부.
+      const id = typeof req.query.id === "string" ? req.query.id : "";
+      if (!id) return res.status(400).json({ error: "id_required" });
+      const r = await deleteRule(id, String((req.body || {}).actor || "admin"));
+      if (!r.ok) return res.status(404).json({ error: r.error });
       res.json({ ok: true });
     } catch (e) {
       handle(res, "DELETE corrections", e);
