@@ -48,6 +48,8 @@ export interface IStorage {
   deleteInquiry(id: string): Promise<void>;
   addInquiryMessage(inquiryId: string, senderType: string, content: string): Promise<InquiryMessage>;
   getInquiryMessages(inquiryId: string): Promise<InquiryMessage[]>;
+  editInquiryMessage(id: string, content: string): Promise<InquiryMessage>;
+  deleteInquiryMessage(id: string): Promise<void>;
 
   // 후기 자동화 초안
   createReviewDraft(draft: InsertReviewDraft): Promise<ReviewDraft>;
@@ -217,6 +219,8 @@ export class MemStorage implements IStorage {
   async deleteInquiry(_id: string): Promise<void> {}
   async addInquiryMessage(_inquiryId: string, _senderType: string, _content: string): Promise<InquiryMessage> { throw new Error("Not implemented"); }
   async getInquiryMessages(_inquiryId: string): Promise<InquiryMessage[]> { return []; }
+  async editInquiryMessage(_id: string, _content: string): Promise<InquiryMessage> { throw new Error("Not implemented"); }
+  async deleteInquiryMessage(_id: string): Promise<void> { throw new Error("Not implemented"); }
 
   private reviewDraftsMap: Map<string, ReviewDraft> = new Map();
   async createReviewDraft(draft: InsertReviewDraft): Promise<ReviewDraft> {
@@ -714,6 +718,27 @@ export class DatabaseStorage implements IStorage {
         .orderBy(inquiryMessages.createdAt);
     } catch (error: any) {
       throw new DatabaseError(`문의 메시지 조회 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async editInquiryMessage(id: string, content: string): Promise<InquiryMessage> {
+    await this.ensureDbReady();
+    try {
+      const [row] = await this.db.update(inquiryMessages).set({ content })
+        .where(eq(inquiryMessages.id, id)).returning();
+      if (!row) throw new Error("메시지를 찾을 수 없습니다.");
+      return row;
+    } catch (error: any) {
+      throw new DatabaseError(`문의 메시지 수정 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
+    }
+  }
+
+  async deleteInquiryMessage(id: string): Promise<void> {
+    await this.ensureDbReady();
+    try {
+      await this.db.delete(inquiryMessages).where(eq(inquiryMessages.id, id));
+    } catch (error: any) {
+      throw new DatabaseError(`문의 메시지 삭제 실패: ${error?.message}`, "DATABASE_QUERY_FAILED");
     }
   }
 
