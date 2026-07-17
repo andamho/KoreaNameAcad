@@ -80,10 +80,24 @@ export default function Privacy() {
               </ul>
               
               <h3 className="text-lg font-semibold mb-2">2. 선택 수집 항목</h3>
-              <ul className="space-y-1 text-muted-foreground leading-relaxed list-disc list-inside mb-3">
+              <ul className="space-y-1 text-muted-foreground leading-relaxed list-disc list-inside mb-4">
                 <li>추가 분석 요청 정보</li>
               </ul>
-              
+
+              <h3 className="text-lg font-semibold mb-2">3. 인스타그램 연동 시 수집 항목</h3>
+              <p className="text-muted-foreground leading-relaxed mb-2">
+                회사의 공식 인스타그램 계정(@whats_ur_name.777)을 통해 문의하시는 경우, 다음 정보가 처리될 수 있습니다.
+              </p>
+              <ul className="space-y-1 text-muted-foreground leading-relaxed list-disc list-inside mb-3">
+                <li>인스타그램 사용자명(username) 및 사용자 식별자</li>
+                <li>게시물에 남기신 댓글 내용</li>
+                <li>다이렉트 메시지(DM)로 보내주신 문의 내용</li>
+              </ul>
+              <p className="text-sm text-muted-foreground/80 italic mb-3">
+                ※ 위 정보는 Meta 플랫폼(Instagram)을 통해 수집되며, 문의 응대 및 상담 안내 목적으로만 이용됩니다.
+                회사는 이용자가 먼저 회사 계정에 연락한 경우에 한해 메시지를 발송하며, 동의 없는 광고성 메시지를 보내지 않습니다.
+              </p>
+
               <p className="text-sm text-muted-foreground/80 italic">
                 ※ 서비스 이용 과정에서 IP주소, 접속 기록, 기기 정보 등이 자동으로 생성·수집될 수 있습니다.
               </p>
