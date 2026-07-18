@@ -1,9 +1,11 @@
 -- 영속 작업 큐 (persistent job queue) — 비파괴 additive migration.
 -- 규칙: 새 테이블·인덱스·FK 생성만. 기존 테이블 DROP/DELETE/ALTER/타입변경 없음. 데이터 INSERT/UPDATE/DELETE 없음.
--- 적용: node --import tsx/esm server/migrate.ts migrations/0002_create_persistent_job_queue.sql
---   (server/migrate.ts 가 BEGIN/COMMIT 트랜잭션으로 감싸고, 기존 테이블 행수 불변을 검증한다.)
---   ⚠️ migrate.ts line 56 은 현재 'report_matches' 하드코딩 검증 → 운영 실행 전 일반화 필요(별도 Gate).
---   IF NOT EXISTS 를 쓰지 않는다(구조 불일치를 숨기지 않기 위해; 재실행은 사전 catalog 검문으로 관리).
+-- 적용: node --import tsx/esm server/migrate.ts 0002_create_persistent_job_queue   (기본 dry-run)
+--   server/migrate.ts 범용 러너가 레지스트리(expectedNewTables=jobs·job_executions,
+--   fingerprint=tests/knop/fixtures/jobQueueFingerprint.json)로 SQL 정적 스캔·사전 catalog 검문·
+--   기존 행수 불변·구조 fingerprint 를 BEGIN/COMMIT tx 안에서 검증한다(어긋나면 ROLLBACK).
+--   실제 COMMIT 은 ALLOW_PRODUCTION_MIGRATION=true + EXPECTED_DATABASE_HOST_HASH 핀 명시 때만.
+--   IF NOT EXISTS 안 씀(구조 불일치 은닉 방지; 재실행은 사전 catalog fingerprint 검문으로 관리).
 -- 확정: jobs 19컬럼, job_executions 21컬럼, FK 2(RESTRICT), unique/부분유일 인덱스 3 + 조회 인덱스 3.
 --   전역 UNIQUE·job+attempt UNIQUE·active execution 부분유일은 전부 "인덱스" 표현(Drizzle uniqueIndex 와 parity).
 --   project_id 무FK(projects 물리삭제 정책), run_revision 없음. timestamptz + DB now(), jsonb, varchar(64) hash.
