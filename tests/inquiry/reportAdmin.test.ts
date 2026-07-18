@@ -9,7 +9,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MIGRATION = fs.readFileSync(path.join(__dirname, "../../migrations/0001_add_report_matches.sql"), "utf-8");
 
 let db: PGlite;
-const q = { query: (sql: string, p?: any[]) => db.query(sql, p as any[]) as any };
+// PGlite 는 rowCount 대신 affectedRows → 운영 pg 풀과 같은 모양으로 정규화
+const q = { query: async (sql: string, p?: any[]) => { const r: any = await db.query(sql, p as any[]); return { rows: r.rows ?? [], rowCount: (r.rows?.length || r.affectedRows) ?? 0 }; } };
 const crmCount = async (cust?: string) => Number((await db.query(cust ? `SELECT count(*)::int n FROM crm_files WHERE customer_id=$1` : `SELECT count(*)::int n FROM crm_files`, cust ? [cust] : []) as any).rows[0].n);
 const match = async (id: string) => (await db.query(`SELECT * FROM report_matches WHERE id=$1`, [id]) as any).rows[0];
 
@@ -83,5 +84,34 @@ describe("이름분석표 관리자 액션", () => {
   test("미리보기 없으면 수동지정 거부(워커 재처리 안내)", async () => {
     await db.query(`INSERT INTO report_matches (id, file_name, report_type, status, candidate_snapshot) VALUES ('m5','x.pdf','family','needs_review','{}')`);
     await assert.rejects(() => assignReport(q, "m5", "c1", "원장님"), /미리보기 이미지가 없어/);
+  });
+
+  test("멱등성: 같은 건 두 번 수동지정 → 2번째 거부, 첨부 1건만", async () => {
+    await db.query(`INSERT INTO report_matches (id, file_name, report_type, status, rendered_url, candidate_snapshot)
+      VALUES ('mi','이은혜님 가족 이름분석.pdf','family','needs_review','/objects/x.png','{}')`);
+    await assignReport(q, "mi", "c1", "원장님");
+    await assert.rejects(() => assignReport(q, "mi", "c2", "원장님"), /이미 처리/);
+    assert.equal(await crmCount(), 1, "중복 첨부 안 됨");
+    assert.equal((await match("mi")).matched_customer_id, "c1", "첫 지정 유지");
+  });
+
+  test("무시 후 지정 시도 → 거부(상태 조건부)", async () => {
+    await db.query(`INSERT INTO report_matches (id, file_name, report_type, status, rendered_url, candidate_snapshot)
+      VALUES ('mj','x.pdf','individual','needs_review','/objects/y.png','{}')`);
+    await ignoreReport(q, "mj", "원장님");
+    await assert.rejects(() => assignReport(q, "mj", "c1", "원장님"), /이미 처리/);
+    assert.equal(await crmCount(), 0);
+  });
+
+  test("audit 이력은 재처리(candidate_snapshot 갱신)돼도 보존", async () => {
+    // 이미 audit 있는 스냅샷 + 재판정 시 보존되는지 (jsonSnapshot 이 prevAudit 유지)
+    const snap = JSON.stringify({ candidates: [], audit: [{ action: "ignore", actor: "원장님", at: "2026-07-18", reason: "test" }] });
+    await db.query(`INSERT INTO report_matches (id, file_name, report_type, status, candidate_snapshot) VALUES ('mk','x.pdf','family','needs_review',$1)`, [snap]);
+    // 무시로 전환 → withAudit 이 기존 audit 뒤에 append
+    await ignoreReport(q, "mk", "원장님2", "확정");
+    const audit = JSON.parse((await match("mk")).candidate_snapshot).audit;
+    assert.equal(audit.length, 2, "기존 audit 보존 + 새 audit 추가");
+    assert.equal(audit[0].reason, "test");
+    assert.equal(audit[1].action, "ignore");
   });
 });

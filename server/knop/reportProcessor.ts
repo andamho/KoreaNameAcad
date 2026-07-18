@@ -42,13 +42,13 @@ export type ProcessInput = {
 
 export type ProcessResult = { status: MatchStatus; matchId: string; note: string };
 
-const jsonSnapshot = (input: ProcessInput, decisionScored: any, previousMatchId: string | null, birthNote?: string) =>
+const jsonSnapshot = (input: ProcessInput, decisionScored: any, previousMatchId: string | null, prevAudit: any[] = []) =>
   JSON.stringify({
     candidates: decisionScored,
     previousMatchId,
-    birthtime: birthNote ?? null,
     extractedName: input.extractedName,
     reportType: input.reportType,
+    audit: prevAudit, // 재판정해도 기존 감사이력 보존(관리자 처리 흔적 유지)
   });
 
 export async function processFile(deps: ProcessorDeps, input: ProcessInput): Promise<ProcessResult> {
@@ -107,7 +107,10 @@ export async function processFile(deps: ProcessorDeps, input: ProcessInput): Pro
   // 판정 (기준 T = 저장된 first_seen_at, 절대 재설정 안 함)
   const info: ReportInfo = { firstSeenAt: new Date(row.first_seen_at), reportType: input.reportType };
   const decision = decideMatch(info, input.candidates);
-  const snapshot = jsonSnapshot(input, decision.scored, previousMatchId);
+  // 기존 감사이력(관리자 처리 흔적)이 있으면 보존
+  let prevAudit: any[] = [];
+  try { prevAudit = JSON.parse(row.candidate_snapshot || "{}").audit || []; } catch { prevAudit = []; }
+  const snapshot = jsonSnapshot(input, decision.scored, previousMatchId, prevAudit);
 
   await db.query(
     `UPDATE report_matches SET top_score=$2, second_score=$3, score_gap=$4, match_reason=$5, candidate_snapshot=$6, updated_at=$7 WHERE id=$1`,

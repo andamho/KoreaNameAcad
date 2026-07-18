@@ -110,4 +110,14 @@ describe("이름분석표 처리기 안전요건", () => {
     assert.equal(r.status, "needs_review");
     assert.equal(await crmCount(), 0);
   });
+
+  test("[7] 동명이인 애매 + 렌더 실패 → needs_review 유지(미리보기 없음), 첨부 없음", async () => {
+    const two = [cand({ customerId: "c1", applicationDate: new Date(T.getTime() - 1 * 86400000) }),
+                 cand({ customerId: "c2", applicationDate: new Date(T.getTime() - 2 * 86400000) })];
+    const r = await processFile(mkDeps({ render: async () => { throw new Error("렌더죽음"); } }), input({ candidates: two }));
+    assert.equal(r.status, "needs_review", "렌더 실패해도 needs_review 유지");
+    const m = await getMatch(r.matchId);
+    assert.equal(m.rendered_url, null, "미리보기 없음");
+    assert.equal(await crmCount(), 0);
+  });
 });

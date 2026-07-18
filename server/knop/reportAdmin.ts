@@ -84,13 +84,16 @@ export async function assignReport(db: DbLike, matchId: string, customerId: stri
   const audit = withAudit(m.candidate_snapshot, { action: "assign", actor, at: new Date().toISOString(), fromStatus: m.status, toStatus: "manually_matched", customerId, reason });
   try {
     await db.query("BEGIN");
+    // 조건부 claim: 아직 미처리(needs_review/실패) 상태일 때만 잡는다 → 중복 클릭·동시 처리 멱등
+    const claim = await db.query(
+      `UPDATE report_matches SET status='manually_matched', matched_customer_id=$2, manually_confirmed_by=$3, manually_confirmed_at=now(), candidate_snapshot=$4, updated_at=now()
+       WHERE id=$1 AND status IN ('needs_review','attachment_failed','processing_failed')`,
+      [matchId, customerId, actor, audit],
+    );
+    if (!claim.rowCount) throw new Error("이미 처리된 건입니다(다른 창에서 처리했거나 상태가 변경됨).");
     await db.query(
       `INSERT INTO crm_files (customer_id, file_name, file_type, file_url, memo) VALUES ($1,$2,'image/png',$3,$4)`,
       [customerId, attachName(m.report_type), m.rendered_url, `${REPORT_PREFIX}${m.file_name}`],
-    );
-    await db.query(
-      `UPDATE report_matches SET status='manually_matched', matched_customer_id=$2, manually_confirmed_by=$3, manually_confirmed_at=now(), candidate_snapshot=$4, updated_at=now() WHERE id=$1`,
-      [matchId, customerId, actor, audit],
     );
     await db.query("COMMIT");
   } catch (e) { await db.query("ROLLBACK").catch(() => {}); throw e; }
@@ -107,19 +110,21 @@ export async function replaceReport(db: DbLike, matchId: string, actor: string, 
   const audit = withAudit(m.candidate_snapshot, { action: "replace", actor, at: new Date().toISOString(), fromStatus: m.status, toStatus: "manually_matched", customerId, reason });
   try {
     await db.query("BEGIN");
-    // 기존 첨부(같은 파일명 memo) 제거
+    // 조건부 claim (멱등)
+    const claim = await db.query(
+      `UPDATE report_matches SET status='manually_matched', matched_customer_id=$2, manually_confirmed_by=$3, manually_confirmed_at=now(), candidate_snapshot=$4, updated_at=now()
+       WHERE id=$1 AND status IN ('needs_review','attachment_failed','processing_failed')`,
+      [matchId, customerId, actor, audit],
+    );
+    if (!claim.rowCount) throw new Error("이미 처리된 건입니다(다른 창에서 처리했거나 상태가 변경됨).");
+    // 기존 첨부(같은 파일명 memo) 제거 후 새 이미지 첨부
     await db.query(`DELETE FROM crm_files WHERE customer_id=$1 AND memo=$2`, [customerId, `${REPORT_PREFIX}${m.file_name}`]);
-    // 새 이미지 첨부
     await db.query(
       `INSERT INTO crm_files (customer_id, file_name, file_type, file_url, memo) VALUES ($1,$2,'image/png',$3,$4)`,
       [customerId, attachName(m.report_type), m.rendered_url, `${REPORT_PREFIX}${m.file_name}`],
     );
-    await db.query(
-      `UPDATE report_matches SET status='manually_matched', matched_customer_id=$2, manually_confirmed_by=$3, manually_confirmed_at=now(), candidate_snapshot=$4, updated_at=now() WHERE id=$1`,
-      [matchId, customerId, actor, audit],
-    );
-    // 이전 건은 대체됨 표시
-    await db.query(`UPDATE report_matches SET status='rejected', updated_at=now() WHERE id=$1`, [m.supersedes_id]);
+    // 이전 건은 대체됨 표시(이미 rejected 면 무해)
+    await db.query(`UPDATE report_matches SET status='rejected', updated_at=now() WHERE id=$1 AND status <> 'rejected'`, [m.supersedes_id]);
     await db.query("COMMIT");
   } catch (e) { await db.query("ROLLBACK").catch(() => {}); throw e; }
 }
@@ -128,8 +133,11 @@ export async function replaceReport(db: DbLike, matchId: string, actor: string, 
 export async function ignoreReport(db: DbLike, matchId: string, actor: string, reason?: string): Promise<void> {
   const m = await loadMatch(db, matchId);
   const audit = withAudit(m.candidate_snapshot, { action: "ignore", actor, at: new Date().toISOString(), fromStatus: m.status, toStatus: "ignored", reason });
-  await db.query(
-    `UPDATE report_matches SET status='ignored', manually_confirmed_by=$2, manually_confirmed_at=now(), candidate_snapshot=$3, updated_at=now() WHERE id=$1`,
+  // 조건부(멱등): 미처리 상태일 때만 무시로 전환
+  const claim = await db.query(
+    `UPDATE report_matches SET status='ignored', manually_confirmed_by=$2, manually_confirmed_at=now(), candidate_snapshot=$3, updated_at=now()
+     WHERE id=$1 AND status IN ('needs_review','attachment_failed','processing_failed')`,
     [matchId, actor, audit],
   );
+  if (!claim.rowCount) throw new Error("이미 처리된 건입니다.");
 }
