@@ -1,0 +1,221 @@
+{
+  "_note": "report_matches 구조 fingerprint(0001). 운영 실행/재실행 시 이 값과 대조. NOT NULL 은 columns.is_nullable 로만 판단(제약 목록은 PK/UNIQUE/FK/CHECK). 러너 computeCatalogFingerprint 로 생성.",
+  "columnCount": 21,
+  "constraints": [
+    {
+      "tbl": "report_matches",
+      "conname": "report_matches_consultation_fk",
+      "contype": "f",
+      "def": "FOREIGN KEY (matched_consultation_id) REFERENCES consultations(id) ON DELETE SET NULL"
+    },
+    {
+      "tbl": "report_matches",
+      "conname": "report_matches_customer_fk",
+      "contype": "f",
+      "def": "FOREIGN KEY (matched_customer_id) REFERENCES customers(id) ON DELETE SET NULL"
+    },
+    {
+      "tbl": "report_matches",
+      "conname": "report_matches_pkey",
+      "contype": "p",
+      "def": "PRIMARY KEY (id)"
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "report_matches",
+      "indexname": "report_matches_customer_idx",
+      "indexdef": "CREATE INDEX report_matches_customer_idx ON public.report_matches USING btree (matched_customer_id)"
+    },
+    {
+      "tablename": "report_matches",
+      "indexname": "report_matches_file_hash_idx",
+      "indexdef": "CREATE INDEX report_matches_file_hash_idx ON public.report_matches USING btree (file_hash)"
+    },
+    {
+      "tablename": "report_matches",
+      "indexname": "report_matches_file_name_idx",
+      "indexdef": "CREATE INDEX report_matches_file_name_idx ON public.report_matches USING btree (file_name)"
+    },
+    {
+      "tablename": "report_matches",
+      "indexname": "report_matches_pkey",
+      "indexdef": "CREATE UNIQUE INDEX report_matches_pkey ON public.report_matches USING btree (id)"
+    },
+    {
+      "tablename": "report_matches",
+      "indexname": "report_matches_status_idx",
+      "indexdef": "CREATE INDEX report_matches_status_idx ON public.report_matches USING btree (status)"
+    }
+  ],
+  "columns": [
+    {
+      "table_name": "report_matches",
+      "column_name": "id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "file_name",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "file_path",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "file_hash",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "first_seen_at",
+      "data_type": "timestamp without time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "extracted_name",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "report_type",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "status",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "'pending'::text"
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "matched_customer_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "matched_consultation_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "top_score",
+      "data_type": "integer",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "second_score",
+      "data_type": "integer",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "score_gap",
+      "data_type": "integer",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "match_reason",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "candidate_snapshot",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "rendered_url",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "supersedes_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "manually_confirmed_by",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "manually_confirmed_at",
+      "data_type": "timestamp without time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "created_at",
+      "data_type": "timestamp without time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "report_matches",
+      "column_name": "updated_at",
+      "data_type": "timestamp without time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    }
+  ]
+}
