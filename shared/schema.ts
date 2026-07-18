@@ -802,3 +802,31 @@ export const igEvents = pgTable("ig_events", {
   receivedAt: timestamp("received_at").defaultNow().notNull(),
 });
 export type IgEvent = typeof igEvents.$inferSelect;
+
+// ── 이름분석표 자동매칭 판정 (동명이인 안전 연결 + 갱신 검토) ──
+// 워커(로컬)와 관리자 화면(Railway)이 공용으로 보는 판정 결과. crm_files(실제 첨부)와 분리.
+// first_seen_at 은 최초 감지 시각(기준 T) — 저장 후 불변. 로컬 워커 상태 파일에도 함께 기록.
+export const reportMatches = pgTable("report_matches", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  fileName: text("file_name").notNull(),               // PDF 파일명
+  filePath: text("file_path"),                         // 폴더 내 경로(참고)
+  fileHash: text("file_hash"),                         // 내용 지문(sha256) — 갱신 감지용
+  firstSeenAt: timestamp("first_seen_at").defaultNow().notNull(), // 최초 감지 시각 = 기준 T (불변)
+  extractedName: text("extracted_name"),               // 파일명에서 뽑은 대표자 이름
+  reportType: text("report_type"),                     // 'family' | 'individual'
+  // 판정 상태: pending | auto_matched | needs_review | manually_matched | rejected | duplicate
+  status: text("status").notNull().default("pending"),
+  matchedCustomerId: varchar("matched_customer_id"),   // 연결된 고객(있으면)
+  matchedConsultationId: varchar("matched_consultation_id"), // 근거 상담신청(있으면)
+  topScore: integer("top_score"),                      // 1위 후보 점수
+  secondScore: integer("second_score"),                // 2위 후보 점수
+  scoreGap: integer("score_gap"),                      // 점수차
+  matchReason: text("match_reason"),                   // 자동/보류 사유(사람 읽는 요약)
+  candidateSnapshot: text("candidate_snapshot"),       // 판정 당시 후보·점수 JSON (사후 추적)
+  manuallyConfirmedBy: text("manually_confirmed_by"),  // 수동 지정한 관리자
+  manuallyConfirmedAt: timestamp("manually_confirmed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+export type ReportMatch = typeof reportMatches.$inferSelect;
+export type InsertReportMatch = typeof reportMatches.$inferInsert;

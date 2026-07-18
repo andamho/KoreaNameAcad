@@ -19,6 +19,9 @@ export function reportsAvailable(): boolean {
 
 export type Report = { file: string; name: string; label: string; family: boolean };
 
+// crm_files.memo 규약: 확정 첨부는 "이름분석표:{파일명}" (식별/중복방지 키). 갱신·판정 상태는 report_matches 테이블이 담당.
+export const REPORT_PREFIX = "이름분석표:";
+
 // 고객명에서 "가족" 꼬리 제거 → 기준 이름 (강보경가족 → 강보경). PDF/녹음 매칭용.
 export function baseName(n: string): string {
   return (n || "").replace(/\s*가족\s*$/, "").replace(/[.\s]+$/, "");
