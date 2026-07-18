@@ -31,8 +31,8 @@ function mkDeps(over: Partial<ProcessorDeps> = {}): ProcessorDeps {
   };
 }
 const cand = (o: Partial<Candidate> & { customerId: string }): Candidate => ({
-  customerName: "이은혜", consultationId: null, applicationDate: new Date(T.getTime() - 2 * 86400000),
-  consultationDate: new Date(T.getTime() - 1 * 86400000), numPeople: 3, consultStatus: "진행", alreadyLinkedSameType: false, ...o,
+  customerName: "이은혜", consultationId: "cons1", applicationDate: new Date(T.getTime() - 2 * 86400000),
+  applicationDateSource: "consultation", numPeople: 3, consultStatus: "진행", alreadyLinkedSameType: false, ...o,
 });
 const input = (o: Partial<ProcessInput> = {}): ProcessInput => ({
   file: "이은혜님 가족 이름분석.pdf", absPath: "C:/x/이은혜님 가족 이름분석.pdf",
@@ -43,7 +43,8 @@ const crmCount = async () => Number((await db.query(`SELECT count(*)::int n FROM
 
 describe("이름분석표 처리기 안전요건", () => {
   beforeEach(async () => { db = new PGlite(); await db.exec(STUB); await db.exec(MIGRATION); uuidN = 0;
-    await db.exec(`INSERT INTO customers (id, name) VALUES ('c1','이은혜'),('c2','이은혜');`); });
+    await db.exec(`INSERT INTO customers (id, name) VALUES ('c1','이은혜'),('c2','이은혜');
+                   INSERT INTO consultations (id, phone) VALUES ('cons1','01000000000');`); });
   afterEach(async () => { await db.close(); });
 
   test("정상 자동연결 → auto_matched + crm_files 1건", async () => {
@@ -103,8 +104,8 @@ describe("이름분석표 처리기 안전요건", () => {
   });
 
   test("동명이인 애매 → needs_review, 첨부 없음", async () => {
-    const two = [cand({ customerId: "c1", consultationDate: new Date(T.getTime() - 1 * 86400000) }),
-                 cand({ customerId: "c2", consultationDate: new Date(T.getTime() + 1 * 86400000) })];
+    const two = [cand({ customerId: "c1", applicationDate: new Date(T.getTime() - 1 * 86400000) }),
+                 cand({ customerId: "c2", applicationDate: new Date(T.getTime() - 2 * 86400000) })];
     const r = await processFile(mkDeps(), input({ candidates: two }));
     assert.equal(r.status, "needs_review");
     assert.equal(await crmCount(), 0);
