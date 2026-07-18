@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, boolean, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean, timestamp, integer, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -407,7 +407,7 @@ export const KNOP_EVENT_STATUSES = ["예정", "확정", "완료", "취소"] as c
 // ── customers: 고객 (최상위) ──
 export const customers = pgTable("customers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  customerCode: text("customer_code").unique(),          // 고객번호 K26-0102 (불변 앵커, 개명·번호변경에도 유지)
+  customerCode: text("customer_code"),                   // 고객번호 K26-0102 (불변 앵커, 개명·번호변경에도 유지) — 운영은 uniqueIndex(아래 정의)
   kind: text("kind"),                                    // 개명 | 상담 (구분, 편집가능) — 작명완료 있으면 개명
   phoneNaming: boolean("phone_naming").default(false).notNull(), // 전화번호 작명 여부(선택 서비스, 새이름과 병렬). 나중에 문자로 자동감지
   name: text("name").notNull(),
@@ -422,7 +422,10 @@ export const customers = pgTable("customers", {
   deletedAt: timestamp("deleted_at"),                    // 휴지통(soft delete). null=활성, 값 있으면 삭제됨
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  // 운영 DB는 UNIQUE INDEX(customers_customer_code_unique). 제약이 아니라 인덱스로 표현해 drop+add churn 방지.
+  uniqueIndex("customers_customer_code_unique").on(table.customerCode),
+]);
 
 export const insertCustomerSchema = z.object({
   name: z.string().min(1),
@@ -611,7 +614,7 @@ export type TranscriptWord = { word: string; start: number; end: number; speaker
 // ── short_links: 긴 /objects/ 주소를 /s/{slug} 짧은 링크로 (문자 발송용) ──
 export const shortLinks = pgTable("short_links", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  slug: varchar("slug").notNull().unique(),          // 짧은 코드 (예: a1B2c3)
+  slug: varchar("slug").notNull().unique("short_links_slug_key"),          // 짧은 코드 (예: a1B2c3) — 운영 제약명 명시
   target: text("target").notNull(),                   // 실제 목적지 (/objects/... 또는 외부 URL)
   label: text("label"),                               // 관리용 이름
   kind: text("kind").default("other").notNull(),      // image | video | other
@@ -652,14 +655,14 @@ export const noticeRuns = pgTable("notice_runs", {
   reason: text("reason"),                             // 감지 근거(예: "개명비 220만원 입금")
   nameDate: text("name_date"),                        // 새이름 내어주기 제안일(입금+2개월, YYYY-MM-DD)
   flaggedAt: timestamp("flagged_at").defaultNow().notNull(),
-  startedAt: timestamp("started_at"),                 // active 전환(예약 생성) 시각
+  startedAt: timestamp("started_at").defaultNow(),    // active 전환(예약 생성) 시각. 운영 default=now()(pending insert가 의존) → 코드 정렬
 });
 
 // ── correction_rules: 공유 학습 교정사전 (KNOP↔영상봇, 어디서 고치든 DB에 누적) ──
 // 로컬 서버가 전사 직전 DB→<video-caption-bot>/learned_corrections.json 로 내려받아 correct.py 에 반영.
 export const correctionRules = pgTable("correction_rules", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  wrong: text("wrong").notNull().unique(),          // 틀린말(원문)
+  wrong: text("wrong").notNull().unique("correction_rules_wrong_key"),          // 틀린말(원문) — 운영 제약명 명시
   right: text("right").notNull(),                    // 맞는말(수정문)
   count: integer("count").default(0).notNull(),      // 학습 횟수
   // status: pending(후보·전사에 미적용) | active(적용) | disabled(구조적 위험/수동 차단)
@@ -787,7 +790,7 @@ export type IncomingSms = typeof incomingSms.$inferSelect;
 export const igEvents = pgTable("ig_events", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   kind: text("kind").notNull(),                        // comment | message | other
-  dedupeKey: text("dedupe_key").notNull().unique(),    // 댓글=comment_id, DM=message.mid
+  dedupeKey: text("dedupe_key").notNull().unique("ig_events_dedupe_key_key"),    // 댓글=comment_id, DM=message.mid — 운영 제약명 명시
   igAccountId: text("ig_account_id"),                  // 이벤트를 받은 내 IG 계정 id
   fromId: text("from_id"),                             // 보낸 사람 IGSID
   fromUsername: text("from_username"),                 // 댓글 웹훅에만 포함(DM 웹훅엔 없음)
