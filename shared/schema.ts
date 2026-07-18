@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, boolean, timestamp, integer, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean, timestamp, integer, uniqueIndex, jsonb, index, foreignKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -832,3 +832,71 @@ export const reportMatches = pgTable("report_matches", {
 });
 export type ReportMatch = typeof reportMatches.$inferSelect;
 export type InsertReportMatch = typeof reportMatches.$inferInsert;
+
+// ── 영속 작업 큐 (persistent job queue, 2단계 동결 계약). additive 신규 테이블.
+//    실제 생성은 명시 migration(migrations/0002_create_persistent_job_queue.sql)으로. db:push 금지.
+//    상태·검증 값의 단일 소스는 shared/jobQueueContract.ts. 이 커밋엔 runtime 코드 없음.
+//    timestamptz + jsonb + varchar(64) hash. 기존 테이블·데이터 무변경.
+// jobs = 불변 요청 identity.
+export const jobs = pgTable("jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ownerScope: text("owner_scope").notNull(),               // 소유 범위(범용). project 없어도 필수
+  projectId: varchar("project_id"),                        // 무FK(projects 물리삭제 정책 → 앱 검증)
+  jobType: text("job_type").notNull(),                     // call-transcribe|video-caption|pdf-generate|sns-publish…
+  status: text("status").default("queued").notNull(),      // 중앙 validator(JobStatus). DB CHECK 미도입
+  priority: integer("priority").default(100).notNull(),    // 작을수록 우선
+  inputIdentity: jsonb("input_identity").notNull(),
+  requestVersionSnapshot: jsonb("request_version_snapshot").notNull(), // 불변(코드에서 보장)
+  executionOptions: jsonb("execution_options"),
+  executionOptionsHash: varchar("execution_options_hash", { length: 64 }).notNull(), // sha256 hex
+  payloadHash: varchar("payload_hash", { length: 64 }).notNull(),
+  idempotencyKey: varchar("idempotency_key", { length: 64 }).notNull(),
+  parentJobId: varchar("parent_job_id"),                   // reprocess 계보(self-FK)
+  reprocessReason: text("reprocess_reason"),
+  availableAt: timestamp("available_at", { withTimezone: true }).default(sql`now()`).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`).notNull(),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+}, (t) => [
+  uniqueIndex("jobs_idempotency_key_key").on(t.idempotencyKey),  // 전역 UNIQUE(인덱스 표현)
+  foreignKey({ columns: [t.parentJobId], foreignColumns: [t.id], name: "jobs_parent_job_id_fkey" }).onDelete("restrict"),
+  index("jobs_claim_idx").on(t.priority, t.availableAt, t.createdAt, t.id).where(sql`status = 'queued'`),
+  index("jobs_parent_idx").on(t.parentJobId),
+  index("jobs_project_created_idx").on(t.projectId, t.createdAt),
+]);
+
+// job_executions = 실제 실행 시도 1:N.
+export const jobExecutions = pgTable("job_executions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  jobId: varchar("job_id").notNull(),                      // → jobs.id RESTRICT
+  attemptNumber: integer("attempt_number").notNull(),
+  executionReason: text("execution_reason").default("normal").notNull(),
+  status: text("status").default("claimed").notNull(),     // 중앙 validator(ExecutionStatus)
+  workerId: text("worker_id"),
+  leaseTokenHash: varchar("lease_token_hash", { length: 64 }), // sha256 hex only(원문 금지)
+  leasedAt: timestamp("leased_at", { withTimezone: true }),
+  leaseExpiresAt: timestamp("lease_expires_at", { withTimezone: true }),
+  heartbeatAt: timestamp("heartbeat_at", { withTimezone: true }),
+  startedAt: timestamp("started_at", { withTimezone: true }),
+  finishedAt: timestamp("finished_at", { withTimezone: true }),
+  actualVersionSnapshot: jsonb("actual_version_snapshot"),
+  artifactSnapshot: jsonb("artifact_snapshot"),
+  executorSnapshot: jsonb("executor_snapshot"),
+  manifestUri: text("manifest_uri"),
+  manifestArtifactHash: varchar("manifest_artifact_hash", { length: 64 }),
+  errorCode: text("error_code"),
+  errorSummary: text("error_summary"),                     // 시스템 요약만(원문·고객값 금지)
+  verificationStatus: text("verification_status"),         // 중앙 validator(VerificationStatus)
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`).notNull(),
+}, (t) => [
+  foreignKey({ columns: [t.jobId], foreignColumns: [jobs.id], name: "job_executions_job_id_fkey" }).onDelete("restrict"),
+  uniqueIndex("job_executions_job_attempt_key").on(t.jobId, t.attemptNumber),
+  uniqueIndex("job_executions_active_uq").on(t.jobId).where(sql`status IN ('claimed','running')`), // 활성 최대 1
+  index("job_executions_reaper_idx").on(t.leaseExpiresAt).where(sql`status IN ('claimed','running')`),
+]);
+
+export type Job = typeof jobs.$inferSelect;
+export type InsertJob = typeof jobs.$inferInsert;
+export type JobExecution = typeof jobExecutions.$inferSelect;
+export type InsertJobExecution = typeof jobExecutions.$inferInsert;
