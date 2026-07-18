@@ -1,0 +1,399 @@
+{
+  "_note": "persistent job queue 구조 fingerprint(0002). 운영 실행 후 이 값과 대조. NOT NULL 은 columns.is_nullable 로만 판단(제약 목록은 PK/UNIQUE/FK/CHECK). 테이블개수만으로 판단 금지.",
+  "columnCount": 40,
+  "constraints": [
+    {
+      "tbl": "job_executions",
+      "conname": "job_executions_job_id_fkey",
+      "contype": "f",
+      "def": "FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE RESTRICT"
+    },
+    {
+      "tbl": "job_executions",
+      "conname": "job_executions_pkey",
+      "contype": "p",
+      "def": "PRIMARY KEY (id)"
+    },
+    {
+      "tbl": "jobs",
+      "conname": "jobs_parent_job_id_fkey",
+      "contype": "f",
+      "def": "FOREIGN KEY (parent_job_id) REFERENCES jobs(id) ON DELETE RESTRICT"
+    },
+    {
+      "tbl": "jobs",
+      "conname": "jobs_pkey",
+      "contype": "p",
+      "def": "PRIMARY KEY (id)"
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "job_executions",
+      "indexname": "job_executions_active_uq",
+      "indexdef": "CREATE UNIQUE INDEX job_executions_active_uq ON public.job_executions USING btree (job_id) WHERE (status = ANY (ARRAY['claimed'::text, 'running'::text]))"
+    },
+    {
+      "tablename": "job_executions",
+      "indexname": "job_executions_job_attempt_key",
+      "indexdef": "CREATE UNIQUE INDEX job_executions_job_attempt_key ON public.job_executions USING btree (job_id, attempt_number)"
+    },
+    {
+      "tablename": "job_executions",
+      "indexname": "job_executions_pkey",
+      "indexdef": "CREATE UNIQUE INDEX job_executions_pkey ON public.job_executions USING btree (id)"
+    },
+    {
+      "tablename": "job_executions",
+      "indexname": "job_executions_reaper_idx",
+      "indexdef": "CREATE INDEX job_executions_reaper_idx ON public.job_executions USING btree (lease_expires_at) WHERE (status = ANY (ARRAY['claimed'::text, 'running'::text]))"
+    },
+    {
+      "tablename": "jobs",
+      "indexname": "jobs_claim_idx",
+      "indexdef": "CREATE INDEX jobs_claim_idx ON public.jobs USING btree (priority, available_at, created_at, id) WHERE (status = 'queued'::text)"
+    },
+    {
+      "tablename": "jobs",
+      "indexname": "jobs_idempotency_key_key",
+      "indexdef": "CREATE UNIQUE INDEX jobs_idempotency_key_key ON public.jobs USING btree (idempotency_key)"
+    },
+    {
+      "tablename": "jobs",
+      "indexname": "jobs_parent_idx",
+      "indexdef": "CREATE INDEX jobs_parent_idx ON public.jobs USING btree (parent_job_id)"
+    },
+    {
+      "tablename": "jobs",
+      "indexname": "jobs_pkey",
+      "indexdef": "CREATE UNIQUE INDEX jobs_pkey ON public.jobs USING btree (id)"
+    },
+    {
+      "tablename": "jobs",
+      "indexname": "jobs_project_created_idx",
+      "indexdef": "CREATE INDEX jobs_project_created_idx ON public.jobs USING btree (project_id, created_at)"
+    }
+  ],
+  "columns": [
+    {
+      "table_name": "job_executions",
+      "column_name": "id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "job_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "attempt_number",
+      "data_type": "integer",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "execution_reason",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "'normal'::text"
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "status",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "'claimed'::text"
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "worker_id",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "lease_token_hash",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "leased_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "lease_expires_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "heartbeat_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "started_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "finished_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "actual_version_snapshot",
+      "data_type": "jsonb",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "artifact_snapshot",
+      "data_type": "jsonb",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "executor_snapshot",
+      "data_type": "jsonb",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "manifest_uri",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "manifest_artifact_hash",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "error_code",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "error_summary",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "verification_status",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_executions",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "owner_scope",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "project_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "job_type",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "status",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "'queued'::text"
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "priority",
+      "data_type": "integer",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "100"
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "input_identity",
+      "data_type": "jsonb",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "request_version_snapshot",
+      "data_type": "jsonb",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "execution_options",
+      "data_type": "jsonb",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "execution_options_hash",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "payload_hash",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "idempotency_key",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "parent_job_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "reprocess_reason",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "available_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "completed_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "cancelled_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    }
+  ]
+}
