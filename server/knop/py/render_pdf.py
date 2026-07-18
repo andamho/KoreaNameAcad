@@ -5,7 +5,7 @@ import fitz
 def main():
     pdf, out = sys.argv[1], sys.argv[2]
     doc = fitz.open(pdf)
-    pix = doc[0].get_pixmap(matrix=fitz.Matrix(2, 2))  # 2x ≈ 144DPI
+    pix = doc[0].get_pixmap(matrix=fitz.Matrix(4, 4))  # 4x ≈ 288DPI (선명한 텍스트)
     pix.save(out)
     doc.close()
     print("ok")
