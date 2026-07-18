@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Download, Plus, Pencil, Trash2, ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { Linkify } from "@/lib/linkify";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { ImageManager } from "@/components/ImageManager";
@@ -99,6 +100,44 @@ export default function Admin() {
   const [submittingReply, setSubmittingReply] = useState<string | null>(null);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loadingInquiries, setLoadingInquiries] = useState(true);
+  // 대화 내역(개별 메시지) — /inquiry 페이지와 동일하게 문의 관리 탭에서도 전체 대화·수정·삭제
+  const [threadMessages, setThreadMessages] = useState<Record<string, Array<{ id: string; senderType: string; content: string; createdAt: string }>>>({});
+  const [editingMsg, setEditingMsg] = useState<{ id: string; text: string } | null>(null);
+
+  const fetchThreadMessages = async (id: string) => {
+    try {
+      const token = localStorage.getItem("kna_admin_token");
+      const res = await fetch(`/api/inquiries/${id}/thread`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return;
+      const data = await res.json();
+      setThreadMessages(prev => ({ ...prev, [id]: Array.isArray(data) ? data : [] }));
+    } catch {}
+  };
+  // 관리자 답글(대화 메시지) 개별 수정
+  const saveMsgEdit = async (inqId: string) => {
+    if (!editingMsg?.text.trim()) return;
+    try {
+      const token = localStorage.getItem("kna_admin_token");
+      const res = await fetch(`/api/inquiry-messages/${editingMsg.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ content: editingMsg.text.trim() }),
+      });
+      if (!res.ok) throw new Error();
+      setEditingMsg(null);
+      fetchThreadMessages(inqId);
+    } catch { toast({ title: "수정 실패", variant: "destructive" }); }
+  };
+  // 관리자 답글 개별 삭제
+  const deleteMsg = async (inqId: string, msgId: string) => {
+    if (!confirm("이 답글을 삭제할까요?")) return;
+    try {
+      const token = localStorage.getItem("kna_admin_token");
+      const res = await fetch(`/api/inquiry-messages/${msgId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error();
+      fetchThreadMessages(inqId);
+    } catch { toast({ title: "삭제 실패", variant: "destructive" }); }
+  };
 
   const fetchInquiries = async () => {
     setLoadingInquiries(true);
@@ -345,7 +384,11 @@ export default function Admin() {
                         <button
                           type="button"
                           className="text-xs text-[#18a999] hover:underline font-medium"
-                          onClick={() => setExpandedInquiry(expandedInquiry === inq.id ? null : inq.id)}
+                          onClick={() => {
+                            const next = expandedInquiry === inq.id ? null : inq.id;
+                            setExpandedInquiry(next);
+                            if (next) fetchThreadMessages(next);
+                          }}
                         >
                           {expandedInquiry === inq.id ? "닫기" : "내용보기"}
                         </button>
@@ -384,76 +427,78 @@ export default function Admin() {
                         <div>
                           <p className="text-xs text-muted-foreground mb-1.5">문의 내용</p>
                           <p className="text-sm whitespace-pre-wrap bg-card border border-border/50 rounded-lg px-4 py-3 leading-relaxed">
-                            {inq.content}
+                            <Linkify>{inq.content}</Linkify>
                           </p>
                         </div>
-                        {inq.adminReply && (
-                          <div>
-                            <p className="text-xs text-muted-foreground mb-1.5">보낸 답변</p>
-                            <p className="text-sm whitespace-pre-wrap bg-[#18a999]/5 border border-[#18a999]/20 rounded-lg px-4 py-3 leading-relaxed">
-                              {inq.adminReply}
-                            </p>
-                          </div>
-                        )}
-                        {inq.status === "접수완료" && (
-                          <div className="space-y-2">
-                            <p className="text-xs text-muted-foreground">
-                              답변 작성 ({inq.contactType === "sms" ? "Solapi 문자로 발송됩니다" : "이메일로 발송됩니다"})
-                            </p>
-                            <textarea
-                              value={replyTexts[inq.id] || ""}
-                              onChange={e => setReplyTexts(prev => ({ ...prev, [inq.id]: e.target.value }))}
-                              placeholder={`${inq.name}님께 보낼 답변을 작성하세요`}
-                              className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[100px] bg-background"
-                            />
-                            <div className="flex items-center justify-between">
-                              <Button
-                                size="sm" variant="outline"
-                                onClick={async () => {
-                                  if (!confirm("정말 삭제하시겠습니까?")) return;
-                                  const token = localStorage.getItem("kna_admin_token");
-                                  await fetch(`/api/inquiries/${inq.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
-                                  fetchInquiries();
-                                  setExpandedInquiry(null);
-                                }}
-                                className="text-red-500 hover:text-red-600 border-red-200"
-                              >
-                                <Trash2 className="w-3.5 h-3.5 mr-1" /> 삭제
-                              </Button>
-                              <Button
-                                size="sm"
-                                disabled={!replyTexts[inq.id]?.trim() || submittingReply === inq.id}
-                                className="bg-[#18a999] text-white hover:bg-[#149085]"
-                                onClick={async () => {
-                                  const text = replyTexts[inq.id]?.trim();
-                                  if (!text) return;
-                                  setSubmittingReply(inq.id);
-                                  try {
-                                    const token = localStorage.getItem("kna_admin_token");
-                                    const res = await fetch(`/api/inquiries/${inq.id}/reply`, {
-                                      method: "PUT",
-                                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                                      body: JSON.stringify({ reply: text }),
-                                    });
-                                    if (!res.ok) throw new Error();
-                                    fetchInquiries();
-                                    setReplyTexts(prev => { const n = { ...prev }; delete n[inq.id]; return n; });
-                                    setExpandedInquiry(null);
-                                    toast({ title: `답변을 ${inq.contactType === "sms" ? "문자로" : "이메일로"} 발송했습니다.` });
-                                  } catch {
-                                    toast({ title: "발송에 실패했습니다.", variant: "destructive" });
-                                  } finally {
-                                    setSubmittingReply(null);
-                                  }
-                                }}
-                              >
-                                {submittingReply === inq.id ? "발송 중..." : "답변 발송"}
-                              </Button>
+
+                        {/* 대화 내역 — 전체 메시지(관리자·고객), 관리자 메시지는 개별 수정·삭제 */}
+                        {(threadMessages[inq.id] ?? []).length > 0 && (
+                          <div className="space-y-1.5">
+                            <p className="text-xs text-muted-foreground">대화 내역</p>
+                            <div className="space-y-2 bg-card border border-border/40 rounded-lg p-3">
+                              {(threadMessages[inq.id] ?? []).map(msg => (
+                                <div key={msg.id} className={`flex flex-col gap-0.5 ${msg.senderType === "admin" ? "items-end" : "items-start"}`}>
+                                  <p className={`text-[10px] font-medium ${msg.senderType === "admin" ? "text-[#18a999]" : "text-muted-foreground"}`}>
+                                    {msg.senderType === "admin" ? "관리자" : inq.name}
+                                  </p>
+                                  {editingMsg?.id === msg.id ? (
+                                    <div className="w-full flex flex-col gap-1.5">
+                                      <textarea
+                                        value={editingMsg.text}
+                                        onChange={e => setEditingMsg({ id: msg.id, text: e.target.value })}
+                                        ref={el => { if (el) { el.style.height = "auto"; el.style.height = `${el.scrollHeight}px`; } }}
+                                        className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition min-h-[120px] max-h-[60vh] overflow-y-auto bg-background"
+                                        maxLength={2000} autoFocus
+                                      />
+                                      <div className="flex justify-end gap-2">
+                                        <button onClick={() => saveMsgEdit(inq.id)} disabled={!editingMsg.text.trim()}
+                                          className="px-3 py-1 rounded-lg bg-[#18a999] text-white text-xs font-bold disabled:opacity-50 transition">저장</button>
+                                        <button onClick={() => setEditingMsg(null)}
+                                          className="px-3 py-1 rounded-lg border border-border text-xs transition">취소</button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className={`max-w-[85%] rounded-xl px-3 py-2 text-sm whitespace-pre-wrap leading-relaxed ${
+                                      msg.senderType === "admin" ? "bg-[#18a999] text-white" : "bg-muted/60 text-foreground"
+                                    }`}>
+                                      <Linkify className={msg.senderType === "admin"
+                                        ? "underline underline-offset-2 break-all font-medium"
+                                        : "text-[#18a999] underline underline-offset-2 hover:text-[#149085] break-all"}>
+                                        {msg.content}
+                                      </Linkify>
+                                    </div>
+                                  )}
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-[10px] text-muted-foreground">{formatDateTime(msg.createdAt)}</p>
+                                    {msg.senderType === "admin" && !msg.id.startsWith("__tmp__") && editingMsg?.id !== msg.id && (
+                                      <>
+                                        <button onClick={() => setEditingMsg({ id: msg.id, text: msg.content })}
+                                          className="text-[10px] text-muted-foreground hover:text-[#18a999] transition">수정</button>
+                                        <button onClick={() => deleteMsg(inq.id, msg.id)}
+                                          className="text-[10px] text-muted-foreground hover:text-red-500 transition">삭제</button>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
                         )}
-                        {inq.status === "답변완료" && (
-                          <div className="flex justify-end">
+
+                        {/* 답변/댓글 입력 — 항상 표시(첫 답변은 문자·이메일 발송, 이후는 대화 댓글) */}
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground">
+                            {inq.status === "접수완료"
+                              ? `첫 답변 (${inq.contactType === "sms" ? "문자로 발송됩니다" : "이메일로 발송됩니다"})`
+                              : "댓글 입력"}
+                          </p>
+                          <textarea
+                            value={replyTexts[inq.id] || ""}
+                            onChange={e => setReplyTexts(prev => ({ ...prev, [inq.id]: e.target.value }))}
+                            placeholder={inq.status === "접수완료" ? `${inq.name}님께 보낼 답변을 작성하세요` : "댓글을 입력하세요"}
+                            className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[100px] bg-background"
+                          />
+                          <div className="flex items-center justify-between">
                             <Button
                               size="sm" variant="outline"
                               onClick={async () => {
@@ -465,10 +510,40 @@ export default function Admin() {
                               }}
                               className="text-red-500 hover:text-red-600 border-red-200"
                             >
-                              <Trash2 className="w-3.5 h-3.5 mr-1" /> 삭제
+                              <Trash2 className="w-3.5 h-3.5 mr-1" /> 문의 삭제
+                            </Button>
+                            <Button
+                              size="sm"
+                              disabled={!replyTexts[inq.id]?.trim() || submittingReply === inq.id}
+                              className="bg-[#18a999] text-white hover:bg-[#149085]"
+                              onClick={async () => {
+                                const text = replyTexts[inq.id]?.trim();
+                                if (!text) return;
+                                setSubmittingReply(inq.id);
+                                try {
+                                  const token = localStorage.getItem("kna_admin_token");
+                                  const res = await fetch(`/api/inquiries/${inq.id}/reply`, {
+                                    method: "PUT",
+                                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                                    body: JSON.stringify({ reply: text }),
+                                  });
+                                  if (!res.ok) throw new Error();
+                                  const result = await res.json().catch(() => ({}));
+                                  fetchInquiries();
+                                  setReplyTexts(prev => { const n = { ...prev }; delete n[inq.id]; return n; });
+                                  fetchThreadMessages(inq.id);
+                                  toast({ title: result?.isFirstReply === false ? "댓글이 등록되었습니다." : `답변을 ${inq.contactType === "sms" ? "문자로" : "이메일로"} 발송했습니다.` });
+                                } catch {
+                                  toast({ title: "발송에 실패했습니다.", variant: "destructive" });
+                                } finally {
+                                  setSubmittingReply(null);
+                                }
+                              }}
+                            >
+                              {submittingReply === inq.id ? "전송 중..." : (inq.status === "접수완료" ? "답변 발송" : "댓글 등록")}
                             </Button>
                           </div>
-                        )}
+                        </div>
                       </div>
                     )}
                   </div>
