@@ -120,4 +120,11 @@ describe("이름분석표 처리기 안전요건", () => {
     assert.equal(m.rendered_url, null, "미리보기 없음");
     assert.equal(await crmCount(), 0);
   });
+
+  test("duplicate 상태면 재처리·재첨부 안 함(백필 terminal skip)", async () => {
+    await db.query(`INSERT INTO report_matches (id, file_name, file_hash, status, matched_customer_id) VALUES ('d1','이은혜님 가족 이름분석.pdf','HASH_DEFAULT','duplicate','c1')`);
+    const r = await processFile(mkDeps(), input());
+    assert.equal(r.status, "duplicate", "이미 duplicate 면 그대로 skip");
+    assert.equal(await crmCount(), 0, "재첨부 없음");
+  });
 });
