@@ -22,14 +22,20 @@ export type Report = { file: string; name: string; label: string; family: boolea
 // crm_files.memo 규약: 확정 첨부는 "이름분석표:{파일명}" (식별/중복방지 키). 갱신·판정 상태는 report_matches 테이블이 담당.
 export const REPORT_PREFIX = "이름분석표:";
 
+// 처리 대상 확장자: 기존 PDF + 신규 이미지(PDF를 4x PNG로 변환해 폴더에 저장). 이미지는 렌더 없이 바로 업로드.
+export const REPORT_EXT = /\.(pdf|png|jpe?g|webp)$/i;
+export function isImageReport(file: string): boolean {
+  return /\.(png|jpe?g|webp)$/i.test(file);
+}
+
 // 고객명에서 "가족" 꼬리 제거 → 기준 이름 (강보경가족 → 강보경). PDF/녹음 매칭용.
 export function baseName(n: string): string {
   return (n || "").replace(/\s*가족\s*$/, "").replace(/[.\s]+$/, "");
 }
 
 function parseReport(file: string): Report | null {
-  if (!file.toLowerCase().endsWith(".pdf")) return null;
-  const base = file.replace(/\.pdf$/i, "");
+  if (!REPORT_EXT.test(file)) return null;
+  const base = file.replace(REPORT_EXT, "");
   const m = base.match(/^(.+?)님/);
   if (!m) return null;
   const name = m[1].trim();
@@ -83,7 +89,7 @@ export function resolveReportPath(file: string): string | null {
   try {
     const base = path.basename(file);
     const full = path.join(DIR, base);
-    if (fs.existsSync(full) && fs.statSync(full).isFile() && full.toLowerCase().endsWith(".pdf")) return full;
+    if (fs.existsSync(full) && fs.statSync(full).isFile() && REPORT_EXT.test(full)) return full;
   } catch {
     /* noop */
   }

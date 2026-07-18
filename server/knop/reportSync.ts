@@ -16,6 +16,8 @@ import {
   resolveReportPath,
   reportsAvailable,
   reportsDir,
+  isImageReport,
+  REPORT_EXT,
 } from "./reports";
 
 const PY = (process.env.KOP_WHISPER_PY || process.env.KNOP_WHISPER_PY)?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot/venv/Scripts/python.exe";
@@ -41,6 +43,13 @@ function renderPng(pdfAbs: string): Promise<Buffer> {
       }
     });
   });
+}
+
+// 렌더 어댑터: 파일이 이미 이미지(신규 상담 건, PS1이 4x PNG로 변환)면 바이트 그대로,
+// PDF(기존 110건)면 4x PNG로 렌더. 매칭·업로드 이후 흐름은 동일.
+function renderOrRead(abs: string): Promise<Buffer> {
+  if (isImageReport(abs)) return fs.promises.readFile(abs);
+  return renderPng(abs);
 }
 
 // 처리기용 raw pg 풀 (파라미터 쿼리·트랜잭션). drizzle db 는 raw query 미노출이라 별도 사용.
@@ -78,7 +87,7 @@ export async function syncReports(): Promise<SyncResult> {
   const state = loadState();
   const deps: ProcessorDeps = {
     db: { query: (sql, params) => reportPool().query(sql, params as any[]) as any },
-    render: renderPng,
+    render: renderOrRead,
     upload: async (key, buf) => { await store.putObject(key, buf, "image/png"); return `/objects/${key}`; },
     hashFile: (abs) => {
       try {
@@ -139,11 +148,11 @@ export function startReportSync() {
   _watching = true;
   // 서버 시작 후 밀린 것 처리
   setTimeout(() => syncReports().catch(() => {}), 15000);
-  // 폴더 감시 (새 PDF 감지 → 디바운스 후 동기화)
+  // 폴더 감시 (새 PDF/이미지 감지 → 디바운스 후 동기화)
   try {
     let timer: NodeJS.Timeout | null = null;
     fs.watch(reportsDir(), (_ev, file) => {
-      if (!file || !String(file).toLowerCase().endsWith(".pdf")) return;
+      if (!file || !REPORT_EXT.test(String(file))) return;
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => syncReports().catch(() => {}), 6000);
     });
