@@ -15,6 +15,21 @@ import type {
 
 export type { AiInbox, ParsedPayment, InboxSuggestion, Call, SmsTemplate, ScheduledMessage };
 
+export type PendingReport = {
+  id: string;
+  kind: "update" | "ambiguous";
+  fileName: string;
+  status: string;
+  reportType: "family" | "individual";
+  firstSeenAt: string;
+  matchReason: string | null;
+  renderedUrl: string | null;
+  topScore: number | null; secondScore: number | null; scoreGap: number | null;
+  candidates: Array<{ customerId: string; customerName: string; score: number; passedGate: boolean; autoEligible: boolean; parts: string[] }>;
+  previous: { customerId: string; customerName: string | null; renderedUrl: string | null } | null;
+  audit: Array<{ action: string; actor: string; at: string; reason?: string }>;
+};
+
 export type CorrectionRule = {
   id: string;
   wrong: string;
@@ -245,6 +260,15 @@ export const knopApi = {
       "POST",
       "/api/kop/corrections/revalidate",
     ),
+
+  // 이름분석표 갱신 대기 (동명이인 확인 / 내용 갱신)
+  listPendingReports: () => req<PendingReport[]>("GET", "/api/kop/reports/pending"),
+  assignReport: (id: string, customerId: string, reason?: string) =>
+    req<{ ok: boolean }>("POST", `/api/kop/reports/${id}/assign`, { customerId, actor: "원장님", reason }),
+  replaceReport: (id: string, reason?: string) =>
+    req<{ ok: boolean }>("POST", `/api/kop/reports/${id}/replace`, { actor: "원장님", reason }),
+  ignoreReport: (id: string, reason?: string) =>
+    req<{ ok: boolean }>("POST", `/api/kop/reports/${id}/ignore`, { actor: "원장님", reason }),
 
   // AI Inbox (결제 문자)
   submitInbox: (rawText: string, sender?: string) =>

@@ -19,6 +19,7 @@ import {
   Inbox,
   Trash2,
   Sparkles,
+  FileText,
 } from "lucide-react";
 import { knopApi } from "@/lib/knopApi";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +28,7 @@ import type { Customer } from "@shared/schema";
 import { CustomerDetailView } from "./CustomerDetail";
 import { InboxView } from "./InboxView";
 import { CorrectionsView } from "./CorrectionsView";
+import { ReportReviewView } from "./ReportReviewView";
 import { NoticeView } from "./NoticeView";
 import { VoiceAssistant } from "./VoiceAssistant";
 import { SmsView } from "./SmsView";
@@ -37,7 +39,7 @@ import { StatusBadge, fmtDate, fmtTime } from "./lib";
 // 실제 운영 달력 "바른이름 달력" (Firebase 호스팅, 실시간 동기화)
 const CALENDAR_URL = "https://calendar-zeus1000.web.app";
 
-type View = "today" | "customers" | "inbox" | "sms-inbox" | "sms" | "notice" | "calendar" | "corrections";
+type View = "today" | "customers" | "inbox" | "sms-inbox" | "sms" | "notice" | "calendar" | "reports" | "corrections";
 
 export function KnopApp() {
   const { isAdmin, isVerifying } = useAdmin();
@@ -60,6 +62,7 @@ export function KnopApp() {
     { key: "sms", label: "문자", icon: MessageSquare },
     { key: "notice", label: "개명안내", icon: Sparkles },
     { key: "calendar", label: "달력", icon: CalendarDays },
+    { key: "reports", label: "이름분석표", icon: FileText },
     { key: "corrections", label: "교정사전", icon: SpellCheck },
   ];
 
@@ -108,6 +111,7 @@ export function KnopApp() {
             {view === "sms" && <SmsView />}
             {view === "notice" && <NoticeView />}
             {view === "calendar" && <CalendarView onOpenCustomer={setSelectedCustomer} />}
+            {view === "reports" && <ReportReviewView />}
             {view === "corrections" && <CorrectionsView />}
           </>
         )}
