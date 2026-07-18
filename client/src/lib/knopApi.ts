@@ -245,6 +245,16 @@ export const knopApi = {
       resummarize,
       words,
     }),
+  // 오타 수정 저장 가속: 바뀐 턴만 splice 로 전송(전체 words 업로드 회피)
+  editCallTranscriptPatch: (
+    id: string,
+    wordPatch: { startIdx: number; delCount: number; words: unknown[] },
+    resummarize = false,
+  ) =>
+    req<{ ok: boolean; id: string; summaryText: string | null }>("PATCH", `/api/kop/calls/${id}`, {
+      wordPatch,
+      resummarize,
+    }),
 
   // 공유 학습 교정사전
   listCorrections: () => req<CorrectionRule[]>("GET", "/api/kop/corrections"),

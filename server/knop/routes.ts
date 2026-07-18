@@ -952,18 +952,37 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
   // 전사문 편집 + 자동 학습 (원본↔수정본 diff → 공유 교정사전에 누적)
   app.patch(`${P}/calls/:id`, requireAdmin, async (req, res) => {
     try {
-      const { transcriptText, resummarize, words } = req.body || {};
-      if (typeof transcriptText !== "string") return res.status(400).json({ error: "transcriptText_required" });
+      const { transcriptText, resummarize, words, wordPatch } = req.body || {};
       const old = await knopStore.getCall(req.params.id);
       if (!old) return res.status(404).json({ error: "not_found" });
       const oldText = old.transcriptText || "";
+
+      // 저장 속도: 오타 수정은 바뀐 턴만 보냄(wordPatch) → 서버가 기존 words 에 splice 후 전사문 재계산.
+      // 전체 words(수백 KB) 업로드를 피한다. (전체 words+transcriptText 로 보내는 옛 경로도 그대로 지원)
+      let finalText: string;
+      let finalWords: unknown[] | undefined;
+      if (wordPatch && typeof wordPatch === "object") {
+        const { startIdx, delCount, words: patchWords } = wordPatch as any;
+        let cur: any[] = [];
+        try { cur = JSON.parse(old.words || "[]"); } catch { cur = []; }
+        if (!Array.isArray(cur) || !Array.isArray(patchWords) || typeof startIdx !== "number" || typeof delCount !== "number" || startIdx < 0 || startIdx + delCount > cur.length) {
+          return res.status(400).json({ error: "invalid_word_patch" });
+        }
+        finalWords = cur.slice(0, startIdx).concat(patchWords, cur.slice(startIdx + delCount));
+        finalText = (finalWords as any[]).map((w) => w.word).join(" ");
+      } else if (typeof transcriptText === "string") {
+        finalText = transcriptText;
+        finalWords = Array.isArray(words) ? words : undefined;
+      } else {
+        return res.status(400).json({ error: "transcriptText_or_wordPatch_required" });
+      }
 
       // 재요약은 명시적으로 요청했을 때만(느린 Gemini 호출). 기본 저장은 건너뜀 → 빠름.
       let summaryText: string | undefined;
       let actionItems: string[] | undefined;
       if (resummarize) {
         try {
-          const s = await summarizeTranscript(transcriptText);
+          const s = await summarizeTranscript(finalText);
           summaryText = s.summary;
           actionItems = s.actionItems;
         } catch (e: any) {
@@ -972,15 +991,15 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       }
 
       const call = await knopStore.updateCall(req.params.id, {
-        transcriptText,
+        transcriptText: finalText,
         summaryText,
         actionItems,
-        words: Array.isArray(words) ? words : undefined, // 음성연동/화자 유지용 갱신
+        words: finalWords, // 음성연동/화자 유지용 갱신(wordPatch 면 splice 결과, 아니면 전체)
       });
       // 응답은 가볍게(전사문/words 수백KB를 되돌려주지 않음 → 저장 체감속도 개선)
       res.json({ ok: true, id: req.params.id, summaryText: call?.summaryText ?? null });
       // 독립 증거 단위 = 전사(통화) ID. 같은 전사를 여러 번 고쳐도 증거는 1건.
-      learnFromEdit(oldText, transcriptText, req.params.id, randomUUID()).catch((e) =>
+      learnFromEdit(oldText, finalText, req.params.id, randomUUID()).catch((e) =>
         console.error(`[KOP] 학습 실패(백그라운드): ${e?.message}`),
       );
       return;

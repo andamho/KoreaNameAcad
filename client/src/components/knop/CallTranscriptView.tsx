@@ -229,25 +229,14 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
 
   // 저장은 즉시(요약 재생성 안 함). 학습은 서버가 백그라운드로 처리.
   // 저장 후 고객 자료 전체(수백KB)를 다시 받지 않고 화면 캐시만 갱신 → 체감 즉시
+  // 저장 가속: 바뀐 턴만 splice 로 전송(전체 words 업로드 회피). 낙관적 반영은 saveTurn 에서 즉시 처리.
   const editMut = useMutation({
-    mutationFn: (payload: { transcript: string; words: W[] }) =>
-      knopApi.editCallTranscript(call.id, payload.transcript, false, payload.words),
-    onSuccess: (_res, payload) => {
-      qc.setQueryData(["knop-customer", call.customerId], (old: any) => {
-        if (!old?.calls) return old;
-        return {
-          ...old,
-          calls: old.calls.map((c: any) =>
-            c.id === call.id
-              ? { ...c, transcriptText: payload.transcript, words: JSON.stringify(payload.words) }
-              : c,
-          ),
-        };
-      });
-      setEditTurn(null);
-      toast({ title: "저장됨" });
+    mutationFn: (payload: { wordPatch: { startIdx: number; delCount: number; words: W[] } }) =>
+      knopApi.editCallTranscriptPatch(call.id, payload.wordPatch, false),
+    onError: (e: any) => {
+      toast({ title: "저장 실패(되돌림)", description: e?.message, variant: "destructive" });
+      qc.invalidateQueries({ queryKey: ["knop-customer", call.customerId] }); // 진짜 상태로 복구
     },
-    onError: (e: any) => toast({ title: "저장 실패", description: e?.message, variant: "destructive" }),
   });
 
   // 요약 갱신(느린 AI 호출) — 원할 때만 수동으로
@@ -265,31 +254,34 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
 
   const saveTurn = () => {
     if (editTurn === null) return;
+    const turn = turns[editTurn];
     if (editVal.trim() === turnText(editTurn).trim()) {
       setEditTurn(null);
       return; // 변경 없음
     }
-    // 수정한 턴만 재토큰화(타임스탬프 균등 분배), 나머지는 원본 유지 → 음성연동/화자 보존
-    const newWords: W[] = [];
-    turns.forEach((turn, ti) => {
-      if (ti === editTurn) {
-        const toks = editVal.trim().split(/\s+/).filter(Boolean);
-        const s = turn.items[0].w.start;
-        const e = turn.items[turn.items.length - 1].w.end;
-        const step = (e - s) / Math.max(1, toks.length);
-        toks.forEach((tok, k) =>
-          newWords.push({
-            word: tok,
-            start: +(s + k * step).toFixed(3),
-            end: +(s + (k + 1) * step).toFixed(3),
-            speaker: turn.speaker,
-          }),
-        );
-      } else {
-        turn.items.forEach((x) => newWords.push(x.w));
-      }
-    });
-    editMut.mutate({ transcript: newWords.map((w) => w.word).join(" "), words: newWords });
+    // 수정한 턴만 재토큰화(타임스탬프 균등 분배) → 그 턴의 전역 인덱스 범위만 splice 전송(수백 KB 회피)
+    const startIdx = turn.items[0].i;
+    const delCount = turn.items[turn.items.length - 1].i - startIdx + 1;
+    const s = turn.items[0].w.start;
+    const e = turn.items[turn.items.length - 1].w.end;
+    const toks = editVal.trim().split(/\s+/).filter(Boolean);
+    const step = (e - s) / Math.max(1, toks.length);
+    const patchWords: W[] = toks.map((tok, k) => ({
+      word: tok,
+      start: +(s + k * step).toFixed(3),
+      end: +(s + (k + 1) * step).toFixed(3),
+      speaker: turn.speaker,
+    }));
+    const newWords = words.slice(0, startIdx).concat(patchWords, words.slice(startIdx + delCount));
+
+    // 즉시 반영(낙관적): 편집창 닫기 + 캐시 갱신 → 체감상 즉시 저장. 실제 업로드는 바뀐 턴만 백그라운드로.
+    setEditTurn(null);
+    qc.setQueryData(["knop-customer", call.customerId], (old: any) =>
+      old?.calls
+        ? { ...old, calls: old.calls.map((c: any) => (c.id === call.id ? { ...c, transcriptText: newWords.map((w) => w.word).join(" "), words: JSON.stringify(newWords) } : c)) }
+        : old,
+    );
+    editMut.mutate({ wordPatch: { startIdx, delCount, words: patchWords } });
   };
 
   if (words.length === 0 && !call.transcriptText) return null;
