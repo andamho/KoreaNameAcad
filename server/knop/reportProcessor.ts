@@ -151,3 +151,77 @@ export async function processFile(deps: ProcessorDeps, input: ProcessInput): Pro
   }
   return { status: "auto_matched", matchId: row.id, note: decision.reason };
 }
+
+// ── 실 DB 후보 조회 ──
+// 후보 게이트: 파일명 대표자 이름 == (고객 기준이름 OR 상담 peopleData 가족 이름).
+// 신청일 출처: source_consultation_id 로 상담신청 확인되면 consultation, 아니면 customer_proxy.
+import { baseName } from "./reports";
+
+export async function gatherCandidates(
+  db: DbLike,
+  extractedName: string,
+  reportType: "family" | "individual",
+): Promise<{ candidates: Candidate[]; failed: boolean }> {
+  try {
+    const custs = (await db.query(
+      `SELECT id, name, created_at, source_consultation_id FROM customers WHERE deleted_at IS NULL`,
+    )).rows;
+    // 후보1: 기준이름 일치
+    const nameMatch = custs.filter((c: any) => baseName(c.name) === extractedName);
+    // 후보2: peopleData 가족 이름에 등장(상담 → 그 상담을 근거로 만든 고객)
+    const cons = (await db.query(
+      `SELECT id FROM consultations WHERE people_data LIKE $1`, [`%${extractedName}%`],
+    )).rows;
+    const consIds = new Set(cons.map((r: any) => r.id));
+    const familyMatch = custs.filter((c: any) => c.source_consultation_id && consIds.has(c.source_consultation_id));
+
+    const chosen = new Map<string, any>();
+    for (const c of [...nameMatch, ...familyMatch]) chosen.set(c.id, c);
+    if (chosen.size === 0) return { candidates: [], failed: false };
+
+    // 각 후보의 기존 이름분석표(같은 유형) 여부 일괄 조회
+    const ids = Array.from(chosen.keys());
+    const linked = (await db.query(
+      `SELECT customer_id, memo FROM crm_files WHERE customer_id = ANY($1::varchar[]) AND memo LIKE '이름분석표:%'`, [ids],
+    )).rows;
+    const linkedSameType = new Set<string>();
+    for (const f of linked as any[]) {
+      const isFamily = /가족/.test(f.memo || "");
+      if ((reportType === "family") === isFamily) linkedSameType.add(f.customer_id);
+    }
+
+    const candidates: Candidate[] = [];
+    for (const c of Array.from(chosen.values())) {
+      let applicationDate: Date | null = null;
+      let source: Candidate["applicationDateSource"] = "unknown";
+      let numPeople: number | null = null;
+      let consultationId: string | null = null;
+      if (c.source_consultation_id) {
+        const con = (await db.query(`SELECT created_at, num_people FROM consultations WHERE id=$1`, [c.source_consultation_id])).rows[0];
+        if (con) {
+          applicationDate = con.created_at ? new Date(con.created_at) : null;
+          source = "consultation";
+          numPeople = con.num_people ?? null;
+          consultationId = c.source_consultation_id;
+        }
+      }
+      if (source !== "consultation") {
+        applicationDate = c.created_at ? new Date(c.created_at) : null;
+        source = applicationDate ? "customer_proxy" : "unknown";
+      }
+      candidates.push({
+        customerId: c.id,
+        customerName: c.name,
+        consultationId,
+        applicationDate,
+        applicationDateSource: source,
+        numPeople,
+        consultStatus: null, // KOP DB에 신뢰 가능한 상담상태 없음 → null(보조점수 미적용)
+        alreadyLinkedSameType: linkedSameType.has(c.id),
+      });
+    }
+    return { candidates, failed: false };
+  } catch {
+    return { candidates: [], failed: true }; // 요건 8: 조회 실패는 추측 금지
+  }
+}

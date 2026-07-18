@@ -5,24 +5,21 @@ import path from "path";
 import os from "os";
 import crypto from "crypto";
 import { spawn } from "child_process";
+import { Pool as PgPool } from "pg";
 import { fileURLToPath } from "url";
 import { db } from "../db";
-import { crmFiles, customers } from "@shared/schema";
-import { knopStore } from "./store";
 import { ObjectStorageService } from "../object_storage/objectStorage";
+import { processFile, gatherCandidates, type ProcessorDeps } from "./reportProcessor";
 import {
   listReports,
   baseName,
-  reportDateForName,
   resolveReportPath,
   reportsAvailable,
   reportsDir,
-  type Report,
 } from "./reports";
 
 const PY = (process.env.KOP_WHISPER_PY || process.env.KNOP_WHISPER_PY)?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot/venv/Scripts/python.exe";
 const RENDER = fileURLToPath(new URL("./py/render_pdf.py", import.meta.url));
-const PREFIX = "이름분석표:";
 const store = new ObjectStorageService();
 
 function renderPng(pdfAbs: string): Promise<Buffer> {
@@ -46,76 +43,91 @@ function renderPng(pdfAbs: string): Promise<Buffer> {
   });
 }
 
+// 처리기용 raw pg 풀 (파라미터 쿼리·트랜잭션). drizzle db 는 raw query 미노출이라 별도 사용.
+let _pool: PgPool | null = null;
+function pool(): PgPool {
+  if (!_pool) {
+    _pool = new PgPool({
+      connectionString: (process.env.NEON_DATABASE_URL || process.env.DATABASE_URL)!,
+      ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 15000, idleTimeoutMillis: 30000, max: 3,
+    });
+  }
+  return _pool;
+}
+
+// 로컬 해시 캐시(재해싱 방지). DB(report_matches)가 원천이고, 이건 성능용 보조 캐시.
+const STATE_FILE = () => path.join(reportsDir(), ".kop_report_state.json");
+type HashState = Record<string, { mtime: number; hash: string }>;
+function loadState(): HashState {
+  try { return JSON.parse(fs.readFileSync(STATE_FILE(), "utf-8")); } catch { return {}; }
+}
+function saveState(s: HashState) { try { fs.writeFileSync(STATE_FILE(), JSON.stringify(s)); } catch { /* noop */ } }
+
+export type SyncResult = {
+  auto_matched: number; needs_review: number; attachment_failed: number;
+  processing_failed: number; skipped: number; processed: number;
+  // 하위호환(기존 호출부): added = 이번에 새로 자동첨부된 수
+  added: number; created: number;
+};
+
 let _syncing = false;
-export async function syncReports(): Promise<{ added: number; created: number }> {
-  if (!db || _syncing || !reportsAvailable()) return { added: 0, created: 0 };
+export async function syncReports(): Promise<SyncResult> {
+  const empty: SyncResult = { auto_matched: 0, needs_review: 0, attachment_failed: 0, processing_failed: 0, skipped: 0, processed: 0, added: 0, created: 0 };
+  if (!db || _syncing || !reportsAvailable()) return empty;
   _syncing = true;
+  const state = loadState();
+  const deps: ProcessorDeps = {
+    db: { query: (sql, params) => pool().query(sql, params as any[]) as any },
+    render: renderPng,
+    upload: async (key, buf) => { await store.putObject(key, buf, "image/png"); return `/objects/${key}`; },
+    hashFile: (abs) => {
+      try {
+        const st = fs.statSync(abs);
+        const cached = state[abs];
+        if (cached && cached.mtime === st.mtimeMs) return cached.hash;
+        const h = crypto.createHash("sha256").update(fs.readFileSync(abs)).digest("hex");
+        state[abs] = { mtime: st.mtimeMs, hash: h };
+        return h;
+      } catch {
+        return crypto.createHash("sha256").update(abs).digest("hex"); // 최후: 경로 해시(사실상 미스)
+      }
+    },
+    now: () => new Date(),
+    uuid: () => crypto.randomUUID(),
+  };
+  const res: SyncResult = { ...empty };
   try {
     const reps = listReports().filter((r) => !/상세/.test(r.file));
-    // 기준이름별 그룹 (가족여부)
-    const groups = new Map<string, { family: boolean; files: Report[] }>();
     for (const r of reps) {
-      const bn = baseName(r.name);
-      if (!bn) continue;
-      const g = groups.get(bn) || { family: false, files: [] };
-      if ((r as any).family) g.family = true;
-      g.files.push(r as any);
-      groups.set(bn, g);
-    }
-    const allCusts = await db.select().from(customers);
-    const byBase = new Map<string, typeof allCusts>(); // 활성만(첨부 대상)
-    const anyBase = new Set<string>(); // 휴지통 포함(재생성 방지)
-    for (const c of allCusts) {
-      const b = baseName(c.name);
-      anyBase.add(b);
-      if (!c.deletedAt) (byBase.get(b) || byBase.set(b, []).get(b)!).push(c);
-    }
-    const existing = await db.select().from(crmFiles);
-    const done = new Set(
-      existing.filter((f) => f.memo?.startsWith(PREFIX)).map((f) => `${f.customerId}|${f.memo!.slice(PREFIX.length)}`)
-    );
-    let added = 0;
-    let created = 0;
-    for (const [bn, g] of Array.from(groups)) {
-      let matched = byBase.get(bn) || [];
-      if (matched.length === 0) {
-        if (anyBase.has(bn)) continue; // 휴지통에 있음 → 재생성 안 함
-        const c = await knopStore.createCustomerForReport(bn, g.family, reportDateForName(bn));
-        matched = [c];
-        created++;
-      }
-      for (const r of g.files) {
-        const abs = resolveReportPath(r.file);
-        if (!abs) continue;
-        let buf: Buffer | null = null;
-        for (const c of matched) {
-          const key = `${c.id}|${r.file}`;
-          if (done.has(key)) continue;
-          try {
-            if (!buf) buf = await renderPng(abs);
-          } catch (e: any) {
-            console.error(`[KNOP] 렌더 실패 ${r.file}: ${e?.message}`);
-            break;
-          }
-          const okey = `uploads/${crypto.randomUUID()}.png`;
-          await store.putObject(okey, buf, "image/png");
-          await db.insert(crmFiles).values({
-            customerId: c.id,
-            fileName: `이름분석표 (${r.label})`,
-            fileType: "image/png",
-            fileUrl: `/objects/${okey}`,
-            memo: `${PREFIX}${r.file}`,
-          });
-          done.add(key);
-          added++;
-        }
+      const abs = resolveReportPath(r.file);
+      if (!abs) continue;
+      const extractedName = baseName(r.name);
+      const reportType = r.family ? "family" : "individual";
+      try {
+        const { candidates, failed } = await gatherCandidates(deps.db, extractedName, reportType);
+        const out = await processFile(deps, {
+          file: r.file, absPath: abs, extractedName, reportType, label: r.label, candidates, candidatesFailed: failed,
+        });
+        res.processed++;
+        if (out.status === "auto_matched") { res.auto_matched++; res.added++; }
+        else if (out.status === "needs_review") res.needs_review++;
+        else if (out.status === "attachment_failed") res.attachment_failed++;
+        else if (out.status === "processing_failed") res.processing_failed++;
+        else res.skipped++;
+      } catch (e: any) {
+        console.error(`[KOP] 이름분석표 처리 오류 ${r.file}: ${e?.message}`);
+        res.processing_failed++;
       }
     }
-    if (added || created) console.log(`[KNOP] 이름분석표 동기화: ${added}개 첨부, 고객 ${created}명 생성`);
-    return { added, created };
+    saveState(state);
+    if (res.auto_matched || res.needs_review || res.attachment_failed || res.processing_failed) {
+      console.log(`[KOP] 이름분석표 동기화: 자동연결 ${res.auto_matched} · 확인필요 ${res.needs_review} · 첨부실패 ${res.attachment_failed} · 처리실패 ${res.processing_failed} (처리 ${res.processed})`);
+    }
+    return res;
   } catch (e: any) {
-    console.error(`[KNOP] 이름분석표 동기화 오류: ${e?.message}`);
-    return { added: 0, created: 0 };
+    console.error(`[KOP] 이름분석표 동기화 오류: ${e?.message}`);
+    saveState(state);
+    return res;
   } finally {
     _syncing = false;
   }
