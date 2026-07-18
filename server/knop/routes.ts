@@ -28,7 +28,9 @@ import { processThread } from "./intakeProcess";
 import { JOURNEY, nextStage } from "./stateMachine";
 import { previewBackfill, applyBackfill } from "./phoneBackfill";
 import { reportsAvailable, reportsForName, resolveReportPath } from "./reports";
-import { syncReports, startReportSync } from "./reportSync";
+import { syncReports, startReportSync, reportPool } from "./reportSync";
+import { listPendingReports, assignReport, replaceReport, ignoreReport } from "./reportAdmin";
+import type { DbLike } from "./reportProcessor";
 import { recordingsAvailable, recordingsForCustomer, resolveRecordingPath } from "./recordings";
 import crypto from "crypto";
 import fs from "fs";
@@ -337,6 +339,36 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     } catch (e) {
       handle(res, "POST reports sync", e);
     }
+  });
+
+  // ── 이름분석표 갱신 대기(동명이인 확인/내용 갱신) 관리 ──
+  const reportDb: DbLike = { query: (sql, params) => reportPool().query(sql, params as any[]) as any };
+  app.get(`${P}/reports/pending`, requireAdmin, async (_req, res) => {
+    try {
+      res.json(await listPendingReports(reportDb));
+    } catch (e) { handle(res, "GET reports pending", e); }
+  });
+  app.post(`${P}/reports/:id/assign`, requireAdmin, async (req, res) => {
+    try {
+      const { customerId, actor, reason } = req.body || {};
+      if (!customerId) return res.status(400).json({ error: "customerId_required" });
+      await assignReport(reportDb, req.params.id, String(customerId), String(actor || "admin"), reason ? String(reason) : undefined);
+      res.json({ ok: true });
+    } catch (e: any) { res.status(400).json({ error: e?.message || "assign_failed" }); }
+  });
+  app.post(`${P}/reports/:id/replace`, requireAdmin, async (req, res) => {
+    try {
+      const { actor, reason } = req.body || {};
+      await replaceReport(reportDb, req.params.id, String(actor || "admin"), reason ? String(reason) : undefined);
+      res.json({ ok: true });
+    } catch (e: any) { res.status(400).json({ error: e?.message || "replace_failed" }); }
+  });
+  app.post(`${P}/reports/:id/ignore`, requireAdmin, async (req, res) => {
+    try {
+      const { actor, reason } = req.body || {};
+      await ignoreReport(reportDb, req.params.id, String(actor || "admin"), reason ? String(reason) : undefined);
+      res.json({ ok: true });
+    } catch (e: any) { res.status(400).json({ error: e?.message || "ignore_failed" }); }
   });
   // PDF 열기 (브라우저 새 탭 — 헤더 대신 ?token= 로 인증)
   app.get(`${P}/reports/file`, (req, res) => {

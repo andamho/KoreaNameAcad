@@ -45,7 +45,7 @@ function renderPng(pdfAbs: string): Promise<Buffer> {
 
 // 처리기용 raw pg 풀 (파라미터 쿼리·트랜잭션). drizzle db 는 raw query 미노출이라 별도 사용.
 let _pool: PgPool | null = null;
-function pool(): PgPool {
+export function reportPool(): PgPool {
   if (!_pool) {
     _pool = new PgPool({
       connectionString: (process.env.NEON_DATABASE_URL || process.env.DATABASE_URL)!,
@@ -77,7 +77,7 @@ export async function syncReports(): Promise<SyncResult> {
   _syncing = true;
   const state = loadState();
   const deps: ProcessorDeps = {
-    db: { query: (sql, params) => pool().query(sql, params as any[]) as any },
+    db: { query: (sql, params) => reportPool().query(sql, params as any[]) as any },
     render: renderPng,
     upload: async (key, buf) => { await store.putObject(key, buf, "image/png"); return `/objects/${key}`; },
     hashFile: (abs) => {

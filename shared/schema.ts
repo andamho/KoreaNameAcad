@@ -823,6 +823,8 @@ export const reportMatches = pgTable("report_matches", {
   scoreGap: integer("score_gap"),                      // 점수차
   matchReason: text("match_reason"),                   // 자동/보류 사유(사람 읽는 요약)
   candidateSnapshot: text("candidate_snapshot"),       // 판정 당시 후보·점수 JSON (사후 추적)
+  renderedUrl: text("rendered_url"),                   // 미리 렌더한 이미지 URL(관리자 미리보기·수동첨부)
+  supersedesId: varchar("supersedes_id"),              // 갱신: 이전 판정 건 ID
   manuallyConfirmedBy: text("manually_confirmed_by"),  // 수동 지정한 관리자
   manuallyConfirmedAt: timestamp("manually_confirmed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

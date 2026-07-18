@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS report_matches (
   score_gap              integer,
   match_reason           text,
   candidate_snapshot     text,
+  rendered_url           text,          -- 판정 시 미리 렌더·업로드한 이미지(관리자 미리보기·수동첨부용)
+  supersedes_id          varchar,       -- 갱신: 이전 판정 건 ID
   manually_confirmed_by  text,
   manually_confirmed_at  timestamp,
   created_at             timestamp NOT NULL DEFAULT now(),

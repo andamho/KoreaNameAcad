@@ -94,9 +94,9 @@ export async function processFile(deps: ProcessorDeps, input: ProcessInput): Pro
     previousMatchId = prior?.id ?? null;
     const id = deps.uuid();
     await db.query(
-      `INSERT INTO report_matches (id, file_name, file_path, file_hash, first_seen_at, extracted_name, report_type, status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,'processing')`,
-      [id, input.file, input.absPath, hash, deps.now(), input.extractedName, input.reportType],
+      `INSERT INTO report_matches (id, file_name, file_path, file_hash, first_seen_at, extracted_name, report_type, status, supersedes_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,'processing',$8)`,
+      [id, input.file, input.absPath, hash, deps.now(), input.extractedName, input.reportType, previousMatchId],
     );
     row = (await db.query(`SELECT * FROM report_matches WHERE id=$1`, [id])).rows[0];
   } else if (row.file_path !== input.absPath) {
@@ -114,29 +114,34 @@ export async function processFile(deps: ProcessorDeps, input: ProcessInput): Pro
     [row.id, decision.topScore, decision.secondScore, decision.scoreGap, decision.reason, snapshot, deps.now()],
   );
 
+  // 미리보기 렌더·업로드 (auto/needs_review 공통, 워커 로컬에서). 관리자 화면(Railway)은 렌더 못하므로 여기서 미리 준비.
+  // needs_review 는 렌더 실패해도 진행(미리보기만 없음), auto 는 렌더 없으면 첨부 불가.
+  let renderedUrl: string | null = null;
+  try {
+    const buf = await deps.render(input.absPath);
+    renderedUrl = await deps.upload(`uploads/${deps.uuid()}.png`, buf);
+    await db.query(`UPDATE report_matches SET rendered_url=$2, updated_at=$3 WHERE id=$1`, [row.id, renderedUrl, deps.now()]);
+  } catch (e: any) {
+    console.error(`[KOP] 미리보기 렌더 실패 ${input.file}: ${e?.message}`);
+  }
+
   if (decision.status === "needs_review") {
     await db.query(`UPDATE report_matches SET status='needs_review', matched_customer_id=NULL, updated_at=$2 WHERE id=$1`, [row.id, deps.now()]);
     return { status: "needs_review", matchId: row.id, note: decision.reason };
   }
 
-  // 자동연결: 렌더·업로드(스토리지) 먼저 → 그 다음 트랜잭션으로 첨부 확정 (요건 5,6,7)
-  const top = decision.matchedCustomerId!;
-  const topCand = input.candidates.find((c) => c.customerId === top);
-  let url: string;
-  try {
-    const buf = await deps.render(input.absPath);
-    url = await deps.upload(`uploads/${deps.uuid()}.png`, buf);
-  } catch (e: any) {
-    await db.query(`UPDATE report_matches SET status='attachment_failed', match_reason=$2, updated_at=$3 WHERE id=$1`,
-      [row.id, `렌더/업로드 실패: ${String(e?.message).slice(0, 200)}`, deps.now()]);
+  // 자동연결 (요건 5,6,7)
+  if (!renderedUrl) {
+    await db.query(`UPDATE report_matches SET status='attachment_failed', match_reason='렌더/업로드 실패', updated_at=$2 WHERE id=$1`, [row.id, deps.now()]);
     return { status: "attachment_failed", matchId: row.id, note: "렌더/업로드 실패" };
   }
-
+  const top = decision.matchedCustomerId!;
+  const topCand = input.candidates.find((c) => c.customerId === top);
   try {
     await db.query("BEGIN");
     await db.query(
       `INSERT INTO crm_files (customer_id, file_name, file_type, file_url, memo) VALUES ($1,$2,'image/png',$3,$4)`,
-      [top, `이름분석표 (${input.label})`, url, `${REPORT_PREFIX}${input.file}`],
+      [top, `이름분석표 (${input.label})`, renderedUrl, `${REPORT_PREFIX}${input.file}`],
     );
     await db.query(
       `UPDATE report_matches SET status='auto_matched', matched_customer_id=$2, matched_consultation_id=$3, updated_at=$4 WHERE id=$1`,
