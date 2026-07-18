@@ -13,6 +13,7 @@ export type ReportInfo = {
 export type Candidate = {
   customerId: string;
   customerName: string;
+  consultationId: string | null; // 근거 상담신청 ID(있으면)
   applicationDate: Date | null; // 신청일 (consultation.createdAt / customer.createdAt)
   consultationDate: Date | null; // 상담일 (consultationTime 파싱)
   numPeople: number | null; // 신청 인원

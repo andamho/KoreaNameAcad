@@ -9,7 +9,7 @@ const daysAfter = (n: number) => new Date(T.getTime() + n * 86400000);
 const family: ReportInfo = { firstSeenAt: T, reportType: "family" };
 
 const cand = (o: Partial<Candidate> & { customerId: string }): Candidate => ({
-  customerName: "이은혜", applicationDate: null, consultationDate: null,
+  customerName: "이은혜", consultationId: null, applicationDate: null, consultationDate: null,
   numPeople: 3, consultStatus: "진행", alreadyLinkedSameType: false, ...o,
 });
 
