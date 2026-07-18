@@ -680,6 +680,16 @@ export const correctionRules = pgTable("correction_rules", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// ── correction_audit: 교정사전 변경 감사로그. 운영 DB 기존 구조와 정확히 일치(코드는 raw SQL로 INSERT).
+// 이 정의는 drizzle-kit이 이 테이블을 인지하게 해, 향후 db:push가 실수로 DROP하지 않도록 하는 목적.
+export const correctionAudit = pgTable("correction_audit", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  action: text("action").notNull(),
+  actor: text("actor"),
+  detail: text("detail"),
+  at: timestamp("at").defaultNow().notNull(),
+});
+
 // ── sms_templates: 문자 템플릿 (설계서 §23) ──
 export const smsTemplates = pgTable("sms_templates", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
