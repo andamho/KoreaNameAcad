@@ -1,75 +1,69 @@
 # ADR: Orchestration Runtime & Agent SDK Selection
 
-- **Status**: Proposed (평가 Gate 산출물; 채택은 후속 Gate 별 별도 승인)
+- **Status**: Proposed — 조건부 승인(2026-07-20) 반영. 채택은 후속 Gate 별 별도 승인.
 - **Date**: 2026-07-20 (조사 시작 UTC 2026-07-19 21:12)
 - **Context Gate**: official agent SDK and orchestration runtime evaluation
-- **관련 문서**: [open-source-agent-orchestration-evaluation](../open-source-agent-orchestration-evaluation.md) · [cross-agent-orchestration-contract](../cross-agent-orchestration-contract.md) · [orchestration-schema-migration](../orchestration-schema-migration.md)
+- **관련**: [open-source-agent-orchestration-evaluation](../open-source-agent-orchestration-evaluation.md) · [cross-agent-orchestration-contract](../cross-agent-orchestration-contract.md) · [orchestration-schema-migration](../orchestration-schema-migration.md)
 
 ## Context
-우리는 이미 PostgreSQL 기반 durable job 시스템(`jobs`/`job_executions` + lease/heartbeat/retry/reaper/idempotency/version snapshot)과, cross-agent orchestration 계약(0004: `job_artifacts`/`job_dependencies`/`automated_reviews`/`human_approvals`/`orchestration_audit_log`/`emergency_stops`)을 보유·설계했다. 남은 미구현은 **GPT/Claude execution adapter, AI-to-AI handoff 런타임, automated review loop, human approval UI**다. 이를 자체 구현하기 전에, 검증된 공식 SDK·runtime 과의 중복을 평가해 불필요한 자체 개발을 줄인다.
-
-핵심 제약: 운영자는 AI 사이 중계자가 아니며, 시스템이 job·artifact·review 를 자동 연결한다. 고객 민감정보(전사·녹음·이름·전화)는 protected reference/최소화. 배포는 Railway, DB 는 Neon PostgreSQL 17.
+우리는 PostgreSQL 기반 durable job 시스템(`jobs`/`job_executions` + lease/heartbeat/retry/reaper/idempotency/version snapshot)과 cross-agent orchestration 계약(0004: `job_artifacts`/`job_dependencies`/`automated_reviews`/`human_approvals`/`orchestration_audit_log`/`emergency_stops`)을 보유·설계했다. 미구현은 GPT/Claude execution adapter·AI-to-AI handoff 런타임·automated review loop·human approval UI. 자체 구현 전에 검증된 공식 SDK·runtime 과의 중복을 평가한다. 배포=Railway, DB=Neon PostgreSQL 17, 고객 민감정보=protected reference/최소화.
 
 ## Decision Drivers
-보안/개인정보(고객 민감데이터, secret boundary, tracing egress) · 현행 아키텍처 적합(단일 SoR) · 운영 단순성(Railway/Neon, 추가 서비스 최소) · 신뢰성/durability · TypeScript 성숙도 · vendor lock-in · migration 비용 · license/commercial 명확성. **하드스톱**: license/데이터정책 불명, secret boundary 불가, production 버전 없음, 필수 기능 experimental 뿐, SoT 이중화 불가피, fail-closed 불가, de-adoption 경로 없음.
+보안/개인정보 · 현행 아키텍처 적합(단일 SoR) · 운영 단순성 · 신뢰성/durability · TS 성숙도 · vendor lock-in · migration 비용 · license/commercial 명확성. **하드스톱**: license/데이터정책 불명, secret boundary 불가, production 버전 없음, 필수 기능 experimental 뿐, SoT 이중화 불가피, fail-closed 불가, de-adoption 경로 없음.
 
 ## Options Considered
-### Option 1 — Existing PostgreSQL orchestration only (자체 전량)
-- **장점**: 단일 SoR, 추가 dependency/서비스 0, 완전 제어, 이미 상당 구현.
-- **단점**: GPT/Claude execution 엔진·tool 권한·worktree·구조화 파싱을 **전량 자체 구현**(높은 개발/유지비, 재발명).
-- **평가**: SoR·큐로는 정답이나, adapter 실행엔진까지 자체 구현은 낭비.
-
-### Option 2 — PostgreSQL + official agent SDK wrappers  ★제안
-- 기존 PG 를 SoR/큐로 유지 + GPT=OpenAI Agents(wrap)·Claude=Claude Agent SDK(wrap)·tool=MCP v1.x.
-- **장점**: 실행엔진 개발량 **high reduction**, 단일 SoR 유지, 신규 운영 서비스 0, de-adoption 용이(계약 뒤 격리).
-- **단점**: 2개 SDK(0.x, 잦은 릴리스) pin·거버넌스 필요; OpenAI tracing egress·모델 drift, Claude 독점 license/native binary 를 wrapper 로 통제.
-- **평가**: 개발량 감소 대비 위험이 wrapper 로 통제 가능 → **채택 제안**.
-
-### Option 3 — PostgreSQL + LangGraphJS limited use
-- 리뷰 DAG(GPT→Claude→GPT)를 LangGraphJS 로.
-- **장점**: StateGraph+Zod 로 DAG/HITL 표현 깔끔.
-- **단점**: durable checkpointer(PostgresSaver) 사용 시 **SoT 이중화**(하드스톱); node 전체 재실행에 따른 **부작용 중복** 위험; JS resume/timeout open issue.
-- **평가**: **MemorySaver(휘발)** 로 job_execution 안에서만 = Borrow 수준. durable 사용은 금지.
-
-### Option 4 — Temporal runtime + PostgreSQL business records
-- Temporal 이 durable 실행/재시도/타이머/시그널/버저닝 담당, PG 는 business record.
-- **장점**: 검증된 durable execution·append-only history·replay; 우리 큐를 개념적으로 대체.
-- **단점**: **Server(+PG+ES) self-host 또는 Cloud(≈$100/mo~ + per-action) 필요**(운영/비용); 반쪽 도입 시 SoT 이중화; migration 비용 high; Neon 적합성 공식 미확인.
-- **평가**: 규모/복잡도 임계 전에는 부담 과다 → **Defer**(패턴은 Borrow).
-
-### Option 5 — Hybrid adoption deferred
-- 지금은 SoR 확정만, adapter/runtime 은 후속 Gate 로 순차.
-- **평가**: Option 2 의 시간축 표현. 채택 순서를 Gate 로 통제(아래).
+1. **Existing PostgreSQL orchestration only** — 단일 SoR·추가 dep/서비스 0이나 GPT/Claude 실행엔진 전량 자체 구현(재발명·높은 유지비).
+2. **PostgreSQL + official agent SDK wrappers** ★ — 기존 PG=SoR/큐 유지 + GPT/Claude 를 SDK wrap + MCP v1.x tool. 실행엔진 개발량 high reduction, 단일 SoR, 신규 서비스 0.
+3. **PostgreSQL + LangGraphJS limited** — 리뷰 DAG 표현 우수하나 durable checkpointer=SoT 이중화(하드스톱), node 재실행 부작용 중복.
+4. **Temporal runtime + PostgreSQL business records** — 검증된 durable execution 이나 Server(+PG+ES)/Cloud 운영·비용·migration 부담, 반쪽 도입 시 SoT 이중화.
+5. **Hybrid adoption deferred** — SoR 확정만, adapter/runtime 은 후속 Gate 순차(=Option 2 의 시간축).
 
 ## Decision
-**Option 2(PostgreSQL + official agent SDK wrappers)를, Option 5 의 단계적 채택으로 실행한다.**
-- **System-of-record / durable queue**: 기존 PostgreSQL 유지. **0004 6테이블은 runtime 선택과 독립적인 business SoR 로 확인 → migration 수정 불필요, 별도 승인으로 통합·apply.**
-- **GPT adapter**: OpenAI Agents JS(`@openai/agents` 0.13.x) — 내부 `GptAdapter` 계약 뒤 **Wrap**.
-- **Claude adapter**: Claude Agent SDK(`@anthropic-ai/claude-agent-sdk` 0.3.x) — 내부 `ClaudeAdapter` 계약 뒤 **Wrap**(거버넌스 승인 조건).
-- **Tool/data protocol**: MCP **v1.x**(1.29) read-only 우선 **Adopt-limited**; **v2 Defer**.
-- **LangGraphJS**: 필요 시 리뷰 DAG 한정 **Borrow**, MemorySaver 만.
-- **Temporal**: **Defer**(scale threshold 후 재평가), 지금은 패턴 borrow(deterministic boundary·versioning·signal HITL).
+**Option 2 를 Option 5 의 단계적 채택으로 실행.**
 
-### 판정별 근거 요약
-| 후보 | 해결 문제 | 현행 대비 장점 | 제거 가능 코드 | 유지 코드 | 신규 dep | 신규 서비스 | 보안 위험 | 운영 위험 | 비용 | lock-in | migration 영향 | de-adoption | 시점 | **판정** |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| OpenAI Agents | GPT 실행엔진 | agent loop/guardrail/구조화 native | GPT 엔진 자작 | wrapper+재검증 | +1 | 0 | tracing egress·모델 drift(wrapper 통제) | 0.x churn | API 사용료 | OpenAI | 0(추가 migration 없음) | 계약 뒤 교체 | Gate C | **Wrap** |
-| Claude Agent SDK | Claude 실행엔진 | worktree/hook/deny/env 치환 native | Claude 엔진 자작 | wrapper+증거수집 | +1(runtime dep 0) | 0 | 독점/ToS·opaque binary·network allowlist 미신뢰(#309) | 0.x ~daily·Win 주의 | API 사용료 | Anthropic | 0 | 계약 뒤 교체 | Gate B | **Wrap** |
-| MCP v1.x | 공통 tool 계약 | 프로토콜 표준·구조화 | 자체 tool 배선 일부 | 권한/승인 enforcement | +1(이미 transitive) | 0 | confused-deputy·injection(설계로 회피) | 낮음 | 0 | 없음 | 0 | 도구 계약 제거 | Gate D | **Adopt(제한)** |
-| LangGraphJS | 리뷰 DAG 표현 | StateGraph+Zod | (선택) 리뷰 배선 | job 안 임시 | +1(선택) | 0 | node 재실행 중복·SoT(회피) | open issue | 0 | 낮음 | 0 | MemorySaver 라 무상태 | 필요 시 | **Borrow** |
-| Temporal | durable 실행 대체 | history/replay/versioning | (미래)큐 일부 | SoR=PG | +다수 | **+1↑(Server)** | payload codec opt-in·SECURITY.md 없음 | **높음(self-host/Cloud)** | Cloud/운영 | 낮음(OSS) | high(큐 대체) | Server 제거 | Gate E | **Defer** |
+### 최종 판정표 (조건부 승인 확정)
+| 대상 | 판정 |
+|---|---|
+| **Existing PostgreSQL orchestration** | **Adopt / retain** |
+| **OpenAI Agents SDK** | **Wrap** |
+| **Claude Agent SDK** | **Wrap, conditional** (governance + isolation approval required) |
+| **LangGraphJS** | **Borrow patterns / Defer runtime** |
+| **MCP v1.x** | **Defer pending read-only spike** |
+| **MCP v2** | **Defer** (전 필드 unverified; v2 기능 production 설계 근거 금지) |
+| **Temporal** | **Borrow patterns / Defer** |
+
+### 판정별 근거·조건
+- **OpenAI Agents (Wrap)**: 내부 `GptAdapter` 계약 뒤. **model exact identifier 필수·SDK default model 금지**·system instruction version pin·tracing off/redaction·structured output schema 필수·max turns/token/cost/time fail-closed. **일반 review adapter 와 Sandbox Agent(beta) 분리** — Sandbox 는 별도 Gate.
+- **Claude Agent SDK (Wrap, conditional)**: stability = **unclear / rapidly changing 0.x** → **exact version pin 필수·자동 minor/patch update 금지**. package version 뿐 아니라 **실행 binary/version/hash 기록**. license 는 MIT 아님 — **package license `SEE LICENSE IN README` · governing terms Anthropic Commercial Terms · data collection/retention 별도 검토 · dependency+platform binary license 별도 inventory**. **거버넌스+격리 승인**(Windows·binary hardening 체크리스트 통과) 전 채택 금지.
+- **MCP v1.x (Defer pending read-only spike)**: 바로 확정하지 않음. **최초 spike `get-orchestration-job-summary`**(read-only·고객 원문 없음·protected reference 만·auth·tool allowlist·exact schema version pin·timeout·reconnect·audit event·prompt injection 방어·GPT/Claude 양쪽 consumer mock·write capability 0) 성공 시 Wrap/Adopt-limited 재평가. **spike 전 운영 MCP server/client 배선 금지.**
+- **MCP v2 (Defer)**: package/version/tag/SHA/release/license/prod 를 공식 근거로 확정 못함 → 전 필드 unverified. v2 기능 production 설계 근거 금지.
+- **LangGraphJS (Borrow patterns / Defer runtime)**: graph/reducer/interrupt/review-loop **설계 패턴만 차용**, **runtime 도입 Defer**. **MemorySaver 는 test/disposable spike 전용**(production persistence 금지). **PostgreSQL checkpointer 도입 금지 또는 별도 승인**(현재 jobs/job_executions 와 SoT 이중화 금지). MemorySaver 보안 수정 이력은 unverified → 확정 필요.
+- **Temporal (Borrow patterns / Defer)**: deterministic boundary·versioning·signal HITL 패턴 차용. Server 운영·비용·migration·SoT 이중화로 채택 Defer(scale threshold 후 재평가).
+
+## Source-of-Truth Principles (필수 명시)
+1. **SDK session/checkpoint/workflow state 는 파생·임시 상태**이다.
+2. **business state 는 PostgreSQL 만 authoritative** 이다.
+3. **동일 execution 상태를 두 곳에 영속 추적하지 않는다**(이중 SoR 금지).
+4. **future Temporal/LangGraph adoption 시 source-of-truth 재설계 Gate 가 필요**하다(그들의 실행상태 store 와 우리 business SoR 의 경계 재확정 전 배선 금지).
+
+## Migration (0004) Impact
+- **0004 6테이블 = runtime 선택과 독립적인 business system-of-record → migration 수정 불필요.** 제거해야 할 runtime-state 컬럼/테이블 없음.
+- Temporal/LangGraph 채택 시에도 우리 테이블 삭제 안 함(그들 상태는 실행상태 store). 조건: 이중 추적 금지 + SoR 재설계 Gate.
+
+## Pre-wiring Hardening Preconditions (운영 배선 전 필수 Gate)
+- **R1 immutable artifact DB hardening**: `immutable=true` CHECK 는 삽입만 막음 → **job_artifacts UPDATE/DELETE 금지(role/trigger)**, content/manifest/protected-ref/schema/lineage 변경 금지, 보존기간 예외 처리.
+- **R2 append-only audit DB hardening**: `orchestration_audit_log` DB 차원 UPDATE/DELETE 방지, writer/reader role 분리, migration runner·test teardown 충돌 검증, 위변조 방지, emergency admin 절차.
+- **R3 secret 취급**: `.env` 복사/symlink/hardlink 금지, secret 파일 타 worktree 연결 금지, 값 미출력 — 운영 read-only 는 부모 프로세스 상속/명시 allowlist/read-only wrapper/ephemeral injection 로만.
+- **R4 테스트 env 격리**: 상속된 운영 secret 감지 시 fail-closed, 필요한 env 만 주입, 값·길이·fingerprint 미출력.
+- **Claude adapter Windows·binary hardening**: disposable worktree·binary hash snapshot·orphan process 0·command allowlist·filesystem scope·symlink/junction escape 검사·env allowlist(process.env 전체 전달 금지)·DB credential 미전달·force push/deploy/migration 차단·egress 컨테이너 강제.
 
 ## Consequences
-- **긍정**: adapter 실행엔진 자체 구현 회피(high reduction), 단일 SoR 보존, 신규 운영 서비스 0, 0004 설계 재확정(수정 불필요), de-adoption 경로 명확.
-- **부정/위험**: 0.x SDK 2종 pin·거버넌스·잦은 릴리스 추적 필요; OpenAI tracing egress·모델 drift·Claude 독점 license 를 wrapper 로 강제 통제해야 함; MCP 는 enforcement 를 자체 host 층에서 보강.
-- **불변 조건**: SDK 상태를 SoR 로 승격 금지(단일 SoR); 실 API 호출·runtime 배선·production dependency 추가는 후속 Gate 승인 후; tracing 기본 off·모델 pin 필수·env allowlist(치환) 필수.
+- **긍정**: adapter 실행엔진 자체 구현 회피(high reduction), 단일 SoR 보존, 신규 운영 서비스 0, 0004 설계 재확정(수정 불필요), de-adoption 경로 명확(계약 뒤 격리, SDK 상태 SoR 미승격).
+- **부정/위험**: 0.x SDK 2종 pin·거버넌스·잦은 릴리스 추적; OpenAI tracing egress·모델 drift, Claude 독점 license·opaque binary·network allowlist 미신뢰(#309) → wrapper+외부 격리로 통제; MCP enforcement 는 자체 host 층 보강.
+- **불변 조건**: SDK 상태 SoR 승격 금지; 실 API 호출·runtime 배선·production dependency 추가·MCP runtime 생성은 후속 Gate 승인 후; tracing 기본 off·모델 pin 필수·env allowlist(치환) 필수; 미확정 SHA/필드는 완전한 reproducibility 로 표현하지 않음.
 
 ## Follow-up Gates
-- **Gate A**: 0004 main 통합 + 운영 apply(별도 승인).
-- **Gate B**: Claude adapter(wrapped) — 거버넌스 승인 포함.
-- **Gate C**: GPT adapter(wrapped).
-- **Gate D**: MCP v1.x read-only tool interface.
-- **Gate E**: Temporal 재평가(scale threshold).
+Gate A(0004 apply) → **Gate B(Claude adapter, Wrap conditional; Windows/binary hardening 선행)** → Gate C(GPT adapter, Wrap; Sandbox 분리) → **Gate D(MCP read-only spike)** → Gate E(Temporal 재평가). 추가: **R1/R2 hardening Gate**(운영 배선 전 필수).
 
 ## 미확정(채택 전 확정)
-npm provenance(전 후보) · Claude Commercial ToS 데이터/보존·native binary 감사 · OpenAI transitive `openai` 버전·ZDR tracing · MCP 1.29 release date·미검증 GHSA(345p·8r9q)·v2 license · LangGraphJS resume/timeout open issue · Temporal Neon 적합성·비용 임계.
+Temporal/OpenAI tag-commit SHA(main HEAD 만) · 전 후보 npm provenance · Claude Commercial ToS 데이터/보존·binary hash·Windows 안정성 · OpenAI transitive `openai` 버전·ZDR tracing · MCP 1.29 release date·미검증 GHSA·**v2 전 필드** · LangGraphJS annotated tag commit 역참조·resume/timeout open issue·MemorySaver 보안 수정 이력 · Temporal Neon 적합성·비용 임계.
