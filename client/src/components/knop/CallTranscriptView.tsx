@@ -55,6 +55,34 @@ function buildChunkText(items: Item[]): { text: string; offsets: Array<[number, 
   return { text, offsets };
 }
 
+// 더블클릭한 화면 좌표 → 그 단어 안에서의 문자 위치 (정확히 클릭한 자리에 커서를 놓기 위함)
+function caretOffsetInWord(clientX: number, clientY: number, word: string): number {
+  try {
+    const doc = document as any;
+    let node: Node | null = null;
+    let off = 0;
+    if (typeof doc.caretRangeFromPoint === "function") {
+      const r = doc.caretRangeFromPoint(clientX, clientY);
+      if (r) {
+        node = r.startContainer;
+        off = r.startOffset;
+      }
+    } else if (typeof doc.caretPositionFromPoint === "function") {
+      const p = doc.caretPositionFromPoint(clientX, clientY);
+      if (p) {
+        node = p.offsetNode;
+        off = p.offset;
+      }
+    }
+    if (node && node.nodeType === 3 && (node.textContent || "").startsWith(word)) {
+      return Math.max(0, Math.min(off, word.length));
+    }
+  } catch {
+    /* noop */
+  }
+  return word.length; // 판정 실패 시 그 단어 끝
+}
+
 // textarea 를 내용 높이에 딱 맞게(줄바꿈까지 반영) — 문단 전체가 보이도록
 function autosize(el: HTMLTextAreaElement | null) {
   if (!el) return;
@@ -242,9 +270,12 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
   };
 
   // 더블클릭 → 그 문단을 편집. wi = 문단 안에서 클릭한 단어 번호
-  const startEdit = (key: string, items: Item[], speaker: string | undefined, wi: number) => {
+  const startEdit = (key: string, items: Item[], speaker: string | undefined, wi: number, charInWord = 0) => {
     const { text, offsets } = buildChunkText(items);
-    caretRef.current = offsets[wi] ?? null;
+    // 단어 전체 선택이 아니라, 더블클릭한 바로 그 자리에 커서만 놓는다
+    const base = offsets[wi]?.[0] ?? 0;
+    const pos = Math.max(0, Math.min(base + charInWord, text.length));
+    caretRef.current = [pos, pos];
     editCtxRef.current = { items, speaker };
     setEditKey(key);
     setEditVal(text);
@@ -511,7 +542,10 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
                               key={i}
                               id={`kw-${i}`}
                               onClick={() => seekTo(w.start, i)}
-                              onDoubleClick={() => startEdit(key, items, turn.speaker, wi)}
+                              onDoubleClick={(ev) => {
+                                ev.preventDefault(); // 브라우저 기본 단어 선택 방지
+                                startEdit(key, items, turn.speaker, wi, caretOffsetInWord(ev.clientX, ev.clientY, w.word));
+                              }}
                               title="클릭: 위치 이동 · 더블클릭: 이 문단 수정"
                               className={`cursor-text rounded px-0.5 hover:bg-[#56D5DB]/20 ${
                                 isCur
