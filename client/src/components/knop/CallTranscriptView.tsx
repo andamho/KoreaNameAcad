@@ -1,12 +1,12 @@
-// 통화 전사: 화자 구분 화면 + 음성 연동(클릭=이동, 더블클릭=그 줄 바로 수정) + 편집 시 자동 학습
+// 통화 전사: 화자 구분 + 음성 연동(클릭=이동, 더블클릭=그 문단 수정) + 편집 시 자동 학습
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import { Play, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { knopApi, type Call } from "@/lib/knopApi";
 
 type W = { word: string; start: number; end: number; speaker?: string };
+type Item = { w: W; i: number };
 
 // 화자별 색/라벨 (등장 순서대로 화자1, 화자2 …)
 const SPK = [
@@ -16,17 +16,59 @@ const SPK = [
   { label: "화자 4", text: "text-orange-700", bg: "bg-orange-50" },
 ];
 
+// 문장 끝(. ? !) 판정
+const isSentenceEnd = (w: string) => /[.?!。]$/.test(w);
+
+// 한 발화(턴)를 읽기 좋은 문단으로 분할: ① 문장부호 ② 말 멈춤(>0.55s) ③ 과도한 길이(하드캡).
+// 한국어 STT는 마침표가 거의 없어서 ②③이 실제 분할을 담당한다.
+function splitChunks(items: Item[]): Item[][] {
+  const out: Item[][] = [];
+  let cur: Item[] = [];
+  for (let k = 0; k < items.length; k++) {
+    const it = items[k];
+    cur.push(it);
+    const next = items[k + 1];
+    if (!next) break;
+    const gap = next.w.start - it.w.end;
+    const punct = isSentenceEnd(it.w.word);
+    const pause = cur.length >= 6 && gap > 0.55;
+    const tooLong = cur.length >= 20; // 문단 최대 단어 수(통짜 방지)
+    if (punct || pause || tooLong) {
+      out.push(cur);
+      cur = [];
+    }
+  }
+  if (cur.length) out.push(cur);
+  return out.length ? out : [items];
+}
+
+// 편집용 텍스트 + 각 단어의 문자 범위(offset) → 더블클릭한 단어에 커서
+function buildChunkText(items: Item[]): { text: string; offsets: Array<[number, number]> } {
+  let text = "";
+  const offsets: Array<[number, number]> = [];
+  items.forEach(({ w }, idx) => {
+    const start = text.length;
+    text += w.word;
+    offsets.push([start, text.length]);
+    if (idx < items.length - 1) text += " ";
+  });
+  return { text, offsets };
+}
+
 export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () => void }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const audioRef = useRef<HTMLAudioElement>(null);
   const editRef = useRef<HTMLTextAreaElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const caretRef = useRef<[number, number] | null>(null); // 더블클릭한 단어의 문자 범위
+  const editCtxRef = useRef<{ items: Item[]; speaker?: string } | null>(null); // 편집 중인 문단
   const [curIdx, setCurIdx] = useState(-1);
-  const [editTurn, setEditTurn] = useState<number | null>(null);
+  const [editKey, setEditKey] = useState<string | null>(null); // "턴:문단" 식별자
   const [editVal, setEditVal] = useState("");
   const [query, setQuery] = useState("");
   const [matchPos, setMatchPos] = useState(0);
+  const [focusIdx, setFocusIdx] = useState<number | null>(null); // 저장 후 그 자리로 스크롤
 
   const words: W[] = useMemo(() => {
     try {
@@ -42,10 +84,10 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
     return m;
   }, [words]);
 
-  // 발화 단위(턴) 그룹핑
+  // 발화 단위(턴) 그룹핑 — 화자 라벨용
   const turns = useMemo(() => {
-    const out: Array<{ speaker?: string; items: Array<{ w: W; i: number }> }> = [];
-    let cur: { speaker?: string; items: Array<{ w: W; i: number }> } | null = null;
+    const out: Array<{ speaker?: string; items: Item[] }> = [];
+    let cur: { speaker?: string; items: Item[] } | null = null;
     words.forEach((w, i) => {
       const spk = w.speaker || undefined;
       const prevEnd = cur && cur.items.length ? cur.items[cur.items.length - 1].w.end : 0;
@@ -60,41 +102,10 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
     return out;
   }, [words]);
 
-  const turnText = (ti: number) => turns[ti].items.map((x) => x.w.word).join(" ");
+  // 각 턴을 문단으로 분할 (표시·편집 공통 단위)
+  const chunksByTurn = useMemo(() => turns.map((t) => splitChunks(t.items)), [turns]);
 
-  // 문장 끝(. ? !) 판정 — 문단 나누기/줄바꿈용
-  const isSentenceEnd = (w: string) => /[.?!。]$/.test(w);
-
-  // 편집용 텍스트: 문장 끝마다 빈 줄. 각 단어의 문자 위치(offset)도 같이 계산 → 더블클릭한 단어에 커서
-  const buildTurnText = (ti: number) => {
-    const items = turns[ti].items;
-    let text = "";
-    const offsets: Array<[number, number]> = [];
-    items.forEach(({ w }, idx) => {
-      const start = text.length;
-      text += w.word;
-      offsets.push([start, text.length]);
-      if (idx < items.length - 1) text += isSentenceEnd(w.word) ? "\n\n" : " ";
-    });
-    return { text, offsets };
-  };
-
-  // 보기용: 턴을 문장 단위로 묶음 (문장마다 한 줄 띄워 표시)
-  const sentencesOf = (ti: number) => {
-    const out: Array<Array<{ w: W; i: number }>> = [];
-    let cur: Array<{ w: W; i: number }> = [];
-    for (const it of turns[ti].items) {
-      cur.push(it);
-      if (isSentenceEnd(it.w.word)) {
-        out.push(cur);
-        cur = [];
-      }
-    }
-    if (cur.length) out.push(cur);
-    return out;
-  };
-
-  // 수정률: 최초 기계전사(originalTranscript) 대비 현재본에서 바뀐 단어 비율 (순서무관 단어 다중집합 비교 → 빠름)
+  // 수정률: 최초 기계전사(originalTranscript) 대비 현재본에서 바뀐 단어 비율 (순서무관 단어 다중집합 비교)
   const stats = useMemo(() => {
     const orig = (call.originalTranscript || "").trim();
     const cur = (words.length > 0 ? words.map((w) => w.word).join(" ") : call.transcriptText || "").trim();
@@ -117,21 +128,43 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
     return { changed, total: cw.length, pct };
   }, [call.originalTranscript, call.transcriptText, words]);
 
-  // 편집창이 열리면 더블클릭한 그 단어를 선택(커서가 딱 그 자리로) + 화면에 보이게 스크롤
+  // 스크롤 컨테이너 안에서만 해당 단어를 보이게(페이지 전체는 안 움직임)
+  const scrollWordIntoView = (idx: number, center = false) => {
+    const cont = listRef.current;
+    const el = document.getElementById(`kw-${idx}`);
+    if (!cont || !el) return;
+    const c = cont.getBoundingClientRect();
+    const e = el.getBoundingClientRect();
+    if (center) {
+      cont.scrollTop += e.top - c.top - cont.clientHeight / 2 + e.height / 2;
+    } else if (e.top < c.top + 4) {
+      cont.scrollTop += e.top - c.top - 8;
+    } else if (e.bottom > c.bottom - 4) {
+      cont.scrollTop += e.bottom - c.bottom + 8;
+    }
+  };
+
+  // 편집창이 열리면 더블클릭한 단어에 커서 + 보이게
   useEffect(() => {
-    if (editTurn === null || !editRef.current) return;
+    if (editKey === null || !editRef.current) return;
     const el = editRef.current;
     el.focus();
     const r = caretRef.current;
-    if (r) {
-      el.setSelectionRange(r[0], r[1]);
-      // 선택 위치가 보이도록 스크롤
-      const ratio = r[0] / Math.max(1, el.value.length);
-      el.scrollTop = Math.max(0, ratio * el.scrollHeight - el.clientHeight / 2);
-    } else {
-      el.select();
-    }
-  }, [editTurn]);
+    if (r) el.setSelectionRange(r[0], r[1]);
+    else el.select();
+  }, [editKey]);
+
+  // 저장 후: 편집했던 자리로 스크롤 + 그 단어 하이라이트 (그 위쪽으로 밀리는 문제 해결)
+  useEffect(() => {
+    if (focusIdx === null || editKey !== null) return;
+    const id = requestAnimationFrame(() => {
+      setCurIdx(focusIdx);
+      scrollWordIntoView(focusIdx, true);
+      setFocusIdx(null);
+    });
+    return () => cancelAnimationFrame(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusIdx, editKey, call.words]);
 
   const seekTo = (start: number, idx?: number) => {
     const a = audioRef.current;
@@ -159,13 +192,12 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
   const matchSet = useMemo(() => new Set(matches), [matches]);
   const curMatch = matches.length ? matches[matchPos % matches.length] : -1;
 
-  // 검색어 바꾸면 첫 번째 결과로 자동 이동
   useEffect(() => {
     if (!matches.length) return;
     const idx = matches[0];
     const w = words[idx];
     if (w) seekTo(w.start, idx);
-    setTimeout(() => document.getElementById(`kw-${idx}`)?.scrollIntoView({ block: "center" }), 0);
+    requestAnimationFrame(() => scrollWordIntoView(idx, true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
 
@@ -175,71 +207,73 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
     setMatchPos(p);
     const idx = matches[p];
     const w = words[idx];
-    if (w) seekTo(w.start, idx); // 음성도 그 지점으로
-    setTimeout(() => {
-      document.getElementById(`kw-${idx}`)?.scrollIntoView({ block: "center", behavior: "smooth" });
-    }, 0);
+    if (w) seekTo(w.start, idx);
+    requestAnimationFrame(() => scrollWordIntoView(idx, true));
   };
 
-  // 편집창 커서 위치 → 그 자리 단어 (앞쪽 단어 수로 계산 → 수정 중에도 따라감)
-  const itemAtCaret = () => {
+  // 편집창 커서 위치 → 그 자리 단어(앞쪽 단어 수로 계산)
+  const itemAtCaret = (): Item | null => {
     const el = editRef.current;
-    if (el === null || editTurn === null) return null;
+    const ctx = editCtxRef.current;
+    if (!el || !ctx) return null;
     const pos = el.selectionStart ?? 0;
     const idx = el.value.slice(0, pos).split(/\s+/).filter(Boolean).length - 1;
-    const items = turns[editTurn].items;
+    const items = ctx.items;
     if (!items.length) return null;
     return items[Math.min(Math.max(0, idx), items.length - 1)];
   };
-  // 커서 옮기면 음성 위치도 그 자리로(재생은 안 함)
   const seekToCaret = () => {
     const it = itemAtCaret();
     if (it) seekTo(it.w.start, it.i);
   };
-  // 커서 위치부터 재생
   const playFromCaret = () => {
     const it = itemAtCaret();
+    const ctx = editCtxRef.current;
     if (it) playFrom(it.w.start);
-    else if (editTurn !== null) playFrom(turns[editTurn].items[0].w.start);
+    else if (ctx && ctx.items.length) playFrom(ctx.items[0].w.start);
   };
 
-  // wordIdx: 턴 안에서 더블클릭한 단어 번호 → 그 단어를 편집창에서 선택
-  const startEdit = (ti: number, wordStart: number, wordIdx: number) => {
-    const { text, offsets } = buildTurnText(ti);
-    caretRef.current = offsets[wordIdx] ?? null;
-    setEditTurn(ti);
+  // 더블클릭 → 그 문단을 편집. wi = 문단 안에서 클릭한 단어 번호
+  const startEdit = (key: string, items: Item[], speaker: string | undefined, wi: number) => {
+    const { text, offsets } = buildChunkText(items);
+    caretRef.current = offsets[wi] ?? null;
+    editCtxRef.current = { items, speaker };
+    setEditKey(key);
     setEditVal(text);
-    seekTo(wordStart); // 음성 위치만 맞춰둠(무음). 애매하면 '듣기'로 재생
+    seekTo(items[wi]?.w.start ?? items[0].w.start);
   };
 
+  // 재생 위치 → 지금 칠할 단어 = "마지막으로 시작된 단어"(카라오케식). 침묵에도 직전 단어 유지.
   const onTime = () => {
     const a = audioRef.current;
     if (!a || words.length === 0) return;
     const t = a.currentTime;
-    let idx = -1;
-    for (let i = 0; i < words.length; i++) {
-      if (words[i].start <= t && t < words[i].end + 0.08) {
-        idx = i;
-        break;
-      }
-      if (words[i].start > t) break;
+    let lo = 0,
+      hi = words.length - 1,
+      idx = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (words[mid].start <= t + 0.04) {
+        idx = mid;
+        lo = mid + 1;
+      } else hi = mid - 1;
     }
-    if (idx !== curIdx) setCurIdx(idx);
+    if (idx !== curIdx) {
+      setCurIdx(idx);
+      if (idx >= 0 && editKey === null && !a.paused) scrollWordIntoView(idx, false);
+    }
   };
 
-  // 저장은 즉시(요약 재생성 안 함). 학습은 서버가 백그라운드로 처리.
-  // 저장 후 고객 자료 전체(수백KB)를 다시 받지 않고 화면 캐시만 갱신 → 체감 즉시
-  // 저장 가속: 바뀐 턴만 splice 로 전송(전체 words 업로드 회피). 낙관적 반영은 saveTurn 에서 즉시 처리.
+  // 저장: 바뀐 문단만 splice 전송(전체 words 업로드 회피). 낙관적 즉시 반영.
   const editMut = useMutation({
     mutationFn: (payload: { wordPatch: { startIdx: number; delCount: number; words: W[] } }) =>
       knopApi.editCallTranscriptPatch(call.id, payload.wordPatch, false),
     onError: (e: any) => {
       toast({ title: "저장 실패(되돌림)", description: e?.message, variant: "destructive" });
-      qc.invalidateQueries({ queryKey: ["knop-customer", call.customerId] }); // 진짜 상태로 복구
+      qc.invalidateQueries({ queryKey: ["knop-customer", call.customerId] });
     },
   });
 
-  // 요약 갱신(느린 AI 호출) — 원할 때만 수동으로
   const summarizeMut = useMutation({
     mutationFn: () => {
       const text = words.length > 0 ? words.map((w) => w.word).join(" ") : call.transcriptText || "";
@@ -252,35 +286,53 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
     onError: (e: any) => toast({ title: "요약 실패", description: e?.message, variant: "destructive" }),
   });
 
-  const saveTurn = () => {
-    if (editTurn === null) return;
-    const turn = turns[editTurn];
-    if (editVal.trim() === turnText(editTurn).trim()) {
-      setEditTurn(null);
+  const saveChunk = () => {
+    const ctx = editCtxRef.current;
+    if (editKey === null || !ctx || !ctx.items.length) return;
+    const items = ctx.items;
+    const origText = items.map((x) => x.w.word).join(" ").trim();
+    if (editVal.trim() === origText) {
+      setEditKey(null);
       return; // 변경 없음
     }
-    // 수정한 턴만 재토큰화(타임스탬프 균등 분배) → 그 턴의 전역 인덱스 범위만 splice 전송(수백 KB 회피)
-    const startIdx = turn.items[0].i;
-    const delCount = turn.items[turn.items.length - 1].i - startIdx + 1;
-    const s = turn.items[0].w.start;
-    const e = turn.items[turn.items.length - 1].w.end;
+    const startIdx = items[0].i;
+    const delCount = items[items.length - 1].i - startIdx + 1;
+    const s = items[0].w.start;
+    const e = items[items.length - 1].w.end;
     const toks = editVal.trim().split(/\s+/).filter(Boolean);
-    const step = (e - s) / Math.max(1, toks.length);
-    const patchWords: W[] = toks.map((tok, k) => ({
-      word: tok,
-      start: +(s + k * step).toFixed(3),
-      end: +(s + (k + 1) * step).toFixed(3),
-      speaker: turn.speaker,
-    }));
+
+    // 타임스탬프는 글자수 비례로 분배(균등보다 실제 말에 가깝게) → 하이라이트 싱크 개선
+    const span = Math.max(0.001, e - s);
+    const weights = toks.map((t) => Math.max(1, t.length));
+    const totalW = weights.reduce((a, b) => a + b, 0) || 1;
+    let acc = 0;
+    const patchWords: W[] = toks.map((tok, k) => {
+      const st = s + (acc / totalW) * span;
+      acc += weights[k];
+      const en = s + (acc / totalW) * span;
+      return { word: tok, start: +st.toFixed(3), end: +en.toFixed(3), speaker: ctx.speaker };
+    });
     const newWords = words.slice(0, startIdx).concat(patchWords, words.slice(startIdx + delCount));
 
-    // 즉시 반영(낙관적): 편집창 닫기 + 캐시 갱신 → 체감상 즉시 저장. 실제 업로드는 바뀐 턴만 백그라운드로.
-    setEditTurn(null);
+    // 저장 후 돌아갈 자리(커서가 있던 단어) 계산
+    const caretPos = editRef.current?.selectionStart ?? editVal.length;
+    const caretTok = editVal.slice(0, caretPos).trim().split(/\s+/).filter(Boolean).length;
+    const anchorIdx = startIdx + Math.max(0, Math.min(caretTok - 1, patchWords.length - 1));
+
+    // 즉시 반영(낙관적): 편집창 닫기 + 캐시 갱신. 실제 업로드는 바뀐 문단만 백그라운드로.
+    setEditKey(null);
+    editCtxRef.current = null;
     qc.setQueryData(["knop-customer", call.customerId], (old: any) =>
       old?.calls
-        ? { ...old, calls: old.calls.map((c: any) => (c.id === call.id ? { ...c, transcriptText: newWords.map((w) => w.word).join(" "), words: JSON.stringify(newWords) } : c)) }
+        ? {
+            ...old,
+            calls: old.calls.map((c: any) =>
+              c.id === call.id ? { ...c, transcriptText: newWords.map((w) => w.word).join(" "), words: JSON.stringify(newWords) } : c,
+            ),
+          }
         : old,
     );
+    setFocusIdx(anchorIdx);
     editMut.mutate({ wordPatch: { startIdx, delCount, words: patchWords } });
   };
 
@@ -290,7 +342,7 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
     <div className="space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
         <div className="text-xs font-medium text-gray-500">
-          전사{words.length > 0 && " · 클릭=위치 이동 · 더블클릭=그 줄 바로 수정"}
+          전사{words.length > 0 && " · 클릭=위치 이동 · 더블클릭=그 문단 수정"}
         </div>
         {stats && (
           <span
@@ -370,105 +422,103 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
       )}
 
       {words.length > 0 ? (
-        <div className="space-y-1.5 max-h-96 overflow-y-auto pr-1">
+        <div ref={listRef} className="space-y-1.5 max-h-96 overflow-y-auto pr-1">
           {turns.map((turn, ti) => {
             const si = turn.speaker !== undefined ? spkIndex.get(turn.speaker) ?? 0 : -1;
             const st = si >= 0 ? SPK[si % SPK.length] : null;
-            const editingThis = editTurn === ti;
             return (
               <div key={ti} className="flex gap-2">
                 {st && <span className={`shrink-0 text-xs font-semibold w-11 pt-1 ${st.text}`}>{st.label}</span>}
-                <div className={`flex-1 ${st ? st.bg + " rounded px-2 py-1" : ""}`}>
-                  {editingThis ? (
-                    <div className="space-y-1.5">
-                      <textarea
-                        ref={editRef}
-                        value={editVal}
-                        onChange={(e) => setEditVal(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            saveTurn();
-                          } else if (e.key === "Escape") {
-                            setEditTurn(null);
-                          }
-                        }}
-                        onClick={seekToCaret}
-                        onSelect={seekToCaret}
-                        onKeyUp={(e) => {
-                          // 방향키로 커서 옮길 때도 음성 위치 따라가게
-                          if (e.key.startsWith("Arrow") || e.key === "Home" || e.key === "End") seekToCaret();
-                        }}
-                        rows={Math.min(18, Math.max(3, editVal.split("\n").length + Math.ceil(editVal.length / 60)))}
-                        className="w-full text-sm leading-relaxed rounded border border-[#56D5DB] px-2 py-1 focus:outline-none resize-y bg-white"
-                      />
-                      <div className="flex items-center gap-2">
-                        <button
-                          className="text-xs text-gray-500 hover:text-[#3fc4ca] flex items-center gap-1"
-                          onClick={playFromCaret}
-                          type="button"
-                          title="커서가 있는 위치부터 재생됩니다"
-                        >
-                          <Play className="w-3 h-3" /> 커서부터 듣기
-                        </button>
-                        <button
-                          className="text-xs text-gray-400 hover:text-[#3fc4ca] flex items-center gap-1"
-                          onClick={() => playFrom(turn.items[0].w.start)}
-                          type="button"
-                          title="이 줄 처음부터 재생"
-                        >
-                          <Play className="w-3 h-3" /> 처음부터
-                        </button>
-                        <button
-                          className="text-xs text-[#3fc4ca] font-medium hover:underline"
-                          onClick={saveTurn}
-                          type="button"
-                        >
-                          저장(Enter)
-                        </button>
-                        <button
-                          className="text-xs text-gray-400 hover:underline"
-                          onClick={() => setEditTurn(null)}
-                          type="button"
-                        >
-                          취소(Esc)
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    // 문장마다 한 줄 띄워 보기 편하게
-                    <div className="space-y-2">
-                      {sentencesOf(ti).map((sent, si2) => (
-                        <p key={si2} className="text-sm leading-relaxed">
-                          {sent.map(({ w, i }) => {
-                            const idxInTurn = turn.items.findIndex((x) => x.i === i);
-                            const isHit = matchSet.has(i);
-                            const isCur = i === curMatch;
-                            return (
-                              <span
-                                key={i}
-                                id={`kw-${i}`}
-                                onClick={() => seekTo(w.start, i)}
-                                onDoubleClick={() => startEdit(ti, w.start, idxInTurn)}
-                                title="클릭: 위치 이동 · 더블클릭: 이 단어부터 수정"
-                                className={`cursor-text rounded px-0.5 hover:bg-[#56D5DB]/20 ${
-                                  isCur
-                                    ? "bg-orange-400 text-white font-semibold"
-                                    : isHit
-                                      ? "bg-yellow-200 text-gray-900"
-                                      : i === curIdx
-                                        ? "bg-[#56D5DB]/50 text-gray-900"
-                                        : "text-gray-700"
-                                }`}
-                              >
-                                {w.word}{" "}
-                              </span>
-                            );
-                          })}
-                        </p>
-                      ))}
-                    </div>
-                  )}
+                <div className={`flex-1 space-y-2 ${st ? st.bg + " rounded px-2 py-1" : ""}`}>
+                  {chunksByTurn[ti].map((items, ci) => {
+                    const key = `${ti}:${ci}`;
+                    if (editKey === key) {
+                      return (
+                        <div key={ci} className="space-y-1.5">
+                          <textarea
+                            ref={editRef}
+                            value={editVal}
+                            onChange={(e) => setEditVal(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                saveChunk();
+                              } else if (e.key === "Escape") {
+                                setEditKey(null);
+                                editCtxRef.current = null;
+                              }
+                            }}
+                            onClick={seekToCaret}
+                            onSelect={seekToCaret}
+                            onKeyUp={(e) => {
+                              if (e.key.startsWith("Arrow") || e.key === "Home" || e.key === "End") seekToCaret();
+                            }}
+                            rows={Math.min(8, Math.max(2, Math.ceil(editVal.length / 42)))}
+                            className="w-full text-sm leading-relaxed rounded border border-[#56D5DB] px-2 py-1 focus:outline-none resize-y bg-white"
+                          />
+                          <div className="flex items-center gap-2">
+                            <button
+                              className="text-xs text-gray-500 hover:text-[#3fc4ca] flex items-center gap-1"
+                              onClick={playFromCaret}
+                              type="button"
+                              title="커서가 있는 위치부터 재생됩니다"
+                            >
+                              <Play className="w-3 h-3" /> 커서부터 듣기
+                            </button>
+                            <button
+                              className="text-xs text-gray-400 hover:text-[#3fc4ca] flex items-center gap-1"
+                              onClick={() => playFrom(items[0].w.start)}
+                              type="button"
+                              title="이 문단 처음부터 재생"
+                            >
+                              <Play className="w-3 h-3" /> 처음부터
+                            </button>
+                            <button className="text-xs text-[#3fc4ca] font-medium hover:underline" onClick={saveChunk} type="button">
+                              저장(Enter)
+                            </button>
+                            <button
+                              className="text-xs text-gray-400 hover:underline"
+                              onClick={() => {
+                                setEditKey(null);
+                                editCtxRef.current = null;
+                              }}
+                              type="button"
+                            >
+                              취소(Esc)
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return (
+                      <p key={ci} className="text-sm leading-relaxed">
+                        {items.map(({ w, i }, wi) => {
+                          const isHit = matchSet.has(i);
+                          const isCur = i === curMatch;
+                          return (
+                            <span
+                              key={i}
+                              id={`kw-${i}`}
+                              onClick={() => seekTo(w.start, i)}
+                              onDoubleClick={() => startEdit(key, items, turn.speaker, wi)}
+                              title="클릭: 위치 이동 · 더블클릭: 이 문단 수정"
+                              className={`cursor-text rounded px-0.5 hover:bg-[#56D5DB]/20 ${
+                                isCur
+                                  ? "bg-orange-400 text-white font-semibold"
+                                  : isHit
+                                    ? "bg-yellow-200 text-gray-900"
+                                    : i === curIdx
+                                      ? "bg-[#56D5DB]/50 text-gray-900"
+                                      : "text-gray-700"
+                              }`}
+                            >
+                              {w.word}{" "}
+                            </span>
+                          );
+                        })}
+                      </p>
+                    );
+                  })}
                 </div>
               </div>
             );
