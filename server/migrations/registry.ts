@@ -36,6 +36,14 @@ export const MIGRATIONS: MigrationDef[] = [
     expectedSqlSha256: "837dc1a1ee884262d37b7a8f04abbde1e6e817818e2ea084a5070cc7d2d01033",
     expectedFixtureSha256: "e88b9fb19ca248d40cd89abfc1a8b9bede1e1c42be5f80acfaf8a0f2c50df216",
   },
+  {
+    id: "0003_create_job_shadow_previews",
+    sqlFile: "0003_create_job_shadow_previews.sql",
+    expectedNewTables: ["job_shadow_previews"],
+    fingerprintFixture: "tests/knop/fixtures/jobShadowPreviewsFingerprint.json",
+    expectedSqlSha256: "0070e6facd1fb45b1d25f35a8a42a816a5c40a4ca1c2280886e0027a9f5eb724",
+    expectedFixtureSha256: "8e11a4bb934466b4f334da57a04f6982e4b0197780d31fae37bb6d9145d583f8",
+  },
 ];
 
 // id 또는 경로("migrations/0001_add_report_matches.sql")로 조회 → 기존 CLI 호출 형식과 하위호환.

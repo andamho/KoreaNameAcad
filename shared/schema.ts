@@ -900,3 +900,40 @@ export type Job = typeof jobs.$inferSelect;
 export type InsertJob = typeof jobs.$inferInsert;
 export type JobExecution = typeof jobExecutions.$inferSelect;
 export type InsertJobExecution = typeof jobExecutions.$inferInsert;
+
+// shadow preview 관측(안 B, migrations/0003). worker queue 와 물리 분리: jobs/execution/customer FK 없음·claim index 없음.
+// 원문/URI/고객값 컬럼 없음. source_record_ref = keyed HMAC(raw id 아님). 저장 대상 = valid observation.
+export const jobShadowPreviews = pgTable("job_shadow_previews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  previewSchemaVersion: integer("preview_schema_version").notNull(),
+  sourceDomain: text("source_domain").notNull(),
+  sourceRecordRef: varchar("source_record_ref", { length: 64 }).notNull(), // keyed HMAC hex(원문 id 아님)
+  sourceRefKeyVersion: text("source_ref_key_version").notNull(),
+  observationKind: text("observation_kind").notNull(),
+  jobType: text("job_type").notNull(),
+  ownerScope: text("owner_scope").notNull(),
+  projectId: varchar("project_id"),
+  prospectiveIdempotencyKey: varchar("prospective_idempotency_key", { length: 64 }).notNull(),
+  payloadHash: varchar("payload_hash", { length: 64 }).notNull(),
+  executionOptionsHash: varchar("execution_options_hash", { length: 64 }).notNull(),
+  requestVersionSnapshot: jsonb("request_version_snapshot").notNull(),
+  observedPipelineHash: varchar("observed_pipeline_hash", { length: 64 }).notNull(),
+  rendererLibraryVersion: text("renderer_library_version"),
+  sourceStatus: text("source_status").notNull(),
+  validationStatus: text("validation_status").notNull(),
+  validationErrorCodes: jsonb("validation_error_codes").default(sql`'[]'`).notNull(),
+  provenanceComplete: boolean("provenance_complete").notNull(),
+  historicalExecutionVersionKnown: boolean("historical_execution_version_known").default(false).notNull(),
+  observedAt: timestamp("observed_at", { withTimezone: true }).default(sql`now()`).notNull(),
+  observationHash: varchar("observation_hash", { length: 64 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`).notNull(),
+}, (t) => [
+  uniqueIndex("job_shadow_previews_observation_uq").on(t.observationHash),
+  index("job_shadow_previews_observed_idx").on(t.observedAt),
+  index("job_shadow_previews_status_idx").on(t.sourceStatus),
+  index("job_shadow_previews_provenance_idx").on(t.provenanceComplete),
+  index("job_shadow_previews_prospective_idx").on(t.prospectiveIdempotencyKey),
+  index("job_shadow_previews_source_idx").on(t.sourceRecordRef, t.sourceRefKeyVersion),
+]);
+export type JobShadowPreview = typeof jobShadowPreviews.$inferSelect;
+export type InsertJobShadowPreview = typeof jobShadowPreviews.$inferInsert;
