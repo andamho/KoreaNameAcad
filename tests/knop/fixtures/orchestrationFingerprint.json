@@ -1,0 +1,951 @@
+{
+  "_note": "cross-agent orchestration 6테이블 구조 fingerprint(0004). 내부 FK RESTRICT, audit_log/emergency_stops 무FK, immutable/append-only 은 앱계약(트리거 별도 Gate).",
+  "columnCount": 77,
+  "tableCount": 6,
+  "constraints": [
+    {
+      "tbl": "automated_reviews",
+      "conname": "automated_reviews_decision_ck",
+      "contype": "c",
+      "def": "CHECK ((decision = ANY (ARRAY['approve'::text, 'revise'::text, 'reject'::text, 'human-review'::text])))"
+    },
+    {
+      "tbl": "automated_reviews",
+      "conname": "automated_reviews_reviewer_ck",
+      "contype": "c",
+      "def": "CHECK ((reviewer_kind = ANY (ARRAY['gpt'::text, 'claude'::text, 'deterministic-validator'::text])))"
+    },
+    {
+      "tbl": "automated_reviews",
+      "conname": "automated_reviews_severity_ck",
+      "contype": "c",
+      "def": "CHECK ((severity = ANY (ARRAY['info'::text, 'low'::text, 'medium'::text, 'high'::text, 'critical'::text])))"
+    },
+    {
+      "tbl": "automated_reviews",
+      "conname": "automated_reviews_artifact_fkey",
+      "contype": "f",
+      "def": "FOREIGN KEY (reviewed_artifact_id) REFERENCES job_artifacts(id) ON DELETE RESTRICT"
+    },
+    {
+      "tbl": "automated_reviews",
+      "conname": "automated_reviews_correction_fkey",
+      "contype": "f",
+      "def": "FOREIGN KEY (correction_instruction_artifact_id) REFERENCES job_artifacts(id) ON DELETE RESTRICT"
+    },
+    {
+      "tbl": "automated_reviews",
+      "conname": "automated_reviews_exec_fkey",
+      "contype": "f",
+      "def": "FOREIGN KEY (reviewed_execution_id) REFERENCES job_executions(id) ON DELETE RESTRICT"
+    },
+    {
+      "tbl": "automated_reviews",
+      "conname": "automated_reviews_job_fkey",
+      "contype": "f",
+      "def": "FOREIGN KEY (reviewed_job_id) REFERENCES jobs(id) ON DELETE RESTRICT"
+    },
+    {
+      "tbl": "automated_reviews",
+      "conname": "automated_reviews_pkey",
+      "contype": "p",
+      "def": "PRIMARY KEY (id)"
+    },
+    {
+      "tbl": "emergency_stops",
+      "conname": "emergency_stops_activated_hex",
+      "contype": "c",
+      "def": "CHECK (((activated_by_protected_ref IS NULL) OR ((activated_by_protected_ref)::text ~ '^[0-9a-f]{64}$'::text)))"
+    },
+    {
+      "tbl": "emergency_stops",
+      "conname": "emergency_stops_released_hex",
+      "contype": "c",
+      "def": "CHECK (((released_by_protected_ref IS NULL) OR ((released_by_protected_ref)::text ~ '^[0-9a-f]{64}$'::text)))"
+    },
+    {
+      "tbl": "emergency_stops",
+      "conname": "emergency_stops_scope_ck",
+      "contype": "c",
+      "def": "CHECK ((scope_type = ANY (ARRAY['global'::text, 'pipeline-kind'::text, 'adapter'::text, 'customer-source'::text, 'promotion'::text, 'write-action'::text])))"
+    },
+    {
+      "tbl": "emergency_stops",
+      "conname": "emergency_stops_pkey",
+      "contype": "p",
+      "def": "PRIMARY KEY (id)"
+    },
+    {
+      "tbl": "human_approvals",
+      "conname": "human_approvals_approver_hex",
+      "contype": "c",
+      "def": "CHECK (((decided_by_protected_ref IS NULL) OR ((decided_by_protected_ref)::text ~ '^[0-9a-f]{64}$'::text)))"
+    },
+    {
+      "tbl": "human_approvals",
+      "conname": "human_approvals_status_ck",
+      "contype": "c",
+      "def": "CHECK ((approval_status = ANY (ARRAY['awaiting-approval'::text, 'approved'::text, 'rejected'::text, 'revision-requested'::text, 'expired'::text, 'cancelled'::text])))"
+    },
+    {
+      "tbl": "human_approvals",
+      "conname": "human_approvals_job_fkey",
+      "contype": "f",
+      "def": "FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE RESTRICT"
+    },
+    {
+      "tbl": "human_approvals",
+      "conname": "human_approvals_review_fkey",
+      "contype": "f",
+      "def": "FOREIGN KEY (review_id) REFERENCES automated_reviews(id) ON DELETE RESTRICT"
+    },
+    {
+      "tbl": "human_approvals",
+      "conname": "human_approvals_pkey",
+      "contype": "p",
+      "def": "PRIMARY KEY (id)"
+    },
+    {
+      "tbl": "job_artifacts",
+      "conname": "job_artifacts_content_hash_hex",
+      "contype": "c",
+      "def": "CHECK (((content_hash)::text ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "tbl": "job_artifacts",
+      "conname": "job_artifacts_customer_needs_ref",
+      "contype": "c",
+      "def": "CHECK ((NOT ((sensitivity_class = 'customer-sensitive'::text) AND (protected_content_ref IS NULL))))"
+    },
+    {
+      "tbl": "job_artifacts",
+      "conname": "job_artifacts_immutable_ck",
+      "contype": "c",
+      "def": "CHECK ((immutable = true))"
+    },
+    {
+      "tbl": "job_artifacts",
+      "conname": "job_artifacts_manifest_hash_hex",
+      "contype": "c",
+      "def": "CHECK (((manifest_hash)::text ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "tbl": "job_artifacts",
+      "conname": "job_artifacts_no_secret_plain",
+      "contype": "c",
+      "def": "CHECK ((NOT ((sensitivity_class = 'secret'::text) AND (content_location IS NOT NULL))))"
+    },
+    {
+      "tbl": "job_artifacts",
+      "conname": "job_artifacts_protected_ref_hex",
+      "contype": "c",
+      "def": "CHECK (((protected_content_ref IS NULL) OR ((protected_content_ref)::text ~ '^[0-9a-f]{64}$'::text)))"
+    },
+    {
+      "tbl": "job_artifacts",
+      "conname": "job_artifacts_redaction_ck",
+      "contype": "c",
+      "def": "CHECK ((redaction_status = ANY (ARRAY['not-required'::text, 'redacted'::text, 'protected-reference'::text, 'pending'::text])))"
+    },
+    {
+      "tbl": "job_artifacts",
+      "conname": "job_artifacts_sensitivity_ck",
+      "contype": "c",
+      "def": "CHECK ((sensitivity_class = ANY (ARRAY['public'::text, 'internal'::text, 'confidential'::text, 'customer-sensitive'::text, 'secret'::text])))"
+    },
+    {
+      "tbl": "job_artifacts",
+      "conname": "job_artifacts_producer_exec_fkey",
+      "contype": "f",
+      "def": "FOREIGN KEY (producer_execution_id) REFERENCES job_executions(id) ON DELETE RESTRICT"
+    },
+    {
+      "tbl": "job_artifacts",
+      "conname": "job_artifacts_producer_job_fkey",
+      "contype": "f",
+      "def": "FOREIGN KEY (producer_job_id) REFERENCES jobs(id) ON DELETE RESTRICT"
+    },
+    {
+      "tbl": "job_artifacts",
+      "conname": "job_artifacts_pkey",
+      "contype": "p",
+      "def": "PRIMARY KEY (id)"
+    },
+    {
+      "tbl": "job_dependencies",
+      "conname": "job_dependencies_no_self",
+      "contype": "c",
+      "def": "CHECK (((job_id)::text <> (depends_on_job_id)::text))"
+    },
+    {
+      "tbl": "job_dependencies",
+      "conname": "job_dependencies_status_ck",
+      "contype": "c",
+      "def": "CHECK ((resolution_status = ANY (ARRAY['pending'::text, 'resolved'::text, 'failed'::text, 'cancelled'::text])))"
+    },
+    {
+      "tbl": "job_dependencies",
+      "conname": "job_dependencies_type_ck",
+      "contype": "c",
+      "def": "CHECK ((dependency_type = ANY (ARRAY['requires-success'::text, 'requires-approved-review'::text, 'requires-human-approval'::text, 'supersedes'::text, 'retry-of'::text, 'correction-of'::text])))"
+    },
+    {
+      "tbl": "job_dependencies",
+      "conname": "job_dependencies_depends_on_fkey",
+      "contype": "f",
+      "def": "FOREIGN KEY (depends_on_job_id) REFERENCES jobs(id) ON DELETE RESTRICT"
+    },
+    {
+      "tbl": "job_dependencies",
+      "conname": "job_dependencies_job_fkey",
+      "contype": "f",
+      "def": "FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE RESTRICT"
+    },
+    {
+      "tbl": "job_dependencies",
+      "conname": "job_dependencies_resolved_artifact_fkey",
+      "contype": "f",
+      "def": "FOREIGN KEY (resolved_artifact_id) REFERENCES job_artifacts(id) ON DELETE RESTRICT"
+    },
+    {
+      "tbl": "job_dependencies",
+      "conname": "job_dependencies_resolved_exec_fkey",
+      "contype": "f",
+      "def": "FOREIGN KEY (resolved_execution_id) REFERENCES job_executions(id) ON DELETE RESTRICT"
+    },
+    {
+      "tbl": "job_dependencies",
+      "conname": "job_dependencies_pkey",
+      "contype": "p",
+      "def": "PRIMARY KEY (id)"
+    },
+    {
+      "tbl": "orchestration_audit_log",
+      "conname": "orchestration_audit_log_actor_ck",
+      "contype": "c",
+      "def": "CHECK ((actor_kind = ANY (ARRAY['system'::text, 'gpt-adapter'::text, 'claude-adapter'::text, 'reviewer'::text, 'human'::text, 'worker'::text])))"
+    },
+    {
+      "tbl": "orchestration_audit_log",
+      "conname": "orchestration_audit_log_actor_hex",
+      "contype": "c",
+      "def": "CHECK (((actor_protected_ref IS NULL) OR ((actor_protected_ref)::text ~ '^[0-9a-f]{64}$'::text)))"
+    },
+    {
+      "tbl": "orchestration_audit_log",
+      "conname": "orchestration_audit_log_pkey",
+      "contype": "p",
+      "def": "PRIMARY KEY (id)"
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "automated_reviews",
+      "indexname": "automated_reviews_pkey",
+      "indexdef": "CREATE UNIQUE INDEX automated_reviews_pkey ON public.automated_reviews USING btree (id)"
+    },
+    {
+      "tablename": "automated_reviews",
+      "indexname": "automated_reviews_reviewer_uq",
+      "indexdef": "CREATE UNIQUE INDEX automated_reviews_reviewer_uq ON public.automated_reviews USING btree (reviewed_execution_id, reviewer_kind, reviewer_version)"
+    },
+    {
+      "tablename": "emergency_stops",
+      "indexname": "emergency_stops_active_scope_uq",
+      "indexdef": "CREATE UNIQUE INDEX emergency_stops_active_scope_uq ON public.emergency_stops USING btree (scope_type, scope_key) WHERE active"
+    },
+    {
+      "tablename": "emergency_stops",
+      "indexname": "emergency_stops_pkey",
+      "indexdef": "CREATE UNIQUE INDEX emergency_stops_pkey ON public.emergency_stops USING btree (id)"
+    },
+    {
+      "tablename": "human_approvals",
+      "indexname": "human_approvals_active_uq",
+      "indexdef": "CREATE UNIQUE INDEX human_approvals_active_uq ON public.human_approvals USING btree (job_id) WHERE (approval_status = 'awaiting-approval'::text)"
+    },
+    {
+      "tablename": "human_approvals",
+      "indexname": "human_approvals_job_idx",
+      "indexdef": "CREATE INDEX human_approvals_job_idx ON public.human_approvals USING btree (job_id)"
+    },
+    {
+      "tablename": "human_approvals",
+      "indexname": "human_approvals_pkey",
+      "indexdef": "CREATE UNIQUE INDEX human_approvals_pkey ON public.human_approvals USING btree (id)"
+    },
+    {
+      "tablename": "job_artifacts",
+      "indexname": "job_artifacts_dedup_uq",
+      "indexdef": "CREATE UNIQUE INDEX job_artifacts_dedup_uq ON public.job_artifacts USING btree (producer_execution_id, artifact_kind, content_hash)"
+    },
+    {
+      "tablename": "job_artifacts",
+      "indexname": "job_artifacts_kind_idx",
+      "indexdef": "CREATE INDEX job_artifacts_kind_idx ON public.job_artifacts USING btree (artifact_kind, schema_version)"
+    },
+    {
+      "tablename": "job_artifacts",
+      "indexname": "job_artifacts_pkey",
+      "indexdef": "CREATE UNIQUE INDEX job_artifacts_pkey ON public.job_artifacts USING btree (id)"
+    },
+    {
+      "tablename": "job_artifacts",
+      "indexname": "job_artifacts_producer_job_idx",
+      "indexdef": "CREATE INDEX job_artifacts_producer_job_idx ON public.job_artifacts USING btree (producer_job_id)"
+    },
+    {
+      "tablename": "job_dependencies",
+      "indexname": "job_dependencies_edge_uq",
+      "indexdef": "CREATE UNIQUE INDEX job_dependencies_edge_uq ON public.job_dependencies USING btree (job_id, depends_on_job_id, dependency_type)"
+    },
+    {
+      "tablename": "job_dependencies",
+      "indexname": "job_dependencies_pkey",
+      "indexdef": "CREATE UNIQUE INDEX job_dependencies_pkey ON public.job_dependencies USING btree (id)"
+    },
+    {
+      "tablename": "job_dependencies",
+      "indexname": "job_dependencies_predecessor_idx",
+      "indexdef": "CREATE INDEX job_dependencies_predecessor_idx ON public.job_dependencies USING btree (depends_on_job_id)"
+    },
+    {
+      "tablename": "job_dependencies",
+      "indexname": "job_dependencies_unresolved_idx",
+      "indexdef": "CREATE INDEX job_dependencies_unresolved_idx ON public.job_dependencies USING btree (job_id) WHERE (resolution_status = 'pending'::text)"
+    },
+    {
+      "tablename": "orchestration_audit_log",
+      "indexname": "orchestration_audit_log_job_time_idx",
+      "indexdef": "CREATE INDEX orchestration_audit_log_job_time_idx ON public.orchestration_audit_log USING btree (job_id, created_at)"
+    },
+    {
+      "tablename": "orchestration_audit_log",
+      "indexname": "orchestration_audit_log_pkey",
+      "indexdef": "CREATE UNIQUE INDEX orchestration_audit_log_pkey ON public.orchestration_audit_log USING btree (id)"
+    },
+    {
+      "tablename": "orchestration_audit_log",
+      "indexname": "orchestration_audit_log_seq_uq",
+      "indexdef": "CREATE UNIQUE INDEX orchestration_audit_log_seq_uq ON public.orchestration_audit_log USING btree (seq)"
+    }
+  ],
+  "columns": [
+    {
+      "table_name": "automated_reviews",
+      "column_name": "id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "automated_reviews",
+      "column_name": "reviewed_job_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "automated_reviews",
+      "column_name": "reviewed_execution_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "automated_reviews",
+      "column_name": "reviewed_artifact_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "automated_reviews",
+      "column_name": "reviewer_kind",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "automated_reviews",
+      "column_name": "reviewer_version",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "automated_reviews",
+      "column_name": "decision",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "automated_reviews",
+      "column_name": "severity",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "automated_reviews",
+      "column_name": "failed_invariants",
+      "data_type": "jsonb",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "automated_reviews",
+      "column_name": "evidence_artifact_ids",
+      "data_type": "jsonb",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "automated_reviews",
+      "column_name": "correction_instruction_artifact_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "automated_reviews",
+      "column_name": "next_job_kind",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "automated_reviews",
+      "column_name": "human_approval_required",
+      "data_type": "boolean",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "table_name": "automated_reviews",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "emergency_stops",
+      "column_name": "id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "emergency_stops",
+      "column_name": "scope_type",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "emergency_stops",
+      "column_name": "scope_key",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "''::text"
+    },
+    {
+      "table_name": "emergency_stops",
+      "column_name": "reason_code",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "emergency_stops",
+      "column_name": "reason_summary",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "emergency_stops",
+      "column_name": "active",
+      "data_type": "boolean",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "true"
+    },
+    {
+      "table_name": "emergency_stops",
+      "column_name": "activated_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "emergency_stops",
+      "column_name": "activated_by_protected_ref",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "emergency_stops",
+      "column_name": "released_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "emergency_stops",
+      "column_name": "released_by_protected_ref",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "emergency_stops",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "emergency_stops",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "human_approvals",
+      "column_name": "id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "human_approvals",
+      "column_name": "job_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "human_approvals",
+      "column_name": "review_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "human_approvals",
+      "column_name": "approval_status",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "'awaiting-approval'::text"
+    },
+    {
+      "table_name": "human_approvals",
+      "column_name": "requested_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "human_approvals",
+      "column_name": "decided_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "human_approvals",
+      "column_name": "decided_by_protected_ref",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "human_approvals",
+      "column_name": "decision_reason_code",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "human_approvals",
+      "column_name": "decision_summary",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "human_approvals",
+      "column_name": "expires_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "human_approvals",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "human_approvals",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "producer_job_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "producer_execution_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "artifact_kind",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "schema_version",
+      "data_type": "integer",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "content_hash",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "manifest_hash",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "content_location",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "protected_content_ref",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "sensitivity_class",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "redaction_status",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "immutable",
+      "data_type": "boolean",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "true"
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "lineage_parent_artifact_ids",
+      "data_type": "jsonb",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "job_artifacts",
+      "column_name": "expires_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_dependencies",
+      "column_name": "id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "job_dependencies",
+      "column_name": "job_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_dependencies",
+      "column_name": "depends_on_job_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_dependencies",
+      "column_name": "dependency_type",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_dependencies",
+      "column_name": "required_artifact_kind",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_dependencies",
+      "column_name": "required_artifact_schema_version",
+      "data_type": "integer",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_dependencies",
+      "column_name": "resolution_status",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "'pending'::text"
+    },
+    {
+      "table_name": "job_dependencies",
+      "column_name": "resolved_execution_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_dependencies",
+      "column_name": "resolved_artifact_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_dependencies",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "job_dependencies",
+      "column_name": "resolved_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "orchestration_audit_log",
+      "column_name": "id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "orchestration_audit_log",
+      "column_name": "seq",
+      "data_type": "bigint",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "orchestration_audit_log",
+      "column_name": "event_type",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "orchestration_audit_log",
+      "column_name": "actor_kind",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "orchestration_audit_log",
+      "column_name": "actor_protected_ref",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "orchestration_audit_log",
+      "column_name": "job_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "orchestration_audit_log",
+      "column_name": "execution_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "orchestration_audit_log",
+      "column_name": "artifact_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "orchestration_audit_log",
+      "column_name": "review_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "orchestration_audit_log",
+      "column_name": "approval_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "orchestration_audit_log",
+      "column_name": "pipeline_kind",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "orchestration_audit_log",
+      "column_name": "event_payload",
+      "data_type": "jsonb",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "orchestration_audit_log",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    }
+  ]
+}

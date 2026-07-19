@@ -104,7 +104,7 @@ describe("범용 마이그레이션 러너", () => {
     assert.deepEqual(scanSql(SQL_0002, DEF_0002.expectedNewTables), { safe: true });
     // 경로 형식으로도 조회되어야(기존 CLI 하위호환)
     assert.equal(findMigration("migrations/0001_add_report_matches.sql")?.id, "0001_add_report_matches");
-    assert.equal(MIGRATIONS.length, 3);
+    assert.equal(MIGRATIONS.length, 4);
   });
 
   // 5
