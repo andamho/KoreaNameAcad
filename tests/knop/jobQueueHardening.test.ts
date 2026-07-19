@@ -7,9 +7,10 @@ import path from "node:path";
 import {
   canonicalStringify, sha256Hex, CanonicalizationError, computeIdempotencyKey,
   createJob, HashIdentityMismatchError, claimNextJob, markRunning, completeExecution, heartbeat, failExecution,
-  inspectJobInvariant, internalReportAdapter, getJob,
+  inspectJobInvariant, getJob,
   type QueueClient, type RequestVersionSnapshot,
 } from "../../server/jobQueue/index";
+import { internalReportAdapter } from "../../server/jobQueue/adapters/internalReport";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const MIG = readFileSync(path.join(here, "..", "..", "migrations", "0002_create_persistent_job_queue.sql"), "utf-8");

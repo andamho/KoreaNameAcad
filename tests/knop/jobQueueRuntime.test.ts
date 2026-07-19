@@ -7,10 +7,11 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import {
   createJob, claimNextJob, markRunning, heartbeat, completeExecution, failExecution, markVersionMismatch,
-  reapExpired, claimForcedRerun, compareVersionSnapshots, sha256Hex,
-  getJob, getExecution, listExecutions, internalReportAdapter,
+  reapExpired, requestForcedRerun, FORCED_RERUN_SUPPORTED, compareVersionSnapshots, sha256Hex,
+  getJob, getExecution, listExecutions,
   type QueueClient, type RequestVersionSnapshot,
 } from "../../server/jobQueue/index";
+import { internalReportAdapter } from "../../server/jobQueue/adapters/internalReport";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const MIG = readFileSync(path.join(here, "..", "..", "migrations", "0002_create_persistent_job_queue.sql"), "utf-8");
@@ -213,20 +214,10 @@ describe("영속 작업 큐 runtime prototype", () => {
     } finally { await db.close(); }
   });
 
-  test("16. forced-rerun → 같은 job 새 execution", async () => {
-    const { db, c } = await freshQ();
-    try {
-      const j = await createJob(c, jobInput());
-      const r = await claimNextJob(c, "w1");
-      await markRunning(c, { executionId: r!.executionId, workerId: "w1", rawLeaseToken: r!.rawLeaseToken });
-      await completeExecution(c, { executionId: r!.executionId, workerId: "w1", rawLeaseToken: r!.rawLeaseToken, jobType: "internal-report", result: await internalReportAdapter.execute(r!.adapterInput) });
-      const fr = await claimForcedRerun(c, j.job.id, "w2");
-      assert.ok(fr && fr.attemptNumber === 2);
-      const exs = await listExecutions(c, j.job.id);
-      assert.equal(exs.length, 2);
-      assert.equal(exs[1].execution_reason, "forced-rerun");
-      assert.equal(exs[0].status, "succeeded", "기존 결과 보존");
-    } finally { await db.close(); }
+  test("16. forced-rerun 은 현 스키마 미지원(안 C) — 직접 execution 생성 금지", () => {
+    // 관리자 함수가 worker lease 를 직접 발급하지 않는다. additive migration(pending_execution_reason) 후 활성화.
+    assert.equal(FORCED_RERUN_SUPPORTED, false);
+    assert.throws(() => requestForcedRerun("any-job-id"), /FORCED_RERUN_UNSUPPORTED|미지원/);
   });
 
   test("17. reprocess → 새 job·parent 관계", async () => {
