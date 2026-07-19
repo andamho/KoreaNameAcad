@@ -139,6 +139,69 @@ export function verifyPostApply(
   return { ok: true, newTables };
 }
 
+// ── inspect (카탈로그 SELECT 전용, DDL·트랜잭션 없음) ──────────────────────────
+export type InspectState = "not-applied" | "already-applied" | "partial" | "fingerprint-mismatch";
+export interface InspectReport {
+  migrationId: string;
+  expectedNewTables: string[];
+  state: InspectState;
+  baseTableCount: number;
+  fkCount: number;
+  existingTableCount: number; // expectedNewTables 제외한 기존 테이블 수
+  existingRowTotal: number; // 기존 테이블 행수 합계
+  safetyScan: "pass" | { reason: string };
+}
+
+// 운영 DB 에도 안전(오직 SELECT). 원문 식별정보를 반환값에 담지 않는다(개수·상태만).
+export async function inspectMigration(
+  c: RunnerClient,
+  def: MigrationDef,
+  opts: { sqlText: string; fixture?: FingerprintFixture | null },
+): Promise<InspectReport> {
+  const scan = scanSql(opts.sqlText, def.expectedNewTables);
+  const safetyScan = scan.safe ? ("pass" as const) : { reason: scan.reason };
+
+  const all = await listTables(c);
+  const present = new Set(all);
+  const existingOnly = all.filter((t) => !def.expectedNewTables.includes(t));
+  let existingRowTotal = 0;
+  for (const t of existingOnly) {
+    existingRowTotal += (await c.query(`SELECT count(*)::int AS n FROM "${t}"`)).rows[0].n;
+  }
+  const baseTableCount = (
+    await c.query(`SELECT count(*)::int AS n FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'`)
+  ).rows[0].n;
+  const fkCount = (await c.query(`SELECT count(*)::int AS n FROM pg_constraint WHERE contype='f'`)).rows[0].n;
+
+  const existing = def.expectedNewTables.filter((t) => present.has(t));
+  let state: InspectState;
+  if (existing.length === 0) state = "not-applied";
+  else if (existing.length < def.expectedNewTables.length) state = "partial";
+  else if (opts.fixture) {
+    const fp = await computeCatalogFingerprint(c, def.expectedNewTables);
+    state = fingerprintMatches(fp, opts.fixture) ? "already-applied" : "fingerprint-mismatch";
+  } else state = "already-applied";
+
+  return {
+    migrationId: def.id,
+    expectedNewTables: def.expectedNewTables,
+    state,
+    baseTableCount,
+    fkCount,
+    existingTableCount: existingOnly.length,
+    existingRowTotal,
+    safetyScan,
+  };
+}
+
+// 기존 객체 불변 검증용 스냅샷 — expectedNewTables 를 제외한 모든 public 테이블의 구조 fingerprint.
+// "행수 불변"만으로 못 잡는 컬럼/PK/FK/인덱스 변경까지 migration 전후로 대조하기 위함.
+export async function snapshotExistingObjects(c: RunnerClient, excludeTables: string[]) {
+  const all = await listTables(c);
+  const targets = all.filter((t) => !excludeTables.includes(t));
+  return targets.length ? computeCatalogFingerprint(c, targets) : { columnCount: 0, columns: [], constraints: [], indexes: [] };
+}
+
 // ── 러너 코어 ────────────────────────────────────────────────────────────────
 export async function runMigration(c: RunnerClient, def: MigrationDef, opts: RunOptions): Promise<RunResult> {
   const base = { migrationId: def.id, committed: false, createdTables: [] as string[] };

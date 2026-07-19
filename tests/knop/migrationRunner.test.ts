@@ -8,13 +8,16 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import {
   runMigration,
+  inspectMigration,
   scanSql,
   verifyPostApply,
+  snapshotExistingObjects,
   isSuccessOutcome,
   type RunnerClient,
 } from "../../server/migrations/runner";
 import { findMigration, MIGRATIONS } from "../../server/migrations/registry";
 import { computeCatalogFingerprint, fingerprintMatches } from "../../server/migrations/catalogFingerprint";
+import { sha256Normalized, fileSha256Normalized } from "../../server/migrations/checksum";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, "..", "..");
@@ -255,5 +258,113 @@ describe("범용 마이그레이션 러너", () => {
     const changed = verifyPostApply({ a: 3 }, { a: 5, jobs: 0 }, ["jobs"]);
     assert.equal(changed.ok, false);
     assert.equal((changed as any).outcome, "aborted-existing-data-changed");
+  });
+
+  // 16 — inspect 상태 4종
+  test("inspect: not-applied / already-applied / partial / fingerprint-mismatch", async () => {
+    // not-applied (빈 DB)
+    {
+      const { db, client } = await freshPg();
+      try {
+        const r = await inspectMigration(client, DEF_0002, { sqlText: SQL_0002, fixture: FP_0002 });
+        assert.equal(r.state, "not-applied");
+        assert.equal(r.safetyScan, "pass");
+        assert.deepEqual(r.expectedNewTables, ["jobs", "job_executions"]);
+      } finally {
+        await db.close();
+      }
+    }
+    // already-applied (apply 후)
+    {
+      const { db, client } = await freshPg();
+      try {
+        await runMigration(client, DEF_0002, { sqlText: SQL_0002, fixture: FP_0002, apply: true });
+        const r = await inspectMigration(client, DEF_0002, { sqlText: SQL_0002, fixture: FP_0002 });
+        assert.equal(r.state, "already-applied");
+      } finally {
+        await db.close();
+      }
+    }
+    // partial (jobs 만)
+    {
+      const { db, client } = await freshPg();
+      try {
+        await db.exec(`CREATE TABLE jobs (id varchar PRIMARY KEY);`);
+        const r = await inspectMigration(client, DEF_0002, { sqlText: SQL_0002, fixture: FP_0002 });
+        assert.equal(r.state, "partial");
+      } finally {
+        await db.close();
+      }
+    }
+    // fingerprint-mismatch (잘못된 구조 전부 존재)
+    {
+      const { db, client } = await freshPg();
+      try {
+        await db.exec(`CREATE TABLE jobs (id integer PRIMARY KEY); CREATE TABLE job_executions (id integer PRIMARY KEY);`);
+        const r = await inspectMigration(client, DEF_0002, { sqlText: SQL_0002, fixture: FP_0002 });
+        assert.equal(r.state, "fingerprint-mismatch");
+      } finally {
+        await db.close();
+      }
+    }
+  });
+
+  // 17 — inspect 는 DDL·트랜잭션 없이 SELECT 만(카탈로그 불변)
+  test("inspect: DDL 없음·기존 상태 불변·safety-scan 은 sqlText 로 판정", async () => {
+    const { db, client } = await freshPg();
+    try {
+      await seedFor0001(db);
+      const before = await listTables(db);
+      const r = await inspectMigration(client, DEF_0001, { sqlText: `DROP TABLE customers;`, fixture: FP_0001 });
+      assert.notEqual(r.safetyScan, "pass"); // 위험 SQL 은 scan FAIL 로 보고
+      assert.deepEqual(await listTables(db), before, "inspect 후 테이블 목록 불변(DROP 실행 안 됨)");
+      assert.ok(r.baseTableCount >= 3 && typeof r.existingRowTotal === "number");
+    } finally {
+      await db.close();
+    }
+  });
+
+  // 18 — apply 중 post-fingerprint 불일치 → 전체 ROLLBACK(부분 테이블 잔존 0)
+  test("apply: post-apply fingerprint 불일치 시 COMMIT 전 전체 ROLLBACK", async () => {
+    const { db, client } = await freshPg();
+    try {
+      // fixture 를 고의로 1개 컬럼 타입만 틀리게 → 적용 후 대조에서 mismatch
+      const bad = JSON.parse(JSON.stringify(FP_0002));
+      bad.columns[0] = { ...bad.columns[0], data_type: "WRONG_TYPE" };
+      const r = await runMigration(client, DEF_0002, { sqlText: SQL_0002, fixture: bad, apply: true });
+      assert.equal(r.outcome, "aborted-fingerprint-mismatch");
+      assert.equal(r.committed, false, "COMMIT 되지 않아야");
+      const t = await listTables(db);
+      assert.ok(!t.includes("jobs") && !t.includes("job_executions"), "부분 생성 테이블 잔존 0(전체 ROLLBACK)");
+    } finally {
+      await db.close();
+    }
+  });
+
+  // 19 — 기존 객체 불변 스냅샷: 0002 apply 전후로 기존 테이블 구조 동일
+  test("snapshotExistingObjects: 0002 apply 전후 기존 객체 fingerprint 불변", async () => {
+    const { db, client } = await freshPg();
+    try {
+      await seedFor0001(db);
+      await runMigration(client, DEF_0001, { sqlText: SQL_0001, fixture: FP_0001, apply: true });
+      const before = await snapshotExistingObjects(client, ["jobs", "job_executions"]);
+      await runMigration(client, DEF_0002, { sqlText: SQL_0002, fixture: FP_0002, apply: true });
+      const after = await snapshotExistingObjects(client, ["jobs", "job_executions"]);
+      assert.deepEqual(after, before, "0002 적용이 기존(report_matches·sentinel 등) 구조를 바꾸지 않아야");
+    } finally {
+      await db.close();
+    }
+  });
+
+  // 20 — 체크섬: 정규화 sha256 안정성 + 레지스트리 기대값 == 실제 파일
+  test("checksum: 정규화 sha256 CRLF/LF 무관 + registry 기대값 == 실제 파일", () => {
+    assert.equal(sha256Normalized("a\r\nb\r\n"), sha256Normalized("a\nb\n"), "CRLF/LF 정규화 동일");
+    for (const def of MIGRATIONS) {
+      const sqlAbs = path.join(root, "migrations", def.sqlFile);
+      assert.equal(fileSha256Normalized(sqlAbs), def.expectedSqlSha256, `${def.id} SQL 체크섬 == registry`);
+      if (def.fingerprintFixture && def.expectedFixtureSha256) {
+        assert.equal(fileSha256Normalized(path.join(root, def.fingerprintFixture)), def.expectedFixtureSha256, `${def.id} fixture 체크섬 == registry`);
+      }
+    }
   });
 });

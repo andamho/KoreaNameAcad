@@ -12,6 +12,10 @@ export interface MigrationDef {
   expectedNewTables: string[];
   /** 적용 후 구조 fingerprint(레포 루트 기준 경로). 있으면 재실행/적용 시 구조 정확 일치까지 검증 */
   fingerprintFixture?: string;
+  /** SQL 파일의 기대 SHA-256(CRLF→LF 정규화, lowercase 64hex). 실행 전 파일 해시와 대조 → 불일치면 거부 */
+  expectedSqlSha256: string;
+  /** fingerprint fixture 파일의 기대 SHA-256(정규화). fingerprintFixture 있을 때만 */
+  expectedFixtureSha256?: string;
 }
 
 // 적용 순서 = 배열 순서. 파괴적 변경은 등록하지 않는다(러너가 SQL 을 추가로 스캔).
@@ -21,12 +25,16 @@ export const MIGRATIONS: MigrationDef[] = [
     sqlFile: "0001_add_report_matches.sql",
     expectedNewTables: ["report_matches"],
     fingerprintFixture: "tests/knop/fixtures/reportMatchesFingerprint.json",
+    expectedSqlSha256: "2cdebd1bb8edf6a16f0fe78936756b57011c2f7ce10201f2840f796b6d6dc2a4",
+    expectedFixtureSha256: "2d6749ca9bd383460f1a721f56b3780f5071cebf629891c80104a98d6d711f5d",
   },
   {
     id: "0002_create_persistent_job_queue",
     sqlFile: "0002_create_persistent_job_queue.sql",
     expectedNewTables: ["jobs", "job_executions"],
     fingerprintFixture: "tests/knop/fixtures/jobQueueFingerprint.json",
+    expectedSqlSha256: "837dc1a1ee884262d37b7a8f04abbde1e6e817818e2ea084a5070cc7d2d01033",
+    expectedFixtureSha256: "e88b9fb19ca248d40cd89abfc1a8b9bede1e1c42be5f80acfaf8a0f2c50df216",
   },
 ];
 
