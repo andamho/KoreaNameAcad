@@ -44,6 +44,22 @@ export const MIGRATIONS: MigrationDef[] = [
     expectedSqlSha256: "0070e6facd1fb45b1d25f35a8a42a816a5c40a4ca1c2280886e0027a9f5eb724",
     expectedFixtureSha256: "8e11a4bb934466b4f334da57a04f6982e4b0197780d31fae37bb6d9145d583f8",
   },
+  {
+    // cross-agent orchestration 6테이블(additive). 내부 FK RESTRICT, audit/emergency 무FK. 운영 apply 는 별도 승인.
+    id: "0004_cross_agent_orchestration",
+    sqlFile: "0004_cross_agent_orchestration.sql",
+    expectedNewTables: [
+      "job_artifacts",
+      "job_dependencies",
+      "automated_reviews",
+      "human_approvals",
+      "orchestration_audit_log",
+      "emergency_stops",
+    ],
+    fingerprintFixture: "tests/knop/fixtures/orchestrationFingerprint.json",
+    expectedSqlSha256: "26bd51fddc9f3049347b628a5384d22e6bcda5297d32b01a53b6edf3e51715a8",
+    expectedFixtureSha256: "b8903b24c0acf078ccd99c28b16e8b7e75c801dd1377f78b028bb1d357d74737",
+  },
 ];
 
 // id 또는 경로("migrations/0001_add_report_matches.sql")로 조회 → 기존 CLI 호출 형식과 하위호환.
