@@ -55,6 +55,13 @@ function buildChunkText(items: Item[]): { text: string; offsets: Array<[number, 
   return { text, offsets };
 }
 
+// textarea 를 내용 높이에 딱 맞게(줄바꿈까지 반영) — 문단 전체가 보이도록
+function autosize(el: HTMLTextAreaElement | null) {
+  if (!el) return;
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight + 2, 520) + "px";
+}
+
 export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () => void }) {
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -152,6 +159,7 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
     const r = caretRef.current;
     if (r) el.setSelectionRange(r[0], r[1]);
     else el.select();
+    autosize(el); // 문단 전체(줄바꿈 포함)가 다 보이게
   }, [editKey]);
 
   // 저장 후: 편집했던 자리로 스크롤 + 그 단어 하이라이트 (그 위쪽으로 밀리는 문제 해결)
@@ -438,7 +446,10 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
                           <textarea
                             ref={editRef}
                             value={editVal}
-                            onChange={(e) => setEditVal(e.target.value)}
+                            onChange={(e) => {
+                              setEditVal(e.target.value);
+                              autosize(e.target);
+                            }}
                             onKeyDown={(e) => {
                               if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault();
@@ -453,8 +464,8 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
                             onKeyUp={(e) => {
                               if (e.key.startsWith("Arrow") || e.key === "Home" || e.key === "End") seekToCaret();
                             }}
-                            rows={Math.min(8, Math.max(2, Math.ceil(editVal.length / 42)))}
-                            className="w-full text-sm leading-relaxed rounded border border-[#56D5DB] px-2 py-1 focus:outline-none resize-y bg-white"
+                            rows={2}
+                            className="w-full text-sm leading-relaxed rounded border border-[#56D5DB] px-2 py-1 focus:outline-none resize-y bg-white overflow-hidden"
                           />
                           <div className="flex items-center gap-2">
                             <button
