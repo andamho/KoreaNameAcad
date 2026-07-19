@@ -47,6 +47,26 @@
 - PGlite 격리 22 test(claim/priority/available_at/attempt/active-uniq/token fencing/heartbeat/completion/retry 3종/reaper 2종/forced-rerun/reprocess/snapshot mismatch/verification/no-overwrite/**raw token 미저장**/sentinel 불변).
 - 실제 **PG17.10 SKIP LOCKED 경합 4 검증**(2 동시→1 획득·10 job·4 워커 중복 0·queued 잔여 0).
 
+## 하드닝(concurrency & invariant Gate 추가)
+- **canonical JSON 가드**: undefined·함수·symbol·BigInt·Date·비유한수·순환 참조 거부(fail-closed). null 보존(missing 과 구분). 골든 fixture `tests/knop/fixtures/canonicalGolden.json` 로 bytes/sha256 동결. idempotencySchemaVersion 별도 계약.
+- **createJob identity 재검증**: 같은 idempotencyKey 인데 owner_scope/project_id/job_type/payload_hash/execution_options_hash/request_version_snapshot/input_identity 중 하나라도 다르면 **HASH_IDENTITY_MISMATCH**(새 job·기존 반환 둘 다 안 함, fail-closed, 불일치 필드명만). canonicalization 버그·수동 DB 변형 방어.
+- **lease 경계**: `lease_expires_at > now()` 만 유효(정확히 같은 시각=만료). heartbeat/running/complete/fail 전부 만료 lease 거부(권한 상실=reaper 소관). DB now() 기준, worker 로컬 시간 금지.
+- **claimed timeout**: reaper 는 `running + started_at` = adapter 실제 시작으로 판정. 비멱등 job 이라도 **claimed(미시작)** 만료는 needs_review 아니라 재시도/소진(부작용 없었음이 증명). 시작 후 만료만 needs_review.
+- **retry 생성 시점**: fail/reaper 는 job 을 queued + available_at 까지만. 다음 정상 claim 이 attempt++·execution 생성(fail/reaper tx 안에서 미리 execution 만들지 않음) → active 부분유일·claim 경합 모델 단순.
+- **forced-rerun 계약**: 허용 상태 succeeded/failed/cancelled/blocked/needs_review. active execution 있으면 거부. 같은 job·새 execution(reason='forced-rerun')·기존 결과 보존·request snapshot 불변·completed_at 재설정. **직접 execution 생성 방식**(현 스키마에 job-level pending reason 없음) — 동시 요청은 active 부분유일 인덱스가 최종 방어(1개만 성공). 향후 job-level pending-reason 이 필요하면 additive 스키마.
+- **reprocess 가드**: reprocess_reason 은 idempotencyKey 에 넣지 않음 → reason 만 바꾸면 같은 key → 기존 job 반환(**새 job 금지**). 입력·버전·옵션 중 최소 하나가 실제로 달라야 새 job.
+- **불변식 진단**: `inspectJobInvariant(jobId)` = running↔single-active·terminal→active0·queued→active0·review→active0·succeeded→마지막 succeeded+검증충족. 상태·ID 만 반환(원문 금지).
+- **로그 안전성**: raw lease token 은 DB·로그·throw 어디에도 없음(hash 만). error_code 레지스트리 외 값 거부, error_summary ≤1000자·원문/stack/고객값 금지.
+
+## 첫 adapter 최종 선택 + 초기 integration 방식
+- **순서 확정**: ① internal-report → ② pdf-generate → ③ call-transcribe → ④ video-caption → ⑤ sns-publish·SMS(비멱등, 최후).
+- **기존 reportSync 경로는 교체하지 않음**(이미 content-hash 멱등+terminal guard 보유).
+- **초기 integration = shadow create only**: adapter 실행 없음. 기존 처리 결과와 queue 의 request snapshot/idempotency 만 대조·관측. **jobs 생성도 운영 write 이므로 별도 승인 전 금지.**
+- 이번 Gate 는 adapter 계약·매핑 문서까지만(코드 배선 0).
+
+## 요구사항 23 ↔ 테스트 대응(요약)
+1 idempotency 1행=runtime#1 · 2 다른 project=runtime#2+hardening#3 · 3 동시 claim 단일=runtime#3(PGlite)+**pg#6·contention A/B(PG17)** · 4 priority=runtime#4 · 5 available_at 미래=runtime#5 · 6 attempt++=runtime#6 · 7 active 중복=runtime#7 · 8 token heartbeat=runtime#8 · 9 stale completion=runtime#9+hardening lease · 10·11 lease 만료 reaper/pure→queued=runtime#10·11 · 12 side-effect→needs_review=runtime#12(+12b 미시작 예외) · 13 transient→queued=runtime#13 · 14 permanent→failed=runtime#14 · 15 소진→failed=runtime#15 · 16 forced-rerun=runtime#16+**pg#6** · 17 reprocess=runtime#17+hardening reprocess · 18 snapshot mismatch=runtime#18 · 19 verification pending 금지=runtime#19 · 20 passed→succeeded=runtime#20 · 21 terminal 덮어쓰기 금지=runtime#21+**pg#1(completion/reaper)** · 22 raw token 미저장=runtime#22+hardening safety · 23 sentinel 불변=runtime#23. (전 항목 커버 + 신규: canonical 골든·identity mismatch·불변식 진단·lease 경계·claimed timeout·PG 경합 5쌍.)
+
 ## 다음 adapter integration Gate 진입 조건
 1. 첫 adapter(pdf/internal) 확정 + 운영 수치(maxAttempts/lease/heartbeat) 확정.
 2. dual-write 전략(기존 경로 유지하며 큐 병행) + 관측.
