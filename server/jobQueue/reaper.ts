@@ -19,7 +19,7 @@ export async function reapExpired(c: QueueClient, opts: { batch?: number } = {})
     // 만료 + 아직 active + (방어적으로) job running 인 execution 만.
     const rows = (
       await c.query(
-        `SELECT e.id, e.job_id, e.attempt_number, j.job_type
+        `SELECT e.id, e.job_id, e.attempt_number, e.status, e.started_at, j.job_type
            FROM job_executions e JOIN jobs j ON j.id=e.job_id
           WHERE e.status IN ('claimed','running') AND e.lease_expires_at < now() AND j.status='running'
           ORDER BY e.lease_expires_at ASC
@@ -33,17 +33,20 @@ export async function reapExpired(c: QueueClient, opts: { batch?: number } = {})
       const policy = jobTypePolicy(r.job_type);
       const attempt = r.attempt_number as number;
       const canRetry = attempt < policy.maxAttempts;
+      // adapter 실제 시작 증명 = running + started_at. claimed(started_at null)=side effect 시작 전 → 안전 requeue.
+      const sideEffectStarted = r.status === "running" && r.started_at !== null;
       await c.query(`SELECT id FROM jobs WHERE id=$1 FOR UPDATE`, [r.job_id]);
 
       let jobStatus: string, availableExpr = "available_at", errorCode: string;
-      if (policy.ambiguousSideEffectPolicy === "retry-queued" && canRetry) {
+      // 비멱등이면서 부작용이 실제 시작됐으면 사람 검토(중복 위험 불명). 그 외(pure/idempotent, 또는 미시작)는 재시도/소진.
+      if (policy.ambiguousSideEffectPolicy === "needs-review" && sideEffectStarted) {
+        jobStatus = "needs_review"; errorCode = "ambiguous.side-effect-unknown"; sum.needsReview++;
+      } else if (canRetry) {
         jobStatus = "queued";
         availableExpr = `now() + make_interval(secs => ${Math.round(backoff(policy, attempt))})`;
         errorCode = "transient.timeout"; sum.requeued++;
-      } else if (policy.ambiguousSideEffectPolicy === "retry-queued") {
-        jobStatus = "failed"; errorCode = "transient.timeout"; sum.failed++;
       } else {
-        jobStatus = "needs_review"; errorCode = "ambiguous.side-effect-unknown"; sum.needsReview++;
+        jobStatus = "failed"; errorCode = "transient.timeout"; sum.failed++;
       }
 
       await c.query(

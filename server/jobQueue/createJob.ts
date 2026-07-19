@@ -4,7 +4,17 @@ import type { QueueClient, JobRow } from "./types";
 import type { RequestVersionSnapshot } from "../../shared/jobQueueContract";
 import { isValidPriority, isSha256Hex, assertNoEmptyString } from "../../shared/jobQueueContract";
 import { jobTypePolicy } from "./registry";
-import { computeExecutionOptionsHash, computeIdempotencyKey } from "./idempotency";
+import { computeExecutionOptionsHash, computeIdempotencyKey, canonicalStringify } from "./idempotency";
+
+// 동일 idempotencyKey 인데 의미 필드가 다르면 = canonicalization 버그/잘못된 호출/수동 DB 변형.
+// fail-closed: 새 job 생성도, 기존 job 반환도 하지 않는다. 불일치 필드명만 노출(원문 금지).
+export class HashIdentityMismatchError extends Error {
+  code = "HASH_IDENTITY_MISMATCH" as const;
+  constructor(public mismatchedFields: string[]) {
+    super(`HASH_IDENTITY_MISMATCH: ${mismatchedFields.join(",")}`);
+    this.name = "HashIdentityMismatchError";
+  }
+}
 
 export interface CreateJobInput {
   ownerScope: string;
@@ -72,6 +82,19 @@ export async function createJob(c: QueueClient, input: CreateJobInput): Promise<
   if (ins.rows[0]) return { job: ins.rows[0] as JobRow, created: true };
 
   const existing = await c.query(`SELECT * FROM jobs WHERE idempotency_key=$1`, [idempotencyKey]);
-  if (!existing.rows[0]) throw new Error("idempotency 충돌인데 기존 job 조회 실패(경합 이례)");
-  return { job: existing.rows[0] as JobRow, created: false };
+  const prev = existing.rows[0] as JobRow | undefined;
+  if (!prev) throw new Error("idempotency 충돌인데 기존 job 조회 실패(경합 이례)");
+
+  // 같은 key = 같은 요청이어야 한다. 의미 필드를 재검증(SHA-256 충돌 방어가 아니라 canonicalization/호출 버그 방어).
+  const mismatched: string[] = [];
+  if (prev.owner_scope !== input.ownerScope) mismatched.push("owner_scope");
+  if (prev.project_id !== input.projectId) mismatched.push("project_id");
+  if (prev.job_type !== input.jobType) mismatched.push("job_type");
+  if (prev.payload_hash !== input.payloadHash) mismatched.push("payload_hash");
+  if (prev.execution_options_hash !== executionOptionsHash) mismatched.push("execution_options_hash");
+  if (canonicalStringify(prev.request_version_snapshot) !== canonicalStringify(input.requestVersionSnapshot)) mismatched.push("request_version_snapshot");
+  if (canonicalStringify(prev.input_identity) !== canonicalStringify(input.inputIdentity)) mismatched.push("input_identity");
+  if (mismatched.length) throw new HashIdentityMismatchError(mismatched);
+
+  return { job: prev, created: false };
 }

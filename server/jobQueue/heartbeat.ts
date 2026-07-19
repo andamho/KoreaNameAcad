@@ -18,6 +18,7 @@ export async function heartbeat(
         SET heartbeat_at = now(), lease_expires_at = now() + make_interval(secs => $4)
       WHERE id=$1 AND worker_id=$2 AND lease_token_hash=$3
         AND status IN ('claimed','running')
+        AND lease_expires_at > now()
       RETURNING id`,
     [args.executionId, args.workerId, tokenHash, policy.leaseDurationSec],
   );

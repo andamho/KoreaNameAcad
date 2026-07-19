@@ -20,11 +20,12 @@ export interface FailResult {
 }
 
 async function lockActiveExecution(c: QueueClient, executionId: string, workerId: string, tokenHash: string) {
-  const ex = await c.query(`SELECT * FROM job_executions WHERE id=$1 FOR UPDATE`, [executionId]);
+  const ex = await c.query(`SELECT *, (lease_expires_at <= now()) AS __lease_expired FROM job_executions WHERE id=$1 FOR UPDATE`, [executionId]);
   const row = ex.rows[0];
   if (!row) return { kind: "fencing-failed" as const };
   if (!["claimed", "running"].includes(row.status)) return { kind: "already-terminal" as const };
   if (row.worker_id !== workerId || row.lease_token_hash !== tokenHash) return { kind: "fencing-failed" as const };
+  if (row.__lease_expired) return { kind: "fencing-failed" as const }; // lease 만료 = 권한 상실(reaper 소관)
   return { kind: "ok" as const, row };
 }
 

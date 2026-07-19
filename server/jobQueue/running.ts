@@ -13,6 +13,7 @@ export async function markRunning(
     `UPDATE job_executions
         SET status='running', started_at = now()
       WHERE id=$1 AND worker_id=$2 AND lease_token_hash=$3 AND status='claimed'
+        AND lease_expires_at > now()
       RETURNING id`,
     [args.executionId, args.workerId, tokenHash],
   );

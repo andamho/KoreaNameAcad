@@ -8,6 +8,7 @@ import { jobSucceededAllowed, isValidErrorSummary } from "../../shared/jobQueueC
 export type CompleteOutcome =
   | "succeeded"
   | "fencing-failed" // 없음/탈취/이미 active 아님
+  | "lease-expired" // lease 만료 → 완료 권한 상실(reaper 소관). expired execution 을 succeeded 로 덮어쓰기 금지
   | "already-terminal" // idempotent: 이미 종료된 execution — 덮어쓰기 안 함
   | "rejected-missing-artifact-hash"
   | "rejected-verification"; // 검증 통과 아님 → 호출자가 fail/needs_review 로 라우팅
@@ -25,7 +26,7 @@ export async function completeExecution(
   const tokenHash = sha256Hex(args.rawLeaseToken);
   await c.query("BEGIN");
   try {
-    const ex = await c.query(`SELECT * FROM job_executions WHERE id=$1 FOR UPDATE`, [args.executionId]);
+    const ex = await c.query(`SELECT *, (lease_expires_at <= now()) AS __lease_expired FROM job_executions WHERE id=$1 FOR UPDATE`, [args.executionId]);
     const row = ex.rows[0];
     if (!row) { await c.query("ROLLBACK"); return { outcome: "fencing-failed", executionId: args.executionId }; }
     // 이미 terminal → 덮어쓰기 금지(idempotent 응답).
@@ -37,6 +38,11 @@ export async function completeExecution(
     if (row.worker_id !== args.workerId || row.lease_token_hash !== tokenHash) {
       await c.query("ROLLBACK");
       return { outcome: "fencing-failed", executionId: args.executionId };
+    }
+    // lease 만료 → 완료 권한 상실. DB now() 기준(정확히 같은 시각도 만료). reaper 가 소관.
+    if (row.__lease_expired) {
+      await c.query("ROLLBACK");
+      return { outcome: "lease-expired", executionId: args.executionId };
     }
     // artifact hash 필수(무결성). resultArtifactHash 누락 시 성공 금지.
     if (!args.result.artifactSnapshot || !args.result.artifactSnapshot.resultArtifactHash) {

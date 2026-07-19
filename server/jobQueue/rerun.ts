@@ -11,10 +11,11 @@ export async function claimForcedRerun(c: QueueClient, jobId: string, workerId: 
     const picked = await c.query(`SELECT * FROM jobs WHERE id=$1 FOR UPDATE`, [jobId]);
     const job = picked.rows[0] as JobRow | undefined;
     if (!job) { await c.query("ROLLBACK"); return null; }
-    // terminal job 만 forced-rerun 대상(진행 중 job 은 중복 실행 금지).
-    if (!["succeeded", "failed", "cancelled"].includes(job.status)) {
+    // forced-rerun 허용 상태(관리자 승인 작업): terminal + 검토 대기 상태. 진행 중(queued/running) 금지.
+    const ALLOWED = ["succeeded", "failed", "cancelled", "blocked", "needs_review"];
+    if (!ALLOWED.includes(job.status)) {
       await c.query("ROLLBACK");
-      throw new Error(`forced-rerun 불가: job ${jobId} 상태=${job.status}(terminal 아님)`);
+      throw new Error(`forced-rerun 불가: job ${jobId} 상태=${job.status}(허용: ${ALLOWED.join("/")})`);
     }
     const active = await c.query(`SELECT id FROM job_executions WHERE job_id=$1 AND status IN ('claimed','running') LIMIT 1`, [jobId]);
     if (active.rows[0]) { await c.query("ROLLBACK"); throw new Error("이미 active execution 존재"); }

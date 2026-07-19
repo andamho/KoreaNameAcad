@@ -15,5 +15,6 @@ export * from "./fail";
 export * from "./reaper";
 export * from "./rerun";
 export * from "./repository";
+export * from "./invariant";
 export { internalReportAdapter } from "./adapters/internalReport";
 export { AdapterError, type JobAdapter } from "./adapters/types";
