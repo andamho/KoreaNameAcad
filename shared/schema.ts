@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, boolean, timestamp, integer, uniqueIndex, jsonb, index, foreignKey } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean, timestamp, integer, bigint, uniqueIndex, jsonb, index, foreignKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -937,3 +937,153 @@ export const jobShadowPreviews = pgTable("job_shadow_previews", {
 ]);
 export type JobShadowPreview = typeof jobShadowPreviews.$inferSelect;
 export type InsertJobShadowPreview = typeof jobShadowPreviews.$inferInsert;
+
+// ── cross-agent orchestration (migrations/0004, additive) ──
+// 계약: shared/orchestration/types.ts·schema.ts + docs/cross-agent-orchestration-contract.md.
+// 여기(DB schema)는 컬럼·FK·인덱스 parity 만 둔다. CHECK 제약은 0002/0003 관례대로 SQL 마이그레이션이 단일 소스
+//   (drizzle 정의에 중복하지 않음). 내부 관계 FK = ON DELETE RESTRICT. audit_log/emergency_stops = 무FK(설계).
+// immutable(job_artifacts)·append-only(audit_log) 의 DB 강제(trigger/role)는 별도 hardening Gate.
+
+// immutable versioned artifact — AI 간 handoff 인덱스·lineage. 원문 대신 protected reference/hash.
+export const jobArtifacts = pgTable("job_artifacts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  producerJobId: varchar("producer_job_id").notNull(),           // → jobs.id RESTRICT
+  producerExecutionId: varchar("producer_execution_id").notNull(), // → job_executions.id RESTRICT
+  artifactKind: text("artifact_kind").notNull(),                 // ArtifactKind(중앙 validator)
+  schemaVersion: integer("schema_version").notNull(),
+  contentHash: varchar("content_hash", { length: 64 }).notNull(),   // sha256 hex
+  manifestHash: varchar("manifest_hash", { length: 64 }).notNull(), // sha256 hex
+  contentLocation: text("content_location"),                     // 비민감 참조(고객값·URL·경로 금지)
+  protectedContentRef: varchar("protected_content_ref", { length: 64 }), // 민감건 HMAC hex
+  sensitivityClass: text("sensitivity_class").notNull(),         // public|internal|confidential|customer-sensitive|secret
+  redactionStatus: text("redaction_status").notNull(),           // not-required|redacted|protected-reference|pending
+  immutable: boolean("immutable").default(true).notNull(),
+  lineageParentArtifactIds: jsonb("lineage_parent_artifact_ids").default(sql`'[]'`).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`).notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+}, (t) => [
+  foreignKey({ columns: [t.producerJobId], foreignColumns: [jobs.id], name: "job_artifacts_producer_job_fkey" }).onDelete("restrict"),
+  foreignKey({ columns: [t.producerExecutionId], foreignColumns: [jobExecutions.id], name: "job_artifacts_producer_exec_fkey" }).onDelete("restrict"),
+  uniqueIndex("job_artifacts_dedup_uq").on(t.producerExecutionId, t.artifactKind, t.contentHash),
+  index("job_artifacts_kind_idx").on(t.artifactKind, t.schemaVersion),
+  index("job_artifacts_producer_job_idx").on(t.producerJobId),
+]);
+
+// job 간 의존(자동 다음 job 판정 근거) + version pinning. 순환 차단은 앱(detectCycleJobs), DB 는 self CHECK 만.
+export const jobDependencies = pgTable("job_dependencies", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  jobId: varchar("job_id").notNull(),
+  dependsOnJobId: varchar("depends_on_job_id").notNull(),
+  dependencyType: text("dependency_type").notNull(),            // requires-success|-approved-review|-human-approval|supersedes|retry-of|correction-of
+  requiredArtifactKind: text("required_artifact_kind"),
+  requiredArtifactSchemaVersion: integer("required_artifact_schema_version"),
+  resolutionStatus: text("resolution_status").default("pending").notNull(), // pending|resolved|failed|cancelled
+  resolvedExecutionId: varchar("resolved_execution_id"),
+  resolvedArtifactId: varchar("resolved_artifact_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`).notNull(),
+  resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+}, (t) => [
+  foreignKey({ columns: [t.jobId], foreignColumns: [jobs.id], name: "job_dependencies_job_fkey" }).onDelete("restrict"),
+  foreignKey({ columns: [t.dependsOnJobId], foreignColumns: [jobs.id], name: "job_dependencies_depends_on_fkey" }).onDelete("restrict"),
+  foreignKey({ columns: [t.resolvedExecutionId], foreignColumns: [jobExecutions.id], name: "job_dependencies_resolved_exec_fkey" }).onDelete("restrict"),
+  foreignKey({ columns: [t.resolvedArtifactId], foreignColumns: [jobArtifacts.id], name: "job_dependencies_resolved_artifact_fkey" }).onDelete("restrict"),
+  uniqueIndex("job_dependencies_edge_uq").on(t.jobId, t.dependsOnJobId, t.dependencyType),
+  index("job_dependencies_unresolved_idx").on(t.jobId).where(sql`resolution_status = 'pending'`),
+  index("job_dependencies_predecessor_idx").on(t.dependsOnJobId),
+]);
+
+// consumer(다른 AI/검증기)의 자동 검토 결과. evidence 는 artifact reference 만.
+export const automatedReviews = pgTable("automated_reviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  reviewedJobId: varchar("reviewed_job_id").notNull(),
+  reviewedExecutionId: varchar("reviewed_execution_id").notNull(),
+  reviewedArtifactId: varchar("reviewed_artifact_id"),
+  reviewerKind: text("reviewer_kind").notNull(),                // gpt|claude|deterministic-validator
+  reviewerVersion: text("reviewer_version").notNull(),
+  decision: text("decision").notNull(),                        // approve|revise|reject|human-review
+  severity: text("severity").notNull(),                        // info|low|medium|high|critical
+  failedInvariants: jsonb("failed_invariants").default(sql`'[]'`).notNull(),
+  evidenceArtifactIds: jsonb("evidence_artifact_ids").default(sql`'[]'`).notNull(),
+  correctionInstructionArtifactId: varchar("correction_instruction_artifact_id"),
+  nextJobKind: text("next_job_kind"),
+  humanApprovalRequired: boolean("human_approval_required").default(false).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`).notNull(),
+}, (t) => [
+  foreignKey({ columns: [t.reviewedJobId], foreignColumns: [jobs.id], name: "automated_reviews_job_fkey" }).onDelete("restrict"),
+  foreignKey({ columns: [t.reviewedExecutionId], foreignColumns: [jobExecutions.id], name: "automated_reviews_exec_fkey" }).onDelete("restrict"),
+  foreignKey({ columns: [t.reviewedArtifactId], foreignColumns: [jobArtifacts.id], name: "automated_reviews_artifact_fkey" }).onDelete("restrict"),
+  foreignKey({ columns: [t.correctionInstructionArtifactId], foreignColumns: [jobArtifacts.id], name: "automated_reviews_correction_fkey" }).onDelete("restrict"),
+  uniqueIndex("automated_reviews_reviewer_uq").on(t.reviewedExecutionId, t.reviewerKind, t.reviewerVersion),
+]);
+
+// 사람 최종 승인(운영 반영 게이트). jobs.status 미변경 = 별도 상태.
+export const humanApprovals = pgTable("human_approvals", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  jobId: varchar("job_id").notNull(),
+  reviewId: varchar("review_id"),
+  approvalStatus: text("approval_status").default("awaiting-approval").notNull(), // awaiting-approval|approved|rejected|revision-requested|expired|cancelled
+  requestedAt: timestamp("requested_at", { withTimezone: true }).default(sql`now()`).notNull(),
+  decidedAt: timestamp("decided_at", { withTimezone: true }),
+  decidedByProtectedRef: varchar("decided_by_protected_ref", { length: 64 }), // 승인자 protected ref(원문 금지)
+  decisionReasonCode: text("decision_reason_code"),
+  decisionSummary: text("decision_summary"),                   // 시스템 요약만(고객 원문 금지)
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`).notNull(),
+}, (t) => [
+  foreignKey({ columns: [t.jobId], foreignColumns: [jobs.id], name: "human_approvals_job_fkey" }).onDelete("restrict"),
+  foreignKey({ columns: [t.reviewId], foreignColumns: [automatedReviews.id], name: "human_approvals_review_fkey" }).onDelete("restrict"),
+  uniqueIndex("human_approvals_active_uq").on(t.jobId).where(sql`approval_status = 'awaiting-approval'`), // 활성 승인 1개
+  index("human_approvals_job_idx").on(t.jobId),
+]);
+
+// append-only 감사 이벤트. 무FK(외부/삭제 대상 참조 가능). 고객 원문·secret·URL·경로 금지.
+export const orchestrationAuditLog = pgTable("orchestration_audit_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  seq: bigint("seq", { mode: "number" }).generatedAlwaysAsIdentity(), // 전역 단조 정렬키
+  eventType: text("event_type").notNull(),
+  actorKind: text("actor_kind").notNull(),                     // system|gpt-adapter|claude-adapter|reviewer|human|worker
+  actorProtectedRef: varchar("actor_protected_ref", { length: 64 }),
+  jobId: varchar("job_id"),
+  executionId: varchar("execution_id"),
+  artifactId: varchar("artifact_id"),
+  reviewId: varchar("review_id"),
+  approvalId: varchar("approval_id"),
+  pipelineKind: text("pipeline_kind"),
+  eventPayload: jsonb("event_payload").default(sql`'{}'`).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`).notNull(),
+}, (t) => [
+  uniqueIndex("orchestration_audit_log_seq_uq").on(t.seq),
+  index("orchestration_audit_log_job_time_idx").on(t.jobId, t.createdAt),
+]);
+
+// 수동 정지 장치. 무FK. scope_key=''=scope 전체. 활성 stop 은 (scope_type,scope_key) 당 최대 1개.
+export const emergencyStops = pgTable("emergency_stops", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  scopeType: text("scope_type").notNull(),                     // global|pipeline-kind|adapter|customer-source|promotion|write-action
+  scopeKey: text("scope_key").default("").notNull(),
+  reasonCode: text("reason_code").notNull(),
+  reasonSummary: text("reason_summary"),
+  active: boolean("active").default(true).notNull(),
+  activatedAt: timestamp("activated_at", { withTimezone: true }).default(sql`now()`).notNull(),
+  activatedByProtectedRef: varchar("activated_by_protected_ref", { length: 64 }),
+  releasedAt: timestamp("released_at", { withTimezone: true }), // 수동 해제 전 자동 재개 금지
+  releasedByProtectedRef: varchar("released_by_protected_ref", { length: 64 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`).notNull(),
+}, (t) => [
+  uniqueIndex("emergency_stops_active_scope_uq").on(t.scopeType, t.scopeKey).where(sql`active`),
+]);
+
+export type JobArtifact = typeof jobArtifacts.$inferSelect;
+export type InsertJobArtifact = typeof jobArtifacts.$inferInsert;
+export type JobDependencyRow = typeof jobDependencies.$inferSelect;   // cf. shared/orchestration/types.ts JobDependency(계약 인터페이스)
+export type InsertJobDependencyRow = typeof jobDependencies.$inferInsert;
+export type AutomatedReview = typeof automatedReviews.$inferSelect;
+export type InsertAutomatedReview = typeof automatedReviews.$inferInsert;
+export type HumanApproval = typeof humanApprovals.$inferSelect;
+export type InsertHumanApproval = typeof humanApprovals.$inferInsert;
+export type OrchestrationAuditLogEntry = typeof orchestrationAuditLog.$inferSelect;
+export type InsertOrchestrationAuditLogEntry = typeof orchestrationAuditLog.$inferInsert;
+export type EmergencyStopRow = typeof emergencyStops.$inferSelect;
+export type InsertEmergencyStopRow = typeof emergencyStops.$inferInsert;
