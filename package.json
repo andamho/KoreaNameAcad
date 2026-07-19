@@ -12,6 +12,7 @@
     "db:push": "drizzle-kit push",
     "test:otp": "node --import tsx/esm --test server/otpStore.test.ts",
     "test:knop": "node --import tsx/esm --test tests/knop/*.test.ts",
+    "test:queue:pg": "node --import tsx/esm --test tests/queue-pg/*.test.ts",
     "test:instagram": "node --import tsx/esm --test tests/instagram/*.test.ts"
   },
   "dependencies": {

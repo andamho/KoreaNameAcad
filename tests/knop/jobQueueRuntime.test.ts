@@ -150,15 +150,30 @@ describe("영속 작업 큐 runtime prototype", () => {
     } finally { await db.close(); }
   });
 
-  test("12. side-effect job 만료 → needs_review", async () => {
+  test("12. side-effect job 만료(adapter 시작 후) → needs_review", async () => {
     const { db, c } = await freshQ();
     try {
       const j = await createJob(c, jobInput({ jobType: "sns-publish", inputIdentity: { inputAssetHash: "v" } }));
       const r = await claimNextJob(c, "w1");
+      // adapter 실제 시작(running+started_at) 후 만료 → 부작용 발생 여부 불명 → needs_review
+      await markRunning(c, { executionId: r!.executionId, workerId: "w1", rawLeaseToken: r!.rawLeaseToken });
       await c.query(`UPDATE job_executions SET lease_expires_at = now() - interval '1 minute' WHERE id=$1`, [r!.executionId]);
       const sum = await reapExpired(c);
       assert.equal(sum.needsReview, 1);
       assert.equal((await getJob(c, j.job.id))!.status, "needs_review");
+    } finally { await db.close(); }
+  });
+
+  test("12b. side-effect job 만료(claimed·adapter 미시작) → queued/failed(needs_review 아님)", async () => {
+    const { db, c } = await freshQ();
+    try {
+      // sns-publish maxAttempts=1 → 미시작 만료는 needs_review 가 아니라 소진 failed(부작용 없었음이 증명됨)
+      const j = await createJob(c, jobInput({ jobType: "sns-publish", inputIdentity: { inputAssetHash: "w" } }));
+      const r = await claimNextJob(c, "w1"); // claimed, started_at null
+      await c.query(`UPDATE job_executions SET lease_expires_at = now() - interval '1 minute' WHERE id=$1`, [r!.executionId]);
+      const sum = await reapExpired(c);
+      assert.equal(sum.needsReview, 0, "미시작이면 needs_review 아님");
+      assert.notEqual((await getJob(c, j.job.id))!.status, "needs_review");
     } finally { await db.close(); }
   });
 
