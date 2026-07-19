@@ -1,20 +1,45 @@
-// jobQueue runtime prototype barrel. ⚠️ 이 모듈은 운영 routes/cron/worker entrypoint 에 연결하지 않는다
-// (이번 Gate = 계약+prototype+격리 테스트만). 실제 배선은 별도 adapter integration Gate.
+// jobQueue runtime prototype — public barrel(RC). ⚠️ 운영 routes/cron/worker entrypoint 에 연결하지 않는다
+// (adapter integration 은 별도 Gate). 이 barrel 은 RC 공개 표면만 노출한다.
+//
+// 비공개(테스트/내부 전용 — 필요 시 하위 경로에서 직접 import):
+//   - adapters/internalReport(internalReportAdapter): 프로토타입/테스트 전용 adapter
+//   - leaseToken(generateLeaseToken 등): 내부 helper(claim 이 직접 사용)
+//   - forced-rerun 실행: 미지원(requestForcedRerun 은 명시적 오류만)
+
+// 상태·snapshot·타입
 export * from "./types";
-export * from "./registry";
-export * from "./errorCodes";
-export * from "./idempotency";
-export * from "./leaseToken";
-export * from "./versionCheck";
-export * from "./createJob";
-export * from "./claim";
-export * from "./running";
-export * from "./heartbeat";
-export * from "./complete";
-export * from "./fail";
-export * from "./reaper";
-export * from "./rerun";
-export * from "./repository";
-export * from "./invariant";
-export { internalReportAdapter } from "./adapters/internalReport";
-export { AdapterError, type JobAdapter } from "./adapters/types";
+// jobType 정책 레지스트리(조회)
+export { jobTypePolicy, registeredJobTypes, backoffSeconds } from "./registry";
+export type { JobTypePolicy, SideEffectClass } from "./registry";
+// error code 레지스트리
+export { ERROR_CODES, isErrorCode, classOfErrorCode } from "./errorCodes";
+export type { ErrorCode } from "./errorCodes";
+// 멱등·canonical(shadow-preview 계산에도 필요)
+export {
+  canonicalStringify, sha256Hex, computeExecutionOptionsHash, computeIdempotencyKey,
+  CanonicalizationError, IDEMPOTENCY_SCHEMA_VERSION,
+} from "./idempotency";
+export type { IdempotencyParts } from "./idempotency";
+// version snapshot 검문
+export { compareVersionSnapshots } from "./versionCheck";
+// 상태 전이 연산(운영 배선은 별도 Gate)
+export { createJob, HashIdentityMismatchError } from "./createJob";
+export type { CreateJobInput, CreateJobResult } from "./createJob";
+export { claimNextJob } from "./claim";
+export { markRunning } from "./running";
+export { heartbeat } from "./heartbeat";
+export { completeExecution } from "./complete";
+export type { CompleteOutcome, CompleteResult } from "./complete";
+export { failExecution, markVersionMismatch } from "./fail";
+export type { FailOutcome, FailResult } from "./fail";
+export { reapExpired } from "./reaper";
+export type { ReapSummary } from "./reaper";
+// 조회·진단(읽기 전용)
+export { getJob, getExecution, listExecutions, activeExecution, countByStatus } from "./repository";
+export { inspectJobInvariant } from "./invariant";
+export type { InvariantViolation, InvariantReport } from "./invariant";
+// forced-rerun: 현 스키마 미지원(안 C) — 계약·오류만 공개
+export { FORCED_RERUN_SUPPORTED, ForcedRerunUnsupportedError, requestForcedRerun } from "./rerun";
+// adapter 인터페이스(계약) — 구체 adapter 는 비공개
+export { AdapterError } from "./adapters/types";
+export type { JobAdapter } from "./adapters/types";

@@ -1,44 +1,33 @@
-// forced-rerun(§retry 계약) — 같은 job 에 새 execution(executionReason='forced-rerun') 생성.
-// 기존 execution·결과 보존(덮어쓰기 금지), idempotencyKey·request snapshot 불변. run_revision 남용 안 함.
-// reprocess(입력·버전 변경)는 별도 — createJob 에 parentJobId+reprocessReason 을 주어 새 job 을 만든다(새 key).
-import type { QueueClient, ClaimResult, JobRow } from "./types";
-import { jobTypePolicy } from "./registry";
-import { generateLeaseToken } from "./leaseToken";
+// forced-rerun — 안 C(현 스키마에서 미지원, 계약만 유지).
+//
+// 배경: forced-rerun 은 "같은 job 에 새 execution(execution_reason='forced-rerun')을 만들어 재실행"하는
+// 관리자 승인 작업이다. 그러나 일반 claim 이 아닌 관리자 함수가 worker_id/lease token/lease 만료를 직접
+// 발급하면 책임 경계가 어긋난다(worker 배정·capability·SKIP LOCKED·priority 경로 우회). 부분유일 인덱스가
+// "중복 방지"는 하지만 그것이 직접 execution 생성 책임을 정당화하지는 않는다.
+//
+// 올바른 계약(향후 활성화): 요청 함수는 execution 을 만들지 않고 job 을 queued 로 되돌리며, 다음 정상 claim 이
+// execution_reason='forced-rerun' 으로 execution 을 생성해 일반 claim/lease 경로를 재사용한다. 이를 위해서는
+// jobs 에 다음 실행 이유를 보존할 컬럼(pending_execution_reason)이 필요하다(현 스키마에 없음).
+//   - 안 A: jobs.pending_execution_reason 추가(additive migration) → 다음 claim 이 해당 reason 사용. (향후)
+//   - 안 B: 별도 job_execution_intents 테이블 → 현 단계 과도, 불채택.
+//   - 안 C(채택): 현 스키마에서는 forced-rerun 실행 API 를 제공하지 않는다. 계약만 유지, additive migration 후 활성화.
+//
+// 따라서 runtime core RC 에서는 forced-rerun 실행을 명시적으로 미지원 처리한다(직접 execution 생성 금지).
 
-export async function claimForcedRerun(c: QueueClient, jobId: string, workerId: string): Promise<ClaimResult | null> {
-  await c.query("BEGIN");
-  try {
-    const picked = await c.query(`SELECT * FROM jobs WHERE id=$1 FOR UPDATE`, [jobId]);
-    const job = picked.rows[0] as JobRow | undefined;
-    if (!job) { await c.query("ROLLBACK"); return null; }
-    // forced-rerun 허용 상태(관리자 승인 작업): terminal + 검토 대기 상태. 진행 중(queued/running) 금지.
-    const ALLOWED = ["succeeded", "failed", "cancelled", "blocked", "needs_review"];
-    if (!ALLOWED.includes(job.status)) {
-      await c.query("ROLLBACK");
-      throw new Error(`forced-rerun 불가: job ${jobId} 상태=${job.status}(허용: ${ALLOWED.join("/")})`);
-    }
-    const active = await c.query(`SELECT id FROM job_executions WHERE job_id=$1 AND status IN ('claimed','running') LIMIT 1`, [jobId]);
-    if (active.rows[0]) { await c.query("ROLLBACK"); throw new Error("이미 active execution 존재"); }
+export const FORCED_RERUN_SUPPORTED = false as const;
 
-    const policy = jobTypePolicy(job.job_type);
-    const nextAttempt = ((await c.query(`SELECT COALESCE(max(attempt_number),0)::int m FROM job_executions WHERE job_id=$1`, [jobId])).rows[0].m as number) + 1;
-    const { raw, hash } = generateLeaseToken();
-    const ins = await c.query(
-      `INSERT INTO job_executions
-         (job_id, attempt_number, execution_reason, status, worker_id, lease_token_hash, leased_at, lease_expires_at, created_at)
-       VALUES ($1,$2,'forced-rerun','claimed',$3,$4, now(), now() + make_interval(secs => $5), now())
-       RETURNING id, lease_expires_at`,
-      [jobId, nextAttempt, workerId, hash, policy.leaseDurationSec],
+export class ForcedRerunUnsupportedError extends Error {
+  code = "FORCED_RERUN_UNSUPPORTED" as const;
+  constructor() {
+    super(
+      "forced-rerun 은 현재 스키마에서 미지원(안 C). jobs.pending_execution_reason additive migration 후 " +
+        "다음 정상 claim 경로로 활성화 예정 — 관리자 함수가 worker lease 를 직접 발급하지 않는다.",
     );
-    await c.query(`UPDATE jobs SET status='running', completed_at=NULL, updated_at=now() WHERE id=$1`, [jobId]);
-    await c.query("COMMIT");
-    return {
-      job, executionId: ins.rows[0].id, attemptNumber: nextAttempt,
-      rawLeaseToken: raw, leaseExpiresAt: ins.rows[0].lease_expires_at,
-      adapterInput: { jobType: job.job_type, inputIdentity: job.input_identity, executionOptions: job.execution_options, requestVersionSnapshot: job.request_version_snapshot },
-    };
-  } catch (e) {
-    await c.query("ROLLBACK").catch(() => {});
-    throw e;
+    this.name = "ForcedRerunUnsupportedError";
   }
+}
+
+// 호출 시 즉시 미지원 오류(직접 execution 생성 안 함). 시그니처는 향후 활성화 대비 유지.
+export function requestForcedRerun(_jobId: string): never {
+  throw new ForcedRerunUnsupportedError();
 }
