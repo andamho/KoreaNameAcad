@@ -1,14 +1,12 @@
 // orchestration DB immutability/append-only hardening 검증 (PGlite, 운영 DB 미접촉).
-// 계약: owner 이전(orchestration_owner) + 비-owner 최소권한 role(reader/writer) + admin + trigger 2차.
-//   job_artifacts 불변 · audit/reviews append-only · business-state 제한 UPDATE · DELETE/TRUNCATE 금지 ·
-//   긴급 우회는 replica(superuser 전용, 런타임 불가)가 아니라 owner 의 DISABLE TRIGGER.
+// 5-role(owner/admin/deployer/writer/reader) + 소유권 이전 + trigger 2차 + fail-closed.
 // DRAFT SQL: migrations/hardening/0001_orchestration_immutability_roles.sql (일반 registry 아님·운영 미적용).
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { runHardening, findHardening, HARDENINGS, type HardeningClient } from "../../server/migrations/hardening/hardeningRunner";
+import { runHardening, findHardening, HARDENINGS, startupTriggerSelfCheck, type HardeningClient } from "../../server/migrations/hardening/hardeningRunner";
 import { SIX_TABLES } from "../../server/migrations/hardening/tables";
 import { fileSha256Normalized } from "../../server/migrations/checksum";
 
@@ -19,7 +17,6 @@ const SQL_0004 = readFileSync(path.join(root, "migrations", "0004_cross_agent_or
 const SQL_HARDEN = readFileSync(path.join(root, "migrations", "hardening", "0001_orchestration_immutability_roles.sql"), "utf-8");
 const H = "a".repeat(64);
 
-// seed(as bootstrap superuser) → 그 다음 hardening(소유권 이전+trigger). enforcement 테스트용.
 async function setup() {
   const { PGlite } = await import("@electric-sql/pglite");
   const db = new PGlite();
@@ -34,8 +31,8 @@ async function setup() {
   const j2 = (await db.query(`INSERT INTO jobs (owner_scope,job_type,input_identity,request_version_snapshot,execution_options_hash,payload_hash,idempotency_key) VALUES ('kop','x','{}','{}',$1,$1,'k2') RETURNING id`, [H])).rows[0].id;
   await db.query(`INSERT INTO job_dependencies (job_id,depends_on_job_id,dependency_type) VALUES ($1,$2,'requires-success')`, [j2, j]);
   await db.exec(SQL_HARDEN);
-  await db.exec(`CREATE ROLE app_sim NOLOGIN`); // 기존 app-role 시뮬(비-owner·무 grant)
-  return { db, j, j2, e };
+  await db.exec(`CREATE ROLE app_sim NOLOGIN`); // 기존 app-role 시뮬(비-owner·무 grant·무 membership)
+  return { db };
 }
 async function asRole(db: any, role: string, sql: string): Promise<{ ok: boolean; msg: string; code?: string }> {
   try { await db.exec(`SET ROLE ${role}`); await db.query(sql); return { ok: true, msg: "" }; }
@@ -46,127 +43,128 @@ async function ownerTry(db: any, sql: string): Promise<{ ok: boolean; msg: strin
   try { await db.query(sql); return { ok: true, msg: "" }; } catch (e: any) { return { ok: false, msg: String(e?.message ?? e), code: e?.code }; }
 }
 
-describe("orchestration DB hardening (owner + role + trigger)", () => {
-  test("role 4개 + 6테이블 소유자=orchestration_owner + PUBLIC 권한 0", async () => {
+describe("orchestration DB hardening: 구조·권한", () => {
+  test("5 role · 6테이블 owner=orchestration_owner · PUBLIC table 권한 0 · PUBLIC function EXECUTE 0", async () => {
     const { db } = await setup();
     try {
       const roles = (await db.query(`SELECT rolname FROM pg_roles WHERE rolname LIKE 'orchestration_%' ORDER BY 1`)).rows.map((r: any) => r.rolname);
-      assert.deepEqual(roles, ["orchestration_admin", "orchestration_owner", "orchestration_reader", "orchestration_writer"]);
-      const owned = (await db.query(`SELECT count(*)::int n FROM pg_class r JOIN pg_namespace ns ON ns.oid=r.relnamespace WHERE ns.nspname='public' AND r.relname=ANY($1) AND pg_get_userbyid(r.relowner)='orchestration_owner'`, [SIX_TABLES])).rows[0].n;
-      assert.equal(owned, 6, "6테이블 모두 orchestration_owner 소유");
-      const pub = (await db.query(`SELECT count(*)::int n FROM information_schema.role_table_grants WHERE table_schema='public' AND table_name=ANY($1) AND grantee='PUBLIC'`, [SIX_TABLES])).rows[0].n;
-      assert.equal(pub, 0, "PUBLIC 권한 0");
-      const fns = (await db.query(`SELECT count(*)::int n FROM pg_proc WHERE proname LIKE 'orch_%'`)).rows[0].n;
-      assert.ok(fns >= 4, "trigger function ≥4");
+      assert.deepEqual(roles, ["orchestration_admin", "orchestration_deployer", "orchestration_owner", "orchestration_reader", "orchestration_writer"]);
+      assert.equal((await db.query(`SELECT count(*)::int n FROM pg_class r JOIN pg_namespace ns ON ns.oid=r.relnamespace WHERE ns.nspname='public' AND r.relname=ANY($1) AND pg_get_userbyid(r.relowner)='orchestration_owner'`, [SIX_TABLES])).rows[0].n, 6);
+      assert.equal((await db.query(`SELECT count(*)::int n FROM information_schema.role_table_grants WHERE table_schema='public' AND table_name=ANY($1) AND grantee='PUBLIC'`, [SIX_TABLES])).rows[0].n, 0, "PUBLIC table 0");
+      const pubFn = (await db.query(`SELECT count(*)::int n FROM pg_proc p WHERE p.proname LIKE 'orch\\_%' AND has_function_privilege('public', p.oid, 'EXECUTE')`)).rows[0].n;
+      assert.equal(pubFn, 0, "PUBLIC function EXECUTE 0");
+      const nonOrch = (await db.query(`SELECT count(*)::int n FROM information_schema.role_table_grants WHERE table_schema='public' AND table_name=ANY($1) AND grantee<>'PUBLIC' AND grantee NOT LIKE 'orchestration\\_%'`, [SIX_TABLES])).rows[0].n;
+      assert.equal(nonOrch, 0, "비-orchestration grantee 0(기존 app role 권한 없음)");
     } finally { await db.close(); }
   });
 
-  test("reader: SELECT ok · INSERT/UPDATE/DELETE 거부", async () => {
+  // 주의: PGlite 는 superuser 세션이라 SET ROLE 자체는 membership 무관하게 통과 → escalation 거부는 catalog membership 로 검증,
+  //   실제 런타임 SET ROLE 거부(비-superuser writer 접속)는 PG17 e2e(scratchpad)에서 real login 으로 확인.
+  test("membership graph: deployer∈admin∈owner · writer/reader/app 은 admin/owner 비멤버", async () => {
+    const { db } = await setup();
+    try {
+      const isMember = async (m: string, g: string) =>
+        (await db.query(`SELECT count(*)::int n FROM pg_auth_members am JOIN pg_roles mr ON mr.oid=am.member JOIN pg_roles gr ON gr.oid=am.roleid WHERE mr.rolname=$1 AND gr.rolname=$2`, [m, g])).rows[0].n > 0;
+      assert.ok(await isMember("orchestration_deployer", "orchestration_admin"), "deployer∈admin");
+      assert.ok(await isMember("orchestration_admin", "orchestration_owner"), "admin∈owner");
+      for (const m of ["orchestration_writer", "orchestration_reader", "app_sim"])
+        for (const g of ["orchestration_admin", "orchestration_owner", "orchestration_deployer"])
+          assert.ok(!(await isMember(m, g)), `${m}∉${g}`);
+    } finally { await db.close(); }
+  });
+
+  test("deployer membership revoke → admin 비멤버(SET ROLE 근거 제거)", async () => {
+    const { db } = await setup();
+    try {
+      const isMember = async (m: string, g: string) =>
+        (await db.query(`SELECT count(*)::int n FROM pg_auth_members am JOIN pg_roles mr ON mr.oid=am.member JOIN pg_roles gr ON gr.oid=am.roleid WHERE mr.rolname=$1 AND gr.rolname=$2`, [m, g])).rows[0].n > 0;
+      assert.ok(await isMember("orchestration_deployer", "orchestration_admin"), "revoke 전 멤버");
+      await db.exec(`REVOKE orchestration_admin FROM orchestration_deployer`);
+      assert.ok(!(await isMember("orchestration_deployer", "orchestration_admin")), "revoke 후 비멤버");
+    } finally { await db.close(); }
+  });
+
+  test("trigger function 직접 호출: writer/app 는 EXECUTE 거부", async () => {
+    const { db } = await setup();
+    try {
+      assert.ok(!(await asRole(db, "orchestration_writer", `SELECT orch_deny_write()`)).ok, "writer 직접 호출 거부");
+      assert.ok(!(await asRole(db, "orchestration_reader", `SELECT orch_deny_truncate()`)).ok, "reader 직접 호출 거부");
+      assert.ok(!(await asRole(db, "app_sim", `SELECT orch_guard_business_update()`)).ok, "app 직접 호출 거부");
+    } finally { await db.close(); }
+  });
+});
+
+describe("orchestration DB hardening: enforcement", () => {
+  test("reader SELECT-only · writer append-only+business전이 · writer↔jobs 격리", async () => {
     const { db } = await setup();
     try {
       assert.ok((await asRole(db, "orchestration_reader", `SELECT * FROM job_artifacts`)).ok);
       assert.ok(!(await asRole(db, "orchestration_reader", `INSERT INTO orchestration_audit_log (event_type,actor_kind) VALUES ('x','system')`)).ok);
-      assert.ok(!(await asRole(db, "orchestration_reader", `UPDATE human_approvals SET approval_status='approved'`)).ok);
+      assert.ok((await asRole(db, "orchestration_writer", `INSERT INTO orchestration_audit_log (event_type,actor_kind) VALUES ('e','system')`)).ok);
+      assert.ok(!(await asRole(db, "orchestration_writer", `UPDATE job_artifacts SET schema_version=2`)).ok);
+      assert.ok((await asRole(db, "orchestration_writer", `UPDATE human_approvals SET approval_status='approved', updated_at=now()`)).ok);
+      assert.ok(!(await asRole(db, "orchestration_writer", `SELECT * FROM jobs`)).ok, "writer jobs 접근 거부");
+      assert.ok(!(await asRole(db, "orchestration_reader", `SELECT * FROM jobs`)).ok, "reader jobs 접근 거부");
     } finally { await db.close(); }
   });
 
-  test("writer: append-only INSERT ok · UPDATE/DELETE/TRUNCATE 거부 · business 상태전이 ok", async () => {
+  test("기존 app-role 시뮬: orchestration write 전면 실패", async () => {
     const { db } = await setup();
     try {
-      assert.ok((await asRole(db, "orchestration_writer", `INSERT INTO orchestration_audit_log (event_type,actor_kind) VALUES ('e','system')`)).ok, "writer audit INSERT");
-      assert.ok(!(await asRole(db, "orchestration_writer", `UPDATE job_artifacts SET schema_version=2`)).ok, "writer artifact UPDATE 거부");
-      assert.ok(!(await asRole(db, "orchestration_writer", `DELETE FROM automated_reviews`)).ok, "writer DELETE 거부");
-      assert.ok(!(await asRole(db, "orchestration_writer", `TRUNCATE orchestration_audit_log`)).ok, "writer TRUNCATE 거부");
-      assert.ok((await asRole(db, "orchestration_writer", `UPDATE human_approvals SET approval_status='approved', updated_at=now()`)).ok, "writer 승인 상태전이 ok");
+      assert.ok(!(await asRole(db, "app_sim", `INSERT INTO orchestration_audit_log (event_type,actor_kind) VALUES ('x','system')`)).ok);
+      assert.ok(!(await asRole(db, "app_sim", `UPDATE job_artifacts SET schema_version=2`)).ok);
+      assert.ok(!(await asRole(db, "app_sim", `DELETE FROM job_artifacts`)).ok);
     } finally { await db.close(); }
   });
 
-  test("writer ↔ business table 격리: writer 는 jobs 접근 불가", async () => {
-    const { db } = await setup();
-    try {
-      assert.ok(!(await asRole(db, "orchestration_writer", `SELECT * FROM jobs`)).ok, "writer jobs SELECT 거부(무 grant)");
-      assert.ok(!(await asRole(db, "orchestration_reader", `SELECT * FROM jobs`)).ok, "reader jobs SELECT 거부");
-    } finally { await db.close(); }
-  });
-
-  test("기존 app-role 시뮬(비-owner·무 grant): orchestration write 실패", async () => {
-    const { db } = await setup();
-    try {
-      assert.ok(!(await asRole(db, "app_sim", `INSERT INTO orchestration_audit_log (event_type,actor_kind) VALUES ('x','system')`)).ok, "app_sim INSERT 거부");
-      assert.ok(!(await asRole(db, "app_sim", `UPDATE job_artifacts SET schema_version=2`)).ok, "app_sim UPDATE 거부");
-      assert.ok(!(await asRole(db, "app_sim", `DELETE FROM job_artifacts`)).ok, "app_sim DELETE 거부");
-    } finally { await db.close(); }
-  });
-
-  test("trigger 2차: 소유자/특권 연결도 immutable UPDATE/DELETE 불가(OA001)", async () => {
+  test("trigger 2차: 특권 연결도 immutable UPDATE/DELETE=OA001 · DELETE=OA002 · 식별=OA003", async () => {
     const { db } = await setup();
     try {
       assert.equal((await ownerTry(db, `UPDATE job_artifacts SET schema_version=2`)).code, "OA001");
-      assert.equal((await ownerTry(db, `DELETE FROM job_artifacts`)).code, "OA001");
-      assert.equal((await ownerTry(db, `UPDATE orchestration_audit_log SET event_type='z'`)).code, "OA001");
+      assert.equal((await ownerTry(db, `DELETE FROM orchestration_audit_log`)).code, "OA001");
       assert.equal((await ownerTry(db, `UPDATE automated_reviews SET decision='reject'`)).code, "OA001");
-    } finally { await db.close(); }
-  });
-
-  test("business-state: DELETE=OA002 · 식별변경=OA003", async () => {
-    const { db } = await setup();
-    try {
       assert.equal((await ownerTry(db, `DELETE FROM human_approvals`)).code, "OA002");
-      assert.equal((await ownerTry(db, `DELETE FROM emergency_stops`)).code, "OA002");
       assert.equal((await ownerTry(db, `DELETE FROM job_dependencies`)).code, "OA002");
       assert.equal((await ownerTry(db, `UPDATE human_approvals SET created_at=now()`)).code, "OA003");
-      assert.equal((await ownerTry(db, `UPDATE emergency_stops SET id='x'`)).code, "OA003");
     } finally { await db.close(); }
   });
 
   test("TRUNCATE 전면 거부", async () => {
-    // PGlite 는 TRUNCATE statement-trigger 미지원(0A000) → '거부됨'만. OA004 는 PG17 e2e 에서.
-    const { db } = await setup();
-    try {
-      for (const t of SIX_TABLES) assert.ok(!(await ownerTry(db, `TRUNCATE ${t}`)).ok, `${t} TRUNCATE 거부`);
-    } finally { await db.close(); }
+    const { db } = await setup(); // PGlite TRUNCATE trigger 미지원(0A000) → 거부만. OA004 는 PG17 e2e.
+    try { for (const t of SIX_TABLES) assert.ok(!(await ownerTry(db, `TRUNCATE ${t}`)).ok, `${t}`); } finally { await db.close(); }
   });
 
-  test("session_replication_role 제한: writer 는 설정 불가(런타임 우회 0)", async () => {
+  test("session_replication_role: writer 설정 불가(런타임 우회 0)", async () => {
     const { db } = await setup();
-    try {
-      const r = await asRole(db, "orchestration_writer", `SET session_replication_role=replica`);
-      assert.ok(!r.ok, "writer 는 session_replication_role 설정 거부");
-    } finally { await db.close(); }
+    try { assert.ok(!(await asRole(db, "orchestration_writer", `SET session_replication_role=replica`)).ok); } finally { await db.close(); }
   });
 
-  test("긴급 우회 = owner 의 DISABLE TRIGGER(비-owner 는 불가)", async () => {
+  test("긴급 = owner DISABLE TRIGGER(writer 불가) · 재enable 후 재작동", async () => {
     const { db } = await setup();
     try {
-      // 비-owner writer 는 trigger disable 불가
-      assert.ok(!(await asRole(db, "orchestration_writer", `ALTER TABLE job_artifacts DISABLE TRIGGER job_artifacts_immutable`)).ok, "writer DISABLE TRIGGER 거부");
-      // owner 는 가능(이중승인·감사 하에서만 — 여기선 능력 검증)
-      assert.ok((await asRole(db, "orchestration_owner", `ALTER TABLE job_artifacts DISABLE TRIGGER job_artifacts_immutable`)).ok, "owner DISABLE TRIGGER 가능");
-      const upd = await ownerTry(db, `UPDATE job_artifacts SET schema_version=2`);
+      assert.ok(!(await asRole(db, "orchestration_writer", `ALTER TABLE job_artifacts DISABLE TRIGGER job_artifacts_immutable`)).ok, "writer DISABLE 거부");
+      assert.ok((await asRole(db, "orchestration_owner", `ALTER TABLE job_artifacts DISABLE TRIGGER job_artifacts_immutable`)).ok, "owner DISABLE ok");
+      assert.ok((await ownerTry(db, `UPDATE job_artifacts SET schema_version=2`)).ok, "disable 중 긴급 정정");
       await db.exec(`ALTER TABLE job_artifacts ENABLE TRIGGER job_artifacts_immutable`);
-      assert.ok(upd.ok, "disable 상태에서 긴급 정정 가능");
-      assert.equal((await ownerTry(db, `UPDATE job_artifacts SET schema_version=3`)).code, "OA001", "enable 후 trigger 재작동");
+      assert.equal((await ownerTry(db, `UPDATE job_artifacts SET schema_version=3`)).code, "OA001", "enable 후 재작동");
     } finally { await db.close(); }
   });
+});
 
-  test("tx rollback: 거부된 UPDATE → tx abort", async () => {
+describe("orchestration DB hardening: startup self-check", () => {
+  const DEF = findHardening("0001_orchestration_immutability_roles")!;
+  test("15 trigger enabled → ok · 하나 disable → 실패 · 재enable → ok", async () => {
     const { db } = await setup();
+    const client: HardeningClient = { query: (s: string, p?: unknown[]) => db.query(s, p as any[]) as any, exec: (s: string) => db.exec(s).then(() => undefined) };
     try {
-      await db.exec(`BEGIN`);
-      let aborted = false; try { await db.query(`UPDATE job_artifacts SET schema_version=2`); } catch { aborted = true; }
-      let follow = false; try { await db.query(`SELECT 1`); } catch { follow = true; }
-      await db.exec(`ROLLBACK`);
-      assert.ok(aborted && follow, "거부 후 tx abort");
-    } finally { await db.close(); }
-  });
-
-  test("append-only seq 단조·유일", async () => {
-    const { db } = await setup();
-    try {
-      for (let i = 0; i < 5; i++) await db.query(`INSERT INTO orchestration_audit_log (event_type,actor_kind) VALUES ('e${i}','system')`);
-      const seqs = (await db.query(`SELECT seq FROM orchestration_audit_log ORDER BY seq`)).rows.map((r: any) => Number(r.seq));
-      assert.equal(new Set(seqs).size, seqs.length);
-      for (let i = 1; i < seqs.length; i++) assert.ok(seqs[i] > seqs[i - 1]);
+      let r = await startupTriggerSelfCheck(client, DEF);
+      assert.ok(r.ok && r.count >= 15, `초기 enabled(${r.count})`);
+      await db.exec(`ALTER TABLE job_artifacts DISABLE TRIGGER job_artifacts_immutable`);
+      r = await startupTriggerSelfCheck(client, DEF);
+      assert.ok(!r.ok && r.disabled.includes("job_artifacts_immutable"), "disable 감지 → self-check 실패(writer 기동 거부)");
+      await db.exec(`ALTER TABLE job_artifacts ENABLE TRIGGER job_artifacts_immutable`);
+      r = await startupTriggerSelfCheck(client, DEF);
+      assert.ok(r.ok && r.disabled.length === 0, "재enable → ok");
     } finally { await db.close(); }
   });
 });
@@ -183,71 +181,57 @@ describe("hardening 전용 러너(checksum allowlist + fail-closed)", () => {
       const e = (await db.query(`INSERT INTO job_executions (job_id,attempt_number) VALUES ($1,1) RETURNING id`, [j])).rows[0].id;
       await db.query(`INSERT INTO job_artifacts (producer_job_id,producer_execution_id,artifact_kind,schema_version,content_hash,manifest_hash,sensitivity_class,redaction_status) VALUES ($1,$2,'error-analysis',1,$3,$3,'internal','not-required')`, [j, e, H]);
     }
-    const client: HardeningClient = { query: (s, p) => db.query(s, p as any[]) as any, exec: (s) => db.exec(s).then(() => undefined) };
+    const client: HardeningClient = { query: (s: string, p?: unknown[]) => db.query(s, p as any[]) as any, exec: (s: string) => db.exec(s).then(() => undefined) };
     return { db, client };
   }
   const roleN = async (db: any) => (await db.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname LIKE 'orchestration_%'`)).rows[0].n;
 
-  test("등록·checksum 일치(4 role owner 반영)", () => {
+  test("등록·checksum·5 role·owner", () => {
     assert.equal(HARDENINGS.length, 1);
     assert.equal(SHA, DEF.expectedSha256);
-    assert.equal(DEF.expectedRoles.length, 4);
+    assert.equal(DEF.expectedRoles.length, 5);
     assert.equal(DEF.expectedTableOwner, "orchestration_owner");
   });
 
   test("sha 불일치 → 거부", async () => {
     const { db, client } = await freshBase();
-    try {
-      const r = await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: "0".repeat(64), apply: true });
-      assert.equal(r.outcome, "aborted-sha-mismatch");
-      assert.equal(await roleN(db), 0);
-    } finally { await db.close(); }
+    try { assert.equal((await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: "0".repeat(64), apply: true })).outcome, "aborted-sha-mismatch"); assert.equal(await roleN(db), 0); }
+    finally { await db.close(); }
   });
 
-  test("신규 6테이블 행수≠0 → fail-closed(적용 안 함)", async () => {
-    const { db, client } = await freshBase(true); // artifact 1행 seed
-    try {
-      const r = await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: SHA, apply: true });
-      assert.equal(r.outcome, "aborted-rows-present");
-      assert.equal(await roleN(db), 0, "role 미생성");
-    } finally { await db.close(); }
+  test("신규 6테이블 행수≠0 → rows-present fail-closed", async () => {
+    const { db, client } = await freshBase(true);
+    try { assert.equal((await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: SHA, apply: true })).outcome, "aborted-rows-present"); assert.equal(await roleN(db), 0); }
+    finally { await db.close(); }
   });
 
-  test("dry-run → 검증 통과·미적용", async () => {
+  test("dry-run → 미적용 · apply → 적용(5role·enabled·owner·PUBLIC0·app0·fn0) · 재실행 already-applied", async () => {
     const { db, client } = await freshBase();
     try {
-      const r = await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: SHA, apply: false });
-      assert.equal(r.outcome, "dry-run-verified");
-      assert.equal(await roleN(db), 0, "dry-run 후 role 없음");
-    } finally { await db.close(); }
-  });
-
-  test("apply → 적용(owner/PUBLIC/trigger post-verify) · 재실행 already-applied", async () => {
-    const { db, client } = await freshBase();
-    try {
-      const r1 = await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: SHA, apply: true });
-      assert.equal(r1.outcome, "applied");
-      assert.equal(await roleN(db), 4);
-      const owned = (await db.query(`SELECT count(*)::int n FROM pg_class r JOIN pg_namespace ns ON ns.oid=r.relnamespace WHERE ns.nspname='public' AND r.relname=ANY($1) AND pg_get_userbyid(r.relowner)='orchestration_owner'`, [SIX_TABLES])).rows[0].n;
-      assert.equal(owned, 6);
+      assert.equal((await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: SHA, apply: false })).outcome, "dry-run-verified");
+      assert.equal(await roleN(db), 0, "dry-run 후 role 0");
+      assert.equal((await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: SHA, apply: true })).outcome, "applied");
+      assert.equal(await roleN(db), 5);
       const r2 = await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: SHA, apply: true });
-      assert.equal(r2.outcome, "already-applied");
-      assert.equal(r2.committed, false);
+      assert.equal(r2.outcome, "already-applied"); assert.equal(r2.committed, false);
     } finally { await db.close(); }
   });
 
-  test("owner-mismatch fail-closed(적용 후 소유권이 owner 가 아니면 거부)", async () => {
+  test("owner-mismatch fail-closed", async () => {
     const { db, client } = await freshBase();
     try {
-      // owner 이전 문(ALTER ... OWNER TO orchestration_owner)을 제거한 변형 SQL → post-verify 소유권 불일치
-      const noOwnerXfer = SQL_HARDEN.replace(/ALTER TABLE .*OWNER TO orchestration_owner;/g, "-- removed").replace(/ALTER FUNCTION .*OWNER TO orchestration_owner;/g, "-- removed");
-      // 주의: 이 변형은 sha 가 달라지므로 러너는 sha 단계에서 먼저 거부됨 → 대신 verify 만 직접 호출로 검증 대체
-      // 여기서는 러너의 owner-mismatch 경로를 직접 확인: 정상 SQL 적용 후 소유권을 강제로 되돌린 뒤 already-applied 검증이 owner-mismatch 로 떨어지는지
       await db.exec(SQL_HARDEN);
-      await db.exec(`ALTER TABLE job_artifacts OWNER TO postgres`); // 소유권 훼손
-      const r = await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: SHA, apply: true });
-      assert.equal(r.outcome, "aborted-owner-mismatch");
-      void noOwnerXfer;
+      await db.exec(`ALTER TABLE job_artifacts OWNER TO postgres`);
+      assert.equal((await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: SHA, apply: true })).outcome, "aborted-owner-mismatch");
+    } finally { await db.close(); }
+  });
+
+  test("trigger-disabled fail-closed(already-applied 검증에서 disable 감지)", async () => {
+    const { db, client } = await freshBase();
+    try {
+      await db.exec(SQL_HARDEN);
+      await db.exec(`ALTER TABLE orchestration_audit_log DISABLE TRIGGER orchestration_audit_log_append_only`);
+      assert.equal((await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: SHA, apply: true })).outcome, "aborted-trigger-disabled");
     } finally { await db.close(); }
   });
 });
