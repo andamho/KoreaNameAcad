@@ -1,0 +1,5 @@
+# internal-report 렌더러(server/knop/py/render_pdf.py) Python 의존성 고정.
+# 실행 환경: 로컬 report-sync 머신 전용(Railway 배포 서버는 폴더 없어 no-op).
+# 실제 확인 버전(2026-07-19, video-caption-bot/venv): pymupdf 1.28.0 (MuPDF 1.29.0).
+# 재현성: 이 버전에서 render_pdf.py 4x(≈288DPI) 렌더가 검증됨. drift 방지 위해 == 고정.
+PyMuPDF==1.28.0

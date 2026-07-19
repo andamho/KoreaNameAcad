@@ -1,0 +1,278 @@
+{
+  "_note": "job_shadow_previews 구조 fingerprint(0003). FK 0(worker queue 물리분리). NOT NULL 은 is_nullable, 제약목록 PK/UNIQUE/FK/CHECK.",
+  "columnCount": 23,
+  "fkCount": 0,
+  "constraints": [
+    {
+      "tbl": "job_shadow_previews",
+      "conname": "job_shadow_previews_execopts_hex",
+      "contype": "c",
+      "def": "CHECK (((execution_options_hash)::text ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "tbl": "job_shadow_previews",
+      "conname": "job_shadow_previews_obshash_hex",
+      "contype": "c",
+      "def": "CHECK (((observation_hash)::text ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "tbl": "job_shadow_previews",
+      "conname": "job_shadow_previews_payload_hex",
+      "contype": "c",
+      "def": "CHECK (((payload_hash)::text ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "tbl": "job_shadow_previews",
+      "conname": "job_shadow_previews_pipeline_hex",
+      "contype": "c",
+      "def": "CHECK (((observed_pipeline_hash)::text ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "tbl": "job_shadow_previews",
+      "conname": "job_shadow_previews_prospective_hex",
+      "contype": "c",
+      "def": "CHECK (((prospective_idempotency_key)::text ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "tbl": "job_shadow_previews",
+      "conname": "job_shadow_previews_source_ref_hex",
+      "contype": "c",
+      "def": "CHECK (((source_record_ref)::text ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "tbl": "job_shadow_previews",
+      "conname": "job_shadow_previews_validation_ck",
+      "contype": "c",
+      "def": "CHECK ((validation_status = ANY (ARRAY['valid'::text, 'invalid'::text])))"
+    },
+    {
+      "tbl": "job_shadow_previews",
+      "conname": "job_shadow_previews_pkey",
+      "contype": "p",
+      "def": "PRIMARY KEY (id)"
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "job_shadow_previews",
+      "indexname": "job_shadow_previews_observation_uq",
+      "indexdef": "CREATE UNIQUE INDEX job_shadow_previews_observation_uq ON public.job_shadow_previews USING btree (observation_hash)"
+    },
+    {
+      "tablename": "job_shadow_previews",
+      "indexname": "job_shadow_previews_observed_idx",
+      "indexdef": "CREATE INDEX job_shadow_previews_observed_idx ON public.job_shadow_previews USING btree (observed_at)"
+    },
+    {
+      "tablename": "job_shadow_previews",
+      "indexname": "job_shadow_previews_pkey",
+      "indexdef": "CREATE UNIQUE INDEX job_shadow_previews_pkey ON public.job_shadow_previews USING btree (id)"
+    },
+    {
+      "tablename": "job_shadow_previews",
+      "indexname": "job_shadow_previews_prospective_idx",
+      "indexdef": "CREATE INDEX job_shadow_previews_prospective_idx ON public.job_shadow_previews USING btree (prospective_idempotency_key)"
+    },
+    {
+      "tablename": "job_shadow_previews",
+      "indexname": "job_shadow_previews_provenance_idx",
+      "indexdef": "CREATE INDEX job_shadow_previews_provenance_idx ON public.job_shadow_previews USING btree (provenance_complete)"
+    },
+    {
+      "tablename": "job_shadow_previews",
+      "indexname": "job_shadow_previews_source_idx",
+      "indexdef": "CREATE INDEX job_shadow_previews_source_idx ON public.job_shadow_previews USING btree (source_record_ref, source_ref_key_version)"
+    },
+    {
+      "tablename": "job_shadow_previews",
+      "indexname": "job_shadow_previews_status_idx",
+      "indexdef": "CREATE INDEX job_shadow_previews_status_idx ON public.job_shadow_previews USING btree (source_status)"
+    }
+  ],
+  "columns": [
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "preview_schema_version",
+      "data_type": "integer",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "source_domain",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "source_record_ref",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "source_ref_key_version",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "observation_kind",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "job_type",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "owner_scope",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "project_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "prospective_idempotency_key",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "payload_hash",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "execution_options_hash",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "request_version_snapshot",
+      "data_type": "jsonb",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "observed_pipeline_hash",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "renderer_library_version",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "source_status",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "validation_status",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "validation_error_codes",
+      "data_type": "jsonb",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "provenance_complete",
+      "data_type": "boolean",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "historical_execution_version_known",
+      "data_type": "boolean",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "observed_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "observation_hash",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "job_shadow_previews",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    }
+  ]
+}
