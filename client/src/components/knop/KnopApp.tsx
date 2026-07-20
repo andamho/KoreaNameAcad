@@ -199,7 +199,7 @@ function TodayView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void })
 // 보드 6단계 — 서버 stateMachine.ts 의 MILESTONE_OF/MILESTONE_ENTRY 와 순서·개수 일치 필수
 const MILESTONES = ["상담", "개명신청", "새이름", "법원접수", "개명승인", "중간관리"];
 const MILESTONE_ENTRY = ["이름분석 상담 완료", "개명의뢰 접수", "새 이름 상담 완료", "개명 신청 완료", "법원 허가 완료", "장기관리"];
-const PHONE_MILESTONE = 2; // ☎전번(선택) 표시가 붙는 자리 = '새이름'
+const PHONE_MILESTONE = 1; // ☎전번(선택) 표시가 붙는 자리 = '개명신청'
 const TEAL = "#1D9E75";
 const GRID = { gridTemplateColumns: `160px repeat(${MILESTONES.length}, 1fr)` } as const;
 function codeMonth(code: string | null): string {
@@ -221,8 +221,9 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
 
   const { data: board, isLoading } = useQuery({ queryKey: ["knop-board"], queryFn: () => knopApi.customerBoard() });
   const advance = useMutation({
-    mutationFn: ({ projectId, toStatus }: { projectId: string; toStatus: string }) =>
-      knopApi.advanceStatus(projectId, toStatus),
+    // force=true 면 뒤 단계로도 되돌릴 수 있다(잘못 찍은 단계 수정용)
+    mutationFn: ({ projectId, toStatus, force }: { projectId: string; toStatus: string; force?: boolean }) =>
+      knopApi.advanceStatus(projectId, toStatus, !!force),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["knop-board"] }),
     onError: (e: Error) => toast({ title: "진행 불가", description: e.message, variant: "destructive" }),
   });
@@ -369,13 +370,34 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
             const cur = i === c.milestone;
             const leftLine = i === 0 ? "transparent" : i <= c.milestone ? TEAL : "#e5e7eb";
             const rightLine = i === last ? "transparent" : i < c.milestone ? TEAL : "#e5e7eb";
-            const clickable = !!c.projectId && i > c.milestone;
+            // 모든 단계를 클릭해 체크(진행)하거나 되돌리기(수정)할 수 있다
+            const hasProject = !!c.projectId;
+            const forward = i > c.milestone;
+            const backward = i < c.milestone;
+            const clickable = hasProject && (forward || backward);
+            const onDot = () => {
+              if (!hasProject) return onOpenCustomer(c.id);
+              if (forward) return advance.mutate({ projectId: c.projectId!, toStatus: MILESTONE_ENTRY[i] });
+              if (backward) {
+                if (window.confirm(`${cleanName(c.name)} 님을 '${MILESTONES[i]}' 단계로 되돌릴까요?`)) {
+                  advance.mutate({ projectId: c.projectId!, toStatus: MILESTONE_ENTRY[i], force: true });
+                }
+                return;
+              }
+              onOpenCustomer(c.id); // 현재 단계를 누르면 고객 상세로
+            };
             return (
               <div
                 key={i}
                 role="button"
-                title={clickable ? `${MILESTONES[i]} 단계로 진행` : ""}
-                onClick={() => (clickable ? advance.mutate({ projectId: c.projectId!, toStatus: MILESTONE_ENTRY[i] }) : onOpenCustomer(c.id))}
+                title={
+                  forward
+                    ? `${MILESTONES[i]} 단계로 진행`
+                    : backward
+                      ? `${MILESTONES[i]} 단계로 되돌리기(수정)`
+                      : "현재 단계 · 클릭하면 고객 상세"
+                }
+                onClick={onDot}
                 className="relative h-7 flex items-center justify-center group"
                 style={{ cursor: clickable ? "pointer" : "default" }}
               >
@@ -391,7 +413,15 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                     boxShadow: cur ? "0 0 0 4px #E1F5EE" : "none",
                   }}
                 />
-                {clickable && <span className="absolute -bottom-1 opacity-0 group-hover:opacity-100 text-[9px] text-[#2ba0a6]">＋</span>}
+                {clickable && (
+                  <span
+                    className={`absolute -bottom-1 opacity-0 group-hover:opacity-100 text-[9px] ${
+                      forward ? "text-[#2ba0a6]" : "text-gray-400"
+                    }`}
+                  >
+                    {forward ? "＋" : "↺"}
+                  </span>
+                )}
                 {/* 새이름 점 아래에 전번 체크박스: 절대위치라 점은 다른 것과 같은 선 유지 */}
                 {i === PHONE_MILESTONE && (
                   <button
