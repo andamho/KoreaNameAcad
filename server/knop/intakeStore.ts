@@ -1,7 +1,7 @@
 // 문자→달력 자동등록: 안드로이드 문자전달 앱이 보낸 수신 문자 누적 + 스레드 그룹핑
 import { db } from "../db";
 import { DatabaseError } from "../storage";
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte } from "drizzle-orm";
 import { incomingSms, type IncomingSms, type InsertIncomingSms } from "@shared/schema";
 import { normalizePhone } from "@shared/schema";
 
@@ -25,23 +25,43 @@ export type SmsThread = {
 };
 
 export const intakeStore = {
-  // 수신 문자 1건 저장 (웹훅)
+  // 문자 1건 저장 (웹훅/가져오기). 수신·발신 모두 사용.
+  // 같은 번호·방향·본문이 ±2분 안에 이미 있으면 새로 넣지 않고 기존 것을 돌려준다
+  // → 매크로 재전송이나 과거 문자 백필을 여러 번 돌려도 중복이 쌓이지 않음.
   async add(input: InsertIncomingSms): Promise<IncomingSms> {
     const d = requireDb();
     try {
+      const phone = normalizePhone(input.phone) || input.phone;
+      const direction = input.direction ?? "수신";
+      const at = input.receivedAt ? new Date(input.receivedAt) : new Date();
+      const [dup] = await d
+        .select()
+        .from(incomingSms)
+        .where(
+          and(
+            eq(incomingSms.phone, phone),
+            eq(incomingSms.body, input.body),
+            eq(incomingSms.direction, direction),
+            gte(incomingSms.receivedAt, new Date(at.getTime() - 120_000)),
+            lte(incomingSms.receivedAt, new Date(at.getTime() + 120_000)),
+          ),
+        )
+        .limit(1);
+      if (dup) return dup;
+
       const [row] = await d
         .insert(incomingSms)
         .values({
           contactName: input.contactName ?? null,
-          phone: normalizePhone(input.phone) || input.phone,
+          phone,
           body: input.body,
-          direction: input.direction ?? "수신",
-          receivedAt: input.receivedAt ? new Date(input.receivedAt) : new Date(),
+          direction,
+          receivedAt: at,
         })
         .returning();
       return row;
     } catch (e) {
-      fail("문자 수신 저장", e);
+      fail("문자 저장", e);
     }
   },
 
