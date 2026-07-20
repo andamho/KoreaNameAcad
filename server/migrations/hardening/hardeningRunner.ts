@@ -24,7 +24,7 @@ export const HARDENINGS: HardeningDef[] = [
   {
     id: "0001_orchestration_immutability_roles",
     sqlFile: "0001_orchestration_immutability_roles.sql",
-    expectedSha256: "c6fe354ecc320df4259b397847672f23addcbfe86785891cc5c60051a73a88a3",
+    expectedSha256: "a4a80dbbb8a65c03e2a2ba1114880e2f7ba658910d22c03f4a6bf8df50993b35",
     expectedRoles: ["orchestration_admin", "orchestration_deployer", "orchestration_owner", "orchestration_reader", "orchestration_writer"],
     expectedTriggerCount: 15,
     expectedFunctions: ["orch_deny_write", "orch_deny_delete", "orch_guard_business_update", "orch_deny_truncate"],

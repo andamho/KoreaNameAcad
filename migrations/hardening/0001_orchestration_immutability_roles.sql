@@ -14,10 +14,13 @@
 --   orchestration_reader  : LOGIN, 비소유자. SELECT.
 -- 실제 migration 실행 주체 = orchestration_deployer LOGIN → SET ROLE orchestration_admin (admin 이 스스로 접속하지 않음).
 --
--- ⚠️ 소유권 이전(ALTER ... OWNER TO orchestration_owner) 전제: 실행 role 이 (현재 owner) 이면서 (orchestration_owner 멤버) 여야 함.
---    apply Gate Phase 2 에서: GRANT <현재 owner role> TO orchestration_deployer; GRANT orchestration_owner TO orchestration_deployer;
---    → deployer 로 실행 → 완료 후 REVOKE <현재 owner role> FROM orchestration_deployer. (정적 SQL 은 현재 owner 이름을 모르므로 Gate 가 처리.)
---    ALTER DEFAULT PRIVILEGES FOR ROLE orchestration_owner 는 orchestration_owner 멤버(=admin, deployer via admin)로 실행.
+-- ⚠️ 소유권 이전 bootstrap = **A 채택**(B 는 Reject: deployer 가 기존 app role 권한을 상속하는 privilege explosion).
+--    이 SQL 은 **현재 6테이블 owner 인 기존 app/migration-owner 연결**로 실행한다. Gate 가 앞뒤로 다음을 처리:
+--      (사전) GRANT orchestration_owner TO <현재 owner role>;   ← 허용: 현재 owner 가 잠시 orchestration_owner 의 member
+--      (사후) REVOKE orchestration_owner FROM <현재 owner role>; + 회수 확인(잔여 membership 0)
+--    ❌ 금지: GRANT <기존 app role> TO orchestration_deployer (= B) · GRANT <기존 app role> TO orchestration_owner
+--    (정적 SQL 은 현재 owner 이름을 모르므로 위 GRANT/REVOKE 는 apply Gate 가 수행한다.)
+--    ALTER DEFAULT PRIVILEGES FOR ROLE orchestration_owner 는 orchestration_owner 멤버로 실행(위 사전 GRANT 상태에서 가능).
 --
 -- 검증된 PG17 능력: CREATE ROLE NOLOGIN/LOGIN·membership·ALTER TABLE/FUNCTION OWNER TO NOLOGIN·SET ROLE·컬럼 UPDATE·
 --   identity INSERT(시퀀스 grant 불요)·trigger 발화(EXECUTE grant 불요)·PUBLIC REVOKE=0.

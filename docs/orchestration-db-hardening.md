@@ -69,11 +69,35 @@ job_artifacts/automated_reviews/orchestration_audit_log=immutable/append-only. h
 ## 11. trigger/function 구조 (약화 금지) — 공용 4 function + 테이블별 15 trigger 유지
 공용 function(orch_deny_write/deny_delete/guard_business_update/deny_truncate) + 테이블별 trigger. privilege-only(무 trigger)는 owner/특권 우회로 **불충분** → 유지. 보안 낮추는 단순화 금지.
 
-## 12. migration 원자성 & 단계 복구
-Phase1(role 5개; deployer/writer/reader=LOGIN, credential 은 secret store 별도) → Phase2(REVOKE PUBLIC/app → 최소 GRANT → trigger fn/trigger → **ownership 이전**(전제: 실행 role 이 현재 owner+owner 멤버; Gate 가 GRANT/REVOKE 로 처리) → default privileges; **단일 tx**) → Phase3(별도 연결 capability + 기존 app write 실패 검증) → Phase4(adapter 미배선 종료·런타임 writer 전환). **role 생성+credential provisioning 은 한 tx 로 완전 rollback 안 될 수 있음** → Phase1(role) / Phase2(구조) 분리, 부분 실패 시 **DROP OWNED → DROP ROLE** 정리 절차.
+## 12. ownership transfer bootstrap — **A 채택 / B Reject**
+| 방식 | 내용 | 판정 |
+|---|---|---|
+| **A** | **현재 owner(기존 app/migration-owner) 연결이 직접** 소유권 이전 후 **임시 membership 즉시 회수** | **채택(기본)** |
+| B | deployer 에 **기존 app role membership** 부여 | **Reject** — app role 의 CRM·업무 테이블 광범위 권한을 deployer 가 상속 → **privilege explosion**, hardening 범위 초과 |
+| C | Neon 관리 계정이 transfer 수행 | 대안(A 불가 시) — 별도 위험/승인 보고 |
+
+**A 절차(정확한 순서)**
+1. 현재 6테이블 owner 인 **기존 app/migration-owner 연결**로 시작
+2. `orchestration_owner` **NOLOGIN** 생성
+3. **현재 owner 를 `orchestration_owner` 의 임시 member 로 추가**
+4. 6테이블 소유권 → `orchestration_owner` 이전
+5. 4개 trigger function 소유권 → `orchestration_owner` 이전
+6. **현재 owner 의 `orchestration_owner` membership 즉시 REVOKE**
+7. **membership 회수 확인**(잔여 0)
+8. 기존 app role 의 신규 6테이블 **explicit privilege 전부 REVOKE**
+9. 기존 app role 이 **owner/admin/deployer 의 member 가 아님** 확인
+10. 이후 관리 경로는 **deployer → admin → owner** 로만 제한
+
+**방향 혼동 금지**
+- ✅ 허용: **기존 app owner 가 잠시 `orchestration_owner` 의 member** 가 됨(권한 범위가 하드닝 대상 안에 갇힘)
+- ❌ 금지: **deployer 가 기존 app role 의 member** 가 됨(= B, privilege explosion)
+- ❌ 금지: **`orchestration_owner` 가 기존 app role 의 member** 가 됨
+
+## 12b. migration 원자성 & 단계 복구
+Phase1(role 5개; deployer/writer/reader=LOGIN, credential 은 secret store 별도) → Phase2(REVOKE PUBLIC/app → 최소 GRANT → trigger fn/trigger → **ownership 이전(§12 A 절차)** → default privileges; **단일 tx**) → Phase3(별도 연결 capability + 기존 app write 실패 검증) → Phase4(adapter 미배선 종료·런타임 writer 전환). **role 생성+credential provisioning 은 한 tx 로 완전 rollback 안 될 수 있음** → Phase1(role) / Phase2(구조) 분리, 부분 실패 시 **DROP OWNED → DROP ROLE** 정리 절차(빈 role 이 아니면 DROP ROLE 은 2BP01 로 실패).
 
 ## 13. hardeningRunner fail-closed (보강)
-exact sha256 allowlist `c6fe354e…` + host pin + 아래 하나라도 불일치 → 미적용/ROLLBACK:
+exact sha256 allowlist `a4a80dbb…` + host pin + 아래 하나라도 불일치 → 미적용/ROLLBACK:
 role 부재(pre)/**5개**(post) · **trigger ≥15 & 전부 enabled**(aborted-trigger-disabled) · function 4 · **owner=orchestration_owner**(owner-mismatch) · **PUBLIC table 0**(public-privilege) · **비-orchestration grantee 0**(app-privilege) · **PUBLIC function EXECUTE 0**(function-public) · **신규 6테이블 행수 0**(rows-present) · already-applied. `startupTriggerSelfCheck` export(앱 부팅 시 15 trigger enabled 확인). 범용 additive 스캐너 불변.
 
 ## 14. 검증 결과
