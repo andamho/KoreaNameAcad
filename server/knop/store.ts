@@ -638,7 +638,7 @@ export const knopStore = {
       const hasProject = new Set(projs.map((p) => p.customerId));
       let created = 0;
       for (const c of all) {
-        if (hasProject.has(c.id)) continue;
+        if (hasProject.has(c.id) || c.deletedAt) continue; // 휴지통 고객은 케이스 생성 안 함
         const isRenamed = c.kind === "개명";
         const status = isRenamed ? "새 이름 상담 완료" : "상담 신청";
         const type = isRenamed ? "개인 개명" : "이름분석";
@@ -1622,14 +1622,18 @@ export const knopStore = {
 let _kindTimer: NodeJS.Timeout | null = null;
 export function startKindSyncScheduler() {
   if (_kindTimer) return;
-  const run = () =>
-    knopStore
-      .syncKinds()
-      .then((r) => {
-        if (r.updated) console.log(`[KNOP] 구분 자동판정: ${r.updated}명 갱신 (개명 ${r.개명} · 상담 ${r.상담} · 전번 ${r.전번})`);
-      })
-      .catch((e: any) => console.error(`[KNOP] 구분 자동판정 실패: ${e?.message}`));
-  console.log("[KNOP] 개명/상담 구분 자동판정 스케줄러 시작 (10분 간격)");
+  const run = async () => {
+    try {
+      const r = await knopStore.syncKinds();
+      if (r.updated) console.log(`[KNOP] 구분 자동판정: ${r.updated}명 갱신 (개명 ${r.개명} · 상담 ${r.상담} · 전번 ${r.전번})`);
+      // 케이스(프로젝트) 없는 고객은 보드에서 단계를 못 누르므로 같이 보장한다
+      const e = await knopStore.ensureCasesForAll();
+      if (e.created) console.log(`[KNOP] 케이스 자동생성: ${e.created}건`);
+    } catch (e: any) {
+      console.error(`[KNOP] 구분/케이스 자동판정 실패: ${e?.message}`);
+    }
+  };
+  console.log("[KNOP] 개명/상담 구분·케이스 자동판정 스케줄러 시작 (10분 간격)");
   setTimeout(run, 20_000); // 서버 기동 20초 후 1회
   _kindTimer = setInterval(run, 10 * 60_000);
 }
