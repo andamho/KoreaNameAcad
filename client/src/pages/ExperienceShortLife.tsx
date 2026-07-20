@@ -500,6 +500,11 @@ export default function ExperienceShortLife() {
           <div className="pt-16">
           <div className="space-y-3">
             <h2 className="text-xl font-bold text-foreground">단명을 만드는 수리운</h2>
+            <div className="space-y-1 pb-1">
+              <p className="text-base text-foreground font-semibold leading-relaxed">죽음은 모든 것을 무릎 꿇립니다.</p>
+              <p className="text-base text-muted-foreground leading-relaxed">어떤 흉운도 결국 죽음 아래에 있습니다.</p>
+              <p className="text-base text-muted-foreground leading-relaxed">단명수가 이름 속 가장 강한 흉운인 이유입니다.</p>
+            </div>
             <div className="grid grid-cols-4 gap-3">
               {DANGER.map(n => (
                 <div key={n} className="rounded-2xl border border-red-400/20 bg-red-400/5 p-4 text-center space-y-1.5">
