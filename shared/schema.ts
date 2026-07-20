@@ -382,6 +382,29 @@ export const KNOP_STATUSES = [
   "관리 완료",
 ] as const;
 
+// 개명 트랙 단계: 프로젝트가 이 단계에 들어가면 그 고객은 '개명' 구분(kind)으로 승격된다.
+// (전화번호 상담/후기·장기관리 등 상담에도 해당할 수 있는 단계는 제외)
+export const KNOP_GAEMYEONG_STATUSES = [
+  "개명의뢰 접수",
+  "개명비 결제대기",
+  "개명비 결제확인 대기",
+  "개명비 결제완료",
+  "이름작업 진행중",
+  "새 이름 상담 예정",
+  "새 이름 상담 완료",
+  "개명 신청 안내 완료",
+  "개명 신청 전",
+  "개명 신청 완료",
+  "법원 허가 대기",
+  "법원 허가 완료",
+  "생활정보 변경 확인 중",
+  "변화 확인",
+] as const;
+
+export function isGaemyeongStatus(s?: string | null): boolean {
+  return !!s && (KNOP_GAEMYEONG_STATUSES as readonly string[]).includes(s);
+}
+
 // 결제 상태
 export const KNOP_PAYMENT_STATUSES = ["미결제", "결제확인중", "결제완료"] as const;
 

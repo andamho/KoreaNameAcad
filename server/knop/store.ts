@@ -52,6 +52,7 @@ import {
   type Call,
   incomingSms,
   scheduledMessages,
+  isGaemyeongStatus,
 } from "@shared/schema";
 
 function requireDb() {
@@ -94,6 +95,21 @@ async function nextCode(d: any, date: Date = new Date()): Promise<string> {
   const prefix = monthPrefix(y, m); // "K26-07"
   const rows = await d.select().from(customers).where(like(customers.customerCode, `${prefix}%`));
   return formatCode(y, m, rows.length + 1);
+}
+
+// 프로젝트가 개명 트랙 단계로 넘어가면 그 고객을 '개명' 구분으로 즉시 승격.
+// (되돌리지는 않음 — 상담으로 강등은 수동 판단 영역)
+async function promoteKindIfGaemyeong(customerId: string, status?: string | null): Promise<void> {
+  if (!isGaemyeongStatus(status)) return;
+  try {
+    const d = requireDb();
+    const [c] = await d.select().from(customers).where(eq(customers.id, customerId));
+    if (c && c.kind !== "개명") {
+      await d.update(customers).set({ kind: "개명" }).where(eq(customers.id, customerId));
+    }
+  } catch {
+    /* 구분 승격 실패는 본 작업을 막지 않는다 */
+  }
 }
 
 // ── Customers ──
@@ -659,6 +675,7 @@ export const knopStore = {
   },
 
   // 달력 자동판정: 작명완료 있으면 개명, phoneChange 있으면 전화번호 작명(☎전번). 수동값은 안 덮음.
+  // 개명 판정 근거 3가지: ① 달력 '완료' 일정(이름/번호) ② 프로젝트가 개명 트랙 단계
   async syncKinds(): Promise<{ 개명: number; 상담: number; 전번: number; updated: number }> {
     const d = requireDb();
     try {
@@ -667,24 +684,36 @@ export const knopStore = {
       const names = new Set<string>();
       const pcPhones = new Set<string>(); // phoneChange=true 전화
       const pcNames = new Set<string>();
-      const clean = (n: string) => (n || "").replace(/[.\s]+$/, "").replace(/\s*가족\s*$/, "");
+      // 매칭용 이름 정리: 괄호주석·가족 꼬리·끝 문장부호 제거 ("김유진(비번2)" → "김유진")
+      const clean = (n: string) =>
+        (n || "")
+          .replace(/[(（][^)）]*[)）]/g, "")
+          .replace(/\s*가족\s*$/, "")
+          .replace(/[.\s]+$/, "")
+          .trim();
       for (const e of events) {
         if (e.cat && e.cat.includes("완료")) {
           if (e.clientPhone) phones.add(normalizePhone(e.clientPhone));
-          const nm = parseNameCount(e.title || "").name;
+          const nm = clean(parseNameCount(e.title || "").name);
           if (nm) names.add(nm);
         }
         if ((e as any).phoneChange) {
           if (e.clientPhone) pcPhones.add(normalizePhone(e.clientPhone));
-          const nm = parseNameCount(e.title || "").name;
+          const nm = clean(parseNameCount(e.title || "").name);
           if (nm) pcNames.add(nm);
         }
+      }
+      // 개명 트랙 단계의 프로젝트를 가진 고객 → 달력에 없어도 개명으로 본다
+      const gaemyeongCustomers = new Set<string>();
+      for (const p of await d.select().from(projects)) {
+        if (isGaemyeongStatus(p.status)) gaemyeongCustomers.add(p.customerId);
       }
       const all = await d.select().from(customers);
       let g = 0, s = 0, pn = 0, updated = 0;
       for (const c of all) {
         const cn = clean(c.name);
-        const renamed = (c.normalizedPhone && phones.has(c.normalizedPhone)) || names.has(cn);
+        const renamed =
+          (c.normalizedPhone && phones.has(c.normalizedPhone)) || names.has(cn) || gaemyeongCustomers.has(c.id);
         const set: any = {};
         if (renamed) {
           g++;
@@ -878,6 +907,7 @@ export const knopStore = {
           title: "상태 변경",
           content: `${before.status} → ${row.status}`,
         });
+        await promoteKindIfGaemyeong(row.customerId, row.status); // 개명 트랙이면 구분 승격
       }
       return row;
     } catch (e) {
@@ -919,6 +949,7 @@ export const knopStore = {
             `${before.status} → ${toStatus}` +
             (stage?.followup ? ` · 다음: ${stage.followup.template} (${stage.followup.days}일 후)` : ""),
         });
+        await promoteKindIfGaemyeong(row.customerId, row.status); // 개명 트랙이면 구분 승격
       }
       return { ok: true, project: row, nextFollowup: stage?.followup ?? null };
     } catch (e) {
@@ -1584,3 +1615,21 @@ export const knopStore = {
     }
   },
 };
+
+// 개명/상담 구분 자동판정 스케줄러.
+// 이전에는 관리자가 sync-kinds 를 직접 호출할 때만 돌아서(화면 버튼도 없었음)
+// 달력에 작명완료가 있어도 개명 카테고리로 안 들어가는 문제가 있었다 → 주기 실행으로 해결.
+let _kindTimer: NodeJS.Timeout | null = null;
+export function startKindSyncScheduler() {
+  if (_kindTimer) return;
+  const run = () =>
+    knopStore
+      .syncKinds()
+      .then((r) => {
+        if (r.updated) console.log(`[KNOP] 구분 자동판정: ${r.updated}명 갱신 (개명 ${r.개명} · 상담 ${r.상담} · 전번 ${r.전번})`);
+      })
+      .catch((e: any) => console.error(`[KNOP] 구분 자동판정 실패: ${e?.message}`));
+  console.log("[KNOP] 개명/상담 구분 자동판정 스케줄러 시작 (10분 간격)");
+  setTimeout(run, 20_000); // 서버 기동 20초 후 1회
+  _kindTimer = setInterval(run, 10 * 60_000);
+}

@@ -1,6 +1,6 @@
 // KNOP 운영 플랫폼 API 라우트 (MVP1) — 전부 관리자 전용
 import type { Express, Request, Response, RequestHandler } from "express";
-import { knopStore } from "./store";
+import { knopStore, startKindSyncScheduler } from "./store";
 import { parsePaymentSms, matchPayment } from "./paymentAi";
 import { transcribeCall, summarizeTranscript } from "./callAi";
 import { transcribeLocal, localTranscribeAvailable } from "./localTranscribe";
@@ -85,6 +85,7 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     .then((n) => n && console.log(`[KNOP SMS] 표준 템플릿 ${n}개 시드됨`))
     .catch(() => {});
   startSmsScheduler();
+  startKindSyncScheduler(); // 개명/상담 구분 자동판정 (달력 작명완료·개명 트랙 단계 반영)
   startReportSync(); // 이름분석 폴더 자동 동기화 (로컬만; 배포는 no-op)
 
   // 교정사전: 기존 로컬 JSON 규칙을 DB로 1회 이관 후, DB→로컬 JSON 재생성(어디서 고쳐도 반영)
