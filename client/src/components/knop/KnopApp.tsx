@@ -216,7 +216,7 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<"recent" | "name" | "old">("recent");
   const [month, setMonth] = useState("all");
-  const [kind, setKind] = useState<"all" | "개명" | "상담">("all");
+  const [kind, setKind] = useState<"all" | "개명" | "상담">("개명"); // 처음엔 개명 목록부터
   const [newOpen, setNewOpen] = useState(false);
 
   const { data: board, isLoading } = useQuery({ queryKey: ["knop-board"], queryFn: () => knopApi.customerBoard() });
@@ -288,7 +288,7 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
 
       {/* 개명/상담 탭 */}
       <div className="flex items-center gap-1">
-        {(["all", "개명", "상담"] as const).map((k) => (
+        {(["개명", "상담", "all"] as const).map((k) => (
           <button
             key={k}
             onClick={() => setKind(k)}
