@@ -6,26 +6,25 @@
 
 ---
 
-## ⚠️ 0. 먼저 읽어주세요 — 지금 branch/credential 을 만들지 마세요
+## ⚠️ 0. 먼저 읽어주세요 — 아직 branch/credential 을 만들지 마세요 (Phase 1 완료 시점)
 
-현재 하네스는 **dry-run(안전 가드 + 실행 계획 출력)까지만 구현**되어 있습니다.
-**`CONFIRM_EXECUTE=true` 를 넣어도 실제 검증은 실행되지 않습니다** — 아래 메시지를 출력하고 종료(코드 3)합니다.
-
-```
-[neon-check] ❌ 실제 실행 경로는 운영자가 disposable Neon branch 에서만 사용. 이 저장소 Gate 에서는 미실행.
-```
-
-즉 **연결→카탈로그 점검→synthetic 객체 생성→39종 검증→cleanup→판정** 의 실행 본체는 **아직 코드에 없습니다**(별도 구현 Gate 필요).
-
-**권고**: Neon branch 와 credential 은 **실행 본체 구현이 끝난 뒤에** 만드세요.
-지금 미리 만들면 쓰이지 않은 채 credential 만 며칠 노출됩니다. 이 문서는 **그때 바로 쓰도록 미리 준비해 둔 것**입니다.
-지금 해보실 수 있는 것은 **§12 dry-run**(연결 0, DB 쓰기 0)뿐이며, 이건 **가짜 URL 로도 확인 가능**합니다.
+**execute 실행 본체(core)는 구현되었습니다.** `CONFIRM_EXECUTE=true` 이면 실제로 연결→preflight→synthetic 생성→cleanup→판정까지 수행합니다.
+다만 **capability 45종의 개별 구현은 아직 일부(Phase 2 예정)** 입니다. 현재는 실행 골격 검증용 **smoke 4종**만 실제 판정합니다.
 
 | 항목 | 현재 상태 |
 |---|---|
-| 안전 가드 · 실행 계획(dry-run) | **구현 완료** |
-| 실제 39종 capability 실행 본체 | **미구현** |
-| Neon 실측 결과 | **not-run (unverified)** |
+| 안전 가드 · 실행 계획(dry-run) | **complete** |
+| execute core(연결·preflight·cleanup·잔여검증·결과판정) | **complete** |
+| capability 45종 개별 구현 | **partial** (smoke 4종만) |
+| embedded/PGlite 실행 골격 검증 | **complete** |
+| pooled mock 검증 | **complete**(실제 PgBouncer 아님) |
+| **실제 Neon direct 실측** | **not-run** |
+| **실제 Neon pooled 실측** | **not-run** |
+| **neon-full 45종** | **unverified** |
+
+**권고: Neon branch 와 credential 은 Phase 2(45 capability 구현·격리 검증) 완료 후에 만드세요.**
+지금 만들면 45종 중 4종만 검증된 상태로 credential 만 노출됩니다.
+지금 해보실 수 있는 것은 **§13 dry-run**(DB 연결 0·쓰기 0)이며, **가짜 URL 로도 확인 가능**합니다.
 
 ---
 
@@ -177,8 +176,8 @@ node --import tsx/esm scripts/neonOrchestrationCapabilityCheck.ts
 **절대 공유 금지**: connection URL · hostname 원문 · username · password · Neon API key · branch credential
 > dry-run 출력을 그대로 복사해도 URL 은 마스킹되어 있지만, **붙여넣기 전에 한 번 눈으로 확인**해 주세요.
 
-## 15. 실제 실행 (⚠️ 현재 미구현 — 구현 Gate 이후)
-`CONFIRM_EXECUTE=true` 는 현재 **거부(코드 3)** 됩니다(§0). 실행 본체 구현이 끝나면 아래 순서로 진행합니다.
+## 15. 실제 실행 (⚠️ Phase 2 완료 후 진행)
+`CONFIRM_EXECUTE=true` 는 이제 **실제로 실행**됩니다(execute core 구현 완료). 다만 **capability 45종 개별 구현이 Phase 2 예정**이므로, **Phase 2 완료 후**에 아래 순서로 진행하세요.
 
 ```powershell
 $env:CONFIRM_EXECUTE = "true"
@@ -226,11 +225,14 @@ node --import tsx/esm scripts/neonOrchestrationCapabilityCheck.ts
 | disposable 토큰 | `i-confirm-disposable-neon-branch` | 일치 ✓ |
 | run-id 정규식 | `/^[a-z0-9]{4,16}$/` | 일치 ✓ (`seoho_20260720_01` 은 **부적합** 으로 명시) |
 | hash 방식 | `sha256(new URL(url).host.toLowerCase())` 64hex | 일치 ✓ |
-| capability count | **39** | 일치 ✓ |
-| cleanup statement count | **13** (DROP SCHEMA 1 + DROP OWNED 6 + DROP ROLE 6) | 일치 ✓ |
+| capability 정본 | **45** (`scripts/neonCheck/capabilities.ts` 단일 정본에서 파생, 숫자 하드코딩 없음) | 일치 ✓ |
+| cleanup statement count | **16** (enable-triggers 1 + DROP SCHEMA 1 + membership revoke 2 + DROP OWNED 6 + DROP ROLE 6) | 일치 ✓ |
 | 실행 명령/경로 | `node --import tsx/esm scripts/neonOrchestrationCapabilityCheck.ts` | 일치 ✓ |
-| synthetic 이름 | schema `oc_chk_<id>` · roles `oc_*_<id>` (production `orchestration_*` 와 불일치) | 일치 ✓ |
-| **execute 본체** | **미구현**(CONFIRM_EXECUTE=true → 거부, exit 3) | **§0·§15 에 명시** ✓ |
+| synthetic 이름 | schema `oc_chk_<id>` · roles `oc_*_<id>` (production `orchestration_*` 와 불일치, 예약 접두 차단) | 일치 ✓ |
+| **execute core** | **구현 완료**(guard 재검증→preflight→smoke→cleanup→잔여검증→분류) | **§0·§15 반영** ✓ |
+| **capability 45 개별 구현** | **partial**(Phase 1 = smoke 4종) | **§0 에 명시** ✓ |
+| credential 방식 | 하이브리드 B — 운영자는 bootstrap URL 한 쌍, synthetic LOGIN password 는 CSPRNG·메모리 전용·출력 0 | 일치 ✓ |
+| public schema 가드 | user table > 0 이면 hard stop | 일치 ✓ |
 
 - secret 을 출력하는 명령 **없음**(hash 만 출력, URL 은 `Read-Host` 입력·마스킹 출력).
 - production 실행을 유도하는 문구 **없음**(production 은 "건드리지 않음" 대상으로만 등장).
