@@ -6,24 +6,26 @@
 
 ---
 
-## ⚠️ 0. 먼저 읽어주세요 — 아직 branch/credential 을 만들지 마세요 (Phase 1 완료 시점)
+## ⚠️ 0. 먼저 읽어주세요 — 현재 상태 (Phase 2 완료 시점)
 
-**execute 실행 본체(core)는 구현되었습니다.** `CONFIRM_EXECUTE=true` 이면 실제로 연결→preflight→synthetic 생성→cleanup→판정까지 수행합니다.
-다만 **capability 45종의 개별 구현은 아직 일부(Phase 2 예정)** 입니다. 현재는 실행 골격 검증용 **smoke 4종**만 실제 판정합니다.
+**execute 실행 본체와 capability 45종 구현이 모두 완료**되었고, 격리 환경에서 검증했습니다.
+**그러나 실제 Neon 은 아직 한 번도 접속하지 않았습니다(not-run).**
 
 | 항목 | 현재 상태 |
 |---|---|
 | 안전 가드 · 실행 계획(dry-run) | **complete** |
 | execute core(연결·preflight·cleanup·잔여검증·결과판정) | **complete** |
-| capability 45종 개별 구현 | **partial** (smoke 4종만) |
-| embedded/PGlite 실행 골격 검증 | **complete** |
-| pooled mock 검증 | **complete**(실제 PgBouncer 아님) |
-| **실제 Neon direct 실측** | **not-run** |
-| **실제 Neon pooled 실측** | **not-run** |
-| **neon-full 45종** | **unverified** |
+| **capability 45종 구현** | **complete** |
+| `pglite` profile 검증 | **verified** (applicable 22 / 45) |
+| `embedded-direct` PG17 17.10 검증 | **verified** (applicable 40 / 45, authoritative 40) |
+| `pooled-mock` 검증 | **verified** (applicable 5 / 45) — 실제 PgBouncer 아님 |
+| **`actual-neon-direct` 실측** | **not-run** |
+| **`actual-neon-pooled` 실측** | **not-run** |
+| **`neon-full` 45종** | **unverified** (Neon evidence 0) |
 
-**권고: Neon branch 와 credential 은 Phase 2(45 capability 구현·격리 검증) 완료 후에 만드세요.**
-지금 만들면 45종 중 4종만 검증된 상태로 credential 만 노출됩니다.
+> **profile 은 자동 상속되지 않습니다.** PGlite/embedded/pooled-mock 결과는 어떤 경우에도 `neon-full` 통과로 승격되지 않으며, 코드에 hard guard 와 테스트가 걸려 있습니다.
+
+**권고: Neon branch 와 credential 은 운영자 승인 후 실제 실행 직전에 만드세요.**
 지금 해보실 수 있는 것은 **§13 dry-run**(DB 연결 0·쓰기 0)이며, **가짜 URL 로도 확인 가능**합니다.
 
 ---

@@ -1,94 +1,114 @@
-// capability 정본(single source of truth). 문서·report·tests 는 전부 여기서 파생한다.
-// 개수(45)를 다른 파일에 하드코딩하지 말 것 — CAPABILITIES.length / countFor(profile) 사용.
+// capability 단일 정본(single source of truth). 문서·report·tests 는 전부 여기서 파생.
+// 개수를 다른 파일에 하드코딩하지 말 것 — CAPABILITIES.length / countFor(profile) 사용.
 
-export const PROFILES = ["embedded-direct", "pooled-mock", "neon-full"] as const;
-export type Profile = (typeof PROFILES)[number];
+/** 실제로 실행되어 evidence 를 만드는 profile */
+export const EXECUTION_PROFILES = ["pglite", "embedded-direct", "pooled-mock", "actual-neon-direct", "actual-neon-pooled"] as const;
+export type ExecutionProfile = (typeof EXECUTION_PROFILES)[number];
+/** 집계(roll-up) 전용 — 직접 실행되지 않는다. actual-neon-* 결과로만 계산. */
+export const AGGREGATE_PROFILE = "neon-full" as const;
+export type AggregateProfile = typeof AGGREGATE_PROFILE;
+export type AnyProfile = ExecutionProfile | AggregateProfile;
 
 export const CATEGORIES = ["role-lifecycle", "ownership", "privilege", "trigger-emergency", "direct-pooled"] as const;
 export type Category = (typeof CATEGORIES)[number];
 
-/** pass = 성공해야 함 · expected-denial = 반드시 거부되어야 함 */
 export type Expectation = "pass" | "expected-denial";
-/** 실행 결과 */
-export type CapabilityOutcome = "pass" | "expected-denial" | "fail" | "skipped";
+/** skipped 제거 — 비적용은 not-applicable, 적용인데 실행 못 하면 fail */
+export type CapabilityOutcome = "pass" | "expected-denial" | "fail" | "not-applicable";
 
 export interface CapabilityDef {
   id: string;
   category: Category;
-  /** 이 capability 가 "실제 판정 가능한" profile 목록. 여기 없는 profile 에서는 실행계획에서 제외(not-applicable). */
-  profiles: readonly Profile[];
+  /** 이 capability 를 실제로 판정할 수 있는 실행 profile (자동 상속 없음) */
+  applicableProfiles: readonly ExecutionProfile[];
   expectation: Expectation;
-  /** neon-full 최종 성공에 필수인가(전부 true — 정본상 선택 capability 없음) */
   mandatory: boolean;
+  /** 45개 전부 true — neon-full 성공에는 actual Neon evidence 필수 */
+  requiredForNeonFull: boolean;
+  /** 엔진 간 결과가 충돌할 때 우선하는 profile */
+  authoritativeProfile: ExecutionProfile;
   description: string;
 }
 
-const D = "embedded-direct" as const, M = "pooled-mock" as const, N = "neon-full" as const;
-const DN = [D, N] as const;   // direct 계열: embedded-direct + neon-full
-const MN = [M, N] as const;   // pooled 계열: pooled-mock + neon-full
+const PG = "pglite" as const, ED = "embedded-direct" as const, PM = "pooled-mock" as const;
+const AND = "actual-neon-direct" as const, ANP = "actual-neon-pooled" as const;
+/** PGlite 로도 판정 가능한 direct 계열 */
+const DIRECT_PG = [PG, ED, AND] as const;
+/** 실제 LOGIN connection/권한 경계가 필요해 PGlite 로는 판정 불가 */
+const DIRECT_LOGIN = [ED, AND] as const;
+/** PGlite 가 해당 PostgreSQL 기능을 지원하지 않아 판정 불가(TRUNCATE statement trigger, default ACL 기록 등) */
+const DIRECT_FULL = [ED, AND] as const;
+/** pooled 계열 */
+const POOLED = [PM, ANP] as const;
 
-// ── 정본 45 (순서 = deterministic 실행 순서) ────────────────────────────────
+const cap = (
+  id: string, category: Category, applicableProfiles: readonly ExecutionProfile[],
+  expectation: Expectation, authoritativeProfile: ExecutionProfile, description: string,
+): CapabilityDef => ({ id, category, applicableProfiles, expectation, mandatory: true, requiredForNeonFull: true, authoritativeProfile, description });
+
+// ── 정본 45 (배열 순서 = deterministic 실행 순서) ────────────────────────────
 export const CAPABILITIES: readonly CapabilityDef[] = Object.freeze([
   // Role lifecycle — 8
-  { id: "create-nologin-role", category: "role-lifecycle", profiles: DN, expectation: "pass", mandatory: true, description: "NOLOGIN role 생성" },
-  { id: "create-login-role", category: "role-lifecycle", profiles: DN, expectation: "pass", mandatory: true, description: "LOGIN role 생성(비밀번호 미출력)" },
-  { id: "grant-membership", category: "role-lifecycle", profiles: DN, expectation: "pass", mandatory: true, description: "membership 부여" },
-  { id: "revoke-membership", category: "role-lifecycle", profiles: DN, expectation: "pass", mandatory: true, description: "membership 회수" },
-  { id: "set-role", category: "role-lifecycle", profiles: DN, expectation: "pass", mandatory: true, description: "SET ROLE 성공" },
-  { id: "reset-role", category: "role-lifecycle", profiles: DN, expectation: "pass", mandatory: true, description: "RESET ROLE 성공" },
-  { id: "set-role-denied-after-revoke", category: "role-lifecycle", profiles: DN, expectation: "expected-denial", mandatory: true, description: "membership 회수 후 SET ROLE 실패" },
-  { id: "escalation-denied-for-runtime-roles", category: "role-lifecycle", profiles: DN, expectation: "expected-denial", mandatory: true, description: "writer/reader/app 의 admin·owner escalation 실패" },
+  cap("create-nologin-role", "role-lifecycle", DIRECT_PG, "pass", ED, "NOLOGIN role 생성"),
+  cap("create-login-role", "role-lifecycle", DIRECT_PG, "pass", ED, "LOGIN role 생성(CSPRNG password, 미출력)"),
+  cap("grant-membership", "role-lifecycle", DIRECT_PG, "pass", ED, "membership 부여"),
+  cap("revoke-membership", "role-lifecycle", DIRECT_PG, "pass", ED, "membership 회수"),
+  cap("set-role", "role-lifecycle", DIRECT_PG, "pass", ED, "SET ROLE 성공"),
+  cap("reset-role", "role-lifecycle", DIRECT_PG, "pass", ED, "RESET ROLE 성공"),
+  cap("set-role-denied-after-revoke", "role-lifecycle", DIRECT_LOGIN, "expected-denial", ED, "membership 회수 후 실제 LOGIN 세션의 SET ROLE 실패"),
+  cap("escalation-denied-for-runtime-roles", "role-lifecycle", DIRECT_LOGIN, "expected-denial", ED, "writer/reader/app LOGIN 의 admin·owner escalation 실패"),
   // Ownership — 6
-  { id: "transfer-table-owner", category: "ownership", profiles: DN, expectation: "pass", mandatory: true, description: "table owner 이전" },
-  { id: "transfer-function-owner", category: "ownership", profiles: DN, expectation: "pass", mandatory: true, description: "function owner 이전" },
-  { id: "bootstrap-a-temporary-membership", category: "ownership", profiles: DN, expectation: "pass", mandatory: true, description: "bootstrap A 임시 membership 부여(현재 owner → synthetic owner)" },
-  { id: "bootstrap-a-ownership-transfer", category: "ownership", profiles: DN, expectation: "pass", mandatory: true, description: "bootstrap A 소유권 이전" },
-  { id: "bootstrap-a-membership-revoked", category: "ownership", profiles: DN, expectation: "pass", mandatory: true, description: "bootstrap A 임시 membership 즉시 회수" },
-  { id: "bootstrap-a-residual-membership-zero", category: "ownership", profiles: DN, expectation: "pass", mandatory: true, description: "bootstrap A 잔여 membership 0" },
+  cap("transfer-table-owner", "ownership", DIRECT_PG, "pass", ED, "table owner 이전"),
+  cap("transfer-function-owner", "ownership", DIRECT_PG, "pass", ED, "function owner 이전"),
+  cap("bootstrap-a-temporary-membership", "ownership", DIRECT_PG, "pass", ED, "bootstrap A: 현재 owner 가 synthetic owner 의 임시 member"),
+  cap("bootstrap-a-ownership-transfer", "ownership", DIRECT_PG, "pass", ED, "bootstrap A: 소유권 이전"),
+  cap("bootstrap-a-membership-revoked", "ownership", DIRECT_PG, "pass", ED, "bootstrap A: 임시 membership 즉시 회수"),
+  cap("bootstrap-a-residual-membership-zero", "ownership", DIRECT_PG, "pass", ED, "bootstrap A: 잔여 membership 0"),
   // Privilege — 13
-  { id: "public-table-privilege-zero", category: "privilege", profiles: DN, expectation: "pass", mandatory: true, description: "PUBLIC table 권한 0" },
-  { id: "public-sequence-privilege-zero", category: "privilege", profiles: DN, expectation: "pass", mandatory: true, description: "PUBLIC sequence 권한 0" },
-  { id: "public-function-execute-zero", category: "privilege", profiles: DN, expectation: "pass", mandatory: true, description: "PUBLIC function EXECUTE 0" },
-  { id: "reader-select-success", category: "privilege", profiles: DN, expectation: "pass", mandatory: true, description: "reader SELECT 성공" },
-  { id: "reader-write-denied", category: "privilege", profiles: DN, expectation: "expected-denial", mandatory: true, description: "reader write 실패" },
-  { id: "writer-insert-success", category: "privilege", profiles: DN, expectation: "pass", mandatory: true, description: "writer 허용 INSERT 성공" },
-  { id: "writer-update-denied", category: "privilege", profiles: DN, expectation: "expected-denial", mandatory: true, description: "writer UPDATE 실패" },
-  { id: "writer-delete-denied", category: "privilege", profiles: DN, expectation: "expected-denial", mandatory: true, description: "writer DELETE 실패" },
-  { id: "writer-truncate-denied", category: "privilege", profiles: DN, expectation: "expected-denial", mandatory: true, description: "writer TRUNCATE 실패" },
-  { id: "writer-business-table-access-denied", category: "privilege", profiles: DN, expectation: "expected-denial", mandatory: true, description: "writer 의 business table 접근 실패" },
-  { id: "app-simulation-orchestration-write-denied", category: "privilege", profiles: DN, expectation: "expected-denial", mandatory: true, description: "app simulation 의 orchestration write 실패" },
-  { id: "trigger-function-direct-call-denied", category: "privilege", profiles: DN, expectation: "expected-denial", mandatory: true, description: "trigger function 직접 호출 실패" },
-  { id: "default-privileges-secure", category: "privilege", profiles: DN, expectation: "pass", mandatory: true, description: "default privileges 로 미래 객체 PUBLIC 누수 0" },
+  cap("public-table-privilege-zero", "privilege", DIRECT_PG, "pass", ED, "PUBLIC table 권한 0"),
+  cap("public-sequence-privilege-zero", "privilege", DIRECT_PG, "pass", ED, "PUBLIC sequence 권한 0"),
+  cap("public-function-execute-zero", "privilege", DIRECT_PG, "pass", ED, "PUBLIC function EXECUTE 0"),
+  cap("reader-select-success", "privilege", DIRECT_LOGIN, "pass", ED, "reader LOGIN 의 SELECT 성공"),
+  cap("reader-write-denied", "privilege", DIRECT_LOGIN, "expected-denial", ED, "reader LOGIN 의 write 실패"),
+  cap("writer-insert-success", "privilege", DIRECT_LOGIN, "pass", ED, "writer LOGIN 의 허용 INSERT 성공"),
+  cap("writer-update-denied", "privilege", DIRECT_LOGIN, "expected-denial", ED, "writer LOGIN 의 immutable UPDATE 실패"),
+  cap("writer-delete-denied", "privilege", DIRECT_LOGIN, "expected-denial", ED, "writer LOGIN 의 DELETE 실패"),
+  cap("writer-truncate-denied", "privilege", DIRECT_LOGIN, "expected-denial", ED, "writer LOGIN 의 TRUNCATE 실패"),
+  cap("writer-business-table-access-denied", "privilege", DIRECT_LOGIN, "expected-denial", ED, "writer LOGIN 의 business table 접근 실패"),
+  cap("app-simulation-orchestration-write-denied", "privilege", DIRECT_LOGIN, "expected-denial", ED, "app simulation LOGIN 의 orchestration write 실패"),
+  cap("trigger-function-direct-call-denied", "privilege", DIRECT_LOGIN, "expected-denial", ED, "trigger function 직접 호출 실패"),
+  cap("default-privileges-secure", "privilege", DIRECT_FULL, "pass", ED, "default privileges 로 미래 객체 PUBLIC 누수 0(PGlite 는 default ACL 미기록 → 판정 불가)"),
   // Trigger and emergency boundary — 10
-  { id: "immutable-update-denied", category: "trigger-emergency", profiles: DN, expectation: "expected-denial", mandatory: true, description: "immutable UPDATE 거부" },
-  { id: "immutable-delete-denied", category: "trigger-emergency", profiles: DN, expectation: "expected-denial", mandatory: true, description: "immutable DELETE 거부" },
-  { id: "identity-field-update-denied", category: "trigger-emergency", profiles: DN, expectation: "expected-denial", mandatory: true, description: "식별 컬럼 변경 거부" },
-  { id: "truncate-trigger-or-fk-denied", category: "trigger-emergency", profiles: DN, expectation: "expected-denial", mandatory: true, description: "TRUNCATE 거부(trigger 또는 FK 참조)" },
-  { id: "session-replication-role-denied", category: "trigger-emergency", profiles: DN, expectation: "expected-denial", mandatory: true, description: "비-superuser 의 session_replication_role 변경 실패" },
-  { id: "runtime-trigger-disable-denied", category: "trigger-emergency", profiles: DN, expectation: "expected-denial", mandatory: true, description: "writer/reader/app 의 trigger disable 실패" },
-  { id: "owner-trigger-disable-allowed", category: "trigger-emergency", profiles: DN, expectation: "pass", mandatory: true, description: "owner 경로 trigger disable 가능(긴급 절차)" },
-  { id: "startup-check-fails-when-trigger-disabled", category: "trigger-emergency", profiles: DN, expectation: "pass", mandatory: true, description: "trigger disabled 상태에서 startup self-check 실패 감지" },
-  { id: "startup-check-passes-after-reenable", category: "trigger-emergency", profiles: DN, expectation: "pass", mandatory: true, description: "재활성 후 startup self-check 성공" },
-  { id: "final-trigger-enabled-count", category: "trigger-emergency", profiles: DN, expectation: "pass", mandatory: true, description: "최종 trigger 전부 enabled" },
+  cap("immutable-update-denied", "trigger-emergency", DIRECT_PG, "expected-denial", ED, "immutable UPDATE 거부(trigger)"),
+  cap("immutable-delete-denied", "trigger-emergency", DIRECT_PG, "expected-denial", ED, "immutable DELETE 거부(trigger)"),
+  cap("identity-field-update-denied", "trigger-emergency", DIRECT_PG, "expected-denial", ED, "식별 컬럼 변경 거부"),
+  cap("truncate-trigger-or-fk-denied", "trigger-emergency", DIRECT_FULL, "expected-denial", ED, "TRUNCATE 거부(PGlite 는 statement trigger 미지원 → embedded 가 authoritative)"),
+  cap("session-replication-role-denied", "trigger-emergency", DIRECT_LOGIN, "expected-denial", ED, "비-superuser 의 session_replication_role 변경 실패"),
+  cap("runtime-trigger-disable-denied", "trigger-emergency", DIRECT_LOGIN, "expected-denial", ED, "runtime role 의 trigger disable 실패"),
+  cap("owner-trigger-disable-allowed", "trigger-emergency", DIRECT_PG, "pass", ED, "owner 경로 trigger disable 가능(긴급 절차)"),
+  cap("startup-check-fails-when-trigger-disabled", "trigger-emergency", DIRECT_PG, "pass", ED, "trigger disabled 시 startup self-check 실패 감지"),
+  cap("startup-check-passes-after-reenable", "trigger-emergency", DIRECT_PG, "pass", ED, "재활성 후 startup self-check 성공"),
+  cap("final-trigger-enabled-count", "trigger-emergency", DIRECT_PG, "pass", ED, "최종 trigger 전부 enabled(기대값 일치)"),
   // Direct/pooled boundary — 8
-  { id: "direct-reader-credential", category: "direct-pooled", profiles: DN, expectation: "pass", mandatory: true, description: "direct reader credential 연결·권한 경계" },
-  { id: "direct-writer-credential", category: "direct-pooled", profiles: DN, expectation: "pass", mandatory: true, description: "direct writer credential 연결·권한 경계" },
-  { id: "deployer-admin-owner-chain", category: "direct-pooled", profiles: DN, expectation: "pass", mandatory: true, description: "deployer→admin→owner SET ROLE 체인" },
-  { id: "pooled-reader-writer-separation", category: "direct-pooled", profiles: MN, expectation: "pass", mandatory: true, description: "pooled reader/writer 권한 분리" },
-  { id: "transaction-end-role-state-clean", category: "direct-pooled", profiles: MN, expectation: "pass", mandatory: true, description: "transaction 종료 후 role/session 상태 잔류 0" },
-  { id: "no-set-role-dependency-in-runtime-pools", category: "direct-pooled", profiles: MN, expectation: "pass", mandatory: true, description: "runtime pool 이 SET ROLE 에 의존하지 않음" },
-  { id: "prepared-statement-reuse-preserves-boundary", category: "direct-pooled", profiles: MN, expectation: "pass", mandatory: true, description: "prepared statement 재사용 후 권한 경계 유지" },
-  { id: "reconnect-preserves-boundary", category: "direct-pooled", profiles: MN, expectation: "pass", mandatory: true, description: "reconnect(연결 재활용) 후 권한 경계 유지" },
+  cap("direct-reader-credential", "direct-pooled", DIRECT_LOGIN, "pass", ED, "direct reader credential 연결 경계"),
+  cap("direct-writer-credential", "direct-pooled", DIRECT_LOGIN, "pass", ED, "direct writer credential 연결 경계"),
+  cap("deployer-admin-owner-chain", "direct-pooled", DIRECT_LOGIN, "pass", ED, "deployer→admin→owner 실제 LOGIN 체인"),
+  cap("pooled-reader-writer-separation", "direct-pooled", POOLED, "pass", ANP, "pooled reader/writer 권한 분리"),
+  cap("transaction-end-role-state-clean", "direct-pooled", POOLED, "pass", ANP, "transaction 종료 후 role/session 상태 잔류 0"),
+  cap("no-set-role-dependency-in-runtime-pools", "direct-pooled", POOLED, "pass", ANP, "runtime pool 이 SET ROLE 에 의존하지 않음"),
+  cap("prepared-statement-reuse-preserves-boundary", "direct-pooled", POOLED, "pass", ANP, "prepared statement 재사용 후 권한 경계 유지"),
+  cap("reconnect-preserves-boundary", "direct-pooled", POOLED, "pass", ANP, "reconnect 후 권한 경계 유지"),
 ]);
 
-// ── 파생 헬퍼(숫자 하드코딩 금지) ───────────────────────────────────────────
+// ── 파생 헬퍼 ───────────────────────────────────────────────────────────────
 export const CAPABILITY_IDS: readonly string[] = CAPABILITIES.map((c) => c.id);
-export const applicableFor = (p: Profile): readonly CapabilityDef[] => CAPABILITIES.filter((c) => c.profiles.includes(p));
-export const countFor = (p: Profile): number => applicableFor(p).length;
-export const byCategory = (cat: Category): readonly CapabilityDef[] => CAPABILITIES.filter((c) => c.category === cat);
+export const applicableFor = (p: ExecutionProfile): readonly CapabilityDef[] => CAPABILITIES.filter((c) => c.applicableProfiles.includes(p));
+export const countFor = (p: ExecutionProfile): number => applicableFor(p).length;
+export const authoritativeFor = (p: ExecutionProfile): readonly CapabilityDef[] => CAPABILITIES.filter((c) => c.authoritativeProfile === p);
 export const findCapability = (id: string): CapabilityDef | undefined => CAPABILITIES.find((c) => c.id === id);
+export const isApplicable = (id: string, p: ExecutionProfile): boolean => !!findCapability(id)?.applicableProfiles.includes(p);
 
-/** 정본 무결성(중복/누락/순서/profile) — 테스트와 실행 진입 양쪽에서 사용. */
+/** 정본 무결성. */
 export function validateCatalog(): { ok: boolean; problems: string[] } {
   const problems: string[] = [];
   const ids = CAPABILITIES.map((c) => c.id);
@@ -96,14 +116,15 @@ export function validateCatalog(): { ok: boolean; problems: string[] } {
   if (dup.length) problems.push(`중복 ID: ${[...new Set(dup)].join(", ")}`);
   for (const c of CAPABILITIES) {
     if (!/^[a-z][a-z0-9-]*$/.test(c.id)) problems.push(`ID 형식 오류: ${c.id}`);
-    if (!c.profiles.length) problems.push(`profile 없음: ${c.id}`);
-    if (!c.profiles.includes("neon-full")) problems.push(`neon-full 미포함: ${c.id}`); // 전부 neon-full 대상
-    if (!c.mandatory) problems.push(`정본에는 선택 capability 없음: ${c.id}`);
-  }
-  // 모든 capability 는 embedded-direct 또는 pooled-mock 중 정확히 하나에서 판정 가능해야 한다(격리 검증 커버리지).
-  for (const c of CAPABILITIES) {
-    const isolated = (c.profiles.includes("embedded-direct") ? 1 : 0) + (c.profiles.includes("pooled-mock") ? 1 : 0);
-    if (isolated !== 1) problems.push(`격리 profile 배정 오류(정확히 1개여야): ${c.id}`);
+    if (!c.applicableProfiles.length) problems.push(`applicableProfiles 비어있음: ${c.id}`);
+    if (!c.authoritativeProfile) problems.push(`authoritativeProfile 누락: ${c.id}`);
+    if (!c.expectation) problems.push(`expectation 누락: ${c.id}`);
+    if (!c.requiredForNeonFull) problems.push(`requiredForNeonFull=false 금지: ${c.id}`);
+    if (!c.mandatory) problems.push(`mandatory=false 금지: ${c.id}`);
+    if (!c.applicableProfiles.includes(c.authoritativeProfile)) problems.push(`authoritativeProfile 이 applicable 에 없음: ${c.id}`);
+    // neon 계열 커버리지: direct 는 actual-neon-direct, pooled 는 actual-neon-pooled 를 반드시 포함
+    const hasNeon = c.applicableProfiles.includes("actual-neon-direct") || c.applicableProfiles.includes("actual-neon-pooled");
+    if (!hasNeon) problems.push(`actual-neon-* profile 미포함(neon-full 판정 불가): ${c.id}`);
   }
   return { ok: problems.length === 0, problems };
 }

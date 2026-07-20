@@ -37,7 +37,21 @@ CREATE ROLE NOLOGIN/LOGIN · membership GRANT/REVOKE · **ALTER TABLE/FUNCTION O
 ownership transfer 만으로 가정하지 않고 **명시 REVOKE + runner fingerprint** 로 다음을 **0** 보장(격리 PG17 검증):
 - 기존 app role 6테이블 **INSERT/UPDATE/DELETE/TRUNCATE/REFERENCES/TRIGGER = 0**(DO 블록: orchestration_* 이외 grantee 전 권한 REVOKE) · owner/admin/deployer **비멤버** · **SET ROLE owner/admin 불가**(real login 검증).
 - **PUBLIC table 권한 0 · PUBLIC sequence 권한 0 · PUBLIC trigger-function EXECUTE 0**(REVOKE ALL ON FUNCTION FROM PUBLIC) · writer/reader **직접 function EXECUTE 0**(직접 호출 거부, 발화에는 EXECUTE 불요) · writer↔business table 격리 · reader 6테이블 write 불가.
-- **default privileges**: `ALTER DEFAULT PRIVILEGES FOR ROLE orchestration_owner IN SCHEMA public REVOKE ALL ON {TABLES,SEQUENCES,FUNCTIONS} FROM PUBLIC` — **실행 role = deployer→SET ROLE admin(=owner 멤버)** 또는 owner. 미래 객체 PUBLIC 누수 차단.
+- **default privileges**: `ALTER DEFAULT PRIVILEGES FOR ROLE orchestration_owner IN SCHEMA public REVOKE ALL ON {TABLES,SEQUENCES,FUNCTIONS} FROM PUBLIC` — **실행 role = deployer→SET ROLE admin(=owner 멤버)** 또는 owner.
+
+> ### ⚠️ 미해결 결함 — default privileges 로는 미래 **함수**의 PUBLIC EXECUTE 를 막지 못함 (Phase 2 실측 발견)
+> **embedded PostgreSQL 17.10 과 PGlite 양쪽에서 재현 확인:**
+> - `ALTER DEFAULT PRIVILEGES … GRANT …` 은 `pg_default_acl` 행을 **생성**한다(정상).
+> - 그러나 기존 default-ACL 엔트리가 없는 상태에서 `ALTER DEFAULT PRIVILEGES … REVOKE {ALL|EXECUTE} ON FUNCTIONS FROM PUBLIC` 은 **행을 만들지 않는다** → 함수의 내장 기본값(PUBLIC EXECUTE)이 **그대로 남는다**. 새로 만든 함수의 `proacl=null`, `has_function_privilege('public',…,'EXECUTE')=true`.
+> - 생성 후 **명시** `REVOKE EXECUTE ON FUNCTION … FROM PUBLIC` 은 정상 동작(`proacl={owner=X/owner}`, public=false).
+>
+> **영향 범위**
+> - **현재 안전**: 하드닝 SQL 은 4개 trigger function 에 대해 명시 `REVOKE ALL ON FUNCTION … FROM PUBLIC` 을 수행하므로 **기존 함수의 PUBLIC EXECUTE = 0**(격리 PG17 재확인).
+> - **TABLES/SEQUENCES**: 내장 기본값이 이미 PUBLIC 에 아무 권한도 주지 않으므로 해당 REVOKE 는 무해한 no-op(실질 위험 없음).
+> - **실제 gap**: `orchestration_owner` 가 **앞으로 만들** 함수는 PUBLIC EXECUTE 를 갖게 된다.
+>
+> **필요한 수정(다음 Gate)** — 이번 Phase 2 범위 밖이라 미적용(하드닝 SQL 은 checksum 고정 상태):
+> 신규 함수를 만들 때마다 명시 `REVOKE EXECUTE ON FUNCTION … FROM PUBLIC` 을 하드닝 절차/러너 post-verify 에 포함하고, runner fingerprint 에 "schema 내 PUBLIC EXECUTE 함수 수 = 0" 을 상시 검사로 추가한다. (default privileges 문장은 무해하므로 유지하되, **그것에 의존하지 않는다**.)
 
 ## 6. connection-pool 설계
 reader/writer **각각 독립 pool**(app pool 과 분리). min/max 소량. **pooler transaction mode 에서 SET ROLE 금지 → 역할별 독립 credential**(§2 unverified 완화). rotation 시 pool 재시작. **startup self-check fail-closed**(§3). credential 식별자 미출력, capability(권한 boolean)만 확인.

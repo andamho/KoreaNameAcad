@@ -75,6 +75,21 @@ schema `oc_chk_<runId>` · role `oc_{owner,admin,deployer,writer,reader,appsim}_
 `tests/knop/neonCapabilityHarness.test.ts` **14/14**: env 누락 거부 · disposable 토큰 누락/오타 거부 · host hash mismatch 거부 · production host hash 일치 거부 · direct==pooled 거부 · run-id 형식 거부 · production-like catalog(업무테이블/행/production role/이전 잔여) 거부 · run-id suffix 강제 및 production 이름 미사용 · cleanup plan run-id 범위 한정(production role/table 불포함, DROP OWNED 포함) · **URL/secret 마스킹**(`url#<hash8>…`) · dry-run plan 에 URL 원문 없음·DB write 0 명시 · 결과 분류(4종, disabled trigger 잔존 → 실패) · capability 목록 39종.
 CLI 실동작 확인: env 없이 실행 → **fail-closed 거부**; 유효 env → **dry-run plan 만 출력, 연결·DB write 0**.
 
+## 7b. Phase 2 결과 — profile 별 검증 현황 (정본 45에서 파생)
+| profile | 성격 | applicable | authoritative | 결과 |
+|---|---|--:|--:|---|
+| `pglite` | in-process, 실제 LOGIN 불가 | **22** | 0 | **passed-clean** (fail 0) |
+| `embedded-direct` | embedded PG **17.10**, 실제 LOGIN 4계정 | **40** | **40** | **passed-clean** (pass 25 / expected-denial 15 / fail 0) |
+| `pooled-mock` | PgBouncer **아님**(로직 mock) | **5** | 0 | **passed-clean** (fail 0) |
+| `actual-neon-direct` | 실제 Neon direct | 40 | 0 | **not-run** |
+| `actual-neon-pooled` | 실제 Neon pooled | 5 | **5** | **not-run** |
+| `neon-full` | roll-up(직접 실행 아님) | — | — | **unverified** (Neon evidence 0, missing 45) |
+
+- **not-applicable 은 catalog 의 `applicableProfiles` 로만 결정**되며 실행 중 임의 판정하지 않습니다. `skipped` 는 제거되었습니다.
+- PGlite 비적용 23종 = 실제 LOGIN/escalation 계열 + TRUNCATE statement trigger + `session_replication_role` + default-ACL 기록(엔진 미지원).
+- **pooled-mock 은 `actual-neon-pooled` 의 대체 evidence 가 아닙니다**(authoritative = `actual-neon-pooled`).
+- 재현: `node --import tsx/esm scripts/runEmbeddedCapabilityCheck.ts` (embedded-postgres 미설치 시 **not-run** 으로 보고, 저장소 의존성 추가 없음).
+
 ## 8. 이번 Gate 에서 하지 않은 것 (명시)
 **disposable Neon branch 생성 안 함 · Neon API/neonctl 인증 탐색 안 함 · `.env`/secret 탐색 안 함 · 실제 Neon capability 실행 안 함(= not-run) · production DB 접근/변경 0 · production role/credential 생성 0.**
 → §4 의 39종 capability 는 **전부 `unverified (not-run on Neon)`** 상태이며, 운영자가 §6 절차를 수행해야 확정된다.
