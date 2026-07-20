@@ -408,8 +408,9 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                   style={{
                     width: 13,
                     height: 13,
-                    background: done ? TEAL : "#fff",
-                    border: done ? `2px solid ${TEAL}` : cur ? `2px solid ${TEAL}` : "1.5px solid #cbd5d5",
+                    // 채워짐 = 그 단계까지 완료(현재 단계 포함), 링 = 지금 위치
+                    background: done || cur ? TEAL : "#fff",
+                    border: done || cur ? `2px solid ${TEAL}` : "1.5px solid #cbd5d5",
                     boxShadow: cur ? "0 0 0 4px #E1F5EE" : "none",
                   }}
                 />
@@ -499,7 +500,7 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                     <button key={i} type="button" onClick={onTap} className="flex flex-col items-center gap-1 py-0.5">
                       <span
                         className="w-full h-1.5 rounded-full"
-                        style={{ background: done ? TEAL : cur ? "#A7E3CD" : "#e5e7eb" }}
+                        style={{ background: done || cur ? TEAL : "#e5e7eb" }}
                       />
                       <span
                         className={`text-[9px] leading-tight text-center ${
