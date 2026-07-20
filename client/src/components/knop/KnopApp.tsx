@@ -337,7 +337,7 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
         {MILESTONES.map((m, i) => (
           <span key={m} className="text-center leading-tight">
             {m}
-            {i === PHONE_MILESTONE && <span className="block text-[10px] text-gray-300">☎전번(선택)</span>}
+            {i === PHONE_MILESTONE && <span className="block text-[10px] text-gray-300">☎전번</span>}
           </span>
         ))}
       </div>
@@ -435,7 +435,7 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                       c.phoneNaming ? "bg-[#56D5DB]/20 text-[#2ba0a6]" : "text-gray-300 hover:text-gray-500 hover:bg-gray-100"
                     }`}
                   >
-                    ☎ {c.phoneNaming ? "완료" : "전번"}
+                    ☎전번
                   </button>
                 )}
               </div>
@@ -520,7 +520,7 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                             c.phoneNaming ? "bg-[#56D5DB]/20 text-[#2ba0a6]" : "text-gray-300"
                           }`}
                         >
-                          ☎{c.phoneNaming ? "완료" : "전번"}
+                          ☎전번
                         </span>
                       )}
                     </button>

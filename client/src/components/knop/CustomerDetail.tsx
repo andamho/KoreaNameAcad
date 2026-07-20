@@ -87,6 +87,7 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
   const [note, setNote] = useState("");
   const [memoDraft, setMemoDraft] = useState<string | null>(null);
   const [phoneDraft, setPhoneDraft] = useState<string | null>(null);
+  const [nameDraft, setNameDraft] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const [transcribing, setTranscribing] = useState(false);
@@ -105,6 +106,17 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
       refresh();
       toast({ title: "메모가 추가되었습니다." });
     },
+  });
+
+  // 개명하면 이름이 바뀐다 → 서버가 옛 이름을 nameHistory 에 보관하고 옛 이름으로도 계속 매칭됨
+  const saveNameMut = useMutation({
+    mutationFn: (name: string) => knopApi.updateCustomer(customerId, { name }),
+    onSuccess: () => {
+      setNameDraft(null);
+      refresh();
+      toast({ title: "이름 변경됨", description: "옛 이름은 이력에 보관되어 계속 매칭됩니다." });
+    },
+    onError: (e: any) => toast({ title: "이름 변경 실패", description: e?.message, variant: "destructive" }),
   });
 
   const savePhoneMut = useMutation({
@@ -236,8 +248,41 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
       <Card className="p-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              {customer.name}
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+              {nameDraft === null ? (
+                <button
+                  type="button"
+                  onClick={() => setNameDraft(customer.name)}
+                  title="클릭하면 이름을 바꿉니다 (개명 시 사용 · 옛 이름은 이력에 남아 계속 매칭됩니다)"
+                  className="text-left hover:text-[#3fc4ca] transition"
+                >
+                  {customer.name}
+                </button>
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  <input
+                    autoFocus
+                    value={nameDraft}
+                    onChange={(e) => setNameDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && nameDraft.trim()) saveNameMut.mutate(nameDraft.trim());
+                      else if (e.key === "Escape") setNameDraft(null);
+                    }}
+                    className="text-2xl font-bold border-b-2 border-[#56D5DB] outline-none w-40 bg-transparent"
+                  />
+                  <Button
+                    size="sm"
+                    className="h-8"
+                    disabled={saveNameMut.isPending || !nameDraft.trim()}
+                    onClick={() => saveNameMut.mutate(nameDraft.trim())}
+                  >
+                    저장
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-8" onClick={() => setNameDraft(null)}>
+                    취소
+                  </Button>
+                </span>
+              )}
               {isHongik && (
                 <span
                   className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-600 text-white text-sm font-bold shrink-0"
@@ -247,6 +292,20 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                 </span>
               )}
             </h2>
+            {/* 옛 이름(개명 이력) — 이 이름으로도 계속 매칭된다 */}
+            {(() => {
+              let hist: Array<{ name: string }> = [];
+              try {
+                hist = JSON.parse((customer as any).nameHistory || "[]");
+              } catch {
+                /* noop */
+              }
+              return hist.length ? (
+                <div className="mt-1 text-xs text-gray-400">
+                  옛 이름: {hist.map((h) => h.name).filter(Boolean).join(" · ")}
+                </div>
+              ) : null;
+            })()}
             <div className="mt-2 flex flex-col gap-1 text-sm text-gray-600">
               {phoneDraft === null ? (
                 <button
