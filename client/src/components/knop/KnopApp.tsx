@@ -77,7 +77,8 @@ export function KnopApp() {
       />
       <div className="space-y-6">
         {/* 상단 탭은 고객 상세를 열어도 항상 보이게 한다 — 탭을 누르면 고객 상세에서 빠져나온다 */}
-        <div className="flex items-center gap-1 border-b border-gray-200">
+        {/* 모바일: 탭이 11개라 넘치므로 가로 스크롤(스크롤바 숨김) */}
+        <div className="flex items-center gap-1 border-b border-gray-200 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {tabs.map((t) => {
             const Icon = t.icon;
             const active = !selectedCustomer && view === t.key;
@@ -88,7 +89,7 @@ export function KnopApp() {
                   setSelectedCustomer(null);
                   setView(t.key);
                 }}
-                className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${
+                className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${
                   active
                     ? "border-[#56D5DB] text-gray-900"
                     : "border-transparent text-gray-400 hover:text-gray-600"
@@ -195,10 +196,12 @@ function TodayView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void })
 }
 
 // ── 고객 파이프라인 보드 ──
-const MILESTONES = ["상담", "새이름", "개명신청", "법적개명", "중간관리"];
-const MILESTONE_ENTRY = ["이름분석 상담 완료", "새 이름 상담 완료", "개명 신청 완료", "법원 허가 완료", "장기관리"];
+// 보드 6단계 — 서버 stateMachine.ts 의 MILESTONE_OF/MILESTONE_ENTRY 와 순서·개수 일치 필수
+const MILESTONES = ["상담", "개명신청", "새이름", "법원접수", "개명승인", "중간관리"];
+const MILESTONE_ENTRY = ["이름분석 상담 완료", "개명의뢰 접수", "새 이름 상담 완료", "개명 신청 완료", "법원 허가 완료", "장기관리"];
+const PHONE_MILESTONE = 2; // ☎전번(선택) 표시가 붙는 자리 = '새이름'
 const TEAL = "#1D9E75";
-const GRID = { gridTemplateColumns: "160px repeat(5, 1fr)" } as const;
+const GRID = { gridTemplateColumns: `160px repeat(${MILESTONES.length}, 1fr)` } as const;
 function codeMonth(code: string | null): string {
   const m = (code || "").match(/K(\d{2})-(\d{2})/);
   return m ? `${m[1]}.${m[2]}` : "";
@@ -327,13 +330,13 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
         </div>
       ) : (
         <>
-      {/* 마일스톤 헤더 */}
-      <div className="grid items-center px-2 pb-2 border-b border-gray-200 text-[11px] text-gray-400" style={GRID}>
+      {/* 마일스톤 헤더 (데스크톱) — 모바일은 아래 카드 목록 사용 */}
+      <div className="hidden sm:grid items-center px-2 pb-2 border-b border-gray-200 text-[11px] text-gray-400" style={GRID}>
         <span>고객</span>
         {MILESTONES.map((m, i) => (
           <span key={m} className="text-center leading-tight">
             {m}
-            {i === 1 && <span className="block text-[10px] text-gray-300">☎전번(선택)</span>}
+            {i === PHONE_MILESTONE && <span className="block text-[10px] text-gray-300">☎전번(선택)</span>}
           </span>
         ))}
       </div>
@@ -343,7 +346,7 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
 
       {/* 행 */}
       {rows.map((c) => (
-        <div key={c.id} className="relative group grid items-center px-2 pt-2.5 pb-6 border-b border-gray-100 hover:bg-gray-50/70 transition" style={GRID}>
+        <div key={c.id} className="relative group hidden sm:grid items-center px-2 pt-2.5 pb-6 border-b border-gray-100 hover:bg-gray-50/70 transition" style={GRID}>
           <button
             title="휴지통으로"
             onClick={(e) => { e.stopPropagation(); trashMut.mutate(c.id); }}
@@ -390,7 +393,7 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                 />
                 {clickable && <span className="absolute -bottom-1 opacity-0 group-hover:opacity-100 text-[9px] text-[#2ba0a6]">＋</span>}
                 {/* 새이름 점 아래에 전번 체크박스: 절대위치라 점은 다른 것과 같은 선 유지 */}
-                {i === 1 && (
+                {i === PHONE_MILESTONE && (
                   <button
                     title={c.phoneNaming ? "전화번호 작명함 (클릭 해제)" : "전화번호 작명 체크"}
                     onClick={(e) => {
@@ -409,6 +412,54 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
           })}
         </div>
       ))}
+
+      {/* 모바일 전용 카드 목록: 6열 고정 보드는 폰에서 뭉개지므로 세로 카드로 */}
+      <div className="sm:hidden divide-y divide-gray-100">
+        {rows.map((c) => {
+          const stepLabel = c.milestone >= MILESTONES.length ? "완료" : MILESTONES[c.milestone];
+          return (
+            <div key={c.id} className="relative flex items-center gap-3 py-3">
+              <button className="flex-1 min-w-0 text-left" onClick={() => onOpenCustomer(c.id)}>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium text-gray-900 truncate">{cleanName(c.name)}</span>
+                  <span
+                    className={`shrink-0 text-[11px] px-1.5 py-0.5 rounded-full ${
+                      c.kind === "개명" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"
+                    }`}
+                  >
+                    {c.kind || "상담"}
+                  </span>
+                  {c.phoneNaming && <span className="shrink-0 text-[10px] text-[#2ba0a6]">☎</span>}
+                </div>
+                <div className="mt-0.5 flex items-center gap-2">
+                  <span className="text-[11px] text-gray-400 tabular-nums">{c.customerCode}</span>
+                  <span className="text-[11px] text-gray-500">· {stepLabel}</span>
+                </div>
+                {/* 진행 점 */}
+                <div className="mt-1.5 flex items-center gap-1">
+                  {MILESTONES.map((_, i) => (
+                    <span
+                      key={i}
+                      className="h-1.5 flex-1 rounded-full"
+                      style={{ background: i < c.milestone ? TEAL : i === c.milestone ? "#A7E3CD" : "#e5e7eb" }}
+                    />
+                  ))}
+                </div>
+              </button>
+              <button
+                title="휴지통으로"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  trashMut.mutate(c.id);
+                }}
+                className="shrink-0 text-gray-300 hover:text-red-500 p-2"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          );
+        })}
+      </div>
         </>
       )}
 

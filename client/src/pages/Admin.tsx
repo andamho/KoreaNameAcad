@@ -365,7 +365,7 @@ export default function Admin() {
             ) : (
               <div className="rounded-xl border border-border">
                 {/* 헤더 */}
-                <div className="grid grid-cols-[1fr_160px_100px_120px] gap-2 px-4 py-2.5 bg-muted/50 text-xs font-bold text-muted-foreground border-b border-border rounded-t-xl">
+                <div className="hidden sm:grid grid-cols-[1fr_160px_100px_120px] gap-2 px-4 py-2.5 bg-muted/50 text-xs font-bold text-muted-foreground border-b border-border rounded-t-xl">
                   <span>작성자</span>
                   <span>문의 일시</span>
                   <span>상태</span>
@@ -373,7 +373,8 @@ export default function Admin() {
                 </div>
                 {inquiries.map((inq, idx) => (
                   <div key={inq.id} className={idx !== 0 ? "border-t border-border/50" : ""}>
-                    <div className="grid grid-cols-[1fr_160px_100px_120px] gap-2 items-center px-4 py-3">
+                    {/* 모바일: 고정 4열은 넘치므로 2x2로 접힘 */}
+                    <div className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-1 sm:grid-cols-[1fr_160px_100px_120px] sm:gap-2 items-center px-4 py-3">
                       <span className="font-medium text-sm">{maskName(inq.name)} 님</span>
                       <span className="text-xs text-muted-foreground">{formatDateTime(inq.createdAt)}</span>
                       <Badge variant={inq.status === "답변완료" ? "secondary" : "default"}
