@@ -448,44 +448,84 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
         {rows.map((c) => {
           const stepLabel = c.milestone >= MILESTONES.length ? "완료" : MILESTONES[c.milestone];
           return (
-            <div key={c.id} className="relative flex items-center gap-3 py-3">
-              <button className="flex-1 min-w-0 text-left" onClick={() => onOpenCustomer(c.id)}>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-medium text-gray-900 truncate">{cleanName(c.name)}</span>
-                  <span
-                    className={`shrink-0 text-[11px] px-1.5 py-0.5 rounded-full ${
-                      c.kind === "개명" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"
-                    }`}
-                  >
-                    {c.kind || "상담"}
-                  </span>
-                  {c.phoneNaming && <span className="shrink-0 text-[10px] text-[#2ba0a6]">☎</span>}
-                </div>
-                <div className="mt-0.5 flex items-center gap-2">
-                  <span className="text-[11px] text-gray-400 tabular-nums">{c.customerCode}</span>
-                  <span className="text-[11px] text-gray-500">· {stepLabel}</span>
-                </div>
-                {/* 진행 점 */}
-                <div className="mt-1.5 flex items-center gap-1">
-                  {MILESTONES.map((_, i) => (
+            <div key={c.id} className="py-3">
+              <div className="flex items-center gap-3">
+                <button className="flex-1 min-w-0 text-left" onClick={() => onOpenCustomer(c.id)}>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium text-gray-900 truncate">{cleanName(c.name)}</span>
                     <span
-                      key={i}
-                      className="h-1.5 flex-1 rounded-full"
-                      style={{ background: i < c.milestone ? TEAL : i === c.milestone ? "#A7E3CD" : "#e5e7eb" }}
-                    />
-                  ))}
-                </div>
-              </button>
-              <button
-                title="휴지통으로"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  trashMut.mutate(c.id);
-                }}
-                className="shrink-0 text-gray-300 hover:text-red-500 p-2"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+                      className={`shrink-0 text-[11px] px-1.5 py-0.5 rounded-full ${
+                        c.kind === "개명" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {c.kind || "상담"}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 flex items-center gap-2">
+                    <span className="text-[11px] text-gray-400 tabular-nums">{c.customerCode}</span>
+                    <span className="text-[11px] font-medium text-[#1D9E75]">· {stepLabel}</span>
+                  </div>
+                </button>
+                <button
+                  title="휴지통으로"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    trashMut.mutate(c.id);
+                  }}
+                  className="shrink-0 text-gray-300 hover:text-red-500 p-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* 단계: 칸마다 이름 표시 + 눌러서 진행/되돌리기 */}
+              <div className="mt-2 grid grid-cols-6 gap-1">
+                {MILESTONES.map((m, i) => {
+                  const done = i < c.milestone;
+                  const cur = i === c.milestone;
+                  const hasProject = !!c.projectId;
+                  const onTap = () => {
+                    if (!hasProject) return onOpenCustomer(c.id);
+                    if (i > c.milestone) return advance.mutate({ projectId: c.projectId!, toStatus: MILESTONE_ENTRY[i] });
+                    if (i < c.milestone) {
+                      if (window.confirm(`${cleanName(c.name)} 님을 '${m}' 단계로 되돌릴까요?`)) {
+                        advance.mutate({ projectId: c.projectId!, toStatus: MILESTONE_ENTRY[i], force: true });
+                      }
+                      return;
+                    }
+                    onOpenCustomer(c.id);
+                  };
+                  return (
+                    <button key={i} type="button" onClick={onTap} className="flex flex-col items-center gap-1 py-0.5">
+                      <span
+                        className="w-full h-1.5 rounded-full"
+                        style={{ background: done ? TEAL : cur ? "#A7E3CD" : "#e5e7eb" }}
+                      />
+                      <span
+                        className={`text-[9px] leading-tight text-center ${
+                          cur ? "text-[#1D9E75] font-semibold" : done ? "text-gray-500" : "text-gray-300"
+                        }`}
+                      >
+                        {m}
+                      </span>
+                      {i === PHONE_MILESTONE && (
+                        <span
+                          role="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            togglePhone.mutate({ id: c.id, on: !c.phoneNaming });
+                          }}
+                          className={`text-[9px] leading-none px-1 py-0.5 rounded-full ${
+                            c.phoneNaming ? "bg-[#56D5DB]/20 text-[#2ba0a6]" : "text-gray-300"
+                          }`}
+                        >
+                          ☎{c.phoneNaming ? "완료" : "전번"}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           );
         })}
