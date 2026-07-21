@@ -83,14 +83,26 @@ preflight 는 **연결을 닫는 것까지만** 책임진다. close 이후 poole
 - **`preflight-passed` 가 아니면 execute 승인 불가.**
 - preflight 결과는 **Neon capability 45 에 포함하지 않는다**(별도 축).
 
-### 6b. execute 차단 evidence
-`preflight-passed` 일 때만 evidence 가 발급된다. 내용은 **run-id · expected direct/pooled hash · forbidden direct/pooled hash ·
-status · identity fingerprint · 발급시각 · integrity(sha256)** 이며 **URL·credential 이 포함되지 않는다**(`assertNoSecrets` 로 강제).
-보관은 프로세스 내 메모리 우선, 프로세스가 분리되는 실제 흐름을 위해 **저장소 밖 임시 경로** 파일을 허용한다.
+### 6b. execute 차단 evidence — **HMAC 서명 · nonce · 만료 · 1회 소비**
+> ⚠️ **정정 이력**: 초기 구현은 `integrity = sha256(evidence body)` 였다. 이는 **누구나 재계산 가능**하므로
+> body 를 원하는 값으로 바꾸고 해시를 다시 계산하면 그대로 통과한다 = **위조 가능**. 해당 방식은 **제거**했다.
 
-execute 진입 시 `assertExecuteAllowed()` 가 다음을 **전부** 대조한다:
-integrity 재계산 일치 · status=passed · run-id 동일 · expected hash 2종 동일 · forbidden hash 2종 동일 · freshness(30분, 미래 timestamp 거부).
-→ **"통과했다"는 자기신고 문자열로는 열리지 않는다.**
+현행 계약(`scripts/neonCheck/evidenceAuth.ts`):
+- `preflight-passed` 일 때만 발급. 서명 키는 **실행마다 CSPRNG 로 새로 생성**된다.
+- MAC = `HMAC-SHA256(key, canonicalBody)` 이며 다음을 **전부 binding**:
+  schema version · run-id · expected direct/pooled hash · **forbidden direct/pooled hash** ·
+  target identity fingerprint · status · issued-at · **expires-at** · **random nonce**.
+- **evidence 와 key 는 서로 다른 파일에 분리 저장**(저장소 밖 임시 경로, mode 0600).
+  evidence 파일에는 키가 들어가지 않는다. 내용에 URL·credential 0 (`assertNoSecrets`).
+- **TTL 상한 15분**(요구 상한 30분 이하). 요청 TTL 이 더 커도 상한으로 잘린다.
+- 검증은 **timing-safe** 비교. `execute` 는 `consumeEvidence()` 로 **읽는 즉시 evidence/key 를 둘 다 삭제**하므로
+  **성공·실패 무관하게 재사용(replay)이 불가능**하다. 같은 프로세스 내 재사용은 nonce 소비 기록이 추가로 막는다.
+- **legacy(unsigned / `integrity` 필드) evidence 는 무조건 거부**한다(호환성 유지 안 함).
+- 이 검증은 **DB adapter 를 만들기 전에** 수행되며 실패 시 **연결 0 · write 0 · exit 5**.
+
+거부되는 위조 시나리오(테스트로 고정): status→passed 변경 · run-id 변경 · expected/forbidden hash 변경 ·
+target identity 변경 · nonce 변경 · **MAC 한 글자 변경** · 시각 변조 · schema version 변경 · 다른 run 의 키 ·
+key/evidence 누락 · 만료 · 재사용 · legacy evidence.
 
 ## 7. 결정된 사항(구현 시점)
 1. **pooled read-only 보장** → `SET SESSION CHARACTERISTICS` 에 의존하지 않고 **트랜잭션마다 `SET TRANSACTION READ ONLY` 재설정 + 되읽기 확인**.

@@ -24,7 +24,7 @@ export function buildDryRunPlan(cfg: HarnessConfig): string[] {
   const cleanup = buildCleanupPlan(n);
   return [
     `[plan] direct=${maskUrl(cfg.directUrl)} pooled=${maskUrl(cfg.pooledUrl)} runId=${cfg.runId}`,
-    `[plan] endpoint pin: direct/pooled 각각 독립 expected hash 로 고정됨 · forbidden(production) hash 불일치 확인됨${cfg.forbiddenHostHash ? "" : " (forbidden 미설정 — 설정 권장)"}`,
+    `[plan] endpoint pin: direct/pooled 각각 독립 expected hash 고정 · forbidden set(production direct+pooled) 4개 조합 불일치 확인됨`,
     `[plan] CREATE SCHEMA ${n.schema} (synthetic 전용 — public 에는 아무것도 만들지 않음)`,
     `[plan] CREATE ROLE ${Object.values(n.roles).join(", ")}`,
     `[plan] capability catalog=${CAPABILITIES.length} · actual-neon-direct applicable=${countFor("actual-neon-direct")} · actual-neon-pooled applicable=${countFor("actual-neon-pooled")}`,
@@ -66,14 +66,17 @@ export async function main(env: HarnessEnv = process.env as HarnessEnv): Promise
 
   // ── execute 진입 전 preflight evidence 검문(§13) ──
   // "통과했다"는 자기신고로는 열리지 않는다. run-id·expected/forbidden hash·status·freshness·integrity 를 전부 대조.
-  const { assertExecuteAllowed } = await import("./neonCheck/selectOnlyPreflight");
-  const { loadEvidence } = await import("./neonCheck/evidenceStore");
-  const ev = assertExecuteAllowed(cfg, loadEvidence(), Date.now());
+  // ⚠️ **DB adapter 를 만들기 전에** 수행한다. 실패하면 연결 0 · write 0 으로 종료한다.
+  const { verifySignedEvidence } = await import("./neonCheck/evidenceAuth");
+  const { consumeEvidence } = await import("./neonCheck/evidenceStore");
+  const stored = consumeEvidence();   // 읽는 즉시 evidence/key 폐기 → 실패해도 재시도(replay) 불가
+  const ev = verifySignedEvidence(cfg, stored.evidence, stored.key, Date.now());
   if (!ev.ok) {
-    console.error("[neon-check] ❌ execute 차단 — preflight evidence 검문 실패:");
+    console.error("[neon-check] ❌ execute 차단 — preflight evidence 인증 실패(DB 연결 0 · write 0):");
     for (const x of ev.refusals) console.error("  - " + x);
     return 5;
   }
+  console.log("[neon-check] preflight evidence 인증 통과(HMAC · nonce 소비 · evidence/key 폐기 완료).");
 
   // ── hardening security assertion 관문(연결 **전**, fail-closed) ──
   // Neon capability 와 별개 catalog. 하나라도 실패하면 Neon 접속 0 · DDL 0 으로 중단한다.

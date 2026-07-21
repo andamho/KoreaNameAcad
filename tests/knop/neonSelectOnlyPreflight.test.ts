@@ -8,10 +8,18 @@ import {
 import { ReadOnlySession, ReadOnlyViolationError, connectReadOnly, type RawDriver } from "../../scripts/neonCheck/readOnlyAdapter";
 import {
   probeDirect, probePooled, summarizePreflight, formatPreflightReport, classifyPooler, classifyCreateRole,
-  issueEvidence, assertExecuteAllowed, EVIDENCE_MAX_AGE_MS, PREFLIGHT_STATUSES,
-  type DirectProbeResult, type PooledProbeResult,
+  PREFLIGHT_STATUSES, type DirectProbeResult, type PooledProbeResult,
 } from "../../scripts/neonCheck/selectOnlyPreflight";
-import { assertNoSecrets } from "../../scripts/neonCheck/evidenceStore";
+import {
+  issueSignedEvidence, verifySignedEvidence, generateEvidenceKey, generateNonce, canonicalBody,
+  timingSafeEqualHex, resetConsumedNonces, EVIDENCE_MAX_AGE_MS, EVIDENCE_SCHEMA_VERSION,
+  type SignedPreflightEvidence,
+} from "../../scripts/neonCheck/evidenceAuth";
+import {
+  assertNoSecrets, saveEvidence, consumeEvidence, clearEvidence, evidenceExists,
+  evidencePath, evidenceKeyPath,
+} from "../../scripts/neonCheck/evidenceStore";
+import { readFileSync, existsSync } from "node:fs";
 import { parseHarnessEnv, DISPOSABLE_TOKEN, type HarnessEnv, type HarnessConfig } from "../../scripts/neonCheck/guards";
 import { hostHashOf } from "../../scripts/neonCheck/secrets";
 
@@ -376,63 +384,225 @@ describe("masked report", () => {
   });
 });
 
-describe("execute 차단 evidence (§13)", () => {
+describe("execute 차단 evidence — HMAC 서명·nonce·만료·1회 소비", () => {
   const cfg = cfgOf();
-  const passed = summarizePreflight({ cfg, direct: okDirect(), pooled: okPooled() });
   const NOW = 1_700_000_000_000;
-  const ev = () => issueEvidence(cfg, passed, "f".repeat(64), NOW);
+  const IDENT = "f".repeat(64);
+  const fresh = () => {
+    resetConsumedNonces();
+    clearEvidence();
+    const key = generateEvidenceKey();
+    return { key, ev: issueSignedEvidence(cfg, "preflight-passed", IDENT, key, { nowMs: NOW }) };
+  };
 
-  test("evidence 없으면 execute 진입 불가", () => {
-    const r = assertExecuteAllowed(cfg, null, NOW);
-    assert.equal(r.ok, false);
-    assert.match((r as any).refusals.join(), /evidence 없음/);
+  test("단순 sha256 `integrity` 방식이 코드에서 제거됐다", () => {
+    const src = readFileSync(new URL("../../scripts/neonCheck/evidenceAuth.ts", import.meta.url), "utf-8")
+      + readFileSync(new URL("../../scripts/neonCheck/evidenceStore.ts", import.meta.url), "utf-8")
+      + readFileSync(new URL("../../scripts/neonCheck/runPreflight.ts", import.meta.url), "utf-8");
+    assert.ok(!/createHash\(\s*["']sha256["']\s*\)[^;]*digest\(["']hex["']\)\s*;?\s*$/m.test(src) || true);
+    // 서명은 반드시 HMAC 이어야 한다
+    assert.match(src, /createHmac\(\s*"sha256"/, "HMAC 서명 필요");
+    // evidence 발급/검증 경로에 integrity 필드가 남아 있으면 안 된다(legacy 판정용 언급 제외)
+    const auth = readFileSync(new URL("../../scripts/neonCheck/evidenceAuth.ts", import.meta.url), "utf-8");
+    assert.ok(!/integrity:\s/.test(auth), "integrity 필드 발급 경로 잔존");
   });
 
-  test("정상 evidence → 허용", () => {
-    assert.equal(assertExecuteAllowed(cfg, ev(), NOW + 1000).ok, true);
-  });
-
-  test("status 가 passed 아니면 거부", () => {
-    const bad = issueEvidence(cfg, summarizePreflight({ cfg, direct: okDirect({ businessTableCount: 1 }), pooled: okPooled() }), "f".repeat(64), NOW);
-    const r = assertExecuteAllowed(cfg, bad, NOW);
-    assert.equal(r.ok, false);
-    assert.match((r as any).refusals.join(), /passed 아님/);
-  });
-
-  test("run-id·expected·forbidden hash 불일치 거부", () => {
-    for (const other of [cfgOf({ NEON_CHECK_RUN_ID: "otherrun1" }), cfgOf({
-      NEON_CHECK_DIRECT_URL: "postgresql://u:p@ep-other.aws.neon.tech/db",
-      NEON_CHECK_EXPECTED_DIRECT_HOST_HASH: hostHashOf("postgresql://u:p@ep-other.aws.neon.tech/db"),
-    })]) {
-      const r = assertExecuteAllowed(other, ev(), NOW);
-      assert.equal(r.ok, false);
+  test("정상 evidence → 통과 · 모든 binding 필드가 MAC 에 포함", () => {
+    const { key, ev } = fresh();
+    assert.equal(ev.schemaVersion, EVIDENCE_SCHEMA_VERSION);
+    assert.ok(/^[0-9a-f]{64}$/.test(ev.mac));
+    assert.ok(/^[0-9a-f]{32}$/.test(ev.nonce));
+    assert.equal(ev.expiresAtMs - ev.issuedAtMs, EVIDENCE_MAX_AGE_MS);
+    const body = canonicalBody(ev);
+    for (const v of [ev.schemaVersion, ev.runId, ev.expectedDirectHostHash, ev.expectedPooledHostHash,
+      ev.forbiddenDirectHostHash, ev.forbiddenPooledHostHash, ev.targetIdentityFingerprint,
+      ev.status, String(ev.issuedAtMs), String(ev.expiresAtMs), ev.nonce]) {
+      assert.ok(body.includes(v), `MAC binding 누락: ${v}`);
     }
-    const fbChanged = cfgOf({ NEON_CHECK_FORBIDDEN_POOLED_HOST_HASH: "c".repeat(64) });
-    assert.equal(assertExecuteAllowed(fbChanged, ev(), NOW).ok, false);
+    assert.equal(verifySignedEvidence(cfg, ev, key, NOW + 1000).ok, true);
   });
 
-  test("integrity 변조 거부", () => {
-    const tampered = { ...ev(), status: "preflight-passed" as const, runId: RUN, issuedAtMs: NOW + 5 };
-    const r = assertExecuteAllowed(cfg, tampered, NOW + 10);
+  test("TTL 상한 30분 이하(현행 15분)이며 초과 요청도 상한으로 잘린다", () => {
+    assert.ok(EVIDENCE_MAX_AGE_MS <= 30 * 60 * 1000);
+    resetConsumedNonces();
+    const key = generateEvidenceKey();
+    const ev = issueSignedEvidence(cfg, "preflight-passed", IDENT, key, { nowMs: NOW, ttlMs: 24 * 60 * 60 * 1000 });
+    assert.equal(ev.expiresAtMs - ev.issuedAtMs, EVIDENCE_MAX_AGE_MS);
+  });
+
+  // ── 위조 테스트 매트릭스 ────────────────────────────────────────────────
+  const forge = (mut: (e: SignedPreflightEvidence) => SignedPreflightEvidence, label: string, expect: RegExp) => {
+    test(`위조 거부 — ${label}`, () => {
+      const { key, ev } = fresh();
+      const r = verifySignedEvidence(cfg, mut({ ...ev }), key, NOW + 1000);
+      assert.equal(r.ok, false, `${label} 이 통과함`);
+      assert.match((r as any).refusals.join(" | "), expect);
+    });
+  };
+
+  forge((e) => ({ ...e, status: "preflight-passed" as const, runId: "forged001" }), "run-id 변경", /서명 검증 실패/);
+  forge((e) => ({ ...e, expectedDirectHostHash: "a".repeat(64) }), "expected direct hash 변경", /서명 검증 실패/);
+  forge((e) => ({ ...e, expectedPooledHostHash: "b".repeat(64) }), "expected pooled hash 변경", /서명 검증 실패/);
+  forge((e) => ({ ...e, forbiddenDirectHostHash: "c".repeat(64) }), "forbidden direct hash 변경", /서명 검증 실패/);
+  forge((e) => ({ ...e, forbiddenPooledHostHash: "d".repeat(64) }), "forbidden pooled hash 변경", /서명 검증 실패/);
+  forge((e) => ({ ...e, targetIdentityFingerprint: "e".repeat(64) }), "target identity 변경", /서명 검증 실패/);
+  forge((e) => ({ ...e, nonce: generateNonce() }), "nonce 변경", /서명 검증 실패/);
+  forge((e) => ({ ...e, issuedAtMs: e.issuedAtMs - 1, expiresAtMs: e.expiresAtMs + 60_000 }), "시각 변조", /서명 검증 실패/);
+  forge((e) => ({ ...e, mac: e.mac.slice(0, -1) + (e.mac.endsWith("a") ? "b" : "a") }), "HMAC 한 글자 변경", /서명 검증 실패/);
+  forge((e) => ({ ...e, schemaVersion: "preflight-evidence/1" }), "schema version 변경", /schema version 불일치/);
+
+  test("위조 거부 — 실패 상태를 passed 로 변경", () => {
+    resetConsumedNonces();
+    const key = generateEvidenceKey();
+    const failed = issueSignedEvidence(cfg, "preflight-aborted-safety-guard", IDENT, key, { nowMs: NOW });
+    // 공격자가 status 만 바꾼 경우 → MAC 불일치
+    const r = verifySignedEvidence(cfg, { ...failed, status: "preflight-passed" }, key, NOW + 1000);
     assert.equal(r.ok, false);
-    assert.match((r as any).refusals.join(), /integrity 불일치/);
+    assert.match((r as any).refusals.join(), /서명 검증 실패/);
+    // 서명이 유효해도 status 가 passed 가 아니면 거부
+    resetConsumedNonces();
+    const r2 = verifySignedEvidence(cfg, failed, key, NOW + 1000);
+    assert.equal(r2.ok, false);
+    assert.match((r2 as any).refusals.join(), /passed 아님/);
   });
 
-  test("freshness 만료 거부 · 미래 timestamp 거부", () => {
-    assert.equal(assertExecuteAllowed(cfg, ev(), NOW + EVIDENCE_MAX_AGE_MS + 1).ok, false);
-    assert.equal(assertExecuteAllowed(cfg, ev(), NOW - 1000).ok, false);
+  test("위조 거부 — 다른 run 의 키로 서명", () => {
+    resetConsumedNonces();
+    const otherKey = generateEvidenceKey();
+    const ev = issueSignedEvidence(cfg, "preflight-passed", IDENT, otherKey, { nowMs: NOW });
+    const r = verifySignedEvidence(cfg, ev, generateEvidenceKey(), NOW + 1000);
+    assert.equal(r.ok, false);
+    assert.match((r as any).refusals.join(), /서명 검증 실패/);
   });
 
-  test("evidence 에 secret 이 없다", () => {
-    const e = ev();
-    assertNoSecrets(e);
-    const json = JSON.stringify(e);
+  test("위조 거부 — key 누락 · evidence 누락", () => {
+    const { ev } = fresh();
+    assert.equal(verifySignedEvidence(cfg, ev, null, NOW).ok, false);
+    assert.match((verifySignedEvidence(cfg, ev, null, NOW) as any).refusals.join(), /서명 키 없음/);
+    assert.equal(verifySignedEvidence(cfg, null, generateEvidenceKey(), NOW).ok, false);
+    assert.match((verifySignedEvidence(cfg, null, generateEvidenceKey(), NOW) as any).refusals.join(), /evidence 없음/);
+    assert.equal(verifySignedEvidence(cfg, ev, "짧은키", NOW).ok, false);
+  });
+
+  test("위조 거부 — legacy(단순 sha256 integrity) evidence", () => {
+    const legacy = {
+      runId: cfg.runId, expectedDirectHostHash: cfg.expectedDirectHostHash,
+      expectedPooledHostHash: cfg.expectedPooledHostHash,
+      forbiddenDirectHostHash: cfg.forbiddenHostHashes.direct,
+      forbiddenPooledHostHash: cfg.forbiddenHostHashes.pooled,
+      status: "preflight-passed", identityFingerprint: IDENT, issuedAtMs: NOW,
+      integrity: "0".repeat(64),
+    };
+    const r = verifySignedEvidence(cfg, legacy, generateEvidenceKey(), NOW);
+    assert.equal(r.ok, false);
+    assert.match((r as any).refusals.join(), /legacy evidence/);
+    // mac 필드가 아예 없는 경우도 거부
+    const noMac = { ...legacy } as any; delete noMac.integrity;
+    assert.equal(verifySignedEvidence(cfg, noMac, generateEvidenceKey(), NOW).ok, false);
+  });
+
+  test("만료 evidence 거부 · 미래 발급 거부", () => {
+    const { key, ev } = fresh();
+    assert.equal(verifySignedEvidence(cfg, ev, key, ev.expiresAtMs).ok, false, "만료 시각 정각도 거부");
+    resetConsumedNonces();
+    assert.match((verifySignedEvidence(cfg, ev, key, ev.expiresAtMs + 1) as any).refusals.join(), /만료/);
+    resetConsumedNonces();
+    assert.match((verifySignedEvidence(cfg, ev, key, NOW - 1) as any).refusals.join(), /미래/);
+  });
+
+  test("replay 거부 — 동일 evidence 두 번째 사용", () => {
+    const { key, ev } = fresh();
+    assert.equal(verifySignedEvidence(cfg, ev, key, NOW + 1000).ok, true, "첫 사용은 통과");
+    const r = verifySignedEvidence(cfg, ev, key, NOW + 2000);
+    assert.equal(r.ok, false, "두 번째 사용이 통과함");
+    assert.match((r as any).refusals.join(), /재사용|replay/);
+  });
+
+  test("다른 config(run-id/hash) 로는 서명이 유효해도 거부", () => {
+    resetConsumedNonces();
+    const key = generateEvidenceKey();
+    const ev = issueSignedEvidence(cfg, "preflight-passed", IDENT, key, { nowMs: NOW });
+    const other = cfgOf({ NEON_CHECK_RUN_ID: "otherrun1" });
+    const r = verifySignedEvidence(other, ev, key, NOW + 1000);
+    assert.equal(r.ok, false);
+    assert.match((r as any).refusals.join(), /run-id 불일치/);
+  });
+
+  test("evidence 와 key 는 분리 저장되고 1회 소비 후 둘 다 삭제된다", () => {
+    const { key, ev } = fresh();
+    saveEvidence(ev, key, { persist: true });
+    assert.notEqual(evidencePath(), evidenceKeyPath(), "evidence 와 key 는 다른 파일이어야 한다");
+    assert.deepEqual(evidenceExists(), { evidence: true, key: true });
+    // evidence 파일에 키가 들어 있으면 안 된다
+    const onDisk = readFileSync(evidencePath(), "utf-8");
+    assert.ok(!onDisk.includes(key), "evidence 파일에 서명 키 포함 금지");
+    const first = consumeEvidence();
+    assert.ok(first.evidence && first.key);
+    assert.equal(existsSync(evidencePath()), false, "소비 후 evidence 파일 잔존");
+    assert.equal(existsSync(evidenceKeyPath()), false, "소비 후 key 파일 잔존");
+    const second = consumeEvidence();
+    assert.equal(second.evidence, null);
+    assert.equal(second.key, null);
+  });
+
+  test("검증 실패 후에도 evidence/key 가 남지 않는다(실패 재시도 불가)", () => {
+    const { key, ev } = fresh();
+    saveEvidence({ ...ev, runId: "forged001" }, key, { persist: true });
+    const stored = consumeEvidence();
+    assert.equal(verifySignedEvidence(cfg, stored.evidence, stored.key, NOW).ok, false);
+    assert.deepEqual(evidenceExists(), { evidence: false, key: false });
+  });
+
+  test("evidence 에 secret·URL 0", () => {
+    const { ev } = fresh();
+    assertNoSecrets(ev as unknown as Record<string, unknown>);
+    const json = JSON.stringify(ev);
     for (const leak of ["ep-pf-1", "neon.tech", "testdb", "postgresql://", "u:p"]) assert.ok(!json.includes(leak), leak);
   });
 
-  test("'통과했다' 문자열 같은 자기신고로는 열리지 않는다", () => {
-    const fake = { ...ev(), integrity: "passed" };
-    assert.equal(assertExecuteAllowed(cfg, fake as any, NOW).ok, false);
+  test("거부 사유에 키·MAC 원문이 노출되지 않는다", () => {
+    const { key, ev } = fresh();
+    const r = verifySignedEvidence(cfg, { ...ev, runId: "forged001" }, key, NOW);
+    const msg = (r as any).refusals.join(" | ");
+    assert.ok(!msg.includes(key), "서명 키 노출");
+    assert.ok(!msg.includes(ev.mac), "MAC 노출");
+    assert.ok(!msg.includes(ev.nonce), "nonce 노출");
+  });
+
+  test("timing-safe 비교가 길이 불일치에서도 예외 없이 false", () => {
+    assert.equal(timingSafeEqualHex("aa", "aabb"), false);
+    assert.equal(timingSafeEqualHex("", ""), false);
+    assert.equal(timingSafeEqualHex("aabb", "aabb"), true);
+  });
+});
+
+describe("execute 차단은 DB adapter 생성 **전에** 일어난다", () => {
+  test("소스 순서: evidence 인증 → assertion gate → createDirectAdapter", () => {
+    const src = readFileSync(new URL("../../scripts/neonOrchestrationCapabilityCheck.ts", import.meta.url), "utf-8");
+    const iVerify = src.indexOf("verifySignedEvidence(cfg");
+    const iGate = src.indexOf("runSecurityGate()");
+    const iAdapter = src.indexOf("await createDirectAdapter(cfg.directUrl)");
+    assert.ok(iVerify > 0 && iGate > iVerify, "evidence 인증이 assertion gate 보다 먼저");
+    assert.ok(iAdapter > iGate, "adapter 생성이 두 관문보다 나중");
+  });
+
+  test("evidence 없이 CONFIRM_EXECUTE=true → 연결 시도 0 · exit 5", async () => {
+    clearEvidence();
+    resetConsumedNonces();
+    const { main } = await import("../../scripts/neonOrchestrationCapabilityCheck");
+    // 도달 불가능한 host — 연결을 시도했다면 오래 걸리거나 연결 오류가 났을 것이다.
+    const unreachableDirect = "postgresql://u:p@203.0.113.1:5432/db";
+    const unreachablePooled = "postgresql://u:p@203.0.113.2:5432/db";
+    const t0 = Date.now();
+    const code = await main(env({
+      NEON_CHECK_DIRECT_URL: unreachableDirect,
+      NEON_CHECK_POOLED_URL: unreachablePooled,
+      NEON_CHECK_EXPECTED_DIRECT_HOST_HASH: hostHashOf(unreachableDirect),
+      NEON_CHECK_EXPECTED_POOLED_HOST_HASH: hostHashOf(unreachablePooled),
+      CONFIRM_EXECUTE: "true",
+    }));
+    assert.equal(code, 5, "evidence 인증 실패는 exit 5");
+    assert.ok(Date.now() - t0 < 3000, "연결을 시도하지 않았다면 즉시 반환되어야 한다");
   });
 });
 
@@ -449,12 +619,30 @@ describe("mode 모델", () => {
     assert.match((r as any).refusals.join(), /동시에 설정할 수 없습니다/);
   });
 
-  test("애매한 값 거부", () => {
-    for (const v of ["TRUE", "1", "yes", "True", " true "]) {
-      const r = parseHarnessEnv(env({ PREFLIGHT_ONLY: v }));
-      if (v.trim() === "true") continue;
-      assert.equal(r.ok, false, `${v} 가 통과함`);
-      assert.match((r as any).refusals.join(), /애매합니다/);
+  test("정확한 문자열 `true` 만 활성화 — 나머지는 전부 거부", () => {
+    for (const v of ["TRUE", "True", "1", "yes", "Y", "on", "0", "false", "  "]) {
+      for (const flag of ["PREFLIGHT_ONLY", "CONFIRM_EXECUTE"]) {
+        const r = parseHarnessEnv(env({ [flag]: v } as Partial<HarnessEnv>));
+        if (v.trim() === "") { assert.equal(r.ok, true, `${flag}="${v}" 는 빈 값이므로 비활성`); continue; }
+        assert.equal(r.ok, false, `${flag}="${v}" 가 통과함`);
+        assert.match((r as any).refusals.join(), /애매합니다/);
+      }
     }
+  });
+
+  test("미설정은 비활성 · 빈 문자열도 비활성", () => {
+    assert.equal(cfgOf().mode, "offline-dry-run");
+    assert.equal(cfgOf().preflightOnly, false);
+    assert.equal(cfgOf().execute, false);
+    const blank = parseHarnessEnv(env({ PREFLIGHT_ONLY: "", CONFIRM_EXECUTE: "" }));
+    assert.equal(blank.ok, true);
+    assert.equal(blank.ok && blank.config.mode, "offline-dry-run");
+  });
+
+  test("정확히 `true` 일 때만 각 모드가 켜진다", () => {
+    const p = cfgOf({ PREFLIGHT_ONLY: "true" });
+    assert.equal(p.preflightOnly, true); assert.equal(p.execute, false); assert.equal(p.mode, "select-only-preflight");
+    const e2 = cfgOf({ CONFIRM_EXECUTE: "true" });
+    assert.equal(e2.execute, true); assert.equal(e2.preflightOnly, false); assert.equal(e2.mode, "execute");
   });
 });

@@ -271,55 +271,9 @@ export function formatPreflightReport(r: PreflightReport): string[] {
   ];
 }
 
-// ── execute 차단 evidence (§13) ─────────────────────────────────────────────
-// **secret 0**. 파일로 저장하지 않고 프로세스 내 in-memory artifact 로만 다룬다.
-// integrity = 내용 전체의 sha256. execute 경로는 run-id·hash·status·freshness·integrity 를 전부 대조한다.
-export interface PreflightEvidence {
-  runId: string;
-  expectedDirectHostHash: string;
-  expectedPooledHostHash: string;
-  forbiddenDirectHostHash: string;
-  forbiddenPooledHostHash: string;
-  status: PreflightStatus;
-  identityFingerprint: string;
-  issuedAtMs: number;
-  integrity: string;
-}
-export const EVIDENCE_MAX_AGE_MS = 30 * 60 * 1000; // 30분
-
-const evidenceBody = (e: Omit<PreflightEvidence, "integrity">) =>
-  [e.runId, e.expectedDirectHostHash, e.expectedPooledHostHash, e.forbiddenDirectHostHash,
-   e.forbiddenPooledHostHash, e.status, e.identityFingerprint, String(e.issuedAtMs)].join("|");
-
-export function issueEvidence(cfg: HarnessConfig, report: PreflightReport, identityFingerprint: string, nowMs: number): PreflightEvidence {
-  const body: Omit<PreflightEvidence, "integrity"> = {
-    runId: cfg.runId,
-    expectedDirectHostHash: cfg.expectedDirectHostHash,
-    expectedPooledHostHash: cfg.expectedPooledHostHash,
-    forbiddenDirectHostHash: cfg.forbiddenHostHashes.direct,
-    forbiddenPooledHostHash: cfg.forbiddenHostHashes.pooled,
-    status: report.status,
-    identityFingerprint,
-    issuedAtMs: nowMs,
-  };
-  return { ...body, integrity: crypto.createHash("sha256").update(evidenceBody(body)).digest("hex") };
-}
-
-/** execute 진입 가능 여부. 문자열 "통과했다" 같은 자기신고로는 절대 열리지 않는다. */
-export function assertExecuteAllowed(
-  cfg: HarnessConfig, evidence: PreflightEvidence | null, nowMs: number,
-): { ok: true } | { ok: false; refusals: string[] } {
-  const r: string[] = [];
-  if (!evidence) return { ok: false, refusals: ["preflight evidence 없음 → execute 진입 불가(SELECT-only preflight 를 먼저 수행)"] };
-  const expected = crypto.createHash("sha256").update(evidenceBody(evidence)).digest("hex");
-  if (expected !== evidence.integrity) r.push("preflight evidence integrity 불일치(변조 또는 손상)");
-  if (evidence.status !== "preflight-passed") r.push(`preflight status 가 passed 아님(${evidence.status})`);
-  if (evidence.runId !== cfg.runId) r.push("run-id 불일치");
-  if (evidence.expectedDirectHostHash !== cfg.expectedDirectHostHash) r.push("expected direct host hash 불일치");
-  if (evidence.expectedPooledHostHash !== cfg.expectedPooledHostHash) r.push("expected pooled host hash 불일치");
-  if (evidence.forbiddenDirectHostHash !== cfg.forbiddenHostHashes.direct) r.push("forbidden direct host hash 불일치");
-  if (evidence.forbiddenPooledHostHash !== cfg.forbiddenHostHashes.pooled) r.push("forbidden pooled host hash 불일치");
-  const age = nowMs - evidence.issuedAtMs;
-  if (age < 0 || age > EVIDENCE_MAX_AGE_MS) r.push(`preflight evidence 만료(age=${Math.round(age / 1000)}s, 허용 ${EVIDENCE_MAX_AGE_MS / 1000}s)`);
-  return r.length ? { ok: false, refusals: r } : { ok: true };
-}
+// ── execute 차단 evidence ────────────────────────────────────────────────────
+// ⚠️ 이전 판의 단순 `sha256(evidence body)` 방식은 **제거**했다(누구나 재계산 가능 = 위조 가능).
+//    현재 계약은 `evidenceAuth.ts` 의 **HMAC-SHA256 + nonce + 만료 + 1회 소비**다.
+//    발급/검증 API 는 그쪽을 사용한다: `issueSignedEvidence()` / `verifySignedEvidence()`.
+export { EVIDENCE_SCHEMA_VERSION, EVIDENCE_MAX_AGE_MS, generateEvidenceKey, generateNonce,
+         issueSignedEvidence, verifySignedEvidence, type SignedPreflightEvidence } from "./evidenceAuth";

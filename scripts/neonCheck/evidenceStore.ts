@@ -1,23 +1,26 @@
-// preflight evidence 보관 — **secret 0 · repository 밖 · 프로세스 내 우선**.
+// preflight evidence 보관 — **secret 0 · 저장소 밖 · evidence/key 분리 · 1회 소비 후 폐기**.
 //
 // 설계:
-//  - 기본은 **in-memory**(같은 프로세스에서 preflight → execute 를 이어 하는 경우).
-//  - 프로세스가 분리되는 실제 운영 흐름을 위해, **repository 밖 임시 디렉터리**의 파일 저장을 허용한다.
-//    저장 내용은 run-id·hash·status·timestamp·integrity 뿐이며 **URL·credential 이 포함되지 않는다**.
-//  - integrity(sha256)로 변조를 탐지하고, 만료(EVIDENCE_MAX_AGE_MS)로 재사용을 막는다.
+//  - evidence 파일과 **서명 키 파일을 분리**한다(다른 경로). evidence 만 훔쳐도 위조가 불가능해야 한다.
+//  - 두 파일 모두 **저장소 밖 임시 디렉터리**. 내용에 URL·credential 이 없다(`assertNoSecrets` 로 강제).
+//  - `consumeEvidence()` 는 읽는 즉시 **두 파일을 모두 삭제**한다 → 성공·실패 무관하게 재사용 불가(replay 방지).
+//  - 같은 프로세스 안 재사용은 `evidenceAuth` 의 nonce 소비 기록이 추가로 막는다.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { PreflightEvidence } from "./selectOnlyPreflight";
+import type { SignedPreflightEvidence } from "./evidenceAuth";
 
-let memory: PreflightEvidence | null = null;
+let memoryEvidence: SignedPreflightEvidence | null = null;
+let memoryKey: string | null = null;
 
-/** repository 밖 임시 경로. 저장소에 남기지 않는다. */
-export const evidencePath = (): string => path.join(os.tmpdir(), "neon-preflight-evidence.json");
+const base = () => os.tmpdir();
+/** evidence 와 key 는 **서로 다른 파일**에 둔다. */
+export const evidencePath = (): string => path.join(base(), "neon-preflight-evidence.json");
+export const evidenceKeyPath = (): string => path.join(base(), "neon-preflight-evidence.key");
 
-/** evidence 에 secret 계열 키가 섞이지 않았는지 확인(저장 전 마지막 방어선). */
-export function assertNoSecrets(e: PreflightEvidence): void {
-  const forbidden = ["url", "password", "user", "host", "database", "credential", "token"];
+/** secret 계열 필드·URL 이 섞이지 않았는지 확인(저장 전 마지막 방어선). */
+export function assertNoSecrets(e: Record<string, unknown>): void {
+  const forbidden = ["url", "password", "user", "host", "database", "credential", "token", "key", "secret"];
   for (const k of Object.keys(e)) {
     const lower = k.toLowerCase();
     if (forbidden.some((f) => lower.includes(f) && !lower.includes("hash"))) {
@@ -29,23 +32,49 @@ export function assertNoSecrets(e: PreflightEvidence): void {
   }
 }
 
-export function saveEvidence(e: PreflightEvidence, opts: { persist?: boolean } = {}): void {
-  assertNoSecrets(e);
-  memory = e;
-  if (opts.persist) fs.writeFileSync(evidencePath(), JSON.stringify(e), { encoding: "utf-8" });
+export interface StoredEvidence { evidence: SignedPreflightEvidence | null; key: string | null }
+
+/** evidence 와 key 를 분리 저장한다. key 는 evidence 파일에 절대 들어가지 않는다. */
+export function saveEvidence(evidence: SignedPreflightEvidence, keyHex: string, opts: { persist?: boolean } = {}): void {
+  assertNoSecrets(evidence as unknown as Record<string, unknown>);
+  memoryEvidence = evidence;
+  memoryKey = keyHex;
+  if (opts.persist) {
+    fs.writeFileSync(evidencePath(), JSON.stringify(evidence), { encoding: "utf-8", mode: 0o600 });
+    fs.writeFileSync(evidenceKeyPath(), keyHex, { encoding: "utf-8", mode: 0o600 });
+  }
 }
 
-export function loadEvidence(): PreflightEvidence | null {
-  if (memory) return memory;
-  try {
-    const raw = fs.readFileSync(evidencePath(), "utf-8");
-    const parsed = JSON.parse(raw) as PreflightEvidence;
-    assertNoSecrets(parsed);
-    return parsed;
-  } catch { return null; }
+/**
+ * **1회 소비**: evidence 와 key 를 읽는 즉시 메모리·파일 양쪽에서 제거한다.
+ * 검증 성공 여부와 무관하게 삭제하므로 실패 후 재시도(replay)도 불가능하다.
+ */
+export function consumeEvidence(): StoredEvidence {
+  const out: StoredEvidence = { evidence: memoryEvidence, key: memoryKey };
+  if (!out.evidence) {
+    try { out.evidence = JSON.parse(fs.readFileSync(evidencePath(), "utf-8")) as SignedPreflightEvidence; }
+    catch { out.evidence = null; }
+  }
+  if (!out.key) {
+    try { out.key = fs.readFileSync(evidenceKeyPath(), "utf-8").trim(); }
+    catch { out.key = null; }
+  }
+  clearEvidence();
+  return out;
+}
+
+/** 읽지 않고 존재 여부만 확인(진단용). 소비하지 않는다. */
+export function evidenceExists(): { evidence: boolean; key: boolean } {
+  return {
+    evidence: memoryEvidence !== null || fs.existsSync(evidencePath()),
+    key: memoryKey !== null || fs.existsSync(evidenceKeyPath()),
+  };
 }
 
 export function clearEvidence(): void {
-  memory = null;
-  try { fs.unlinkSync(evidencePath()); } catch { /* 없으면 무시 */ }
+  memoryEvidence = null;
+  memoryKey = null;
+  for (const p of [evidencePath(), evidenceKeyPath()]) {
+    try { fs.unlinkSync(p); } catch { /* 없으면 무시 */ }
+  }
 }

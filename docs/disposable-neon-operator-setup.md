@@ -22,7 +22,7 @@
 | **offline dry-run** | **ready** |
 | **SELECT-only preflight** | **implemented** (실제 Neon 실행은 not-run) |
 | **forbidden direct/pooled 분리** | **complete** (4개 조합 set 비교) |
-| **execute evidence gating** | **complete** (integrity + freshness) |
+| **execute evidence gating** | **complete** (HMAC-SHA256 + nonce + 만료 + 1회 소비, 단순 sha256 제거) |
 | `pglite` profile 검증 | **verified** (applicable 22 / 45, PG 18.x → 비정본) |
 | `embedded-direct` PG17 17.10 검증 | **verified** (applicable 40 / 45, authoritative 40) |
 | `pooled-mock` 검증 | **verified** (applicable 5 / 45) — 실제 PgBouncer 아님 |
@@ -324,8 +324,11 @@ node --import tsx/esm scripts/neonOrchestrationCapabilityCheck.ts
 - [ ] `createRoleCapability` = `likely-capable` / `unverified` (**"가능하다"고 단정하지 않습니다** — execute 전 잔여 위험)
 - [ ] masked fingerprint 만 보임(URL·host·db·user·role·table 이름 없음)
 
-> preflight 가 통과하면 **evidence** 가 발급됩니다(run-id·hash 4종·status·발급시각·integrity, **secret 0**, 저장소 밖 임시 경로, 만료 30분).
-> execute 경로는 이 evidence 를 대조해 열리며, **"통과했다"는 말만으로는 열리지 않습니다.**
+> preflight 가 통과하면 **HMAC 서명 evidence** 가 발급됩니다.
+> run-id · expected hash 2 · **forbidden hash 2** · target identity · status · 발급/만료 시각 · **일회성 nonce** 를
+> 전부 서명에 묶고, **evidence 와 서명 키를 서로 다른 파일에 분리 저장**합니다(저장소 밖 임시 경로, **secret 0**, TTL 15분).
+> execute 는 이를 **DB 연결 전에** 검증하고 **읽는 즉시 evidence/key 를 폐기**하므로 재사용이 불가능합니다.
+> 단순 해시(`integrity`) 방식의 구 evidence 는 **거부**됩니다. **"통과했다"는 말만으로는 열리지 않습니다.**
 
 ## 14. 결과 공유 규칙 (Claude·문서·메신저 공통)
 **공유 가능**: dry-run status · run-id · **masked** direct/pooled fingerprint(`url#xxxxxxxx…`) ·
