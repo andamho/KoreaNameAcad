@@ -148,7 +148,10 @@ BEGIN
       EXECUTE format('GRANT %I TO %I', r, me);
       granted := true;
     END IF;
-    -- FUNCTIONS: 유일하게 실효가 있는 형식(전역). 이것이 이번 정정의 핵심.
+    -- FUNCTIONS: default privileges 형식 중 실효가 있는 것은 전역 형식뿐이다(스키마 한정은 no-op).
+    -- ⚠️ 다만 default ACL 은 **보조 방어선**이다. 최종 보장은 owner-only creation + exact-signature REVOKE + fingerprint.
+    -- authoritative = orchestration_owner. admin/deployer 는 defense-in-depth 이며 **함수 생성 권한을 허용한다는 뜻이 아니다**
+    -- (세 role 모두 public schema CREATE 가 없어 평상시 함수를 만들 수 없다).
     EXECUTE format('ALTER DEFAULT PRIVILEGES FOR ROLE %I REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC', r);
     -- TABLES/SEQUENCES: 내장 기본값에 PUBLIC 이 없어 행이 생기지 않는 **진짜 no-op**(무해). 선언적 의도로만 유지.
     EXECUTE format('ALTER DEFAULT PRIVILEGES FOR ROLE %I REVOKE ALL ON TABLES FROM PUBLIC', r);

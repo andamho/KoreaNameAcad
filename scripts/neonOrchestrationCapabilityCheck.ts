@@ -36,6 +36,13 @@ export async function main(env: HarnessEnv = process.env as HarnessEnv): Promise
   for (const line of buildDryRunPlan(cfg)) console.log(line);
   if (!cfg.execute) { console.log("[neon-check] dry-run 종료(DB 연결 0 · DB write 0). 실행하려면 CONFIRM_EXECUTE=true."); return 0; }
 
+  // ── hardening security assertion 관문(연결 **전**, fail-closed) ──
+  // Neon capability 와 별개 catalog. 하나라도 실패하면 Neon 접속 0 · DDL 0 으로 중단한다.
+  const { runSecurityGate, formatSecurityGate } = await import("./neonCheck/securityGate");
+  const gate = await runSecurityGate();
+  for (const line of formatSecurityGate(gate)) console.log(line);
+  if (!gate.gateOpen) { console.error("[neon-check] ❌ hardening security assertion 실패 → execute 중단"); return 4; }
+
   // ── execute: actual disposable Neon 대상 ──
   const db = await createDirectAdapter(cfg.directUrl);
   try {

@@ -8,20 +8,21 @@
 
 ## ⚠️ 0. 먼저 읽어주세요 — 현재 상태 (Phase 2 완료 시점)
 
-**execute 실행 본체와 capability **46종** 구현이 모두 완료**되었고, 격리 환경에서 검증했습니다.
+**execute 실행 본체와 capability **45종** 구현이 모두 완료**되었고, 격리 환경에서 검증했습니다.
 **그러나 실제 Neon 은 아직 한 번도 접속하지 않았습니다(not-run).**
 
 | 항목 | 현재 상태 |
 |---|---|
 | 안전 가드 · 실행 계획(dry-run) | **complete** |
 | execute core(연결·preflight·cleanup·잔여검증·결과판정) | **complete** |
-| **capability 46종 구현** | **complete** |
-| `pglite` profile 검증 | **verified** (applicable 24 / 46, PG 18.3 → 비정본) |
-| `embedded-direct` PG17 17.10 검증 | **verified** (applicable 41 / 46, authoritative 41) |
-| `pooled-mock` 검증 | **verified** (applicable 5 / 46) — 실제 PgBouncer 아님 |
+| **capability 45종 구현** | **complete** |
+| **hardening security assertions** | **complete, 10**(capability 와 별도 catalog) |
+| `pglite` profile 검증 | **verified** (applicable 22 / 45, PG 18.x → 비정본) |
+| `embedded-direct` PG17 17.10 검증 | **verified** (applicable 40 / 45, authoritative 40) |
+| `pooled-mock` 검증 | **verified** (applicable 5 / 45) — 실제 PgBouncer 아님 |
 | **`actual-neon-direct` 실측** | **not-run** |
 | **`actual-neon-pooled` 실측** | **not-run** |
-| **`neon-full` 46종** | **unverified** (Neon evidence 0) |
+| **`neon-full` 45종** | **unverified** (Neon evidence 0) |
 
 > **profile 은 자동 상속되지 않습니다.** PGlite/embedded/pooled-mock 결과는 어떤 경우에도 `neon-full` 통과로 승격되지 않으며, 코드에 hard guard 와 테스트가 걸려 있습니다.
 
@@ -179,7 +180,7 @@ node --import tsx/esm scripts/neonOrchestrationCapabilityCheck.ts
 > dry-run 출력을 그대로 복사해도 URL 은 마스킹되어 있지만, **붙여넣기 전에 한 번 눈으로 확인**해 주세요.
 
 ## 15. 실제 실행 (⚠️ Phase 2 완료 후 진행)
-`CONFIRM_EXECUTE=true` 는 이제 **실제로 실행**됩니다(execute core 구현 완료). capability 46종 개별 구현도 완료됐습니다. 아래 순서로 진행하세요.
+`CONFIRM_EXECUTE=true` 는 이제 **실제로 실행**됩니다(execute core 구현 완료). capability 45종 개별 구현도 완료됐습니다. 아래 순서로 진행하세요.
 
 ```powershell
 $env:CONFIRM_EXECUTE = "true"
@@ -227,15 +228,15 @@ node --import tsx/esm scripts/neonOrchestrationCapabilityCheck.ts
 | disposable 토큰 | `i-confirm-disposable-neon-branch` | 일치 ✓ |
 | run-id 정규식 | `/^[a-z0-9]{4,16}$/` | 일치 ✓ (`seoho_20260720_01` 은 **부적합** 으로 명시) |
 | hash 방식 | `sha256(new URL(url).host.toLowerCase())` 64hex | 일치 ✓ |
-| capability 정본 | **46** (`scripts/neonCheck/capabilities.ts` 단일 정본에서 파생, 숫자 하드코딩 없음) | 일치 ✓ |
+| capability 정본 | **45** (`scripts/neonCheck/capabilities.ts` 단일 정본에서 파생, 숫자 하드코딩 없음) | 일치 ✓ |
 | cleanup statement count | **16** (enable-triggers 1 + DROP SCHEMA 1 + membership revoke 2 + DROP OWNED 6 + DROP ROLE 6) | 일치 ✓ |
 | 실행 명령/경로 | `node --import tsx/esm scripts/neonOrchestrationCapabilityCheck.ts` | 일치 ✓ |
 | synthetic 이름 | schema `oc_chk_<id>` · roles `oc_*_<id>` (production `orchestration_*` 와 불일치, 예약 접두 차단) | 일치 ✓ |
 | **execute core** | **구현 완료**(guard 재검증→preflight→smoke→cleanup→잔여검증→분류) | **§0·§15 반영** ✓ |
-| **capability 46 개별 구현** | **complete** | ✓ |
+| **capability 45 개별 구현** | **complete** | ✓ |
 | credential 방식 | 하이브리드 B — 운영자는 bootstrap URL 한 쌍, synthetic LOGIN password 는 CSPRNG·메모리 전용·출력 0 | 일치 ✓ |
 | public schema 가드 | user table > 0 이면 hard stop | 일치 ✓ |
 
 - secret 을 출력하는 명령 **없음**(hash 만 출력, URL 은 `Read-Host` 입력·마스킹 출력).
 - production 실행을 유도하는 문구 **없음**(production 은 "건드리지 않음" 대상으로만 등장).
-- **Neon 실측을 완료했다고 표현하지 않음** — Neon capability 46종은 전부 `unverified (not-run)`.
+- **Neon 실측을 완료했다고 표현하지 않음** — Neon capability 45종은 전부 `unverified (not-run)`.

@@ -77,8 +77,7 @@ export const CAPABILITIES: readonly CapabilityDef[] = Object.freeze([
   cap("writer-business-table-access-denied", "privilege", DIRECT_LOGIN, "expected-denial", ED, "writer LOGIN 의 business table 접근 실패"),
   cap("app-simulation-orchestration-write-denied", "privilege", DIRECT_LOGIN, "expected-denial", ED, "app simulation LOGIN 의 orchestration write 실패"),
   cap("trigger-function-direct-call-denied", "privilege", DIRECT_LOGIN, "expected-denial", ED, "trigger function 직접 호출 실패"),
-  cap("default-privileges-secure", "privilege", DIRECT_PG, "pass", ED, "전역 형식 default privileges 로 **미래 함수** PUBLIC EXECUTE 0"),
-  cap("schema-qualified-default-privileges-noop", "privilege", DIRECT_PG, "pass", ED, "회귀: `IN SCHEMA` 한정 REVOKE 는 행 미생성 no-op(정정 근거 유지 확인)"),
+  cap("default-privileges-secure", "privilege", DIRECT_FULL, "pass", ED, "default privileges 로 미래 객체 PUBLIC 누수 0(전역 형식 기준. PGlite 는 판정 대상 아님 — 정본=embedded)"),
   // Trigger and emergency boundary — 10
   cap("immutable-update-denied", "trigger-emergency", DIRECT_PG, "expected-denial", ED, "immutable UPDATE 거부(trigger)"),
   cap("immutable-delete-denied", "trigger-emergency", DIRECT_PG, "expected-denial", ED, "immutable DELETE 거부(trigger)"),

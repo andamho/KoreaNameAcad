@@ -51,14 +51,22 @@ ownership transfer 만으로 가정하지 않고 **명시 REVOKE + runner finger
 
 **정본 증거**: embedded PostgreSQL **17.10** (운영 Neon 과 동일 메이저). PGlite 는 **18.3** 이라 동일 결과가 나와도 **정본이 아니다**(버전 상이).
 
+**default ACL 정책 — 정확한 서술(과장 금지)**
+- schema-specific default ACL 은 global default 와 **별도로 계산**된다(합쳐서 적용되며, 서로를 대체하지 않는다).
+- 비어 있는 schema-specific ACL 에서 `REVOKE … FROM PUBLIC` 은 **no-op 이 될 수 있다**(행조차 생기지 않음).
+- global function default ACL 의 `REVOKE EXECUTE … FROM PUBLIC` 은 **built-in PUBLIC EXECUTE 를 제거할 수 있다**.
+- default ACL 은 **`FOR ROLE` 목록 밖 role 이 생성한 함수에는 적용되지 않는다.**
+- 따라서 default ACL 은 **보조 방어선**이다.
+- **최종 보장 = owner-only creation + exact-signature function REVOKE + security assertion(fingerprint).**
+
 **적용한 해결(3층)**
 1. **기존 4함수** — 정확한 signature 기준 명시 `REVOKE ALL ON FUNCTION …() FROM PUBLIC` + reader/writer/deployer 선언적 회수. **소유권 이전 뒤 재선언**(멱등). PG 17.10 실측상 `ALTER FUNCTION … OWNER TO` 는 ACL 을 `{old=X/old}`→`{new=X/new}` 로 재작성하며 PUBLIC 회수를 유지하지만, 엔진 동작에 의존하지 않는다.
 2. **미래 함수** — **전역 형식** default privileges 를 **owner·admin·deployer 3 role 전부**에 적용. `FOR ROLE` 목록 밖 role 이 만든 함수는 보호되지 않으므로 3개 모두 필요(실측 확인).
-3. **fail-closed fingerprint** — 러너가 9 hard stop 으로 상시 검사(§9b). 하나라도 위반 시 `aborted-function-fingerprint`.
+3. **fail-closed assertion** — 러너/게이트가 security assertion 10종으로 상시 검사(§9b). 하나라도 위반 시 `aborted-function-fingerprint` 이며 actual Neon execute 도 차단된다.
 
 **추가 방어층(실측 발견)**: 하드닝은 `REVOKE CREATE ON SCHEMA public FROM PUBLIC` 을 수행하고 owner 에게 CREATE 를 부여하지 않으므로, **owner 조차 기본 상태에서는 public 스키마에 함수를 만들 수 없다**(42501). 미래 함수 생성은 반드시 명시적 `GRANT CREATE ON SCHEMA public TO orchestration_owner` 선행을 요구한다.
 
-**잔여 위험(명시)**: 기존 app/migration owner role(이름을 정적 SQL 이 알 수 없음)이 만드는 함수는 이 default ACL 로 보호되지 않는다. → §9c 미래 migration 규칙과 fingerprint 의 `fn-count`(미승인 `orch_*` 함수 탐지)로 보완한다.
+**잔여 위험(명시)**: 기존 app/migration owner role(이름을 정적 SQL 이 알 수 없음)이 만드는 함수는 이 default ACL 로 보호되지 않는다. → §9c 미래 migration 규칙과 `fnsec-function-count`(미승인 `orch_*` 함수 탐지)·`fnsec-owner`(소유자 강제)로 보완한다.
 
 **보안 모드 결정**: 4함수는 `SECURITY INVOKER` 유지(`prosecdef=false`), `proconfig=null`. trigger 발화는 EXECUTE 권한을 요구하지 않으므로 `SECURITY DEFINER` 가 불필요하고, DEFINER 는 search_path 주입면을 새로 만든다. 함수 본문은 `RAISE`/`TG_*`/`NEW·OLD` 컬럼 비교만 쓰고 **스키마 미한정 객체·연산자를 참조하지 않아** search_path 의존이 없다. 그래서 `proconfig` 고정을 요구하지 않되, fingerprint 가 두 값의 **무단 변경을 hard stop 으로 탐지**한다.
 
@@ -120,40 +128,99 @@ job_artifacts/automated_reviews/orchestration_audit_log=immutable/append-only. h
 Phase1(role 5개; deployer/writer/reader=LOGIN, credential 은 secret store 별도) → Phase2(REVOKE PUBLIC/app → 최소 GRANT → trigger fn/trigger → **ownership 이전(§12 A 절차)** → default privileges; **단일 tx**) → Phase3(별도 연결 capability + 기존 app write 실패 검증) → Phase4(adapter 미배선 종료·런타임 writer 전환). **role 생성+credential provisioning 은 한 tx 로 완전 rollback 안 될 수 있음** → Phase1(role) / Phase2(구조) 분리, 부분 실패 시 **DROP OWNED → DROP ROLE** 정리 절차(빈 role 이 아니면 DROP ROLE 은 2BP01 로 실패).
 
 ## 13. hardeningRunner fail-closed (보강)
-exact sha256 allowlist **`c5649f3f…`**(function privilege 정정으로 재고정) + host pin + 아래 하나라도 불일치 → 미적용/ROLLBACK:
-role 부재(pre)/**5개**(post) · **trigger ≥15 & 전부 enabled**(aborted-trigger-disabled) · function 4 · **owner=orchestration_owner**(owner-mismatch) · **PUBLIC table 0**(public-privilege) · **비-orchestration grantee 0**(app-privilege) · **PUBLIC function EXECUTE 0**(function-public) · **function fingerprint 9 hard stop**(function-fingerprint, §9b) · **신규 6테이블 행수 0**(rows-present) · already-applied. `startupTriggerSelfCheck` export(앱 부팅 시 15 trigger enabled 확인). 범용 additive 스캐너 불변.
+exact sha256 allowlist **`71c83e66…`**(function privilege 정정 + 문구 정정으로 재고정) + host pin + 아래 하나라도 불일치 → 미적용/ROLLBACK:
+role 부재(pre)/**5개**(post) · **trigger ≥15 & 전부 enabled**(aborted-trigger-disabled) · function 4 · **owner=orchestration_owner**(owner-mismatch) · **PUBLIC table 0**(public-privilege) · **비-orchestration grantee 0**(app-privilege) · **PUBLIC function EXECUTE 0**(function-public) · **function security assertion 10종**(function-fingerprint, §9b) · **신규 6테이블 행수 0**(rows-present) · already-applied. `startupTriggerSelfCheck` export(앱 부팅 시 15 trigger enabled 확인). 범용 additive 스캐너 불변.
 
-### 9b. function fingerprint — 9 hard stop
-`verifyFunctionFingerprint()` 가 반환하는 위반 목록. 하나라도 있으면 `aborted-function-fingerprint`.
+### 9b. hardening security assertion (10종) — Neon capability 와 **별도 catalog**
+정본: `server/migrations/hardening/functionSecurityAssertions.ts` · 평가기: `functionSecurityCheck.ts` · 관문: `scripts/neonCheck/securityGate.ts`.
+
+> **세 catalog 를 섞지 않는다.** 보고는 항상 세 줄로 분리한다.
+> - **Neon capabilities: 45** (`scripts/neonCheck/capabilities.ts`) — disposable Neon 에서 실측할 항목. **ID·순서·개수 불변**(order hash 로 고정).
+> - **hardening security assertions: 10** (이 절) — actual Neon 실행 **전에 반드시 통과**해야 하는 관문. capability count 에 **포함하지 않는다**.
+> - **preflight assertions: 10** (`scripts/neonCheck/guards.ts` §2) — production-like DB·host·run-id 안전 검문.
+> assertion ID 는 `fnsec-` prefix 를 강제해 capability ID 와 충돌이 구조적으로 불가능하다.
 
 | # | id | 검사 | 탐지 대상 |
 |---|---|---|---|
-| 1 | `fn-count` | `public` 의 `orch\_%` 함수 집합 = 기대 4개 | **미승인 함수 도입**·누락 |
-| 2 | `fn-signature` | identity arguments = `""`(무인자) | signature 변조 |
-| 3 | `fn-owner` | 소유자 = `orchestration_owner` | 소유권 탈취 |
-| 4 | `fn-shape` | 반환형 `trigger` + 언어 `plpgsql` | 본문 성격 변경 |
-| 5 | `fn-secdef` | `prosecdef=false` | **SECURITY DEFINER 무단 도입** |
-| 6 | `fn-searchpath` | `proconfig IS NULL` | search_path 고정/주입 |
-| 7 | `fn-public-execute` | PUBLIC EXECUTE = 0 | PUBLIC 재부여 |
-| 8 | `fn-role-execute` | reader/writer EXECUTE = 0 **및** ACL grantee ⊆ {owner} | 런타임 role 직접 부여 |
-| 9 | `fn-default-acl` | 전역(namespace 0) FUNCTIONS default ACL 이 3 role 전부 존재 & PUBLIC 미포함 | **미래 함수 보호 해제** |
+| 1 | `fnsec-function-count` | `public` 의 `orch\_%` 함수 집합 = 명세 4개 | **미승인 함수 도입**·누락 |
+| 2 | `fnsec-signatures` | identity arguments·반환형·언어 = 명세 | signature 변조 |
+| 3 | `fnsec-owner` | 최종 소유자 = `orchestration_owner` | admin/deployer/app 소유 |
+| 4 | `fnsec-security-mode` | `prosecdef=false` | **SECURITY DEFINER 무단 도입** |
+| 5 | `fnsec-search-path` | `proconfig IS NULL` | search_path 고정/주입 |
+| 6 | `fnsec-public-execute-zero` | PUBLIC EXECUTE = 0 | PUBLIC 재부여 |
+| 7 | `fnsec-runtime-role-execute-zero` | app/writer/reader EXECUTE = 0 **및** ACL grantee ⊆ {owner} | 런타임 role 직접 부여 |
+| 8 | `fnsec-default-acl-policy` | 전역(ns 0) FUNCTIONS default ACL 존재 & PUBLIC 미포함 | 미래 함수 보호 해제 |
+| 9 | `fnsec-trigger-connection-count` | 함수별 trigger 연결 = 3/6/3/3 (합계 **15**) | trigger 분리·삭제 |
+| 10 | `fnsec-schema-create-privilege-zero` | orchestration_* 의 public CREATE = 0 | **전략 A 임시 GRANT 미회수** |
 
-> **의도된 예외**: `orchestration_deployer`/`admin` 은 owner membership 을 통해 EXECUTE 를 **상속**한다(회수 불가·설계상 break-glass 경로). 그래서 8번은 reader/writer 만 강제한다. SQL 의 `REVOKE … FROM orchestration_deployer` 는 **직접 grant** 만 제거하는 선언적 문장이다.
+**manifest 필드**(각 assertion): id · expected function signature · expected owner class · security mode · search_path policy · PUBLIC EXECUTE=false · app EXECUTE=false · writer EXECUTE=false · reader EXECUTE=false · expected trigger connection count · authoritative evidence profile(`embedded-direct`).
 
-### 9c. 미래 migration 규칙 (orchestration 함수를 추가·변경할 때 — 6단계)
-1. **생성 주체를 `orchestration_owner` 로 고정**: `SET ROLE orchestration_owner` 로 실행한다(deployer→admin→owner). app/migration owner 로 만들면 default ACL 보호를 받지 못한다.
-2. **CREATE 권한 선행 부여**: `GRANT CREATE ON SCHEMA public TO orchestration_owner` (하드닝이 PUBLIC 의 CREATE 를 회수했으므로 필수) — 사용 후 회수 권장.
-3. **생성 직후 명시 REVOKE**: `REVOKE ALL ON FUNCTION <정확한 signature> FROM PUBLIC, orchestration_reader, orchestration_writer` — default ACL 에 의존하지 않는 이중 방어.
-4. **보안 모드 유지**: `SECURITY INVOKER`(기본) · `SET search_path` 미사용. DEFINER 가 꼭 필요하면 별도 승인 Gate 로 분리하고 `proconfig` 를 명시 고정한다.
-5. **fingerprint 갱신**: `HARDENINGS[].functionFingerprint.names` 에 새 함수를 추가한다. 추가하지 않으면 `fn-count` 가 **fail-closed 로 배포를 막는다**(의도된 동작).
-6. **checksum 재고정 + 격리 검증**: SQL 변경 시 `expectedSha256` 재계산, PGlite 스위트 + embedded PG17 e2e 를 모두 통과시킨 뒤에만 apply Gate 로 넘긴다.
+**관문 동작**: `neonOrchestrationCapabilityCheck` 의 execute 경로는 **DB 연결을 만들기 전에** 이 10종을 평가하고, 하나라도 실패하면 exit 4 로 중단한다(**Neon 접속 0 · DDL 0**). 평가는 격리 PGlite 에 hardening SQL 을 적용해 수행하며, 출력 prefix 는 `[hardening-assertions]` 로 capability 출력과 분리된다.
+
+> **의도된 예외**: `orchestration_deployer`/`admin` 은 owner membership 을 통해 EXECUTE 를 **상속**한다(회수 불가·설계상 break-glass). 그래서 7번은 app/reader/writer 만 강제한다. SQL 의 `REVOKE … FROM orchestration_deployer` 는 **직접 grant** 만 제거하는 선언적 문장이다.
+
+### 9c. 함수 생성 역할 정책 — 정상 migration 경로 (7단계)
+```
+1. orchestration_deployer 로 LOGIN
+2. SET ROLE orchestration_admin
+3. SET ROLE orchestration_owner            (필요 시)
+4. 함수 생성 — 최종 owner 는 **항상** orchestration_owner
+5. exact-signature REVOKE (PUBLIC, reader, writer)
+6. security assertion 평가 (§9b 10종)
+7. RESET ROLE
+```
+**원칙**
+- deployer 가 평상시 함수 owner 가 되지 않는다 · admin 이 함수 owner 가 되지 않는다 · **최종 owner 는 항상 `orchestration_owner`**.
+- app/writer/reader 는 `CREATE FUNCTION` 불가(PG17 실측 **42501**). admin/deployer 도 평상시 public schema CREATE 권한 **0**.
+- 함수 생성 직후 **exact-signature REVOKE 필수**(default ACL 에 의존하지 않는다).
+- 새 함수를 `FUNCTION_SPECS` 에 등록하지 않으면 `fnsec-function-count` 가 **배포를 막는다**(의도된 fail-closed).
+- SQL 변경 시 checksum 재고정 → runner allowlist 동기화 → PGlite 스위트 + embedded PG17 e2e 통과 후에만 apply Gate 로 넘긴다.
+
+### 9d. default ACL 적용 role 범위 — 재평가 결과
+| role | 지위 | 근거 |
+|---|---|---|
+| `orchestration_owner` | **authoritative policy** | owner-only creation 정책의 짝. 정상 경로로 만들어지는 모든 함수를 덮는다. |
+| `orchestration_admin` · `orchestration_deployer` | **defense-in-depth 유지** | 아래 실측 근거 |
+
+**유지 근거(PG 17.10 실측)**: deployer 의 전역 default ACL 을 해제한 뒤 deployer 로 함수를 만들면 `has_function_privilege('public',…,'EXECUTE')=true` 로 **누수가 실제 재현**된다. 즉 이 두 항목은 장식이 아니라 동작하는 방어선이다. 미래 migration 이 실수로 `SET ROLE` 을 빠뜨리거나 deployer 에게 CREATE 를 부여하는 경우를 덮는다.
+
+> ⚠️ **명시**: admin/deployer 에 default ACL 을 두는 것은 **그 role 에 함수 생성 권한을 허용한다는 뜻이 아니다.** 세 role 모두 public schema CREATE 권한이 0 이며, 정책상 최종 owner 는 언제나 `orchestration_owner` 다.
+
+### 9e. public schema CREATE 전략 — **A 채택**(B 는 후속 개선)
+하드닝이 `REVOKE CREATE ON SCHEMA public FROM PUBLIC` 을 수행하므로 owner 조차 함수 생성 전 명시적 CREATE 권한이 필요하다.
+
+| | A. public schema 유지 (**현재 적용 후보**) | B. orchestration 전용 internal schema (**후속**) |
+|---|---|---|
+| 절차 | 단일 tx 안 임시 `GRANT CREATE` → 생성 → exact REVOKE → **CREATE 즉시 REVOKE** → tx 종료 전 privilege 0 확인 | owner 만 CREATE 인 전용 schema, PUBLIC CREATE/USAGE 0, trigger function 만 이전(테이블은 기존 schema 유지), schema-qualified 참조 |
+| 장점 | 스키마 이동 없음 · 0004 의미 무변경 · 즉시 적용 가능 | 임시 권한 자체가 불필요 · 노출면 구조적 축소 |
+| 단점 | 매 migration 마다 임시 권한 구간 존재 | search_path/참조 경로 변경 → 별도 검증 Gate 필요 |
+
+**A 의 안전성 — PG 17.10 실측 14/14 통과**
+- 커밋 **전** CREATE privilege 0 · 커밋 **후** 0
+- **rollback 후 0**(`GRANT` 은 트랜잭션 대상이라 되돌려진다)
+- **실패 주입**(문법오류 함수 + 없는 테이블 trigger) → rollback 후 CREATE 0 · 잔여 함수 0
+- 회수 실패 시 `fnsec-schema-create-privilege-zero` 가 **fail-closed** 로 잡는다
+
+→ **판정: 현재 적용 후보는 A. B 는 후속 개선 항목**(이번 Gate 에서 구현하지 않음).
 
 ## 14. 검증 결과
-- **PGlite `tests/knop/orchestrationHardening.test.ts` 17/17** + **`tests/knop/orchestrationFunctionPrivilege.test.ts` 21/21**(실제 상태 6 + 9 hard stop 주입 11 + 러너 통합 4). 전체 **test:knop 255/255 · tsc 0**.
-  - ⚠️ PGlite = PostgreSQL **18.3**. 운영(Neon PG 17.x)과 메이저가 다르므로 **정본 아님**.
-- **격리 PG17(embedded 17.10) e2e 24/24**: 5 role · owner 이전 · PUBLIC table/function-EXECUTE 0 · 비-orch grantee 0 · **deployer login→SET ROLE admin→owner** · **writer/reader/app real-login SET ROLE admin/owner 거부** · app write 실패 · writer INSERT ok·UPDATE 거부·jobs 격리·**session_replication_role 42501**·**직접 function call 거부** · OA001–OA004 · **writer DISABLE TRIGGER 거부·owner 가능·긴급 종료 후 15 trigger enabled·재작동**.
-- **격리 PG17(embedded 17.10) function privilege e2e 20/20**(정본): 함수 4 · owner · **PUBLIC EXECUTE 0** · ACL `{orchestration_owner=X/orchestration_owner}` · INVOKER · proconfig null · shape/signature · reader/writer EXECUTE 0 · deployer/admin 상속 4 · **전역 default ACL 3 role & PUBLIC 미포함** · **owner 기본 CREATE 차단(42501)** · ★**미래 함수 public=false** · ★**deployer 생성 미래 함수도 public=false** · trigger 발화 OA001 · writer 직접 호출 42501 · **2g 임시 멤버십 잔여 0**.
-- **embedded capability 하네스**(정정 반영): catalog **46** · embedded-direct applicable **41** / pass 26 / expected-denial 15 / **fail 0** / authoritative 41 · 잔여 object·role·membership·disabled-trigger **0** · pooled-mock 5 passed-clean · **neon-full = unverified**(actual Neon evidence 0, missing 46).
+**상태 표현(정본)**
+| 항목 | 상태 |
+|---|---|
+| Neon capability implementation | **complete, 45** |
+| function security assertions | **complete, 10** |
+| preflight assertions | complete (guards §2) |
+| embedded PG17 verification | **complete** |
+| actual Neon direct / pooled | **not-run** |
+| `neon-full` | **unverified** |
+
+- **PGlite(PostgreSQL 18.x · 비정본)**: `orchestrationHardening.test.ts` 17/17 + `orchestrationFunctionPrivilege.test.ts` **34/34**(catalog 경계 6 + 정상 상태 5 + 역할 정책 4 + 전략 A 3 + 실패 주입 11 + 게이트 연동 5). 전체 **test:knop 267/267 · tsc 0**.
+- **격리 PG17(embedded 17.10) — 정본**
+  - hardening e2e 24/24 (5 role · owner 이전 · PUBLIC 0 · SET ROLE 경계 · OA001–OA004 · DISABLE TRIGGER runbook)
+  - function privilege e2e 20/20 (미래 함수 `public=false` · deployer 생성분도 보호 · owner 기본 CREATE 차단 42501 · trigger 발화 OA001 · writer 직접 호출 42501 · 임시 멤버십 잔여 0)
+  - **security assertion 10/10 통과 + 실패 주입 4종 전부 탐지**(PUBLIC 재부여 · default ACL 해제 · 임시 CREATE 미회수 · trigger 제거)
+  - **전략 A 14/14**(커밋 전/후·rollback·실패 주입 후 CREATE privilege 0, deployer default ACL 해제 시 누수 재현)
+- **Phase 2 capability 회귀 없음**: catalog **45**, embedded-direct applicable **40** / pass 25 / expected-denial 15 / **fail 0** / authoritative 40, pooled-mock 5 passed-clean, 잔여 object·role·membership·disabled-trigger **0**, `neon-full` **unverified**(actual Neon evidence 0, missing 45).
 
 ## 15. shadow mismatch (정정 표현)
 stored 4 · current eligible 4 · observation_hash match 0 · source_record_ref match 0 · field drift 0 · provenance mismatch 0 · most likely = eligible population replacement · individual transition = **unverified**. 자동 write/backfill/delete 금지. migration/hardening 무관. [문서](orchestration-shadow-mismatch-investigation.md).

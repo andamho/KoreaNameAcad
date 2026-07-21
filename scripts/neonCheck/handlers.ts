@@ -176,18 +176,9 @@ export const DIRECT_HANDLERS: Record<string, Handler> = {
     } catch (e: any) { return bad(`probe-failed:${e?.code ?? "ERR"}`); }
     finally { await db.exec(`RESET ROLE`).catch(() => {}); }
   },
-  // 회귀 보존: 결함의 원인이던 스키마 한정 형식이 여전히 no-op 임을 확인한다.
-  // 만약 엔진이 바뀌어 행이 생기면 정정 근거를 재검토해야 하므로 **fail** 로 드러나야 한다.
-  "schema-qualified-default-privileges-noop": async ({ db, names: n }) => {
-    const cnt = () => num(db, `SELECT count(*)::int AS n FROM pg_default_acl d WHERE d.defaclobjtype='f' AND d.defaclnamespace<>0 AND pg_get_userbyid(d.defaclrole)=$1`, [n.roles.admin]);
-    try {
-      const before = await cnt();
-      await db.exec(`ALTER DEFAULT PRIVILEGES FOR ROLE ${qi(n.roles.admin)} IN SCHEMA ${qi(n.schema)} REVOKE ALL ON FUNCTIONS FROM PUBLIC`);
-      const after = await cnt();
-      if (after !== before) return bad(`schema-qualified-now-effective(before=${before},after=${after})`);
-      return ok(`schema-qualified-still-noop(rows=${after})`);
-    } catch (e: any) { return bad(`probe-failed:${e?.code ?? "ERR"}`); }
-  },
+  // ⚠️ `IN SCHEMA` 한정 형식이 no-op 이라는 회귀 확인은 **Neon capability 가 아니라**
+  //    hardening security assertion(`server/migrations/hardening/functionSecurityAssertions.ts` → `default-acl-policy`)에 있다.
+  //    Neon capability 정본 45개는 변경하지 않는다.
 
   // Trigger / emergency
   "immutable-update-denied": async ({ db, names: n }) => expectDenied(() => db.query(`UPDATE ${S(n).artifact} SET v='z'`)),
