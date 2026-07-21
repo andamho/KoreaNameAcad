@@ -1,0 +1,37 @@
+{
+  // 저장소 **도구·테스트** typecheck 설정.
+  //
+  // 배경: 루트 `tsconfig.json` 은 `client/src`·`shared`·`server` 만 포함하고 `**/*.test.ts` 를 제외한다.
+  //   그래서 `scripts/**`, `tests/**`, 루트 config 파일, `server/**/*.test.ts` 가 **어떤 컴파일에도 들어가지 않았다.**
+  //   (운영 DB 에 write 하는 `scripts/writeInternalReportShadowObservations.ts` 도 그 사각지대에 있었다.)
+  //
+  // 이 설정의 목적은 **소유(ownership) 확보**다. 여기 포함됐다고 타입 오류가 0이라는 뜻은 아니다.
+  //   - "모든 파일이 어떤 컴파일에 귀속됐는가" = Coverage Gate 판정
+  //   - "그 컴파일이 오류 0인가"              = 별도 상태(점진 정리 대상)
+  //
+  // 실행: npx tsc -p tsconfig.tooling.json --noEmit
+  "extends": "./tsconfig.json",
+  "include": [
+    "scripts/**/*.ts",
+    "tests/**/*.ts",
+    "server/**/*.test.ts",
+    "drizzle.config.ts",
+    "tailwind.config.ts",
+    "vite.config.ts",
+    "postcss.config.js"
+  ],
+  "exclude": ["node_modules", "build", "dist"],
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "lib": ["ES2022"],
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "incremental": false
+  }
+}

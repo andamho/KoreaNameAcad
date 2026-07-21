@@ -23,6 +23,7 @@
 | **SELECT-only preflight** | **implemented** (실제 Neon 실행은 not-run) |
 | **forbidden direct/pooled 분리** | **complete** (4개 조합 set 비교) |
 | **execute evidence gating** | **complete** (HMAC-SHA256 + nonce + 만료 + 1회 소비, 단순 sha256 제거) |
+| **typecheck ownership coverage** | **pass** (310/310 귀속 · unclaimed 0) |
 | `pglite` profile 검증 | **verified** (applicable 22 / 45, PG 18.x → 비정본) |
 | `embedded-direct` PG17 17.10 검증 | **verified** (applicable 40 / 45, authoritative 40) |
 | `pooled-mock` 검증 | **verified** (applicable 5 / 45) — 실제 PgBouncer 아님 |

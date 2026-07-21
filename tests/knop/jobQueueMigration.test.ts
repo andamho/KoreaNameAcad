@@ -14,7 +14,9 @@ const MIG = readFileSync(path.join(here, "..", "..", "migrations", "0002_create_
 async function freshPg() {
   const { PGlite } = await import("@electric-sql/pglite");
   const db = new PGlite();
-  const q = (sql: string, params?: unknown[]) => db.query(sql, params as any[]);
+  // PGlite `query()` 는 `Results<unknown>` 을 돌려주므로 행 타입을 열어둔다.
+  // 기본값을 느슨한 레코드로 두어 호출부에서 `.rows[0].n` 같은 접근이 타입 검사를 통과하게 한다.
+  const q = <T = Record<string, any>>(sql: string, params?: unknown[]) => db.query<T>(sql, params as any[]);
   return { db, q };
 }
 
