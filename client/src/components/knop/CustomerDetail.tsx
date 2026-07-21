@@ -474,39 +474,6 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
             </div>
           </Card>
 
-          {/* 폴더 녹음 자동 연결 (로컬 상담녹음) */}
-          {recData?.recordings && recData.recordings.length > 0 && (
-            <Card className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                  <Mic className="w-4 h-4 text-[#56D5DB]" /> 폴더 녹음 ({recData.recordings.length})
-                </h3>
-                {recData.recordings.some((r) => !r.attached) && (
-                  <Button size="sm" variant="outline" onClick={() => attachRecMut.mutate()} disabled={attachRecMut.isPending}>
-                    {attachRecMut.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : null}
-                    가져오기 + 전사
-                  </Button>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                {recData.recordings.map((r) => (
-                  <div key={r.file} className="flex items-center gap-2 text-sm">
-                    <Mic className="w-3.5 h-3.5 shrink-0 text-gray-300" />
-                    <span className="truncate text-gray-600">{r.label}</span>
-                    {r.attached ? (
-                      <span className="ml-auto shrink-0 text-xs text-emerald-600">연결됨</span>
-                    ) : (
-                      <span className="ml-auto shrink-0 text-xs text-gray-400">대기</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <p className="mt-2 text-[11px] text-gray-400">
-                가져오면 아래 통화 목록에 추가되고 자동 전사됩니다.
-              </p>
-            </Card>
-          )}
-
           {/* 이름분석표 (로컬 PDF 연계) */}
           {reportsData?.reports && reportsData.reports.length > 0 && (
             <Card className="p-5">
@@ -530,9 +497,6 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
               </div>
             </Card>
           )}
-
-          {/* 문자 대화 (주고받은 문자 시간순) */}
-          <MessagesCard customerId={customerId} />
 
           {/* 이름분석표 (업로드 파일) */}
           <Card className="p-5">
@@ -594,6 +558,39 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
               })}
             </div>
           </Card>
+
+          {/* 폴더 녹음 자동 연결 (로컬 상담녹음) */}
+          {recData?.recordings && recData.recordings.length > 0 && (
+            <Card className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                  <Mic className="w-4 h-4 text-[#56D5DB]" /> 폴더 녹음 ({recData.recordings.length})
+                </h3>
+                {recData.recordings.some((r) => !r.attached) && (
+                  <Button size="sm" variant="outline" onClick={() => attachRecMut.mutate()} disabled={attachRecMut.isPending}>
+                    {attachRecMut.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : null}
+                    가져오기 + 전사
+                  </Button>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                {recData.recordings.map((r) => (
+                  <div key={r.file} className="flex items-center gap-2 text-sm">
+                    <Mic className="w-3.5 h-3.5 shrink-0 text-gray-300" />
+                    <span className="truncate text-gray-600">{r.label}</span>
+                    {r.attached ? (
+                      <span className="ml-auto shrink-0 text-xs text-emerald-600">연결됨</span>
+                    ) : (
+                      <span className="ml-auto shrink-0 text-xs text-gray-400">대기</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 text-[11px] text-gray-400">
+                가져오면 아래 통화 목록에 추가되고 자동 전사됩니다.
+              </p>
+            </Card>
+          )}
 
           {/* 통화 녹음 */}
           <Card className="p-5">
@@ -690,6 +687,9 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
               })}
             </div>
           </Card>
+
+          {/* 문자 대화 (주고받은 문자 시간순) */}
+          <MessagesCard customerId={customerId} />
         </div>
 
         {/* 오른쪽: 통합 타임라인 */}
