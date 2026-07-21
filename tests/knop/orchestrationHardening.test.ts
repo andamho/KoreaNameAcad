@@ -21,14 +21,14 @@ async function setup() {
   const { PGlite } = await import("@electric-sql/pglite");
   const db = new PGlite();
   await db.exec(SQL_0002); await db.exec(SQL_0004);
-  const j = (await db.query(`INSERT INTO jobs (owner_scope,job_type,input_identity,request_version_snapshot,execution_options_hash,payload_hash,idempotency_key) VALUES ('kop','x','{}','{}',$1,$1,'k1') RETURNING id`, [H])).rows[0].id;
-  const e = (await db.query(`INSERT INTO job_executions (job_id,attempt_number) VALUES ($1,1) RETURNING id`, [j])).rows[0].id;
+  const j = (await db.query<{ id: number }>(`INSERT INTO jobs (owner_scope,job_type,input_identity,request_version_snapshot,execution_options_hash,payload_hash,idempotency_key) VALUES ('kop','x','{}','{}',$1,$1,'k1') RETURNING id`, [H])).rows[0].id;
+  const e = (await db.query<{ id: number }>(`INSERT INTO job_executions (job_id,attempt_number) VALUES ($1,1) RETURNING id`, [j])).rows[0].id;
   await db.query(`INSERT INTO job_artifacts (producer_job_id,producer_execution_id,artifact_kind,schema_version,content_hash,manifest_hash,sensitivity_class,redaction_status) VALUES ($1,$2,'error-analysis',1,$3,$3,'internal','not-required')`, [j, e, H]);
   await db.query(`INSERT INTO automated_reviews (reviewed_job_id,reviewed_execution_id,reviewer_kind,reviewer_version,decision,severity) VALUES ($1,$2,'gpt','v1','approve','info')`, [j, e]);
   await db.query(`INSERT INTO orchestration_audit_log (event_type,actor_kind) VALUES ('job-created','system')`);
   await db.query(`INSERT INTO human_approvals (job_id) VALUES ($1)`, [j]);
   await db.query(`INSERT INTO emergency_stops (scope_type,reason_code) VALUES ('global','ops')`);
-  const j2 = (await db.query(`INSERT INTO jobs (owner_scope,job_type,input_identity,request_version_snapshot,execution_options_hash,payload_hash,idempotency_key) VALUES ('kop','x','{}','{}',$1,$1,'k2') RETURNING id`, [H])).rows[0].id;
+  const j2 = (await db.query<{ id: number }>(`INSERT INTO jobs (owner_scope,job_type,input_identity,request_version_snapshot,execution_options_hash,payload_hash,idempotency_key) VALUES ('kop','x','{}','{}',$1,$1,'k2') RETURNING id`, [H])).rows[0].id;
   await db.query(`INSERT INTO job_dependencies (job_id,depends_on_job_id,dependency_type) VALUES ($1,$2,'requires-success')`, [j2, j]);
   await db.exec(SQL_HARDEN);
   await db.exec(`CREATE ROLE app_sim NOLOGIN`); // 기존 app-role 시뮬(비-owner·무 grant·무 membership)
@@ -47,13 +47,13 @@ describe("orchestration DB hardening: 구조·권한", () => {
   test("5 role · 6테이블 owner=orchestration_owner · PUBLIC table 권한 0 · PUBLIC function EXECUTE 0", async () => {
     const { db } = await setup();
     try {
-      const roles = (await db.query(`SELECT rolname FROM pg_roles WHERE rolname LIKE 'orchestration_%' ORDER BY 1`)).rows.map((r: any) => r.rolname);
+      const roles = (await db.query<{ rolname: string }>(`SELECT rolname FROM pg_roles WHERE rolname LIKE 'orchestration_%' ORDER BY 1`)).rows.map((r: any) => r.rolname);
       assert.deepEqual(roles, ["orchestration_admin", "orchestration_deployer", "orchestration_owner", "orchestration_reader", "orchestration_writer"]);
-      assert.equal((await db.query(`SELECT count(*)::int n FROM pg_class r JOIN pg_namespace ns ON ns.oid=r.relnamespace WHERE ns.nspname='public' AND r.relname=ANY($1) AND pg_get_userbyid(r.relowner)='orchestration_owner'`, [SIX_TABLES])).rows[0].n, 6);
-      assert.equal((await db.query(`SELECT count(*)::int n FROM information_schema.role_table_grants WHERE table_schema='public' AND table_name=ANY($1) AND grantee='PUBLIC'`, [SIX_TABLES])).rows[0].n, 0, "PUBLIC table 0");
-      const pubFn = (await db.query(`SELECT count(*)::int n FROM pg_proc p WHERE p.proname LIKE 'orch\\_%' AND has_function_privilege('public', p.oid, 'EXECUTE')`)).rows[0].n;
+      assert.equal((await db.query<{ n: number }>(`SELECT count(*)::int n FROM pg_class r JOIN pg_namespace ns ON ns.oid=r.relnamespace WHERE ns.nspname='public' AND r.relname=ANY($1) AND pg_get_userbyid(r.relowner)='orchestration_owner'`, [SIX_TABLES])).rows[0].n, 6);
+      assert.equal((await db.query<{ n: number }>(`SELECT count(*)::int n FROM information_schema.role_table_grants WHERE table_schema='public' AND table_name=ANY($1) AND grantee='PUBLIC'`, [SIX_TABLES])).rows[0].n, 0, "PUBLIC table 0");
+      const pubFn = (await db.query<{ n: number }>(`SELECT count(*)::int n FROM pg_proc p WHERE p.proname LIKE 'orch\\_%' AND has_function_privilege('public', p.oid, 'EXECUTE')`)).rows[0].n;
       assert.equal(pubFn, 0, "PUBLIC function EXECUTE 0");
-      const nonOrch = (await db.query(`SELECT count(*)::int n FROM information_schema.role_table_grants WHERE table_schema='public' AND table_name=ANY($1) AND grantee<>'PUBLIC' AND grantee NOT LIKE 'orchestration\\_%'`, [SIX_TABLES])).rows[0].n;
+      const nonOrch = (await db.query<{ n: number }>(`SELECT count(*)::int n FROM information_schema.role_table_grants WHERE table_schema='public' AND table_name=ANY($1) AND grantee<>'PUBLIC' AND grantee NOT LIKE 'orchestration\\_%'`, [SIX_TABLES])).rows[0].n;
       assert.equal(nonOrch, 0, "비-orchestration grantee 0(기존 app role 권한 없음)");
     } finally { await db.close(); }
   });
@@ -64,7 +64,7 @@ describe("orchestration DB hardening: 구조·권한", () => {
     const { db } = await setup();
     try {
       const isMember = async (m: string, g: string) =>
-        (await db.query(`SELECT count(*)::int n FROM pg_auth_members am JOIN pg_roles mr ON mr.oid=am.member JOIN pg_roles gr ON gr.oid=am.roleid WHERE mr.rolname=$1 AND gr.rolname=$2`, [m, g])).rows[0].n > 0;
+        (await db.query<{ n: number }>(`SELECT count(*)::int n FROM pg_auth_members am JOIN pg_roles mr ON mr.oid=am.member JOIN pg_roles gr ON gr.oid=am.roleid WHERE mr.rolname=$1 AND gr.rolname=$2`, [m, g])).rows[0].n > 0;
       assert.ok(await isMember("orchestration_deployer", "orchestration_admin"), "deployer∈admin");
       assert.ok(await isMember("orchestration_admin", "orchestration_owner"), "admin∈owner");
       for (const m of ["orchestration_writer", "orchestration_reader", "app_sim"])
@@ -77,7 +77,7 @@ describe("orchestration DB hardening: 구조·권한", () => {
     const { db } = await setup();
     try {
       const isMember = async (m: string, g: string) =>
-        (await db.query(`SELECT count(*)::int n FROM pg_auth_members am JOIN pg_roles mr ON mr.oid=am.member JOIN pg_roles gr ON gr.oid=am.roleid WHERE mr.rolname=$1 AND gr.rolname=$2`, [m, g])).rows[0].n > 0;
+        (await db.query<{ n: number }>(`SELECT count(*)::int n FROM pg_auth_members am JOIN pg_roles mr ON mr.oid=am.member JOIN pg_roles gr ON gr.oid=am.roleid WHERE mr.rolname=$1 AND gr.rolname=$2`, [m, g])).rows[0].n > 0;
       assert.ok(await isMember("orchestration_deployer", "orchestration_admin"), "revoke 전 멤버");
       await db.exec(`REVOKE orchestration_admin FROM orchestration_deployer`);
       assert.ok(!(await isMember("orchestration_deployer", "orchestration_admin")), "revoke 후 비멤버");
@@ -177,14 +177,14 @@ describe("hardening 전용 러너(checksum allowlist + fail-closed)", () => {
     const db = new PGlite();
     await db.exec(SQL_0002); await db.exec(SQL_0004);
     if (seed) {
-      const j = (await db.query(`INSERT INTO jobs (owner_scope,job_type,input_identity,request_version_snapshot,execution_options_hash,payload_hash,idempotency_key) VALUES ('kop','x','{}','{}',$1,$1,'k') RETURNING id`, [H])).rows[0].id;
-      const e = (await db.query(`INSERT INTO job_executions (job_id,attempt_number) VALUES ($1,1) RETURNING id`, [j])).rows[0].id;
+      const j = (await db.query<{ id: number }>(`INSERT INTO jobs (owner_scope,job_type,input_identity,request_version_snapshot,execution_options_hash,payload_hash,idempotency_key) VALUES ('kop','x','{}','{}',$1,$1,'k') RETURNING id`, [H])).rows[0].id;
+      const e = (await db.query<{ id: number }>(`INSERT INTO job_executions (job_id,attempt_number) VALUES ($1,1) RETURNING id`, [j])).rows[0].id;
       await db.query(`INSERT INTO job_artifacts (producer_job_id,producer_execution_id,artifact_kind,schema_version,content_hash,manifest_hash,sensitivity_class,redaction_status) VALUES ($1,$2,'error-analysis',1,$3,$3,'internal','not-required')`, [j, e, H]);
     }
     const client: HardeningClient = { query: (s: string, p?: unknown[]) => db.query(s, p as any[]) as any, exec: (s: string) => db.exec(s).then(() => undefined) };
     return { db, client };
   }
-  const roleN = async (db: any) => (await db.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname LIKE 'orchestration_%'`)).rows[0].n;
+  const roleN = async (db: any): Promise<number> => (await db.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname LIKE 'orchestration_%'`)).rows[0].n;
 
   test("등록·checksum·5 role·owner", () => {
     assert.equal(HARDENINGS.length, 1);

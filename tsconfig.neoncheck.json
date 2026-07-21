@@ -1,0 +1,41 @@
+{
+  // disposable Neon 하네스 전용 **영구 typecheck 설정**.
+  //
+  // 왜 별도인가: 루트 `tsconfig.json` 의 include 는 `client/src` · `shared` · `server` 뿐이라
+  //   `scripts/` 와 `tests/` 가 **타입체크 대상이 아니었다**. 그래서 하네스 코드의 타입 오류가
+  //   빌드에서도 `npm run check` 에서도 드러나지 않았다(실제로 stale 참조 결함이 이 방식으로 숨어 있었다).
+  //
+  // 고정 명령:
+  //   npx tsc -p tsconfig.neoncheck.json --noEmit
+  //
+  // package.json / package-lock.json 은 변경하지 않는다(스크립트 등록 없이 위 명령을 그대로 사용).
+  "extends": "./tsconfig.json",
+  "include": [
+    "scripts/neonCheck/**/*.ts",
+    "scripts/neonOrchestrationCapabilityCheck.ts",
+    "scripts/runEmbeddedCapabilityCheck.ts",
+    "server/migrations/hardening/**/*.ts",
+    "server/migrations/checksum.ts",
+    "tests/knop/neonEndpointPinning.test.ts",
+    "tests/knop/neonSelectOnlyPreflight.test.ts",
+    "tests/knop/neonCapabilityHarness.test.ts",
+    "tests/knop/orchestrationFunctionPrivilege.test.ts",
+    "tests/knop/orchestrationHardening.test.ts"
+  ],
+  "exclude": ["node_modules", "build", "dist"],
+  "compilerOptions": {
+    "noEmit": true,
+    // 루트 설정은 `**/*.test.ts` 를 exclude 하고 vite/client 타입을 요구한다. 여기서는 반대로
+    // 테스트를 포함하고 node 전역만 쓰므로 types 를 명시적으로 좁힌다.
+    "types": ["node"],
+    "lib": ["ES2022"],
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    // 루트의 incremental 캐시(tsBuildInfoFile)를 공유하면 서로의 결과를 덮어쓰므로 분리한다.
+    "incremental": false
+  }
+}

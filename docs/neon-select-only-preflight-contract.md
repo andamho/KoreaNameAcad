@@ -23,7 +23,12 @@ migration history 0 · 기존 `orchestration_*` role 0 · 이전 run 잔여 obje
 | **SELECT-only preflight** | `PREFLIGHT_ONLY=true` | **있음(읽기 전용)** | **0** | 실제 DB 안전 조건 확인 |
 | execute | `CONFIRM_EXECUTE=true` | 있음 | 있음 | 실제 capability 검증 |
 
-**상호배타**: `PREFLIGHT_ONLY=true` 와 `CONFIRM_EXECUTE=true` 가 동시에 설정되면 **거부**한다(모드 혼동은 fail-closed).
+**플래그 계약(확정)**: **미설정=비활성** · **정확한 `true`=활성** · **빈 문자열/공백=거부**(변수를 제거하라고 안내) ·
+`TRUE`/`True`/`1`/`yes`/`on`/`false`/`0`/앞뒤 공백 포함 변형 **전부 거부** · `PREFLIGHT_ONLY` 와 `CONFIRM_EXECUTE` **동시 `true` 거부**.
+빈 문자열을 미설정과 동일하게 취급하지 않는 이유: 변수를 지웠다고 착각한 상태를 조용히 통과시키면 모드 오인의 원인이 되기 때문이다.
+
+**타입 검사**: 하네스 코드는 루트 `tsconfig.json` 의 include 밖이라 검사되지 않았다 → **`tsconfig.neoncheck.json`** 을 추가했다.
+고정 명령: `npx tsc -p tsconfig.neoncheck.json --noEmit` (package.json 변경 없음).
 env 계약 단일 정본(`scripts/neonCheck/envContract.ts`)에 `PREFLIGHT_ONLY` 를 추가하고 문서·CLI 도움말·테스트가 함께 파생되게 한다.
 
 ## 2. 읽기 전용 강제 — 2중 방어 (구현됨)

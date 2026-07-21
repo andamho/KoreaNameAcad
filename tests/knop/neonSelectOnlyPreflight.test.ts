@@ -606,43 +606,66 @@ describe("execute 차단은 DB adapter 생성 **전에** 일어난다", () => {
   });
 });
 
-describe("mode 모델", () => {
+describe("mode 모델 — 실행 플래그 계약", () => {
   test("세 모드가 플래그로 결정된다", () => {
     assert.equal(cfgOf().mode, "offline-dry-run");
     assert.equal(cfgOf({ PREFLIGHT_ONLY: "true" }).mode, "select-only-preflight");
     assert.equal(cfgOf({ CONFIRM_EXECUTE: "true" }).mode, "execute");
   });
 
-  test("PREFLIGHT_ONLY 와 CONFIRM_EXECUTE 동시 설정 거부", () => {
+  test("unset = 비활성 (undefined 만 미설정으로 인정)", () => {
+    const e = env();
+    assert.equal(e.PREFLIGHT_ONLY, undefined);
+    assert.equal(e.CONFIRM_EXECUTE, undefined);
+    const cfg = cfgOf();
+    assert.equal(cfg.mode, "offline-dry-run");
+    assert.equal(cfg.preflightOnly, false);
+    assert.equal(cfg.execute, false);
+  });
+
+  test("정확한 `true` = 활성 (그 값일 때만)", () => {
+    const p = cfgOf({ PREFLIGHT_ONLY: "true" });
+    assert.equal(p.preflightOnly, true);
+    assert.equal(p.execute, false);
+    assert.equal(p.mode, "select-only-preflight");
+    const x = cfgOf({ CONFIRM_EXECUTE: "true" });
+    assert.equal(x.execute, true);
+    assert.equal(x.preflightOnly, false);
+    assert.equal(x.mode, "execute");
+  });
+
+  test("빈 문자열 = 거부 (미설정과 구분) · 변수 제거를 안내", () => {
+    for (const flag of ["PREFLIGHT_ONLY", "CONFIRM_EXECUTE"]) {
+      const r = parseHarnessEnv(env({ [flag]: "" } as Partial<HarnessEnv>));
+      assert.equal(r.ok, false, `${flag}="" 가 통과함 — 미설정과 동일 취급 금지`);
+      const msg = (r as any).refusals.join(" | ");
+      assert.match(msg, /빈 값으로 설정/);
+      assert.match(msg, new RegExp(`Remove-Item Env:${flag}`));
+    }
+    assert.equal(parseHarnessEnv(env({ PREFLIGHT_ONLY: "", CONFIRM_EXECUTE: "" })).ok, false);
+  });
+
+  test("공백·TRUE·True·1·yes·false·0 등 변형 전부 거부", () => {
+    const rejected = [" ", "  ", "\t", "\n", "TRUE", "True", "tRue", "1", "yes", "Y", "on",
+                      "false", "0", "true ", " true", '"true"', "'true'"];
+    for (const v of rejected) {
+      for (const flag of ["PREFLIGHT_ONLY", "CONFIRM_EXECUTE"]) {
+        const r = parseHarnessEnv(env({ [flag]: v } as Partial<HarnessEnv>));
+        assert.equal(r.ok, false, `${flag}=${JSON.stringify(v)} 가 통과함`);
+        assert.match((r as any).refusals.join(" | "), /빈 값으로 설정|유효하지 않습니다/);
+      }
+    }
+  });
+
+  test("PREFLIGHT_ONLY 와 CONFIRM_EXECUTE 동시 true 거부", () => {
     const r = parseHarnessEnv(env({ PREFLIGHT_ONLY: "true", CONFIRM_EXECUTE: "true" }));
     assert.equal(r.ok, false);
     assert.match((r as any).refusals.join(), /동시에 설정할 수 없습니다/);
   });
 
-  test("정확한 문자열 `true` 만 활성화 — 나머지는 전부 거부", () => {
-    for (const v of ["TRUE", "True", "1", "yes", "Y", "on", "0", "false", "  "]) {
-      for (const flag of ["PREFLIGHT_ONLY", "CONFIRM_EXECUTE"]) {
-        const r = parseHarnessEnv(env({ [flag]: v } as Partial<HarnessEnv>));
-        if (v.trim() === "") { assert.equal(r.ok, true, `${flag}="${v}" 는 빈 값이므로 비활성`); continue; }
-        assert.equal(r.ok, false, `${flag}="${v}" 가 통과함`);
-        assert.match((r as any).refusals.join(), /애매합니다/);
-      }
-    }
-  });
-
-  test("미설정은 비활성 · 빈 문자열도 비활성", () => {
-    assert.equal(cfgOf().mode, "offline-dry-run");
-    assert.equal(cfgOf().preflightOnly, false);
-    assert.equal(cfgOf().execute, false);
-    const blank = parseHarnessEnv(env({ PREFLIGHT_ONLY: "", CONFIRM_EXECUTE: "" }));
-    assert.equal(blank.ok, true);
-    assert.equal(blank.ok && blank.config.mode, "offline-dry-run");
-  });
-
-  test("정확히 `true` 일 때만 각 모드가 켜진다", () => {
-    const p = cfgOf({ PREFLIGHT_ONLY: "true" });
-    assert.equal(p.preflightOnly, true); assert.equal(p.execute, false); assert.equal(p.mode, "select-only-preflight");
-    const e2 = cfgOf({ CONFIRM_EXECUTE: "true" });
-    assert.equal(e2.execute, true); assert.equal(e2.preflightOnly, false); assert.equal(e2.mode, "execute");
+  test("empty vs unset 구분이 실제 mode 결정에 반영된다", () => {
+    assert.equal(parseHarnessEnv(env()).ok, true, "unset 은 통과");
+    assert.equal(parseHarnessEnv(env({ CONFIRM_EXECUTE: "" })).ok, false, "empty 는 거부");
+    assert.equal(cfgOf({ CONFIRM_EXECUTE: "true" }).mode, "execute");
   });
 });

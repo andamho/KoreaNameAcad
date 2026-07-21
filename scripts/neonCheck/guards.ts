@@ -121,12 +121,18 @@ export function parseHarnessEnv(env: HarnessEnv): { ok: true; config: HarnessCon
   if (direct && pooled && direct === pooled) r.push("direct/pooled URL 이 동일 → pooler 검증 불가(거부)");
   if (hDirect && hPooled && hDirect === hPooled) r.push("direct/pooled host 가 동일 → endpoint 구분 불가(거부)");
 
-  // 6. 실행 모드 — 상호배타 · "true" 정확 일치만 인정
+  // 6. 실행 모드 — 상호배타 · **정확한 문자열 `true`** 만 활성화
+  //    ⚠️ **미설정(undefined)** 과 **빈 문자열("")** 을 구분한다.
+  //       - 미설정  → 비활성(정상). 플래그를 안 쓴 것이다.
+  //       - 빈 문자열/공백 → **거부**. 변수를 설정했는데 값이 비어 있는 것은 의도가 불명확하고,
+  //         "지웠다고 생각했지만 빈 값으로 남아 있는" 상태를 조용히 통과시키면 모드 오인의 원인이 된다.
+  //       - trim 하지 않는다. `"true "`·`" true"` 도 거부한다(정확 일치만).
   const flag = (v: string | undefined, name: string): boolean => {
-    const raw = (v ?? "").trim();
-    if (!raw) return false;
-    if (raw === "true") return true;
-    r.push(`${name} 값이 애매합니다("true" 정확 일치만 인정) → 거부`);
+    if (v === undefined) return false;                 // unset → 비활성
+    if (v === "true") return true;                     // 정확 일치 → 활성
+    r.push(v.trim() === ""
+      ? `${name} 이 빈 값으로 설정돼 있습니다 → 거부(사용하지 않으려면 변수를 **제거**하세요: Remove-Item Env:${name})`
+      : `${name} 값이 유효하지 않습니다(정확한 문자열 "true" 만 활성화) → 거부`);
     return false;
   };
   const preflightOnly = flag(env.PREFLIGHT_ONLY, "PREFLIGHT_ONLY");
