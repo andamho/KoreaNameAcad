@@ -517,6 +517,20 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     }
   });
 
+  // 옛 이름/옛 번호 이력에서 잘못 입력된 항목 삭제 (오매칭 방지)
+  app.post(`${P}/customers/:id/history/remove`, requireAdmin, async (req, res) => {
+    try {
+      const { kind, value } = req.body || {};
+      if (kind !== "name" && kind !== "phone") return res.status(400).json({ error: "kind_must_be_name_or_phone" });
+      if (!value) return res.status(400).json({ error: "value_required" });
+      const row = await knopStore.removeHistoryEntry(req.params.id, kind, String(value));
+      if (!row) return res.status(404).json({ error: "not_found" });
+      res.json(row);
+    } catch (e) {
+      handle(res, "POST remove history", e);
+    }
+  });
+
   // 개명/상담 구분 자동판정 (작명완료 일정 기준)
   app.post(`${P}/customers/sync-kinds`, requireAdmin, async (_req, res) => {
     try {

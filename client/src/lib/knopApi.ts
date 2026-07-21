@@ -167,6 +167,9 @@ export const knopApi = {
   updateCustomer: (id: string, data: Record<string, unknown>) =>
     req<Customer>("PATCH", `/api/kop/customers/${id}`, data),
   deleteCustomer: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/customers/${id}`), // 휴지통으로
+  // 옛 이름/옛 번호 이력에서 잘못 입력된 항목 삭제
+  removeCustomerHistory: (id: string, kind: "name" | "phone", value: string) =>
+    req<Customer>("POST", `/api/kop/customers/${id}/history/remove`, { kind, value }),
   listTrash: () => req<Customer[]>("GET", "/api/kop/customers-trash"),
   restoreCustomer: (id: string) => req<{ ok: boolean }>("POST", `/api/kop/customers/${id}/restore`),
   permanentDeleteCustomer: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/customers/${id}/permanent`),

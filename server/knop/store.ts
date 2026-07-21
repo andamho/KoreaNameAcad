@@ -629,6 +629,41 @@ export const knopStore = {
     }
   },
 
+  // 옛 이름/옛 번호 이력에서 잘못 들어간 항목 1건 삭제.
+  // 잘못 입력한 번호가 이력에 남아 있으면 그 번호 주인의 문자가 이 고객으로 오매칭될 수 있어 필요.
+  async removeHistoryEntry(
+    id: string,
+    kind: "name" | "phone",
+    value: string,
+  ): Promise<Customer | undefined> {
+    const d = requireDb();
+    try {
+      const [cur] = await d.select().from(customers).where(eq(customers.id, id));
+      if (!cur) return undefined;
+      const field = kind === "name" ? "nameHistory" : "phoneHistory";
+      const arr = safeJsonArr((cur as any)[field]);
+      const norm = (v: string) => (kind === "phone" ? normalizePhone(v) : String(v || "").trim());
+      const target = norm(value);
+      const next = arr.filter((h: any) => {
+        const hv = kind === "name" ? h?.name : h?.normalized || h?.phone;
+        return norm(String(hv ?? "")) !== target;
+      });
+      if (next.length === arr.length) return cur; // 해당 항목 없음 → 변경 없음
+      const patch: any = { updatedAt: new Date() };
+      patch[field] = JSON.stringify(next);
+      const [row] = await d.update(customers).set(patch).where(eq(customers.id, id)).returning();
+      await logTimeline({
+        customerId: id,
+        type: "history_removed",
+        title: kind === "name" ? "옛 이름 삭제" : "옛 번호 삭제",
+        content: `${value} (잘못 입력분 정리)`,
+      });
+      return row;
+    } catch (e) {
+      fail("이력 삭제", e);
+    }
+  },
+
   // 모든 고객에 케이스(프로젝트) 1개 보장 — 초기상태는 kind로(개명이면 새이름 완료, 아니면 상담신청)
   async ensureCasesForAll(): Promise<{ created: number }> {
     const d = requireDb();

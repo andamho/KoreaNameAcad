@@ -292,20 +292,9 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                 </span>
               )}
             </h2>
-            {/* 옛 이름(개명 이력) — 이 이름으로도 계속 매칭된다 */}
-            {(() => {
-              let hist: Array<{ name: string }> = [];
-              try {
-                hist = JSON.parse((customer as any).nameHistory || "[]");
-              } catch {
-                /* noop */
-              }
-              return hist.length ? (
-                <div className="mt-1 text-xs text-gray-400">
-                  옛 이름: {hist.map((h) => h.name).filter(Boolean).join(" · ")}
-                </div>
-              ) : null;
-            })()}
+            {/* 옛 이름 · 옛 번호 — 이 값으로도 계속 매칭되므로, 잘못 입력분은 지울 수 있어야 한다 */}
+            <HistoryChips customer={customer} onRemoved={refresh} />
+            <div className="mt-1" />
             <div className="mt-2 flex flex-col gap-1 text-sm text-gray-600">
               {phoneDraft === null ? (
                 <button
@@ -785,6 +774,73 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
         customerName={customer.name}
         onSent={refresh}
       />
+    </div>
+  );
+}
+
+// 옛 이름 · 옛 번호 칩. 이 값들로도 고객 매칭이 되므로, 잘못 입력한 것은 지울 수 있어야 한다.
+function HistoryChips({ customer, onRemoved }: { customer: any; onRemoved: () => void }) {
+  const { toast } = useToast();
+  const parse = (s: any) => {
+    try {
+      const v = JSON.parse(s || "[]");
+      return Array.isArray(v) ? v : [];
+    } catch {
+      return [];
+    }
+  };
+  const names: string[] = parse(customer?.nameHistory).map((h: any) => h?.name).filter(Boolean);
+  const phones: string[] = parse(customer?.phoneHistory)
+    .map((h: any) => h?.phone || h?.normalized)
+    .filter(Boolean);
+
+  const removeMut = useMutation({
+    mutationFn: ({ kind, value }: { kind: "name" | "phone"; value: string }) =>
+      knopApi.removeCustomerHistory(customer.id, kind, value),
+    onSuccess: (_d, v) => {
+      onRemoved();
+      toast({ title: v.kind === "name" ? "옛 이름 삭제됨" : "옛 번호 삭제됨" });
+    },
+    onError: (e: any) => toast({ title: "삭제 실패", description: e?.message, variant: "destructive" }),
+  });
+
+  const chip = (kind: "name" | "phone", value: string) => (
+    <span
+      key={kind + value}
+      className="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-500 text-[11px] px-2 py-0.5"
+    >
+      {value}
+      <button
+        type="button"
+        title="잘못 입력된 값이면 삭제 (이 값으로는 더 이상 매칭되지 않습니다)"
+        disabled={removeMut.isPending}
+        onClick={() => {
+          if (window.confirm(`"${value}" 를 이력에서 삭제할까요?\n(이 ${kind === "name" ? "이름" : "번호"}으로는 더 이상 이 고객을 찾지 않습니다)`)) {
+            removeMut.mutate({ kind, value });
+          }
+        }}
+        className="text-gray-400 hover:text-red-500 leading-none disabled:opacity-40"
+      >
+        ✕
+      </button>
+    </span>
+  );
+
+  if (!names.length && !phones.length) return null;
+  return (
+    <div className="mt-1.5 flex flex-col gap-1">
+      {names.length > 0 && (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[11px] text-gray-400 shrink-0">옛 이름</span>
+          {names.map((n) => chip("name", n))}
+        </div>
+      )}
+      {phones.length > 0 && (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[11px] text-gray-400 shrink-0">옛 번호</span>
+          {phones.map((p) => chip("phone", p))}
+        </div>
+      )}
     </div>
   );
 }
