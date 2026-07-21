@@ -2,7 +2,7 @@
 // dry-run 과 execute 가 **동일 guard/plan** 을 공유한다. execute 에서 guard 를 생략·캐시하지 않는다.
 import { hostHashOf } from "./secrets";
 import { RUN_ID_RE } from "./identifiers";
-import { DEPRECATED_ENV } from "./envContract";
+import { DEPRECATED_ENV, type RunMode } from "./envContract";
 
 export const DISPOSABLE_TOKEN = "i-confirm-disposable-neon-branch";
 
@@ -11,21 +11,30 @@ export interface HarnessEnv {
   NEON_CHECK_POOLED_URL?: string;
   NEON_CHECK_EXPECTED_DIRECT_HOST_HASH?: string;
   NEON_CHECK_EXPECTED_POOLED_HOST_HASH?: string;
-  NEON_CHECK_FORBIDDEN_HOST_HASH?: string;
+  NEON_CHECK_FORBIDDEN_DIRECT_HOST_HASH?: string;
+  NEON_CHECK_FORBIDDEN_POOLED_HOST_HASH?: string;
   NEON_CHECK_DISPOSABLE_CONFIRM?: string;
   NEON_CHECK_RUN_ID?: string;
+  PREFLIGHT_ONLY?: string;
   CONFIRM_EXECUTE?: string;
-  /** @deprecated 단일 hash 계약(폐기). 설정돼 있으면 거부한다. */
+  /** @deprecated 단일 expected hash 계약(폐기). */
   NEON_CHECK_EXPECTED_HOST_HASH?: string;
+  /** @deprecated 단일 forbidden hash 계약(폐기) — production pooled 를 차단하지 못한다. */
+  NEON_CHECK_FORBIDDEN_HOST_HASH?: string;
+  /** @deprecated hash-helper 전용 입력을 실행 env 에 섞던 이름(폐기). */
+  NEON_CHECK_FORBIDDEN_URL?: string;
 }
 export interface HarnessConfig {
   directUrl: string;
   pooledUrl: string;
   expectedDirectHostHash: string;
   expectedPooledHostHash: string;
-  forbiddenHostHash: string | null;
+  /** production forbidden **set** — direct/pooled 어느 조합과도 겹치면 안 된다. */
+  forbiddenHostHashes: { direct: string; pooled: string };
   runId: string;
+  mode: RunMode;
   execute: boolean;
+  preflightOnly: boolean;
 }
 export interface GuardResult { ok: boolean; refusals: string[] }
 
@@ -50,7 +59,8 @@ export function parseHarnessEnv(env: HarnessEnv): { ok: true; config: HarnessCon
   const pooled = (env.NEON_CHECK_POOLED_URL ?? "").trim();
   const expDirect = (env.NEON_CHECK_EXPECTED_DIRECT_HOST_HASH ?? "").trim().toLowerCase();
   const expPooled = (env.NEON_CHECK_EXPECTED_POOLED_HOST_HASH ?? "").trim().toLowerCase();
-  const forbid = (env.NEON_CHECK_FORBIDDEN_HOST_HASH ?? "").trim().toLowerCase();
+  const fbDirect = (env.NEON_CHECK_FORBIDDEN_DIRECT_HOST_HASH ?? "").trim().toLowerCase();
+  const fbPooled = (env.NEON_CHECK_FORBIDDEN_POOLED_HOST_HASH ?? "").trim().toLowerCase();
   const token = (env.NEON_CHECK_DISPOSABLE_CONFIRM ?? "").trim();
   const runId = (env.NEON_CHECK_RUN_ID ?? "").trim();
 
@@ -69,12 +79,15 @@ export function parseHarnessEnv(env: HarnessEnv): { ok: true; config: HarnessCon
   if (token !== DISPOSABLE_TOKEN) r.push("disposable 확인 토큰 불일치/누락");
   if (!RUN_ID_RE.test(runId)) r.push("NEON_CHECK_RUN_ID 없음/형식오류([a-z0-9]{4,16})");
 
-  // 2. hash 형식
+  // 2. hash 형식 — 네 개 모두 필수 · lowercase 64hex
   if (!HEX64.test(expDirect)) r.push("NEON_CHECK_EXPECTED_DIRECT_HOST_HASH 없음/형식오류(64 lowercase hex)");
   if (!HEX64.test(expPooled)) r.push("NEON_CHECK_EXPECTED_POOLED_HOST_HASH 없음/형식오류(64 lowercase hex)");
-  if (forbid && !HEX64.test(forbid)) r.push("NEON_CHECK_FORBIDDEN_HOST_HASH 형식오류(64 lowercase hex)");
+  if (!HEX64.test(fbDirect)) r.push("NEON_CHECK_FORBIDDEN_DIRECT_HOST_HASH 없음/형식오류(64 lowercase hex)");
+  if (!HEX64.test(fbPooled)) r.push("NEON_CHECK_FORBIDDEN_POOLED_HOST_HASH 없음/형식오류(64 lowercase hex)");
   if (HEX64.test(expDirect) && HEX64.test(expPooled) && expDirect === expPooled)
     r.push("expected direct/pooled hash 가 동일 → 두 endpoint 를 구분해 pin 하지 못함(거부)");
+  if (HEX64.test(fbDirect) && HEX64.test(fbPooled) && fbDirect === fbPooled)
+    r.push("forbidden direct/pooled hash 가 동일 → production 두 endpoint 를 구분해 차단하지 못함(거부)");
 
   // 3. 독립 pin — 각 endpoint 의 실제 host hash 가 각자의 expected 와 일치해야 한다
   const hDirect = direct && parseUrlShape(direct).ok ? hostHashOf(direct) : null;
@@ -90,13 +103,36 @@ export function parseHarnessEnv(env: HarnessEnv): { ok: true; config: HarnessCon
       : "pooled URL host hash ≠ expected pooled pin");
   }
 
-  // 4. forbidden(production) 일치 거부 — 두 endpoint 모두
-  if (hDirect && forbid && HEX64.test(forbid) && hDirect === forbid) r.push("direct URL 이 production host hash 와 일치 → 거부");
-  if (hPooled && forbid && HEX64.test(forbid) && hPooled === forbid) r.push("pooled URL 이 production host hash 와 일치 → 거부");
+  // 4. forbidden **set** 비교 — 위치별 단순 비교가 아니라 4개 조합 전부.
+  //    production 은 direct/pooled 두 host 를 가지므로, disposable 의 어느 endpoint 가
+  //    production 의 **어느 쪽과도** 겹치면 안 된다(예: disposable pooled 자리에 production direct 를 넣는 사고).
+  const forbiddenSet = [
+    { label: "production direct", hash: fbDirect },
+    { label: "production pooled", hash: fbPooled },
+  ].filter((f) => HEX64.test(f.hash));
+  for (const actual of [{ label: "direct", hash: hDirect }, { label: "pooled", hash: hPooled }]) {
+    if (!actual.hash) continue;
+    for (const f of forbiddenSet) {
+      if (actual.hash === f.hash) r.push(`disposable ${actual.label} URL 이 **${f.label}** host hash 와 일치 → 즉시 중단`);
+    }
+  }
 
   // 5. 두 endpoint 는 실제로 달라야 한다
   if (direct && pooled && direct === pooled) r.push("direct/pooled URL 이 동일 → pooler 검증 불가(거부)");
   if (hDirect && hPooled && hDirect === hPooled) r.push("direct/pooled host 가 동일 → endpoint 구분 불가(거부)");
+
+  // 6. 실행 모드 — 상호배타 · "true" 정확 일치만 인정
+  const flag = (v: string | undefined, name: string): boolean => {
+    const raw = (v ?? "").trim();
+    if (!raw) return false;
+    if (raw === "true") return true;
+    r.push(`${name} 값이 애매합니다("true" 정확 일치만 인정) → 거부`);
+    return false;
+  };
+  const preflightOnly = flag(env.PREFLIGHT_ONLY, "PREFLIGHT_ONLY");
+  const execute = flag(env.CONFIRM_EXECUTE, "CONFIRM_EXECUTE");
+  if (preflightOnly && execute) r.push("PREFLIGHT_ONLY 와 CONFIRM_EXECUTE 를 동시에 설정할 수 없습니다(모드 혼동 → 거부)");
+  const mode: RunMode = execute ? "execute" : preflightOnly ? "select-only-preflight" : "offline-dry-run";
 
   if (r.length) return { ok: false, refusals: r };
   return {
@@ -104,8 +140,8 @@ export function parseHarnessEnv(env: HarnessEnv): { ok: true; config: HarnessCon
     config: {
       directUrl: direct, pooledUrl: pooled,
       expectedDirectHostHash: expDirect, expectedPooledHostHash: expPooled,
-      forbiddenHostHash: forbid || null, runId,
-      execute: (env.CONFIRM_EXECUTE ?? "") === "true",
+      forbiddenHostHashes: { direct: fbDirect, pooled: fbPooled },
+      runId, mode, execute, preflightOnly,
     },
   };
 }

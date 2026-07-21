@@ -20,7 +20,9 @@
 | **endpoint independent pinning** | **complete** (direct/pooled 각각 expected hash) |
 | **PowerShell history-safe input guidance** | **complete** (§10·§11) |
 | **offline dry-run** | **ready** |
-| **SELECT-only preflight** | **designed, not implemented** ([계약](neon-select-only-preflight-contract.md)) |
+| **SELECT-only preflight** | **implemented** (실제 Neon 실행은 not-run) |
+| **forbidden direct/pooled 분리** | **complete** (4개 조합 set 비교) |
+| **execute evidence gating** | **complete** (integrity + freshness) |
 | `pglite` profile 검증 | **verified** (applicable 22 / 45, PG 18.x → 비정본) |
 | `embedded-direct` PG17 17.10 검증 | **verified** (applicable 40 / 45, authoritative 40) |
 | `pooled-mock` 검증 | **verified** (applicable 5 / 45) — 실제 PgBouncer 아님 |
@@ -128,25 +130,32 @@ $env:NEON_CHECK_DIRECT_URL = "postgresql://user:pass@..."   # ❌ 절대 금지
 - 붙여넣기 후 **clipboard 를 비우세요**: `Set-Clipboard -Value " "`
 - URL 을 **script argument/argv 로 전달하지 마세요**(프로세스 목록에 노출됩니다).
 
-### 입력
+### 입력 — ① 실행 하네스 env
 ```powershell
 # 1) URL — 화면·기록에 남지 않게 Read-Host 사용
-$env:NEON_CHECK_DIRECT_URL = Read-Host "direct URL 붙여넣기"
-$env:NEON_CHECK_POOLED_URL = Read-Host "pooled URL 붙여넣기"
+$env:NEON_CHECK_DIRECT_URL = Read-Host "disposable direct URL"
+$env:NEON_CHECK_POOLED_URL = Read-Host "disposable pooled URL"
 
-# 2) host hash — §11 에서 계산한 값(hash 는 secret 이 아니지만 URL 은 다시 타이핑하지 않습니다)
-$env:NEON_CHECK_EXPECTED_DIRECT_HOST_HASH = Read-Host "direct host hash"
-$env:NEON_CHECK_EXPECTED_POOLED_HOST_HASH = Read-Host "pooled host hash"
-$env:NEON_CHECK_FORBIDDEN_HOST_HASH       = Read-Host "production host hash"
+# 2) endpoint pin — §11 에서 계산한 hash 4개
+$env:NEON_CHECK_EXPECTED_DIRECT_HOST_HASH  = Read-Host "expected-direct hash"
+$env:NEON_CHECK_EXPECTED_POOLED_HOST_HASH  = Read-Host "expected-pooled hash"
+$env:NEON_CHECK_FORBIDDEN_DIRECT_HOST_HASH = Read-Host "forbidden-direct(production) hash"
+$env:NEON_CHECK_FORBIDDEN_POOLED_HOST_HASH = Read-Host "forbidden-pooled(production) hash"
 
 # 3) 고정 값
 $env:NEON_CHECK_DISPOSABLE_CONFIRM = "i-confirm-disposable-neon-branch"
 $env:NEON_CHECK_RUN_ID             = "<RUN_ID>"   # §12 규칙 참고
 ```
 
-> **폐기된 변수**: `NEON_CHECK_EXPECTED_HOST_HASH` 는 더 이상 쓰지 않습니다. 단일 hash 로는 direct/pooled 두 endpoint 를
-> 동시에 고정할 수 없어 **pooled 가 사실상 미고정 상태**가 되기 때문입니다. 설정돼 있으면 하네스가 **거부**합니다.
-> 이전 세션에서 설정했다면 제거하세요: `Remove-Item Env:NEON_CHECK_EXPECTED_HOST_HASH -ErrorAction SilentlyContinue`
+> **forbidden 은 hash 2개 모두 필수입니다.** production 도 direct/pooled 로 host 가 둘이기 때문에,
+> 하나만 두면 **production pooled endpoint 를 차단하지 못합니다.**
+> 하네스는 disposable direct/pooled 각각을 production direct/pooled **양쪽 모두와 대조**합니다(4개 조합).
+
+> **폐기된 변수**(설정돼 있으면 **거부**됩니다):
+> `NEON_CHECK_EXPECTED_HOST_HASH` · `NEON_CHECK_FORBIDDEN_HOST_HASH` · `NEON_CHECK_FORBIDDEN_URL`
+> ```powershell
+> Remove-Item Env:NEON_CHECK_EXPECTED_HOST_HASH, Env:NEON_CHECK_FORBIDDEN_HOST_HASH, Env:NEON_CHECK_FORBIDDEN_URL -ErrorAction SilentlyContinue
+> ```
 
 ### 화면에 보이지 않게 입력하고 싶다면 (선택)
 `Read-Host` 는 입력 문자가 화면에 보입니다. 어깨너머 노출까지 막으려면 `-AsSecureString` 을 쓸 수 있습니다.
@@ -167,8 +176,11 @@ Remove-Variable sec
 ```powershell
 Remove-Item Env:NEON_CHECK_DIRECT_URL, Env:NEON_CHECK_POOLED_URL, `
             Env:NEON_CHECK_EXPECTED_DIRECT_HOST_HASH, Env:NEON_CHECK_EXPECTED_POOLED_HOST_HASH, `
-            Env:NEON_CHECK_FORBIDDEN_HOST_HASH, Env:NEON_CHECK_DISPOSABLE_CONFIRM, `
-            Env:NEON_CHECK_RUN_ID, Env:CONFIRM_EXECUTE, Env:NEON_CHECK_FORBIDDEN_URL `
+            Env:NEON_CHECK_FORBIDDEN_DIRECT_HOST_HASH, Env:NEON_CHECK_FORBIDDEN_POOLED_HOST_HASH, `
+            Env:NEON_CHECK_DISPOSABLE_CONFIRM, Env:NEON_CHECK_RUN_ID, `
+            Env:PREFLIGHT_ONLY, Env:CONFIRM_EXECUTE, `
+            Env:NEON_HASH_INPUT_DIRECT_URL, Env:NEON_HASH_INPUT_POOLED_URL, `
+            Env:NEON_HASH_INPUT_FORBIDDEN_DIRECT_URL, Env:NEON_HASH_INPUT_FORBIDDEN_POOLED_URL `
             -ErrorAction SilentlyContinue
 ```
 그다음 **PowerShell 세션을 종료**하고 **credential 을 폐기**합니다.
@@ -176,35 +188,35 @@ Remove-Item Env:NEON_CHECK_DIRECT_URL, Env:NEON_CHECK_POOLED_URL, `
 > ⚠️ history 파일을 직접 열거나 지우지 마세요. 다른 작업 기록까지 훼손됩니다. 애초에 리터럴을 타이핑하지 않는 것이 정답입니다.
 
 ## 11. host hash 계산 방법 (URL 원문 출력 0 · argv 노출 0)
-하네스와 **동일한 방식**입니다: `sha256( new URL(url).host.toLowerCase() )` → 64자리 소문자 hex.
-전용 도구는 **URL 을 인자로 받지 않고 환경변수에서만 읽으며**, `direct#<hash>` / `pooled#<hash>` 형식으로 **hash 만** 출력합니다.
+계산 방식은 하네스와 동일합니다: `sha256( new URL(url).host.toLowerCase() )` → 64자리 소문자 hex.
+
+> ⚠️ **입력 변수는 hash-helper 전용 계약**(`NEON_HASH_INPUT_*`)이며 **실행 하네스 env 와 분리**돼 있습니다.
+> 하네스는 이 이름들을 읽지 않습니다. 계산 직후 제거하세요.
 
 ```powershell
-# §10 에서 이미 URL 환경변수를 설정했다면 그대로 실행하면 됩니다
+# ② hash-helper temporary input (계산용, 즉시 제거)
+$env:NEON_HASH_INPUT_DIRECT_URL           = Read-Host "disposable direct URL"
+$env:NEON_HASH_INPUT_POOLED_URL           = Read-Host "disposable pooled URL"
+$env:NEON_HASH_INPUT_FORBIDDEN_DIRECT_URL = Read-Host "production direct URL"
+$env:NEON_HASH_INPUT_FORBIDDEN_POOLED_URL = Read-Host "production pooled URL"
+
 node --import tsx/esm scripts/neonCheck/hashTool.ts
+
+Remove-Item Env:NEON_HASH_INPUT_DIRECT_URL, Env:NEON_HASH_INPUT_POOLED_URL, `
+            Env:NEON_HASH_INPUT_FORBIDDEN_DIRECT_URL, Env:NEON_HASH_INPUT_FORBIDDEN_POOLED_URL `
+            -ErrorAction SilentlyContinue
 ```
 
 출력 예(값은 예시):
 ```
-[neon-hash] direct#2b0bf1de………………
-[neon-hash] pooled#6c34f59d………………
-[neon-hash] forbidden#<미설정> (NEON_CHECK_FORBIDDEN_URL 없음)
+[neon-hash] expected-direct#2b0bf1de………………
+[neon-hash] expected-pooled#6c34f59d………………
+[neon-hash] forbidden-direct#9a1c4b02………………
+[neon-hash] forbidden-pooled#71e8d330………………
 ```
+네 값을 §10 의 대응 변수에 각각 넣습니다. **expected 두 값이 같으면 거부**되고, **forbidden 두 값이 같아도 거부**됩니다.
 
-- `direct#…` → `NEON_CHECK_EXPECTED_DIRECT_HOST_HASH`
-- `pooled#…` → `NEON_CHECK_EXPECTED_POOLED_HOST_HASH`
-- **두 값은 서로 달라야 정상입니다**(같으면 하네스가 거부합니다). Neon 은 pooled host 가 `-pooler` 형태로 다릅니다.
-
-### production forbidden hash 계산
-production URL 도 **저장소 파일이나 명령 기록에 남기지 않고** 일시 주입으로만 계산합니다.
-```powershell
-$env:NEON_CHECK_FORBIDDEN_URL = Read-Host "production URL(계산용, 즉시 제거)"
-node --import tsx/esm scripts/neonCheck/hashTool.ts        # forbidden#<hash> 확인
-Remove-Item Env:NEON_CHECK_FORBIDDEN_URL                    # 즉시 제거
-$env:NEON_CHECK_FORBIDDEN_HOST_HASH = Read-Host "위에서 나온 forbidden hash"
-```
-
-> 도구는 `URL` 을 인자로 주면 **거부**합니다(명령 기록·프로세스 목록 노출 방지). malformed URL 이어도 원문을 출력하지 않습니다.
+> 도구는 URL 을 **인자로 주면 거부**합니다(명령 기록·프로세스 목록 노출 방지). malformed URL 이어도 원문을 출력하지 않습니다.
 
 ## 12. run-id 생성 규칙
 하네스 정규식은 **`^[a-z0-9]{4,16}$`** 입니다 — **영문 소문자와 숫자만, 4~16자**. **밑줄(_)·대문자·하이픈 불가.**
@@ -279,6 +291,41 @@ Remove-Item Env:CONFIRM_EXECUTE -ErrorAction SilentlyContinue
 host hash mismatch · direct/pooled 구분 실패 · forbidden hash 일치 · catalog≠45 · assertion≠10 ·
 cleanup 이 run-id 밖 참조 · raw URL/host/user/password 출력 · DB 연결이나 write 발생 ·
 synthetic 이름이 run-id 밖 · `CONFIRM_EXECUTE` 없이 executor 진입 · status 가 aborted/error · **결과를 이해할 수 없음**.
+
+## 13b. SELECT-only preflight (읽기 전용 연결 — DDL 0 · DML 0)
+offline dry-run 이 통과했다면, **실제 DB 안전 조건**을 읽기 전용으로 확인합니다.
+
+```powershell
+Remove-Item Env:CONFIRM_EXECUTE -ErrorAction SilentlyContinue
+$env:PREFLIGHT_ONLY = "true"
+node --import tsx/esm scripts/neonOrchestrationCapabilityCheck.ts
+```
+
+- `PREFLIGHT_ONLY` 와 `CONFIRM_EXECUTE` 를 **동시에 설정하면 거부**됩니다. 값은 `"true"` **정확히**만 인정합니다.
+- 모든 probe 는 `BEGIN` → `SET TRANSACTION READ ONLY` → … → **항상 `ROLLBACK`** 안에서 돌고, **COMMIT 경로가 없습니다.**
+- 실행되는 SQL 은 **코드에 고정된 query ID allowlist** 뿐입니다(임의 SQL 실행 API 없음).
+
+### preflight 결과 상태
+| status | 의미 | execute 승인 |
+|---|---|---|
+| `preflight-passed` | 모든 안전 조건 통과 | 가능(별도 승인 Gate) |
+| `preflight-aborted-safety-guard` | 고객 데이터·업무 테이블·migration·production role·잔여 object 발견 | **불가** |
+| `preflight-target-identity-unverified` | direct/pooled 가 같은 DB 라는 증거 부족 | **불가** |
+| `preflight-connection-failed` | 연결 실패 | **불가** |
+| `preflight-readonly-enforcement-failed` | 읽기 전용 강제 실패 | **불가** |
+
+### 확인 체크리스트
+- [ ] `mode=select-only-preflight` · `status=preflight-passed`
+- [ ] `dbWrites=0 ddl=0`
+- [ ] `readOnly=enforced`
+- [ ] `publicUserTables=0 businessTables=0 businessRows=false migrationHistory=0 orchestrationRoles=0 residue=0`
+- [ ] `identityMatch=true` (direct/pooled 가 같은 disposable DB)
+- [ ] `poolerConfidence` = `consistent-with-transaction-pooling` 또는 `unverified` (**`confirmed` 는 추측으로 나오지 않습니다**)
+- [ ] `createRoleCapability` = `likely-capable` / `unverified` (**"가능하다"고 단정하지 않습니다** — execute 전 잔여 위험)
+- [ ] masked fingerprint 만 보임(URL·host·db·user·role·table 이름 없음)
+
+> preflight 가 통과하면 **evidence** 가 발급됩니다(run-id·hash 4종·status·발급시각·integrity, **secret 0**, 저장소 밖 임시 경로, 만료 30분).
+> execute 경로는 이 evidence 를 대조해 열리며, **"통과했다"는 말만으로는 열리지 않습니다.**
 
 ## 14. 결과 공유 규칙 (Claude·문서·메신저 공통)
 **공유 가능**: dry-run status · run-id · **masked** direct/pooled fingerprint(`url#xxxxxxxx…`) ·

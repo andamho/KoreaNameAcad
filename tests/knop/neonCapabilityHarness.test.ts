@@ -27,11 +27,15 @@ const CLI_SRC = readFileSync(path.join(here, "..", "..", "scripts", "neonOrchest
 
 const DIRECT = "postgresql://u:p@disposable-branch.example.neon.tech/testdb";
 const POOLED = "postgresql://u:p@disposable-branch-pooler.example.neon.tech/testdb";
+const PROD_DIRECT = "postgresql://u:p@prod-main.example.neon.tech/proddb";
+const PROD_POOLED = "postgresql://u:p@prod-main-pooler.example.neon.tech/proddb";
 const RUN = "phase2aa";
 const okEnv = (over: Partial<HarnessEnv> = {}): HarnessEnv => ({
   NEON_CHECK_DIRECT_URL: DIRECT, NEON_CHECK_POOLED_URL: POOLED,
   NEON_CHECK_EXPECTED_DIRECT_HOST_HASH: hostHashOf(DIRECT),
   NEON_CHECK_EXPECTED_POOLED_HOST_HASH: hostHashOf(POOLED),
+  NEON_CHECK_FORBIDDEN_DIRECT_HOST_HASH: hostHashOf(PROD_DIRECT),
+  NEON_CHECK_FORBIDDEN_POOLED_HOST_HASH: hostHashOf(PROD_POOLED),
   NEON_CHECK_DISPOSABLE_CONFIRM: DISPOSABLE_TOKEN, NEON_CHECK_RUN_ID: RUN, ...over,
 });
 const cfgOf = (over: Partial<HarnessEnv> = {}): HarnessConfig => {

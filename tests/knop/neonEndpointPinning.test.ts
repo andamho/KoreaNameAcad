@@ -16,7 +16,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, "..", "..");
 const DIRECT = "postgresql://u:p@ep-disp-123.ap-southeast-1.aws.neon.tech/testdb";
 const POOLED = "postgresql://u:p@ep-disp-123-pooler.ap-southeast-1.aws.neon.tech/testdb";
-const PROD = "postgresql://u:p@ep-prod-999.ap-southeast-1.aws.neon.tech/proddb";
+const PROD_DIRECT = "postgresql://u:p@ep-prod-999.ap-southeast-1.aws.neon.tech/proddb";
+const PROD_POOLED = "postgresql://u:p@ep-prod-999-pooler.ap-southeast-1.aws.neon.tech/proddb";
 const RUN = "pin260721";
 
 const okEnv = (over: Partial<HarnessEnv> = {}): HarnessEnv => ({
@@ -24,7 +25,8 @@ const okEnv = (over: Partial<HarnessEnv> = {}): HarnessEnv => ({
   NEON_CHECK_POOLED_URL: POOLED,
   NEON_CHECK_EXPECTED_DIRECT_HOST_HASH: hostHashOf(DIRECT),
   NEON_CHECK_EXPECTED_POOLED_HOST_HASH: hostHashOf(POOLED),
-  NEON_CHECK_FORBIDDEN_HOST_HASH: hostHashOf(PROD),
+  NEON_CHECK_FORBIDDEN_DIRECT_HOST_HASH: hostHashOf(PROD_DIRECT),
+  NEON_CHECK_FORBIDDEN_POOLED_HOST_HASH: hostHashOf(PROD_POOLED),
   NEON_CHECK_DISPOSABLE_CONFIRM: DISPOSABLE_TOKEN,
   NEON_CHECK_RUN_ID: RUN,
   ...over,
@@ -86,21 +88,35 @@ describe("endpoint 독립 pinning", () => {
       /동일/);
   });
 
-  test("forbidden(production) hash 와 direct 일치 거부", () => {
-    assert.match(refuse({ NEON_CHECK_DIRECT_URL: PROD, NEON_CHECK_EXPECTED_DIRECT_HOST_HASH: hostHashOf(PROD) }),
-      /direct URL 이 production host hash 와 일치/);
+  test("forbidden set — 4개 조합 전부 차단", () => {
+    const hit = (label: string) => new RegExp("disposable .* URL 이 .*" + label + ".* host hash 와 일치");
+    assert.match(refuse({ NEON_CHECK_DIRECT_URL: PROD_DIRECT, NEON_CHECK_EXPECTED_DIRECT_HOST_HASH: hostHashOf(PROD_DIRECT) }), hit("production direct"));
+    assert.match(refuse({ NEON_CHECK_DIRECT_URL: PROD_POOLED, NEON_CHECK_EXPECTED_DIRECT_HOST_HASH: hostHashOf(PROD_POOLED) }), hit("production pooled"));
+    assert.match(refuse({ NEON_CHECK_POOLED_URL: PROD_DIRECT, NEON_CHECK_EXPECTED_POOLED_HOST_HASH: hostHashOf(PROD_DIRECT) }), hit("production direct"));
+    assert.match(refuse({ NEON_CHECK_POOLED_URL: PROD_POOLED, NEON_CHECK_EXPECTED_POOLED_HOST_HASH: hostHashOf(PROD_POOLED) }), hit("production pooled"));
   });
 
-  test("forbidden(production) hash 와 pooled 일치 거부", () => {
-    assert.match(refuse({ NEON_CHECK_POOLED_URL: PROD, NEON_CHECK_EXPECTED_POOLED_HOST_HASH: hostHashOf(PROD) }),
-      /pooled URL 이 production host hash 와 일치/);
+  test("forbidden direct/pooled hash 동일 거부", () => {
+    const h = hostHashOf(PROD_DIRECT);
+    assert.match(refuse({ NEON_CHECK_FORBIDDEN_DIRECT_HOST_HASH: h, NEON_CHECK_FORBIDDEN_POOLED_HOST_HASH: h }),
+      /forbidden direct\/pooled hash 가 동일/);
+  });
+
+  test("deprecated 단일 forbidden hash 거부", () => {
+    assert.match(refuse({ NEON_CHECK_FORBIDDEN_HOST_HASH: hostHashOf(PROD_DIRECT) }),
+      /NEON_CHECK_FORBIDDEN_HOST_HASH 는 폐기된 계약/);
+  });
+
+  test("deprecated helper URL 변수를 실행 env 에 두면 거부", () => {
+    assert.match(refuse({ NEON_CHECK_FORBIDDEN_URL: "postgresql://u:p@h/db" }),
+      /NEON_CHECK_FORBIDDEN_URL 는 폐기된 계약/);
   });
 
   test("malformed hash 거부(대문자·길이·비hex)", () => {
     for (const bad of ["A".repeat(64), "a".repeat(63), "z".repeat(64), ""]) {
       assert.match(refuse({ NEON_CHECK_EXPECTED_DIRECT_HOST_HASH: bad }), /EXPECTED_DIRECT_HOST_HASH|expected direct/);
     }
-    assert.match(refuse({ NEON_CHECK_FORBIDDEN_HOST_HASH: "xyz" }), /FORBIDDEN_HOST_HASH 형식오류/);
+    assert.match(refuse({ NEON_CHECK_FORBIDDEN_DIRECT_HOST_HASH: "xyz" }), /FORBIDDEN_DIRECT_HOST_HASH 없음/);
   });
 
   test("pooled URL 누락 거부(pooled 5종의 유일한 정본이므로 필수)", () => {
@@ -120,6 +136,7 @@ describe("endpoint 독립 pinning", () => {
       refuse({ NEON_CHECK_DIRECT_URL: "mysql://secretuser:secretpass@leak.example.com:5432/leakdb" }),
       refuse({ NEON_CHECK_EXPECTED_POOLED_HOST_HASH: "b".repeat(64) }),
       refuse({ NEON_CHECK_EXPECTED_HOST_HASH: hostHashOf(DIRECT) }),
+      refuse({ NEON_CHECK_POOLED_URL: PROD_POOLED, NEON_CHECK_EXPECTED_POOLED_HOST_HASH: hostHashOf(PROD_POOLED) }),
     ].join(" || ");
     for (const leak of ["secretuser", "secretpass", "leak.example.com", "leakdb", "ep-disp-123", "neon.tech", "postgresql://"]) {
       assert.ok(!all.includes(leak), `거부 메시지에 ${leak} 노출`);
@@ -132,12 +149,14 @@ describe("environment contract 단일 정본", () => {
     assert.deepEqual(REQUIRED_ENV, [
       "NEON_CHECK_DIRECT_URL", "NEON_CHECK_POOLED_URL",
       "NEON_CHECK_EXPECTED_DIRECT_HOST_HASH", "NEON_CHECK_EXPECTED_POOLED_HOST_HASH",
+      "NEON_CHECK_FORBIDDEN_DIRECT_HOST_HASH", "NEON_CHECK_FORBIDDEN_POOLED_HOST_HASH",
       "NEON_CHECK_DISPOSABLE_CONFIRM", "NEON_CHECK_RUN_ID",
     ]);
-    assert.ok(ENV_NAMES.includes("NEON_CHECK_FORBIDDEN_HOST_HASH"));
+    assert.ok(ENV_NAMES.includes("PREFLIGHT_ONLY"));
     assert.ok(ENV_NAMES.includes("CONFIRM_EXECUTE"));
     assert.deepEqual(SECRET_ENV, ["NEON_CHECK_DIRECT_URL", "NEON_CHECK_POOLED_URL"]);
-    assert.deepEqual(DEPRECATED_ENV.map((d) => d.name), ["NEON_CHECK_EXPECTED_HOST_HASH"]);
+    assert.deepEqual(DEPRECATED_ENV.map((d) => d.name),
+      ["NEON_CHECK_EXPECTED_HOST_HASH", "NEON_CHECK_FORBIDDEN_HOST_HASH", "NEON_CHECK_FORBIDDEN_URL"]);
   });
 
   test("필수 변수 누락은 전부 fail-closed", () => {
@@ -164,10 +183,10 @@ describe("environment contract 단일 정본", () => {
 });
 
 describe("hash 도구 — argv/출력 누출 0", () => {
-  test("환경변수에서만 읽고 direct#/pooled# 형식으로만 출력", () => {
-    const lines = computeHashLines({ NEON_CHECK_DIRECT_URL: DIRECT, NEON_CHECK_POOLED_URL: POOLED });
-    assert.equal(lines[0].text, `direct#${hostHashOf(DIRECT)}`);
-    assert.equal(lines[1].text, `pooled#${hostHashOf(POOLED)}`);
+  test("helper 전용 env 에서만 읽고 label#hash 형식으로만 출력", () => {
+    const lines = computeHashLines({ NEON_HASH_INPUT_DIRECT_URL: DIRECT, NEON_HASH_INPUT_POOLED_URL: POOLED });
+    assert.equal(lines[0].text, `expected-direct#${hostHashOf(DIRECT)}`);
+    assert.equal(lines[1].text, `expected-pooled#${hostHashOf(POOLED)}`);
     for (const l of lines) {
       for (const leak of ["ep-disp-123", "neon.tech", "testdb", "u:p", "postgresql://"]) {
         assert.ok(!l.text.includes(leak), `${leak} 노출: ${l.text}`);
@@ -176,7 +195,7 @@ describe("hash 도구 — argv/출력 누출 0", () => {
   });
 
   test("malformed URL 이어도 원문 미출력", () => {
-    const lines = computeHashLines({ NEON_CHECK_DIRECT_URL: "postgresql://leakuser:leakpw@bad host/db" });
+    const lines = computeHashLines({ NEON_HASH_INPUT_DIRECT_URL: "postgresql://leakuser:leakpw@bad host/db" });
     assert.equal(lines[0].ok, false);
     for (const leak of ["leakuser", "leakpw", "bad host"]) assert.ok(!lines[0].text.includes(leak), lines[0].text);
   });
@@ -191,7 +210,8 @@ describe("hash 도구 — argv/출력 누출 0", () => {
     const src = readFileSync(path.join(root, "scripts", "neonCheck", "hashTool.ts"), "utf-8");
     assert.match(src, /process\.argv\.length > 2/, "argv 인자 거부 경로 필요");
     assert.ok(!/process\.argv\[2\]/.test(src), "argv 에서 URL 을 읽으면 안 됨");
-    assert.equal(HASH_TARGETS.every((t) => t.env.startsWith("NEON_CHECK_")), true);
+    assert.equal(HASH_TARGETS.every((t) => t.env.startsWith("NEON_HASH_INPUT_")), true);
+    for (const t of HASH_TARGETS) assert.ok(!ENV_NAMES.includes(t.env), `${t.env} 가 실행 env 계약에 혼입`);
     assert.match(hashToolUsage().join("\n"), /Read-Host/);
   });
 });
@@ -245,16 +265,18 @@ describe("dry-run = offline contract validation", () => {
 });
 
 describe("SELECT-only preflight 계약 문서", () => {
-  test("설계 문서가 존재하고 미구현임을 명시", () => {
+  test("계약 문서가 구현 상태와 일치하고 실제 Neon 은 not-run 임을 명시", () => {
     const doc = readFileSync(path.join(root, "docs", "neon-select-only-preflight-contract.md"), "utf-8");
-    assert.match(doc, /designed, not implemented/);
-    for (const k of ["PREFLIGHT_ONLY", "SET TRANSACTION READ ONLY", "allowlist", "PgBouncer", "preflight-passed"]) {
+    assert.match(doc, /실제 Neon 실행은 not-run/);
+    assert.ok(!/designed, not implemented/.test(doc), "구현 완료 후 남은 미구현 표기 제거");
+    for (const k of ["PREFLIGHT_ONLY", "SET TRANSACTION READ ONLY", "allowlist", "PgBouncer", "preflight-passed",
+      "preflight-target-identity-unverified", "preflight-readonly-enforcement-failed", "integrity"]) {
       assert.ok(doc.includes(k), `계약 문서에 ${k} 누락`);
     }
   });
 
-  test("preflight 는 아직 구현되지 않았다(코드 부재 확인)", () => {
+  test("preflight 모드가 계약에 포함됐다", () => {
     const guards = readFileSync(path.join(root, "scripts", "neonCheck", "guards.ts"), "utf-8");
-    assert.ok(!guards.includes("PREFLIGHT_ONLY"), "이번 Gate 에서는 구현하지 않는다");
+    assert.ok(guards.includes("PREFLIGHT_ONLY"), "모드 계약 구현됨");
   });
 });

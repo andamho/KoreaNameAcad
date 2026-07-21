@@ -30,7 +30,7 @@ export function buildDryRunPlan(cfg: HarnessConfig): string[] {
     `[plan] capability catalog=${CAPABILITIES.length} · actual-neon-direct applicable=${countFor("actual-neon-direct")} · actual-neon-pooled applicable=${countFor("actual-neon-pooled")}`,
     `[plan] hardening security assertions=${ASSERTION_IDS.length} (capability 와 별도 catalog — 합산하지 않음)`,
     `[plan] cleanup statements=${cleanup.length} (run-id 범위 한정)`,
-    `[plan] status=offline-contract-validation (dry-run) · DB connection 0 · DB write 0`,
+    `[plan] mode=${cfg.mode} · status=offline-contract-validation · DB connection 0 · DB write 0`,
     `[plan] 미검증(dry-run 범위 밖): credential 유효성 · 접속 가능성 · CREATE ROLE capability · public user table 0 ·`,
     `[plan]   business table/row 0 · migration history · 기존 orchestration role · PgBouncer transaction mode ·`,
     `[plan]   direct/pooled 실제 권한 차이 → **actual DB safety remains unverified**`,
@@ -52,10 +52,27 @@ export async function main(env: HarnessEnv = process.env as HarnessEnv): Promise
   const cfg = parsed.config;
 
   for (const line of buildDryRunPlan(cfg)) console.log(line);
+  if (cfg.mode === "select-only-preflight") {
+    console.log("[neon-check] mode=select-only-preflight — 읽기 전용 연결로 실제 DB 안전 조건을 확인합니다(DDL 0 · DML 0).");
+    const { runSelectOnlyPreflight } = await import("./neonCheck/runPreflight");
+    return runSelectOnlyPreflight(cfg);
+  }
+
   if (!cfg.execute) {
-    console.log("[neon-check] status=offline-contract-validation PASSED — DB 연결 0 · DB write 0.");
+    console.log(`[neon-check] mode=${cfg.mode} status=offline-contract-validation PASSED — DB 연결 0 · DB write 0.`);
     console.log("[neon-check] ⚠️ actual DB safety remains unverified. 다음은 SELECT-only preflight 이며, 실제 DDL 은 별도 승인 후 CONFIRM_EXECUTE=true 에서만 수행된다.");
     return 0;
+  }
+
+  // ── execute 진입 전 preflight evidence 검문(§13) ──
+  // "통과했다"는 자기신고로는 열리지 않는다. run-id·expected/forbidden hash·status·freshness·integrity 를 전부 대조.
+  const { assertExecuteAllowed } = await import("./neonCheck/selectOnlyPreflight");
+  const { loadEvidence } = await import("./neonCheck/evidenceStore");
+  const ev = assertExecuteAllowed(cfg, loadEvidence(), Date.now());
+  if (!ev.ok) {
+    console.error("[neon-check] ❌ execute 차단 — preflight evidence 검문 실패:");
+    for (const x of ev.refusals) console.error("  - " + x);
+    return 5;
   }
 
   // ── hardening security assertion 관문(연결 **전**, fail-closed) ──
