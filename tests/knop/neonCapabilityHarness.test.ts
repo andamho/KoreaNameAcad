@@ -30,7 +30,8 @@ const POOLED = "postgresql://u:p@disposable-branch-pooler.example.neon.tech/test
 const RUN = "phase2aa";
 const okEnv = (over: Partial<HarnessEnv> = {}): HarnessEnv => ({
   NEON_CHECK_DIRECT_URL: DIRECT, NEON_CHECK_POOLED_URL: POOLED,
-  NEON_CHECK_EXPECTED_HOST_HASH: hostHashOf(DIRECT),
+  NEON_CHECK_EXPECTED_DIRECT_HOST_HASH: hostHashOf(DIRECT),
+  NEON_CHECK_EXPECTED_POOLED_HOST_HASH: hostHashOf(POOLED),
   NEON_CHECK_DISPOSABLE_CONFIRM: DISPOSABLE_TOKEN, NEON_CHECK_RUN_ID: RUN, ...over,
 });
 const cfgOf = (over: Partial<HarnessEnv> = {}): HarnessConfig => {
@@ -194,7 +195,7 @@ describe("Phase2: neon-full 승격 금지", () => {
 describe("Phase2: guard · preflight · identifier · sanitizer", () => {
   test("env 계약 거부 경로", () => {
     assert.ok(!parseHarnessEnv({}).ok);
-    for (const bad of [{ NEON_CHECK_DISPOSABLE_CONFIRM: "no" }, { NEON_CHECK_RUN_ID: "BAD" }, { NEON_CHECK_EXPECTED_HOST_HASH: "b".repeat(64) }, { NEON_CHECK_POOLED_URL: DIRECT }])
+    for (const bad of [{ NEON_CHECK_DISPOSABLE_CONFIRM: "no" }, { NEON_CHECK_RUN_ID: "BAD" }, { NEON_CHECK_EXPECTED_DIRECT_HOST_HASH: "b".repeat(64) }, { NEON_CHECK_POOLED_URL: DIRECT }])
       assert.ok(!parseHarnessEnv(okEnv(bad as Partial<HarnessEnv>)).ok, JSON.stringify(bad));
   });
 

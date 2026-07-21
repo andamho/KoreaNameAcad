@@ -30,7 +30,8 @@ export async function runEmbedded(runId = process.env.NEON_CHECK_RUN_ID || `emb$
   const pooledUrl = `postgresql://ocboot:ocboot@127.0.0.1:${port}/postgres?sslmode=disable`; // host 다름(endpoint 구분 모사)
   const parsed = parseHarnessEnv({
     NEON_CHECK_DIRECT_URL: directUrl, NEON_CHECK_POOLED_URL: pooledUrl,
-    NEON_CHECK_EXPECTED_HOST_HASH: hostHashOf(directUrl),
+    NEON_CHECK_EXPECTED_DIRECT_HOST_HASH: hostHashOf(directUrl),
+    NEON_CHECK_EXPECTED_POOLED_HOST_HASH: hostHashOf(pooledUrl),
     NEON_CHECK_DISPOSABLE_CONFIRM: DISPOSABLE_TOKEN, NEON_CHECK_RUN_ID: runId, CONFIRM_EXECUTE: "true",
   });
   if (!parsed.ok) { console.error("[embedded] env 거부:", parsed.refusals.join(" | ")); await pg.stop(); return { ran: false, reason: "env", exitCode: 2 }; }

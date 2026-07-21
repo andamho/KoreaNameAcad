@@ -9,32 +9,39 @@
 embedded PG17 로 이미 확인된 것: role 생성·membership·ALTER OWNER(NOLOGIN)·SET ROLE·컬럼 UPDATE·identity INSERT·trigger 발화·PUBLIC/function REVOKE·session_replication_role(superuser 전용)·OA001–OA004·owner-only DISABLE TRIGGER.
 **embedded 로 확인 불가(=이 Gate 대상)**: Neon **pooled(PgBouncer transaction mode)** 에서의 role/session 상태 · direct vs pooled URL 차이 · credential rotation 후 기존 pooled connection · prepared statement ↔ role 변경 · Neon branch 에서의 role cleanup(DROP/REASSIGN OWNED).
 
-## 1. 환경변수 계약 (`.env` 미사용 — 프로세스 env 로만 일시 주입)
+## 1. 환경변수 계약 (단일 정본 = `scripts/neonCheck/envContract.ts`)
 | 변수 | 필수 | 설명 |
 |---|---|---|
-| `NEON_CHECK_DIRECT_URL` | ✓ | disposable branch **direct** 연결 |
-| `NEON_CHECK_POOLED_URL` | 권장 | 동일 branch **pooled** 연결(없으면 pooled 항목 skip) |
-| `NEON_CHECK_EXPECTED_HOST_HASH` | ✓ | `sha256(host)` 64hex — 대상 고정 핀 |
-| `NEON_CHECK_FORBIDDEN_HOST_HASH` | 권장 | **production host hash** — 일치 시 즉시 거부 |
+| `NEON_CHECK_DIRECT_URL` | ✓ | disposable **direct** 연결 **[secret]** |
+| `NEON_CHECK_POOLED_URL` | ✓ | 동일 환경 **pooled** 연결 **[secret]** — pooled 5종의 유일한 정본이라 필수 |
+| `NEON_CHECK_EXPECTED_DIRECT_HOST_HASH` | ✓ | direct host 의 `sha256` 64hex — **direct 독립 pin** |
+| `NEON_CHECK_EXPECTED_POOLED_HOST_HASH` | ✓ | pooled host 의 `sha256` 64hex — **pooled 독립 pin** |
+| `NEON_CHECK_FORBIDDEN_HOST_HASH` | 권장 | **production host hash** — direct/pooled 중 하나라도 일치하면 즉시 거부 |
 | `NEON_CHECK_DISPOSABLE_CONFIRM` | ✓ | 반드시 `i-confirm-disposable-neon-branch` |
 | `NEON_CHECK_RUN_ID` | ✓ | `[a-z0-9]{4,16}` — 모든 object 이름 suffix |
-| `CONFIRM_EXECUTE` | 실행 시 | `true` 일 때만 실제 DDL. **기본은 dry-run(DB write 0)** |
-호스트 hash 계산(값 자체는 출력 금지):
-```bash
-node -e "console.log(require('crypto').createHash('sha256').update(new URL(process.argv[1]).host.toLowerCase()).digest('hex'))" "<URL>"
+| `CONFIRM_EXECUTE` | 실행 시 | `true` 일 때만 실제 DDL. 기본은 **offline contract validation(dry-run)** |
+
+> **폐기**: `NEON_CHECK_EXPECTED_HOST_HASH`(단일 hash). 하나의 hash 로는 host 가 서로 다른 direct/pooled 두 endpoint 를
+> 동시에 pin 할 수 없어 **pooled 가 사실상 미고정**이었다. 설정돼 있으면 **fail-closed 로 거부**한다(호환성 유지 안 함).
+
+host hash 계산은 전용 도구를 쓴다(**URL 을 argv 로 받지 않고 환경변수에서만 읽으며 hash 만 출력**):
+```powershell
+node --import tsx/esm scripts/neonCheck/hashTool.ts     # direct#<64hex> / pooled#<64hex>
 ```
 
 ## 2. production 오접속 방지 다층 가드 (하나라도 걸리면 fail-closed)
 1. disposable confirmation 토큰 불일치/누락 → 거부
-2. `EXPECTED_HOST_HASH` 누락/형식오류/**실제 host hash 불일치** → 거부
-3. **`FORBIDDEN_HOST_HASH`(production) 와 일치** → 거부
+2. `EXPECTED_DIRECT_HOST_HASH`/`EXPECTED_POOLED_HOST_HASH` 누락·형식오류·**각 endpoint 실제 host hash 불일치**·**교차 입력**·**두 값 동일** → 거부
+3. **`FORBIDDEN_HOST_HASH`(production) 와 direct 또는 pooled 가 일치** → 거부
 4. **direct == pooled URL** → pooler 검증 불가로 거부
 5. `RUN_ID` 형식 오류 → 거부
 6. 접속 후 카탈로그 관찰: **업무/운영 테이블 존재**(customers·consultations·calls·jobs·job_executions·job_shadow_previews·job_artifacts·orchestration_audit_log 등) 또는 **기존 행 > 0** → 거부
 7. **production 이름 `orchestration_*` role 존재** → 거부(동일 이름 생성 금지)
 8. 이전 run 의 run-id 잔여 object 발견 → 거부(수동 cleanup 선행)
 9. synthetic namespace `oc_chk_<runId>` **밖 DDL 금지**
-10. 기본 dry-run — 실제 생성은 `CONFIRM_EXECUTE=true` 필요
+10. 기본 dry-run(**offline contract validation**) — 실제 생성은 `CONFIRM_EXECUTE=true` 필요
+11. 폐기된 `NEON_CHECK_EXPECTED_HOST_HASH` 사용 → 거부
+> **dry-run 은 6~9 를 검증하지 못한다**(DB 연결 0). 그 항목들은 SELECT-only preflight 또는 execute 에서만 확인된다 — [계약](neon-select-only-preflight-contract.md).
 > 판정 불가 시에도 **거부**(fail-closed). 로그에는 URL/host/username/password 원문 대신 `url#<hash8>…` 만 출력.
 
 ## 3. 생성 object 이름 규칙 (production 충돌 방지)
@@ -55,14 +62,14 @@ schema `oc_chk_<runId>` · role `oc_{owner,admin,deployer,writer,reader,appsim}_
 **결과 분류**: `passed-clean` · `passed-branch-disposal-required` · `failed-cleanup` · `aborted-safety-guard`. **cleanup 실패를 성공으로 보고하지 않는다** — 실패 시 branch 자체를 폐기하고 잔여 위험을 보고.
 
 ## 6. 운영자 실행 절차 (14단계)
-1. Neon 에서 **production 과 분리된 disposable branch** 생성
+1. **별도 disposable project 생성(1순위)** — branch 는 copy-on-write 로 고객 데이터가 따라올 수 있어 기본 권고가 아니다
 2. **production 데이터 복제 없음** 확인(빈 DB 권장)
 3. 빈 DB 또는 synthetic-only DB 준비
 4. **direct TEST credential** 생성(ephemeral)
 5. **pooled TEST credential** 생성(ephemeral)
 6. expected host hash 계산(§1 명령, 값 미기록/미공유)
 7. 환경변수를 **실행 프로세스에만 일시 주입**(`.env` 파일에 쓰지 않음, shell history 주의)
-8. **dry-run 실행**: `node --import tsx/esm scripts/neonOrchestrationCapabilityCheck.ts`
+8. **dry-run 실행**(offline contract validation): `node --import tsx/esm scripts/neonOrchestrationCapabilityCheck.ts`
 9. dry-run plan 확인(대상 host hash·run-id·생성 예정 object·cleanup 범위)
 10. `CONFIRM_EXECUTE=true` 설정
 11. 하네스 실행

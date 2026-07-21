@@ -2,52 +2,112 @@
 // dry-run 과 execute 가 **동일 guard/plan** 을 공유한다. execute 에서 guard 를 생략·캐시하지 않는다.
 import { hostHashOf } from "./secrets";
 import { RUN_ID_RE } from "./identifiers";
+import { DEPRECATED_ENV } from "./envContract";
 
 export const DISPOSABLE_TOKEN = "i-confirm-disposable-neon-branch";
 
 export interface HarnessEnv {
   NEON_CHECK_DIRECT_URL?: string;
   NEON_CHECK_POOLED_URL?: string;
-  NEON_CHECK_EXPECTED_HOST_HASH?: string;
+  NEON_CHECK_EXPECTED_DIRECT_HOST_HASH?: string;
+  NEON_CHECK_EXPECTED_POOLED_HOST_HASH?: string;
   NEON_CHECK_FORBIDDEN_HOST_HASH?: string;
   NEON_CHECK_DISPOSABLE_CONFIRM?: string;
   NEON_CHECK_RUN_ID?: string;
   CONFIRM_EXECUTE?: string;
+  /** @deprecated 단일 hash 계약(폐기). 설정돼 있으면 거부한다. */
+  NEON_CHECK_EXPECTED_HOST_HASH?: string;
 }
 export interface HarnessConfig {
   directUrl: string;
-  pooledUrl: string | null;
-  expectedHostHash: string;
+  pooledUrl: string;
+  expectedDirectHostHash: string;
+  expectedPooledHostHash: string;
   forbiddenHostHash: string | null;
   runId: string;
   execute: boolean;
 }
 export interface GuardResult { ok: boolean; refusals: string[] }
 
-/** 1단계: 연결 전 형식·핀 검증. 실패 시 DB 연결을 시도하지 않는다. */
+const HEX64 = /^[0-9a-f]{64}$/;
+/** URL 구조만 확인한다. **원문(host/user/db)을 반환하거나 메시지에 넣지 않는다.** */
+export function parseUrlShape(url: string): { ok: boolean; reason?: string } {
+  let u: URL;
+  try { u = new URL(url); } catch { return { ok: false, reason: "URL 파싱 실패" }; }
+  if (!/^postgres(ql)?:$/.test(u.protocol)) return { ok: false, reason: "protocol 이 postgres/postgresql 이 아님" };
+  if (!u.hostname) return { ok: false, reason: "host 없음" };
+  if (u.port && !/^\d{1,5}$/.test(u.port)) return { ok: false, reason: "port 형식 오류" };
+  return { ok: true };
+}
+
+/**
+ * 1단계: 연결 **전** 형식·핀 검증. 실패 시 DB 연결을 시도하지 않는다.
+ * direct 와 pooled 를 **각각 독립적으로** expected hash 에 고정한다(suffix 추론 금지).
+ */
 export function parseHarnessEnv(env: HarnessEnv): { ok: true; config: HarnessConfig } | { ok: false; refusals: string[] } {
   const r: string[] = [];
   const direct = (env.NEON_CHECK_DIRECT_URL ?? "").trim();
   const pooled = (env.NEON_CHECK_POOLED_URL ?? "").trim();
-  const expect = (env.NEON_CHECK_EXPECTED_HOST_HASH ?? "").trim().toLowerCase();
+  const expDirect = (env.NEON_CHECK_EXPECTED_DIRECT_HOST_HASH ?? "").trim().toLowerCase();
+  const expPooled = (env.NEON_CHECK_EXPECTED_POOLED_HOST_HASH ?? "").trim().toLowerCase();
   const forbid = (env.NEON_CHECK_FORBIDDEN_HOST_HASH ?? "").trim().toLowerCase();
   const token = (env.NEON_CHECK_DISPOSABLE_CONFIRM ?? "").trim();
   const runId = (env.NEON_CHECK_RUN_ID ?? "").trim();
-  const hex = (s: string) => /^[0-9a-f]{64}$/.test(s);
 
+  // 0. 폐기된 계약 사용 거부(호환성 유지하지 않음)
+  for (const d of DEPRECATED_ENV) {
+    if (((env as Record<string, string | undefined>)[d.name] ?? "").trim()) {
+      r.push(`${d.name} 는 폐기된 계약입니다 → ${d.replacedBy} 사용. 이유: ${d.reason}`);
+    }
+  }
+
+  // 1. 필수 존재 + URL 구조
   if (!direct) r.push("NEON_CHECK_DIRECT_URL 없음");
+  else { const s = parseUrlShape(direct); if (!s.ok) r.push(`NEON_CHECK_DIRECT_URL ${s.reason}`); }
+  if (!pooled) r.push("NEON_CHECK_POOLED_URL 없음(pooled endpoint 는 actual-neon-pooled 5종의 유일한 정본이므로 필수)");
+  else { const s = parseUrlShape(pooled); if (!s.ok) r.push(`NEON_CHECK_POOLED_URL ${s.reason}`); }
   if (token !== DISPOSABLE_TOKEN) r.push("disposable 확인 토큰 불일치/누락");
-  if (!hex(expect)) r.push("NEON_CHECK_EXPECTED_HOST_HASH 없음/형식오류");
   if (!RUN_ID_RE.test(runId)) r.push("NEON_CHECK_RUN_ID 없음/형식오류([a-z0-9]{4,16})");
-  if (forbid && !hex(forbid)) r.push("NEON_CHECK_FORBIDDEN_HOST_HASH 형식오류");
-  if (direct && hex(expect) && hostHashOf(direct) !== expect) r.push("direct URL host hash ≠ expected pin");
-  if (direct && forbid && hex(forbid) && hostHashOf(direct) === forbid) r.push("direct URL 이 production host hash 와 일치 → 거부");
-  if (pooled && forbid && hex(forbid) && hostHashOf(pooled) === forbid) r.push("pooled URL 이 production host hash 와 일치 → 거부");
-  if (pooled && direct && pooled === direct) r.push("direct/pooled URL 이 동일 → pooler 검증 불가(거부)");
-  if (pooled && direct && hostHashOf(pooled) === hostHashOf(direct)) r.push("direct/pooled host 가 동일 → endpoint 구분 불가(거부)");
+
+  // 2. hash 형식
+  if (!HEX64.test(expDirect)) r.push("NEON_CHECK_EXPECTED_DIRECT_HOST_HASH 없음/형식오류(64 lowercase hex)");
+  if (!HEX64.test(expPooled)) r.push("NEON_CHECK_EXPECTED_POOLED_HOST_HASH 없음/형식오류(64 lowercase hex)");
+  if (forbid && !HEX64.test(forbid)) r.push("NEON_CHECK_FORBIDDEN_HOST_HASH 형식오류(64 lowercase hex)");
+  if (HEX64.test(expDirect) && HEX64.test(expPooled) && expDirect === expPooled)
+    r.push("expected direct/pooled hash 가 동일 → 두 endpoint 를 구분해 pin 하지 못함(거부)");
+
+  // 3. 독립 pin — 각 endpoint 의 실제 host hash 가 각자의 expected 와 일치해야 한다
+  const hDirect = direct && parseUrlShape(direct).ok ? hostHashOf(direct) : null;
+  const hPooled = pooled && parseUrlShape(pooled).ok ? hostHashOf(pooled) : null;
+  if (hDirect && HEX64.test(expDirect) && hDirect !== expDirect) {
+    r.push(HEX64.test(expPooled) && hDirect === expPooled
+      ? "direct URL host hash 가 **pooled** expected pin 과 일치 → direct/pooled expected hash 교차 입력(거부)"
+      : "direct URL host hash ≠ expected direct pin");
+  }
+  if (hPooled && HEX64.test(expPooled) && hPooled !== expPooled) {
+    r.push(HEX64.test(expDirect) && hPooled === expDirect
+      ? "pooled URL host hash 가 **direct** expected pin 과 일치 → direct/pooled expected hash 교차 입력(거부)"
+      : "pooled URL host hash ≠ expected pooled pin");
+  }
+
+  // 4. forbidden(production) 일치 거부 — 두 endpoint 모두
+  if (hDirect && forbid && HEX64.test(forbid) && hDirect === forbid) r.push("direct URL 이 production host hash 와 일치 → 거부");
+  if (hPooled && forbid && HEX64.test(forbid) && hPooled === forbid) r.push("pooled URL 이 production host hash 와 일치 → 거부");
+
+  // 5. 두 endpoint 는 실제로 달라야 한다
+  if (direct && pooled && direct === pooled) r.push("direct/pooled URL 이 동일 → pooler 검증 불가(거부)");
+  if (hDirect && hPooled && hDirect === hPooled) r.push("direct/pooled host 가 동일 → endpoint 구분 불가(거부)");
 
   if (r.length) return { ok: false, refusals: r };
-  return { ok: true, config: { directUrl: direct, pooledUrl: pooled || null, expectedHostHash: expect, forbiddenHostHash: forbid || null, runId, execute: (env.CONFIRM_EXECUTE ?? "") === "true" } };
+  return {
+    ok: true,
+    config: {
+      directUrl: direct, pooledUrl: pooled,
+      expectedDirectHostHash: expDirect, expectedPooledHostHash: expPooled,
+      forbiddenHostHash: forbid || null, runId,
+      execute: (env.CONFIRM_EXECUTE ?? "") === "true",
+    },
+  };
 }
 
 // ── 2단계: 연결 후 카탈로그 관찰 판정 ────────────────────────────────────────

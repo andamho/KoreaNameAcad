@@ -6,22 +6,35 @@ import { scopedNames } from "./neonCheck/identifiers";
 import { buildCleanupPlan } from "./neonCheck/cleanup";
 import { maskUrl, type MemorySecret } from "./neonCheck/secrets";
 import { CAPABILITIES, countFor, validateCatalog } from "./neonCheck/capabilities";
+import { ASSERTION_IDS } from "../server/migrations/hardening/functionSecurityAssertions";
+import { formatEnvContract } from "./neonCheck/envContract";
 import { createDirectAdapter, type DbAdapter } from "./neonCheck/adapters";
 import { executeDirectProfile, executePooledProfile, rollupNeonFull, assertNoNeonPromotion, formatProfileReport, formatNeonFull } from "./neonCheck/executor";
 
 export { DISPOSABLE_TOKEN };
 
-/** dry-run plan — DB 연결 0 · write 0. execute 와 동일한 guard/이름/cleanup plan 공유. */
+/**
+ * dry-run = **offline contract validation**. DB 연결 0 · write 0.
+ * ⚠️ 통과해도 "실행 준비 완료"가 아니다. credential 유효성·접속 가능성·CREATE ROLE capability·
+ *    public user table 0·business row 0·migration history·기존 orchestration role·PgBouncer transaction mode 는
+ *    **전부 미검증(actual DB safety remains unverified)** 이며 SELECT-only preflight 단계에서만 확인된다.
+ */
 export function buildDryRunPlan(cfg: HarnessConfig): string[] {
   const n = scopedNames(cfg.runId);
   const cleanup = buildCleanupPlan(n);
   return [
-    `[plan] target=${maskUrl(cfg.directUrl)} pooled=${cfg.pooledUrl ? maskUrl(cfg.pooledUrl) : "none"} runId=${cfg.runId}`,
+    `[plan] direct=${maskUrl(cfg.directUrl)} pooled=${maskUrl(cfg.pooledUrl)} runId=${cfg.runId}`,
+    `[plan] endpoint pin: direct/pooled 각각 독립 expected hash 로 고정됨 · forbidden(production) hash 불일치 확인됨${cfg.forbiddenHostHash ? "" : " (forbidden 미설정 — 설정 권장)"}`,
     `[plan] CREATE SCHEMA ${n.schema} (synthetic 전용 — public 에는 아무것도 만들지 않음)`,
     `[plan] CREATE ROLE ${Object.values(n.roles).join(", ")}`,
     `[plan] capability catalog=${CAPABILITIES.length} · actual-neon-direct applicable=${countFor("actual-neon-direct")} · actual-neon-pooled applicable=${countFor("actual-neon-pooled")}`,
+    `[plan] hardening security assertions=${ASSERTION_IDS.length} (capability 와 별도 catalog — 합산하지 않음)`,
     `[plan] cleanup statements=${cleanup.length} (run-id 범위 한정)`,
-    `[plan] DB connection 0 · DB write 0 (dry-run). 실제 실행은 CONFIRM_EXECUTE=true 필요.`,
+    `[plan] status=offline-contract-validation (dry-run) · DB connection 0 · DB write 0`,
+    `[plan] 미검증(dry-run 범위 밖): credential 유효성 · 접속 가능성 · CREATE ROLE capability · public user table 0 ·`,
+    `[plan]   business table/row 0 · migration history · 기존 orchestration role · PgBouncer transaction mode ·`,
+    `[plan]   direct/pooled 실제 권한 차이 → **actual DB safety remains unverified**`,
+    `[plan] 다음 단계는 SELECT-only preflight(읽기 전용 연결). 실제 DDL 은 그 이후 별도 승인 + CONFIRM_EXECUTE=true.`,
   ];
 }
 
@@ -30,11 +43,20 @@ export async function main(env: HarnessEnv = process.env as HarnessEnv): Promise
   if (!catalog.ok) { console.error("[neon-check] ❌ capability 정본 무결성 실패:"); for (const p of catalog.problems) console.error("  - " + p); return 2; }
 
   const parsed = parseHarnessEnv(env);
-  if (!parsed.ok) { console.error("[neon-check] ❌ 실행 거부(fail-closed):"); for (const r of parsed.refusals) console.error("  - " + r); return 2; }
+  if (!parsed.ok) {
+    console.error("[neon-check] ❌ 실행 거부(fail-closed):");
+    for (const r of parsed.refusals) console.error("  - " + r);
+    for (const l of formatEnvContract()) console.error("[neon-check] " + l);
+    return 2;
+  }
   const cfg = parsed.config;
 
   for (const line of buildDryRunPlan(cfg)) console.log(line);
-  if (!cfg.execute) { console.log("[neon-check] dry-run 종료(DB 연결 0 · DB write 0). 실행하려면 CONFIRM_EXECUTE=true."); return 0; }
+  if (!cfg.execute) {
+    console.log("[neon-check] status=offline-contract-validation PASSED — DB 연결 0 · DB write 0.");
+    console.log("[neon-check] ⚠️ actual DB safety remains unverified. 다음은 SELECT-only preflight 이며, 실제 DDL 은 별도 승인 후 CONFIRM_EXECUTE=true 에서만 수행된다.");
+    return 0;
+  }
 
   // ── hardening security assertion 관문(연결 **전**, fail-closed) ──
   // Neon capability 와 별개 catalog. 하나라도 실패하면 Neon 접속 0 · DDL 0 으로 중단한다.
