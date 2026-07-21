@@ -62,7 +62,7 @@ describe("Phase2: capability 정본 · profile 모델", () => {
     }
   });
 
-  test("handler missing 0 — 45개 전부 handler 연결", () => {
+  test("handler missing 0 — 카탈로그 전부 handler 연결", () => {
     const missing: string[] = [];
     for (const c of CAPABILITIES) {
       const isPooled = c.applicableProfiles.includes("pooled-mock");
@@ -87,9 +87,20 @@ describe("Phase2: capability 정본 · profile 모델", () => {
     const pgIds = new Set(applicableFor("pglite").map((c) => c.id));
     for (const id of ["set-role-denied-after-revoke", "escalation-denied-for-runtime-roles", "reader-select-success",
       "writer-insert-success", "writer-business-table-access-denied", "trigger-function-direct-call-denied",
-      "truncate-trigger-or-fk-denied", "session-replication-role-denied", "runtime-trigger-disable-denied", "default-privileges-secure",
+      "truncate-trigger-or-fk-denied", "session-replication-role-denied", "runtime-trigger-disable-denied",
       "direct-reader-credential", "direct-writer-credential", "deployer-admin-owner-chain"]) {
       assert.ok(!pgIds.has(id), `${id} 는 PGlite 비적용이어야`);
+      assert.equal(findCapability(id)!.authoritativeProfile, "embedded-direct", id);
+    }
+  });
+
+  // function privilege 정정 Gate 에서 재분류: 이전 판은 "PGlite 는 default ACL 미기록"이라 비적용으로 뒀으나
+  // 실측 결과 그것은 **스키마 한정 형식이 no-op** 이었기 때문이다. 전역 형식은 PGlite(18.x)·embedded(17.10) 모두 기록한다.
+  // 정본은 여전히 embedded-direct(운영 Neon 은 PG 17.x, PGlite 는 18.x 라 버전이 다름).
+  test("default ACL 계열은 PGlite 적용 가능하되 정본은 embedded-direct", () => {
+    const pgIds = new Set(applicableFor("pglite").map((c) => c.id));
+    for (const id of ["default-privileges-secure", "schema-qualified-default-privileges-noop"]) {
+      assert.ok(pgIds.has(id), `${id} 는 PGlite 적용 가능해야(전역 형식 실측 근거)`);
       assert.equal(findCapability(id)!.authoritativeProfile, "embedded-direct", id);
     }
   });
@@ -185,7 +196,7 @@ describe("Phase2: neon-full 승격 금지", () => {
       .map((c) => ({ capabilityId: c.id, executionProfile: "actual-neon-direct" as const, outcome: "pass" as const, evidenceSource: "actual-neon-direct" as const, authoritative: true, durationMs: 1 }));
     const pooled = CAPABILITIES.filter((c) => c.applicableProfiles.includes("actual-neon-pooled"))
       .map((c) => ({ capabilityId: c.id, executionProfile: "actual-neon-pooled" as const, outcome: "pass" as const, evidenceSource: "actual-neon-pooled" as const, authoritative: true, durationMs: 1 }));
-    assert.equal(rollupNeonFull([...direct, ...pooled]).status, "passed", "모든 45 actual Neon evidence 시에만");
+    assert.equal(rollupNeonFull([...direct, ...pooled]).status, "passed", "모든 capability 가 actual Neon evidence 일 때에만");
     assert.equal(rollupNeonFull([...direct]).status, "unverified", "pooled 누락 시 unverified");
   });
 });

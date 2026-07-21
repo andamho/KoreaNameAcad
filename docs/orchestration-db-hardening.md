@@ -37,21 +37,30 @@ CREATE ROLE NOLOGIN/LOGIN · membership GRANT/REVOKE · **ALTER TABLE/FUNCTION O
 ownership transfer 만으로 가정하지 않고 **명시 REVOKE + runner fingerprint** 로 다음을 **0** 보장(격리 PG17 검증):
 - 기존 app role 6테이블 **INSERT/UPDATE/DELETE/TRUNCATE/REFERENCES/TRIGGER = 0**(DO 블록: orchestration_* 이외 grantee 전 권한 REVOKE) · owner/admin/deployer **비멤버** · **SET ROLE owner/admin 불가**(real login 검증).
 - **PUBLIC table 권한 0 · PUBLIC sequence 권한 0 · PUBLIC trigger-function EXECUTE 0**(REVOKE ALL ON FUNCTION FROM PUBLIC) · writer/reader **직접 function EXECUTE 0**(직접 호출 거부, 발화에는 EXECUTE 불요) · writer↔business table 격리 · reader 6테이블 write 불가.
-- **default privileges**: `ALTER DEFAULT PRIVILEGES FOR ROLE orchestration_owner IN SCHEMA public REVOKE ALL ON {TABLES,SEQUENCES,FUNCTIONS} FROM PUBLIC` — **실행 role = deployer→SET ROLE admin(=owner 멤버)** 또는 owner.
+- **default privileges**: `ALTER DEFAULT PRIVILEGES FOR ROLE {owner,admin,deployer} REVOKE {EXECUTE ON FUNCTIONS | ALL ON TABLES,SEQUENCES} FROM PUBLIC` — **스키마 한정자 없음**(아래 §5b). 대상 role 멤버십이 필요하므로 SQL 의 DO 블록이 없으면 임시 부여 후 즉시 회수한다.
 
-> ### ⚠️ 미해결 결함 — default privileges 로는 미래 **함수**의 PUBLIC EXECUTE 를 막지 못함 (Phase 2 실측 발견)
-> **embedded PostgreSQL 17.10 과 PGlite 양쪽에서 재현 확인:**
-> - `ALTER DEFAULT PRIVILEGES … GRANT …` 은 `pg_default_acl` 행을 **생성**한다(정상).
-> - 그러나 기존 default-ACL 엔트리가 없는 상태에서 `ALTER DEFAULT PRIVILEGES … REVOKE {ALL|EXECUTE} ON FUNCTIONS FROM PUBLIC` 은 **행을 만들지 않는다** → 함수의 내장 기본값(PUBLIC EXECUTE)이 **그대로 남는다**. 새로 만든 함수의 `proacl=null`, `has_function_privilege('public',…,'EXECUTE')=true`.
-> - 생성 후 **명시** `REVOKE EXECUTE ON FUNCTION … FROM PUBLIC` 은 정상 동작(`proacl={owner=X/owner}`, public=false).
->
-> **영향 범위**
-> - **현재 안전**: 하드닝 SQL 은 4개 trigger function 에 대해 명시 `REVOKE ALL ON FUNCTION … FROM PUBLIC` 을 수행하므로 **기존 함수의 PUBLIC EXECUTE = 0**(격리 PG17 재확인).
-> - **TABLES/SEQUENCES**: 내장 기본값이 이미 PUBLIC 에 아무 권한도 주지 않으므로 해당 REVOKE 는 무해한 no-op(실질 위험 없음).
-> - **실제 gap**: `orchestration_owner` 가 **앞으로 만들** 함수는 PUBLIC EXECUTE 를 갖게 된다.
->
-> **필요한 수정(다음 Gate)** — 이번 Phase 2 범위 밖이라 미적용(하드닝 SQL 은 checksum 고정 상태):
-> 신규 함수를 만들 때마다 명시 `REVOKE EXECUTE ON FUNCTION … FROM PUBLIC` 을 하드닝 절차/러너 post-verify 에 포함하고, runner fingerprint 에 "schema 내 PUBLIC EXECUTE 함수 수 = 0" 을 상시 검사로 추가한다. (default privileges 문장은 무해하므로 유지하되, **그것에 의존하지 않는다**.)
+### 5b. ⚠️ function privilege 정정 — 결함 원인과 해결 (정정 완료)
+**결함(Phase 2 발견)**: `orchestration_owner` 가 **앞으로 만들** 함수가 PUBLIC EXECUTE 를 그대로 보유.
+
+**근본 원인(정정 Gate 에서 규명)** — 이전 판의 "REVOKE 형식은 기록되지 않는다"는 서술은 **부정확**했다. 실제 원인은 **`IN SCHEMA` 한정자**다:
+
+| 형식 | 시작 ACL | `pg_default_acl` 행 | 이후 새 함수 |
+|---|---|---|---|
+| `… FOR ROLE r **IN SCHEMA s** REVOKE … ON FUNCTIONS FROM PUBLIC` | **빈 ACL** | **생성 안 됨**(no-op) | `proacl=null` → **PUBLIC EXECUTE 보유** ❌ |
+| `… FOR ROLE r REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC` (**전역**) | **내장 기본값**(`=X/r` 포함) | `{r=X/r}` (namespace 0) | `proacl={r=X/r}` → **public=false** ✅ |
+
+**정본 증거**: embedded PostgreSQL **17.10** (운영 Neon 과 동일 메이저). PGlite 는 **18.3** 이라 동일 결과가 나와도 **정본이 아니다**(버전 상이).
+
+**적용한 해결(3층)**
+1. **기존 4함수** — 정확한 signature 기준 명시 `REVOKE ALL ON FUNCTION …() FROM PUBLIC` + reader/writer/deployer 선언적 회수. **소유권 이전 뒤 재선언**(멱등). PG 17.10 실측상 `ALTER FUNCTION … OWNER TO` 는 ACL 을 `{old=X/old}`→`{new=X/new}` 로 재작성하며 PUBLIC 회수를 유지하지만, 엔진 동작에 의존하지 않는다.
+2. **미래 함수** — **전역 형식** default privileges 를 **owner·admin·deployer 3 role 전부**에 적용. `FOR ROLE` 목록 밖 role 이 만든 함수는 보호되지 않으므로 3개 모두 필요(실측 확인).
+3. **fail-closed fingerprint** — 러너가 9 hard stop 으로 상시 검사(§9b). 하나라도 위반 시 `aborted-function-fingerprint`.
+
+**추가 방어층(실측 발견)**: 하드닝은 `REVOKE CREATE ON SCHEMA public FROM PUBLIC` 을 수행하고 owner 에게 CREATE 를 부여하지 않으므로, **owner 조차 기본 상태에서는 public 스키마에 함수를 만들 수 없다**(42501). 미래 함수 생성은 반드시 명시적 `GRANT CREATE ON SCHEMA public TO orchestration_owner` 선행을 요구한다.
+
+**잔여 위험(명시)**: 기존 app/migration owner role(이름을 정적 SQL 이 알 수 없음)이 만드는 함수는 이 default ACL 로 보호되지 않는다. → §9c 미래 migration 규칙과 fingerprint 의 `fn-count`(미승인 `orch_*` 함수 탐지)로 보완한다.
+
+**보안 모드 결정**: 4함수는 `SECURITY INVOKER` 유지(`prosecdef=false`), `proconfig=null`. trigger 발화는 EXECUTE 권한을 요구하지 않으므로 `SECURITY DEFINER` 가 불필요하고, DEFINER 는 search_path 주입면을 새로 만든다. 함수 본문은 `RAISE`/`TG_*`/`NEW·OLD` 컬럼 비교만 쓰고 **스키마 미한정 객체·연산자를 참조하지 않아** search_path 의존이 없다. 그래서 `proconfig` 고정을 요구하지 않되, fingerprint 가 두 값의 **무단 변경을 hard stop 으로 탐지**한다.
 
 ## 6. connection-pool 설계
 reader/writer **각각 독립 pool**(app pool 과 분리). min/max 소량. **pooler transaction mode 에서 SET ROLE 금지 → 역할별 독립 credential**(§2 unverified 완화). rotation 시 pool 재시작. **startup self-check fail-closed**(§3). credential 식별자 미출력, capability(권한 boolean)만 확인.
@@ -111,12 +120,40 @@ job_artifacts/automated_reviews/orchestration_audit_log=immutable/append-only. h
 Phase1(role 5개; deployer/writer/reader=LOGIN, credential 은 secret store 별도) → Phase2(REVOKE PUBLIC/app → 최소 GRANT → trigger fn/trigger → **ownership 이전(§12 A 절차)** → default privileges; **단일 tx**) → Phase3(별도 연결 capability + 기존 app write 실패 검증) → Phase4(adapter 미배선 종료·런타임 writer 전환). **role 생성+credential provisioning 은 한 tx 로 완전 rollback 안 될 수 있음** → Phase1(role) / Phase2(구조) 분리, 부분 실패 시 **DROP OWNED → DROP ROLE** 정리 절차(빈 role 이 아니면 DROP ROLE 은 2BP01 로 실패).
 
 ## 13. hardeningRunner fail-closed (보강)
-exact sha256 allowlist `a4a80dbb…` + host pin + 아래 하나라도 불일치 → 미적용/ROLLBACK:
-role 부재(pre)/**5개**(post) · **trigger ≥15 & 전부 enabled**(aborted-trigger-disabled) · function 4 · **owner=orchestration_owner**(owner-mismatch) · **PUBLIC table 0**(public-privilege) · **비-orchestration grantee 0**(app-privilege) · **PUBLIC function EXECUTE 0**(function-public) · **신규 6테이블 행수 0**(rows-present) · already-applied. `startupTriggerSelfCheck` export(앱 부팅 시 15 trigger enabled 확인). 범용 additive 스캐너 불변.
+exact sha256 allowlist **`c5649f3f…`**(function privilege 정정으로 재고정) + host pin + 아래 하나라도 불일치 → 미적용/ROLLBACK:
+role 부재(pre)/**5개**(post) · **trigger ≥15 & 전부 enabled**(aborted-trigger-disabled) · function 4 · **owner=orchestration_owner**(owner-mismatch) · **PUBLIC table 0**(public-privilege) · **비-orchestration grantee 0**(app-privilege) · **PUBLIC function EXECUTE 0**(function-public) · **function fingerprint 9 hard stop**(function-fingerprint, §9b) · **신규 6테이블 행수 0**(rows-present) · already-applied. `startupTriggerSelfCheck` export(앱 부팅 시 15 trigger enabled 확인). 범용 additive 스캐너 불변.
+
+### 9b. function fingerprint — 9 hard stop
+`verifyFunctionFingerprint()` 가 반환하는 위반 목록. 하나라도 있으면 `aborted-function-fingerprint`.
+
+| # | id | 검사 | 탐지 대상 |
+|---|---|---|---|
+| 1 | `fn-count` | `public` 의 `orch\_%` 함수 집합 = 기대 4개 | **미승인 함수 도입**·누락 |
+| 2 | `fn-signature` | identity arguments = `""`(무인자) | signature 변조 |
+| 3 | `fn-owner` | 소유자 = `orchestration_owner` | 소유권 탈취 |
+| 4 | `fn-shape` | 반환형 `trigger` + 언어 `plpgsql` | 본문 성격 변경 |
+| 5 | `fn-secdef` | `prosecdef=false` | **SECURITY DEFINER 무단 도입** |
+| 6 | `fn-searchpath` | `proconfig IS NULL` | search_path 고정/주입 |
+| 7 | `fn-public-execute` | PUBLIC EXECUTE = 0 | PUBLIC 재부여 |
+| 8 | `fn-role-execute` | reader/writer EXECUTE = 0 **및** ACL grantee ⊆ {owner} | 런타임 role 직접 부여 |
+| 9 | `fn-default-acl` | 전역(namespace 0) FUNCTIONS default ACL 이 3 role 전부 존재 & PUBLIC 미포함 | **미래 함수 보호 해제** |
+
+> **의도된 예외**: `orchestration_deployer`/`admin` 은 owner membership 을 통해 EXECUTE 를 **상속**한다(회수 불가·설계상 break-glass 경로). 그래서 8번은 reader/writer 만 강제한다. SQL 의 `REVOKE … FROM orchestration_deployer` 는 **직접 grant** 만 제거하는 선언적 문장이다.
+
+### 9c. 미래 migration 규칙 (orchestration 함수를 추가·변경할 때 — 6단계)
+1. **생성 주체를 `orchestration_owner` 로 고정**: `SET ROLE orchestration_owner` 로 실행한다(deployer→admin→owner). app/migration owner 로 만들면 default ACL 보호를 받지 못한다.
+2. **CREATE 권한 선행 부여**: `GRANT CREATE ON SCHEMA public TO orchestration_owner` (하드닝이 PUBLIC 의 CREATE 를 회수했으므로 필수) — 사용 후 회수 권장.
+3. **생성 직후 명시 REVOKE**: `REVOKE ALL ON FUNCTION <정확한 signature> FROM PUBLIC, orchestration_reader, orchestration_writer` — default ACL 에 의존하지 않는 이중 방어.
+4. **보안 모드 유지**: `SECURITY INVOKER`(기본) · `SET search_path` 미사용. DEFINER 가 꼭 필요하면 별도 승인 Gate 로 분리하고 `proconfig` 를 명시 고정한다.
+5. **fingerprint 갱신**: `HARDENINGS[].functionFingerprint.names` 에 새 함수를 추가한다. 추가하지 않으면 `fn-count` 가 **fail-closed 로 배포를 막는다**(의도된 동작).
+6. **checksum 재고정 + 격리 검증**: SQL 변경 시 `expectedSha256` 재계산, PGlite 스위트 + embedded PG17 e2e 를 모두 통과시킨 뒤에만 apply Gate 로 넘긴다.
 
 ## 14. 검증 결과
-- **PGlite `tests/knop/orchestrationHardening.test.ts` 17/17**(구조·권한 4 + enforcement 6 + startup self-check 1 + 러너 6). 전체 **test:knop 207/207 · tsc 0**.
+- **PGlite `tests/knop/orchestrationHardening.test.ts` 17/17** + **`tests/knop/orchestrationFunctionPrivilege.test.ts` 21/21**(실제 상태 6 + 9 hard stop 주입 11 + 러너 통합 4). 전체 **test:knop 255/255 · tsc 0**.
+  - ⚠️ PGlite = PostgreSQL **18.3**. 운영(Neon PG 17.x)과 메이저가 다르므로 **정본 아님**.
 - **격리 PG17(embedded 17.10) e2e 24/24**: 5 role · owner 이전 · PUBLIC table/function-EXECUTE 0 · 비-orch grantee 0 · **deployer login→SET ROLE admin→owner** · **writer/reader/app real-login SET ROLE admin/owner 거부** · app write 실패 · writer INSERT ok·UPDATE 거부·jobs 격리·**session_replication_role 42501**·**직접 function call 거부** · OA001–OA004 · **writer DISABLE TRIGGER 거부·owner 가능·긴급 종료 후 15 trigger enabled·재작동**.
+- **격리 PG17(embedded 17.10) function privilege e2e 20/20**(정본): 함수 4 · owner · **PUBLIC EXECUTE 0** · ACL `{orchestration_owner=X/orchestration_owner}` · INVOKER · proconfig null · shape/signature · reader/writer EXECUTE 0 · deployer/admin 상속 4 · **전역 default ACL 3 role & PUBLIC 미포함** · **owner 기본 CREATE 차단(42501)** · ★**미래 함수 public=false** · ★**deployer 생성 미래 함수도 public=false** · trigger 발화 OA001 · writer 직접 호출 42501 · **2g 임시 멤버십 잔여 0**.
+- **embedded capability 하네스**(정정 반영): catalog **46** · embedded-direct applicable **41** / pass 26 / expected-denial 15 / **fail 0** / authoritative 41 · 잔여 object·role·membership·disabled-trigger **0** · pooled-mock 5 passed-clean · **neon-full = unverified**(actual Neon evidence 0, missing 46).
 
 ## 15. shadow mismatch (정정 표현)
 stored 4 · current eligible 4 · observation_hash match 0 · source_record_ref match 0 · field drift 0 · provenance mismatch 0 · most likely = eligible population replacement · individual transition = **unverified**. 자동 write/backfill/delete 금지. migration/hardening 무관. [문서](orchestration-shadow-mismatch-investigation.md).

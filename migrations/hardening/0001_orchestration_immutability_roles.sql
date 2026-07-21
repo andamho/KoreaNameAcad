@@ -20,10 +20,18 @@
 --      (사후) REVOKE orchestration_owner FROM <현재 owner role>; + 회수 확인(잔여 membership 0)
 --    ❌ 금지: GRANT <기존 app role> TO orchestration_deployer (= B) · GRANT <기존 app role> TO orchestration_owner
 --    (정적 SQL 은 현재 owner 이름을 모르므로 위 GRANT/REVOKE 는 apply Gate 가 수행한다.)
---    ALTER DEFAULT PRIVILEGES FOR ROLE orchestration_owner 는 orchestration_owner 멤버로 실행(위 사전 GRANT 상태에서 가능).
+--    ALTER DEFAULT PRIVILEGES(2g)는 대상 role 멤버십이 필요하므로, 없으면 DO 블록이 임시 부여 후 즉시 회수한다(부여한 것만).
+--
+-- ⚠️ 함수 권한 정정(2e/2g'/2g): 미래 함수의 PUBLIC EXECUTE 는 **스키마 한정 default privileges 로 막을 수 없다**.
+--    기존 4함수 = 정확한 signature 명시 REVOKE(소유권 이전 후 재선언), 미래 함수 = **전역 형식** default privileges 3 role.
 --
 -- 검증된 PG17 능력: CREATE ROLE NOLOGIN/LOGIN·membership·ALTER TABLE/FUNCTION OWNER TO NOLOGIN·SET ROLE·컬럼 UPDATE·
 --   identity INSERT(시퀀스 grant 불요)·trigger 발화(EXECUTE grant 불요)·PUBLIC REVOKE=0.
+--   함수 기본값: SECURITY INVOKER(prosecdef=false)·proconfig=null(search_path 미설정)·volatile·non-strict·parallel-unsafe.
+--   ⚠️ SECURITY DEFINER 는 채택하지 않는다(INVOKER 유지). trigger 발화에 EXECUTE 가 불요하므로 DEFINER 가 불필요하고,
+--      DEFINER 는 search_path 주입면을 새로 만든다. 함수 본문은 RAISE/TG_* 와 NEW/OLD 컬럼 비교만 사용하며
+--      **스키마 미한정 객체·연산자를 참조하지 않으므로** search_path 의존이 없다(그래서 proconfig 고정도 요구하지 않는다).
+--      단 fingerprint 는 prosecdef=false 와 proconfig=null 을 **고정 기대값으로 hard stop** 검사한다(무단 변경 탐지).
 --   ⚠️ session_replication_role=replica 는 SUPERUSER 전용 → 비-superuser 불가. 긴급 우회는 owner 의 ALTER TABLE DISABLE TRIGGER(runbook).
 
 -- ══ Phase 1: role ══
@@ -77,7 +85,14 @@ BEGIN
   END IF; RETURN NEW; END;$$;
 CREATE OR REPLACE FUNCTION orch_deny_truncate() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN RAISE EXCEPTION 'orchestration: TRUNCATE on % is forbidden', TG_TABLE_NAME USING ERRCODE = 'OA004'; END;$$;
+-- 정확한 signature 기준 명시 REVOKE. PUBLIC 뿐 아니라 runtime role 도 선언적으로 회수(현재 grant 가 없어도 의도를 감사 가능하게 남긴다).
+-- 발화(trigger firing)는 EXECUTE 권한을 요구하지 않으므로 이 REVOKE 는 trigger 동작에 영향이 없다(직접 호출만 차단). — PG 17.10 검증
+-- ⚠️ REVOKE 는 **직접 grant 만** 제거한다. orchestration_deployer/admin 은 owner membership 을 통해 EXECUTE 를 상속하며
+--    이는 설계상 의도된 break-glass 경로다(회수 불가). 따라서 fingerprint 는 reader/writer 에 대해서만 EXECUTE=false 를 강제하고,
+--    ACL grantee 집합이 {orchestration_owner} 뿐인지를 함께 검사한다.
 REVOKE ALL ON FUNCTION orch_deny_write(), orch_deny_delete(), orch_guard_business_update(), orch_deny_truncate() FROM PUBLIC;
+REVOKE ALL ON FUNCTION orch_deny_write(), orch_deny_delete(), orch_guard_business_update(), orch_deny_truncate()
+  FROM orchestration_reader, orchestration_writer, orchestration_deployer;
 
 -- immutable / append-only 3테이블: UPDATE·DELETE 전면 거부
 CREATE TRIGGER job_artifacts_immutable            BEFORE UPDATE OR DELETE ON job_artifacts            FOR EACH ROW EXECUTE FUNCTION orch_deny_write();
@@ -110,10 +125,37 @@ ALTER FUNCTION orch_deny_delete()            OWNER TO orchestration_owner;
 ALTER FUNCTION orch_guard_business_update()  OWNER TO orchestration_owner;
 ALTER FUNCTION orch_deny_truncate()          OWNER TO orchestration_owner;
 
--- 2g. 미래 객체 기본 권한 누수 방지(owner 가 만들 tables/sequences/functions 에 PUBLIC 권한 없음). owner 멤버로 실행.
-ALTER DEFAULT PRIVILEGES FOR ROLE orchestration_owner IN SCHEMA public REVOKE ALL ON TABLES    FROM PUBLIC;
-ALTER DEFAULT PRIVILEGES FOR ROLE orchestration_owner IN SCHEMA public REVOKE ALL ON SEQUENCES FROM PUBLIC;
-ALTER DEFAULT PRIVILEGES FOR ROLE orchestration_owner IN SCHEMA public REVOKE ALL ON FUNCTIONS FROM PUBLIC;
+-- 2g'. 소유권 이전 후 함수 ACL 재확인(재선언). PG 17.10 실측상 ALTER FUNCTION ... OWNER TO 는 ACL 을
+--      `{old=X/old}` → `{new=X/new}` 로 재작성하며 PUBLIC 회수 상태를 유지하지만, 엔진 동작에 의존하지 않도록 명시 재선언한다(멱등).
+REVOKE ALL ON FUNCTION orch_deny_write(), orch_deny_delete(), orch_guard_business_update(), orch_deny_truncate() FROM PUBLIC;
+REVOKE ALL ON FUNCTION orch_deny_write(), orch_deny_delete(), orch_guard_business_update(), orch_deny_truncate()
+  FROM orchestration_reader, orchestration_writer, orchestration_deployer;
+
+-- 2g. 미래 객체 기본 권한 누수 방지.
+-- ⚠️⚠️ 정정 대상 결함(PG 17.10 · PGlite 실측): `ALTER DEFAULT PRIVILEGES ... IN SCHEMA <s> REVOKE ... FROM PUBLIC` 는
+--   **빈 ACL 에서 시작**하므로 PUBLIC 회수가 no-op 이고 pg_default_acl 행조차 생성되지 않는다
+--   → 이후 생성되는 함수는 `proacl=null` = **PUBLIC EXECUTE 보유**. (이전 판 116행이 여기에 해당)
+--   **스키마 한정 없는 전역 형식**만 내장 기본값(`=X/owner` 포함)에서 시작하므로 PUBLIC EXECUTE 제거가 실제 적용된다:
+--   → 행 `{orchestration_owner=X/orchestration_owner}` 생성, 이후 **모든 스키마**의 새 함수가 `public=false`.
+-- 적용 대상 role: 함수를 만들 수 있는 3개 전부(owner 뿐 아니라 admin·deployer 도 포함해야 누수가 닫힌다 — `FOR ROLE` 목록 밖 role 이 만든 함수는 미보호).
+-- 비 superuser 환경(Neon)에서는 `FOR ROLE` 대상의 **멤버십**이 필요하므로, 없으면 임시로 부여하고 즉시 회수한다(부여한 것만 회수).
+DO $$
+DECLARE r text; granted boolean; me text := current_user;
+BEGIN
+  FOREACH r IN ARRAY ARRAY['orchestration_owner', 'orchestration_admin', 'orchestration_deployer'] LOOP
+    granted := false;
+    IF NOT pg_has_role(me, r, 'MEMBER') THEN
+      EXECUTE format('GRANT %I TO %I', r, me);
+      granted := true;
+    END IF;
+    -- FUNCTIONS: 유일하게 실효가 있는 형식(전역). 이것이 이번 정정의 핵심.
+    EXECUTE format('ALTER DEFAULT PRIVILEGES FOR ROLE %I REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC', r);
+    -- TABLES/SEQUENCES: 내장 기본값에 PUBLIC 이 없어 행이 생기지 않는 **진짜 no-op**(무해). 선언적 의도로만 유지.
+    EXECUTE format('ALTER DEFAULT PRIVILEGES FOR ROLE %I REVOKE ALL ON TABLES FROM PUBLIC', r);
+    EXECUTE format('ALTER DEFAULT PRIVILEGES FOR ROLE %I REVOKE ALL ON SEQUENCES FROM PUBLIC', r);
+    IF granted THEN EXECUTE format('REVOKE %I FROM %I', r, me); END IF;
+  END LOOP;
+END $$;
 
 -- ══ Phase 3(별도 검증)·Phase 4(adapter 배선 없이 종료·런타임 writer credential 접속) ══
 -- 긴급 정정 기본 = 새 correction/reversal 이벤트 INSERT(원본 보존). DISABLE TRIGGER 는 최후 수단 runbook(이중승인·즉시 재enable·재검증).

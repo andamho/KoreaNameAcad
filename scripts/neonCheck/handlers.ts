@@ -153,25 +153,40 @@ export const DIRECT_HANDLERS: Record<string, Handler> = {
   "writer-business-table-access-denied": async (ctx) => loginDenied(ctx, ctx.names.roles.writer, `SELECT 1 FROM ${S(ctx.names).business}`),
   "app-simulation-orchestration-write-denied": async (ctx) => loginDenied(ctx, ctx.names.roles.appSim, `INSERT INTO ${S(ctx.names).audit} (v) VALUES ('x')`),
   "trigger-function-direct-call-denied": async (ctx) => loginDenied(ctx, ctx.names.roles.writer, `SELECT ${S(ctx.names).fn.denyWrite}()`),
-  // ⚠️ 검증된 사실(embedded PG17 + PGlite): `ALTER DEFAULT PRIVILEGES ... REVOKE ... FROM PUBLIC` 는
-  //    기존 default-ACL 엔트리가 없을 때 pg_default_acl 행을 만들지 않아 **미래 함수의 PUBLIC EXECUTE 를 제거하지 못한다.**
-  //    신뢰 가능한 유일한 수단은 생성 후 명시 `REVOKE EXECUTE ON FUNCTION ... FROM PUBLIC` 이다.
-  //    따라서 이 capability 는 "미래 객체가 명시 REVOKE 절차로 확실히 PUBLIC 노출 0 이 되는가"를 판정한다.
+  // ⚠️ 정정됨(function privilege hardening correction Gate). 이전 판의 서술은 **부정확**했다.
+  //    실측(PG 17.10 + PGlite 18.3): `ALTER DEFAULT PRIVILEGES ... **IN SCHEMA <s>** REVOKE ... FROM PUBLIC` 만 무력하다
+  //    (빈 ACL 에서 시작 → no-op, pg_default_acl 행 미생성). **스키마 한정 없는 전역 형식**은 내장 기본값에서 시작하므로
+  //    실제로 PUBLIC EXECUTE 를 제거하며, 이후 생성되는 함수는 모든 스키마에서 `public=false` 가 된다.
+  //    → 이 capability 는 전역 형식이 **미래 함수**를 실제로 보호하는지 판정한다(명시 REVOKE 는 기존 함수용 보조층).
   "default-privileges-secure": async ({ db, names: n }) => {
     const probe = `${n.tables.artifact}_probe`;
     const fq = `${qi(n.schema)}.${qi(probe)}`;
     const pubCount = () => num(db, `SELECT count(*)::int AS n FROM pg_proc p JOIN pg_namespace ns ON ns.oid=p.pronamespace WHERE ns.nspname=$1 AND p.proname=$2 AND has_function_privilege('public', p.oid, 'EXECUTE')`, [n.schema, probe]);
     try {
+      // 전역 형식(run-scoped owner role 한정. cleanup 의 DROP OWNED BY 가 default ACL 행도 제거한다)
+      await db.exec(`ALTER DEFAULT PRIVILEGES FOR ROLE ${qi(n.roles.owner)} REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC`);
+      const rows = await num(db, `SELECT count(*)::int AS n FROM pg_default_acl d WHERE d.defaclobjtype='f' AND d.defaclnamespace=0 AND pg_get_userbyid(d.defaclrole)=$1`, [n.roles.owner]);
+      if (rows !== 1) return bad(`global-default-acl-row-missing(${rows})`);
       await db.exec(`SET ROLE ${qi(n.roles.owner)}`);
       await db.exec(`CREATE FUNCTION ${fq}() RETURNS int LANGUAGE sql AS $$SELECT 1$$`);
-      const before = await pubCount();
-      await db.exec(`REVOKE EXECUTE ON FUNCTION ${fq}() FROM PUBLIC`); // 유일하게 검증된 수단
-      const after = await pubCount();
+      const after = await pubCount();          // 명시 REVOKE 없이도 0 이어야 한다 = 미래 함수 보호
       await db.exec(`DROP FUNCTION ${fq}()`);
-      if (after !== 0) return bad("public-execute-not-revocable");
-      return ok(`explicit-revoke-effective(before=${before},after=0)`);
+      if (after !== 0) return bad("future-function-public-execute-present");
+      return ok("global-default-acl-protects-future-functions");
     } catch (e: any) { return bad(`probe-failed:${e?.code ?? "ERR"}`); }
     finally { await db.exec(`RESET ROLE`).catch(() => {}); }
+  },
+  // 회귀 보존: 결함의 원인이던 스키마 한정 형식이 여전히 no-op 임을 확인한다.
+  // 만약 엔진이 바뀌어 행이 생기면 정정 근거를 재검토해야 하므로 **fail** 로 드러나야 한다.
+  "schema-qualified-default-privileges-noop": async ({ db, names: n }) => {
+    const cnt = () => num(db, `SELECT count(*)::int AS n FROM pg_default_acl d WHERE d.defaclobjtype='f' AND d.defaclnamespace<>0 AND pg_get_userbyid(d.defaclrole)=$1`, [n.roles.admin]);
+    try {
+      const before = await cnt();
+      await db.exec(`ALTER DEFAULT PRIVILEGES FOR ROLE ${qi(n.roles.admin)} IN SCHEMA ${qi(n.schema)} REVOKE ALL ON FUNCTIONS FROM PUBLIC`);
+      const after = await cnt();
+      if (after !== before) return bad(`schema-qualified-now-effective(before=${before},after=${after})`);
+      return ok(`schema-qualified-still-noop(rows=${after})`);
+    } catch (e: any) { return bad(`probe-failed:${e?.code ?? "ERR"}`); }
   },
 
   // Trigger / emergency
