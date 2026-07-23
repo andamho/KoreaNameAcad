@@ -173,17 +173,28 @@ const esc = (s: string) =>
   (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 // 뷰어 페이지 HTML (이미지 여러 장 + 영상 한 화면, 모바일 최적화, 자체완결)
+// 유튜브 URL(watch?v=, youtu.be/, /embed/, /shorts/)에서 영상 ID 추출. 아니면 null.
+function youtubeId(url: string): string | null {
+  const m = (url || "").match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
 export async function renderViewerHtml(setKey: SetKey): Promise<string> {
   const assets = await assetsForSet(setKey);
   // 영상 아래엔 외부 제작물 출처 고지(고정), 이미지 '바로 위'엔 저장 안내를 붙인다.
   const VIDEO_CREDIT = "※ 포웨이 행복연구소 제작 영상입니다(한국이름학교와 무관). 미용감사에 참고하시기 좋아 소개해 드려요.";
   const SAVE_TIP = "📌 이미지를 저장하시려면, 사진을 꾹 눌러 “이미지 저장”을 선택하세요.";
   const blocks = assets
-    .map((a) =>
-      a.kind === "video"
-        ? `<figure><video src="${esc(a.target)}" controls playsinline preload="metadata"></video><figcaption>${esc(a.title)}</figcaption><div class="credit">${esc(VIDEO_CREDIT)}</div></figure>`
-        : `<div class="savetip">${esc(SAVE_TIP)}</div><figure><img src="${esc(a.target)}" alt="${esc(a.title)}" loading="lazy"><figcaption>${esc(a.title)}</figcaption></figure>`,
-    )
+    .map((a) => {
+      if (a.kind === "video") {
+        const yt = youtubeId(a.target);
+        const player = yt
+          ? `<div class="ytwrap"><iframe src="https://www.youtube.com/embed/${yt}" title="${esc(a.title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`
+          : `<video src="${esc(a.target)}" controls playsinline preload="metadata"></video>`;
+        return `<figure>${player}<figcaption>${esc(a.title)}</figcaption><div class="credit">${esc(VIDEO_CREDIT)}</div></figure>`;
+      }
+      return `<div class="savetip">${esc(SAVE_TIP)}</div><figure><img src="${esc(a.target)}" alt="${esc(a.title)}" loading="lazy"><figcaption>${esc(a.title)}</figcaption></figure>`;
+    })
     .join("\n");
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -194,6 +205,8 @@ export async function renderViewerHtml(setKey: SetKey): Promise<string> {
 header{text-align:center;padding:18px 0 12px}header .b{display:inline-block;font-weight:700;color:#3fc4ca;letter-spacing:.02em}
 figure{margin:0 0 16px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.06)}
 figure img,figure video{display:block;width:100%;height:auto;background:#000}
+.ytwrap{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+.ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 figcaption{padding:8px 12px;font-size:13px;color:#666}
 .credit{padding:8px 12px 12px;font-size:12px;color:#8a8f93;line-height:1.6;border-top:1px solid #f0f2f3}
 .savetip{margin:0 2px 8px;font-size:12.5px;color:#3fa0a6;line-height:1.6;text-align:center;font-weight:500}
