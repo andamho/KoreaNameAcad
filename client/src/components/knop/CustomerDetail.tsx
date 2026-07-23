@@ -527,9 +527,9 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
       </Card>
 
       <div className="space-y-6">
-        {/* 왼쪽(넓게): 이름분석표 · 녹음 · 문자 */}
-        {/* 본문: 이름분석표 · 녹음 · 문자 (전체 폭) */}
-
+      {/* 좌: 이름분석표(넓게) · 우: 상담 통화 — 통화가 이름분석표에 대한 내용이라 나란히 */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3 space-y-6">
           {/* 이름분석표 (로컬 PDF 연계) */}
           {reportsData?.reports && reportsData.reports.length > 0 && (
             <Card className="p-5">
@@ -581,15 +581,13 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                 return (
                 <div key={f.id} className="rounded-lg border border-gray-100 overflow-hidden">
                   {/* 이미지는 처음부터 크게 — 클릭하면 원본 화질로 열림 */}
+                  {/* 가로는 칸을 꽉 채우고(크게 보임), 세로로 긴 건 이 안에서 스크롤 */}
                   {isImg && (
-                    <a href={f.fileUrl} target="_blank" rel="noreferrer" title="클릭하면 원본 화질로 열립니다">
-                      <img
-                        src={f.fileUrl}
-                        alt={f.fileName}
-                        loading="lazy"
-                        className="block w-full max-h-[70vh] object-contain bg-white border-b border-gray-100"
-                      />
-                    </a>
+                    <div className="max-h-[78vh] overflow-auto bg-white border-b border-gray-100">
+                      <a href={f.fileUrl} target="_blank" rel="noreferrer" title="클릭하면 원본 화질로 열립니다">
+                        <img src={f.fileUrl} alt={f.fileName} loading="lazy" className="block w-full h-auto" />
+                      </a>
+                    </div>
                   )}
                   <div className="flex items-center justify-between gap-2 px-3 py-2">
                   <a
@@ -631,6 +629,8 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
             </div>
           </Card>
 
+        </div>
+        <div className="lg:col-span-2 space-y-6">
           {/* 폴더 녹음 자동 연결 (로컬 상담녹음) */}
           {recData?.recordings && recData.recordings.length > 0 && (
             <Card className="p-5">
@@ -667,7 +667,7 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
           {/* 통화 녹음 */}
           <Card className="p-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-800">통화 녹음 ({calls.length})</h3>
+              <h3 className="font-semibold text-gray-800">상담 통화 ({calls.length})</h3>
               <Button
                 variant="outline"
                 size="sm"
@@ -760,6 +760,10 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
             </div>
           </Card>
 
+        </div>
+      </div>
+
+      {/* 하단 전체 폭: 문자 대화 */}
           {/* 문자 대화 (주고받은 문자 시간순) */}
           <MessagesCard customerId={customerId} />
 
