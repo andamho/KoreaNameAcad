@@ -386,19 +386,57 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
               )}
             </div>
           </div>
-          <div className="flex gap-2">
+          {/* 우측: 진행 단계 — 여기서 바로 체크/되돌리기 */}
+          <div className="flex-1 min-w-[280px] max-w-xl">
+            {projects.length === 0 ? (
+              <p className="text-sm text-gray-400 text-right">진행 중인 건이 없습니다.</p>
+            ) : (
+              projects.map((p) => {
+                const cur = knopStatusToMilestone(p.status);
+                return (
+                  <div key={p.id}>
+                    <div className="grid grid-cols-6 gap-1">
+                      {KNOP_MILESTONES.map((m, i) => {
+                        const done = i < cur;
+                        const isCur = i === cur;
+                        const onTap = () => {
+                          if (i > cur) return advanceMut.mutate({ id: p.id, toStatus: KNOP_MILESTONE_ENTRY[i] });
+                          if (i < cur && confirm(`'${m}' 단계로 되돌릴까요?`)) {
+                            advanceMut.mutate({ id: p.id, toStatus: KNOP_MILESTONE_ENTRY[i], force: true });
+                          }
+                        };
+                        return (
+                          <button
+                            key={m}
+                            type="button"
+                            onClick={onTap}
+                            title={i > cur ? `${m} 단계로 진행` : i < cur ? `${m} 단계로 되돌리기` : "현재 단계"}
+                            className="flex flex-col items-center gap-1 group"
+                          >
+                            <span
+                              className="w-full h-1.5 rounded-full transition"
+                              style={{ background: done || isCur ? MS_TEAL : "#e5e7eb" }}
+                            />
+                            <span
+                              className={`text-[11px] leading-tight text-center ${
+                                isCur ? "text-[#1D9E75] font-semibold" : done ? "text-gray-500" : "text-gray-300 group-hover:text-gray-500"
+                              }`}
+                            >
+                              {m}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="mt-1 text-[11px] text-gray-400 text-right">현재: {p.status}</div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+          <div className="flex gap-2 shrink-0">
             <Button variant="outline" size="sm" onClick={() => setSmsDialog(true)}>
               <Send className="w-4 h-4 mr-1" /> 문자
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setEventDialog(true)}>
-              <CalendarPlus className="w-4 h-4 mr-1" /> 일정
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setProjectDialog(true)}
-              className="bg-[#56D5DB] hover:bg-[#3fc4ca] text-white"
-            >
-              <Plus className="w-4 h-4 mr-1" /> 프로젝트
             </Button>
           </div>
         </div>
@@ -436,93 +474,6 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
               </div>
             </div>
           )}
-        </div>
-      </Card>
-
-      {/* 프로젝트: 전체 폭 + 6단계 진행바(클릭해서 바로 체크/되돌리기) */}
-      <Card className="p-5">
-        <h3 className="font-semibold text-gray-800 mb-3">프로젝트 ({projects.length})</h3>
-        <div className="space-y-4">
-          {projects.length === 0 && <p className="text-sm text-gray-400">프로젝트가 없습니다.</p>}
-          {projects.map((p) => {
-            const cur = knopStatusToMilestone(p.status);
-            return (
-              <div key={p.id} className="rounded-lg border border-gray-100 p-4">
-                <div className="flex items-start justify-between gap-2 flex-wrap">
-                  <div className="min-w-0">
-                    <div className="text-xs text-gray-400">{p.type}</div>
-                    <div className="font-medium text-gray-900">{p.title}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={p.paymentStatus}
-                      onValueChange={(v) => updateProjectMut.mutate({ id: p.id, patch: { paymentStatus: v } })}
-                    >
-                      <SelectTrigger className="h-7 w-auto border-none bg-transparent p-0 shadow-none focus:ring-0">
-                        <PaymentBadge status={p.paymentStatus} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PAYMENT_STATUSES.map((s) => (
-                          <SelectItem key={s} value={s}>
-                            {s}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-gray-300 hover:text-red-500"
-                      onClick={() => {
-                        if (confirm("이 프로젝트를 삭제할까요?")) deleteProjectMut.mutate(p.id);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* 진행 단계: 점을 눌러 진행(앞) / 되돌리기(뒤, 확인창) */}
-                <div className="mt-3 grid grid-cols-6 gap-1">
-                  {KNOP_MILESTONES.map((m, i) => {
-                    const done = i < cur;
-                    const isCur = i === cur;
-                    const onTap = () => {
-                      if (i > cur) return advanceMut.mutate({ id: p.id, toStatus: KNOP_MILESTONE_ENTRY[i] });
-                      if (i < cur && confirm(`'${m}' 단계로 되돌릴까요?`)) {
-                        advanceMut.mutate({ id: p.id, toStatus: KNOP_MILESTONE_ENTRY[i], force: true });
-                      }
-                    };
-                    return (
-                      <button
-                        key={m}
-                        type="button"
-                        onClick={onTap}
-                        title={i > cur ? `${m} 단계로 진행` : i < cur ? `${m} 단계로 되돌리기` : "현재 단계"}
-                        className="flex flex-col items-center gap-1 py-0.5 group"
-                      >
-                        <span
-                          className="w-full h-1.5 rounded-full transition"
-                          style={{ background: done || isCur ? MS_TEAL : "#e5e7eb" }}
-                        />
-                        <span
-                          className={`text-[11px] leading-tight text-center ${
-                            isCur ? "text-[#1D9E75] font-semibold" : done ? "text-gray-500" : "text-gray-300 group-hover:text-gray-500"
-                          }`}
-                        >
-                          {m}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="mt-1 text-[11px] text-gray-400">
-                  현재: {p.status}
-                  {p.memo ? ` · ${p.memo}` : ""}
-                </div>
-              </div>
-            );
-          })}
         </div>
       </Card>
 
