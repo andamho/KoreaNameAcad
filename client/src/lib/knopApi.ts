@@ -170,6 +170,9 @@ export const knopApi = {
   // 옛 이름/옛 번호 이력에서 잘못 입력된 항목 삭제
   removeCustomerHistory: (id: string, kind: "name" | "phone", value: string) =>
     req<Customer>("POST", `/api/kop/customers/${id}/history/remove`, { kind, value }),
+  // 문자 발송용 짧은링크 생성(이미지 등) — 누르면 원본 화질로 열림
+  createShortLink: (target: string, label?: string) =>
+    req<{ url: string }>("POST", `/api/kop/shortlink`, { target, label }),
   listTrash: () => req<Customer[]>("GET", "/api/kop/customers-trash"),
   restoreCustomer: (id: string) => req<{ ok: boolean }>("POST", `/api/kop/customers/${id}/restore`),
   permanentDeleteCustomer: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/customers/${id}/permanent`),

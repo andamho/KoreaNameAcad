@@ -517,6 +517,22 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     }
   });
 
+  // 문자 발송용 짧은링크 생성(이미지 등). 같은 대상이면 기존 링크 재사용.
+  app.post(`${P}/shortlink`, requireAdmin, async (req, res) => {
+    try {
+      const { target, label } = req.body || {};
+      if (!target || typeof target !== "string") return res.status(400).json({ error: "target_required" });
+      // 안전: 우리 오브젝트 경로(/objects/...) 또는 http(s) 절대주소만 허용
+      if (!/^\/objects\//.test(target) && !/^https?:\/\//.test(target)) {
+        return res.status(400).json({ error: "invalid_target" });
+      }
+      const url = await gm.ensureShortLink(target, typeof label === "string" && label ? label : "이름분석표 이미지", "image");
+      res.json({ url });
+    } catch (e) {
+      handle(res, "POST shortlink", e);
+    }
+  });
+
   // 옛 이름/옛 번호 이력에서 잘못 입력된 항목 삭제 (오매칭 방지)
   app.post(`${P}/customers/:id/history/remove`, requireAdmin, async (req, res) => {
     try {

@@ -88,6 +88,16 @@ export function shortUrl(slug: string): string {
   return `${BASE_URL}/s/${slug}`;
 }
 
+// 같은 대상(target)에 이미 짧은링크가 있으면 그걸 재사용, 없으면 새로 만든다.
+// 이름분석표 이미지를 문자로 보낼 때 사용(누를 때마다 새 링크가 쌓이지 않도록).
+export async function ensureShortLink(target: string, label: string, kind: string): Promise<string> {
+  const d = requireDb();
+  const [ex] = await d.select().from(shortLinks).where(eq(shortLinks.target, target)).limit(1);
+  if (ex) return shortUrl(ex.slug);
+  const link = await createShortLink(target, label, kind);
+  return shortUrl(link.slug);
+}
+
 // {이름} 등 치환 (이름은 "가족" 접미 제거)
 function applyVars(text: string, name: string): string {
   const base = (name || "").replace(/\s*가족\s*$/, "").trim() || name;

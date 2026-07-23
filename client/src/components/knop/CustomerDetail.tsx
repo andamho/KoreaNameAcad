@@ -17,6 +17,7 @@ import {
   FileText,
   Download,
   ExternalLink,
+  Link2,
   MessageSquarePlus,
   MessageSquare,
   CalendarPlus,
@@ -117,6 +118,20 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
       toast({ title: "이름 변경됨", description: "옛 이름은 이력에 보관되어 계속 매칭됩니다." });
     },
     onError: (e: any) => toast({ title: "이름 변경 실패", description: e?.message, variant: "destructive" }),
+  });
+
+  // 문자 발송용 이미지 링크: 원본 화질 그대로 열리는 짧은링크를 만들어 클립보드에 복사
+  const copyLinkMut = useMutation({
+    mutationFn: (fileUrl: string) => knopApi.createShortLink(fileUrl, `${data?.customer?.name ?? ""} 이름분석표`),
+    onSuccess: async ({ url }) => {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast({ title: "문자용 링크 복사됨", description: `${url}\n문자에 붙여넣어 보내세요. 원본 화질로 열립니다.` });
+      } catch {
+        toast({ title: "문자용 링크", description: url });
+      }
+    },
+    onError: (e: any) => toast({ title: "링크 생성 실패", description: e?.message, variant: "destructive" }),
   });
 
   const savePhoneMut = useMutation({
@@ -541,6 +556,16 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                     <span className="truncate">{f.fileName}</span>
                   </a>
                   <div className="flex items-center gap-1 shrink-0">
+                    {isImg && (
+                      <button
+                        title="문자 발송용 링크 복사 (누르면 원본 화질로 열립니다)"
+                        disabled={copyLinkMut.isPending}
+                        onClick={() => copyLinkMut.mutate(f.fileUrl)}
+                        className="text-gray-300 hover:text-[#3fc4ca] disabled:opacity-40"
+                      >
+                        <Link2 className="w-4 h-4" />
+                      </button>
+                    )}
                     <a href={f.fileUrl} target="_blank" rel="noreferrer" className="text-gray-300 hover:text-gray-600">
                       <Download className="w-4 h-4" />
                     </a>
