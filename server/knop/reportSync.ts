@@ -76,9 +76,10 @@ async function writeReportLink(fileName: string): Promise<void> {
     const viewerTarget = `/img?src=${encodeURIComponent(renderedUrl)}`;
     const usedSlug = await ensureReportLinkSlug(viewerTarget, fileName.replace(/\.(pdf|png|jpe?g|webp)$/i, ""), slug);
     if (!usedSlug) return;
-    const linkUrl = `${PUBLIC_BASE}/${usedSlug}`;
+    // .url 바로가기는 한글이 깨질 수 있어 URL 은 퍼센트 인코딩(ASCII). 브라우저 주소창엔 한글로 보임.
+    const linkUrl = `${PUBLIC_BASE}/${encodeURIComponent(usedSlug)}`;
     fs.writeFileSync(urlFile, `[InternetShortcut]\r\nURL=${linkUrl}\r\n`, "utf-8");
-    console.log(`[KOP] 문자용 링크 생성: ${slug}.url → ${linkUrl}`);
+    console.log(`[KOP] 문자용 링크 생성: ${slug}.url → ${PUBLIC_BASE}/${usedSlug}`);
   } catch (e: any) {
     console.error(`[KOP] 링크 파일 생성 오류(${fileName}): ${e?.message}`);
   }
