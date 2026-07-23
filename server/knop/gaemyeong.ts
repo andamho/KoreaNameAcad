@@ -175,14 +175,16 @@ const esc = (s: string) =>
 // 뷰어 페이지 HTML (이미지 여러 장 + 영상 한 화면, 모바일 최적화, 자체완결)
 export async function renderViewerHtml(setKey: SetKey): Promise<string> {
   const assets = await assetsForSet(setKey);
+  // 영상 아래엔 외부 제작물 출처 고지(고정), 이미지 '바로 위'엔 저장 안내를 붙인다.
+  const VIDEO_CREDIT = "※ 포웨이 행복연구소 제작 영상입니다(한국이름학교와 무관). 미용감사에 참고하시기 좋아 소개해 드려요.";
+  const SAVE_TIP = "📌 이미지를 저장하시려면, 사진을 꾹 눌러 “이미지 저장”을 선택하세요.";
   const blocks = assets
     .map((a) =>
       a.kind === "video"
-        ? `<figure><video src="${esc(a.target)}" controls playsinline preload="metadata"></video><figcaption>${esc(a.title)}</figcaption></figure>`
-        : `<figure><img src="${esc(a.target)}" alt="${esc(a.title)}" loading="lazy"><figcaption>${esc(a.title)}</figcaption></figure>`,
+        ? `<figure><video src="${esc(a.target)}" controls playsinline preload="metadata"></video><figcaption>${esc(a.title)}</figcaption><div class="credit">${esc(VIDEO_CREDIT)}</div></figure>`
+        : `<div class="savetip">${esc(SAVE_TIP)}</div><figure><img src="${esc(a.target)}" alt="${esc(a.title)}" loading="lazy"><figcaption>${esc(a.title)}</figcaption></figure>`,
     )
     .join("\n");
-  const hasImage = assets.some((a) => a.kind === "image");
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>한국이름학교</title>
@@ -193,12 +195,12 @@ header{text-align:center;padding:18px 0 12px}header .b{display:inline-block;font
 figure{margin:0 0 16px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.06)}
 figure img,figure video{display:block;width:100%;height:auto;background:#000}
 figcaption{padding:8px 12px;font-size:13px;color:#666}
-.tip{margin:8px 2px 20px;font-size:12.5px;color:#8a8f93;line-height:1.6;text-align:center}
+.credit{padding:8px 12px 12px;font-size:12px;color:#8a8f93;line-height:1.6;border-top:1px solid #f0f2f3}
+.savetip{margin:0 2px 8px;font-size:12.5px;color:#3fa0a6;line-height:1.6;text-align:center;font-weight:500}
 .empty{padding:60px 0;text-align:center;color:#aaa}
 </style></head><body><div class="wrap">
 <header><span class="b">한국이름학교</span></header>
 ${blocks || '<div class="empty">준비 중입니다.</div>'}
-${hasImage ? '<div class="tip">📌 이미지를 저장하려면 사진을 길게 누른 뒤 “이미지 저장”을 선택하세요.</div>' : ""}
 </div></body></html>`;
 }
 
