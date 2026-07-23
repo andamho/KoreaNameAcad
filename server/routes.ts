@@ -1386,6 +1386,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register object storage routes for file uploads
   registerObjectStorageRoutes(app);
 
+  // 이미지 뷰어(공개): 문자 링크로 열면 확대/축소가 되는 페이지. src 는 우리 오브젝트 경로만 허용.
+  app.get("/img", (req, res) => {
+    const src = String(req.query.src || "");
+    if (!/^\/objects\/[A-Za-z0-9._/-]+$/.test(src)) return res.status(400).send("잘못된 이미지 주소");
+    const safe = src.replace(/"/g, "%22");
+    res.type("html").send(`<!doctype html><html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=0.5, maximum-scale=6, user-scalable=yes">
+<title>이름분석표</title>
+<style>
+  html,body{margin:0;height:100%;background:#f1f3f5;-webkit-text-size-adjust:100%}
+  #wrap{position:fixed;inset:0;overflow:auto;-webkit-overflow-scrolling:touch;text-align:center}
+  #pic{display:inline-block;width:100%;max-width:900px;height:auto;transition:width .12s ease}
+  #bar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);display:flex;gap:8px;
+       background:rgba(30,34,40,.86);padding:8px 10px;border-radius:999px;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+  #bar button{width:44px;height:44px;border:0;border-radius:50%;background:#fff;color:#222;font-size:20px;
+       font-weight:700;line-height:1;cursor:pointer}
+  #bar button:active{background:#dfe3e8}
+  #bar .lbl{color:#fff;font-size:13px;display:flex;align-items:center;padding:0 4px;min-width:44px;justify-content:center}
+</style></head><body>
+<div id="wrap"><img id="pic" src="${safe}" alt="이름분석표"></div>
+<div id="bar">
+  <button onclick="z(-1)" aria-label="축소">－</button>
+  <span class="lbl" id="pct">100%</span>
+  <button onclick="z(1)" aria-label="확대">＋</button>
+  <button onclick="fit()" aria-label="화면맞춤" title="화면맞춤">⤢</button>
+</div>
+<script>
+  var pic=document.getElementById('pic'),pct=document.getElementById('pct');
+  var base=Math.min(900,window.innerWidth), cur=base;
+  function apply(){pic.style.width=Math.round(cur)+'px';pct.textContent=Math.round(cur/base*100)+'%';}
+  function z(d){cur=Math.max(base*0.5,Math.min(base*5,cur*(d>0?1.25:0.8)));apply();}
+  function fit(){cur=base;apply();window.scrollTo(0,0);}
+  apply();
+  window.addEventListener('resize',function(){base=Math.min(900,window.innerWidth);});
+</script>
+</body></html>`);
+  });
+
   // 짧은 링크: /s/:slug → 실제 목적지로 302 (문자 발송용, 공개)
   app.get("/s/:slug", async (req, res) => {
     try {

@@ -526,7 +526,9 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       if (!/^\/objects\//.test(target) && !/^https?:\/\//.test(target)) {
         return res.status(400).json({ error: "invalid_target" });
       }
-      const url = await gm.ensureShortLink(target, typeof label === "string" && label ? label : "이름분석표 이미지", "image");
+      // 우리 오브젝트 이미지면 확대/축소 되는 뷰어 페이지로 감싼다(문자로 열 때 편함)
+      const linkTarget = /^\/objects\//.test(target) ? `/img?src=${encodeURIComponent(target)}` : target;
+      const url = await gm.ensureShortLink(linkTarget, typeof label === "string" && label ? label : "이름분석표 이미지", "image");
       res.json({ url });
     } catch (e) {
       handle(res, "POST shortlink", e);
