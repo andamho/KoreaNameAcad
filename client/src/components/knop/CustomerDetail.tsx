@@ -160,11 +160,21 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
     queryFn: () => knopApi.getSequences(customerId),
   });
   const miyongActive = (seqStatus as any)?.gaemyeong_request === "active";
+  const jeonghwaActive = (seqStatus as any)?.gaemyeong_approved === "active";
   const startMiyongMut = useMutation({
     mutationFn: () => knopApi.startSequence(customerId, "gaemyeong_request"),
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: ["knop-seq", customerId] });
       if (r.ok) toast({ title: "미용감사 시작됨", description: `${r.scheduled}건 예약 (${r.dates.join(", ")})` });
+      else toast({ title: "시작 안 됨", description: r.reason, variant: "destructive" });
+    },
+    onError: (e: any) => toast({ title: "시작 실패", description: e?.message, variant: "destructive" }),
+  });
+  const startJeonghwaMut = useMutation({
+    mutationFn: () => knopApi.startSequence(customerId, "gaemyeong_approved"),
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ["knop-seq", customerId] });
+      if (r.ok) toast({ title: "이름정화 시작됨", description: `${r.scheduled}건 예약` });
       else toast({ title: "시작 안 됨", description: r.reason, variant: "destructive" });
     },
     onError: (e: any) => toast({ title: "시작 실패", description: e?.message, variant: "destructive" }),
@@ -504,6 +514,26 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                 title="개명 진행자에게 미용감사 관리문자 시퀀스를 시작합니다"
               >
                 <Send className="w-4 h-4 mr-1" /> 미용감사
+              </Button>
+            )}
+            {/* 이름정화(개명허가 후) 수동 발송 — 기존 개명자 소급 */}
+            {jeonghwaActive ? (
+              <span className="inline-flex items-center h-8 px-2.5 rounded-md bg-emerald-50 text-emerald-700 text-xs font-medium">
+                정화 발송중
+              </span>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={startJeonghwaMut.isPending}
+                onClick={() => {
+                  if (confirm("이 고객에게 이름정화 관리문자를 시작할까요?\n(개명 허가 후 발송용 · 현재 실제발송 OFF면 예약만 됩니다)")) {
+                    startJeonghwaMut.mutate();
+                  }
+                }}
+                title="개명 허가받은 고객에게 이름정화 관리문자 시퀀스를 시작합니다"
+              >
+                <Send className="w-4 h-4 mr-1" /> 이름정화
               </Button>
             )}
             <Button variant="outline" size="sm" onClick={() => setSmsDialog(true)}>

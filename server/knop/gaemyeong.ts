@@ -333,9 +333,10 @@ export async function testSend(setKey: SetKey, step: number, phone: string, samp
   return { content };
 }
 
-// 내부: 4건 예약 생성(발송시각 9~10시 랜덤). 실제 발송은 KNOP_SMS_LIVE 게이트.
-async function scheduleMessages(cust: Customer, setKey: SetKey): Promise<string[]> {
-  const steps = await getSteps(setKey);
+// 내부: 예약 생성(발송시각 9~10시 랜덤). 실제 발송은 KNOP_SMS_LIVE 게이트.
+// keep: 특정 단계만 예약할 때(예: 정화하기=step≥1, 개명허가확인=step0만).
+async function scheduleMessages(cust: Customer, setKey: SetKey, keep?: (step: number) => boolean): Promise<string[]> {
+  const steps = (await getSteps(setKey)).filter((s) => !keep || keep(s.step));
   const assets = NOTICE_SETS[setKey].hasAssets ? await assetsForSet(setKey) : [];
   const dates: string[] = [];
   for (const s of steps) {
@@ -345,6 +346,25 @@ async function scheduleMessages(cust: Customer, setKey: SetKey): Promise<string[
     dates.push(when.toISOString());
   }
   return dates;
+}
+
+// gaemyeong_approved 세트의 step0 은 '개명허가 확인'(법원접수+2개월), step≥1 은 '정화하기'(개명승인 후).
+// → startSequence(정화하기)는 step0 제외, 개명허가확인은 별도 scheduleApprovalCheck 로 예약.
+function sequenceStepFilter(setKey: SetKey): ((step: number) => boolean) | undefined {
+  return setKey === "gaemyeong_approved" ? (n) => n >= 1 : undefined;
+}
+
+// 법원접수 시 호출: '개명허가 확인'(step0) 1건을 2개월(offset) 뒤로 예약. 이미 예약돼 있으면 건너뜀.
+export async function scheduleApprovalCheck(customerId: string): Promise<{ ok: boolean; reason?: string; date?: string }> {
+  const cust = await knopStore.getCustomer(customerId);
+  if (!cust?.phone) return { ok: false, reason: "전화번호 없음" };
+  const steps = await getSteps("gaemyeong_approved");
+  const s0 = steps.find((x) => x.step === 0);
+  if (!s0) return { ok: false, reason: "개명허가 확인 문구 없음" };
+  const content = await renderStep("gaemyeong_approved", s0.body, 0, cust.name, []);
+  const when = randomMorningKST(s0.offsetDays);
+  await smsStore.createMessage({ customerId: cust.id, phone: cust.phone, content, scheduledAt: when.toISOString() });
+  return { ok: true, date: when.toISOString() };
 }
 
 async function findRun(customerId: string, setKey: SetKey) {
@@ -438,7 +458,7 @@ export async function startSequence(customerId: string, setKey: SetKey): Promise
   if (!cust.phone) return { ok: false, scheduled: 0, reason: "고객 전화번호 없음", dates: [] };
   const existing = await findRun(customerId, setKey);
   if (existing?.status === "active") return { ok: false, scheduled: 0, reason: "이미 발송 시작됨", dates: [] };
-  const dates = await scheduleMessages(cust, setKey);
+  const dates = await scheduleMessages(cust, setKey, sequenceStepFilter(setKey)); // 정화하기는 step0(개명허가확인) 제외
   if (existing) {
     await d.update(noticeRuns).set({ status: "active", startedAt: new Date() }).where(eq(noticeRuns.id, existing.id));
   } else {
