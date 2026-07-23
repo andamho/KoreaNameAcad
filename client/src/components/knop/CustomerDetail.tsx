@@ -29,6 +29,9 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { knopApi, type CustomerDetail as CustomerDetailData } from "@/lib/knopApi";
+import { KNOP_MILESTONES, KNOP_MILESTONE_ENTRY, knopStatusToMilestone } from "@shared/schema";
+
+const MS_TEAL = "#1D9E75"; // 진행바 색(고객목록 보드와 동일)
 import { CallTranscriptView } from "./CallTranscriptView";
 import { NewProjectDialog, NewEventDialog, SendSmsDialog } from "./dialogs";
 import {
@@ -179,8 +182,9 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
   });
 
   const advanceMut = useMutation({
-    mutationFn: ({ id, toStatus }: { id: string; toStatus: string }) =>
-      knopApi.advanceStatus(id, toStatus),
+    // force=true 면 뒤 단계로도 되돌릴 수 있다(잘못 찍은 단계 수정용)
+    mutationFn: ({ id, toStatus, force }: { id: string; toStatus: string; force?: boolean }) =>
+      knopApi.advanceStatus(id, toStatus, !!force),
     onMutate: async ({ id, toStatus }) => {
       await qc.cancelQueries({ queryKey });
       return { prev: patchProjectCache(id, { status: toStatus }) };
@@ -333,9 +337,6 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                 </span>
               )}
             </h2>
-            {/* 옛 이름 · 옛 번호 — 이 값으로도 계속 매칭되므로, 잘못 입력분은 지울 수 있어야 한다 */}
-            <HistoryChips customer={customer} onRemoved={refresh} />
-            <div className="mt-1" />
             <div className="mt-2 flex flex-col gap-1 text-sm text-gray-600">
               {phoneDraft === null ? (
                 <button
@@ -438,53 +439,24 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* 왼쪽: 프로젝트 + 파일 */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* 프로젝트 */}
-          <Card className="p-5">
-            <h3 className="font-semibold text-gray-800 mb-3">프로젝트 ({projects.length})</h3>
-            <div className="space-y-3">
-              {projects.length === 0 && <p className="text-sm text-gray-400">프로젝트가 없습니다.</p>}
-              {projects.map((p) => (
-                <div key={p.id} className="rounded-lg border border-gray-100 p-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="text-xs text-gray-400">{p.type}</div>
-                      <div className="font-medium text-gray-900">{p.title}</div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-gray-300 hover:text-red-500"
-                      onClick={() => {
-                        if (confirm("이 프로젝트를 삭제할까요?")) deleteProjectMut.mutate(p.id);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+      {/* 프로젝트: 전체 폭 + 6단계 진행바(클릭해서 바로 체크/되돌리기) */}
+      <Card className="p-5">
+        <h3 className="font-semibold text-gray-800 mb-3">프로젝트 ({projects.length})</h3>
+        <div className="space-y-4">
+          {projects.length === 0 && <p className="text-sm text-gray-400">프로젝트가 없습니다.</p>}
+          {projects.map((p) => {
+            const cur = knopStatusToMilestone(p.status);
+            return (
+              <div key={p.id} className="rounded-lg border border-gray-100 p-4">
+                <div className="flex items-start justify-between gap-2 flex-wrap">
+                  <div className="min-w-0">
+                    <div className="text-xs text-gray-400">{p.type}</div>
+                    <div className="font-medium text-gray-900">{p.title}</div>
                   </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <Select
-                      value={p.status}
-                      onValueChange={(v) => updateProjectMut.mutate({ id: p.id, patch: { status: v } })}
-                    >
-                      <SelectTrigger className="h-7 w-auto border-none bg-transparent p-0 shadow-none focus:ring-0">
-                        <StatusBadge status={p.status} />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-64">
-                        {STATUSES.map((s) => (
-                          <SelectItem key={s} value={s}>
-                            {s}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="flex items-center gap-2">
                     <Select
                       value={p.paymentStatus}
-                      onValueChange={(v) =>
-                        updateProjectMut.mutate({ id: p.id, patch: { paymentStatus: v } })
-                      }
+                      onValueChange={(v) => updateProjectMut.mutate({ id: p.id, patch: { paymentStatus: v } })}
                     >
                       <SelectTrigger className="h-7 w-auto border-none bg-transparent p-0 shadow-none focus:ring-0">
                         <PaymentBadge status={p.paymentStatus} />
@@ -497,23 +469,66 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                         ))}
                       </SelectContent>
                     </Select>
-                    {nextStatusOf(p.status) && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-[#2ba0a6] border-[#56D5DB]/50"
-                        disabled={advanceMut.isPending}
-                        onClick={() => advanceMut.mutate({ id: p.id, toStatus: nextStatusOf(p.status)! })}
-                      >
-                        다음 단계 → {nextStatusOf(p.status)}
-                      </Button>
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-gray-300 hover:text-red-500"
+                      onClick={() => {
+                        if (confirm("이 프로젝트를 삭제할까요?")) deleteProjectMut.mutate(p.id);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
-                  {p.memo && <p className="mt-2 text-sm text-gray-500">{p.memo}</p>}
                 </div>
-              ))}
-            </div>
-          </Card>
+
+                {/* 진행 단계: 점을 눌러 진행(앞) / 되돌리기(뒤, 확인창) */}
+                <div className="mt-3 grid grid-cols-6 gap-1">
+                  {KNOP_MILESTONES.map((m, i) => {
+                    const done = i < cur;
+                    const isCur = i === cur;
+                    const onTap = () => {
+                      if (i > cur) return advanceMut.mutate({ id: p.id, toStatus: KNOP_MILESTONE_ENTRY[i] });
+                      if (i < cur && confirm(`'${m}' 단계로 되돌릴까요?`)) {
+                        advanceMut.mutate({ id: p.id, toStatus: KNOP_MILESTONE_ENTRY[i], force: true });
+                      }
+                    };
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={onTap}
+                        title={i > cur ? `${m} 단계로 진행` : i < cur ? `${m} 단계로 되돌리기` : "현재 단계"}
+                        className="flex flex-col items-center gap-1 py-0.5 group"
+                      >
+                        <span
+                          className="w-full h-1.5 rounded-full transition"
+                          style={{ background: done || isCur ? MS_TEAL : "#e5e7eb" }}
+                        />
+                        <span
+                          className={`text-[11px] leading-tight text-center ${
+                            isCur ? "text-[#1D9E75] font-semibold" : done ? "text-gray-500" : "text-gray-300 group-hover:text-gray-500"
+                          }`}
+                        >
+                          {m}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="mt-1 text-[11px] text-gray-400">
+                  현재: {p.status}
+                  {p.memo ? ` · ${p.memo}` : ""}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      <div className="space-y-6">
+        {/* 왼쪽(넓게): 이름분석표 · 녹음 · 문자 */}
+        {/* 본문: 이름분석표 · 녹음 · 문자 (전체 폭) */}
 
           {/* 이름분석표 (로컬 PDF 연계) */}
           {reportsData?.reports && reportsData.reports.length > 0 && (
@@ -564,21 +579,26 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
               {files.map((f) => {
                 const isImg = (f.fileType || "").startsWith("image/");
                 return (
-                <div
-                  key={f.id}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-gray-100 px-3 py-2"
-                >
+                <div key={f.id} className="rounded-lg border border-gray-100 overflow-hidden">
+                  {/* 이미지는 처음부터 크게 — 클릭하면 원본 화질로 열림 */}
+                  {isImg && (
+                    <a href={f.fileUrl} target="_blank" rel="noreferrer" title="클릭하면 원본 화질로 열립니다">
+                      <img
+                        src={f.fileUrl}
+                        alt={f.fileName}
+                        loading="lazy"
+                        className="block w-full max-h-[70vh] object-contain bg-white border-b border-gray-100"
+                      />
+                    </a>
+                  )}
+                  <div className="flex items-center justify-between gap-2 px-3 py-2">
                   <a
                     href={f.fileUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="flex items-center gap-2 min-w-0 text-sm text-gray-700 hover:text-[#3fc4ca]"
                   >
-                    {isImg ? (
-                      <img src={f.fileUrl} alt={f.fileName} loading="lazy" className="w-11 h-14 object-cover rounded border border-gray-200 shrink-0 bg-white" />
-                    ) : (
-                      <FileText className="w-4 h-4 shrink-0 text-gray-400" />
-                    )}
+                    {!isImg && <FileText className="w-4 h-4 shrink-0 text-gray-400" />}
                     <span className="truncate">{f.fileName}</span>
                   </a>
                   <div className="flex items-center gap-1 shrink-0">
@@ -603,6 +623,7 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
+                  </div>
                   </div>
                 </div>
                 );
@@ -741,68 +762,7 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
 
           {/* 문자 대화 (주고받은 문자 시간순) */}
           <MessagesCard customerId={customerId} />
-        </div>
 
-        {/* 오른쪽: 통합 타임라인 */}
-        <div className="lg:col-span-3">
-          <Card className="p-5">
-            <h3 className="font-semibold text-gray-800 mb-3">통합 타임라인</h3>
-
-            {/* 빠른 메모 입력 */}
-            <div className="flex gap-2 mb-4">
-              <Input
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="상담 메모 · 통화 내용 기록…"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && note.trim()) addNoteMut.mutate();
-                }}
-              />
-              <Button
-                onClick={() => addNoteMut.mutate()}
-                disabled={!note.trim() || addNoteMut.isPending}
-                className="bg-[#56D5DB] hover:bg-[#3fc4ca] text-white shrink-0"
-              >
-                <MessageSquarePlus className="w-4 h-4 mr-1" /> 기록
-              </Button>
-            </div>
-
-            <Separator className="mb-4" />
-
-            <div className="space-y-4">
-              {timeline.length === 0 && <p className="text-sm text-gray-400">기록이 없습니다.</p>}
-              {timeline.map((ev) => {
-                const meta = timelineMeta(ev.type);
-                return (
-                  <div key={ev.id} className="group flex gap-3">
-                    <div className="flex flex-col items-center pt-1.5">
-                      <span className={`w-2.5 h-2.5 rounded-full ${meta.dot}`} />
-                      <span className="w-px flex-1 bg-gray-100 mt-1" />
-                    </div>
-                    <div className="flex-1 pb-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-medium text-gray-400">{meta.label}</span>
-                          <span className="text-sm font-medium text-gray-800">{ev.title}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-400">{fmtDateTime(ev.createdAt)}</span>
-                          <button
-                            className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition"
-                            onClick={() => deleteTimelineMut.mutate(ev.id)}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                      {ev.content && <p className="mt-0.5 text-sm text-gray-600 whitespace-pre-wrap">{ev.content}</p>}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-        </div>
       </div>
 
       <NewProjectDialog
@@ -829,72 +789,6 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
   );
 }
 
-// 옛 이름 · 옛 번호 칩. 이 값들로도 고객 매칭이 되므로, 잘못 입력한 것은 지울 수 있어야 한다.
-function HistoryChips({ customer, onRemoved }: { customer: any; onRemoved: () => void }) {
-  const { toast } = useToast();
-  const parse = (s: any) => {
-    try {
-      const v = JSON.parse(s || "[]");
-      return Array.isArray(v) ? v : [];
-    } catch {
-      return [];
-    }
-  };
-  const names: string[] = parse(customer?.nameHistory).map((h: any) => h?.name).filter(Boolean);
-  const phones: string[] = parse(customer?.phoneHistory)
-    .map((h: any) => h?.phone || h?.normalized)
-    .filter(Boolean);
-
-  const removeMut = useMutation({
-    mutationFn: ({ kind, value }: { kind: "name" | "phone"; value: string }) =>
-      knopApi.removeCustomerHistory(customer.id, kind, value),
-    onSuccess: (_d, v) => {
-      onRemoved();
-      toast({ title: v.kind === "name" ? "옛 이름 삭제됨" : "옛 번호 삭제됨" });
-    },
-    onError: (e: any) => toast({ title: "삭제 실패", description: e?.message, variant: "destructive" }),
-  });
-
-  const chip = (kind: "name" | "phone", value: string) => (
-    <span
-      key={kind + value}
-      className="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-500 text-[11px] px-2 py-0.5"
-    >
-      {value}
-      <button
-        type="button"
-        title="잘못 입력된 값이면 삭제 (이 값으로는 더 이상 매칭되지 않습니다)"
-        disabled={removeMut.isPending}
-        onClick={() => {
-          if (window.confirm(`"${value}" 를 이력에서 삭제할까요?\n(이 ${kind === "name" ? "이름" : "번호"}으로는 더 이상 이 고객을 찾지 않습니다)`)) {
-            removeMut.mutate({ kind, value });
-          }
-        }}
-        className="text-gray-400 hover:text-red-500 leading-none disabled:opacity-40"
-      >
-        ✕
-      </button>
-    </span>
-  );
-
-  if (!names.length && !phones.length) return null;
-  return (
-    <div className="mt-1.5 flex flex-col gap-1">
-      {names.length > 0 && (
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[11px] text-gray-400 shrink-0">옛 이름</span>
-          {names.map((n) => chip("name", n))}
-        </div>
-      )}
-      {phones.length > 0 && (
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[11px] text-gray-400 shrink-0">옛 번호</span>
-          {phones.map((p) => chip("phone", p))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // 주고받은 문자 대화 (받음=왼쪽 회색, 보냄=오른쪽 민트, 시간순)
 function MessagesCard({ customerId }: { customerId: string }) {

@@ -405,6 +405,29 @@ export function isGaemyeongStatus(s?: string | null): boolean {
   return !!s && (KNOP_GAEMYEONG_STATUSES as readonly string[]).includes(s);
 }
 
+// ── 보드 6단계 (서버·고객목록·고객상세가 모두 이걸 씀 — 중복 정의로 어긋나지 않게) ──
+export const KNOP_MILESTONES = ["상담", "개명신청", "새이름", "법원접수", "개명승인", "중간관리"] as const;
+// 각 단계로 '진행'시킬 때 세팅되는 대표 상태
+export const KNOP_MILESTONE_ENTRY = [
+  "이름분석 상담 완료",
+  "개명의뢰 접수",
+  "새 이름 상담 완료",
+  "개명 신청 완료",
+  "법원 허가 완료",
+  "장기관리",
+] as const;
+export const KNOP_MILESTONE_OF: Record<string, number> = {
+  "상담 신청": 0, "상담비 결제대기": 0, "상담비 결제확인 대기": 0, "상담비 결제완료": 0, "상담예약 완료": 0, "이름분석 상담 완료": 0,
+  "개명의뢰 접수": 1, "개명비 결제대기": 1, "개명비 결제확인 대기": 1, "개명비 결제완료": 1,
+  "이름작업 진행중": 2, "새 이름 상담 예정": 2, "새 이름 상담 완료": 2, "전화번호 상담 예정": 2, "전화번호 상담 완료": 2,
+  "개명 신청 안내 완료": 3, "개명 신청 전": 3, "개명 신청 완료": 3,
+  "법원 허가 대기": 4, "법원 허가 완료": 4,
+  "생활정보 변경 확인 중": 5, "변화 확인": 5, "후기 요청": 5, "장기관리": 5, "관리 완료": 5,
+};
+export function knopStatusToMilestone(status?: string | null): number {
+  return KNOP_MILESTONE_OF[status || ""] ?? 0;
+}
+
 // 결제 상태
 export const KNOP_PAYMENT_STATUSES = ["미결제", "결제확인중", "결제완료"] as const;
 

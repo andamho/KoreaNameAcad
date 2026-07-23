@@ -1,5 +1,6 @@
 // 개명 여정 상태기계: 상담→새이름→개명신청→법원허가→후속 을 순서대로 전진(뒤로 안 감).
 // 각 단계 진입 시 '다음 후속문자(템플릿)'와 권장 시점(일)을 안내.
+import { KNOP_MILESTONE_ENTRY, knopStatusToMilestone } from "@shared/schema";
 export type Stage = {
   status: string;
   followup?: { template: string; days: number }; // 이 단계 도달 후 예정 후속
@@ -27,32 +28,10 @@ export const JOURNEY: Stage[] = [
 // 파이프라인 보드용 5단계 (필수 흐름). 전화번호 작명은 선택 서비스라 선에서 빼고 별도 체크박스(customers.phoneNaming).
 export const MILESTONES = ["상담", "새이름", "개명신청", "법적개명", "중간관리"];
 // 마일스톤 클릭 시 그 단계로 진행할 대표 상태
-// 보드 6단계: 상담 → 개명신청 → 새이름 → 법원접수 → 개명승인 → 중간관리
-// (클라이언트 KnopApp.tsx 의 MILESTONES/MILESTONE_ENTRY 와 순서·개수가 반드시 일치해야 함)
-export const MILESTONE_ENTRY = [
-  "이름분석 상담 완료",
-  "개명의뢰 접수",
-  "새 이름 상담 완료",
-  "개명 신청 완료",
-  "법원 허가 완료",
-  "장기관리",
-];
-const MILESTONE_OF: Record<string, number> = {
-  "상담 신청": 0, "상담비 결제대기": 0, "상담비 결제확인 대기": 0, "상담비 결제완료": 0, "상담예약 완료": 0, "이름분석 상담 완료": 0,
-  // 1 개명신청 = 고객이 개명을 의뢰한 시점(결제 포함)
-  "개명의뢰 접수": 1, "개명비 결제대기": 1, "개명비 결제확인 대기": 1, "개명비 결제완료": 1,
-  // 2 새이름 = 새 이름이 만들어진 단계
-  "이름작업 진행중": 2, "새 이름 상담 예정": 2, "새 이름 상담 완료": 2,
-  "전화번호 상담 예정": 2, "전화번호 상담 완료": 2, // 전화번호는 새이름과 병렬(체크박스로 별도 표시)
-  // 3 법원접수 = 법원에 개명 서류를 낸 단계
-  "개명 신청 안내 완료": 3, "개명 신청 전": 3, "개명 신청 완료": 3,
-  // 4 개명승인 = 법원 허가
-  "법원 허가 대기": 4, "법원 허가 완료": 4,
-  // 5 중간관리 = 사후관리
-  "생활정보 변경 확인 중": 5, "변화 확인": 5, "후기 요청": 5, "장기관리": 5, "관리 완료": 5,
-};
+// 보드 6단계 정의는 shared/schema.ts 하나로 통일(서버·고객목록·고객상세 공용).
+export const MILESTONE_ENTRY = KNOP_MILESTONE_ENTRY as readonly string[];
 export function statusToMilestone(status: string): number {
-  return MILESTONE_OF[status] ?? 0;
+  return knopStatusToMilestone(status);
 }
 
 export function statusRank(status: string): number {
