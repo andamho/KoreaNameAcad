@@ -19,6 +19,7 @@ import {
   isImageReport,
   REPORT_EXT,
 } from "./reports";
+import { readEvents, parseNameCount, calendarAvailable } from "./calendar";
 
 const PY = (process.env.KOP_WHISPER_PY || process.env.KNOP_WHISPER_PY)?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot/venv/Scripts/python.exe";
 
@@ -56,32 +57,66 @@ async function ensureReportLinkSlug(target: string, label: string, desiredSlug: 
   }
 }
 
-// 처리된 리포트의 R2 이미지가 있으면, 문자용 링크(.url 바로가기)를 이름분석링크 폴더에 생성.
-async function writeReportLink(fileName: string): Promise<void> {
-  if (/상세/.test(fileName)) return; // 상세본은 발송용 아님
+// 달력에서 '오늘 이후 상담(cat=상담)' 일정이 잡힌 사람들의 기준이름 집합
+async function upcomingConsultNames(): Promise<Set<string> | null> {
+  if (!calendarAvailable()) return null;
   try {
-    const pool = reportPool();
-    const row = (await pool.query(
-      "SELECT rendered_url FROM report_matches WHERE file_name=$1 AND rendered_url IS NOT NULL ORDER BY first_seen_at DESC LIMIT 1",
-      [fileName],
-    )).rows[0];
-    const renderedUrl: string | undefined = row?.rendered_url;
-    if (!renderedUrl) return; // 아직 이미지 업로드 전 → 다음 스캔에서 처리
-    const slug = reportSlugFromFile(fileName);
-    if (!slug) return;
-    if (!fs.existsSync(LINK_DIR)) fs.mkdirSync(LINK_DIR, { recursive: true });
-    const urlFile = path.join(LINK_DIR, `${slug}.url`);
-    if (fs.existsSync(urlFile)) return; // 이미 있음 → 중복 생성 안 함
-    // 뷰어로 감싼 대상(확대/축소) — 고객상세 버튼과 같은 대상이라 링크가 일관되게 재사용됨
-    const viewerTarget = `/img?src=${encodeURIComponent(renderedUrl)}`;
-    const usedSlug = await ensureReportLinkSlug(viewerTarget, fileName.replace(/\.(pdf|png|jpe?g|webp)$/i, ""), slug);
-    if (!usedSlug) return;
-    // .url 바로가기는 한글이 깨질 수 있어 URL 은 퍼센트 인코딩(ASCII). 브라우저 주소창엔 한글로 보임.
-    const linkUrl = `${PUBLIC_BASE}/${encodeURIComponent(usedSlug)}`;
-    fs.writeFileSync(urlFile, `[InternetShortcut]\r\nURL=${linkUrl}\r\n`, "utf-8");
-    console.log(`[KOP] 문자용 링크 생성: ${slug}.url → ${PUBLIC_BASE}/${usedSlug}`);
+    const events = await readEvents();
+    const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10); // KST 오늘
+    const set = new Set<string>();
+    for (const e of events) {
+      if (!e.date || e.date < today) continue;
+      if ((e.cat || "") !== "상담") continue; // 상담 일정만
+      const nm = baseName(parseNameCount(e.title || "").name);
+      if (nm) set.add(nm);
+    }
+    return set;
   } catch (e: any) {
-    console.error(`[KOP] 링크 파일 생성 오류(${fileName}): ${e?.message}`);
+    console.error(`[KOP] 상담일정 조회 실패: ${e?.message}`);
+    return null;
+  }
+}
+
+// 이름분석링크 폴더를 '오늘 이후 상담예정자'로 동기화: 예정자 링크(.url) 생성 + 비예정자 링크 정리.
+export async function syncReportLinks(): Promise<void> {
+  if (!reportsAvailable()) return; // 로컬 전용
+  const upcoming = await upcomingConsultNames();
+  if (!upcoming) return; // 달력 못 읽으면 아무 것도 안 함(전체 생성 방지)
+  try {
+    if (!fs.existsSync(LINK_DIR)) fs.mkdirSync(LINK_DIR, { recursive: true });
+    const pool = reportPool();
+    const rows = (await pool.query(
+      `SELECT DISTINCT ON (file_name) file_name, extracted_name, rendered_url
+       FROM report_matches WHERE rendered_url IS NOT NULL
+       ORDER BY file_name, first_seen_at DESC`,
+    )).rows;
+    const wanted = new Set<string>();
+    let made = 0;
+    for (const r of rows) {
+      if (/상세/.test(r.file_name)) continue;
+      const nm = baseName(r.extracted_name || "");
+      if (!nm || !upcoming.has(nm)) continue; // 상담예정자만
+      const slug = reportSlugFromFile(r.file_name);
+      if (!slug) continue;
+      wanted.add(`${slug}.url`);
+      const urlFile = path.join(LINK_DIR, `${slug}.url`);
+      if (fs.existsSync(urlFile)) continue;
+      const viewerTarget = `/img?src=${encodeURIComponent(r.rendered_url)}`;
+      const usedSlug = await ensureReportLinkSlug(viewerTarget, String(r.file_name).replace(/\.[^.]+$/, ""), slug);
+      if (!usedSlug) continue;
+      fs.writeFileSync(urlFile, `[InternetShortcut]\r\nURL=${PUBLIC_BASE}/${encodeURIComponent(usedSlug)}\r\n`, "utf-8");
+      made++;
+    }
+    // 상담예정이 아닌 사람의 링크는 폴더에서 제거 → 폴더엔 '오늘 이후 상담예정자'만 남음
+    let removed = 0;
+    for (const f of fs.readdirSync(LINK_DIR)) {
+      if (f.toLowerCase().endsWith(".url") && !wanted.has(f)) {
+        try { fs.unlinkSync(path.join(LINK_DIR, f)); removed++; } catch { /* noop */ }
+      }
+    }
+    if (made || removed) console.log(`[KOP] 상담예정 링크 동기화: 생성 ${made} · 정리 ${removed} (상담예정 ${upcoming.size}명)`);
+  } catch (e: any) {
+    console.error(`[KOP] 상담예정 링크 동기화 오류: ${e?.message}`);
   }
 }
 const RENDER = fileURLToPath(new URL("./py/render_pdf.py", import.meta.url));
@@ -186,8 +221,6 @@ export async function syncReports(): Promise<SyncResult> {
         else if (out.status === "attachment_failed") res.attachment_failed++;
         else if (out.status === "processing_failed") res.processing_failed++;
         else res.skipped++;
-        // 처리된 리포트의 문자용 링크(.url)를 이름분석링크 폴더에 생성(있으면 건너뜀)
-        await writeReportLink(r.file);
       } catch (e: any) {
         console.error(`[KOP] 이름분석표 처리 오류 ${r.file}: ${e?.message}`);
         res.processing_failed++;
@@ -197,6 +230,7 @@ export async function syncReports(): Promise<SyncResult> {
     if (res.auto_matched || res.needs_review || res.attachment_failed || res.processing_failed) {
       console.log(`[KOP] 이름분석표 동기화: 자동연결 ${res.auto_matched} · 확인필요 ${res.needs_review} · 첨부실패 ${res.attachment_failed} · 처리실패 ${res.processing_failed} (처리 ${res.processed})`);
     }
+    await syncReportLinks(); // 오늘 이후 상담예정자 링크 폴더 동기화
     return res;
   } catch (e: any) {
     console.error(`[KOP] 이름분석표 동기화 오류: ${e?.message}`);

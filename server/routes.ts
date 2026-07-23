@@ -1386,12 +1386,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register object storage routes for file uploads
   registerObjectStorageRoutes(app);
 
-  // 이미지 뷰어(공개): 문자 링크로 열면 확대/축소가 되는 페이지. src 는 우리 오브젝트 경로만 허용.
-  app.get("/img", (req, res) => {
-    const src = String(req.query.src || "");
-    if (!/^\/objects\/[A-Za-z0-9._/-]+$/.test(src)) return res.status(400).send("잘못된 이미지 주소");
+  // 이미지 뷰어 HTML (핀치줌 확대/축소). src 는 우리 오브젝트 경로만.
+  const imageViewerHtml = (src: string) => {
     const safe = src.replace(/"/g, "%22");
-    res.type("html").send(`<!doctype html><html lang="ko"><head>
+    return `<!doctype html><html lang="ko"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=0.5, maximum-scale=6, user-scalable=yes">
 <title>이름분석표</title>
@@ -1401,10 +1399,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   #pic{display:inline-block;width:100%;max-width:900px;height:auto}
 </style></head><body>
 <div id="wrap"><img id="pic" src="${safe}" alt="이름분석표"></div>
-</body></html>`);
+</body></html>`;
+  };
+  const imgSrcOfTarget = (t: string): string | null => {
+    if (!/^\/img\?src=/.test(t)) return null;
+    try {
+      const s = decodeURIComponent(t.replace(/^\/img\?src=/, ""));
+      return /^\/objects\/[A-Za-z0-9._/-]+$/.test(s) ? s : null;
+    } catch {
+      return null;
+    }
+  };
+
+  app.get("/img", (req, res) => {
+    const src = String(req.query.src || "");
+    if (!/^\/objects\/[A-Za-z0-9._/-]+$/.test(src)) return res.status(400).send("잘못된 이미지 주소");
+    res.type("html").send(imageViewerHtml(src));
   });
 
-  // 루트 링크: /홍길동가족이름분석표 → 실제 목적지로 302 (문자 발송용, 공개).
+  // 짧은링크 공통 처리: 이미지 뷰어 대상이면 '리다이렉트 없이 그 자리에서' 이미지 표시
+  // → 주소창이 /홍길동님이름분석표 로 깔끔하게 유지됨. 그 외 대상은 302.
+  const serveShortLink = (row: any, req: any, res: any) => {
+    db!.update(shortLinks).set({ clicks: (row.clicks ?? 0) + 1 }).where(eq(shortLinks.id, row.id)).catch(() => {});
+    const imgSrc = imgSrcOfTarget(row.target);
+    if (imgSrc) return res.type("html").send(imageViewerHtml(imgSrc));
+    const target = row.target.startsWith("/") ? `${req.protocol}://${req.get("host")}${row.target}` : row.target;
+    return res.redirect(302, target);
+  };
+
+  // 루트 링크: /홍길동님이름분석표 (문자 발송용, 공개).
   // '이름분석표' 포함 슬러그만 처리 → /admin 등 앱 페이지·정적파일과 충돌 없음.
   app.get("/:slug", async (req, res, next) => {
     try {
@@ -1413,24 +1436,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!db) return next();
       const [row] = await db.select().from(shortLinks).where(eq(shortLinks.slug, slug));
       if (!row) return next();
-      db.update(shortLinks).set({ clicks: (row.clicks ?? 0) + 1 }).where(eq(shortLinks.id, row.id)).catch(() => {});
-      const target = row.target.startsWith("/") ? `${req.protocol}://${req.get("host")}${row.target}` : row.target;
-      return res.redirect(302, target);
+      return serveShortLink(row, req, res);
     } catch {
       return next();
     }
   });
 
-  // 짧은 링크: /s/:slug → 실제 목적지로 302 (문자 발송용, 공개)
+  // 짧은 링크: /s/:slug (기존 호환)
   app.get("/s/:slug", async (req, res) => {
     try {
       if (!db) return res.status(404).send("Not found");
-      const slug = String(req.params.slug || "");
-      const [row] = await db.select().from(shortLinks).where(eq(shortLinks.slug, slug));
+      const [row] = await db.select().from(shortLinks).where(eq(shortLinks.slug, String(req.params.slug || "")));
       if (!row) return res.status(404).send("링크를 찾을 수 없습니다");
-      db.update(shortLinks).set({ clicks: (row.clicks ?? 0) + 1 }).where(eq(shortLinks.id, row.id)).catch(() => {});
-      const target = row.target.startsWith("/") ? `${req.protocol}://${req.get("host")}${row.target}` : row.target;
-      return res.redirect(302, target);
+      return serveShortLink(row, req, res);
     } catch {
       return res.status(500).send("오류");
     }

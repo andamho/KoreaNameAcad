@@ -2,7 +2,7 @@
 // ⚠️ 웹서버·문자 스케줄러·개명 안내 스케줄러는 실행하지 않는다 → Railway 서버와 절대 충돌 없음(문자 이중발송 방지).
 // 실행: npm run report-sync   /   pm2 로 상주 등록 (부팅 시 자동 실행 + 꺼지면 자동 재시작)
 import "dotenv/config"; // DB·R2 환경변수 로드 (db import 전에)
-import { startReportSync, syncReports } from "./reportSync";
+import { startReportSync, syncReports, syncReportLinks } from "./reportSync";
 import { reportsAvailable, reportsDir } from "./reports";
 
 async function main() {
@@ -29,8 +29,10 @@ async function main() {
   startReportSync();
   console.log("[이름분석표 워커] 폴더 감시 중 — 새 PDF 가 들어오면 자동으로 사이트에 올립니다.");
 
-  // 상주: 이벤트 루프 유지
-  setInterval(() => {}, 1 << 30);
+  // 상담예정 링크 폴더 동기화: 시작 시 1회 + 15분마다 (달력에 상담일정이 바뀌어도 반영)
+  syncReportLinks().catch((e: any) => console.error("[이름분석표 워커] 링크 동기화 오류:", e?.message));
+  setInterval(() => { syncReportLinks().catch(() => {}); }, 15 * 60 * 1000);
+
 }
 
 process.on("SIGINT", () => { console.log("[이름분석표 워커] 종료(SIGINT)"); process.exit(0); });
