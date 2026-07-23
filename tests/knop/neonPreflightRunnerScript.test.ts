@@ -35,10 +35,38 @@ describe("runDisposablePreflight.ps1 — 안전 계약", () => {
     }
   });
 
-  test("CONFIRM_EXECUTE 를 true 로 설정하는 경로가 없다", () => {
-    assert.ok(!/\$env:CONFIRM_EXECUTE\s*=\s*["']?true/i.test(src), "CONFIRM_EXECUTE 설정 금지");
-    // 시작 시 기존 값을 제거하는 경로는 있어야 한다
+  test("CONFIRM_EXECUTE 는 -Execute 경로 안에서만 설정되고, 설정 직후 반드시 제거된다", () => {
+    // 시작 시 기존 값을 제거하는 경로가 있어야 한다
     assert.match(src, /Remove-Item\s+"Env:CONFIRM_EXECUTE"/, "기존 CONFIRM_EXECUTE 제거 경로 필요");
+    // CONFIRM_EXECUTE = "true" 를 설정하는 모든 지점은 곧바로 Remove-Item 이 뒤따라야 한다(잔류 금지)
+    const setPattern = /\$env:CONFIRM_EXECUTE\s*=\s*"true"/g;
+    let m: RegExpExecArray | null;
+    let count = 0;
+    while ((m = setPattern.exec(src)) !== null) {
+      count += 1;
+      const after = src.slice(m.index, m.index + 400);
+      assert.match(after, /Remove-Item\s+"Env:CONFIRM_EXECUTE"/, "CONFIRM_EXECUTE 설정 직후 제거 필요");
+    }
+    // STEP 3(execute) + STEP 4(replay 확인) 두 곳에서만 설정한다
+    assert.equal(count, 2, `CONFIRM_EXECUTE 설정 지점은 정확히 2개(execute+replay)여야 함, 실제 ${count}`);
+    // execute 는 -Execute 스위치로만 진입한다
+    assert.match(src, /\[switch\]\$Execute/, "-Execute 스위치 필요");
+    assert.match(src, /elseif \(-not \$Execute\)/, "-Execute 없으면 preflight 까지만");
+  });
+
+  test("execute 는 preflight(STEP 2) 성공 후에만, 같은 run-id 로 진행한다", () => {
+    const step2 = src.indexOf("STEP 2: SELECT-only preflight");
+    const step3 = src.indexOf("STEP 3: execute");
+    assert.ok(step2 > 0 && step3 > step2, "STEP 3 는 STEP 2 뒤에 있어야 한다");
+    // preflight 실패 시 execute 로 가지 않는다
+    assert.match(src, /preCode -ne 0[\s\S]{0,200}execute 로 진행하지 않습니다/, "preflight 실패 시 execute 차단");
+    // run-id 는 한 번만 생성해 STEP 2·3 가 공유한다(evidence run-id binding 일치)
+    assert.equal((src.match(/\$runId = New-RunId/g) ?? []).length, 1, "run-id 는 한 번만 생성");
+  });
+
+  test("replay 차단(STEP 4)을 확인한다 — 소비된 evidence 재사용은 exit 5", () => {
+    assert.match(src, /STEP 4: evidence replay 차단 확인/, "STEP 4 필요");
+    assert.match(src, /\$replayCode -eq 5/, "replay 차단은 exit 5 로 판정");
   });
 
   test("dry-run 성공 시에만 preflight 로 진행한다", () => {

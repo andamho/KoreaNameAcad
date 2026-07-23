@@ -29,6 +29,11 @@
 [CmdletBinding()]
 param(
   [switch]$SelfTest,
+  # ⚠️ -Execute 를 주면 preflight 통과 후 **실제 capability 실행**(STEP 3)까지 진행한다.
+  #    이때만 `CONFIRM_EXECUTE=true` 를 이 스크립트 **이번 실행에 한해** 설정하고, 끝나면 즉시 제거한다.
+  #    생성되는 객체는 전부 `oc_*_<runId>` scoped(production 이름과 겹치지 않음)이며 실행 끝에 run-id 범위로 정리된다.
+  #    -Execute 가 없으면 STEP 2(preflight)까지만 하고 DDL 을 실행하지 않는다(기존 동작).
+  [switch]$Execute,
   [string]$ReportPath = ""
 )
 
@@ -203,19 +208,44 @@ try {
   Add-Report "[runner] ✅ STEP 1 통과 — 다음 단계로 진행합니다."
 
   if ($SelfTest) {
-    Add-Report "[runner] SELF-TEST: 실제 접속 단계를 건너뜁니다(합성 URL 이므로 preflight 미실행)."
-    $preCode = 0
+    Add-Report "[runner] SELF-TEST: 실제 접속 단계를 건너뜁니다(합성 URL 이므로 preflight/execute 미실행)."
+    $Script:ExitCode = 0
   } else {
-    # 7. SELECT-only preflight (읽기 전용 연결 · DDL 0 · DML 0)
+    # 7. SELECT-only preflight (읽기 전용 연결 · DDL 0 · DML 0) — evidence 를 갓 발급한다.
     $env:PREFLIGHT_ONLY = "true"
     $preCode = Invoke-Harness "STEP 2: SELECT-only preflight"
     Remove-Item "Env:PREFLIGHT_ONLY" -ErrorAction SilentlyContinue
-    if ($preCode -eq 0) { Add-Report "[runner] ✅ STEP 2 통과 — preflight evidence 발급됨." }
-    else { Add-Report "[runner] ❌ STEP 2 실패(exit=$preCode) — execute 승인 불가." }
-  }
+    if ($preCode -ne 0) {
+      Add-Report "[runner] ❌ STEP 2 실패(exit=$preCode) — execute 로 진행하지 않습니다."
+      $Script:ExitCode = $preCode
+    }
+    elseif (-not $Execute) {
+      Add-Report "[runner] ✅ STEP 2 통과 — preflight evidence 발급됨."
+      Add-Report "[runner] CONFIRM_EXECUTE: 설정한 적 없음(-Execute 없이 실행 — 실제 DDL 미수행)."
+      $Script:ExitCode = 0
+    }
+    else {
+      Add-Report "[runner] ✅ STEP 2 통과 — 방금 evidence 발급됨(만료 전). 이어서 execute 진행."
 
-  Add-Report "[runner] CONFIRM_EXECUTE: 설정한 적 없음(이 스크립트는 실제 DDL 을 실행하지 않습니다)."
-  $Script:ExitCode = $preCode
+      # 8. execute — 실제 capability. 이 스크립트 **이번 실행에만** CONFIRM_EXECUTE 를 켠다.
+      #    evidence 는 STEP 2 가 발급한 것을 1회 소비한다(같은 run-id, 만료 전). 객체는 run-id scoped.
+      $env:CONFIRM_EXECUTE = "true"
+      $exeCode = Invoke-Harness "STEP 3: execute (실제 capability · oc_*_$runId · run-id scoped cleanup)"
+      Remove-Item "Env:CONFIRM_EXECUTE" -ErrorAction SilentlyContinue
+      if ($exeCode -eq 0) { Add-Report "[runner] ✅ STEP 3 통과 — capability 실행·정리 완료." }
+      else { Add-Report "[runner] ⚠ STEP 3 exit=$exeCode — 결과/잔여를 아래 보고에서 확인." }
+
+      # 9. replay 차단 확인 — 같은 evidence 로 다시 execute 를 시도한다.
+      #    STEP 3 가 evidence 를 이미 소비(파일 삭제)했으므로 여기서는 반드시 차단(exit 5)되어야 한다.
+      $env:CONFIRM_EXECUTE = "true"
+      $replayCode = Invoke-Harness "STEP 4: evidence replay 차단 확인 (재실행 — 차단되어야 정상)"
+      Remove-Item "Env:CONFIRM_EXECUTE" -ErrorAction SilentlyContinue
+      if ($replayCode -eq 5) { Add-Report "[runner] ✅ STEP 4 — 소비된 evidence 재사용 차단됨(exit 5). replay 방지 확인." }
+      else { Add-Report "[runner] ⚠ STEP 4 — 예상(exit 5)과 다름(exit=$replayCode). evidence 재사용 차단 재검토 필요." }
+
+      $Script:ExitCode = $exeCode
+    }
+  }
 }
 catch {
   Add-Report "[runner] ❌ 중단: $(Protect-Output $_.Exception.Message)"
