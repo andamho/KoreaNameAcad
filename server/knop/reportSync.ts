@@ -98,19 +98,21 @@ export async function syncReportLinks(): Promise<void> {
       if (!nm || !upcoming.has(nm)) continue; // 상담예정자만
       const slug = reportSlugFromFile(r.file_name);
       if (!slug) continue;
-      wanted.add(`${slug}.url`);
-      const urlFile = path.join(LINK_DIR, `${slug}.url`);
-      if (fs.existsSync(urlFile)) continue;
+      wanted.add(`${slug}.txt`);
+      const linkFile = path.join(LINK_DIR, `${slug}.txt`);
+      if (fs.existsSync(linkFile)) continue;
       const viewerTarget = `/img?src=${encodeURIComponent(r.rendered_url)}`;
       const usedSlug = await ensureReportLinkSlug(viewerTarget, String(r.file_name).replace(/\.[^.]+$/, ""), slug);
       if (!usedSlug) continue;
-      fs.writeFileSync(urlFile, `[InternetShortcut]\r\nURL=${PUBLIC_BASE}/${encodeURIComponent(usedSlug)}\r\n`, "utf-8");
+      // 텍스트 파일: 열어서 Ctrl+A→Ctrl+C 로 복사해 카톡/문자에 붙여넣기. 주소는 한글 그대로(가독).
+      fs.writeFileSync(linkFile, `${PUBLIC_BASE}/${usedSlug}`, "utf-8");
       made++;
     }
-    // 상담예정이 아닌 사람의 링크는 폴더에서 제거 → 폴더엔 '오늘 이후 상담예정자'만 남음
+    // 상담예정이 아닌 사람의 링크 파일은 폴더에서 제거(옛 .url 포함) → '오늘 이후 상담예정자'만 남음
     let removed = 0;
     for (const f of fs.readdirSync(LINK_DIR)) {
-      if (f.toLowerCase().endsWith(".url") && !wanted.has(f)) {
+      const low = f.toLowerCase();
+      if ((low.endsWith(".txt") || low.endsWith(".url")) && !wanted.has(f)) {
         try { fs.unlinkSync(path.join(LINK_DIR, f)); removed++; } catch { /* noop */ }
       }
     }
