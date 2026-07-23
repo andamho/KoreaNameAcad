@@ -222,10 +222,22 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
   const { data: board, isLoading } = useQuery({ queryKey: ["knop-board"], queryFn: () => knopApi.customerBoard() });
   const advance = useMutation({
     // force=true 면 뒤 단계로도 되돌릴 수 있다(잘못 찍은 단계 수정용)
-    mutationFn: ({ projectId, toStatus, force }: { projectId: string; toStatus: string; force?: boolean }) =>
+    mutationFn: ({ projectId, toStatus, force }: { projectId: string; toStatus: string; force?: boolean; toMilestone?: number }) =>
       knopApi.advanceStatus(projectId, toStatus, !!force),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["knop-board"] }),
-    onError: (e: Error) => toast({ title: "진행 불가", description: e.message, variant: "destructive" }),
+    // 낙관적 반영: 클릭 즉시 그 행의 단계를 바꿔 화면에 표시(체감 즉시). 저장은 뒤에서.
+    onMutate: async ({ projectId, toStatus, toMilestone }) => {
+      await qc.cancelQueries({ queryKey: ["knop-board"] });
+      const prev = qc.getQueryData<any[]>(["knop-board"]);
+      if (prev && typeof toMilestone === "number") {
+        qc.setQueryData<any[]>(["knop-board"], prev.map((c) => (c.projectId === projectId ? { ...c, milestone: toMilestone, status: toStatus } : c)));
+      }
+      return { prev };
+    },
+    onError: (e: Error, _v, ctx: any) => {
+      if (ctx?.prev) qc.setQueryData(["knop-board"], ctx.prev); // 실패 시 원복
+      toast({ title: "진행 불가", description: e.message, variant: "destructive" });
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["knop-board"] }), // 백그라운드 재확인
   });
   const togglePhone = useMutation({
     mutationFn: ({ id, on }: { id: string; on: boolean }) => knopApi.updateCustomer(id, { phoneNaming: on }),
@@ -377,10 +389,10 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
             const clickable = hasProject && (forward || backward);
             const onDot = () => {
               if (!hasProject) return onOpenCustomer(c.id);
-              if (forward) return advance.mutate({ projectId: c.projectId!, toStatus: MILESTONE_ENTRY[i] });
+              if (forward) return advance.mutate({ projectId: c.projectId!, toStatus: MILESTONE_ENTRY[i], toMilestone: i });
               if (backward) {
                 if (window.confirm(`${cleanName(c.name)} 님을 '${MILESTONES[i]}' 단계로 되돌릴까요?`)) {
-                  advance.mutate({ projectId: c.projectId!, toStatus: MILESTONE_ENTRY[i], force: true });
+                  advance.mutate({ projectId: c.projectId!, toStatus: MILESTONE_ENTRY[i], force: true, toMilestone: i });
                 }
                 return;
               }
@@ -487,10 +499,10 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                   const hasProject = !!c.projectId;
                   const onTap = () => {
                     if (!hasProject) return onOpenCustomer(c.id);
-                    if (i > c.milestone) return advance.mutate({ projectId: c.projectId!, toStatus: MILESTONE_ENTRY[i] });
+                    if (i > c.milestone) return advance.mutate({ projectId: c.projectId!, toStatus: MILESTONE_ENTRY[i], toMilestone: i });
                     if (i < c.milestone) {
                       if (window.confirm(`${cleanName(c.name)} 님을 '${m}' 단계로 되돌릴까요?`)) {
-                        advance.mutate({ projectId: c.projectId!, toStatus: MILESTONE_ENTRY[i], force: true });
+                        advance.mutate({ projectId: c.projectId!, toStatus: MILESTONE_ENTRY[i], force: true, toMilestone: i });
                       }
                       return;
                     }

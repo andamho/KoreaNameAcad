@@ -153,17 +153,39 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
     },
   });
 
+  // 프로젝트 상태를 캐시에서 즉시 바꿔 화면에 반영(체감 즉시). prev 반환으로 실패 시 원복.
+  const patchProjectCache = (id: string, patch: Record<string, unknown>) => {
+    const prev = qc.getQueryData<CustomerDetailData>(queryKey);
+    if (prev?.projects) {
+      qc.setQueryData<CustomerDetailData>(queryKey, {
+        ...prev,
+        projects: prev.projects.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+      });
+    }
+    return prev;
+  };
+
   const updateProjectMut = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: Record<string, unknown> }) =>
       knopApi.updateProject(id, patch),
-    onSuccess: () => refresh(),
+    onMutate: async ({ id, patch }) => {
+      await qc.cancelQueries({ queryKey });
+      return { prev: patchProjectCache(id, patch) };
+    },
+    onError: (_e, _v, ctx: any) => {
+      if (ctx?.prev) qc.setQueryData(queryKey, ctx.prev);
+    },
+    onSettled: () => refresh(),
   });
 
   const advanceMut = useMutation({
     mutationFn: ({ id, toStatus }: { id: string; toStatus: string }) =>
       knopApi.advanceStatus(id, toStatus),
+    onMutate: async ({ id, toStatus }) => {
+      await qc.cancelQueries({ queryKey });
+      return { prev: patchProjectCache(id, { status: toStatus }) };
+    },
     onSuccess: (r) => {
-      refresh();
       toast({
         title: `다음 단계: ${r.project.status}`,
         description: r.nextFollowup
@@ -171,7 +193,11 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
           : undefined,
       });
     },
-    onError: (e: Error) => toast({ title: "진행 불가", description: e.message, variant: "destructive" }),
+    onError: (e: Error, _v, ctx: any) => {
+      if (ctx?.prev) qc.setQueryData(queryKey, ctx.prev);
+      toast({ title: "진행 불가", description: e.message, variant: "destructive" });
+    },
+    onSettled: () => refresh(),
   });
 
   const deleteProjectMut = useMutation({
