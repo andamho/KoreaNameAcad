@@ -127,18 +127,31 @@ async function prepareEnvironment(db: DbAdapter, n: ScopedNames, inj: Injector, 
   onRolesCreated?: (roles: string[], secrets: Map<string, MemorySecret>) => Promise<void>): Promise<void> {
   await createSchema(db, n);
   if (inj.shouldFail("after-schema")) throw new InjectedFailure("after-schema");
-  await db.exec(`CREATE ROLE ${qi(n.roles.owner)} NOLOGIN`);
-  await db.exec(`CREATE ROLE ${qi(n.roles.admin)} NOLOGIN`);
+  // ⚠️ PostgreSQL 16+ (Neon 포함, non-superuser) 에서 CREATE ROLE 의 자동 멤버십은
+  //    `ADMIN TRUE, INHERIT FALSE, SET FALSE` 다. 즉 GRANT/DROP ROLE 은 되지만 **SET ROLE·OWNER TO 는 불가**.
+  //    그래서 각 role 생성 직후 `GRANT <role> TO CURRENT_USER WITH SET TRUE, INHERIT FALSE` 를 명시한다:
+  //      - SET TRUE     → executor 가 SET ROLE <role> 로 전환 가능(capability·default-privileges 검증에 필요)
+  //      - INHERIT FALSE→ executor 가 role 권한을 **자동 상속하지 않음**(과다 권한 방지 — 명시적 SET ROLE 로만 전환)
+  //    embedded 는 superuser 라 이 제약이 없었고, 실제 Neon 에서 처음 노출됐다(actual-neon-direct execute).
+  const grantSet = (role: string) => db.exec(`GRANT ${qi(role)} TO CURRENT_USER WITH SET TRUE, INHERIT FALSE`);
+  await db.exec(`CREATE ROLE ${qi(n.roles.owner)} NOLOGIN`); await grantSet(n.roles.owner);
+  await db.exec(`CREATE ROLE ${qi(n.roles.admin)} NOLOGIN`); await grantSet(n.roles.admin);
   if (inj.shouldFail("after-two-roles")) throw new InjectedFailure("after-two-roles");
   for (const role of [n.roles.deployer, n.roles.writer, n.roles.reader, n.roles.appSim]) {
     const sec = generateSecret(); secrets.set(role, sec);
     await db.exec(`CREATE ROLE ${qi(role)} LOGIN PASSWORD '${sec.reveal().replace(/'/g, "''")}'`);
+    await grantSet(role);
   }
   if (onRolesCreated) await onRolesCreated([n.roles.deployer, n.roles.writer, n.roles.reader, n.roles.appSim], secrets);
   await createObjects(db, n);
   if (inj.shouldFail("after-partial-triggers")) throw new InjectedFailure("after-partial-triggers");
   if (inj.shouldFail("after-synthetic-insert")) throw new InjectedFailure("after-synthetic-insert");
   await applyGrants(db, n);
+}
+
+/** 격리 테스트 전용: prepareEnvironment 를 injection 없이 호출한다(non-superuser 재현용). */
+export async function prepareEnvironmentForTest(db: DbAdapter, n: ScopedNames, secrets: Map<string, MemorySecret>): Promise<void> {
+  await prepareEnvironment(db, n, noInjection, secrets);
 }
 
 // ── orchestration ───────────────────────────────────────────────────────────
@@ -212,6 +225,7 @@ export async function executeDirectProfile(opts: ExecuteOptions): Promise<Profil
       const target = inj.shouldFail("cleanup-first-attempt") ? failFirstExec(db, 1) : db;
       try { cleanup = await runCleanup(target, n, { retry: true }); }
       catch (e) { cleanup = { ok: false, attempted: 0, failed: [{ label: "cleanup", error: sanitizeError(e).message }], residualRoles: -1, residualObjects: -1, disabledTriggers: -1, retried: false }; }
+      if (cleanup && cleanup.failed.length) notes.push(`cleanup 실패 step: ${cleanup.failed.map((f) => `${f.label}(${f.error})`).join(" | ")}`);
     }
     secrets.clear();
   }

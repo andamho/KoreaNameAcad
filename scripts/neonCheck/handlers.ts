@@ -163,14 +163,16 @@ export const DIRECT_HANDLERS: Record<string, Handler> = {
     const fq = `${qi(n.schema)}.${qi(probe)}`;
     const pubCount = () => num(db, `SELECT count(*)::int AS n FROM pg_proc p JOIN pg_namespace ns ON ns.oid=p.pronamespace WHERE ns.nspname=$1 AND p.proname=$2 AND has_function_privilege('public', p.oid, 'EXECUTE')`, [n.schema, probe]);
     try {
-      // 전역 형식(run-scoped owner role 한정. cleanup 의 DROP OWNED BY 가 default ACL 행도 제거한다)
+      // ⚠️ PG16+ non-superuser: `ALTER DEFAULT PRIVILEGES FOR ROLE owner` 는 owner 로 SET ROLE 된 상태여야 한다(INHERIT FALSE).
+      //    executor 로 직접 하면 permission denied. 그래서 SET ROLE owner 상태에서 전역 REVOKE + CREATE FUNCTION 을 함께 수행한다.
+      await db.exec(`SET ROLE ${qi(n.roles.owner)}`);
       await db.exec(`ALTER DEFAULT PRIVILEGES FOR ROLE ${qi(n.roles.owner)} REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC`);
       const rows = await num(db, `SELECT count(*)::int AS n FROM pg_default_acl d WHERE d.defaclobjtype='f' AND d.defaclnamespace=0 AND pg_get_userbyid(d.defaclrole)=$1`, [n.roles.owner]);
-      if (rows !== 1) return bad(`global-default-acl-row-missing(${rows})`);
-      await db.exec(`SET ROLE ${qi(n.roles.owner)}`);
+      if (rows !== 1) { await db.exec(`RESET ROLE`).catch(() => {}); return bad(`global-default-acl-row-missing(${rows})`); }
       await db.exec(`CREATE FUNCTION ${fq}() RETURNS int LANGUAGE sql AS $$SELECT 1$$`);
       const after = await pubCount();          // 명시 REVOKE 없이도 0 이어야 한다 = 미래 함수 보호
       await db.exec(`DROP FUNCTION ${fq}()`);
+      await db.exec(`RESET ROLE`);
       if (after !== 0) return bad("future-function-public-execute-present");
       return ok("global-default-acl-protects-future-functions");
     } catch (e: any) { return bad(`probe-failed:${e?.code ?? "ERR"}`); }
@@ -188,8 +190,10 @@ export const DIRECT_HANDLERS: Record<string, Handler> = {
   "session-replication-role-denied": async (ctx) => loginDenied(ctx, ctx.names.roles.writer, `SET session_replication_role=replica`),
   "runtime-trigger-disable-denied": async (ctx) => loginDenied(ctx, ctx.names.roles.writer, `ALTER TABLE ${S(ctx.names).artifact} DISABLE TRIGGER ${qi(ctx.names.tables.artifact + "_imm")}`),
   "owner-trigger-disable-allowed": async ({ db, names: n, hook }) => {
+    // ⚠️ `GRANT owner TO CURRENT_USER`(SET 미지정) 을 하지 않는다 — 그러면 prepareEnvironment 의 SET TRUE 옵션이
+    //    기본값(SET FALSE)으로 덮여 이후 SET ROLE 이 깨진다. 멤버십은 prepareEnvironment 에서 이미 SET TRUE 로 부여됐고,
+    //    테이블은 owner 소유(applyGrants)이므로 SET ROLE owner 만으로 DISABLE TRIGGER 가 가능하다.
     try {
-      await db.exec(`GRANT ${qi(n.roles.owner)} TO CURRENT_USER`);
       await db.exec(`SET ROLE ${qi(n.roles.owner)}`);
       await db.exec(`ALTER TABLE ${S(n).artifact} DISABLE TRIGGER ${qi(n.tables.artifact + "_imm")}`);
       await db.exec(`RESET ROLE`);
@@ -203,8 +207,13 @@ export const DIRECT_HANDLERS: Record<string, Handler> = {
     return st.disabled > 0 ? ok(`disabled=${st.disabled}`) : bad("expected-disabled-trigger");
   },
   "startup-check-passes-after-reenable": async ({ db, names: n }) => {
-    await db.exec(`ALTER TABLE ${S(n).artifact} ENABLE TRIGGER ${qi(n.tables.artifact + "_imm")}`);
-    await db.exec(`REVOKE ${qi(n.roles.owner)} FROM CURRENT_USER`).catch(() => {});
+    // 테이블이 owner 소유이므로 ENABLE TRIGGER 도 owner 로 수행한다. owner 멤버십은 **회수하지 않는다**
+    //    (cleanup 이 SET ROLE 로 각 role 자기 소유물을 정리해야 하므로 멤버십이 끝까지 유지돼야 한다).
+    try {
+      await db.exec(`SET ROLE ${qi(n.roles.owner)}`);
+      await db.exec(`ALTER TABLE ${S(n).artifact} ENABLE TRIGGER ${qi(n.tables.artifact + "_imm")}`);
+      await db.exec(`RESET ROLE`);
+    } catch { await db.exec(`RESET ROLE`).catch(() => {}); }
     const st = await triggerState(db, n);
     return st.disabled === 0 ? ok("disabled=0") : bad(`still-disabled=${st.disabled}`);
   },

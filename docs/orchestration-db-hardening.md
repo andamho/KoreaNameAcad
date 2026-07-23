@@ -124,6 +124,28 @@ job_artifacts/automated_reviews/orchestration_audit_log=immutable/append-only. h
 - ❌ 금지: **deployer 가 기존 app role 의 member** 가 됨(= B, privilege explosion)
 - ❌ 금지: **`orchestration_owner` 가 기존 app role 의 member** 가 됨
 
+## 12a. ⚠️ PG16+ non-superuser SET ROLE 제약 — **production apply 전 필수 반영** (실제 Neon 실측 발견)
+disposable Neon(PG 17.10, non-superuser owner)에서 harness execute 실행 중 발견. **embedded PG17 이 superuser 라 그동안 숨어 있었다.**
+
+**근본**: PostgreSQL **16부터 `CREATE ROLE`·`GRANT role TO x`(옵션 미지정)의 자동/기본 멤버십은 `ADMIN TRUE, INHERIT FALSE, SET FALSE`**.
+즉 관리(GRANT/DROP ROLE)는 되지만 **`SET ROLE`·`ALTER … OWNER TO` 는 불가**(`42501 must be able to SET ROLE`). embedded PG17 non-superuser 재현으로 catalog 확정(`member=true, SET=false`).
+
+**이 하드닝 SQL 에서 영향받는 지점과 필요한 수정(diff 제시 — 이번 Gate 에서 SQL 실제 수정·checksum 재고정은 하지 않음, apply Gate 에서 반영)**:
+
+| 위치 | 현재 | 필요한 수정 | 이유 |
+|---|---|---|---|
+| §role 체인 (`GRANT orchestration_owner TO orchestration_admin`, `… admin TO deployer`) | `GRANT … TO …;` | `GRANT … TO … WITH SET TRUE, INHERIT FALSE;` | deployer→admin→owner **SET ROLE 체인**이 동작하려면 SET TRUE. INHERIT FALSE 로 권한 자동 상속은 막아 최소권한 유지 |
+| §12 A 절차 3 (bootstrap: 현재 owner 를 orchestration_owner member 로) | `GRANT orchestration_owner TO <현재 owner>;` | `GRANT orchestration_owner TO <현재 owner> WITH SET TRUE, INHERIT FALSE;` | 그래야 현재 owner 가 `ALTER TABLE … OWNER TO orchestration_owner` 를 수행할 수 있다(SET ROLE 가능해야 OWNER 이전 가능) |
+| `ALTER TABLE/FUNCTION … OWNER TO orchestration_owner` (6+4) | 그대로 | (전제 충족 시 무변경) | 위 SET TRUE 가 선행되면 그대로 성공. 추가로 **새 owner 가 대상 schema(public)에 CREATE 권한**이 있어야 함(public 은 통상 owner 가 이미 보유) |
+
+**추가 실측 사실(harness 에서 확정)**:
+- `ALTER … OWNER TO X` 는 executor 가 X 로 SET ROLE 가능 **AND** X 가 그 객체의 schema 에 **CREATE(+객체 조작 시 USAGE)** 권한 보유여야 한다.
+- `ALTER DEFAULT PRIVILEGES FOR ROLE X` 는 executor 가 **X 로 SET ROLE 한 상태**에서만 가능(INHERIT FALSE).
+- `DROP ROLE` 은 그 role 에게 부여된 **database-level privilege(GRANT CONNECT 등)** 가 남아 있으면 `objects depend on it` 로 실패 → cleanup 은 role 별 **`REVOKE ALL ON DATABASE … FROM role`** 를 DROP ROLE 앞에 수행해야 한다(grantor 만 revoke 가능).
+- `REVOKE membership` 을 owner-트리거 검증 도중 하면 안 된다(이후 SET ROLE 이 깨짐) — 멤버십은 cleanup 완료까지 유지.
+
+> 이 diff 는 **harness(`scripts/neonCheck/*`)에는 이미 반영·검증**됐다(embedded superuser + non-superuser 두 경로 통과). production `migrations/hardening/0001_*.sql` 반영은 **checksum 재고정·격리 재검증을 포함한 별도 apply-준비 Gate**에서 수행한다.
+
 ## 12b. migration 원자성 & 단계 복구
 Phase1(role 5개; deployer/writer/reader=LOGIN, credential 은 secret store 별도) → Phase2(REVOKE PUBLIC/app → 최소 GRANT → trigger fn/trigger → **ownership 이전(§12 A 절차)** → default privileges; **단일 tx**) → Phase3(별도 연결 capability + 기존 app write 실패 검증) → Phase4(adapter 미배선 종료·런타임 writer 전환). **role 생성+credential provisioning 은 한 tx 로 완전 rollback 안 될 수 있음** → Phase1(role) / Phase2(구조) 분리, 부분 실패 시 **DROP OWNED → DROP ROLE** 정리 절차(빈 role 이 아니면 DROP ROLE 은 2BP01 로 실패).
 
