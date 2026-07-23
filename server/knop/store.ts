@@ -53,6 +53,8 @@ import {
   incomingSms,
   scheduledMessages,
   isGaemyeongStatus,
+  KNOP_MILESTONE_ENTRY,
+  knopStatusToMilestone,
 } from "@shared/schema";
 
 function requireDb() {
@@ -738,17 +740,21 @@ export const knopStore = {
           if (nm) pcNames.add(nm);
         }
       }
-      // 개명 트랙 단계의 프로젝트를 가진 고객 → 달력에 없어도 개명으로 본다
+      // 프로젝트: 개명 트랙 판정 + 고객별 대표 프로젝트(최근 수정) — 작명완료 → 개명신청 자동 전진용
       const gaemyeongCustomers = new Set<string>();
-      for (const p of await d.select().from(projects)) {
+      const projs2 = await d.select().from(projects).orderBy(desc(projects.updatedAt));
+      const projByCust = new Map<string, (typeof projs2)[number]>();
+      for (const p of projs2) {
         if (isGaemyeongStatus(p.status)) gaemyeongCustomers.add(p.customerId);
+        if (!projByCust.has(p.customerId)) projByCust.set(p.customerId, p);
       }
       const all = await d.select().from(customers);
-      let g = 0, s = 0, pn = 0, updated = 0;
+      let g = 0, s = 0, pn = 0, updated = 0, advanced = 0;
       for (const c of all) {
         const cn = clean(c.name);
-        const renamed =
-          (c.normalizedPhone && phones.has(c.normalizedPhone)) || names.has(cn) || gaemyeongCustomers.has(c.id);
+        // 달력에 '작명완료' 일정이 있는 사람(이름/번호 매칭)
+        const hasNamingDone = (c.normalizedPhone && phones.has(c.normalizedPhone)) || names.has(cn);
+        const renamed = hasNamingDone || gaemyeongCustomers.has(c.id);
         const set: any = {};
         if (renamed) {
           g++;
@@ -766,7 +772,16 @@ export const knopStore = {
           await d.update(customers).set(set).where(eq(customers.id, c.id));
           updated++;
         }
+        // 작명완료 일정이 있으면 프로젝트를 '개명신청' 단계까지 자동 전진(뒤로는 안 감).
+        if (hasNamingDone && !c.deletedAt) {
+          const p = projByCust.get(c.id);
+          if (p && knopStatusToMilestone(p.status) < 1) {
+            await knopStore.advanceStatus(p.id, KNOP_MILESTONE_ENTRY[1]); // 개명의뢰 접수 = 개명신청
+            advanced++;
+          }
+        }
       }
+      if (advanced) console.log(`[KOP] 작명완료 → 개명신청 자동 전진: ${advanced}건`);
       return { 개명: g, 상담: s, 전번: pn, updated };
     } catch (e) {
       fail("구분 동기화", e);
