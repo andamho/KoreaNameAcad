@@ -1404,6 +1404,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 </body></html>`);
   });
 
+  // 루트 링크: /홍길동가족이름분석표 → 실제 목적지로 302 (문자 발송용, 공개).
+  // '이름분석표' 포함 슬러그만 처리 → /admin 등 앱 페이지·정적파일과 충돌 없음.
+  app.get("/:slug", async (req, res, next) => {
+    try {
+      const slug = String(req.params.slug || "");
+      if (!slug.includes("이름분석표")) return next(); // 리포트 링크가 아니면 앱(SPA)으로
+      if (!db) return next();
+      const [row] = await db.select().from(shortLinks).where(eq(shortLinks.slug, slug));
+      if (!row) return next();
+      db.update(shortLinks).set({ clicks: (row.clicks ?? 0) + 1 }).where(eq(shortLinks.id, row.id)).catch(() => {});
+      const target = row.target.startsWith("/") ? `${req.protocol}://${req.get("host")}${row.target}` : row.target;
+      return res.redirect(302, target);
+    } catch {
+      return next();
+    }
+  });
+
   // 짧은 링크: /s/:slug → 실제 목적지로 302 (문자 발송용, 공개)
   app.get("/s/:slug", async (req, res) => {
     try {

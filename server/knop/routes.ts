@@ -528,7 +528,12 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       }
       // 우리 오브젝트 이미지면 확대/축소 되는 뷰어 페이지로 감싼다(문자로 열 때 편함)
       const linkTarget = /^\/objects\//.test(target) ? `/img?src=${encodeURIComponent(target)}` : target;
-      const url = await gm.ensureShortLink(linkTarget, typeof label === "string" && label ? label : "이름분석표 이미지", "image");
+      const lbl = typeof label === "string" && label ? label : "이름분석표 이미지";
+      // 이름 기반 읽기 쉬운 슬러그(예: 홍길동가족이름분석표) → 고객이 보고 안심. 없으면 랜덤.
+      const desiredSlug = gm.slugifyReport(lbl) || undefined;
+      const slug = await gm.ensureShortLink(linkTarget, lbl, "image", desiredSlug);
+      // '이름분석표'로 끝나는 슬러그는 /s/ 없이 루트로 열림(오해 방지). 그 외는 /s/ 로.
+      const url = slug.includes("이름분석표") ? gm.rootUrl(slug) : gm.shortUrl(slug);
       res.json({ url });
     } catch (e) {
       handle(res, "POST shortlink", e);

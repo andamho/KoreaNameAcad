@@ -70,8 +70,33 @@ function genSlug(): string {
   return s;
 }
 
-export async function createShortLink(target: string, label: string, kind: string): Promise<{ slug: string; id: string }> {
+// 사람이 읽는 슬러그: "홍길동가족 이름분석표" → "홍길동가족이름분석표" (한글·영문·숫자·-_ 만, 공백 제거)
+export function slugifyReport(label: string): string {
+  return (label || "").replace(/\s+/g, "").replace(/[^0-9A-Za-z가-힣_-]/g, "").slice(0, 60);
+}
+export function rootUrl(slug: string): string {
+  return `${BASE_URL}/${slug}`;
+}
+
+export async function createShortLink(
+  target: string,
+  label: string,
+  kind: string,
+  desiredSlug?: string,
+): Promise<{ slug: string; id: string }> {
   const d = requireDb();
+  // 원하는 슬러그(이름 기반)가 있으면 그것부터 시도, 충돌 시 -2, -3 …
+  if (desiredSlug) {
+    const tries = [desiredSlug, ...Array.from({ length: 30 }, (_, i) => `${desiredSlug}-${i + 2}`)];
+    for (const slug of tries) {
+      try {
+        const [row] = await d.insert(shortLinks).values({ slug, target, label, kind }).returning();
+        return { slug: row.slug, id: row.id };
+      } catch {
+        // 충돌 → 다음 후보
+      }
+    }
+  }
   for (let i = 0; i < 6; i++) {
     const slug = genSlug();
     try {
@@ -90,12 +115,12 @@ export function shortUrl(slug: string): string {
 
 // 같은 대상(target)에 이미 짧은링크가 있으면 그걸 재사용, 없으면 새로 만든다.
 // 이름분석표 이미지를 문자로 보낼 때 사용(누를 때마다 새 링크가 쌓이지 않도록).
-export async function ensureShortLink(target: string, label: string, kind: string): Promise<string> {
+export async function ensureShortLink(target: string, label: string, kind: string, desiredSlug?: string): Promise<string> {
   const d = requireDb();
   const [ex] = await d.select().from(shortLinks).where(eq(shortLinks.target, target)).limit(1);
-  if (ex) return shortUrl(ex.slug);
-  const link = await createShortLink(target, label, kind);
-  return shortUrl(link.slug);
+  if (ex) return ex.slug; // 같은 대상이면 기존 슬러그 재사용
+  const link = await createShortLink(target, label, kind, desiredSlug);
+  return link.slug;
 }
 
 // {이름} 등 치환 (이름은 "가족" 접미 제거)
