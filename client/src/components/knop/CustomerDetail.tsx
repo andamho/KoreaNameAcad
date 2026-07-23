@@ -154,6 +154,22 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
     onSettled: () => refresh(),
   });
 
+  // 미용감사 시퀀스 상태(시작됐는지) + 수동 시작(지난 개명자 소급 발송용)
+  const { data: seqStatus } = useQuery({
+    queryKey: ["knop-seq", customerId],
+    queryFn: () => knopApi.getSequences(customerId),
+  });
+  const miyongActive = (seqStatus as any)?.gaemyeong_request === "active";
+  const startMiyongMut = useMutation({
+    mutationFn: () => knopApi.startSequence(customerId, "gaemyeong_request"),
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ["knop-seq", customerId] });
+      if (r.ok) toast({ title: "미용감사 시작됨", description: `${r.scheduled}건 예약 (${r.dates.join(", ")})` });
+      else toast({ title: "시작 안 됨", description: r.reason, variant: "destructive" });
+    },
+    onError: (e: any) => toast({ title: "시작 실패", description: e?.message, variant: "destructive" }),
+  });
+
   const savePhoneMut = useMutation({
     mutationFn: (phone: string) => knopApi.updateCustomer(customerId, { phone }),
     onSuccess: () => {
@@ -470,6 +486,26 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
             )}
           </div>
           <div className="flex gap-2 shrink-0">
+            {/* 미용감사 시작(지난 개명자 소급 발송). 이미 시작됐으면 상태 표시 */}
+            {miyongActive ? (
+              <span className="inline-flex items-center h-8 px-2.5 rounded-md bg-emerald-50 text-emerald-700 text-xs font-medium">
+                미용감사 발송중
+              </span>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={startMiyongMut.isPending}
+                onClick={() => {
+                  if (confirm("이 고객에게 미용감사 관리문자(4건)를 시작할까요?\n(현재 실제 발송 OFF면 예약만 됩니다)")) {
+                    startMiyongMut.mutate();
+                  }
+                }}
+                title="개명 진행자에게 미용감사 관리문자 시퀀스를 시작합니다"
+              >
+                <Send className="w-4 h-4 mr-1" /> 미용감사
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={() => setSmsDialog(true)}>
               <Send className="w-4 h-4 mr-1" /> 문자
             </Button>

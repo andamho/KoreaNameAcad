@@ -728,11 +728,21 @@ export const knopStore = {
           .replace(/\s*가족\s*$/, "")
           .replace(/[.\s]+$/, "")
           .trim();
+      // 자동 발동(개명신청 전진+미용감사)은 '이 날짜 이후'의 작명완료 일정에만 적용(지나간 건 제외).
+      const AUTO_FROM = (process.env.KOP_NAMING_AUTO_FROM || "2026-07-24").trim();
+      const advNames = new Set<string>();
+      const advPhones = new Set<string>();
       for (const e of events) {
         if (e.cat && e.cat.includes("완료")) {
-          if (e.clientPhone) phones.add(normalizePhone(e.clientPhone));
+          const ph = e.clientPhone ? normalizePhone(e.clientPhone) : "";
           const nm = clean(parseNameCount(e.title || "").name);
+          if (ph) phones.add(ph);
           if (nm) names.add(nm);
+          // 기준일 이후 작명완료 → 자동 발동 대상
+          if (e.date && e.date >= AUTO_FROM) {
+            if (ph) advPhones.add(ph);
+            if (nm) advNames.add(nm);
+          }
         }
         if ((e as any).phoneChange) {
           if (e.clientPhone) pcPhones.add(normalizePhone(e.clientPhone));
@@ -772,11 +782,12 @@ export const knopStore = {
           await d.update(customers).set(set).where(eq(customers.id, c.id));
           updated++;
         }
-        // 작명완료 일정이 있으면 프로젝트를 '개명신청' 단계까지 자동 전진(뒤로는 안 감).
-        if (hasNamingDone && !c.deletedAt) {
+        // 기준일 이후 작명완료 일정이 있으면 프로젝트를 '개명신청'까지 자동 전진(지나간 건 제외, 뒤로 안 감).
+        const advanceDue = (c.normalizedPhone && advPhones.has(c.normalizedPhone)) || advNames.has(cn);
+        if (advanceDue && !c.deletedAt) {
           const p = projByCust.get(c.id);
           if (p && knopStatusToMilestone(p.status) < 1) {
-            await knopStore.advanceStatus(p.id, KNOP_MILESTONE_ENTRY[1]); // 개명의뢰 접수 = 개명신청
+            await knopStore.advanceStatus(p.id, KNOP_MILESTONE_ENTRY[1]); // 개명의뢰 접수 = 개명신청 (→ 미용감사 자동 시작)
             advanced++;
           }
         }
