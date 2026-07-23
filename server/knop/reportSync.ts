@@ -21,6 +21,68 @@ import {
 } from "./reports";
 
 const PY = (process.env.KOP_WHISPER_PY || process.env.KNOP_WHISPER_PY)?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot/venv/Scripts/python.exe";
+
+// 문자 발송용 링크(.url 바로가기)를 저장할 로컬 폴더 + 링크가 가리킬 공개 도메인
+const LINK_DIR = (process.env.KOP_REPORT_LINK_DIR || "C:/Users/iimoo/Desktop/이름분석링크").trim();
+const PUBLIC_BASE = (process.env.PUBLIC_BASE_URL || "https://korea-name-acad.com").replace(/\/$/, "");
+
+// 파일명 → 링크 슬러그: "하주오님 가족 이름분석.pdf" → "하주오님가족이름분석표" (파일명 그대로, 님 포함)
+function reportSlugFromFile(fileName: string): string {
+  let b = fileName.replace(/\.(pdf|png|jpe?g|webp)$/i, "").replace(/\s*\(상세\)\s*/g, "");
+  if (/이름분석(?!표)/.test(b)) b = b.replace(/이름분석(?!표)/g, "이름분석표");
+  else if (!/이름분석표/.test(b)) b = b + "이름분석표";
+  return b.replace(/\s+/g, "").replace(/[^0-9A-Za-z가-힣_-]/g, "").slice(0, 60);
+}
+
+// 같은 대상이면 기존 슬러그 재사용, 없으면 원하는 슬러그(충돌 시 -2)로 생성. (워커의 raw pg 풀 사용)
+async function ensureReportLinkSlug(target: string, label: string, desiredSlug: string): Promise<string | null> {
+  const pool = reportPool();
+  try {
+    const ex = await pool.query("SELECT slug FROM short_links WHERE target=$1 LIMIT 1", [target]);
+    if (ex.rows[0]) return ex.rows[0].slug as string;
+    const tries = desiredSlug ? [desiredSlug, ...Array.from({ length: 30 }, (_, i) => `${desiredSlug}-${i + 2}`)] : [];
+    for (const slug of tries) {
+      try {
+        await pool.query("INSERT INTO short_links (slug, target, label, kind) VALUES ($1,$2,$3,'image')", [slug, target, label]);
+        return slug;
+      } catch {
+        /* 슬러그 충돌 → 다음 후보 */
+      }
+    }
+    return null;
+  } catch (e: any) {
+    console.error(`[KOP] 링크 슬러그 생성 실패: ${e?.message}`);
+    return null;
+  }
+}
+
+// 처리된 리포트의 R2 이미지가 있으면, 문자용 링크(.url 바로가기)를 이름분석링크 폴더에 생성.
+async function writeReportLink(fileName: string): Promise<void> {
+  if (/상세/.test(fileName)) return; // 상세본은 발송용 아님
+  try {
+    const pool = reportPool();
+    const row = (await pool.query(
+      "SELECT rendered_url FROM report_matches WHERE file_name=$1 AND rendered_url IS NOT NULL ORDER BY first_seen_at DESC LIMIT 1",
+      [fileName],
+    )).rows[0];
+    const renderedUrl: string | undefined = row?.rendered_url;
+    if (!renderedUrl) return; // 아직 이미지 업로드 전 → 다음 스캔에서 처리
+    const slug = reportSlugFromFile(fileName);
+    if (!slug) return;
+    if (!fs.existsSync(LINK_DIR)) fs.mkdirSync(LINK_DIR, { recursive: true });
+    const urlFile = path.join(LINK_DIR, `${slug}.url`);
+    if (fs.existsSync(urlFile)) return; // 이미 있음 → 중복 생성 안 함
+    // 뷰어로 감싼 대상(확대/축소) — 고객상세 버튼과 같은 대상이라 링크가 일관되게 재사용됨
+    const viewerTarget = `/img?src=${encodeURIComponent(renderedUrl)}`;
+    const usedSlug = await ensureReportLinkSlug(viewerTarget, fileName.replace(/\.(pdf|png|jpe?g|webp)$/i, ""), slug);
+    if (!usedSlug) return;
+    const linkUrl = `${PUBLIC_BASE}/${usedSlug}`;
+    fs.writeFileSync(urlFile, `[InternetShortcut]\r\nURL=${linkUrl}\r\n`, "utf-8");
+    console.log(`[KOP] 문자용 링크 생성: ${slug}.url → ${linkUrl}`);
+  } catch (e: any) {
+    console.error(`[KOP] 링크 파일 생성 오류(${fileName}): ${e?.message}`);
+  }
+}
 const RENDER = fileURLToPath(new URL("./py/render_pdf.py", import.meta.url));
 const store = new ObjectStorageService();
 
@@ -123,6 +185,8 @@ export async function syncReports(): Promise<SyncResult> {
         else if (out.status === "attachment_failed") res.attachment_failed++;
         else if (out.status === "processing_failed") res.processing_failed++;
         else res.skipped++;
+        // 처리된 리포트의 문자용 링크(.url)를 이름분석링크 폴더에 생성(있으면 건너뜀)
+        await writeReportLink(r.file);
       } catch (e: any) {
         console.error(`[KOP] 이름분석표 처리 오류 ${r.file}: ${e?.message}`);
         res.processing_failed++;
