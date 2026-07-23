@@ -29,7 +29,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { knopApi, type CustomerDetail as CustomerDetailData } from "@/lib/knopApi";
-import { KNOP_MILESTONES, KNOP_MILESTONE_ENTRY, knopStatusToMilestone } from "@shared/schema";
+import { KNOP_MILESTONES, KNOP_MILESTONE_ENTRY, KNOP_PHONE_MILESTONE, knopStatusToMilestone } from "@shared/schema";
 
 const MS_TEAL = "#1D9E75"; // 진행바 색(고객목록 보드와 동일)
 import { CallTranscriptView } from "./CallTranscriptView";
@@ -135,6 +135,23 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
       }
     },
     onError: (e: any) => toast({ title: "링크 생성 실패", description: e?.message, variant: "destructive" }),
+  });
+
+  // ☎전번(전화번호 작명) 체크 — 고객목록 보드와 동일. 클릭 즉시 반영.
+  const togglePhoneNamingMut = useMutation({
+    mutationFn: (on: boolean) => knopApi.updateCustomer(customerId, { phoneNaming: on }),
+    onMutate: async (on) => {
+      await qc.cancelQueries({ queryKey });
+      const prev = qc.getQueryData<CustomerDetailData>(queryKey);
+      if (prev?.customer) {
+        qc.setQueryData<CustomerDetailData>(queryKey, { ...prev, customer: { ...prev.customer, phoneNaming: on } });
+      }
+      return { prev };
+    },
+    onError: (_e, _v, ctx: any) => {
+      if (ctx?.prev) qc.setQueryData(queryKey, ctx.prev);
+    },
+    onSettled: () => refresh(),
   });
 
   const savePhoneMut = useMutation({
@@ -424,6 +441,24 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                             >
                               {m}
                             </span>
+                            {/* 개명신청 칸 아래: 전화번호 작명 체크(고객목록과 동일) */}
+                            {i === KNOP_PHONE_MILESTONE && (
+                              <span
+                                role="button"
+                                title={customer.phoneNaming ? "전화번호 작명함 (클릭 해제)" : "전화번호 작명 체크"}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  togglePhoneNamingMut.mutate(!customer.phoneNaming);
+                                }}
+                                className={`text-[10px] leading-none px-1.5 py-0.5 rounded-full whitespace-nowrap transition ${
+                                  customer.phoneNaming
+                                    ? "bg-[#56D5DB]/20 text-[#2ba0a6]"
+                                    : "text-gray-300 hover:text-gray-500 hover:bg-gray-100"
+                                }`}
+                              >
+                                ☎전번
+                              </span>
+                            )}
                           </button>
                         );
                       })}

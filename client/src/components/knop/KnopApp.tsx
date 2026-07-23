@@ -25,7 +25,7 @@ import { knopApi } from "@/lib/knopApi";
 import { useToast } from "@/hooks/use-toast";
 import { useAdmin } from "@/contexts/AdminContext";
 import type { Customer } from "@shared/schema";
-import { KNOP_MILESTONES, KNOP_MILESTONE_ENTRY } from "@shared/schema";
+import { KNOP_MILESTONES, KNOP_MILESTONE_ENTRY, KNOP_PHONE_MILESTONE } from "@shared/schema";
 import { CustomerDetailView } from "./CustomerDetail";
 import { InboxView } from "./InboxView";
 import { CorrectionsView } from "./CorrectionsView";
@@ -200,7 +200,7 @@ function TodayView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void })
 // 보드 6단계 — 정의는 shared/schema.ts 하나(서버·목록·상세 공용)
 const MILESTONES = KNOP_MILESTONES as readonly string[];
 const MILESTONE_ENTRY = KNOP_MILESTONE_ENTRY as readonly string[];
-const PHONE_MILESTONE = 1; // ☎전번(선택) 표시가 붙는 자리 = '개명신청'
+const PHONE_MILESTONE = KNOP_PHONE_MILESTONE; // shared 와 동일(고객상세와 어긋나지 않게)
 const TEAL = "#1D9E75";
 const GRID = { gridTemplateColumns: `160px repeat(${MILESTONES.length}, 1fr)` } as const;
 function codeMonth(code: string | null): string {

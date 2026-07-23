@@ -427,6 +427,8 @@ export const KNOP_MILESTONE_OF: Record<string, number> = {
 export function knopStatusToMilestone(status?: string | null): number {
   return KNOP_MILESTONE_OF[status || ""] ?? 0;
 }
+// ☎전번(전화번호 작명) 체크가 붙는 단계 = '개명신청' (고객목록·고객상세 동일)
+export const KNOP_PHONE_MILESTONE = 1;
 
 // 결제 상태
 export const KNOP_PAYMENT_STATUSES = ["미결제", "결제확인중", "결제완료"] as const;
