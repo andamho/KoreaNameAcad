@@ -1000,6 +1000,18 @@ export const knopStore = {
             (stage?.followup ? ` · 다음: ${stage.followup.template} (${stage.followup.days}일 후)` : ""),
         });
         await promoteKindIfGaemyeong(row.customerId, row.status); // 개명 트랙이면 구분 승격
+        // 개명신청(단계1) 도달 → 미용감사 관리문자 시퀀스 자동 시작. 이미 시작됐으면 건너뜀.
+        // (현재 SMS 는 DRY-RUN 이라 실제 발송은 안 되고 예약만 됨 — KOP_SMS_LIVE=1 때 실제 발송)
+        if (knopStatusToMilestone(before.status) < 1 && knopStatusToMilestone(row.status) >= 1) {
+          try {
+            const gm = await import("./gaemyeong");
+            const r = await gm.startSequence(row.customerId, "gaemyeong_request");
+            if (r.ok) console.log(`[KOP] 개명신청 도달 → 미용감사 시퀀스 자동 시작 (${r.scheduled}건 예약) cust=${row.customerId}`);
+            else console.log(`[KOP] 미용감사 자동시작 건너뜀: ${r.reason} cust=${row.customerId}`);
+          } catch (e: any) {
+            console.error(`[KOP] 미용감사 자동시작 오류: ${e?.message}`);
+          }
+        }
       }
       return { ok: true, project: row, nextFollowup: stage?.followup ?? null };
     } catch (e) {
