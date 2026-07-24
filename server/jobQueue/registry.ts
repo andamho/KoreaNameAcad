@@ -42,6 +42,13 @@ const RECOMMENDED: JobTypePolicy[] = [
     verificationRequired: true, defaultPriority: PRIORITY.default,
   },
   {
+    jobType: "name-report-attach", // 실제 업무 adapter — 이름분석표 자동첨부(processFile). content-hash idempotent.
+    maxAttempts: 3, initialDelaySec: 30, multiplier: 3, maxDelaySec: 300, jitterSec: 5,
+    leaseDurationSec: 120, heartbeatIntervalSec: 30,
+    sideEffectClass: "idempotent-external", ambiguousSideEffectPolicy: "retry-queued",
+    verificationRequired: false, defaultPriority: PRIORITY.default, // needs_review 도 유효 종료 → skipped/passed 허용
+  },
+  {
     jobType: "call-transcribe",
     maxAttempts: 4, initialDelaySec: 60, multiplier: 3, maxDelaySec: 900, jitterSec: 10,
     leaseDurationSec: 600, heartbeatIntervalSec: 180,

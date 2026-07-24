@@ -1,11 +1,13 @@
 // 작업큐 worker entrypoint — Railway 등에서 단일 명령으로 실행. 반복 claim → 처리, 빈 큐 대기, 주기적 reaper, graceful shutdown.
-// ⚠️ 소유자 연결(NEON_DATABASE_URL) 미사용. 전용 ORCHESTRATION_QUEUE_URL(=orchestration_writer credential)만.
+// ⚠️ 소유자 연결(NEON_DATABASE_URL) 미사용. 전용 ORCHESTRATION_WORKER_URL(=orchestration_writer credential)만.
 // ⚠️ raw lease token·credential 을 로그에 남기지 않는다(worker id·outcome·개수만).
 // 동시 worker 안전: claim=FOR UPDATE SKIP LOCKED, reaper=FOR UPDATE OF e SKIP LOCKED → 여러 worker 동시 실행 안전.
 //
-// 실행:
-//   ORCHESTRATION_QUEUE_URL=<writer dsn> node --import tsx/esm scripts/queueWorker.ts
+// 실행(프로덕션 빌드):
+//   ORCHESTRATION_WORKER_URL=<writer dsn> node dist/queueWorker.js
 //   (환경: WORKER_IDLE_MS 기본 2000 · REAPER_EVERY_MS 기본 30000 · WORKER_HEARTBEAT=true 로 장시간 heartbeat)
+//   name-report(실제 업무) adapter 는 **로컬 worker 전용**: WORKER_ENABLE_NAME_REPORT=true 이고 로컬 report 폴더가 있을 때만 등록.
+//   (배포/클라우드 worker 는 로컬 파일이 없어 등록하지 않는다 → cloud 는 preview 계산 adapter 만.)
 import crypto from "crypto";
 import os from "os";
 import { acquireQueueClient, queueConnectionConfigured, queueHostHash } from "../server/jobQueue/connection";
@@ -19,8 +21,26 @@ const REAPER_EVERY_MS = Number(process.env.REAPER_EVERY_MS ?? 30000);
 const USE_HEARTBEAT = (process.env.WORKER_HEARTBEAT ?? "").trim() === "true";
 
 // 운영 adapter 등록(실제 처리 코드 호출). echo/test adapter 는 등록하지 않는다.
-function buildAdapters(): Map<string, JobAdapter> {
+//   name-report(실제 업무)는 로컬 전용 → 플래그 + 로컬 폴더 존재 시에만 지연 import 로 등록(cloud worker 안전).
+async function buildAdapters(): Promise<Map<string, JobAdapter>> {
   const list: JobAdapter[] = [internalReportComputeAdapter()];
+  if ((process.env.WORKER_ENABLE_NAME_REPORT ?? "").trim() === "true") {
+    try {
+      const [{ makeNameReportAdapter }, sync, { reportsAvailable }] = await Promise.all([
+        import("../server/jobQueue/adapters/nameReport"),
+        import("../server/knop/reportSync"),
+        import("../server/knop/reports"),
+      ]);
+      if (!reportsAvailable()) {
+        console.error("[worker] WORKER_ENABLE_NAME_REPORT=true 지만 로컬 report 폴더 없음 → name-report 미등록(cloud/배포 worker 추정).");
+      } else {
+        list.push(makeNameReportAdapter(sync.makeLocalNameReportDeps()));
+        console.log("[worker] name-report(실제 업무) adapter 등록 — 로컬 전용.");
+      }
+    } catch (e: any) {
+      console.error(`[worker] name-report adapter 등록 실패(무시하고 계속): ${String(e?.message ?? e).slice(0, 160)}`);
+    }
+  }
   return new Map(list.map((a) => [a.jobType, a]));
 }
 
@@ -32,7 +52,7 @@ export async function runWorker(signal?: { stopped: boolean }): Promise<void> {
     process.exit(1);
   }
   const workerId = `${os.hostname()}#${process.pid}#${crypto.randomBytes(3).toString("hex")}`;
-  const adapters = buildAdapters();
+  const adapters = await buildAdapters();
   const { queue, release } = await acquireQueueClient("worker");
   console.log(`[worker] start id=${workerId} ${queueHostHash("worker")} adapters=[${[...adapters.keys()].join(",")}] heartbeat=${USE_HEARTBEAT}`);
 

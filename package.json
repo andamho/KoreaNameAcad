@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "report-sync": "tsx server/knop/reportSyncWorker.ts",
-    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && esbuild scripts/queueWorker.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/queueWorker.js",
+    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && esbuild scripts/queueWorker.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/queueWorker.js && esbuild scripts/createQueueSmokeJob.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/queueSmoke.js",
     "start": "NODE_ENV=production node dist/index.js",
     "worker": "NODE_ENV=production node dist/queueWorker.js",
     "check": "tsc",

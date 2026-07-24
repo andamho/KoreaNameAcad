@@ -49,6 +49,66 @@ const ROLLBACK_SQL = `
   ALTER TABLE "jobs" DROP COLUMN IF EXISTS "cancel_requested_at";
   ALTER TABLE "jobs" DROP COLUMN IF EXISTS "cancel_requested_by_ref";`;
 
+// 배포 전 준비 체크(새 Gate 아님 · inspect 에 편입). raw URL/host/password 미출력 — host#8자·불린만.
+//   확인: worker/admin/owner host 일치 · worker 자격이 owner 아님 · 빌드 산출물(dist/queueWorker.js·queueSmoke.js) · feature flag 기본 off.
+function parseUrlSafe(url: string): { hostHash: string; user: string } | null {
+  try { const u = new URL(url); return { hostHash: hostHash(url), user: decodeURIComponent(u.username || "").toLowerCase() }; } catch { return null; }
+}
+export function deployReadiness(ownerUrl: string): { hardFail: boolean } {
+  const OWNER_ROLE = "neondb_owner";
+  const ownerParsed = parseUrlSafe(ownerUrl);
+  const worker = (process.env.ORCHESTRATION_WORKER_URL || "").trim();
+  const admin = (process.env.ORCHESTRATION_ADMIN_URL || "").trim();
+  const lines: string[] = [];
+  let hardFail = false;
+
+  // 1) worker URL 이 owner 자격이 아님(writer 여야 함).
+  if (worker) {
+    const w = parseUrlSafe(worker);
+    if (!w) { lines.push("worker URL 파싱 실패 → FAIL"); hardFail = true; }
+    else {
+      const isOwner = w.user === OWNER_ROLE || (ownerParsed && w.user === ownerParsed.user);
+      lines.push(`worker 자격 ≠ owner: ${isOwner ? "FAIL(소유자 자격 사용 금지)" : "PASS"}`);
+      if (isOwner) hardFail = true;
+      // 2) worker host == owner host(같은 DB).
+      const match = ownerParsed ? w.hostHash === ownerParsed.hostHash : false;
+      lines.push(`worker host == owner host: ${match ? "PASS" : "FAIL"} (worker host#${w.hostHash.slice(0, 8)}…)`);
+      if (!match) hardFail = true;
+    }
+  } else lines.push("worker URL: 미설정(배포 시점 제공) → WARN");
+
+  // 3) admin URL host == worker/owner host + admin 자격이 owner 아님.
+  if (admin) {
+    const a = parseUrlSafe(admin);
+    if (!a) { lines.push("admin URL 파싱 실패 → FAIL"); hardFail = true; }
+    else {
+      const match = ownerParsed ? a.hostHash === ownerParsed.hostHash : false;
+      const isOwner = a.user === OWNER_ROLE || (ownerParsed && a.user === ownerParsed.user);
+      lines.push(`admin host == owner host: ${match ? "PASS" : "FAIL"} · admin 자격 ≠ owner: ${isOwner ? "FAIL" : "PASS"}`);
+      if (!match || isOwner) hardFail = true;
+    }
+  } else lines.push("admin URL: 미설정(선택) → WARN");
+
+  // 4) 빌드 산출물(tsx 런타임 미의존 · start/worker/smoke 명령이 dist 사용).
+  for (const rel of ["dist/queueWorker.js", "dist/queueSmoke.js"]) {
+    const ok = fs.existsSync(path.join(repoRoot, rel));
+    lines.push(`빌드 산출물 ${rel}: ${ok ? "PASS" : "FAIL(npm run build 필요)"}`);
+    if (!ok) hardFail = true;
+  }
+
+  // 5) feature flag 기본 off — 코드 게이트(routes.ts) 존재 + 현재 env 가 강제 on 아님.
+  const routes = (() => { try { return fs.readFileSync(path.join(repoRoot, "server", "knop", "routes.ts"), "utf8"); } catch { return ""; } })();
+  const gated = /FEATURE_JOB_QUEUE[^\n]*===\s*"true"/.test(routes);
+  const envOn = (process.env.FEATURE_JOB_QUEUE || "").trim() === "true";
+  lines.push(`feature flag 기본 off: 코드게이트=${gated ? "PASS" : "FAIL"} · 현재 env on=${envOn ? "⚠️ ON(배포 전 확인)" : "off PASS"}`);
+  if (!gated) hardFail = true;
+
+  console.log("[queue-mig] 배포 준비 체크:");
+  for (const l of lines) console.log(`  - ${l}`);
+  console.log(`[queue-mig] 배포 준비: ${hardFail ? "❌ 미충족(위 FAIL 해결 필요)" : "✅ 충족"}`);
+  return { hardFail };
+}
+
 async function inspect(c: pg.Client) {
   const col = (await c.query(`SELECT count(*)::int n FROM information_schema.columns WHERE table_name='jobs' AND column_name IN ('cancel_requested_at','cancel_requested_by_ref')`)).rows[0].n;
   const wr = (await c.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname IN ('orchestration_writer','orchestration_reader')`)).rows[0].n;
@@ -67,7 +127,12 @@ export async function main(): Promise<number> {
   const c = new pg.Client({ connectionString: url, ssl: url.includes("sslmode=disable") ? undefined : { rejectUnauthorized: false } });
   await c.connect();
   try {
-    if (mode === "inspect") { const s = await inspect(c); return s.columnsApplied && s.grantsApplied ? 0 : 1; }
+    if (mode === "inspect") {
+      const s = await inspect(c);
+      const dbOk = s.columnsApplied && s.grantsApplied;
+      const rd = deployReadiness(url); // 배포 전 준비(호스트 일치·자격·빌드·flag) — inspect 에 편입(새 Gate 아님)
+      return dbOk && !rd.hardFail ? 0 : 1;
+    }
 
     if (mode === "rollback") {
       if ((process.env.CONFIRM_QUEUE_ROLLBACK || "").trim() !== "true") die("rollback 거부 — CONFIRM_QUEUE_ROLLBACK=true 필수.");

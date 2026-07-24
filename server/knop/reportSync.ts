@@ -10,6 +10,7 @@ import { fileURLToPath } from "url";
 import { db } from "../db";
 import { ObjectStorageService } from "../object_storage/objectStorage";
 import { processFile, gatherCandidates, type ProcessorDeps } from "./reportProcessor";
+import type { NameReportDeps } from "../jobQueue/adapters/nameReport";
 import {
   listReports,
   baseName,
@@ -79,13 +80,10 @@ export type SyncResult = {
   added: number; created: number;
 };
 
-let _syncing = false;
-export async function syncReports(): Promise<SyncResult> {
-  const empty: SyncResult = { auto_matched: 0, needs_review: 0, attachment_failed: 0, processing_failed: 0, skipped: 0, processed: 0, added: 0, created: 0 };
-  if (!db || _syncing || !reportsAvailable()) return empty;
-  _syncing = true;
-  const state = loadState();
-  const deps: ProcessorDeps = {
+// 처리기 deps 빌더 — 정상 경로(syncReports)와 큐 adapter(makeLocalNameReportDeps)가 **같은 실제 deps** 를 공유한다.
+//   render=로컬 Python·upload=R2·hashFile=파일 sha256(캐시). 복제 없음.
+function buildProcessorDeps(state: HashState): ProcessorDeps {
+  return {
     db: { query: (sql, params) => reportPool().query(sql, params as any[]) as any },
     render: renderOrRead,
     upload: async (key, buf) => { await store.putObject(key, buf, "image/png"); return `/objects/${key}`; },
@@ -104,6 +102,39 @@ export async function syncReports(): Promise<SyncResult> {
     now: () => new Date(),
     uuid: () => crypto.randomUUID(),
   };
+}
+
+// 큐 worker 용 name-report deps — 실제 deps + 비-PII ref(fileContentHash) 를 **로컬에서** ProcessInput 으로 해석.
+//   큐에는 고객 PII 를 담지 않으므로(계약), 파일명·이름·후보는 여기서 로컬 report 폴더를 스캔해 얻는다(PII 는 로컬에만).
+//   ⚠️ 로컬 전용(reportsAvailable()==true 인 로컬 worker). 배포 서버는 report 폴더가 없어 사용하지 않는다.
+export function makeLocalNameReportDeps(): NameReportDeps {
+  const state = loadState();
+  const base = buildProcessorDeps(state);
+  return {
+    ...base,
+    resolveInput: async (ref) => {
+      const reps = listReports().filter((r) => !/상세/.test(r.file));
+      for (const r of reps) {
+        const abs = resolveReportPath(r.file);
+        if (!abs) continue;
+        if (base.hashFile(abs) !== ref.fileContentHash) continue; // content hash 로 로컬 파일 특정
+        const extractedName = baseName(r.name);
+        const reportType: "family" | "individual" = r.family ? "family" : "individual";
+        const { candidates, failed } = await gatherCandidates(base.db, extractedName, reportType);
+        return { file: r.file, absPath: abs, extractedName, reportType, label: r.label, candidates, candidatesFailed: failed };
+      }
+      throw new Error("name-report locator 미해결 — 로컬 report 폴더에 해당 content hash 파일 없음");
+    },
+  };
+}
+
+let _syncing = false;
+export async function syncReports(): Promise<SyncResult> {
+  const empty: SyncResult = { auto_matched: 0, needs_review: 0, attachment_failed: 0, processing_failed: 0, skipped: 0, processed: 0, added: 0, created: 0 };
+  if (!db || _syncing || !reportsAvailable()) return empty;
+  _syncing = true;
+  const state = loadState();
+  const deps: ProcessorDeps = buildProcessorDeps(state);
   const res: SyncResult = { ...empty };
   try {
     const reps = listReports().filter((r) => !/상세/.test(r.file));
