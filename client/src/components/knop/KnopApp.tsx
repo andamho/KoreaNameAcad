@@ -202,8 +202,8 @@ const MILESTONES = KNOP_MILESTONES as readonly string[];
 const MILESTONE_ENTRY = KNOP_MILESTONE_ENTRY as readonly string[];
 const PHONE_MILESTONE = KNOP_PHONE_MILESTONE; // shared 와 동일(고객상세와 어긋나지 않게)
 const TEAL = "#1D9E75";
-const AMBER = "#F59E0B"; // 법원접수 단계 랜드마크 색(스크롤 중 위치 파악용)
-const COURT_MILESTONE = KNOP_MILESTONES.indexOf("법원접수"); // 노란색으로 표시할 단계
+const AMBER = "#F59E0B"; // 새이름 단계 랜드마크 색(스크롤 중 위치 파악용)
+const AMBER_MILESTONE = KNOP_MILESTONES.indexOf("새이름"); // 노란색으로 표시할 단계
 const APPROVED_MILESTONE = KNOP_MILESTONES.indexOf("개명승인"); // 점 대신 마스코트로 표시할 단계
 const GRID = { gridTemplateColumns: `160px repeat(${MILESTONES.length}, 1fr)` } as const;
 function codeMonth(code: string | null): string {
@@ -217,7 +217,7 @@ function cleanName(n: string): string {
 // 개명 배지 옆 진행상황 칩: 현재 단계 + (진행중이면) 미용감사/정화하기 n/총
 function ProgressChips({ milestone, seq }: { milestone: number; seq?: { setKey: string; sent: number; total: number } }) {
   const done = milestone >= MILESTONES.length;
-  const isCourt = milestone === COURT_MILESTONE;
+  const isCourt = milestone === AMBER_MILESTONE;
   return (
     <>
       <span
@@ -473,9 +473,9 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                       height: 13,
                       // 채워짐 = 그 단계까지 완료(현재 단계 포함), 링 = 지금 위치.
                       // 법원접수 단계는 노란색 랜드마크(어디쯤인지 스크롤 중 빨리 파악)
-                      background: done || cur ? (i === COURT_MILESTONE ? AMBER : TEAL) : "#fff",
-                      border: done || cur ? `2px solid ${i === COURT_MILESTONE ? AMBER : TEAL}` : "1.5px solid #cbd5d5",
-                      boxShadow: cur ? (i === COURT_MILESTONE ? "0 0 0 4px #FEF3C7" : "0 0 0 4px #E1F5EE") : "none",
+                      background: done || cur ? (i === AMBER_MILESTONE ? AMBER : TEAL) : "#fff",
+                      border: done || cur ? `2px solid ${i === AMBER_MILESTONE ? AMBER : TEAL}` : "1.5px solid #cbd5d5",
+                      boxShadow: cur ? (i === AMBER_MILESTONE ? "0 0 0 4px #FEF3C7" : "0 0 0 4px #E1F5EE") : "none",
                     }}
                   />
                 )}
@@ -564,11 +564,11 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                     <button key={i} type="button" onClick={onTap} className="flex flex-col items-center gap-1 py-0.5">
                       <span
                         className="w-full h-1.5 rounded-full"
-                        style={{ background: done || cur ? (i === COURT_MILESTONE ? AMBER : TEAL) : "#e5e7eb" }}
+                        style={{ background: done || cur ? (i === AMBER_MILESTONE ? AMBER : TEAL) : "#e5e7eb" }}
                       />
                       <span
                         className={`text-[9px] leading-tight text-center ${
-                          i === COURT_MILESTONE && (cur || done)
+                          i === AMBER_MILESTONE && (cur || done)
                             ? "text-[#B45309] font-semibold"
                             : cur
                               ? "text-[#1D9E75] font-semibold"
