@@ -208,6 +208,11 @@ export const knopApi = {
   }) => req<CrmFile>("POST", "/api/kop/files", data),
   deleteFile: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/files/${id}`),
   ocrFile: (id: string) => req<{ ok: boolean; status: string; text?: string }>("POST", `/api/kop/files/${id}/ocr`),
+  wishCandidates: (customerId: string) =>
+    req<{ candidates: { text: string; at: string | null; reason: string }[] }>(
+      "POST",
+      `/api/kop/customers/${customerId}/wish-candidates`,
+    ),
 
   // Calendar
   listCalendar: (startISO: string, endISO: string) =>

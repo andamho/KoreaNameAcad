@@ -100,6 +100,7 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
   const [note, setNote] = useState("");
   const [memoDraft, setMemoDraft] = useState<string | null>(null);
   const [wishDraft, setWishDraft] = useState<string | null>(null);
+  const [wishCands, setWishCands] = useState<{ text: string; at: string | null; reason: string }[] | null>(null);
   const [phoneDraft, setPhoneDraft] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -217,6 +218,15 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
       toast({ title: "희망사항 저장됨" });
     },
     onError: (e: any) => toast({ title: "저장 실패", description: e?.message, variant: "destructive" }),
+  });
+
+  const findWishMut = useMutation({
+    mutationFn: () => knopApi.wishCandidates(customerId),
+    onSuccess: (r) => {
+      setWishCands(r.candidates);
+      if (!r.candidates.length) toast({ title: "희망사항으로 보이는 문자가 없습니다" });
+    },
+    onError: (e: any) => toast({ title: "찾기 실패", description: e?.message, variant: "destructive" }),
   });
 
   // OCR로 인식된 사진 글자를 희망사항에 이어붙이기
@@ -773,14 +783,66 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                 <Sparkles className="w-4 h-4 text-[#56D5DB]" /> 개명 희망사항
               </h3>
               {wishDraft === null && (
-                <button
-                  className="text-xs text-[#3fc4ca] hover:underline"
-                  onClick={() => setWishDraft(customer.namingWish || "")}
-                >
-                  ✎ 수정
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="text-xs text-[#2ba0a6] hover:underline disabled:opacity-40"
+                    disabled={findWishMut.isPending}
+                    onClick={() => findWishMut.mutate()}
+                    title="고객이 보낸 문자 중 희망사항으로 보이는 걸 AI가 찾아줍니다"
+                  >
+                    {findWishMut.isPending ? "찾는 중…" : "문자에서 찾기 (AI)"}
+                  </button>
+                  <button className="text-xs text-[#3fc4ca] hover:underline" onClick={() => setWishDraft(customer.namingWish || "")}>
+                    ✎ 수정
+                  </button>
+                </div>
               )}
             </div>
+
+            {/* AI가 찾은 희망사항 후보 문자 — 원장님이 [추가]로 확정 */}
+            {wishCands && wishCands.length > 0 && (
+              <div className="mb-3 rounded-lg border border-[#56D5DB]/40 bg-[#56D5DB]/5 p-3 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-[#2ba0a6]">희망사항으로 보이는 문자 {wishCands.length}건</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="text-[#2ba0a6] hover:underline"
+                      disabled={appendWishMut.isPending}
+                      onClick={() => {
+                        appendWishMut.mutate(wishCands.map((x) => x.text).join("\n\n"));
+                        setWishCands(null);
+                      }}
+                    >
+                      모두 추가
+                    </button>
+                    <button className="text-gray-400 hover:text-gray-600" onClick={() => setWishCands(null)}>
+                      닫기
+                    </button>
+                  </div>
+                </div>
+                {wishCands.map((cand, i) => (
+                  <div key={i} className="rounded border border-gray-100 bg-white p-2">
+                    <p className="text-xs text-gray-700 whitespace-pre-wrap break-words">{cand.text}</p>
+                    <div className="mt-1 flex items-center justify-between gap-2">
+                      <span className="text-[10px] text-gray-400 truncate">{cand.reason}</span>
+                      <button
+                        disabled={appendWishMut.isPending}
+                        onClick={() => {
+                          appendWishMut.mutate(cand.text);
+                          setWishCands((prev) => (prev ? prev.filter((_, j) => j !== i) : prev));
+                        }}
+                        className="shrink-0 text-xs text-[#2ba0a6] hover:underline disabled:opacity-40"
+                      >
+                        ＋ 추가
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {wishCands && wishCands.length === 0 && (
+              <p className="mb-3 text-xs text-gray-400">희망사항으로 보이는 문자를 못 찾았습니다.</p>
+            )}
             {wishDraft === null ? (
               customer.namingWish ? (
                 <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{customer.namingWish}</p>

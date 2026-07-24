@@ -9,6 +9,7 @@ import { learnFromEdit, listRules, upsertManualRule, setRuleEnabled, deleteRule,
 import * as gm from "./gaemyeong";
 import { isSetKey } from "./gaemyeong";
 import { runOcr, kickOcr } from "./ocr";
+import { findWishCandidates } from "./wish";
 import { smsStore, startSmsScheduler } from "./sms";
 import {
   calendarAvailable,
@@ -711,6 +712,15 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       res.json(await runOcr(req.params.id));
     } catch (e) {
       handle(res, "POST file ocr", e);
+    }
+  });
+
+  // 문자에서 개명 희망사항 후보 찾기(AI) — 반영은 클라에서 클릭으로 확정
+  app.post(`${P}/customers/:id/wish-candidates`, requireAdmin, async (req, res) => {
+    try {
+      res.json({ candidates: await findWishCandidates(req.params.id) });
+    } catch (e) {
+      handle(res, "POST wish candidates", e);
     }
   });
 
