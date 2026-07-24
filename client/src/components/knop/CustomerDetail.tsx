@@ -1,5 +1,5 @@
 // KNOP 고객 상세: 헤더 + 프로젝트 + 통합 타임라인 + 파일 + 메모
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,12 @@ import {
 export function CustomerDetailView({ customerId, onBack }: { customerId: string; onBack: () => void }) {
   const { toast } = useToast();
   const qc = useQueryClient();
+  // 고객 상세를 열 때(또는 다른 고객으로 바뀔 때) 항상 맨 위에서 시작 — 명단에서 스크롤 내린 위치가 따라오지 않게
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0 });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [customerId]);
   const queryKey = ["knop-customer", customerId];
   const { data, isLoading } = useQuery<CustomerDetailData>({
     queryKey,
