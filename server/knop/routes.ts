@@ -1371,4 +1371,23 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       handle(res, "POST notice-pending cancel", e);
     }
   });
+
+  // 진행중 현황 (개명후관리: 예약 남은 세트 목록) + 세트 취소
+  app.get(`${P}/notice-active`, requireAdmin, async (_req, res) => {
+    try {
+      res.json(await gm.listActiveSequences());
+    } catch (e) {
+      handle(res, "GET notice-active", e);
+    }
+  });
+
+  app.post(`${P}/notice-active/:customerId/:setKey/cancel`, requireAdmin, async (req, res) => {
+    try {
+      const { setKey } = req.params;
+      if (!isSetKey(setKey)) return res.status(400).json({ ok: false, reason: "잘못된 세트" });
+      res.json(await gm.cancelSequence(req.params.customerId, setKey));
+    } catch (e) {
+      handle(res, "POST notice-active cancel", e);
+    }
+  });
 }

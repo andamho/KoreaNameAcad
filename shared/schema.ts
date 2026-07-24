@@ -770,6 +770,7 @@ export const scheduledMessages = pgTable("scheduled_messages", {
   templateId: varchar("template_id"),
   direction: text("direction").default("발신").notNull(),
   status: text("status").notNull().default("scheduled"),
+  setKey: text("set_key"),                           // 개명후관리 세트(gaemyeong_request/approved). 진행중 현황 집계용
   scheduledAt: timestamp("scheduled_at").notNull(),  // 예약 시각(즉시는 now)
   sentAt: timestamp("sent_at"),
   error: text("error"),

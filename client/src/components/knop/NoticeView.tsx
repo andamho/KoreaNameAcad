@@ -14,6 +14,7 @@ import {
   type NoticeStep,
   type NoticePreview,
   type NoticePending,
+  type ActiveSequence,
 } from "@/lib/knopApi";
 
 const SETS = [
@@ -21,10 +22,11 @@ const SETS = [
   { key: "gaemyeong_approved", label: "개명허가 · 정화하기", hint: "개명허가 확인 다음날부터 · 문구만" },
 ];
 
-export function NoticeView() {
+export function NoticeView({ onOpenCustomer }: { onOpenCustomer?: (id: string) => void }) {
   const [setKey, setSetKey] = useState("gaemyeong_request");
   return (
     <div className="space-y-6">
+      <ActivePanel onOpenCustomer={onOpenCustomer} />
       <PendingPanel />
       <div className="flex gap-2">
         {SETS.map((s) => (
@@ -42,6 +44,113 @@ export function NoticeView() {
       </div>
       <SetEditor setKey={setKey} />
     </div>
+  );
+}
+
+// ── 진행중 현황: 지금 관리문자(미용감사/정화하기)가 돌고 있는 고객 ──
+function fmtNextKST(iso: string | null): string {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  const s = d.toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
+    month: "numeric",
+    day: "numeric",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  return s;
+}
+
+function ActivePanel({ onOpenCustomer }: { onOpenCustomer?: (id: string) => void }) {
+  const { toast } = useToast();
+  const qc = useQueryClient();
+  const { data: rows } = useQuery<ActiveSequence[]>({
+    queryKey: ["knop-notice-active"],
+    queryFn: () => knopApi.listActiveSequences(),
+    refetchInterval: 30000,
+  });
+  const cancelMut = useMutation({
+    mutationFn: ({ customerId, setKey }: { customerId: string; setKey: string }) =>
+      knopApi.cancelSequence(customerId, setKey),
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ["knop-notice-active"] });
+      toast({ title: "관리문자 취소됨", description: `남은 예약 ${r.canceled}건 취소` });
+    },
+    onError: (e: any) => toast({ title: "실패", description: e?.message, variant: "destructive" }),
+  });
+
+  const list = rows || [];
+  return (
+    <Card className="p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Clock className="w-4 h-4 text-[#2ba0a6]" />
+          <h3 className="font-semibold text-gray-900">진행중 현황</h3>
+          <Badge variant="outline" className="text-gray-500">{list.length}</Badge>
+        </div>
+        <span className="text-xs text-gray-400">관리문자 발송이 남은 고객</span>
+      </div>
+
+      {list.length === 0 ? (
+        <p className="text-sm text-gray-400 py-4 text-center">현재 진행중인 관리문자가 없습니다.</p>
+      ) : (
+        <div className="divide-y divide-gray-100">
+          {list.map((s) => (
+            <div key={`${s.customerId}-${s.setKey}`} className="flex items-center gap-3 py-2.5">
+              <button
+                className="min-w-0 flex-1 text-left flex items-center gap-2 group"
+                onClick={() => onOpenCustomer?.(s.customerId)}
+                title="고객 상세 열기"
+              >
+                <span className="text-sm font-medium text-gray-900 truncate group-hover:text-[#2ba0a6]">
+                  {s.customerName}
+                </span>
+                <span
+                  className={`shrink-0 text-[11px] px-1.5 py-0.5 rounded-full ${
+                    s.setKey === "gaemyeong_request" ? "bg-emerald-100 text-emerald-700" : "bg-violet-100 text-violet-700"
+                  }`}
+                >
+                  {s.setKey === "gaemyeong_request" ? "미용감사" : "정화하기"}
+                </span>
+              </button>
+
+              {/* 진행 도트 ●○○○ */}
+              <div className="hidden sm:flex items-center gap-1 shrink-0">
+                {Array.from({ length: s.total }).map((_, i) => (
+                  <span
+                    key={i}
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ background: i < s.sent ? "#1D9E75" : "#e5e7eb" }}
+                  />
+                ))}
+                <span className="ml-1 text-xs text-gray-500">
+                  {s.sent}/{s.total}
+                </span>
+              </div>
+
+              <div className="shrink-0 text-xs text-gray-500 w-32 text-right hidden sm:block">
+                다음 {fmtNextKST(s.nextAt)}
+              </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="shrink-0 text-gray-400 hover:text-red-500"
+                onClick={() => {
+                  if (window.confirm(`${s.customerName} 님의 ${s.setKey === "gaemyeong_request" ? "미용감사" : "정화하기"} 남은 문자를 모두 취소할까요?`)) {
+                    cancelMut.mutate({ customerId: s.customerId, setKey: s.setKey });
+                  }
+                }}
+              >
+                취소
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
   );
 }
 

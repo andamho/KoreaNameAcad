@@ -133,6 +133,7 @@ export const smsStore = {
     content: string;
     templateId?: string | null;
     scheduledAt?: string | null;
+    setKey?: string | null;
   }): Promise<ScheduledMessage> {
     const d = requireDb();
     try {
@@ -145,6 +146,7 @@ export const smsStore = {
           phone: input.phone,
           content: input.content,
           templateId: input.templateId ?? null,
+          setKey: input.setKey ?? null,
           scheduledAt: when,
           status: "scheduled",
         })

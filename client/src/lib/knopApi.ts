@@ -418,6 +418,21 @@ export const knopApi = {
       { nameDate },
     ),
   cancelNoticePending: (id: string) => req<{ ok: boolean }>("POST", `/api/kop/notice-pending/${id}/cancel`),
+
+  // 진행중 현황 (개명후관리)
+  listActiveSequences: () => req<ActiveSequence[]>("GET", "/api/kop/notice-active"),
+  cancelSequence: (customerId: string, setKey: string) =>
+    req<{ ok: boolean; canceled: number }>("POST", `/api/kop/notice-active/${customerId}/${setKey}/cancel`),
+};
+
+export type ActiveSequence = {
+  customerId: string;
+  customerName: string;
+  setKey: string;
+  setLabel: string;
+  total: number;
+  sent: number;
+  nextAt: string | null;
 };
 
 export type CalendarAgendaItem = {

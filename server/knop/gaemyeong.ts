@@ -2,7 +2,7 @@
 // 각 세트: 안내 + 1/2/3주 점검 = 4건을 예약 발송. 발송 시각은 예약일 오전 9~10시 랜덤(KST).
 // 안내 문자에는 짧은 링크(이미지/영상) + 저장방법 안내를 자동 첨부.
 import crypto from "crypto";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql, isNotNull } from "drizzle-orm";
 import { db } from "../db";
 import { sendSMS } from "../sms";
 import {
@@ -10,6 +10,7 @@ import {
   noticeSteps,
   noticeAssets,
   noticeRuns,
+  scheduledMessages,
   customers,
   type Customer,
 } from "@shared/schema";
@@ -342,7 +343,7 @@ async function scheduleMessages(cust: Customer, setKey: SetKey, keep?: (step: nu
   for (const s of steps) {
     const when = randomMorningKST(s.offsetDays);
     const content = await renderStep(setKey, s.body, s.step, cust.name, assets);
-    await smsStore.createMessage({ customerId: cust.id, phone: cust.phone, content, scheduledAt: when.toISOString() });
+    await smsStore.createMessage({ customerId: cust.id, phone: cust.phone, content, scheduledAt: when.toISOString(), setKey });
     dates.push(when.toISOString());
   }
   return dates;
@@ -363,7 +364,7 @@ export async function scheduleApprovalCheck(customerId: string): Promise<{ ok: b
   if (!s0) return { ok: false, reason: "개명허가 확인 문구 없음" };
   const content = await renderStep("gaemyeong_approved", s0.body, 0, cust.name, []);
   const when = randomMorningKST(s0.offsetDays);
-  await smsStore.createMessage({ customerId: cust.id, phone: cust.phone, content, scheduledAt: when.toISOString() });
+  await smsStore.createMessage({ customerId: cust.id, phone: cust.phone, content, scheduledAt: when.toISOString(), setKey: "gaemyeong_approved" });
   return { ok: true, date: when.toISOString() };
 }
 
@@ -474,4 +475,65 @@ export async function sequenceStatus(customerId: string): Promise<Record<string,
   const out: Record<string, string> = {};
   for (const r of runs) out[r.setKey] = r.status;
   return out;
+}
+
+// 진행중 현황: 아직 보낼 예약이 남은 세트들을 (고객·세트)별로 집계.
+// 발송완료(sent)만 남고 예약(scheduled)이 0이면 목록에서 빠짐(= 관리 종료).
+export type ActiveSequence = {
+  customerId: string;
+  customerName: string;
+  setKey: string;
+  setLabel: string;
+  total: number;      // 세트 전체 문자 수
+  sent: number;       // 이미 발송된 수
+  nextAt: string | null; // 다음 발송 예정(ISO)
+};
+export async function listActiveSequences(): Promise<ActiveSequence[]> {
+  const d = requireDb();
+  const rows = await d
+    .select({
+      customerId: scheduledMessages.customerId,
+      customerName: customers.name,
+      setKey: scheduledMessages.setKey,
+      total: sql<number>`count(*)::int`,
+      sent: sql<number>`count(*) FILTER (WHERE ${scheduledMessages.status} = 'sent')::int`,
+      // 저장값(naive)은 UTC 벽시계 → 타임존 변환 없이 그대로 ISO-Z 문자열로. 서버 TZ와 무관하게 정확.
+      nextAt: sql<string | null>`to_char(min(${scheduledMessages.scheduledAt}) FILTER (WHERE ${scheduledMessages.status} = 'scheduled'), 'YYYY-MM-DD"T"HH24:MI:SS"Z"')`,
+    })
+    .from(scheduledMessages)
+    .innerJoin(customers, eq(scheduledMessages.customerId, customers.id))
+    .where(isNotNull(scheduledMessages.setKey))
+    .groupBy(scheduledMessages.customerId, customers.name, scheduledMessages.setKey)
+    .having(sql`count(*) FILTER (WHERE ${scheduledMessages.status} = 'scheduled') > 0`)
+    .orderBy(sql`min(${scheduledMessages.scheduledAt}) FILTER (WHERE ${scheduledMessages.status} = 'scheduled') ASC`);
+  return rows.map((r) => ({
+    customerId: r.customerId!,
+    customerName: r.customerName,
+    setKey: r.setKey!,
+    setLabel: isSetKey(r.setKey!) ? NOTICE_SETS[r.setKey as SetKey].label : r.setKey!,
+    total: r.total,
+    sent: r.sent,
+    nextAt: r.nextAt ?? null, // 이미 UTC ISO-Z 문자열
+  }));
+}
+
+// 진행중 세트 취소: 아직 안 보낸 예약을 모두 취소하고 run 을 취소 표시(재시작 가능).
+export async function cancelSequence(customerId: string, setKey: SetKey): Promise<{ ok: boolean; canceled: number }> {
+  const d = requireDb();
+  const res = await d
+    .update(scheduledMessages)
+    .set({ status: "canceled" })
+    .where(
+      and(
+        eq(scheduledMessages.customerId, customerId),
+        eq(scheduledMessages.setKey, setKey),
+        eq(scheduledMessages.status, "scheduled"),
+      ),
+    )
+    .returning();
+  await d
+    .update(noticeRuns)
+    .set({ status: "canceled" })
+    .where(and(eq(noticeRuns.customerId, customerId), eq(noticeRuns.setKey, setKey)));
+  return { ok: true, canceled: res.length };
 }
