@@ -623,6 +623,7 @@ export const knopStore = {
       if (input.phoneNaming !== undefined) patch.phoneNaming = !!input.phoneNaming;
       if (input.email !== undefined) patch.email = input.email ?? null;
       if (input.memo !== undefined) patch.memo = input.memo ?? null;
+      if (input.namingWish !== undefined) patch.namingWish = input.namingWish ?? null;
       if (input.tags !== undefined) patch.tags = input.tags ? JSON.stringify(input.tags) : null;
       const [row] = await d.update(customers).set(patch).where(eq(customers.id, id)).returning();
       return row;

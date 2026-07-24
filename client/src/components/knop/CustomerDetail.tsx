@@ -25,6 +25,7 @@ import {
   Loader2,
   ChevronDown,
   Send,
+  Sparkles,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
@@ -98,6 +99,7 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
   const [smsDialog, setSmsDialog] = useState(false);
   const [note, setNote] = useState("");
   const [memoDraft, setMemoDraft] = useState<string | null>(null);
+  const [wishDraft, setWishDraft] = useState<string | null>(null);
   const [phoneDraft, setPhoneDraft] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -205,6 +207,30 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
       refresh();
       toast({ title: "메모 저장됨" });
     },
+  });
+
+  const saveWishMut = useMutation({
+    mutationFn: (namingWish: string) => knopApi.updateCustomer(customerId, { namingWish }),
+    onSuccess: () => {
+      setWishDraft(null);
+      refresh();
+      toast({ title: "희망사항 저장됨" });
+    },
+    onError: (e: any) => toast({ title: "저장 실패", description: e?.message, variant: "destructive" }),
+  });
+
+  // OCR로 인식된 사진 글자를 희망사항에 이어붙이기
+  const appendWishMut = useMutation({
+    mutationFn: (text: string) => {
+      const cur = (data?.customer.namingWish || "").trimEnd();
+      const merged = cur ? `${cur}\n\n${text.trim()}` : text.trim();
+      return knopApi.updateCustomer(customerId, { namingWish: merged });
+    },
+    onSuccess: () => {
+      refresh();
+      toast({ title: "희망사항에 저장됨" });
+    },
+    onError: (e: any) => toast({ title: "저장 실패", description: e?.message, variant: "destructive" }),
   });
 
   // 프로젝트 상태를 캐시에서 즉시 바꿔 화면에 반영(체감 즉시). prev 반환으로 실패 시 원복.
@@ -682,6 +708,13 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                           <Link2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
+                      <button
+                        disabled={appendWishMut.isPending}
+                        onClick={() => appendWishMut.mutate(f.ocrText || "")}
+                        className="mt-2 text-xs text-[#2ba0a6] hover:underline disabled:opacity-40"
+                      >
+                        ＋ 이 글자를 개명 희망사항에 저장
+                      </button>
                     </details>
                   )}
                   {isImg && (f.ocrStatus === "failed" || !f.ocrStatus) && (
@@ -731,6 +764,52 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                 );
               })}
             </div>
+          </Card>
+
+          {/* 개명 희망사항 (작명 참고자료 — 사진 첨부 OCR "희망사항에 저장" / 직접 입력) */}
+          <Card className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#56D5DB]" /> 개명 희망사항
+              </h3>
+              {wishDraft === null && (
+                <button
+                  className="text-xs text-[#3fc4ca] hover:underline"
+                  onClick={() => setWishDraft(customer.namingWish || "")}
+                >
+                  ✎ 수정
+                </button>
+              )}
+            </div>
+            {wishDraft === null ? (
+              customer.namingWish ? (
+                <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{customer.namingWish}</p>
+              ) : (
+                <p className="text-sm text-gray-400">
+                  아직 없습니다. 고객이 보낸 희망사항을 사진으로 첨부하면 밑의 <b>"＋ 희망사항에 저장"</b> 으로 넣거나,
+                  <b> ✎수정</b> 으로 직접 입력하세요.
+                </p>
+              )
+            ) : (
+              <div className="space-y-2">
+                <Textarea
+                  autoFocus
+                  value={wishDraft}
+                  onChange={(e) => setWishDraft(e.target.value)}
+                  rows={Math.min(24, Math.max(6, wishDraft.split("\n").length + 1))}
+                  className="text-sm leading-relaxed"
+                  placeholder="고객이 원하는 새 이름의 방향(직업·결혼·성격·재물·건강 등)"
+                />
+                <div className="flex gap-2">
+                  <Button size="sm" disabled={saveWishMut.isPending} onClick={() => saveWishMut.mutate(wishDraft)}>
+                    저장
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setWishDraft(null)}>
+                    취소
+                  </Button>
+                </div>
+              </div>
+            )}
           </Card>
 
         </div>

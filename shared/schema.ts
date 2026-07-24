@@ -465,6 +465,7 @@ export const customers = pgTable("customers", {
   nameHistory: text("name_history"),                     // JSON [{name,changedAt}] 옛 이름(개명 추적)
   email: text("email"),
   memo: text("memo"),
+  namingWish: text("naming_wish"),                       // 개명 희망사항(고객이 원하는 새이름 방향 — 작명 참고자료)
   tags: text("tags"),                                   // JSON string[] (선택)
   sourceConsultationId: varchar("source_consultation_id"), // 상담신청에서 전환된 경우 원본 id
   deletedAt: timestamp("deleted_at"),                    // 휴지통(soft delete). null=활성, 값 있으면 삭제됨
@@ -482,6 +483,7 @@ export const insertCustomerSchema = z.object({
   phoneNaming: z.boolean().optional(),
   email: z.string().optional().nullable(),
   memo: z.string().optional().nullable(),
+  namingWish: z.string().optional().nullable(),
   tags: z.array(z.string()).optional(),
   sourceConsultationId: z.string().optional().nullable(),
 });
