@@ -209,17 +209,17 @@ export class ObjectStorageService {
           return;
         }
 
-        // 일반 요청: HeadObject로 Content-Length 포함 후 writeHead로 강제 전송
-        const headCmd = new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: key });
-        const head = await r2Client.send(headCmd);
+        // 일반 요청: GetObject 한 번만(응답에 ContentType/ContentLength 포함 → HeadObject 불필요).
+        // 예전엔 Head+Get 두 번 왕복해서 이미지 첫바이트가 ~1초 걸렸음. R2 왕복 1회로 절반 단축.
         const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key });
         const data = await r2Client.send(command);
         if (!data.Body) continue;
         res.writeHead(200, {
-          "content-type": head.ContentType || data.ContentType || "application/octet-stream",
-          "content-length": String(head.ContentLength ?? ""),
+          "content-type": data.ContentType || "application/octet-stream",
+          ...(data.ContentLength != null ? { "content-length": String(data.ContentLength) } : {}),
           "accept-ranges": "bytes",
-          "cache-control": "public, max-age=3600",
+          // 파일명이 UUID라 내용이 바뀌지 않음 → 길게 캐시(재방문 즉시 표시)
+          "cache-control": "public, max-age=31536000, immutable",
         });
         (data.Body as any).pipe(res);
         return;
