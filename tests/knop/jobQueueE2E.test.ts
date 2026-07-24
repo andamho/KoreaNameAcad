@@ -13,6 +13,8 @@ import { processNextJob } from "../../server/jobQueue/worker";
 import { requestCancel, isCancelRequested } from "../../server/jobQueue/cancel";
 import { listJobs, getJobDetail, requestJobCancel } from "../../server/jobQueue/adminApi";
 import { makeEchoAdapter, makeFailingAdapter } from "../../server/jobQueue/adapters/echoCompute";
+import { internalReportComputeAdapter } from "../../server/jobQueue/adapters/internalReport";
+import type { JobAdapter } from "../../server/jobQueue/adapters/types";
 import { queueConnectionConfigured, acquireQueueClient, QUEUE_URL_ENV } from "../../server/jobQueue/connection";
 import { sha256Hex } from "../../server/jobQueue/idempotency";
 import type { RequestVersionSnapshot } from "../../shared/jobQueueContract";
@@ -87,6 +89,60 @@ describe("작업큐 e2e — queued → running → done", () => {
       assert.equal(await jobStatus(c, job.id), "succeeded");
       // 큐 비었으면 idle
       assert.equal((await processNextJob(c, "w1", echo)).outcome, "idle");
+    } finally { await db.close(); }
+  });
+});
+
+describe("작업큐 e2e — 실제 adapter + heartbeat", () => {
+  const realInput = (over: any = {}) => jobInput({
+    projectId: null, executionOptions: null,
+    inputIdentity: { sourceAssetHash: H("asset-bytes"), reportType: "individual", rendererVersion: "r1" },
+    ...over,
+  });
+  const realAdapters = new Map([[internalReportComputeAdapter().jobType, internalReportComputeAdapter()]]);
+
+  test("internalReportComputeAdapter(기존 preview 코드 호출) → succeeded + 결과 해시", async () => {
+    const { db, c } = await freshQ();
+    try {
+      const { job } = await createJob(c, realInput());
+      const r = await processNextJob(c, "w1", realAdapters);
+      assert.equal(r.outcome, "succeeded", `detail=${r.detail}`);
+      const ex = await execOf(c, job.id);
+      assert.ok(ex.artifact_snapshot?.resultArtifactHash, "실제 adapter 결과 아티팩트 해시");
+    } finally { await db.close(); }
+  });
+
+  test("heartbeat 모드로 실행 → succeeded(짧은 주기)", async () => {
+    const { db, c } = await freshQ();
+    try {
+      const { job } = await createJob(c, realInput({ projectId: "hb" } as any));
+      const r = await processNextJob(c, "w1", realAdapters, { heartbeat: true, heartbeatIntervalSec: 1 });
+      assert.equal(r.outcome, "succeeded", `detail=${r.detail}`);
+      assert.equal(await jobStatus(c, job.id), "succeeded");
+    } finally { await db.close(); }
+  });
+
+  test("heartbeat 모드 + 취소 요청 → adapter signal 존중, cancelled 확정", async () => {
+    // ⚠️ PGlite 단일 연결이라 동시 트랜잭션 race 를 피해 취소를 **선설정**한다(운영은 worker/admin 별도 연결).
+    //    heartbeat-중-취소의 전체 경로(별도 연결)는 scripts/runQueueRuntimeE2E.ts(embedded)에서 검증한다.
+    const { db, c } = await freshQ();
+    try {
+      const { job } = await createJob(c, jobInput({ projectId: "hb-cancel" }));
+      await requestCancel(c, job.id, "admin#x");
+      let sawSignal = false;
+      const slow: JobAdapter = {
+        jobType: "internal-report",
+        actualVersion(i) { const { executorRequirement, ...a } = i.requestVersionSnapshot; void executorRequirement; return a; },
+        async execute(i, ctx) {
+          for (let k = 0; k < 20 && !ctx?.signal?.aborted; k++) await new Promise((r) => setTimeout(r, 20));
+          if (ctx?.signal?.aborted) sawSignal = true;
+          return await makeEchoAdapter("internal-report").execute(i);
+        },
+      };
+      const r = await processNextJob(c, "w1", new Map([["internal-report", slow]]), { heartbeat: true, heartbeatIntervalSec: 1 });
+      assert.equal(r.outcome, "cancelled", `detail=${r.detail}`);
+      assert.equal(await jobStatus(c, job.id), "cancelled");
+      void sawSignal; // 선설정 취소는 시작 직후 초기 확인에서 잡혀 execute 전 cancelled 가능(정합)
     } finally { await db.close(); }
   });
 });

@@ -79,6 +79,14 @@ function dayRange(dateISO?: string): { start: string; end: string } {
 export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
   const P = "/api/knop";
 
+  // 작업큐 관리자 API — FEATURE_JOB_QUEUE=true 일 때만 마운트(기본 off → 운영 무영향).
+  if ((process.env.FEATURE_JOB_QUEUE ?? "").trim() === "true") {
+    void import("../jobQueue/adminHttp").then((m) => {
+      m.mountJobQueueAdmin(app, P, requireAdmin);
+      console.log("[KNOP] job queue admin API mounted (FEATURE_JOB_QUEUE=true)");
+    }).catch((e) => console.error("[KNOP] job queue admin mount failed:", String(e?.message ?? e).slice(0, 200)));
+  }
+
   // 문자 표준 템플릿 시드 + 예약문자 스케줄러 기동
   smsStore
     .seedTemplates()

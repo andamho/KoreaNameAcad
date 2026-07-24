@@ -46,7 +46,9 @@ export type { JobAdapter } from "./adapters/types";
 export { makeEchoAdapter, makeFailingAdapter } from "./adapters/echoCompute";
 // worker 실행 루프 + cooperative cancel + 전용 연결(런타임 배선)
 export { processNextJob } from "./worker";
-export type { ProcessResult, ProcessOutcome } from "./worker";
+export type { ProcessResult, ProcessOutcome, ProcessOptions } from "./worker";
+export { internalReportComputeAdapter } from "./adapters/internalReport";
+export { mountJobQueueAdmin } from "./adminHttp";
 export { requestCancel, isCancelRequested, acknowledgeCancel } from "./cancel";
 export { queueConnectionConfigured, acquireQueueClient, queueHostHash, QUEUE_URL_ENV } from "./connection";
 // 관리자 작업목록 API(순수 함수)

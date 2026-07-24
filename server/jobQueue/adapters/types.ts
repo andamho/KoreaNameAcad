@@ -10,10 +10,17 @@ export class AdapterError extends Error {
   }
 }
 
+// 장시간 adapter 가 heartbeat 루프의 취소/lease-상실 신호를 받아 조기 중단할 수 있게 하는 선택적 컨텍스트.
+//   signal.aborted=true 면 worker 가 lease 를 잃었거나 취소가 요청된 것 → adapter 는 가능한 빨리 중단해야 한다.
+//   짧은 adapter 는 무시해도 된다(선택적 파라미터라 기존 구현 무영향).
+export interface AdapterExecuteContext {
+  signal?: AbortSignal;
+}
+
 export interface JobAdapter {
   jobType: string;
   // worker 실제 실행 버전(request 와 대조됨).
   actualVersion(input: ClaimResult["adapterInput"]): ActualVersionSnapshot;
-  // 실제 작업 수행 → CompletionInput. 실패 시 AdapterError throw.
-  execute(input: ClaimResult["adapterInput"]): Promise<CompletionInput>;
+  // 실제 작업 수행 → CompletionInput. 실패 시 AdapterError throw. ctx.signal 로 조기 중단 가능(장시간 작업).
+  execute(input: ClaimResult["adapterInput"], ctx?: AdapterExecuteContext): Promise<CompletionInput>;
 }

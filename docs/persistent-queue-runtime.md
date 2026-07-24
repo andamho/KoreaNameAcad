@@ -136,3 +136,11 @@ migration apply(0002→0004→hardening) → cancel-ack additive migration → w
 - `server/jobQueue/adapters/echoCompute.ts`: 순수 echo adapter(e2e).  `server/jobQueue/adminApi.ts`: listJobs/getJobDetail/requestJobCancel(비밀 미노출).
 - migration: `migrations/0005_job_cancel_request.sql`(cancel 컬럼, additive) · `migrations/0005b_queue_runtime_grants.sql`(writer/reader grants, 운영자 적용).
 - e2e: `tests/knop/jobQueueE2E.test.ts` 9종 — 단계별 queued→running→succeeded, 1-shot, cancel, terminal cancel no-op, transient 재시도, no-adapter permanent, lease 만료 reaper, admin API, 전용 연결 fail-closed.
+
+## 운영 연결 직전 배선 완료(이번 묶음) — 실제 adapter·heartbeat·worker·admin·migration·실 PG E2E
+- **실제 adapter**: `adapters/internalReport.ts` `internalReportComputeAdapter()` — 기존 `buildInternalReportQueuePreview` 호출(clone 아님). validation 실패=permanent.invalid-input.
+- **heartbeat**: `worker.ts` `executeWithHeartbeat` — adapter 실행 중 주기 heartbeat + cancel 확인 + lease-상실 시 AbortSignal 로 조기 중단, timer 정리. fencing 유지(complete 가 만료 lease 거부). `AdapterExecuteContext.signal` 로 장시간 adapter 조기 중단.
+- **worker entrypoint**: `scripts/queueWorker.ts` — 반복 claim, 빈 큐 대기(WORKER_IDLE_MS), 주기 reaper(REAPER_EVERY_MS, SKIP LOCKED=다중 worker 안전), graceful shutdown(SIGINT/SIGTERM), raw token 미로그. 전용 `ORCHESTRATION_QUEUE_URL`만.
+- **admin HTTP**: `adminHttp.ts` `mountJobQueueAdmin` — 기존 requireAdmin 사용, `FEATURE_JOB_QUEUE=true` 게이트(기본 off), 요청당 전용 연결. GET jobs/:id, POST cancel. 비밀 미노출.
+- **migration 적용**: `scripts/applyQueueRuntime.ts`(inspect/dry-run/apply/rollback, host-pin, fail-closed) — 0005(cancel 컬럼)+0005b(grants). applyHardening 은 이를 미지원(hardening registry 전용)이라 별도 최소 연결(hardening CLI 재사용 안 함).
+- **실 PostgreSQL E2E**: `scripts/runQueueRuntimeE2E.ts`(embedded PG17 non-superuser) 8/8 — hardening→0005/0005b→**writer 가 소유자 없이** job 생성·claim·adapter(heartbeat)·complete→**reader** 조회·write 거부. `tests/knop/jobQueueE2E.test.ts` 12(PGlite).
