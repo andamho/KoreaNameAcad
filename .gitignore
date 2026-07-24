@@ -11,3 +11,6 @@ zeus-calendar-key.json
 *-firebase-adminsdk-*.json
 
 scripts/.production-hardening-host.pin
+
+# 이름분석표 로컬 worker DPAPI writer 비밀(로컬 전용)
+scripts/.name-report-writer.secret

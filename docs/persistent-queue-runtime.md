@@ -160,3 +160,24 @@ migration apply(0002→0004→hardening) → cancel-ack additive migration → w
 
 ### 운영 start command(확정, 단일)
 - worker: `node dist/queueWorker.js` (`npm run worker` 동일). ⚠️ tsx 런타임 의존 없음(빌드 산출물). SIGINT/SIGTERM graceful shutdown, exit 0(정상)/1(fail-closed).
+
+## 이름분석표 enqueue 배선(이번 묶음) — 로컬 전용
+### 실행 위상(정정 · Railway 필수 아님)
+- **로컬 Windows worker = 실제 이름분석표 처리.** report 폴더·Python 렌더·R2 접근이 되는 서호님 컴퓨터에서만 실제 첨부가 가능하다.
+  실행: `scripts/runLocalNameReportWorker.ps1`(내부에서 `node dist/queueWorker.js`, `WORKER_ENABLE_NAME_REPORT=true`).
+- **Railway worker = 향후 클라우드용**(현재는 preview 계산 adapter 정도). 로컬 파일이 없어 name-report adapter 를 **등록하지 않는다**.
+  → **이름분석표 처리를 위해 Railway worker 를 지금 만들 필요 없음.**
+- **Railway web = 관리자 조회·취소 API**(`FEATURE_JOB_QUEUE=true` 게이트). 처리 주체 아님.
+
+### enqueue 분기(`reportSync.syncReports`)
+- `FEATURE_NAME_REPORT_QUEUE`(기본 **false**): 기존 `processFile()` 직접 처리 경로 그대로(동작 불변).
+- `=true`: 파일 감지 후 직접 처리하지 않고 `enqueueDetectedReports()` 로 `name-report-attach` job 생성. writer 연결 없으면 fail-closed(직접 처리로 폴백하지 않음 → 이중 처리 방지).
+- 같은 파일 내용 → 같은 `inputAssetHash` → 같은 idempotency key(중복 job 없음). 직접 처리와 큐 처리는 상호 배타.
+
+### locator 계약(`nameReportLocal.ts`)
+- job 에는 비-PII 만: `inputIdentity = { inputAssetHash, fileContentHash, locator:"reports-sha256:<sha256>" }`. **절대경로·파일명(=이름=PII) 저장 안 함.**
+- worker 재시작 후 해석: reports 루트 안의 파일을 `listReports()` 로 열거하며 **내용 sha256 로 특정**(루트 밖·path traversal 차단). `.kop_name_report_index.json`(hash→상대경로)은 힌트일 뿐 정답은 재해시로 확정.
+- 파일 이동·삭제·루트 이탈 → `permanent.invalid-input`(자동 재시도 없음).
+
+### 검증
+- `tests/knop/nameReportEnqueueE2E.test.ts` 7종(PGlite + 임시 reports 폴더): locator 계약·flag on/off·감지→job 1개→claim→**실제 processFile**→artifact→succeeded·재감지 dedup·재큐 재실행 무중복·파일삭제 permanent·루트밖 permanent·취소·transient 재시도. render/upload 만 test double, DB 매칭·중복 방지는 실제 함수.

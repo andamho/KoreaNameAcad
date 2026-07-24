@@ -11,6 +11,8 @@ import { db } from "../db";
 import { ObjectStorageService } from "../object_storage/objectStorage";
 import { processFile, gatherCandidates, type ProcessorDeps } from "./reportProcessor";
 import type { NameReportDeps } from "../jobQueue/adapters/nameReport";
+import { queueConnectionConfigured, acquireQueueClient } from "../jobQueue/connection";
+import { nameReportQueueEnabled, enqueueDetectedReports, resolveNameReportInput } from "./nameReportLocal";
 import {
   listReports,
   baseName,
@@ -78,6 +80,8 @@ export type SyncResult = {
   processing_failed: number; skipped: number; processed: number;
   // 하위호환(기존 호출부): added = 이번에 새로 자동첨부된 수
   added: number; created: number;
+  // 큐 모드(FEATURE_NAME_REPORT_QUEUE=true)에서 생성된 job 수(직접 처리 대신).
+  queued: number;
 };
 
 // 처리기 deps 빌더 — 정상 경로(syncReports)와 큐 adapter(makeLocalNameReportDeps)가 **같은 실제 deps** 를 공유한다.
@@ -110,32 +114,40 @@ function buildProcessorDeps(state: HashState): ProcessorDeps {
 export function makeLocalNameReportDeps(): NameReportDeps {
   const state = loadState();
   const base = buildProcessorDeps(state);
-  return {
-    ...base,
-    resolveInput: async (ref) => {
-      const reps = listReports().filter((r) => !/상세/.test(r.file));
-      for (const r of reps) {
-        const abs = resolveReportPath(r.file);
-        if (!abs) continue;
-        if (base.hashFile(abs) !== ref.fileContentHash) continue; // content hash 로 로컬 파일 특정
-        const extractedName = baseName(r.name);
-        const reportType: "family" | "individual" = r.family ? "family" : "individual";
-        const { candidates, failed } = await gatherCandidates(base.db, extractedName, reportType);
-        return { file: r.file, absPath: abs, extractedName, reportType, label: r.label, candidates, candidatesFailed: failed };
-      }
-      throw new Error("name-report locator 미해결 — 로컬 report 폴더에 해당 content hash 파일 없음");
-    },
-  };
+  // resolveInput 은 locator 계약(nameReportLocal)에 위임 — 해시 기반 로컬 인덱스 + 루트/traversal 안전.
+  return { ...base, resolveInput: (ref) => resolveNameReportInput(base, ref) };
 }
 
 let _syncing = false;
 export async function syncReports(): Promise<SyncResult> {
-  const empty: SyncResult = { auto_matched: 0, needs_review: 0, attachment_failed: 0, processing_failed: 0, skipped: 0, processed: 0, added: 0, created: 0 };
+  const empty: SyncResult = { auto_matched: 0, needs_review: 0, attachment_failed: 0, processing_failed: 0, skipped: 0, processed: 0, added: 0, created: 0, queued: 0 };
   if (!db || _syncing || !reportsAvailable()) return empty;
   _syncing = true;
   const state = loadState();
   const deps: ProcessorDeps = buildProcessorDeps(state);
   const res: SyncResult = { ...empty };
+
+  // 큐 모드: 직접 처리(processFile) 대신 name-report job 생성으로 분기. 기본 off(기존 동작 불변).
+  //   같은 파일 → 같은 inputAssetHash → 같은 idempotency key(중복 job 없음). 직접/큐 처리는 상호 배타(둘 다 실행 안 함).
+  if (nameReportQueueEnabled()) {
+    try {
+      if (!queueConnectionConfigured("worker")) {
+        console.error("[KOP] FEATURE_NAME_REPORT_QUEUE=true 지만 ORCHESTRATION_WORKER_URL 미설정 → enqueue 불가(직접 처리도 안 함, fail-closed).");
+        saveState(state); return res;
+      }
+      const { queue, release } = await acquireQueueClient("worker");
+      try {
+        const r = await enqueueDetectedReports(queue, deps); // 실제 createJob 경로
+        res.processed = r.queued + r.deduped; res.queued = r.queued; res.skipped = r.deduped; res.processing_failed = r.failed;
+        if (r.queued || r.failed) console.log(`[KOP] 이름분석표 큐잉: 신규 job ${r.queued} · 중복(dedup) ${r.deduped} · 실패 ${r.failed}`);
+      } finally { await release().catch(() => {}); }
+      saveState(state); return res;
+    } catch (e: any) {
+      console.error(`[KOP] 이름분석표 큐잉 오류: ${e?.message}`);
+      saveState(state); return res;
+    } finally { _syncing = false; }
+  }
+
   try {
     const reps = listReports().filter((r) => !/상세/.test(r.file));
     for (const r of reps) {

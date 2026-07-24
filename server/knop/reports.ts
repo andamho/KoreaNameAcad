@@ -3,15 +3,15 @@
 import fs from "fs";
 import path from "path";
 
-const DIR = (process.env.KOP_REPORTS_DIR || process.env.KNOP_REPORTS_DIR)?.trim() || "C:/Users/iimoo/Documents/이름분석";
-
+// dir 은 매 호출 시 env 를 읽는다(정적 배포 동작 불변 + 테스트에서 임시 폴더 주입 가능).
 export function reportsDir(): string {
-  return DIR;
+  return (process.env.KOP_REPORTS_DIR || process.env.KNOP_REPORTS_DIR)?.trim() || "C:/Users/iimoo/Documents/이름분석";
 }
 
 export function reportsAvailable(): boolean {
   try {
-    return fs.existsSync(DIR) && fs.statSync(DIR).isDirectory();
+    const dir = reportsDir();
+    return fs.existsSync(dir) && fs.statSync(dir).isDirectory();
   } catch {
     return false;
   }
@@ -46,7 +46,7 @@ function parseReport(file: string): Report | null {
 export function listReports(): Report[] {
   if (!reportsAvailable()) return [];
   try {
-    return fs.readdirSync(DIR).map(parseReport).filter((r): r is Report => !!r);
+    return fs.readdirSync(reportsDir()).map(parseReport).filter((r): r is Report => !!r);
   } catch {
     return [];
   }
@@ -75,7 +75,7 @@ export function reportDateForName(name: string): Date | null {
   for (const r of listReports()) {
     if (baseName(r.name) !== bn) continue;
     try {
-      const s = fs.statSync(path.join(DIR, r.file));
+      const s = fs.statSync(path.join(reportsDir(), r.file));
       const d = s.birthtimeMs ? s.birthtime : s.mtime;
       if (!earliest || d < earliest) earliest = d;
     } catch {
@@ -88,7 +88,7 @@ export function reportDateForName(name: string): Date | null {
 export function resolveReportPath(file: string): string | null {
   try {
     const base = path.basename(file);
-    const full = path.join(DIR, base);
+    const full = path.join(reportsDir(), base);
     if (fs.existsSync(full) && fs.statSync(full).isFile() && REPORT_EXT.test(full)) return full;
   } catch {
     /* noop */
