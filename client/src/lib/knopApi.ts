@@ -207,6 +207,7 @@ export const knopApi = {
     memo?: string | null;
   }) => req<CrmFile>("POST", "/api/kop/files", data),
   deleteFile: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/files/${id}`),
+  ocrFile: (id: string) => req<{ ok: boolean; status: string; text?: string }>("POST", `/api/kop/files/${id}/ocr`),
 
   // Calendar
   listCalendar: (startISO: string, endISO: string) =>

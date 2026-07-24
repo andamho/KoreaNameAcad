@@ -57,11 +57,13 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
   const { data, isLoading } = useQuery<CustomerDetailData>({
     queryKey,
     queryFn: () => knopApi.getCustomer(customerId),
-    // 전사 처리 중인 통화가 있으면 4초마다 자동 갱신
-    refetchInterval: (query) =>
-      (query.state.data as CustomerDetailData | undefined)?.calls?.some((c) => c.status === "processing")
-        ? 4000
-        : false,
+    // 전사 처리 중인 통화 또는 글자인식(OCR) 중인 이미지가 있으면 4초마다 자동 갱신
+    refetchInterval: (query) => {
+      const d = query.state.data as CustomerDetailData | undefined;
+      const busy =
+        d?.calls?.some((c) => c.status === "processing") || d?.files?.some((f) => f.ocrStatus === "pending");
+      return busy ? 4000 : false;
+    },
   });
   const { data: journey } = useQuery({ queryKey: ["knop-journey"], queryFn: () => knopApi.listJourney() });
   const { data: hongikIds } = useQuery({ queryKey: ["knop-hongik"], queryFn: () => knopApi.hongikCustomerIds() });
@@ -272,6 +274,15 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
       refresh();
       toast({ title: "파일 삭제됨" });
     },
+  });
+
+  const ocrMut = useMutation({
+    mutationFn: (id: string) => knopApi.ocrFile(id),
+    onSuccess: (r) => {
+      refresh();
+      toast({ title: r.ok ? "글자 인식 완료" : "글자 인식 실패", variant: r.ok ? undefined : "destructive" });
+    },
+    onError: (e: any) => toast({ title: "글자 인식 실패", description: e?.message, variant: "destructive" }),
   });
 
   const deleteCallMut = useMutation({
@@ -646,6 +657,41 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                         <img src={f.fileUrl} alt={f.fileName} loading="lazy" className="block w-full h-auto" />
                       </a>
                     </div>
+                  )}
+                  {/* 사진에서 뽑아낸 글자(OCR) */}
+                  {isImg && f.ocrStatus === "pending" && (
+                    <div className="flex items-center gap-1.5 px-3 py-2 text-xs text-gray-400 border-b border-gray-50">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> 글자 인식 중…
+                    </div>
+                  )}
+                  {isImg && f.ocrStatus === "done" && f.ocrText && (
+                    <details className="px-3 py-2 border-b border-gray-50 bg-gray-50/40">
+                      <summary className="text-xs font-medium text-[#2ba0a6] cursor-pointer select-none">
+                        인식된 글자 보기
+                      </summary>
+                      <div className="mt-2 flex items-start gap-2">
+                        <p className="flex-1 text-xs text-gray-600 whitespace-pre-wrap break-words">{f.ocrText}</p>
+                        <button
+                          title="글자 복사"
+                          onClick={() => {
+                            navigator.clipboard.writeText(f.ocrText || "");
+                            toast({ title: "글자 복사됨" });
+                          }}
+                          className="shrink-0 text-gray-300 hover:text-[#3fc4ca]"
+                        >
+                          <Link2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </details>
+                  )}
+                  {isImg && (f.ocrStatus === "failed" || !f.ocrStatus) && (
+                    <button
+                      disabled={ocrMut.isPending}
+                      onClick={() => ocrMut.mutate(f.id)}
+                      className="w-full text-left px-3 py-2 text-xs text-gray-400 hover:text-[#2ba0a6] border-b border-gray-50 disabled:opacity-40"
+                    >
+                      {ocrMut.isPending ? "글자 인식 중…" : f.ocrStatus === "failed" ? "글자 인식 실패 · 다시 시도" : "＋ 이 사진 글자 인식"}
+                    </button>
                   )}
                   <div className="flex items-center justify-between gap-2 px-3 py-2">
                   <a

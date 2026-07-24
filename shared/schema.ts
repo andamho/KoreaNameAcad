@@ -548,6 +548,8 @@ export const crmFiles = pgTable("crm_files", {
   fileType: text("file_type"),
   fileUrl: text("file_url").notNull(),                  // /objects/... 경로
   memo: text("memo"),
+  ocrText: text("ocr_text"),                            // 이미지에서 추출한 글자(Gemini OCR)
+  ocrStatus: text("ocr_status"),                        // null(대상아님) | pending | done | failed
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
 });
 

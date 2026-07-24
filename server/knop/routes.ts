@@ -8,6 +8,7 @@ import { randomUUID } from "crypto";
 import { learnFromEdit, listRules, upsertManualRule, setRuleEnabled, deleteRule, analyzeRules, seedRulesFromJsonOnce, exportLearnedToJson, revalidateAllRules } from "./learnedDict";
 import * as gm from "./gaemyeong";
 import { isSetKey } from "./gaemyeong";
+import { runOcr, kickOcr } from "./ocr";
 import { smsStore, startSmsScheduler } from "./sms";
 import {
   calendarAvailable,
@@ -696,9 +697,20 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
   app.post(`${P}/files`, requireAdmin, async (req, res) => {
     try {
       const input = insertCrmFileSchema.parse(req.body);
-      res.json(await knopStore.addFile(input));
+      const row = await knopStore.addFile(input);
+      kickOcr(row.id, row.fileType); // 이미지면 백그라운드로 글자 인식(응답 지연 없음)
+      res.json(row);
     } catch (e) {
       handle(res, "POST file", e);
+    }
+  });
+
+  // 특정 첨부 이미지 글자 인식(수동 실행/재시도) — 완료까지 기다렸다 결과 반환
+  app.post(`${P}/files/:id/ocr`, requireAdmin, async (req, res) => {
+    try {
+      res.json(await runOcr(req.params.id));
+    } catch (e) {
+      handle(res, "POST file ocr", e);
     }
   });
 
