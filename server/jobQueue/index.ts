@@ -40,6 +40,14 @@ export { inspectJobInvariant } from "./invariant";
 export type { InvariantViolation, InvariantReport } from "./invariant";
 // forced-rerun: 현 스키마 미지원(안 C) — 계약·오류만 공개
 export { FORCED_RERUN_SUPPORTED, ForcedRerunUnsupportedError, requestForcedRerun } from "./rerun";
-// adapter 인터페이스(계약) — 구체 adapter 는 비공개
+// adapter 인터페이스(계약)
 export { AdapterError } from "./adapters/types";
 export type { JobAdapter } from "./adapters/types";
+export { makeEchoAdapter, makeFailingAdapter } from "./adapters/echoCompute";
+// worker 실행 루프 + cooperative cancel + 전용 연결(런타임 배선)
+export { processNextJob } from "./worker";
+export type { ProcessResult, ProcessOutcome } from "./worker";
+export { requestCancel, isCancelRequested, acknowledgeCancel } from "./cancel";
+export { queueConnectionConfigured, acquireQueueClient, queueHostHash, QUEUE_URL_ENV } from "./connection";
+// 관리자 작업목록 API(순수 함수)
+export { listJobs, getJobDetail, requestJobCancel, type JobListItem, type JobDetail } from "./adminApi";

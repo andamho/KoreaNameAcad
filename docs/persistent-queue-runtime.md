@@ -116,7 +116,7 @@
 | 읽기·진단 | `repository.ts` · `invariant.ts` | `getJob`/`inspectJobInvariant` | — |
 - 배럴: `server/jobQueue/index.ts`. **운영 route/cron/worker 에 미연결**(현 prototype 계약).
 
-### 2) ⚠️ cancel acknowledgment — **미구현 갭**(추가 필요)
+### 2) ✅ cancel acknowledgment — **구현 완료**(worker 경로 배선)
 - 현 스키마: `jobs.cancelled_at`(timestamptz) + status `cancelled` 는 있으나, **협조적 취소 요청→worker ack 흐름이 없다**(`cancel_requested_at` 컬럼·ack 모듈 부재).
 - **필요 작업(구현 순서)**:
   1. **additive migration**(신규 `000N`): `jobs.cancel_requested_at timestamptz NULL`(+ 선택 `cancel_requested_by_ref`). 기존 행 무영향·backfill 0. `server/migrations/registry.ts` 등록 + fixture.
@@ -127,3 +127,12 @@
 
 ### 3) 배선 순서(요약)
 migration apply(0002→0004→hardening) → cancel-ack additive migration → worker entrypoint(단일 실행·reaper cron) 연결 → `FEATURE_JOB_QUEUE`(기본 OFF) → 첫 adapter(internal-report) dual-write 관측 → calls-120 복구.
+
+
+## 런타임 배선 완료(이번 묶음) — 실제 queued→running→done
+- `server/jobQueue/worker.ts` `processNextJob`: claim→markRunning→(cancel 확인)→adapter.execute→complete/fail. commit 이후 adapter 실행, raw lease token 메모리 전용.
+- `server/jobQueue/cancel.ts`: `requestCancel`(멱등, cancel_requested_at)·`isCancelRequested`·`acknowledgeCancel`(fencing+active+lease 유효 시 cancelled). 관리자가 execution 상태를 직접 쓰지 않음.
+- `server/jobQueue/connection.ts`: 전용 `ORCHESTRATION_QUEUE_URL`(=writer credential)만 읽음. 소유자(NEON_DATABASE_URL) 비의존, 미설정 fail-closed. worker=전용 pg.Client(트랜잭션 안전).
+- `server/jobQueue/adapters/echoCompute.ts`: 순수 echo adapter(e2e).  `server/jobQueue/adminApi.ts`: listJobs/getJobDetail/requestJobCancel(비밀 미노출).
+- migration: `migrations/0005_job_cancel_request.sql`(cancel 컬럼, additive) · `migrations/0005b_queue_runtime_grants.sql`(writer/reader grants, 운영자 적용).
+- e2e: `tests/knop/jobQueueE2E.test.ts` 9종 — 단계별 queued→running→succeeded, 1-shot, cancel, terminal cancel no-op, transient 재시도, no-adapter permanent, lease 만료 reaper, admin API, 전용 연결 fail-closed.
