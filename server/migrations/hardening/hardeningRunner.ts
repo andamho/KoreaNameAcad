@@ -103,14 +103,26 @@ export async function hardeningPreflight(c: HardeningClient, def: HardeningDef, 
   const su = await n(c, `SELECT (rolsuper)::int n FROM pg_roles WHERE rolname = current_user`);
   const canCreateRole = await n(c, `SELECT (rolcreaterole OR rolsuper)::int n FROM pg_roles WHERE rolname = current_user`);
   const ownsAll = await n(c, `SELECT count(*)::int n FROM pg_class r JOIN pg_namespace ns ON ns.oid=r.relnamespace WHERE ns.nspname='public' AND r.relname = ANY($1) AND pg_get_userbyid(r.relowner)=current_user`, [SIX_TABLES]);
+  // ── 0002·0004 운영 선행 상태(read-only) ──
+  const tablesExist = await n(c, `SELECT count(*)::int n FROM pg_class r JOIN pg_namespace ns ON ns.oid=r.relnamespace WHERE ns.nspname='public' AND r.relkind='r' AND r.relname = ANY($1)`, [SIX_TABLES]);
+  const queueTables = await n(c, `SELECT count(*)::int n FROM pg_class r JOIN pg_namespace ns ON ns.oid=r.relnamespace WHERE ns.nspname='public' AND r.relname = ANY(ARRAY['jobs','job_executions'])`);
+  const preFns = await functionsExist(c, def.expectedFunctions);              // orch_* 함수 선행 존재?
+  const preTrigs = (await targetTriggers(c)).rows.length;                     // 대상 6테이블의 orch trigger 선행 존재?
   observations.push(`executor=${su === 1 ? "superuser" : "non-superuser"} canCreateRole=${canCreateRole === 1} ownsAllSixTables=${ownsAll}/${SIX_TABLES.length} existingOrchRoles=${roleCount}/${def.expectedRoles.length} sixTableRows=${rows}`);
+  observations.push(`0002(queue jobs/job_executions)=${queueTables}/2 · 0004(6 target tables)=${tablesExist}/${SIX_TABLES.length} · preexistingOrchFunctions=${preFns} · preexistingTargetTriggers=${preTrigs}`);
 
   let state: HardeningPreflight["state"] = "clean-ready";
   if (roleCount === def.expectedRoles.length) { state = "already-applied"; observations.push("이미 5개 orchestration role 존재 → already-applied 경로(재적용 아님)."); }
   else if (roleCount > 0) { state = "partial"; blockers.push(`orchestration role 일부만 존재(${roleCount}/${def.expectedRoles.length}) → 부분 상태(수동 정리 필요)`); }
   else if (rows !== 0) { state = "rows-present"; blockers.push(`6테이블 행수 ${rows}≠0 → fail-closed(신규 6테이블은 비어 있어야 apply)`); }
   if (canCreateRole !== 1) blockers.push("executor 가 CREATE ROLE 불가 → apply 불가");
-  if (su !== 1 && ownsAll !== SIX_TABLES.length && state === "clean-ready") blockers.push(`비-superuser executor 가 6테이블 전부의 owner 가 아님(${ownsAll}/${SIX_TABLES.length}) → 소유권 이전 불가`);
+  // clean-ready 경로에서만 선행 전제(0002/0004·소유권·충돌 부재) 를 강제한다(already-applied 는 4함수·15trigger 가 정상).
+  if (state === "clean-ready") {
+    if (tablesExist !== SIX_TABLES.length) blockers.push(`0004 미적용 또는 6테이블 누락(${tablesExist}/${SIX_TABLES.length}) → hardening 전제 불충족`);
+    if (queueTables !== 2) blockers.push(`0002 미적용(queue 테이블 ${queueTables}/2) → 선행 migration 필요`);
+    if (su !== 1 && ownsAll !== SIX_TABLES.length) blockers.push(`비-superuser executor 가 6테이블 전부의 owner 가 아님(${ownsAll}/${SIX_TABLES.length}) → 소유권 이전 불가`);
+    if (preFns > 0 || preTrigs > 0) blockers.push(`선행 충돌: orch 함수 ${preFns}·대상 trigger ${preTrigs} 가 이미 존재(clean 상태여야 apply) → 수동 확인 필요`);
+  }
   return { ok: blockers.length === 0, blockers, observations, state };
 }
 

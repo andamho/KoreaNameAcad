@@ -269,3 +269,24 @@ stored 4 · current eligible 4 · observation_hash match 0 · source_record_ref 
 
 ## 17. 유지 금지(이번 Gate)
 운영 role/ownership/GRANT/REVOKE/trigger/apply/credential·adapter·connection pool runtime·신규 row·외부 AI·calls·package/lock·main merge/push·feature branch push **전부 미수행**.
+
+### 12a-2. 운영 실행 인터페이스 — PowerShell 래퍼 + 단계 위험도 분류
+운영자(Windows PowerShell) 실행기는 `scripts/runProductionHardening.ps1`(BOM 유지). CLI `scripts/applyHardening.ts` 를 fail-closed 로 구동한다.
+- **접속 변수 계약**: CLI 는 **`NEON_DATABASE_URL` 단일**만 읽는다(DATABASE_URL fallback 없음 — 두 변수 공존 시 구 값 선택 위험 제거). Railway 운영 변수와 일치.
+- **엔드포인트**: hardening(권한·role·ownership DDL)은 **direct 강제**. host 에 `pooler` 포함 시 fail-closed(pooled 는 세션·role 동작이 달라질 수 있음).
+- **host 핀**: 래퍼가 입력 URL 에서 host hash 를 **자동 계산**(운영자 수동 복사 불요). gitignored pin 파일에 TOFU 로 고정 후, 이후 실행은 대조(불일치 fail-closed).
+- **입력 보안**: URL 은 `Read-Host -AsSecureString` 로만. 화면·명령기록·마스킹 보고서에 DSN/password/host 원문 0(host 는 sha256 8자).
+- **단계 위험도(정확 분류)**:
+  | Mode | 분류 | production 영향 | 승인 |
+  |---|---|---|---|
+  | `Preflight` | **read-only** | DDL/DML 0 | 불요 |
+  | `DryRun` | ⚠️ **read-only 아님** | 실제 DDL/role/ownership/권한 변경을 트랜잭션 안에서 시도 후 ROLLBACK(잠금·일시 영향 가능) | 승인 문구 `RUN DRYRUN` |
+  | `Apply` | production **COMMIT** | 영구 반영 | 승인 문구 `APPLY TO PRODUCTION` |
+  | `Rollback` | post-commit 환원 COMMIT | 소유권 환원·role 삭제(테이블 보존) | 승인 문구 `ROLLBACK PRODUCTION` |
+  - ❌ "dry-run 은 반영 0이므로 production write 가 아니다"라고 표현하지 않는다 — dry-run 은 production-impacting 이다.
+- **preflight 가 확인하는 선행 상태(read-only)**: 0002(jobs/job_executions)·0004(6테이블) 적용 여부, 6테이블 존재·owner=neondb_owner, 6테이블 행수, hardening role 부분 생성, orch 함수·trigger 선행 충돌. 하나라도 예상과 다르면 blocker → DryRun 진행 금지.
+- 실행 명령(운영자):
+  ```
+  powershell -ExecutionPolicy Bypass -File scripts\runProductionHardening.ps1 -Mode Preflight
+  ```
+  (DryRun/Apply/Rollback 은 각각 승인 문구 입력 요구.)
