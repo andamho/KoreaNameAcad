@@ -97,7 +97,9 @@ export async function hardeningPreflight(c: HardeningClient, def: HardeningDef, 
   const blockers: string[] = []; const observations: string[] = [];
   if (actualSha256 !== def.expectedSha256) blockers.push(`sha 불일치(expected=${def.expectedSha256.slice(0, 8)}… actual=${actualSha256.slice(0, 8)}…)`);
   const roleCount = await rolesExist(c, def.expectedRoles);
-  const rows = await newRowsTotal(c);
+  // ⚠️ 6테이블 행수 검사는 **clean 상태(role 0)일 때만**. 이미 적용된 상태에선 소유권이 orchestration_owner 로 넘어가
+  //    원 owner 가 SELECT 못 할 수 있으므로(permission denied) 건너뛴다(-1 = 미검사). runHardening 도 동일하게 already 처리 후에만 센다.
+  const rows = roleCount === 0 ? await newRowsTotal(c) : -1;
   const su = await n(c, `SELECT (rolsuper)::int n FROM pg_roles WHERE rolname = current_user`);
   const canCreateRole = await n(c, `SELECT (rolcreaterole OR rolsuper)::int n FROM pg_roles WHERE rolname = current_user`);
   const ownsAll = await n(c, `SELECT count(*)::int n FROM pg_class r JOIN pg_namespace ns ON ns.oid=r.relnamespace WHERE ns.nspname='public' AND r.relname = ANY($1) AND pg_get_userbyid(r.relowner)=current_user`, [SIX_TABLES]);

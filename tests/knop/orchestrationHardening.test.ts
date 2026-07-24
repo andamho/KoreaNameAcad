@@ -260,6 +260,15 @@ describe("hardening 전용 러너(checksum allowlist + fail-closed)", () => {
     } finally { await db.close(); }
   });
 
+  test("preflight: 적용 후에는 already-applied(소유권 이전으로 행수 검사 건너뜀 — throw 안 함)", async () => {
+    const { db, client } = await freshBase();
+    try {
+      assert.equal((await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: SHA, apply: true })).outcome, "applied");
+      const pf = await hardeningPreflight(client, DEF, SHA); // 적용 후 재조회 — newRowsTotal 을 건너뛰어야 함
+      assert.equal(pf.state, "already-applied");
+    } finally { await db.close(); }
+  });
+
   // ── rollback 왕복(PGlite superuser: 구조 검증. 비-superuser 소유권 semantics 는 runNonSuperuserHardeningCheck.ts) ──
   test("rollback: apply → rollback → orchestration role 0 · trigger 0 · function 0 · 테이블 존속(DROP 안 함)", async () => {
     const { db, client } = await freshBase(); // rows=0(하드닝 요건). 롤백은 테이블을 DROP 하지 않는다.
