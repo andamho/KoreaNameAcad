@@ -213,6 +213,30 @@ function cleanName(n: string): string {
   return (n || "").replace(/[.\s]+$/, "");
 }
 
+// 개명 배지 옆 진행상황 칩: 현재 단계 + (진행중이면) 미용감사/정화하기 n/총
+function ProgressChips({ milestone, seq }: { milestone: number; seq?: { setKey: string; sent: number; total: number } }) {
+  const done = milestone >= MILESTONES.length;
+  const isCourt = milestone === COURT_MILESTONE;
+  return (
+    <>
+      <span
+        className="shrink-0 text-[11px] px-1.5 py-0.5 rounded-full font-medium"
+        style={{
+          background: done ? "#F3F4F6" : isCourt ? "#FEF3C7" : "#E1F5EE",
+          color: done ? "#6B7280" : isCourt ? "#B45309" : "#1D9E75",
+        }}
+      >
+        {done ? "완료" : MILESTONES[milestone]}
+      </span>
+      {seq && (
+        <span className="shrink-0 text-[11px] px-1.5 py-0.5 rounded-full bg-sky-100 text-sky-700 font-medium">
+          {seq.setKey === "gaemyeong_request" ? "미용감사" : "정화하기"} {seq.sent}/{seq.total}
+        </span>
+      )}
+    </>
+  );
+}
+
 function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void }) {
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -223,6 +247,13 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
   const [newOpen, setNewOpen] = useState(false);
 
   const { data: board, isLoading } = useQuery({ queryKey: ["knop-board"], queryFn: () => knopApi.customerBoard() });
+  // 진행중 관리문자(미용감사/정화하기) — 명단에서 개명 옆에 표시
+  const { data: activeSeqs } = useQuery({
+    queryKey: ["knop-notice-active"],
+    queryFn: () => knopApi.listActiveSequences(),
+    refetchInterval: 60000,
+  });
+  const seqByCust = new Map((activeSeqs || []).map((s) => [s.customerId, s]));
   const advance = useMutation({
     // force=true 면 뒤 단계로도 되돌릴 수 있다(잘못 찍은 단계 수정용)
     mutationFn: ({ projectId, toStatus, force }: { projectId: string; toStatus: string; force?: boolean; toMilestone?: number }) =>
@@ -372,11 +403,12 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
           </button>
           <button className="text-left min-w-0" onClick={() => onOpenCustomer(c.id)}>
             <div className="text-[11px] text-gray-400">{c.customerCode}</div>
-            <div className="text-sm font-medium text-gray-900 truncate flex items-center gap-1.5">
-              {cleanName(c.name)}
-              <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${c.kind === "개명" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
+            <div className="text-sm font-medium text-gray-900 flex items-center flex-wrap gap-1">
+              <span className="truncate">{cleanName(c.name)}</span>
+              <span className={`shrink-0 text-[11px] px-1.5 py-0.5 rounded-full ${c.kind === "개명" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
                 {c.kind || "상담"}
               </span>
+              <ProgressChips milestone={c.milestone} seq={seqByCust.get(c.id)} />
             </div>
           </button>
           {MILESTONES.map((_, i) => {
@@ -463,12 +495,11 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
       {/* 모바일 전용 카드 목록: 6열 고정 보드는 폰에서 뭉개지므로 세로 카드로 */}
       <div className="sm:hidden divide-y divide-gray-100">
         {rows.map((c) => {
-          const stepLabel = c.milestone >= MILESTONES.length ? "완료" : MILESTONES[c.milestone];
           return (
             <div key={c.id} className="py-3">
               <div className="flex items-center gap-3">
                 <button className="flex-1 min-w-0 text-left" onClick={() => onOpenCustomer(c.id)}>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center flex-wrap gap-1">
                     <span className="text-sm font-medium text-gray-900 truncate">{cleanName(c.name)}</span>
                     <span
                       className={`shrink-0 text-[11px] px-1.5 py-0.5 rounded-full ${
@@ -477,10 +508,10 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                     >
                       {c.kind || "상담"}
                     </span>
+                    <ProgressChips milestone={c.milestone} seq={seqByCust.get(c.id)} />
                   </div>
-                  <div className="mt-0.5 flex items-center gap-2">
+                  <div className="mt-0.5">
                     <span className="text-[11px] text-gray-400 tabular-nums">{c.customerCode}</span>
-                    <span className="text-[11px] font-medium text-[#1D9E75]">· {stepLabel}</span>
                   </div>
                 </button>
                 <button
