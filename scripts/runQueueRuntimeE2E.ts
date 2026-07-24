@@ -7,13 +7,14 @@ import crypto from "crypto";
 import os from "os";
 import path from "path";
 import fs from "fs";
+import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { runHardening, findHardening } from "../server/migrations/hardening/hardeningRunner";
 import { sha256Normalized } from "../server/migrations/checksum";
 import { createJob } from "../server/jobQueue/createJob";
 import { processNextJob } from "../server/jobQueue/worker";
-import { listJobs, getJobDetail } from "../server/jobQueue/adminApi";
+import { listJobs, getJobDetail, requestJobCancel } from "../server/jobQueue/adminApi";
 import { internalReportComputeAdapter } from "../server/jobQueue/adapters/internalReport";
 import { sha256Hex } from "../server/jobQueue/idempotency";
 import type { QueueClient } from "../server/jobQueue/types";
@@ -56,11 +57,12 @@ export async function runQueueE2E(): Promise<{ ran: boolean; exitCode: number }>
   const hardClient = { query: (sql: string, params?: unknown[]) => ao.query(sql, params as any[]), exec: async (sql: string) => { await ao.query(sql); } };
   const hr = await runHardening(hardClient, DEF, { sqlText: HARD, actualSha256: sha256Normalized(HARD), apply: true });
   add("hardening 0001 applied(role 생성·소유권)", hr.outcome === "applied", hr.outcome);
-  await ao.query(S5); await ao.query(S5B); // cancel 컬럼 + writer/reader grants
-  // 운영 credential 모사: writer/reader 비밀번호 설정 + DB CONNECT (embedded 로컬 전용 — production 아님)
+  await ao.query(S5); await ao.query(S5B); // cancel 컬럼 + writer/queue_admin/reader grants(0005b 가 queue_admin role 생성)
+  // 운영 credential 모사: 각 role 비밀번호 설정(embedded 로컬 전용 — production 아님). CONNECT 는 0005b DO 블록이 부여.
   await ao.query(`ALTER ROLE orchestration_writer LOGIN PASSWORD 'wpw'`);
+  await ao.query(`ALTER ROLE orchestration_queue_admin LOGIN PASSWORD 'apw'`);
   await ao.query(`ALTER ROLE orchestration_reader LOGIN PASSWORD 'rpw'`);
-  await ao.query(`GRANT CONNECT ON DATABASE postgres TO orchestration_writer, orchestration_reader`);
+  add("0005b: queue_admin role 생성됨(role 분리)", (await ao.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname='orchestration_queue_admin'`)).rows[0].n === 1);
   await ao.end();
 
   // ── writer 연결(소유자 아님)로 전체 런타임 경로 ──
@@ -92,20 +94,44 @@ export async function runQueueE2E(): Promise<{ ran: boolean; exitCode: number }>
   } catch (e: any) { add("writer 경로", false, String(e?.message ?? e).slice(0, 120)); }
   finally { await wc.end().catch(() => {}); }
 
-  // ── reader 연결(SELECT 전용)로 관리자 조회 ──
+  // ── admin(queue_admin) 연결: 목록·상세·취소 요청(cancel 컬럼 UPDATE) — INSERT 불가(최소권한) ──
+  const adc = new pg.Client({ host: "localhost", port, user: "orchestration_queue_admin", password: "apw", database: "postgres" }); await adc.connect();
+  try {
+    const aq = wrap(adc);
+    const items = await listJobs(aq, { limit: 10 });
+    add("admin(queue_admin) 목록 조회", items.length >= 1 && items.some((j) => j.id === jobId && j.status === "succeeded"));
+    add("admin 단건 상세(execution 이력)", (await getJobDetail(aq, jobId))?.executions.some((e) => e.status === "succeeded") === true);
+    // 취소 요청: writer 로 새 queued job 만들고 admin 이 cancel 요청(cancel_requested_at UPDATE 최소권한)
+    const wc2 = new pg.Client({ host: "localhost", port, user: "orchestration_writer", password: "wpw", database: "postgres" }); await wc2.connect();
+    const c2 = await createJob(wrap(wc2), { ...(jobInput as any), projectId: "cancel-target" }); await wc2.end();
+    const rc2 = await requestJobCancel(aq, c2.job.id, "admin#ref");
+    add("admin 이 cancel 요청 성공(cancel 컬럼 UPDATE 최소권한)", rc2.requested === true);
+    add("admin 은 INSERT 불가(최소권한 — job 직접 생성 거부)", await (async () => { try { await aq.query(`INSERT INTO jobs (owner_scope,job_type,input_identity,request_version_snapshot,execution_options_hash,payload_hash,idempotency_key) VALUES ('x','internal-report','{}','{}',$1,$1,'zz')`, [sha256Hex("z")]); return false; } catch { return true; } })());
+  } catch (e: any) { add("admin 경로", false, String(e?.message ?? e).slice(0, 120)); }
+  finally { await adc.end().catch(() => {}); }
+
+  // ── reader 연결(SELECT 전용): 조회 가능, write 거부 ──
   const rc = new pg.Client({ host: "localhost", port, user: "orchestration_reader", password: "rpw", database: "postgres" }); await rc.connect();
   try {
     const rq = wrap(rc);
-    const items = await listJobs(rq, { limit: 10 });
-    add("reader 관리자 목록 조회", items.length >= 1 && items.some((j) => j.id === jobId && j.status === "succeeded"));
-    const detail = await getJobDetail(rq, jobId);
-    add("reader 단건 상세(execution 이력)", !!detail && detail.executions.some((e) => e.status === "succeeded"));
-    // reader 는 write 불가(권한 분리 확인)
-    let readerWriteDenied = false;
-    try { await rq.query(`UPDATE jobs SET status='failed' WHERE id=$1`, [jobId]); } catch { readerWriteDenied = true; }
-    add("reader 는 write 거부(권한 분리)", readerWriteDenied);
+    add("reader 목록 조회 가능", (await listJobs(rq, { limit: 5 })).length >= 1);
+    let denied = false; try { await rq.query(`UPDATE jobs SET status='failed' WHERE id=$1`, [jobId]); } catch { denied = true; }
+    add("reader 는 write 거부(SELECT 전용)", denied);
   } catch (e: any) { add("reader 경로", false, String(e?.message ?? e).slice(0, 120)); }
-  finally { await rc.end().catch(() => {}); await epg.stop().catch(() => {}); }
+  finally { await rc.end().catch(() => {}); }
+
+  // ── 실제 smoke CLI 를 서브프로세스로 실행(create→worker inline→heartbeat→succeeded→admin 조회 재검증) ──
+  try {
+    const wurl = `postgresql://orchestration_writer:wpw@localhost:${port}/postgres?sslmode=disable`;
+    const aurl = `postgresql://orchestration_queue_admin:apw@localhost:${port}/postgres?sslmode=disable`;
+    const out = execFileSync("node", ["--import", "tsx/esm", "scripts/createQueueSmokeJob.ts"], {
+      cwd: root, encoding: "utf8",
+      env: { ...process.env, CONFIRM_QUEUE_SMOKE: "true", SMOKE_WORKER_INLINE: "true", ORCHESTRATION_WORKER_URL: wurl, ORCHESTRATION_ADMIN_URL: aurl, SMOKE_TIMEOUT_MS: "8000" },
+    });
+    add("smoke CLI: create→inline worker(heartbeat)→succeeded→admin 조회", /status=succeeded/.test(out) && /admin 조회: status=succeeded/.test(out));
+    add("smoke CLI 출력에 credential/DSN 원문 없음", !/orchestration_writer:wpw@|postgresql:\/\/orchestration/.test(out));
+  } catch (e: any) { add("smoke CLI", false, String(e?.stdout ?? e?.message ?? e).replace(/\s+/g, " ").slice(0, 200)); }
+  finally { await epg.stop().catch(() => {}); }
 
   const fail = results.filter((r) => !r.ok);
   for (const r of results) console.log(`[q-e2e] ${r.ok ? "PASS" : "FAIL"} ${r.name}${r.detail ? " :: " + r.detail : ""}`);

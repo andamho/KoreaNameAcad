@@ -247,12 +247,18 @@ describe("작업큐 e2e — 관리자 작업목록 API", () => {
   });
 });
 
-describe("작업큐 e2e — 전용 연결 fail-closed", () => {
-  test("ORCHESTRATION_QUEUE_URL 미설정 → configured=false · acquire throw(소유자 연결 비의존)", async () => {
-    const saved = process.env[QUEUE_URL_ENV]; delete process.env[QUEUE_URL_ENV];
+describe("작업큐 e2e — 전용 연결 fail-closed(worker/admin 분리)", () => {
+  test("worker/admin URL 미설정 → configured=false · acquire throw(소유자 연결 비의존)", async () => {
+    const savedW = process.env[QUEUE_URL_ENV.worker], savedA = process.env[QUEUE_URL_ENV.admin];
+    delete process.env[QUEUE_URL_ENV.worker]; delete process.env[QUEUE_URL_ENV.admin];
     try {
-      assert.equal(queueConnectionConfigured(), false);
-      await assert.rejects(() => acquireQueueClient(), /ORCHESTRATION_QUEUE_URL 미설정/);
-    } finally { if (saved !== undefined) process.env[QUEUE_URL_ENV] = saved; }
+      assert.equal(queueConnectionConfigured("worker"), false);
+      assert.equal(queueConnectionConfigured("admin"), false);
+      await assert.rejects(() => acquireQueueClient("worker"), /ORCHESTRATION_WORKER_URL 미설정/);
+      await assert.rejects(() => acquireQueueClient("admin"), /ORCHESTRATION_ADMIN_URL 미설정/);
+    } finally {
+      if (savedW !== undefined) process.env[QUEUE_URL_ENV.worker] = savedW;
+      if (savedA !== undefined) process.env[QUEUE_URL_ENV.admin] = savedA;
+    }
   });
 });

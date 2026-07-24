@@ -7,7 +7,7 @@ import { listJobs, getJobDetail, requestJobCancel } from "./adminApi";
 import { isJobStatus, type JobStatus } from "../../shared/jobQueueContract";
 
 async function withQueue<T>(fn: (q: import("./types").QueueClient) => Promise<T>): Promise<T> {
-  const { queue, release } = await acquireQueueClient();
+  const { queue, release } = await acquireQueueClient("admin"); // 관리자 전용 credential(SELECT + cancel UPDATE)
   try { return await fn(queue); } finally { await release().catch(() => {}); }
 }
 
@@ -15,7 +15,7 @@ async function withQueue<T>(fn: (q: import("./types").QueueClient) => Promise<T>
 export function mountJobQueueAdmin(app: Express, prefix: string, requireAdmin: RequestHandler): void {
   const base = `${prefix}/jobqueue`;
   const guard503: RequestHandler = (_req, res, next) => {
-    if (!queueConnectionConfigured()) { res.status(503).json({ error: "queue-connection-unconfigured", detail: "ORCHESTRATION_QUEUE_URL 미설정" }); return; }
+    if (!queueConnectionConfigured("admin")) { res.status(503).json({ error: "queue-connection-unconfigured", detail: "ORCHESTRATION_ADMIN_URL 미설정" }); return; }
     next();
   };
 

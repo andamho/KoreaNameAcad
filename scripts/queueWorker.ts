@@ -27,14 +27,14 @@ function buildAdapters(): Map<string, JobAdapter> {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function runWorker(signal?: { stopped: boolean }): Promise<void> {
-  if (!queueConnectionConfigured()) {
-    console.error("[worker] ❌ ORCHESTRATION_QUEUE_URL 미설정 — fail-closed(소유자 연결 비의존).");
+  if (!queueConnectionConfigured("worker")) {
+    console.error("[worker] ❌ ORCHESTRATION_WORKER_URL 미설정 — fail-closed(소유자 연결 비의존).");
     process.exit(1);
   }
   const workerId = `${os.hostname()}#${process.pid}#${crypto.randomBytes(3).toString("hex")}`;
   const adapters = buildAdapters();
-  const { queue, release } = await acquireQueueClient();
-  console.log(`[worker] start id=${workerId} ${queueHostHash()} adapters=[${[...adapters.keys()].join(",")}] heartbeat=${USE_HEARTBEAT}`);
+  const { queue, release } = await acquireQueueClient("worker");
+  console.log(`[worker] start id=${workerId} ${queueHostHash("worker")} adapters=[${[...adapters.keys()].join(",")}] heartbeat=${USE_HEARTBEAT}`);
 
   const stop = signal ?? { stopped: false };
   let lastReap = 0;
@@ -60,7 +60,9 @@ export async function runWorker(signal?: { stopped: boolean }): Promise<void> {
   }
 }
 
-const isDirect = process.argv[1] && process.argv[1].replace(/\\/g, "/").endsWith("queueWorker.ts");
+// 직접 실행 판정: tsx(.ts) 와 번들(dist/queueWorker.js) 둘 다 지원.
+const entry = (process.argv[1] || "").replace(/\\/g, "/");
+const isDirect = entry.endsWith("queueWorker.ts") || entry.endsWith("queueWorker.js");
 if (isDirect) {
   const stop = { stopped: false };
   const shutdown = (sig: string) => { console.log(`[worker] ${sig} → graceful shutdown(현재 tick 완료 후 종료)`); stop.stopped = true; };

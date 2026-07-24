@@ -38,17 +38,27 @@ const SQL_0005B = () => fs.readFileSync(path.join(repoRoot, "migrations", "0005b
 const ROLLBACK_SQL = `
   REVOKE ALL ON "jobs" FROM orchestration_writer, orchestration_reader;
   REVOKE ALL ON "job_executions" FROM orchestration_writer, orchestration_reader;
+  DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='orchestration_queue_admin') THEN
+    EXECUTE 'REVOKE ALL ON "jobs" FROM orchestration_queue_admin';
+    EXECUTE 'REVOKE ALL ON "job_executions" FROM orchestration_queue_admin';
+    EXECUTE 'REVOKE USAGE ON SCHEMA public FROM orchestration_queue_admin';
+    EXECUTE format('REVOKE ALL ON DATABASE %I FROM orchestration_queue_admin', current_database());
+    EXECUTE 'DROP ROLE orchestration_queue_admin';
+  END IF; END $$;
   DROP INDEX IF EXISTS "jobs_cancel_requested_idx";
   ALTER TABLE "jobs" DROP COLUMN IF EXISTS "cancel_requested_at";
   ALTER TABLE "jobs" DROP COLUMN IF EXISTS "cancel_requested_by_ref";`;
 
 async function inspect(c: pg.Client) {
   const col = (await c.query(`SELECT count(*)::int n FROM information_schema.columns WHERE table_name='jobs' AND column_name IN ('cancel_requested_at','cancel_requested_by_ref')`)).rows[0].n;
-  const roles = (await c.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname IN ('orchestration_writer','orchestration_reader')`)).rows[0].n;
-  const wIns = roles === 2 ? (await c.query(`SELECT has_table_privilege('orchestration_writer','jobs','INSERT') AND has_table_privilege('orchestration_writer','job_executions','UPDATE') AS ok`)).rows[0].ok : false;
-  const rSel = roles === 2 ? (await c.query(`SELECT has_table_privilege('orchestration_reader','jobs','SELECT') AS ok`)).rows[0].ok : false;
-  console.log(`[queue-mig] inspect: cancelColumns=${col}/2 · orchestrationRoles=${roles}/2 · writerCanInsertJobs&UpdateExec=${wIns} · readerCanSelectJobs=${rSel}`);
-  return { columnsApplied: col === 2, rolesPresent: roles === 2, grantsApplied: wIns === true && rSel === true };
+  const wr = (await c.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname IN ('orchestration_writer','orchestration_reader')`)).rows[0].n;
+  const qa = (await c.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname='orchestration_queue_admin'`)).rows[0].n;
+  const wIns = wr === 2 ? (await c.query(`SELECT has_table_privilege('orchestration_writer','jobs','INSERT') AND has_table_privilege('orchestration_writer','job_executions','UPDATE') AS ok`)).rows[0].ok : false;
+  const rSel = wr === 2 ? (await c.query(`SELECT has_table_privilege('orchestration_reader','jobs','SELECT') AS ok`)).rows[0].ok : false;
+  // admin: SELECT jobs + UPDATE(cancel_requested_at) + INSERT 불가(최소권한 검증)
+  const aOk = qa === 1 && col === 2 ? (await c.query(`SELECT has_table_privilege('orchestration_queue_admin','jobs','SELECT') AND has_column_privilege('orchestration_queue_admin','jobs','cancel_requested_at','UPDATE') AND NOT has_table_privilege('orchestration_queue_admin','jobs','INSERT') AS ok`)).rows[0].ok : false;
+  console.log(`[queue-mig] inspect: cancelColumns=${col}/2 · writer/reader=${wr}/2 · queueAdmin=${qa}/1 · writerInsert&ExecUpdate=${wIns} · readerSelect=${rSel} · adminSelect&CancelUpdate&NoInsert=${aOk}`);
+  return { columnsApplied: col === 2, rolesPresent: wr === 2 && qa === 1, grantsApplied: wIns === true && rSel === true && aOk === true };
 }
 
 export async function main(): Promise<number> {

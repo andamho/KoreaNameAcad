@@ -144,3 +144,19 @@ migration apply(0002→0004→hardening) → cancel-ack additive migration → w
 - **admin HTTP**: `adminHttp.ts` `mountJobQueueAdmin` — 기존 requireAdmin 사용, `FEATURE_JOB_QUEUE=true` 게이트(기본 off), 요청당 전용 연결. GET jobs/:id, POST cancel. 비밀 미노출.
 - **migration 적용**: `scripts/applyQueueRuntime.ts`(inspect/dry-run/apply/rollback, host-pin, fail-closed) — 0005(cancel 컬럼)+0005b(grants). applyHardening 은 이를 미지원(hardening registry 전용)이라 별도 최소 연결(hardening CLI 재사용 안 함).
 - **실 PostgreSQL E2E**: `scripts/runQueueRuntimeE2E.ts`(embedded PG17 non-superuser) 8/8 — hardening→0005/0005b→**writer 가 소유자 없이** job 생성·claim·adapter(heartbeat)·complete→**reader** 조회·write 거부. `tests/knop/jobQueueE2E.test.ts` 12(PGlite).
+
+## 운영 배포 구조 확정(이번 묶음) + 정정
+### ⚠️ adapter 성격 정정
+- `internalReportComputeAdapter` 는 기존 `buildInternalReportQueuePreview()` 를 실행하는 **preview 계산 adapter** 다.
+  실제 PDF 생성·파일 저장·고객 연결을 하는 **업무 adapter 가 아니다**. 현재 달성 = **격리 환경에서 preview 계산 작업 queued→running→succeeded**,
+  실제 운영 업무 처리 **미연결**.
+
+### Railway 서비스 구성(확정)
+- **같은 저장소·같은 commit·같은 이미지**(Dockerfile: `npm ci --include=dev` → build → dist). 서비스별 start command 만 다르게.
+- **web service**(기존 `KoreaNameAcad`): `node dist/index.js`(기존 유지). 변수: 기존 + (admin API 쓰면) `FEATURE_JOB_QUEUE=true` · `ORCHESTRATION_ADMIN_URL`.
+- **worker service**(신규, 별도): start command **`node dist/queueWorker.js`**(빌드가 생성). 변수: `ORCHESTRATION_WORKER_URL`(필수) · `WORKER_IDLE_MS`/`REAPER_EVERY_MS`/`WORKER_HEARTBEAT`(선택). `FEATURE_JOB_QUEUE` 불요(worker 는 admin API 안 씀).
+- **migration** 은 Railway 서비스가 아니라 **운영자 로컬**(direct URL·host pin)에서 `scripts/runProductionQueueMigration.ps1` 로 실행.
+- credential 분리: worker=`ORCHESTRATION_WORKER_URL`(orchestration_writer) · admin API=`ORCHESTRATION_ADMIN_URL`(orchestration_queue_admin: SELECT + cancel 컬럼 UPDATE, INSERT 불가) · 소유자 `NEON_DATABASE_URL` 은 런타임 큐 작업에 **재사용 금지**.
+
+### 운영 start command(확정, 단일)
+- worker: `node dist/queueWorker.js` (`npm run worker` 동일). ⚠️ tsx 런타임 의존 없음(빌드 산출물). SIGINT/SIGTERM graceful shutdown, exit 0(정상)/1(fail-closed).
