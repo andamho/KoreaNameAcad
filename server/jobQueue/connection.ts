@@ -1,16 +1,18 @@
 // 큐 런타임 전용 DB 연결 — **소유자 연결(NEON_DATABASE_URL)에 의존하지 않는다.** role별 전용 변수로 분리:
-//   worker : ORCHESTRATION_WORKER_URL (=orchestration_writer)  — claim·heartbeat·complete·fail·reaper.
-//   admin  : ORCHESTRATION_ADMIN_URL  (=orchestration_queue_admin) — 목록·상세·cancel 요청(SELECT + cancel 컬럼 UPDATE).
-// 미설정이면 fail-closed. worker/admin 은 트랜잭션을 쓰므로 pool.query(라운드로빈)가 아니라 **전용 pg.Client**(단일 커넥션).
+//   worker  : ORCHESTRATION_WORKER_URL  (=orchestration_writer)      — claim·heartbeat·complete·fail·reaper.
+//   admin   : ORCHESTRATION_ADMIN_URL   (=orchestration_queue_admin) — 목록·상세·cancel 요청(SELECT + cancel 컬럼 UPDATE).
+//   enqueue : ORCHESTRATION_ENQUEUE_URL (=orchestration_enqueuer)    — 이름분석표 감시·**job 생성 전용**(jobs SELECT+INSERT만).
+// 미설정이면 fail-closed(role 간 fallback 금지 — 최소권한). 트랜잭션을 쓰므로 pool.query 가 아니라 **전용 pg.Client**.
 // 원문 URL/host/credential 을 로그에 남기지 않는다(host 는 sha256 8자).
 import crypto from "crypto";
 import pg from "pg";
 import type { QueueClient } from "./types";
 
-export type QueueRole = "worker" | "admin";
+export type QueueRole = "worker" | "admin" | "enqueue";
 export const QUEUE_URL_ENV: Record<QueueRole, string> = {
   worker: "ORCHESTRATION_WORKER_URL",
   admin: "ORCHESTRATION_ADMIN_URL",
+  enqueue: "ORCHESTRATION_ENQUEUE_URL",
 };
 
 export function queueConnectionConfigured(role: QueueRole): boolean {

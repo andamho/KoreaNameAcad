@@ -38,6 +38,12 @@ const SQL_0005B = () => fs.readFileSync(path.join(repoRoot, "migrations", "0005b
 const ROLLBACK_SQL = `
   REVOKE ALL ON "jobs" FROM orchestration_writer, orchestration_reader;
   REVOKE ALL ON "job_executions" FROM orchestration_writer, orchestration_reader;
+  DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='orchestration_enqueuer') THEN
+    EXECUTE 'REVOKE ALL ON "jobs" FROM orchestration_enqueuer';
+    EXECUTE 'REVOKE USAGE ON SCHEMA public FROM orchestration_enqueuer';
+    EXECUTE format('REVOKE ALL ON DATABASE %I FROM orchestration_enqueuer', current_database());
+    EXECUTE 'DROP ROLE orchestration_enqueuer';
+  END IF; END $$;
   DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='orchestration_queue_admin') THEN
     EXECUTE 'REVOKE ALL ON "jobs" FROM orchestration_queue_admin';
     EXECUTE 'REVOKE ALL ON "job_executions" FROM orchestration_queue_admin';
@@ -77,6 +83,19 @@ export function deployReadiness(ownerUrl: string): { hardFail: boolean } {
     }
   } else lines.push("worker URL: 미설정(배포 시점 제공) → WARN");
 
+  // 2b) enqueue URL host == owner host + enqueue 자격이 owner/writer 아님(최소권한 분리).
+  const enqueue = (process.env.ORCHESTRATION_ENQUEUE_URL || "").trim();
+  if (enqueue) {
+    const e = parseUrlSafe(enqueue);
+    if (!e) { lines.push("enqueue URL 파싱 실패 → FAIL"); hardFail = true; }
+    else {
+      const match = ownerParsed ? e.hostHash === ownerParsed.hostHash : false;
+      const isOwner = e.user === OWNER_ROLE || (ownerParsed && e.user === ownerParsed.user);
+      lines.push(`enqueue host == owner host: ${match ? "PASS" : "FAIL"} · enqueue 자격 ≠ owner: ${isOwner ? "FAIL" : "PASS"}`);
+      if (!match || isOwner) hardFail = true;
+    }
+  } else lines.push("enqueue URL: 미설정(이름분석표 큐 사용 시 필요) → WARN");
+
   // 3) admin URL host == worker/owner host + admin 자격이 owner 아님.
   if (admin) {
     const a = parseUrlSafe(admin);
@@ -113,12 +132,23 @@ async function inspect(c: pg.Client) {
   const col = (await c.query(`SELECT count(*)::int n FROM information_schema.columns WHERE table_name='jobs' AND column_name IN ('cancel_requested_at','cancel_requested_by_ref')`)).rows[0].n;
   const wr = (await c.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname IN ('orchestration_writer','orchestration_reader')`)).rows[0].n;
   const qa = (await c.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname='orchestration_queue_admin'`)).rows[0].n;
+  const eq = (await c.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname='orchestration_enqueuer'`)).rows[0].n;
   const wIns = wr === 2 ? (await c.query(`SELECT has_table_privilege('orchestration_writer','jobs','INSERT') AND has_table_privilege('orchestration_writer','job_executions','UPDATE') AS ok`)).rows[0].ok : false;
   const rSel = wr === 2 ? (await c.query(`SELECT has_table_privilege('orchestration_reader','jobs','SELECT') AS ok`)).rows[0].ok : false;
   // admin: SELECT jobs + UPDATE(cancel_requested_at) + INSERT 불가(최소권한 검증)
   const aOk = qa === 1 && col === 2 ? (await c.query(`SELECT has_table_privilege('orchestration_queue_admin','jobs','SELECT') AND has_column_privilege('orchestration_queue_admin','jobs','cancel_requested_at','UPDATE') AND NOT has_table_privilege('orchestration_queue_admin','jobs','INSERT') AS ok`)).rows[0].ok : false;
-  console.log(`[queue-mig] inspect: cancelColumns=${col}/2 · writer/reader=${wr}/2 · queueAdmin=${qa}/1 · writerInsert&ExecUpdate=${wIns} · readerSelect=${rSel} · adminSelect&CancelUpdate&NoInsert=${aOk}`);
-  return { columnsApplied: col === 2, rolesPresent: wr === 2 && qa === 1, grantsApplied: wIns === true && rSel === true && aOk === true };
+  // enqueuer: jobs SELECT+INSERT 만. UPDATE(claim/heartbeat/complete) 불가 · job_executions 권한 전무(reaper/execution 변경 불가).
+  const eOk = eq === 1 ? (await c.query(
+    `SELECT has_table_privilege('orchestration_enqueuer','jobs','SELECT')
+        AND has_table_privilege('orchestration_enqueuer','jobs','INSERT')
+        AND NOT has_table_privilege('orchestration_enqueuer','jobs','UPDATE')
+        AND NOT has_table_privilege('orchestration_enqueuer','jobs','DELETE')
+        AND NOT has_table_privilege('orchestration_enqueuer','job_executions','SELECT')
+        AND NOT has_table_privilege('orchestration_enqueuer','job_executions','INSERT')
+        AND NOT has_table_privilege('orchestration_enqueuer','job_executions','UPDATE') AS ok`,
+  )).rows[0].ok : false;
+  console.log(`[queue-mig] inspect: cancelColumns=${col}/2 · writer/reader=${wr}/2 · queueAdmin=${qa}/1 · enqueuer=${eq}/1 · writerInsert&ExecUpdate=${wIns} · readerSelect=${rSel} · adminSelect&CancelUpdate&NoInsert=${aOk} · enqueuerSelect&Insert&NoUpdate&NoExec=${eOk}`);
+  return { columnsApplied: col === 2, rolesPresent: wr === 2 && qa === 1 && eq === 1, grantsApplied: wIns === true && rSel === true && aOk === true && eOk === true };
 }
 
 export async function main(): Promise<number> {

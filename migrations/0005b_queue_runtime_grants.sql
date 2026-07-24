@@ -21,10 +21,24 @@ GRANT UPDATE ("cancel_requested_at", "cancel_requested_by_ref", "updated_at") ON
 -- 3) reader(모니터링): SELECT 만.
 GRANT SELECT ON "jobs", "job_executions" TO orchestration_reader;
 
--- 4) DB CONNECT(정적 SQL 은 DB 이름을 모르므로 current_database() 로).
+-- 4) enqueuer(=orchestration_enqueuer): 이름분석표 감시·**job 생성 전용**. createJob 이 실제 필요한 최소 권한만:
+--    jobs SELECT(idempotency 재조회) + INSERT(ON CONFLICT DO NOTHING). **UPDATE 없음**(claim/heartbeat/complete/fail 불가).
+--    job_executions 권한 **전무**(reaper·execution 변경 불가). worker/admin 권한과 완전 분리.
 DO $$ BEGIN
-  EXECUTE format('GRANT CONNECT ON DATABASE %I TO orchestration_writer, orchestration_queue_admin, orchestration_reader', current_database());
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='orchestration_enqueuer') THEN
+    CREATE ROLE orchestration_enqueuer LOGIN;  -- 비밀번호는 secret store 프로비저닝(SQL 밖)
+  END IF;
+END $$;
+GRANT USAGE ON SCHEMA public TO orchestration_enqueuer;
+GRANT SELECT, INSERT ON "jobs" TO orchestration_enqueuer;
+-- (job_executions·UPDATE 는 부여하지 않는다 — 최소권한)
+
+-- 5) DB CONNECT(정적 SQL 은 DB 이름을 모르므로 current_database() 로).
+DO $$ BEGIN
+  EXECUTE format('GRANT CONNECT ON DATABASE %I TO orchestration_writer, orchestration_queue_admin, orchestration_reader, orchestration_enqueuer', current_database());
 END $$;
 
--- ⚠️ ORCHESTRATION_WORKER_URL = orchestration_writer · ORCHESTRATION_ADMIN_URL = orchestration_queue_admin.
+-- ⚠️ ORCHESTRATION_WORKER_URL = orchestration_writer(claim·heartbeat·complete·fail·reaper) ·
+--    ORCHESTRATION_ADMIN_URL = orchestration_queue_admin(조회·취소) ·
+--    ORCHESTRATION_ENQUEUE_URL = orchestration_enqueuer(감시·job 생성 전용).
 --    소유자 URL(NEON_DATABASE_URL) 을 런타임 큐 작업에 재사용 금지.

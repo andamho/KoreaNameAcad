@@ -131,11 +131,12 @@ export async function syncReports(): Promise<SyncResult> {
   //   같은 파일 → 같은 inputAssetHash → 같은 idempotency key(중복 job 없음). 직접/큐 처리는 상호 배타(둘 다 실행 안 함).
   if (nameReportQueueEnabled()) {
     try {
-      if (!queueConnectionConfigured("worker")) {
-        console.error("[KOP] FEATURE_NAME_REPORT_QUEUE=true 지만 ORCHESTRATION_WORKER_URL 미설정 → enqueue 불가(직접 처리도 안 함, fail-closed).");
+      // enqueue 전용 최소권한 role(orchestration_enqueuer). worker/owner URL fallback 금지(fail-closed).
+      if (!queueConnectionConfigured("enqueue")) {
+        console.error("[KOP] FEATURE_NAME_REPORT_QUEUE=true 지만 ORCHESTRATION_ENQUEUE_URL 미설정 → enqueue 불가(직접 처리도 안 함, fail-closed).");
         saveState(state); return res;
       }
-      const { queue, release } = await acquireQueueClient("worker");
+      const { queue, release } = await acquireQueueClient("enqueue");
       try {
         const r = await enqueueDetectedReports(queue, deps); // 실제 createJob 경로
         res.processed = r.queued + r.deduped; res.queued = r.queued; res.skipped = r.deduped; res.processing_failed = r.failed;

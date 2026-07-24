@@ -62,7 +62,9 @@ export async function runQueueE2E(): Promise<{ ran: boolean; exitCode: number }>
   await ao.query(`ALTER ROLE orchestration_writer LOGIN PASSWORD 'wpw'`);
   await ao.query(`ALTER ROLE orchestration_queue_admin LOGIN PASSWORD 'apw'`);
   await ao.query(`ALTER ROLE orchestration_reader LOGIN PASSWORD 'rpw'`);
+  await ao.query(`ALTER ROLE orchestration_enqueuer LOGIN PASSWORD 'eqpw'`);
   add("0005b: queue_admin role 생성됨(role 분리)", (await ao.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname='orchestration_queue_admin'`)).rows[0].n === 1);
+  add("0005b: enqueuer role 생성됨(최소권한 분리)", (await ao.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname='orchestration_enqueuer'`)).rows[0].n === 1);
   await ao.end();
 
   // ── writer 연결(소유자 아님)로 전체 런타임 경로 ──
@@ -93,6 +95,23 @@ export async function runQueueE2E(): Promise<{ ran: boolean; exitCode: number }>
     add("execution=succeeded + 결과 아티팩트 해시 기록(실제 adapter 계산)", exArtifact?.status === "succeeded" && !!exArtifact?.h, exArtifact?.h?.slice(0, 8));
   } catch (e: any) { add("writer 경로", false, String(e?.message ?? e).slice(0, 120)); }
   finally { await wc.end().catch(() => {}); }
+
+  // ── enqueuer(orchestration_enqueuer) 연결: job 생성 전용. claim·execution·reaper 전부 거부(최소권한) ──
+  const eqc = new pg.Client({ host: "localhost", port, user: "orchestration_enqueuer", password: "eqpw", database: "postgres" }); await eqc.connect();
+  try {
+    const eq = wrap(eqc);
+    const eqCreated = await createJob(eq, { ...(jobInput as any), inputIdentity: { ...(jobInput as any).inputIdentity, inputAssetHash: sha256Hex("enqueue-asset"), sourceAssetHash: sha256Hex("enqueue-asset") } });
+    add("enqueuer 가 job 생성 가능(SELECT+INSERT)", eqCreated.created === true && eqCreated.job.status === "queued");
+    const denyUpdateJobs = await (async () => { try { await eq.query(`UPDATE jobs SET status='claimed' WHERE id=$1`, [eqCreated.job.id]); return false; } catch { return true; } })();
+    add("enqueuer 는 jobs UPDATE(claim) 불가", denyUpdateJobs);
+    const denyExecSelect = await (async () => { try { await eq.query(`SELECT 1 FROM job_executions LIMIT 1`); return false; } catch { return true; } })();
+    add("enqueuer 는 job_executions SELECT 불가", denyExecSelect);
+    const denyExecInsert = await (async () => { try { await eq.query(`INSERT INTO job_executions (job_id,attempt_number,worker_id,status,execution_reason) VALUES ($1,1,'x','claimed','normal')`, [eqCreated.job.id]); return false; } catch { return true; } })();
+    add("enqueuer 는 job_executions INSERT(claim/heartbeat) 불가", denyExecInsert);
+    const denyExecUpdate = await (async () => { try { await eq.query(`UPDATE job_executions SET status='failed'`); return false; } catch { return true; } })();
+    add("enqueuer 는 job_executions UPDATE(reaper/complete/fail) 불가", denyExecUpdate);
+  } catch (e: any) { add("enqueuer 경로", false, String(e?.message ?? e).slice(0, 120)); }
+  finally { await eqc.end().catch(() => {}); }
 
   // ── admin(queue_admin) 연결: 목록·상세·취소 요청(cancel 컬럼 UPDATE) — INSERT 불가(최소권한) ──
   const adc = new pg.Client({ host: "localhost", port, user: "orchestration_queue_admin", password: "apw", database: "postgres" }); await adc.connect();
