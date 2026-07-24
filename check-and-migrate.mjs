@@ -1,8 +1,9 @@
 import pg from "pg";
+import { requireDbUrl } from "./scripts/secureDbUrl.mjs";
 const { Client } = pg;
 
 const client = new Client({
-  connectionString: "postgresql://neondb_owner:npg_Tx3qKFVUSiE8@ep-royal-sunset-a10na1ix-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require",
+  connectionString: requireDbUrl(),
 });
 
 await client.connect();
