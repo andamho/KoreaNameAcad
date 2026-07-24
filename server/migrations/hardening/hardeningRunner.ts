@@ -32,7 +32,7 @@ export const HARDENINGS: HardeningDef[] = [
   {
     id: "0001_orchestration_immutability_roles",
     sqlFile: "0001_orchestration_immutability_roles.sql",
-    expectedSha256: "71c83e66ef896bb331b60c21a68f457bcdc09b04027f48225d2e1e2174bd3372",
+    expectedSha256: "88e24efbdb0c639a3a1428756dceb8373a1b58f865ca42e3408f5bf24ed8679d",
     expectedRoles: ["orchestration_admin", "orchestration_deployer", "orchestration_owner", "orchestration_reader", "orchestration_writer"],
     expectedTriggerCount: 15,
     expectedFunctions: ["orch_deny_write", "orch_deny_delete", "orch_guard_business_update", "orch_deny_truncate"],
@@ -45,7 +45,8 @@ export type HardeningOutcome =
   | "applied" | "dry-run-verified" | "already-applied"
   | "aborted-sha-mismatch" | "aborted-postverify" | "aborted-owner-mismatch"
   | "aborted-public-privilege" | "aborted-app-privilege" | "aborted-function-public" | "aborted-function-fingerprint"
-  | "aborted-trigger-disabled" | "aborted-rows-present" | "aborted-sql-error" | "aborted-partial";
+  | "aborted-trigger-disabled" | "aborted-rows-present" | "aborted-sql-error" | "aborted-partial"
+  | "aborted-executor-escalation";
 export interface HardeningResult { outcome: HardeningOutcome; id: string; committed: boolean; detail: string; }
 
 async function n(c: HardeningClient, sql: string, params?: unknown[]): Promise<number> { return (await c.query(sql, params)).rows[0].n; }
@@ -65,6 +66,51 @@ const tablesOwnedBy = (c: HardeningClient, owner: string) => n(c,
   `SELECT count(*)::int n FROM pg_class r JOIN pg_namespace ns ON ns.oid=r.relnamespace
      WHERE ns.nspname='public' AND r.relname = ANY($1) AND pg_get_userbyid(r.relowner)=$2`, [SIX_TABLES, owner]);
 const newRowsTotal = async (c: HardeningClient): Promise<number> => { let t = 0; for (const tbl of SIX_TABLES) t += await n(c, `SELECT count(*)::int n FROM "${tbl}"`); return t; };
+
+/**
+ * executor(=이 SQL 을 실행하는 현재 owner/deployer) 가 orchestration role 로 **SET ROLE 가능하면 위반**.
+ *   PG16+ 에서 CREATEROLE 비-superuser 가 role 을 생성하면 admin-only 자동 멤버십(set=false·inherit=false)이 남는데,
+ *   이는 SET ROLE 불가라 escalation 이 아니다. 하지만 어떤 경로로든 executor 가 SET ROLE owner/admin/deployer 가 **가능**하면
+ *   migration credential 이 owner 를 사칭할 수 있으므로 fail-closed.
+ *   ⚠️ superuser 세션(PGlite 테스트 등)은 항상 SET 가능하므로 이 검사를 건너뛴다(비-superuser 운영 경로에서만 유효).
+ */
+async function executorCanEscalate(c: HardeningClient): Promise<{ superuser: boolean; escalatable: string[] }> {
+  const su = await n(c, `SELECT (rolsuper)::int n FROM pg_roles WHERE rolname = current_user`);
+  if (su === 1) return { superuser: true, escalatable: [] };
+  const escalatable: string[] = [];
+  for (const role of ["orchestration_owner", "orchestration_admin", "orchestration_deployer"]) {
+    if (await n(c, `SELECT pg_has_role(current_user, $1, 'SET')::int n`, [role]) === 1) escalatable.push(role);
+  }
+  return { superuser: false, escalatable };
+}
+
+// ── apply 전 read-only preflight ─────────────────────────────────────────────
+// ⚠️ **읽기 전용**: DDL/DML 0. apply Gate 가 실제 write 전에 전제 조건과 중단 조건을 먼저 확인한다.
+//    통과해도 apply 성공을 보장하지 않는다(실제 적용·검증은 runHardening 이 트랜잭션 안에서 수행).
+export interface HardeningPreflight {
+  ok: boolean;
+  blockers: string[];      // 하나라도 있으면 apply 하지 말 것
+  observations: string[];  // 참고용
+  state: "clean-ready" | "already-applied" | "partial" | "rows-present" | "not-ready";
+}
+export async function hardeningPreflight(c: HardeningClient, def: HardeningDef, actualSha256: string): Promise<HardeningPreflight> {
+  const blockers: string[] = []; const observations: string[] = [];
+  if (actualSha256 !== def.expectedSha256) blockers.push(`sha 불일치(expected=${def.expectedSha256.slice(0, 8)}… actual=${actualSha256.slice(0, 8)}…)`);
+  const roleCount = await rolesExist(c, def.expectedRoles);
+  const rows = await newRowsTotal(c);
+  const su = await n(c, `SELECT (rolsuper)::int n FROM pg_roles WHERE rolname = current_user`);
+  const canCreateRole = await n(c, `SELECT (rolcreaterole OR rolsuper)::int n FROM pg_roles WHERE rolname = current_user`);
+  const ownsAll = await n(c, `SELECT count(*)::int n FROM pg_class r JOIN pg_namespace ns ON ns.oid=r.relnamespace WHERE ns.nspname='public' AND r.relname = ANY($1) AND pg_get_userbyid(r.relowner)=current_user`, [SIX_TABLES]);
+  observations.push(`executor=${su === 1 ? "superuser" : "non-superuser"} canCreateRole=${canCreateRole === 1} ownsAllSixTables=${ownsAll}/${SIX_TABLES.length} existingOrchRoles=${roleCount}/${def.expectedRoles.length} sixTableRows=${rows}`);
+
+  let state: HardeningPreflight["state"] = "clean-ready";
+  if (roleCount === def.expectedRoles.length) { state = "already-applied"; observations.push("이미 5개 orchestration role 존재 → already-applied 경로(재적용 아님)."); }
+  else if (roleCount > 0) { state = "partial"; blockers.push(`orchestration role 일부만 존재(${roleCount}/${def.expectedRoles.length}) → 부분 상태(수동 정리 필요)`); }
+  else if (rows !== 0) { state = "rows-present"; blockers.push(`6테이블 행수 ${rows}≠0 → fail-closed(신규 6테이블은 비어 있어야 apply)`); }
+  if (canCreateRole !== 1) blockers.push("executor 가 CREATE ROLE 불가 → apply 불가");
+  if (su !== 1 && ownsAll !== SIX_TABLES.length && state === "clean-ready") blockers.push(`비-superuser executor 가 6테이블 전부의 owner 가 아님(${ownsAll}/${SIX_TABLES.length}) → 소유권 이전 불가`);
+  return { ok: blockers.length === 0, blockers, observations, state };
+}
 
 // startup self-check(운영 앱 부팅 시): 기대 trigger 수 + 전부 enabled 여야 true. 하나라도 disabled/누락이면 false → writer 기동 거부.
 export async function startupTriggerSelfCheck(c: HardeningClient, def: HardeningDef): Promise<{ ok: boolean; count: number; disabled: string[] }> {
@@ -86,6 +132,8 @@ async function verify(c: HardeningClient, def: HardeningDef): Promise<{ ok: true
   if (await publicFunctionExecute(c, def.expectedFunctions) !== 0) return { ok: false, outcome: "aborted-function-public", detail: "PUBLIC function EXECUTE 잔존" };
   const fnsec = await evaluateFunctionSecurityAssertions(c);
   if (!fnsec.gateOpen) return { ok: false, outcome: "aborted-function-fingerprint", detail: `function security assertion 실패: ${fnsec.failedIds.join(",")}` };
+  const esc = await executorCanEscalate(c);
+  if (esc.escalatable.length) return { ok: false, outcome: "aborted-executor-escalation", detail: `executor 가 SET ROLE 가능(사칭 위험): ${esc.escalatable.join(",")}` };
   return { ok: true };
 }
 

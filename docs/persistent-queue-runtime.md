@@ -88,3 +88,42 @@
 3. FEATURE_JOB_QUEUE 플래그 설계(기본 OFF).
 4. worker entrypoint·reaper cron 배치 계획(단일 실행 보장).
 5. 그 다음에야 calls-120 복구·비멱등 게시 adapter.
+
+## 구현 순서 + 코드 위치 확정 (production 배선 준비 — Bundle C)
+> ⚠️ 아래는 **적용 순서와 실제 파일 위치**를 못박는 표다. 코드 배선(worker entrypoint 연결)은 **production apply 승인 이후**에 한다. 지금은 위치·순서만 확정한다.
+
+### 0) DB migration 적용 — `server/migrate.ts` (drizzle push 미사용)
+- **적용 명령**(host 핀 필수, apply=COMMIT):
+  ```
+  MIGRATION_MODE=apply CONFIRM_APPLY=true EXPECTED_DATABASE_HOST_HASH=<sha256(host)> \
+    node --import tsx/esm server/migrate.ts <id>
+  ```
+  `inspect`(기본, SELECT만) → `dry-run`(tx 후 ROLLBACK) → `apply`(COMMIT) 3단. sha256(CRLF→LF) 레지스트리 대조, host 원문 미로그.
+- **적용 순서**: `0002_create_persistent_job_queue`(jobs/job_executions) → `0004_cross_agent_orchestration`(6 orchestration 테이블) → **hardening `0001`(별도 hardeningRunner·§12a-1, 승인 Gate)**. 레지스트리: `server/migrations/registry.ts`.
+- ⚠️ `check-and-migrate.mjs`(루트)는 **일회성 ad-hoc + 하드코딩 credential** → 정식 경로 아님(자격증명 회전·env 전환 별도 태스크).
+
+### 1) 이미 구현된 런타임 모듈(`server/jobQueue/`) — 배선만 남음
+| 항목 | 파일 | 진입 함수 | 계약 |
+|---|---|---|---|
+| worker claim | `claim.ts` | `claimNextJob` | `FOR UPDATE SKIP LOCKED` + active 부재 + attempt=max+1 + lease token **hash만 DB** → commit 후 adapter |
+| claimed→running | `running.ts` | `markRunning` | fencing(exec+worker+token+status=claimed) 일치만 |
+| lease | `leaseToken.ts` | raw 생성/hash · 경계 `lease_expires_at>now()` | 만료 lease 는 heartbeat/complete/fail 전부 거부(reaper 소관) |
+| heartbeat | `heartbeat.ts` | `heartbeat` | fencing 후 heartbeat_at·lease 연장(DB now()). 반환 false=즉시 중단 |
+| complete | `complete.ts` | `completeExecution` | fencing + verification + terminal 덮어쓰기 금지 |
+| fail | `fail.ts` | `failExecution` / `markVersionMismatch` | transient→queued(available_at) / permanent·소진→failed / side-effect→needs_review |
+| idempotency | `idempotency.ts` | canonical JSON+sha256 key | createJob(`createJob.ts`) 재요청 1행 |
+| reaper | `reaper.ts` | `reapExpired` | 만료 claimed(미시작)→재시도, running(시작)→정책 |
+| 읽기·진단 | `repository.ts` · `invariant.ts` | `getJob`/`inspectJobInvariant` | — |
+- 배럴: `server/jobQueue/index.ts`. **운영 route/cron/worker 에 미연결**(현 prototype 계약).
+
+### 2) ⚠️ cancel acknowledgment — **미구현 갭**(추가 필요)
+- 현 스키마: `jobs.cancelled_at`(timestamptz) + status `cancelled` 는 있으나, **협조적 취소 요청→worker ack 흐름이 없다**(`cancel_requested_at` 컬럼·ack 모듈 부재).
+- **필요 작업(구현 순서)**:
+  1. **additive migration**(신규 `000N`): `jobs.cancel_requested_at timestamptz NULL`(+ 선택 `cancel_requested_by_ref`). 기존 행 무영향·backfill 0. `server/migrations/registry.ts` 등록 + fixture.
+  2. **cancel 요청 API**: job 을 삭제하지 않고 `cancel_requested_at=now()` 만 기록(멱등). 위치: `server/jobQueue/cancel.ts`(신규) → `requestCancel(jobId)`.
+  3. **worker ack**: `heartbeat` 반환값에 `cancelRequested: boolean` 추가(fencing 유지). worker 가 true 를 받으면 중단하고 `acknowledgeCancel(executionId, workerId, leaseToken)` 호출 → execution=cancelled·job=cancelled·`cancelled_at` 기록(terminal 덮어쓰기 금지, 부작용 없었음 증명 시에만). 위치: `cancel.ts` + `heartbeat.ts` 확장.
+  4. 테스트(PGlite+PG17): 요청 멱등, 미시작 claimed 취소=부작용0 즉시 cancelled, running 취소=ack 후에만, 만료 lease 취소 거부, terminal 후 취소 무효.
+- **원칙**: cancel 도 claim/lease/fencing 계약을 따른다(관리자 함수가 execution 상태를 직접 쓰지 않음 — forced-rerun 안 C 와 동일 원칙).
+
+### 3) 배선 순서(요약)
+migration apply(0002→0004→hardening) → cancel-ack additive migration → worker entrypoint(단일 실행·reaper cron) 연결 → `FEATURE_JOB_QUEUE`(기본 OFF) → 첫 adapter(internal-report) dual-write 관측 → calls-120 복구.

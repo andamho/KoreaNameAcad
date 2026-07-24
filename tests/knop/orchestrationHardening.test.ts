@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { runHardening, findHardening, HARDENINGS, startupTriggerSelfCheck, type HardeningClient } from "../../server/migrations/hardening/hardeningRunner";
+import { runHardening, findHardening, HARDENINGS, startupTriggerSelfCheck, hardeningPreflight, type HardeningClient } from "../../server/migrations/hardening/hardeningRunner";
 import { SIX_TABLES } from "../../server/migrations/hardening/tables";
 import { fileSha256Normalized } from "../../server/migrations/checksum";
 
@@ -15,6 +15,7 @@ const root = path.join(here, "..", "..");
 const SQL_0002 = readFileSync(path.join(root, "migrations", "0002_create_persistent_job_queue.sql"), "utf-8");
 const SQL_0004 = readFileSync(path.join(root, "migrations", "0004_cross_agent_orchestration.sql"), "utf-8");
 const SQL_HARDEN = readFileSync(path.join(root, "migrations", "hardening", "0001_orchestration_immutability_roles.sql"), "utf-8");
+const ROLLBACK_SQL = readFileSync(path.join(root, "migrations", "hardening", "0001_orchestration_immutability_roles.rollback.sql"), "utf-8");
 const H = "a".repeat(64);
 
 async function setup() {
@@ -233,5 +234,65 @@ describe("hardening 전용 러너(checksum allowlist + fail-closed)", () => {
       await db.exec(`ALTER TABLE orchestration_audit_log DISABLE TRIGGER orchestration_audit_log_append_only`);
       assert.equal((await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: SHA, apply: true })).outcome, "aborted-trigger-disabled");
     } finally { await db.close(); }
+  });
+
+  // ── apply 전 read-only preflight ──────────────────────────────────────────
+  test("preflight: clean → ok/clean-ready, write 0 · sha 불일치 → blocker · 적용 후 → already-applied", async () => {
+    const { db, client } = await freshBase();
+    try {
+      const pf = await hardeningPreflight(client, DEF, SHA);
+      assert.equal(pf.ok, true, `blockers=${pf.blockers.join("|")}`);
+      assert.equal(pf.state, "clean-ready");
+      assert.equal(await roleN(db), 0, "preflight 는 write 0(role 미생성)");
+      const bad = await hardeningPreflight(client, DEF, "0".repeat(64));
+      assert.equal(bad.ok, false); assert.ok(bad.blockers.some((b) => b.includes("sha")));
+      await db.exec(SQL_HARDEN);
+      const pf2 = await hardeningPreflight(client, DEF, SHA);
+      assert.equal(pf2.state, "already-applied");
+    } finally { await db.close(); }
+  });
+
+  test("preflight: 6테이블 행수≠0 → rows-present blocker", async () => {
+    const { db, client } = await freshBase(true);
+    try {
+      const pf = await hardeningPreflight(client, DEF, SHA);
+      assert.equal(pf.state, "rows-present"); assert.equal(pf.ok, false);
+    } finally { await db.close(); }
+  });
+
+  // ── rollback 왕복(PGlite superuser: 구조 검증. 비-superuser 소유권 semantics 는 runNonSuperuserHardeningCheck.ts) ──
+  test("rollback: apply → rollback → orchestration role 0 · trigger 0 · function 0 · 테이블 존속(DROP 안 함)", async () => {
+    const { db, client } = await freshBase(); // rows=0(하드닝 요건). 롤백은 테이블을 DROP 하지 않는다.
+    try {
+      assert.equal((await runHardening(client, DEF, { sqlText: SQL_HARDEN, actualSha256: SHA, apply: true })).outcome, "applied");
+      await db.exec(ROLLBACK_SQL);
+      assert.equal(await roleN(db), 0, "rollback 후 orchestration role 0");
+      const trig = (await db.query<{ n: number }>(`SELECT count(*)::int n FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace ns ON ns.oid=c.relnamespace WHERE ns.nspname='public' AND NOT t.tgisinternal AND c.relname = ANY($1)`, [SIX_TABLES])).rows[0].n;
+      assert.equal(trig, 0, "rollback 후 orchestration trigger 0");
+      const fns = (await db.query<{ n: number }>(`SELECT count(*)::int n FROM pg_proc WHERE proname LIKE 'orch\\_%'`)).rows[0].n;
+      assert.equal(fns, 0, "rollback 후 함수 0");
+      // 6테이블이 여전히 존재하고 SELECT 가능(데이터 보존 = 테이블 DROP 안 함)
+      for (const t of SIX_TABLES) await db.query(`SELECT count(*) FROM "${t}"`);
+    } finally { await db.close(); }
+  });
+
+  // ── secret·production-write 차단 ──────────────────────────────────────────
+  test("secret 차단: hardening SQL·rollback SQL 에 password/secret literal 없음", () => {
+    for (const [name, sql] of [["0001", SQL_HARDEN], ["rollback", ROLLBACK_SQL]] as const) {
+      assert.ok(!/password\s*=?\s*['"]/i.test(sql.replace(/--.*$/gm, "")), `${name}: password literal`);
+      assert.ok(!/postgres(ql)?:\/\//i.test(sql), `${name}: connection string`);
+      assert.ok(!/\bLOGIN\s+PASSWORD\b/i.test(sql), `${name}: inline LOGIN PASSWORD (credential 은 secret store 외부)`);
+    }
+  });
+
+  test("production-write 차단: dry-run·sha불일치·rows-present 는 commit 0(role 0 유지)", async () => {
+    for (const mk of [
+      async (c: HardeningClient) => runHardening(c, DEF, { sqlText: SQL_HARDEN, actualSha256: SHA, apply: false }),
+      async (c: HardeningClient) => runHardening(c, DEF, { sqlText: SQL_HARDEN, actualSha256: "0".repeat(64), apply: true }),
+    ]) {
+      const { db, client } = await freshBase();
+      try { const r = await mk(client); assert.equal(r.committed, false); assert.equal(await roleN(db), 0); }
+      finally { await db.close(); }
+    }
   });
 });

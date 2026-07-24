@@ -144,7 +144,22 @@ disposable Neon(PG 17.10, non-superuser owner)에서 harness execute 실행 중 
 - `DROP ROLE` 은 그 role 에게 부여된 **database-level privilege(GRANT CONNECT 등)** 가 남아 있으면 `objects depend on it` 로 실패 → cleanup 은 role 별 **`REVOKE ALL ON DATABASE … FROM role`** 를 DROP ROLE 앞에 수행해야 한다(grantor 만 revoke 가능).
 - `REVOKE membership` 을 owner-트리거 검증 도중 하면 안 된다(이후 SET ROLE 이 깨짐) — 멤버십은 cleanup 완료까지 유지.
 
-> 이 diff 는 **harness(`scripts/neonCheck/*`)에는 이미 반영·검증**됐다(embedded superuser + non-superuser 두 경로 통과). production `migrations/hardening/0001_*.sql` 반영은 **checksum 재고정·격리 재검증을 포함한 별도 apply-준비 Gate**에서 수행한다.
+> 이 diff 는 **harness(`scripts/neonCheck/*`)에는 이미 반영·검증**됐다(embedded superuser + non-superuser 두 경로 통과).
+
+### 12a-1. ✅ production 0001 SQL 반영 완료 (apply-ready) — embedded PG17 **non-superuser** 실증
+`migrations/hardening/0001_orchestration_immutability_roles.sql` 를 아래와 같이 수정하고 **checksum 재고정**(`88e24efb…`)했다. **운영 DB 미적용**(apply Gate 별도 승인 필요).
+- **role 체인 + bootstrap**: `WITH SET TRUE, INHERIT FALSE` 명시. bootstrap 은 apply Gate 외부 GRANT 대신 **SQL 내부** `GRANT orchestration_owner TO CURRENT_USER …`(self-참조) → Phase2 끝 `REVOKE …`(자족화).
+- **2f 소유권 이전**: 직전에 `GRANT CREATE ON SCHEMA public TO orchestration_owner`(임시), 이전 직후 `REVOKE`(owner CREATE 0 유지 = owner-only-creation·`fnsec-schema-create-privilege-zero`). owner 는 USAGE 만 상시 보유.
+- **2g' 함수 ACL 재선언 / 2g default privileges**: 소유권 이전 후이므로 **`SET ROLE orchestration_owner`(및 admin/deployer) 상태**에서 수행(비-superuser 는 이전 owner 가 더 이상 REVOKE/ALTER DEFAULT PRIVILEGES 못 함).
+- **⚠️ 신규 발견 결함(이번 실증)**: 2a clean-slate DO 블록이 **executor(현재 owner) 자신의 grant 까지 REVOKE** → 이후 owner 의 `CREATE TRIGGER` 가 비-superuser 에서 `42501`. `AND grantee <> current_user` 추가로 수정(executor 암묵 owner 권한은 2f 이전으로 소멸).
+- **⚠️ 잔여 membership 정정**: 기존 문서의 "잔여 membership 0" 은 role 을 **DROP 하는 harness** 기준이었다. production 은 role 이 **영속**하므로, executor(CREATEROLE 비-superuser)가 role 을 **생성**할 때 붙는 **admin-only 자동 멤버십(`set=false, inherit=false`)** 은 그 비-superuser 가 **제거 불가**(grantor=bootstrap superuser, PG16+ 불변·Neon 동일). 이는 **`SET ROLE` 불가라 escalation 이 아니다.** 실제 보안 계약은 **"executor 가 orchestration role 로 `SET ROLE` 불가"**(내가 준 bootstrap `WITH SET TRUE` 행은 최종 REVOKE 로 제거) → runner post-verify 에 **`aborted-executor-escalation`** 검사 추가(superuser 세션은 skip).
+
+**검증(운영 미접촉)**: `scripts/runNonSuperuserHardeningCheck.ts`(embedded non-superuser) 9/9 — sha-mismatch/dry-run 차단, apply=applied, 6/6 owner, executor SET-가능 잔여 0, owner CREATE 0, 전역 default ACL 존재, PUBLIC EXECUTE 0, 재실행 already-applied. PGlite 하드닝 테스트(runner·preflight·rollback·secret·write차단) 통과.
+- **checksum 방식**: 0001 은 **미적용·미등록 DRAFT** 이므로 **파일 in-place 수정 + 러너 상수(`expectedSha256`) 재고정**이 안전(신규 migration 파일 분리 불요 — 운영 이력에 0001 이 없음).
+- **rollback**: `migrations/hardening/0001_*.rollback.sql`(post-commit 환원: 소유권→executor·trigger/함수 제거·role 삭제, **테이블 DROP 안 함=데이터 보존**). 비-superuser 는 `INHERIT TRUE` 임시 재부여로 `DROP OWNED BY`·소유권 환원 수행. embedded 실증 통과.
+- **read-only preflight**: `hardeningPreflight()` — sha·role 부재/부분·6테이블 행수 0·executor CREATE ROLE 가능·(비-superuser 는) 6테이블 owner 여부 확인. **DDL/DML 0**.
+- **중단 조건(fail-closed outcome)**: `aborted-sha-mismatch · -partial · -rows-present · -postverify · -owner-mismatch · -public-privilege · -app-privilege · -function-public · -function-fingerprint · -trigger-disabled · -executor-escalation · -sql-error`. 하나라도 걸리면 **ROLLBACK(commit 0)**.
+- **⚠️ 여전히 미검증(Neon 실측 필요)**: pooled connection SET ROLE·session 상태·credential rotation 후 pool — embedded 결과를 Neon pooler 실측으로 표현하지 않는다(§2/§16).
 
 ## 12b. migration 원자성 & 단계 복구
 Phase1(role 5개; deployer/writer/reader=LOGIN, credential 은 secret store 별도) → Phase2(REVOKE PUBLIC/app → 최소 GRANT → trigger fn/trigger → **ownership 이전(§12 A 절차)** → default privileges; **단일 tx**) → Phase3(별도 연결 capability + 기존 app write 실패 검증) → Phase4(adapter 미배선 종료·런타임 writer 전환). **role 생성+credential provisioning 은 한 tx 로 완전 rollback 안 될 수 있음** → Phase1(role) / Phase2(구조) 분리, 부분 실패 시 **DROP OWNED → DROP ROLE** 정리 절차(빈 role 이 아니면 DROP ROLE 은 2BP01 로 실패).

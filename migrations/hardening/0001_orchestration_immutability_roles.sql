@@ -15,12 +15,13 @@
 -- 실제 migration 실행 주체 = orchestration_deployer LOGIN → SET ROLE orchestration_admin (admin 이 스스로 접속하지 않음).
 --
 -- ⚠️ 소유권 이전 bootstrap = **A 채택**(B 는 Reject: deployer 가 기존 app role 권한을 상속하는 privilege explosion).
---    이 SQL 은 **현재 6테이블 owner 인 기존 app/migration-owner 연결**로 실행한다. Gate 가 앞뒤로 다음을 처리:
---      (사전) GRANT orchestration_owner TO <현재 owner role>;   ← 허용: 현재 owner 가 잠시 orchestration_owner 의 member
---      (사후) REVOKE orchestration_owner FROM <현재 owner role>; + 회수 확인(잔여 membership 0)
+--    이 SQL 은 **현재 6테이블 owner 인 기존 app/migration-owner 연결**로 실행한다. bootstrap 멤버십은 SQL **내부**에서 처리한다:
+--      Phase 1 끝  : GRANT orchestration_owner TO CURRENT_USER WITH SET TRUE, INHERIT FALSE;  ← self-참조(현재 owner 이름 불요)
+--      Phase 2 끝  : REVOKE orchestration_owner FROM CURRENT_USER;                              ← 잔여 membership 0
+--    이렇게 하면 apply Gate 가 owner 이름을 몰라도 SQL 이 자족적으로 소유권 이전을 수행한다(정적 SQL 이 CURRENT_USER 로 자기 참조).
 --    ❌ 금지: GRANT <기존 app role> TO orchestration_deployer (= B) · GRANT <기존 app role> TO orchestration_owner
---    (정적 SQL 은 현재 owner 이름을 모르므로 위 GRANT/REVOKE 는 apply Gate 가 수행한다.)
---    ALTER DEFAULT PRIVILEGES(2g)는 대상 role 멤버십이 필요하므로, 없으면 DO 블록이 임시 부여 후 즉시 회수한다(부여한 것만).
+--    ⚠️ PG16+ non-superuser(실측): ALTER … OWNER TO 는 executor 의 SET ROLE 가능 + 새 owner 의 schema CREATE 를 요구하고,
+--       ALTER DEFAULT PRIVILEGES FOR ROLE X 는 X 로 SET ROLE 한 상태를 요구한다 → 2f 는 임시 CREATE, 2g 는 SET ROLE 로 처리한다.
 --
 -- ⚠️ 함수 권한 정정(2e/2g'/2g): 미래 함수의 PUBLIC EXECUTE 는 **스키마 한정 default privileges 로 막을 수 없다**.
 --    기존 4함수 = 정확한 signature 명시 REVOKE(소유권 이전 후 재선언), 미래 함수 = **전역 형식** default privileges 3 role.
@@ -40,8 +41,14 @@ CREATE ROLE orchestration_admin    NOLOGIN;
 CREATE ROLE orchestration_deployer LOGIN;   -- 비밀번호는 SQL 밖 secret store 프로비저닝
 CREATE ROLE orchestration_reader   LOGIN;
 CREATE ROLE orchestration_writer   LOGIN;
-GRANT orchestration_owner TO orchestration_admin;      -- admin → SET ROLE owner
-GRANT orchestration_admin TO orchestration_deployer;   -- deployer → SET ROLE admin (→ owner)
+-- ⚠️ PG16+ non-superuser: 멤버십은 명시적으로 SET TRUE(SET ROLE 체인 동작) · INHERIT FALSE(권한 자동상속 차단=최소권한).
+--    옵션을 생략하면 SET/INHERIT 기본값이 엔진·member rolinherit 에 의존해 체인이 깨지거나 권한이 새어 나갈 수 있다(실측 확정).
+GRANT orchestration_owner TO orchestration_admin    WITH SET TRUE, INHERIT FALSE;  -- admin → SET ROLE owner
+GRANT orchestration_admin TO orchestration_deployer WITH SET TRUE, INHERIT FALSE;  -- deployer → SET ROLE admin (→ owner)
+-- bootstrap(owner model A): 이 SQL 을 실행하는 **현재 6테이블 owner(CURRENT_USER)** 가 orchestration_owner 로
+--   SET ROLE / ALTER … OWNER TO 를 수행할 수 있도록 임시 멤버십을 SQL 내부에서 부여한다(정적 SQL 이 CURRENT_USER 로 자기 참조).
+--   Phase 2 끝에서 즉시 REVOKE 하여 잔여 멤버십 0. (기존: 이름을 모른다며 apply Gate 외부 GRANT/REVOKE → self-참조로 내부화·자족화)
+GRANT orchestration_owner TO CURRENT_USER WITH SET TRUE, INHERIT FALSE;
 
 -- ══ Phase 2: 기존 app role·PUBLIC 권한 완전 제거 → 최소 GRANT → trigger → 소유권 이전 → default privileges ══
 -- 2a. PUBLIC 및 orchestration_* 이외 모든 grantee(기존 app role 포함)의 6테이블 명시 권한 회수(클린 슬레이트)
@@ -54,14 +61,17 @@ BEGIN
     SELECT DISTINCT grantee, table_name FROM information_schema.role_table_grants
      WHERE table_schema='public' AND table_name = ANY(tbls)
        AND grantee <> 'PUBLIC' AND grantee NOT LIKE 'orchestration\_%'
+       AND grantee <> current_user   -- ⚠️ 실행 주체(현재 owner) 자신은 제외한다: 여기서 회수하면 이후 owner 의 CREATE TRIGGER 가
+                                      --    비-superuser 에서 42501(permission denied)로 막힌다. executor 의 암묵 owner 권한은 2f 소유권 이전으로 소멸한다.
   LOOP
     EXECUTE format('REVOKE ALL ON public.%I FROM %I', g.table_name, g.grantee);
   END LOOP;
 END$$;
 
--- 2b. schema USAGE(비소유자 접근 최소 전제). CREATE 미부여.
+-- 2b. schema USAGE(비소유자 접근 최소 전제). CREATE 는 부여하지 않는다(owner-only-creation).
+--     owner 도 USAGE 를 갖는다: 소유한 함수/테이블을 SET ROLE 로 조작(2g' REVOKE·break-glass DISABLE TRIGGER)하려면 schema USAGE 필요.
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
-GRANT USAGE ON SCHEMA public TO orchestration_reader, orchestration_writer;
+GRANT USAGE ON SCHEMA public TO orchestration_reader, orchestration_writer, orchestration_owner;
 
 -- 2c. reader: SELECT 만
 GRANT SELECT ON job_artifacts, job_dependencies, automated_reviews, human_approvals, orchestration_audit_log, emergency_stops TO orchestration_reader;
@@ -114,6 +124,11 @@ CREATE TRIGGER human_approvals_no_truncate          BEFORE TRUNCATE ON human_app
 CREATE TRIGGER emergency_stops_no_truncate          BEFORE TRUNCATE ON emergency_stops          FOR EACH STATEMENT EXECUTE FUNCTION orch_deny_truncate();
 
 -- 2f. 소유권 이전(owner model A): 6테이블 + 4 function → orchestration_owner. 기존 owner 암묵권한 소멸.
+-- ⚠️ PG16+ non-superuser: `ALTER … OWNER TO orchestration_owner` 는 (a) executor 가 orchestration_owner 로 SET ROLE 가능
+--    (위 bootstrap GRANT WITH SET TRUE 로 충족) **AND** (b) orchestration_owner 가 그 객체의 schema 에 **CREATE** 보유,
+--    두 조건을 모두 요구한다. 그래서 이전 직전에만 CREATE 를 임시 부여하고, 이전 직후 회수한다
+--    (owner 는 평상시 public 에 CREATE 0 = owner-only-creation 정책·fnsec-schema-create-privilege-zero 유지).
+GRANT CREATE ON SCHEMA public TO orchestration_owner;
 ALTER TABLE job_artifacts            OWNER TO orchestration_owner;
 ALTER TABLE job_dependencies         OWNER TO orchestration_owner;
 ALTER TABLE automated_reviews        OWNER TO orchestration_owner;
@@ -124,41 +139,45 @@ ALTER FUNCTION orch_deny_write()             OWNER TO orchestration_owner;
 ALTER FUNCTION orch_deny_delete()            OWNER TO orchestration_owner;
 ALTER FUNCTION orch_guard_business_update()  OWNER TO orchestration_owner;
 ALTER FUNCTION orch_deny_truncate()          OWNER TO orchestration_owner;
+REVOKE CREATE ON SCHEMA public FROM orchestration_owner;
 
--- 2g'. 소유권 이전 후 함수 ACL 재확인(재선언). PG 17.10 실측상 ALTER FUNCTION ... OWNER TO 는 ACL 을
---      `{old=X/old}` → `{new=X/new}` 로 재작성하며 PUBLIC 회수 상태를 유지하지만, 엔진 동작에 의존하지 않도록 명시 재선언한다(멱등).
+-- 2g'. 소유권 이전 후 함수 ACL 재확인(재선언, 멱등). ALTER FUNCTION … OWNER TO 는 ACL 을 `{new=X/new}` 로 재작성하며
+--      PUBLIC 회수 상태를 유지하지만, 엔진 동작에 의존하지 않도록 명시 재선언한다. 이전 후에는 함수 소유자가
+--      orchestration_owner 이므로 **owner 로 SET ROLE 한 상태**에서만 REVOKE 가능하다(비-superuser: 이전 소유자는 더 이상 못 함).
+SET ROLE orchestration_owner;
 REVOKE ALL ON FUNCTION orch_deny_write(), orch_deny_delete(), orch_guard_business_update(), orch_deny_truncate() FROM PUBLIC;
 REVOKE ALL ON FUNCTION orch_deny_write(), orch_deny_delete(), orch_guard_business_update(), orch_deny_truncate()
   FROM orchestration_reader, orchestration_writer, orchestration_deployer;
+RESET ROLE;
 
 -- 2g. 미래 객체 기본 권한 누수 방지.
 -- ⚠️⚠️ 정정 대상 결함(PG 17.10 · PGlite 실측): `ALTER DEFAULT PRIVILEGES ... IN SCHEMA <s> REVOKE ... FROM PUBLIC` 는
 --   **빈 ACL 에서 시작**하므로 PUBLIC 회수가 no-op 이고 pg_default_acl 행조차 생성되지 않는다
---   → 이후 생성되는 함수는 `proacl=null` = **PUBLIC EXECUTE 보유**. (이전 판 116행이 여기에 해당)
---   **스키마 한정 없는 전역 형식**만 내장 기본값(`=X/owner` 포함)에서 시작하므로 PUBLIC EXECUTE 제거가 실제 적용된다:
---   → 행 `{orchestration_owner=X/orchestration_owner}` 생성, 이후 **모든 스키마**의 새 함수가 `public=false`.
--- 적용 대상 role: 함수를 만들 수 있는 3개 전부(owner 뿐 아니라 admin·deployer 도 포함해야 누수가 닫힌다 — `FOR ROLE` 목록 밖 role 이 만든 함수는 미보호).
--- 비 superuser 환경(Neon)에서는 `FOR ROLE` 대상의 **멤버십**이 필요하므로, 없으면 임시로 부여하고 즉시 회수한다(부여한 것만 회수).
+--   → 이후 생성되는 함수는 `proacl=null` = **PUBLIC EXECUTE 보유**. **스키마 한정 없는 전역 형식**만 실효가 있다.
+-- ⚠️ 추가 정정(PG16+ non-superuser): `ALTER DEFAULT PRIVILEGES FOR ROLE X …` 는 executor 가 X 로 **SET ROLE 한 상태**여야 한다
+--   (INHERIT FALSE 라 자동 상속 없음). 그래서 각 role 로 SET ROLE 후 `FOR ROLE` 없이(=현재 role) ALTER DEFAULT PRIVILEGES 한다.
+-- 적용 대상 role: 함수를 만들 수 있는 3개 전부(owner·admin·deployer). admin/deployer 는 defense-in-depth 이며 함수 생성 허용을 뜻하지 않는다
+--   (세 role 모두 public schema CREATE 0 → 평상시 함수 생성 불가).
 DO $$
 DECLARE r text; granted boolean; me text := current_user;
 BEGIN
   FOREACH r IN ARRAY ARRAY['orchestration_owner', 'orchestration_admin', 'orchestration_deployer'] LOOP
     granted := false;
-    IF NOT pg_has_role(me, r, 'MEMBER') THEN
-      EXECUTE format('GRANT %I TO %I', r, me);
+    IF NOT pg_has_role(me, r, 'SET') THEN
+      EXECUTE format('GRANT %I TO %I WITH SET TRUE, INHERIT FALSE', r, me);
       granted := true;
     END IF;
-    -- FUNCTIONS: default privileges 형식 중 실효가 있는 것은 전역 형식뿐이다(스키마 한정은 no-op).
-    -- ⚠️ 다만 default ACL 은 **보조 방어선**이다. 최종 보장은 owner-only creation + exact-signature REVOKE + fingerprint.
-    -- authoritative = orchestration_owner. admin/deployer 는 defense-in-depth 이며 **함수 생성 권한을 허용한다는 뜻이 아니다**
-    -- (세 role 모두 public schema CREATE 가 없어 평상시 함수를 만들 수 없다).
-    EXECUTE format('ALTER DEFAULT PRIVILEGES FOR ROLE %I REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC', r);
-    -- TABLES/SEQUENCES: 내장 기본값에 PUBLIC 이 없어 행이 생기지 않는 **진짜 no-op**(무해). 선언적 의도로만 유지.
-    EXECUTE format('ALTER DEFAULT PRIVILEGES FOR ROLE %I REVOKE ALL ON TABLES FROM PUBLIC', r);
-    EXECUTE format('ALTER DEFAULT PRIVILEGES FOR ROLE %I REVOKE ALL ON SEQUENCES FROM PUBLIC', r);
+    EXECUTE format('SET ROLE %I', r);
+    ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;   -- 실효(전역 형식) — pg_default_acl 행 생성
+    ALTER DEFAULT PRIVILEGES REVOKE ALL ON TABLES FROM PUBLIC;          -- 진짜 no-op(내장 기본값에 PUBLIC 없음) — 선언적
+    ALTER DEFAULT PRIVILEGES REVOKE ALL ON SEQUENCES FROM PUBLIC;
+    RESET ROLE;
     IF granted THEN EXECUTE format('REVOKE %I FROM %I', r, me); END IF;
   END LOOP;
 END $$;
+
+-- bootstrap 해제: 현재 owner(CURRENT_USER) 의 orchestration_owner 임시 멤버십 회수 → 잔여 멤버십 0(운영 credential 만 SET ROLE 경로 보유).
+REVOKE orchestration_owner FROM CURRENT_USER;
 
 -- ══ Phase 3(별도 검증)·Phase 4(adapter 배선 없이 종료·런타임 writer credential 접속) ══
 -- 긴급 정정 기본 = 새 correction/reversal 이벤트 INSERT(원본 보존). DISABLE TRIGGER 는 최후 수단 runbook(이중승인·즉시 재enable·재검증).
