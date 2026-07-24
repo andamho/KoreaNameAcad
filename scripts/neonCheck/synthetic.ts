@@ -54,9 +54,10 @@ export async function createObjects(db: DbAdapter, n: ScopedNames): Promise<void
 export async function applyGrants(db: DbAdapter, n: ScopedNames): Promise<void> {
   const s = S(n);
   // ── 소유권 모델(PG16+ non-superuser / Neon 검증) ──────────────────────────────
-  //   schema  = **executor 소유 유지** → cleanup 의 DROP SCHEMA 가 SET ROLE 없이 가능(소유자만 DROP).
-  //   테이블·함수 = **owner 소유** → capability(owner 의 DISABLE TRIGGER·default-privileges)와 실제 hardening 모델 일치.
-  //   전제: owner 가 테이블 소유·schema 안 작업을 하려면 schema 에 **CREATE + USAGE** 둘 다 필요하다
+  //   schema      = **executor 소유 유지** → cleanup 의 DROP SCHEMA 가 SET ROLE 없이 가능(소유자만 DROP).
+  //   테이블·함수 = **executor 소유 유지**. 소유권 이전은 setup 이 하지 않고, ownership capability 가 실제로
+  //                 executor→owner 이전을 한 번 수행·검증한다(중복 이전 금지 — 그래야 capability 의 검증 의미가 산다).
+  //   전제: owner 가 나중에 테이블 소유·schema 안 작업을 하려면 schema 에 **CREATE + USAGE** 둘 다 필요하다
   //         (ALTER TABLE OWNER/CREATE FUNCTION 은 CREATE, GRANT/DISABLE TRIGGER 는 USAGE). — embedded PG17 non-superuser 재현으로 확정.
   await db.exec(`REVOKE ALL ON SCHEMA ${s.schema} FROM PUBLIC`);
   await db.exec(`REVOKE ALL ON ALL TABLES IN SCHEMA ${s.schema} FROM PUBLIC`);
@@ -64,16 +65,15 @@ export async function applyGrants(db: DbAdapter, n: ScopedNames): Promise<void> 
   await db.exec(`GRANT CREATE, USAGE ON SCHEMA ${s.schema} TO ${qi(n.roles.owner)}`);
   await db.exec(`GRANT USAGE ON SCHEMA ${s.schema} TO ${qi(n.roles.reader)}, ${qi(n.roles.writer)}`);
 
-  // 테이블·함수 소유권을 owner 로 이전(executor 가 SET TRUE 멤버십 + owner 의 schema CREATE 로 가능).
-  for (const tbl of [s.artifact, s.audit, s.approval, s.business]) await db.exec(`ALTER TABLE ${tbl} OWNER TO ${qi(n.roles.owner)}`);
-  for (const fn of [s.fn.denyWrite, s.fn.denyDelete, s.fn.guard, s.fn.denyTruncate]) await db.exec(`ALTER FUNCTION ${fn}() OWNER TO ${qi(n.roles.owner)}`);
+  // 테이블·함수가 아직 executor 소유이므로 runtime role 권한은 **executor(=소유자)가 직접** GRANT 한다.
+  //   이후 ownership capability 가 테이블을 owner 로 이전해도 이 GRANT(ACL) 는 소유권 변경과 무관하게 유지된다.
+  await db.exec(`GRANT SELECT ON ${s.artifact}, ${s.audit}, ${s.approval} TO ${qi(n.roles.reader)}`);
+  await db.exec(`GRANT SELECT, INSERT ON ${s.artifact}, ${s.audit}, ${s.approval} TO ${qi(n.roles.writer)}`);
+  await db.exec(`GRANT UPDATE (status, updated_at) ON ${s.approval} TO ${qi(n.roles.writer)}`);
 
-  // owner 소유가 됐으므로 이후 GRANT·default-privileges 는 owner 로 SET ROLE 한 상태에서 수행한다.
+  // owner 기준 default privileges(미래 owner 가 만들 객체의 PUBLIC 누수 방지) — owner 로 SET ROLE 한 상태에서만 가능(INHERIT FALSE).
   await db.exec(`SET ROLE ${qi(n.roles.owner)}`);
   try {
-    await db.exec(`GRANT SELECT ON ${s.artifact}, ${s.audit}, ${s.approval} TO ${qi(n.roles.reader)}`);
-    await db.exec(`GRANT SELECT, INSERT ON ${s.artifact}, ${s.audit}, ${s.approval} TO ${qi(n.roles.writer)}`);
-    await db.exec(`GRANT UPDATE (status, updated_at) ON ${s.approval} TO ${qi(n.roles.writer)}`);
     await db.exec(`ALTER DEFAULT PRIVILEGES FOR ROLE ${qi(n.roles.owner)} IN SCHEMA ${s.schema} REVOKE ALL ON TABLES FROM PUBLIC`);
     await db.exec(`ALTER DEFAULT PRIVILEGES FOR ROLE ${qi(n.roles.owner)} IN SCHEMA ${s.schema} REVOKE ALL ON SEQUENCES FROM PUBLIC`);
     await db.exec(`ALTER DEFAULT PRIVILEGES FOR ROLE ${qi(n.roles.owner)} IN SCHEMA ${s.schema} REVOKE ALL ON FUNCTIONS FROM PUBLIC`);

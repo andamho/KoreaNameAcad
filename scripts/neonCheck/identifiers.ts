@@ -38,6 +38,9 @@ export interface ScopedNames {
   runId: string;
   schema: string;
   roles: { owner: string; admin: string; deployer: string; writer: string; reader: string; appSim: string };
+  /** membership lifecycle 검증 **전용** role 쌍. 하네스 핵심(executor↔owner) 멤버십과 분리.
+   *  GRANT/REVOKE 를 이 쌍에서만 수행해, capability 가 cleanup·setup 에 필요한 멤버십을 건드리지 않게 한다. */
+  mlRoles: { parent: string; subject: string };
   tables: { artifact: string; audit: string; approval: string; business: string };
   functions: { denyWrite: string; denyDelete: string; guard: string; denyTruncate: string };
 }
@@ -49,6 +52,7 @@ export function scopedNames(runId: string): ScopedNames {
     runId,
     schema: assertRunScoped(`oc_chk_${runId}`, runId),
     roles: { owner: s("owner"), admin: s("admin"), deployer: s("deployer"), writer: s("writer"), reader: s("reader"), appSim: s("appsim") },
+    mlRoles: { parent: s("mlt_parent"), subject: s("mlt_subject") },
     tables: { artifact: s("artifact"), audit: s("audit"), approval: s("approval"), business: s("business") },
     functions: { denyWrite: s("deny_write"), denyDelete: s("deny_delete"), guard: s("guard_update"), denyTruncate: s("deny_truncate") },
   };
@@ -56,6 +60,7 @@ export function scopedNames(runId: string): ScopedNames {
 
 /** 이 run 이 만들 모든 식별자(검증·cleanup 범위 산출용) */
 export function allNames(n: ScopedNames): string[] {
-  return [n.schema, ...Object.values(n.roles), ...Object.values(n.tables), ...Object.values(n.functions)];
+  return [n.schema, ...Object.values(n.roles), ...Object.values(n.mlRoles), ...Object.values(n.tables), ...Object.values(n.functions)];
 }
-export const allRoles = (n: ScopedNames): string[] => Object.values(n.roles);
+/** cleanup·잔여검증이 다뤄야 할 모든 role(오케스트레이션 6종 + membership lifecycle 전용 2종). */
+export const allRoles = (n: ScopedNames): string[] => [...Object.values(n.roles), ...Object.values(n.mlRoles)];

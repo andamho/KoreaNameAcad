@@ -3,7 +3,7 @@
 import type { DbAdapter } from "./adapters";
 import type { PooledMockAdapter } from "./adapters";
 import { createPooledMockAdapter } from "./adapters";
-import { qi, type ScopedNames } from "./identifiers";
+import { qi, qq, type ScopedNames } from "./identifiers";
 import type { MemorySecret } from "./secrets";
 import { S, triggerState, EXPECTED_TRIGGER_COUNT } from "./synthetic";
 import type { CapabilityOutcome } from "./capabilities";
@@ -38,6 +38,36 @@ async function expectDenied(fn: () => Promise<unknown>): Promise<HandlerResult> 
 const num = async (db: DbAdapter, sql: string, p?: unknown[]) => Number((await db.query(sql, p)).rows[0]?.n ?? 0);
 const isMember = async (db: DbAdapter, member: string, group: string) =>
   (await num(db, `SELECT count(*)::int AS n FROM pg_auth_members am JOIN pg_roles m ON m.oid=am.member JOIN pg_roles g ON g.oid=am.roleid WHERE m.rolname=$1 AND g.rolname=$2`, [member, group])) > 0;
+
+/** 테이블의 현재 소유자 role 이름(없으면 ""). */
+const tableOwner = async (db: DbAdapter, schema: string, table: string): Promise<string> =>
+  String((await db.query(`SELECT pg_get_userbyid(c.relowner) AS o FROM pg_class c JOIN pg_namespace ns ON ns.oid=c.relnamespace WHERE ns.nspname=$1 AND c.relname=$2`, [schema, table])).rows[0]?.o ?? "");
+
+/**
+ * 소유권 이전 capability 공통 검증(중복 이전 금지 — 실제 이전을 **한 번만** 수행).
+ *   (1) executor 가 현재 각 테이블의 소유자인가(이미 owner 소유면 검증 의미가 없으므로 fail)
+ *   (2) target owner 가 schema 에 CREATE + USAGE 를 갖는가
+ *   (3) executor 가 owner 로 SET 가능한 membership 인가(PG16+ INHERIT FALSE 에서도 SET TRUE 면 이전 가능)
+ *   (4) ALTER TABLE ... OWNER TO owner
+ *   (5) catalog 상 실제로 owner 소유가 됐는가
+ * detailCode 에는 run-id 원문 이름 대신 symbolic label 만 남긴다.
+ */
+async function transferTablesToOwner(db: DbAdapter, n: ScopedNames, targets: { tbl: string; label: string }[]): Promise<HandlerResult> {
+  const cur = String((await db.query(`SELECT current_user AS u`)).rows[0]?.u ?? "");
+  for (const { tbl, label } of targets) {
+    const o = await tableOwner(db, n.schema, tbl);
+    if (o !== cur) return bad(`not-executor-owned:${label}`); // setup 이 미리 이전했거나 이미 이전됨 → 실검증 불가
+  }
+  const p = (await db.query(`SELECT has_schema_privilege($1, $2, 'CREATE') AS c, has_schema_privilege($1, $2, 'USAGE') AS u`, [n.roles.owner, n.schema])).rows[0] as { c: boolean; u: boolean };
+  if (!(p?.c && p?.u)) return bad(`owner-schema-priv:c=${p?.c}/u=${p?.u}`);
+  const setAble = (await db.query(`SELECT pg_has_role($1, 'SET') AS s`, [n.roles.owner])).rows[0] as { s: boolean };
+  if (!setAble?.s) return bad("executor-not-set-able-to-owner");
+  for (const { tbl } of targets) await db.exec(`ALTER TABLE ${qq(n.schema, tbl)} OWNER TO ${qi(n.roles.owner)}`);
+  for (const { tbl, label } of targets) {
+    if ((await tableOwner(db, n.schema, tbl)) !== n.roles.owner) return bad(`owner-mismatch:${label}`);
+  }
+  return ok(`transferred=${targets.length}`);
+}
 
 /** 실제 LOGIN 연결로 작업 수행(연결은 항상 닫는다). */
 async function withLogin<T>(ctx: HandlerCtx, role: string, fn: (db: DbAdapter) => Promise<T>): Promise<T> {
@@ -105,37 +135,36 @@ export const DIRECT_HANDLERS: Record<string, Handler> = {
     return denied("all-denied");
   },
 
-  // Ownership
-  "transfer-table-owner": async ({ db, names: n }) => {
-    await db.exec(`GRANT ${qi(n.roles.owner)} TO CURRENT_USER`);
-    await db.exec(`ALTER TABLE ${S(n).artifact} OWNER TO ${qi(n.roles.owner)}`);
-    const c = await num(db, `SELECT count(*)::int AS n FROM pg_class c JOIN pg_namespace ns ON ns.oid=c.relnamespace WHERE ns.nspname=$1 AND c.relname=$2 AND pg_get_userbyid(c.relowner)=$3`, [n.schema, n.tables.artifact, n.roles.owner]);
-    return c === 1 ? ok() : bad("owner-mismatch");
-  },
+  // Ownership — setup 은 테이블을 미리 owner 로 이전하지 않는다. 아래 capability 가 executor→owner 이전을 **실제로 한 번** 수행·검증한다.
+  "transfer-table-owner": async ({ db, names: n }) =>
+    transferTablesToOwner(db, n, [{ tbl: n.tables.artifact, label: "artifact" }]),
   "transfer-function-owner": async ({ db, names: n }) => {
+    // 함수도 setup 에서 미리 이전하지 않는다. executor(=현재 함수 소유자)가 owner 로 실제 이전 후 catalog 확인.
     const s = S(n);
+    const cur = String((await db.query(`SELECT current_user AS u`)).rows[0]?.u ?? "");
+    const preOwned = await num(db, `SELECT count(*)::int AS n FROM pg_proc p JOIN pg_namespace ns ON ns.oid=p.pronamespace WHERE ns.nspname=$1 AND pg_get_userbyid(p.proowner)=$2`, [n.schema, cur]);
+    if (preOwned < 4) return bad(`not-executor-owned:fns=${preOwned}`);
     for (const f of [s.fn.denyWrite, s.fn.denyDelete, s.fn.guard, s.fn.denyTruncate]) await db.exec(`ALTER FUNCTION ${f}() OWNER TO ${qi(n.roles.owner)}`);
     const c = await num(db, `SELECT count(*)::int AS n FROM pg_proc p JOIN pg_namespace ns ON ns.oid=p.pronamespace WHERE ns.nspname=$1 AND pg_get_userbyid(p.proowner)=$2`, [n.schema, n.roles.owner]);
     return c >= 4 ? ok(`fns=${c}`) : bad(`fn-owner=${c}`);
   },
+  // ── membership lifecycle: 하네스 핵심(executor↔owner) 이 아니라 **전용 parent/subject 쌍**에서만 GRANT/REVOKE 한다. ──
   "bootstrap-a-temporary-membership": async ({ db, names: n }) => {
-    const cur = String((await db.query(`SELECT current_user AS u`)).rows[0]?.u ?? "");
-    return (await isMember(db, cur, n.roles.owner)) ? ok("temp-member") : bad("not-member");
+    await db.exec(`GRANT ${qi(n.mlRoles.parent)} TO ${qi(n.mlRoles.subject)} WITH SET TRUE, INHERIT FALSE`);
+    return (await isMember(db, n.mlRoles.subject, n.mlRoles.parent)) ? ok("temp-member") : bad("not-member");
   },
-  "bootstrap-a-ownership-transfer": async ({ db, names: n }) => {
-    const s = S(n);
-    for (const t of [s.audit, s.approval, s.business]) await db.exec(`ALTER TABLE ${t} OWNER TO ${qi(n.roles.owner)}`);
-    const c = await num(db, `SELECT count(*)::int AS n FROM pg_class c JOIN pg_namespace ns ON ns.oid=c.relnamespace WHERE ns.nspname=$1 AND c.relkind='r' AND pg_get_userbyid(c.relowner)=$2`, [n.schema, n.roles.owner]);
-    return c === 4 ? ok("tables=4") : bad(`owned=${c}`);
-  },
+  "bootstrap-a-ownership-transfer": async ({ db, names: n }) =>
+    transferTablesToOwner(db, n, [
+      { tbl: n.tables.audit, label: "audit" },
+      { tbl: n.tables.approval, label: "approval" },
+      { tbl: n.tables.business, label: "business" },
+    ]),
   "bootstrap-a-membership-revoked": async ({ db, names: n }) => {
-    await db.exec(`REVOKE ${qi(n.roles.owner)} FROM CURRENT_USER`);
-    return ok();
+    await db.exec(`REVOKE ${qi(n.mlRoles.parent)} FROM ${qi(n.mlRoles.subject)}`);
+    return (await isMember(db, n.mlRoles.subject, n.mlRoles.parent)) ? bad("revoke-failed") : ok("revoked");
   },
-  "bootstrap-a-residual-membership-zero": async ({ db, names: n }) => {
-    const cur = String((await db.query(`SELECT current_user AS u`)).rows[0]?.u ?? "");
-    return (await isMember(db, cur, n.roles.owner)) ? bad("residual-membership") : ok("residual=0");
-  },
+  "bootstrap-a-residual-membership-zero": async ({ db, names: n }) =>
+    (await isMember(db, n.mlRoles.subject, n.mlRoles.parent)) ? bad("residual-membership") : ok("residual=0"),
 
   // Privilege
   "public-table-privilege-zero": async ({ db, names: n }) =>

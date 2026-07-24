@@ -7,10 +7,13 @@
 //   `scripts/runNonSuperuserRoleCheck.ts`(embedded, superuser 아닌 role) 로 수행하며 여기서 재현하지 않는다(엔진 제약).
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { buildCleanupPlan, assertCleanupScope, runCleanup, verifyResidual, type CleanupStep } from "../../scripts/neonCheck/cleanup";
 import { scopedNames } from "../../scripts/neonCheck/identifiers";
 import { prepareEnvironmentForTest } from "../../scripts/neonCheck/executor";
-import { wrapClientAsDirect } from "../../scripts/neonCheck/adapters";
+import { DIRECT_HANDLERS, type HandlerCtx } from "../../scripts/neonCheck/handlers";
+import { wrapClientAsDirect, type DbAdapter } from "../../scripts/neonCheck/adapters";
 import type { MemorySecret } from "../../scripts/neonCheck/secrets";
 
 const RUN = "nsr26072a";
@@ -110,6 +113,113 @@ describe("cleanup 실행 — 멱등·부분·잔여 0 (PGlite)", () => {
     const biz = (await db.query(`SELECT count(*)::int AS n FROM pg_roles WHERE rolname='unrelated_biz_role'`)).rows[0] as { n: number };
     assert.equal(biz.n, 1, "무관 business role 을 건드렸다");
     await db.exec(`DROP ROLE unrelated_biz_role`);
+    await raw.close();
+  });
+});
+
+// ── 소유권 이전 capability 실검증 + membership 격리 (PGlite) ──────────────────
+// setup 재배치: 테이블은 capability 전 executor 소유 → capability 가 실제로 owner 이전을 한 번 수행·검증.
+// membership lifecycle 은 전용 parent/subject 쌍에서만 GRANT/REVOKE → 하네스 핵심(executor↔owner) 멤버십 불변.
+const num = async (db: DbAdapter, sql: string, p?: unknown[]) => Number((await db.query(sql, p)).rows[0]?.n ?? 0);
+const ownerOf = async (db: DbAdapter, table: string) =>
+  String((await db.query(`SELECT pg_get_userbyid(c.relowner) AS o FROM pg_class c JOIN pg_namespace ns ON ns.oid=c.relnamespace WHERE ns.nspname=$1 AND c.relname=$2`, [n.schema, table])).rows[0]?.o ?? "");
+const curUser = async (db: DbAdapter) => String((await db.query(`SELECT current_user AS u`)).rows[0]?.u ?? "");
+const membershipRows = (db: DbAdapter, member: string, group: string) =>
+  num(db, `SELECT count(*)::int AS n FROM pg_auth_members am JOIN pg_roles m ON m.oid=am.member JOIN pg_roles g ON g.oid=am.roleid WHERE m.rolname=$1 AND g.rolname=$2`, [member, group]);
+const ctxOf = (db: DbAdapter): HandlerCtx => ({ db, names: n, login: null, secrets: new Map<string, MemorySecret>(), hook: async () => {} });
+const runCap = (db: DbAdapter, id: string) => DIRECT_HANDLERS[id](ctxOf(db));
+
+describe("소유권 이전 capability 실검증 (PGlite)", () => {
+  test("capability 전 4개 테이블은 executor 소유 (setup 이 미리 owner 로 넘기지 않는다)", async () => {
+    const { raw, db } = await pglite();
+    await prepareEnvironmentForTest(db, n, new Map());
+    const exec = await curUser(db);
+    for (const [label, t] of [["artifact", n.tables.artifact], ["audit", n.tables.audit], ["approval", n.tables.approval], ["business", n.tables.business]] as const) {
+      assert.equal(await ownerOf(db, t), exec, `${label} 는 capability 전 executor 소유여야`);
+      assert.notEqual(await ownerOf(db, t), n.roles.owner, `${label} 가 이미 owner 소유면 검증 의미 상실`);
+    }
+    await raw.close();
+  });
+
+  test("transfer-table-owner 후 artifact 는 owner 소유", async () => {
+    const { raw, db } = await pglite();
+    await prepareEnvironmentForTest(db, n, new Map());
+    const r = await runCap(db, "transfer-table-owner");
+    assert.equal(r.outcome, "pass", `detail=${r.detailCode}`);
+    assert.equal(await ownerOf(db, n.tables.artifact), n.roles.owner);
+    await raw.close();
+  });
+
+  test("bootstrap-a-ownership-transfer 후 audit·approval·business 는 owner 소유", async () => {
+    const { raw, db } = await pglite();
+    await prepareEnvironmentForTest(db, n, new Map());
+    const r = await runCap(db, "bootstrap-a-ownership-transfer");
+    assert.equal(r.outcome, "pass", `detail=${r.detailCode}`);
+    for (const t of [n.tables.audit, n.tables.approval, n.tables.business]) assert.equal(await ownerOf(db, t), n.roles.owner);
+    await raw.close();
+  });
+
+  test("이미 owner 소유면 transfer capability 는 fail (중복 이전 통과 금지)", async () => {
+    const { raw, db } = await pglite();
+    await prepareEnvironmentForTest(db, n, new Map());
+    await runCap(db, "transfer-table-owner"); // 1차 이전
+    const again = await runCap(db, "transfer-table-owner"); // 2차 — 이미 owner 소유
+    assert.equal(again.outcome, "fail", "이미 이전된 테이블에 다시 통과시키면 안 된다");
+    assert.match(String(again.detailCode), /not-executor-owned/);
+    await raw.close();
+  });
+
+  test("handler 소스에 중복 GRANT(TO/FROM CURRENT_USER) 가 없다", () => {
+    const raw = readFileSync(fileURLToPath(new URL("../../scripts/neonCheck/handlers.ts", import.meta.url)), "utf8");
+    // 주석(설명용)은 제외하고 **실행 SQL**만 본다: 주석으로 시작하는 줄을 통째로 뺀다.
+    const code = raw.split("\n").filter((l) => { const t = l.trim(); return !t.startsWith("//") && !t.startsWith("*") && !t.startsWith("/*"); }).join("\n");
+    assert.ok(!/\bTO\s+CURRENT_USER\b/.test(code), "handler 실행 SQL 에 GRANT ... TO CURRENT_USER 잔존");
+    assert.ok(!/\bFROM\s+CURRENT_USER\b/.test(code), "handler 실행 SQL 에 REVOKE ... FROM CURRENT_USER 잔존");
+  });
+});
+
+describe("membership lifecycle 격리 (PGlite)", () => {
+  test("전용 subject↔parent 로만 grant/revoke, 잔여 0 · executor↔owner 불변", async () => {
+    const { raw, db } = await pglite();
+    await prepareEnvironmentForTest(db, n, new Map());
+    const exec = await curUser(db);
+    const execOwnerBefore = await membershipRows(db, exec, n.roles.owner);
+    assert.equal(execOwnerBefore, 1, "executor↔owner 멤버십은 정확히 1행");
+
+    const t = await runCap(db, "bootstrap-a-temporary-membership");
+    assert.equal(t.outcome, "pass", `temp detail=${t.detailCode}`);
+    assert.equal(await membershipRows(db, n.mlRoles.subject, n.mlRoles.parent), 1, "subject↔parent 부여됨");
+
+    const rev = await runCap(db, "bootstrap-a-membership-revoked");
+    assert.equal(rev.outcome, "pass");
+    const zero = await runCap(db, "bootstrap-a-residual-membership-zero");
+    assert.equal(zero.outcome, "pass", "revoke 후 잔여 0");
+    assert.equal(await membershipRows(db, n.mlRoles.subject, n.mlRoles.parent), 0);
+
+    // 하네스 핵심 멤버십은 capability 가 건드리지 않는다
+    assert.equal(await membershipRows(db, exec, n.roles.owner), 1, "executor↔owner 멤버십이 변형됨");
+    await raw.close();
+  });
+
+  test("membership capability 가 중간 실패해도(부여만·회수 전) cleanup 후 임시 membership 잔여 0", async () => {
+    const { raw, db } = await pglite();
+    await prepareEnvironmentForTest(db, n, new Map());
+    await runCap(db, "bootstrap-a-temporary-membership"); // 부여만 하고 회수(다음 capability)는 생략 → 실패 모사
+    assert.equal(await membershipRows(db, n.mlRoles.subject, n.mlRoles.parent), 1, "회수 전이라 1행 남아 있음");
+    await runCleanup(db, n, { retry: true });
+    const residual = await verifyResidual(db, n);
+    assert.equal(residual.roles, 0, "전용 role 포함 잔여 role 0");
+    // 전용 role 이 drop 됐으므로 subject↔parent 멤버십 행도 사라진다
+    assert.equal(await membershipRows(db, n.mlRoles.subject, n.mlRoles.parent), 0, "임시 membership 잔여");
+    await raw.close();
+  });
+
+  test("cleanup 후 run-id default ACL 0", async () => {
+    const { raw, db } = await pglite();
+    await prepareEnvironmentForTest(db, n, new Map());
+    await runCleanup(db, n, { retry: true });
+    const dacl = await num(db, `SELECT count(*)::int AS n FROM pg_default_acl d WHERE pg_get_userbyid(d.defaclrole) LIKE $1`, [`%\\_${RUN}`]);
+    assert.equal(dacl, 0, `default ACL 잔여=${dacl}`);
     await raw.close();
   });
 });

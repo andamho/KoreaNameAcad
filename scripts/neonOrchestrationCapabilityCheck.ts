@@ -26,7 +26,7 @@ export function buildDryRunPlan(cfg: HarnessConfig): string[] {
     `[plan] direct=${maskUrl(cfg.directUrl)} pooled=${maskUrl(cfg.pooledUrl)} runId=${cfg.runId}`,
     `[plan] endpoint pin: direct/pooled 각각 독립 expected hash 고정 · forbidden set(production direct+pooled) 4개 조합 불일치 확인됨`,
     `[plan] CREATE SCHEMA ${n.schema} (synthetic 전용 — public 에는 아무것도 만들지 않음)`,
-    `[plan] CREATE ROLE ${Object.values(n.roles).join(", ")}`,
+    `[plan] CREATE ROLE ${[...Object.values(n.roles), ...Object.values(n.mlRoles)].join(", ")}`,
     `[plan] capability catalog=${CAPABILITIES.length} · actual-neon-direct applicable=${countFor("actual-neon-direct")} · actual-neon-pooled applicable=${countFor("actual-neon-pooled")}`,
     `[plan] hardening security assertions=${ASSERTION_IDS.length} (capability 와 별도 catalog — 합산하지 않음)`,
     `[plan] cleanup statements=${cleanup.length} (run-id 범위 한정)`,

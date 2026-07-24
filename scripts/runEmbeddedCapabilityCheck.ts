@@ -8,6 +8,8 @@
 import crypto from "node:crypto";
 import os from "node:os";
 import path from "node:path";
+import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 import { parseHarnessEnv, DISPOSABLE_TOKEN } from "./neonCheck/guards";
 import { createDirectAdapter, wrapClientAsDirect, type DbAdapter } from "./neonCheck/adapters";
 import { executeDirectProfile, executePooledProfile, rollupNeonFull, formatProfileReport, formatNeonFull } from "./neonCheck/executor";
@@ -18,8 +20,12 @@ export interface EmbeddedRunResult { ran: boolean; reason?: string; exitCode: nu
 
 export async function runEmbedded(runId = process.env.NEON_CHECK_RUN_ID || `emb${crypto.randomBytes(4).toString("hex")}`): Promise<EmbeddedRunResult> {
   let EmbeddedPostgres: any;
-  try { EmbeddedPostgres = (await import("embedded-postgres" as string)).default; }
-  catch { console.log("[embedded] not-run: embedded-postgres 미설치(저장소 의존성 아님). scratchpad 에 설치 후 재실행."); return { ran: false, reason: "dependency-absent", exitCode: 0 }; }
+  try {
+    const iso = (process.env.NEON_ISO_MODULES ?? "").trim();
+    const spec = iso ? pathToFileURL(createRequire(path.join(iso, "package.json")).resolve("embedded-postgres")).href : ("embedded-postgres" as string);
+    EmbeddedPostgres = (await import(spec)).default;
+  }
+  catch { console.log("[embedded] not-run: embedded-postgres 미설치(저장소 의존성 아님). NEON_ISO_MODULES 로 격리 설치본 지정 후 재실행."); return { ran: false, reason: "dependency-absent", exitCode: 0 }; }
 
   const dbDir = path.join(os.tmpdir(), `oc-emb-${Date.now()}`);
   const port = 56800 + Math.floor(Math.random() * 500);

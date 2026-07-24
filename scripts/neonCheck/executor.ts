@@ -172,6 +172,11 @@ async function prepareEnvironment(db: DbAdapter, n: ScopedNames, inj: Injector, 
     await db.exec(`CREATE ROLE ${qi(role)} LOGIN PASSWORD '${sec.reveal().replace(/'/g, "''")}'`);
     await grantSet(role);
   }
+  // membership lifecycle 검증 **전용** role 쌍(NOLOGIN). capability 는 이 쌍에서만 GRANT/REVOKE 하므로
+  //   executor↔owner 등 하네스 핵심 멤버십을 건드리지 않는다. grantSet 은 cleanup 의 drop-owned-self(SET ROLE)
+  //   가 깔끔히 실행되도록 하는 용도이며, subject↔parent 멤버십(capability 가 검증) 과는 별개 행이라 간섭하지 않는다.
+  await db.exec(`CREATE ROLE ${qi(n.mlRoles.parent)} NOLOGIN`); await grantSet(n.mlRoles.parent);
+  await db.exec(`CREATE ROLE ${qi(n.mlRoles.subject)} NOLOGIN`); await grantSet(n.mlRoles.subject);
   if (onRolesCreated) await onRolesCreated([n.roles.deployer, n.roles.writer, n.roles.reader, n.roles.appSim], secrets);
   await createObjects(db, n);
   if (inj.shouldFail("after-partial-triggers")) throw new InjectedFailure("after-partial-triggers");
