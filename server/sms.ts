@@ -17,7 +17,9 @@ export async function sendSMS(to: string, text: string): Promise<void> {
     .update(date + salt)
     .digest("hex");
 
-  const type = text.length > 90 ? "LMS" : "SMS";
+  // 솔라피 SMS 한도는 90byte(한글 2byte 계산). 글자수가 아니라 바이트로 판별해야 함.
+  const smsBytes = Array.from(text).reduce((n, ch) => n + (ch.codePointAt(0)! > 0x7f ? 2 : 1), 0);
+  const type = smsBytes > 90 ? "LMS" : "SMS";
 
   const res = await fetch("https://api.solapi.com/messages/v4/send", {
     method: "POST",
