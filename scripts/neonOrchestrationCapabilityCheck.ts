@@ -105,9 +105,12 @@ export async function main(env: HarnessEnv = process.env as HarnessEnv): Promise
       },
     });
     for (const l of formatProfileReport(direct)) console.log(l);
+    // 실패한 capability 를 개별 보고(마스킹된 detailCode/error 만 — 원문 없음). 3개 fail 등 진단에 필요.
+    for (const f of direct.results.filter((r) => r.outcome === "fail")) console.log(`[neon-check] FAIL ${f.capabilityId}: ${f.detailCode ?? ""} ${f.sanitizedError ?? ""}`.trimEnd());
 
     const pooled = await executePooledProfile({ profile: "actual-neon-pooled", cfg });
     for (const l of formatProfileReport(pooled)) console.log(l);
+    for (const f of pooled.results.filter((r) => r.outcome === "fail")) console.log(`[neon-check] FAIL ${f.capabilityId}: ${f.detailCode ?? ""} ${f.sanitizedError ?? ""}`.trimEnd());
 
     const rollup = rollupNeonFull([...direct.results, ...pooled.results]);
     assertNoNeonPromotion(rollup, [...direct.results, ...pooled.results]);
