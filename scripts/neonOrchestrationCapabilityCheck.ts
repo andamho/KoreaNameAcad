@@ -9,7 +9,7 @@ import { CAPABILITIES, countFor, validateCatalog } from "./neonCheck/capabilitie
 import { ASSERTION_IDS } from "../server/migrations/hardening/functionSecurityAssertions";
 import { formatEnvContract } from "./neonCheck/envContract";
 import { createDirectAdapter, type DbAdapter } from "./neonCheck/adapters";
-import { executeDirectProfile, executePooledProfile, rollupNeonFull, assertNoNeonPromotion, formatProfileReport, formatNeonFull } from "./neonCheck/executor";
+import { executeDirectProfile, executePooledProfile, rollupNeonFull, assertNoNeonPromotion, formatProfileReport, formatNeonFull, formatUnexpectedFailures } from "./neonCheck/executor";
 
 export { DISPOSABLE_TOKEN };
 
@@ -105,12 +105,12 @@ export async function main(env: HarnessEnv = process.env as HarnessEnv): Promise
       },
     });
     for (const l of formatProfileReport(direct)) console.log(l);
-    // 실패한 capability 를 개별 보고(마스킹된 detailCode/error 만 — 원문 없음). 3개 fail 등 진단에 필요.
-    for (const f of direct.results.filter((r) => r.outcome === "fail")) console.log(`[neon-check] FAIL ${f.capabilityId}: ${f.detailCode ?? ""} ${f.sanitizedError ?? ""}`.trimEnd());
 
     const pooled = await executePooledProfile({ profile: "actual-neon-pooled", cfg });
     for (const l of formatProfileReport(pooled)) console.log(l);
-    for (const f of pooled.results.filter((r) => r.outcome === "fail")) console.log(`[neon-check] FAIL ${f.capabilityId}: ${f.detailCode ?? ""} ${f.sanitizedError ?? ""}`.trimEnd());
+
+    // ── 예상 밖 실패 **구조화 보고**(보고서 파일에 영구 기록됨 — 콘솔 휘발 대비). 원문 0, 마스킹된 detailCode/sqlState 만. ──
+    for (const l of formatUnexpectedFailures([{ report: direct, endpoint: "direct" }, { report: pooled, endpoint: "pooled" }])) console.log(l);
 
     const rollup = rollupNeonFull([...direct.results, ...pooled.results]);
     assertNoNeonPromotion(rollup, [...direct.results, ...pooled.results]);

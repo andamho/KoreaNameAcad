@@ -60,6 +60,8 @@ export interface ExecutionResult {
   detailCode?: string;
   durationMs: number;
   sanitizedError?: string;
+  /** PostgreSQL SQLSTATE(예: 42501). handler 예외에서 추출. 원문 아님. */
+  sqlState?: string;
 }
 export type HarnessStatus = "passed-clean" | "passed-branch-disposal-required" | "failed-cleanup" | "aborted-safety-guard";
 export interface ProfileReport {
@@ -121,6 +123,34 @@ export function formatProfileReport(r: ProfileReport): string[] {
 }
 export const formatNeonFull = (r: NeonFullRollup): string =>
   `[neon-check] profile=${r.profile} status=${r.status} neon-evidence=${r.neonEvidenceCount} missing=${r.missing}`;
+
+/**
+ * 예상 밖 실패(outcome==="fail")를 **구조화**해 보고서에 영구 기록할 텍스트로 만든다.
+ * 원문(SQL 전문·URL·credential)은 넣지 않는다. run-id 포함 이름은 이미 마스킹된 detailCode/sanitizedError 만 사용.
+ * expected 는 capability 정본의 expectation 에서 가져온다.
+ */
+export function formatUnexpectedFailures(reports: { report: ProfileReport; endpoint: "direct" | "pooled" }[]): string[] {
+  const fails: { r: ExecutionResult; endpoint: "direct" | "pooled" }[] = [];
+  for (const { report, endpoint } of reports) {
+    for (const r of report.results) if (r.outcome === "fail") fails.push({ r, endpoint });
+  }
+  const lines = [`[failure] unexpectedFailures=${fails.length}`];
+  fails.forEach(({ r, endpoint }, i) => {
+    const cap = CAPABILITIES.find((c) => c.id === r.capabilityId);
+    lines.push(`[failure] failure[${i + 1}]:`);
+    lines.push(`[failure]   capabilityId=${r.capabilityId}`);
+    lines.push(`[failure]   endpoint=${endpoint}`);
+    lines.push(`[failure]   expected=${cap?.expectation ?? "unknown"}`);
+    lines.push(`[failure]   actual=${r.outcome}`);
+    lines.push(`[failure]   sqlState=${r.sqlState ?? "n/a"}`);
+    lines.push(`[failure]   detailCode=${r.detailCode ?? "n/a"}`);
+    lines.push(`[failure]   sanitizedError=${r.sanitizedError ?? "n/a"}`);
+    lines.push(`[failure]   stage=capability-handler`); // capability 실행 중 발생(cleanup 실패는 profile note 로 별도)
+    lines.push(`[failure]   phase=before-cleanup`);      // capability 는 cleanup 이전 단계
+  });
+  if (fails.length === 0) lines.push(`[failure] (없음 — 모든 applicable capability 가 기대대로)`);
+  return lines;
+}
 
 // ── 환경 준비 ───────────────────────────────────────────────────────────────
 async function prepareEnvironment(db: DbAdapter, n: ScopedNames, inj: Injector, secrets: Map<string, MemorySecret>,
@@ -211,7 +241,8 @@ export async function executeDirectProfile(opts: ExecuteOptions): Promise<Profil
         results.push({ capabilityId: cap.id, executionProfile: profile, outcome, evidenceSource: profile, authoritative: cap.authoritativeProfile === profile, detailCode: r.detailCode, durationMs: Date.now() - t0 });
       } catch (e) {
         if (e instanceof InjectedFailure) throw e;
-        results.push({ capabilityId: cap.id, executionProfile: profile, outcome: "fail", evidenceSource: profile, authoritative: cap.authoritativeProfile === profile, durationMs: Date.now() - t0, sanitizedError: sanitizeError(e).message });
+        const se = sanitizeError(e);
+        results.push({ capabilityId: cap.id, executionProfile: profile, outcome: "fail", evidenceSource: profile, authoritative: cap.authoritativeProfile === profile, durationMs: Date.now() - t0, sanitizedError: se.message, sqlState: se.code });
       }
       const point = AFTER_CAPABILITY[cap.id];
       if (point && inj.shouldFail(point)) throw new InjectedFailure(point);
