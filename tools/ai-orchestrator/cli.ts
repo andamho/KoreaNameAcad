@@ -10,8 +10,10 @@ import { runOrchestration } from "./orchestrator";
 import { Workspace, createTempWorkspace } from "./executor/workspace";
 import { makeMockProvider } from "./providers/mock";
 import { anthropicProvider } from "./providers/claude";
+import { claudeCodeProvider, claudeCodePreflight } from "./providers/claudeCode";
 import { openaiProvider } from "./providers/openai";
 import { checkProvider, renderChecks } from "./providers/check";
+import type { Provider } from "./providers/types";
 import { demoClaudeResponses, demoGptResponses, DEMO_TASK } from "./scenarios";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -22,15 +24,33 @@ function arg(name: string): string | undefined {
 }
 const flag = (name: string) => process.argv.includes(`--${name}`);
 
+// Claude 측 provider 선택: --claude-provider api|claude-code. **기본값 claude-code**(Max 구독).
+//   Anthropic API 방식은 CLAUDE_PROVIDER=api 또는 --claude-provider api 로만.
+function resolveClaudeSide(): { provider: Provider; keyEnv: string; kind: string } {
+  const kind = ((arg("claude-provider") || process.env.CLAUDE_PROVIDER || "claude-code")).trim();
+  if (kind === "api") return { provider: anthropicProvider(arg("claude-model")), keyEnv: "ANTHROPIC_API_KEY", kind };
+  return { provider: claudeCodeProvider(arg("claude-model")), keyEnv: "", kind: "claude-code" };
+}
+
 async function main(): Promise<number> {
-  // 실제 API 사전 점검(키·모델·접근·구조화). 키 원문 미출력.
+  // 실제 사전 점검(설치·인증·모델·구조화). 키/토큰 원문 미출력.
   if (flag("check-providers")) {
-    const checks = [
-      await checkProvider("claude", anthropicProvider(arg("claude-model")), "ANTHROPIC_API_KEY"),
-      await checkProvider("gpt", openaiProvider(arg("openai-model")), "OPENAI_API_KEY"),
-    ];
-    console.log(renderChecks(checks));
-    return checks.every((c) => c.ok) ? 0 : 2;
+    const side = resolveClaudeSide();
+    console.log(`[check-providers] Claude 경로: ${side.kind === "claude-code" ? "Claude Code(Max 구독, API 크레딧 불요)" : "Anthropic API(크레딧)"}`);
+    let claudeOk: boolean;
+    if (side.kind === "claude-code") {
+      const pf = claudeCodePreflight(arg("claude-model"));
+      console.log(`  - claude(구독): ${pf.ok ? "✅ OK" : "❌ 실패"} · 설치=${pf.installed ? pf.version : "없음"} · API키제거=${pf.noApiKeyPath ? "예(구독)" : "아니오(키 우선됨 — unset 필요)"} · JSON=${pf.jsonOk ? "OK" : "-"}`);
+      console.log(`      → ${pf.reason}`);
+      claudeOk = pf.ok;
+    } else {
+      const c = await checkProvider("claude", side.provider, side.keyEnv);
+      console.log(renderChecks([c]));
+      claudeOk = c.ok;
+    }
+    const g = await checkProvider("gpt", openaiProvider(arg("openai-model")), "OPENAI_API_KEY");
+    console.log(renderChecks([g]));
+    return claudeOk && g.ok ? 0 : 2;
   }
 
   const mock = flag("mock");
@@ -49,18 +69,20 @@ async function main(): Promise<number> {
     workspace = createTempWorkspace(path.join(runDir, "workspace"));
     console.log(`[ai] mock 모드 — 데모 코드 작업으로 자동 왕복 검증(키 불필요). runId=${runId}`);
   } else {
-    const hasKeys = !!(process.env.ANTHROPIC_API_KEY || "").trim() && !!(process.env.OPENAI_API_KEY || "").trim();
-    const hasModels = !!(process.env.ANTHROPIC_MODEL || "").trim() && !!(process.env.OPENAI_MODEL || "").trim();
-    if (!hasKeys || !hasModels) {
-      console.error("❌ 실제 모드에는 키+모델이 필요합니다(한 번만 설정). .env 에 추가(값은 서호님만 입력, 저장소·로그 금지):");
-      console.error("     ANTHROPIC_API_KEY=sk-ant-...    OPENAI_API_KEY=sk-...");
-      console.error("     ANTHROPIC_MODEL=<사용 가능한 모델>    OPENAI_MODEL=<사용 가능한 모델>");
-      console.error("   설정 후 먼저 점검: npm run ai:orchestrate -- --check-providers");
-      console.error("   키 없이 흐름만 검증: npm run ai:orchestrate -- --task \"...\" --mock");
+    const claudeSide = resolveClaudeSide();
+    // GPT 는 항상 OpenAI 키+모델 필요. Claude 는 api 면 키+모델, claude-code 면 구독(키 불요).
+    const gptReady = !!(process.env.OPENAI_API_KEY || "").trim() && !!(process.env.OPENAI_MODEL || "").trim();
+    const claudeApiReady = claudeSide.kind !== "api" || (!!(process.env.ANTHROPIC_API_KEY || "").trim() && !!(process.env.ANTHROPIC_MODEL || "").trim());
+    if (!gptReady || !claudeApiReady) {
+      console.error("❌ 실제 모드 준비 미완. .env 설정(값은 서호님만 입력, 저장소·로그 금지):");
+      console.error(`   Claude 경로=${claudeSide.kind === "claude-code" ? "Claude Code(Max 구독) — 키 불요, 'claude login' 필요" : "Anthropic API — ANTHROPIC_API_KEY + ANTHROPIC_MODEL 필요"}`);
+      console.error("   GPT: OPENAI_API_KEY + OPENAI_MODEL 필요");
+      console.error("   점검: npm run ai:orchestrate -- --check-providers   ·   키 없이 흐름검증: --mock");
       return 2;
     }
-    claude = anthropicProvider(arg("claude-model"));
+    claude = claudeSide.provider;
     gpt = openaiProvider(arg("openai-model"));
+    console.log(`[ai] Claude 경로=${claudeSide.kind}`);
     const wsPath = arg("workspace") || repoRoot;
     workspace = new Workspace(wsPath);
     try { workspace.assertNotMain(); }

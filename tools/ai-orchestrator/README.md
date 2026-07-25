@@ -40,5 +40,16 @@ npm run ai:orchestrate -- --task "현재 영상편집 실패 사례를 재현하
 테스트 실행 이력 + (구현 시) 변경 파일 + (품질 과제 시) 수치(metrics) + GPT `approve`+`goal_satisfied` 를 모두 만족해야 complete.
 동일 실패 2회 반복·최대 반복 도달 시 안전 종료(stopped).
 
+## Claude 측 provider — API 크레딧 없이 Max 구독으로
+`--claude-provider api|claude-code` (기본 auto: `ANTHROPIC_API_KEY` 있으면 `api`, 없으면 `claude-code`).
+- **claude-code(권장, Max 구독)**: 공식 헤드리스 `claude -p --output-format json` 를 서브프로세스로 호출 → **Anthropic API 크레딧 불요**.
+  조건: Claude Code 설치 + `claude login`(구독 로그인) + `ANTHROPIC_API_KEY` **미설정**(있으면 API 크레딧이 우선됨 — provider 가 자식 프로세스 env 에서 자동 제거, `CLAUDE_CODE_FORCE_SUBSCRIPTION=false` 로 해제 가능).
+  Claude Code 자체 도구가 실제 워크스페이스를 건드리지 않도록 **격리 cwd** 에서 실행 — 코드 수정·명령은 orchestrator 안전계층이 담당.
+  공식 스크립트/자동화 경로만 사용(화면 자동화·세션 탈취 없음).
+- **api**: `ANTHROPIC_API_KEY` + `ANTHROPIC_MODEL` 로 Anthropic Messages API.
+
 ## 최초 1회 설정
-실제 모드는 `.env` 에 `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` 필요(값은 서호님만 입력, 저장소·로그 금지). 없으면 `--mock` 로 흐름을 검증할 수 있다.
+1) 사전 점검: `npm run ai:orchestrate -- --check-providers` (키 원문 미출력, 실패 사유 안내).
+2) **Claude(둘 중 하나)**: (a) Max 구독 — Claude Code 설치 + `claude login`, `ANTHROPIC_API_KEY` 미설정. (b) API — `.env` 에 `ANTHROPIC_API_KEY`+`ANTHROPIC_MODEL`.
+3) **GPT**: `.env` 에 `OPENAI_API_KEY`+`OPENAI_MODEL`.
+값은 서호님만 입력, 저장소·로그에 남기지 마세요. 키 없이 흐름만 보려면 `--mock`.

@@ -23,12 +23,15 @@ function humanReason(msg: string): string {
   return `호출 실패: ${m.slice(0, 120)}`;
 }
 
+// keyEnv 가 빈 문자열이면 = 구독 인증(키 불요, 예: claude-code) → 키 검사 생략.
 export async function checkProvider(label: string, provider: Provider, keyEnv: string): Promise<ProviderCheck> {
-  const keyPresent = !!(process.env[keyEnv] || "").trim();
+  const subscription = keyEnv === "";
+  const keyPresent = subscription ? true : !!(process.env[keyEnv] || "").trim();
   const model = provider.model.startsWith("(") ? "" : provider.model; // "(… 미설정)" 표시 처리
   const base: ProviderCheck = { label, keyPresent, model, reachable: false, structuredOk: false, ok: false, reason: "" };
-  if (!keyPresent) return { ...base, reason: `${keyEnv} 미설정 — .env 에 키 입력 필요(값은 저장소·로그에 남기지 마세요)` };
-  if (!model) return { ...base, reason: `모델 미설정 — .env 에 ${label === "claude" ? "ANTHROPIC_MODEL" : "OPENAI_MODEL"} 지정 필요(코드 기본값 없음)` };
+  if (!subscription && !keyPresent) return { ...base, reason: `${keyEnv} 미설정 — .env 에 키 입력 필요(값은 저장소·로그에 남기지 마세요)` };
+  // 구독 provider(claude-code)는 모델 비어도 기본 모델 사용 가능 → 모델 게이트 생략.
+  if (!subscription && !model) return { ...base, reason: `모델 미설정 — .env 에 ${label === "claude" ? "ANTHROPIC_MODEL" : "OPENAI_MODEL"} 지정 필요(코드 기본값 없음)` };
   try {
     const raw = await provider.complete({
       system: "너는 점검용이다. 반드시 JSON 만 출력: {\"ok\":true}",
