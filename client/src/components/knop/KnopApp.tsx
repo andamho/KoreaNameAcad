@@ -58,11 +58,11 @@ export function KnopApp() {
   const tabs: { key: View; label: string; icon: typeof Sun }[] = [
     { key: "today", label: "오늘", icon: Sun },
     { key: "customers", label: "고객", icon: Users },
-    { key: "inbox", label: "입금", icon: Wallet },
-    { key: "sms-inbox", label: "문자수신", icon: Inbox },
-    { key: "sms", label: "안내문자", icon: MessageSquare },
     { key: "notice", label: "개명후관리", icon: Bird },
     { key: "calendar", label: "달력", icon: CalendarDays },
+    { key: "sms", label: "안내문자", icon: MessageSquare },
+    { key: "inbox", label: "입금", icon: Wallet },
+    { key: "sms-inbox", label: "문자수신", icon: Inbox },
     { key: "reports", label: "이름분석표", icon: FileText },
     { key: "corrections", label: "교정사전", icon: SpellCheck },
   ];
