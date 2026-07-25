@@ -108,7 +108,12 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
   const [transcribing, setTranscribing] = useState(false);
   const [openCall, setOpenCall] = useState<string | null>(null);
 
-  const refresh = () => qc.invalidateQueries({ queryKey });
+  // 상세를 고치면 고객 목록(보드)·오늘 화면도 같이 갱신해야 이름/번호 변경이 바로 반영된다
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey });
+    qc.invalidateQueries({ queryKey: ["knop-board"] });
+    qc.invalidateQueries({ queryKey: ["knop-today"] });
+  };
 
   const { uploadFile, isUploading } = useUpload({
     onError: () => toast({ title: "업로드 실패", variant: "destructive" }),
