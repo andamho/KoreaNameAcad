@@ -55,6 +55,10 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
     document.body.scrollTop = 0;
   }, [customerId]);
   const queryKey = ["knop-customer", customerId];
+  // 고객목록(보드) 캐시에 이미 있는 이름 — 상세 응답을 기다리지 않고 이름분석표 조회를 바로 시작하기 위함
+  const cachedName = (qc.getQueryData<any[]>(["knop-board"]) || []).find((c) => c.id === customerId)?.name as
+    | string
+    | undefined;
   const { data, isLoading } = useQuery<CustomerDetailData>({
     queryKey,
     queryFn: () => knopApi.getCustomer(customerId),
@@ -69,15 +73,17 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
   const { data: journey } = useQuery({ queryKey: ["knop-journey"], queryFn: () => knopApi.listJourney() });
   const { data: hongikIds } = useQuery({ queryKey: ["knop-hongik"], queryFn: () => knopApi.hongikCustomerIds() });
   const isHongik = (hongikIds || []).includes(customerId);
+  // 이름은 목록 캐시 우선 → 상세 응답을 기다리는 워터폴 제거(체감 로딩 단축)
+  const reportName = data?.customer.name || cachedName;
   const { data: reportsData } = useQuery({
-    queryKey: ["knop-reports", data?.customer.name],
-    queryFn: () => knopApi.reportsForName(data!.customer.name),
-    enabled: !!data?.customer.name,
+    queryKey: ["knop-reports", reportName],
+    queryFn: () => knopApi.reportsForName(reportName!),
+    enabled: !!reportName,
   });
+  // customerId 는 처음부터 알고 있으므로 상세 응답을 기다리지 않고 즉시 조회
   const { data: recData } = useQuery({
-    queryKey: ["knop-recordings", data?.customer.id],
-    queryFn: () => knopApi.listRecordings(data!.customer.id),
-    enabled: !!data?.customer.id,
+    queryKey: ["knop-recordings", customerId],
+    queryFn: () => knopApi.listRecordings(customerId),
   });
   const attachRecMut = useMutation({
     mutationFn: () => knopApi.attachRecordings(data!.customer.id),
@@ -372,12 +378,19 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
   };
 
   if (isLoading || !data) {
+    // 목록에서 이미 아는 이름은 즉시 보여줘 빈 화면 체감을 줄인다
     return (
-      <div className="py-16 text-center text-gray-400">
+      <div className="py-8">
         <Button variant="ghost" onClick={onBack} className="mb-4">
-          <ArrowLeft className="w-4 h-4 mr-1" /> 목록
+          <ArrowLeft className="w-4 h-4 mr-1" /> 고객 목록
         </Button>
-        <p>불러오는 중…</p>
+        <Card className="p-6">
+          <h2 className="text-2xl font-bold text-gray-900">{cachedName || "불러오는 중…"}</h2>
+          <div className="mt-4 space-y-2 animate-pulse">
+            <div className="h-3 w-40 bg-gray-100 rounded" />
+            <div className="h-3 w-64 bg-gray-100 rounded" />
+          </div>
+        </Card>
       </div>
     );
   }

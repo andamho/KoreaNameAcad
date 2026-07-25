@@ -245,6 +245,8 @@ export const knopApi = {
     memo?: string | null;
   }) => req<Call>("POST", "/api/kop/calls", data),
   deleteCall: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/calls/${id}`),
+  // 통화 1건 전체(words 포함) — 고객상세 목록은 words 를 빼고 오므로 펼칠 때 사용
+  getCall: (id: string) => req<Call>("GET", `/api/kop/calls/${id}`),
   // 응답은 가볍게(전사문/words 미포함) — 저장 속도용
   editCallTranscript: (
     id: string,

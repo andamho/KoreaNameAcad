@@ -1530,10 +1530,33 @@ export const knopStore = {
   },
 
   // ── Calls (통화 녹음 + 전사/요약) ──
+  // 목록에는 words(단어별 타임스탬프 JSON, 통화당 수백KB~1MB)와 original_transcript 를 싣지 않는다.
+  // → 고객상세 응답이 수 MB가 되던 문제 해결. 실제 값은 통화를 펼칠 때 GET /calls/:id 로 따로 받는다.
   async listCalls(customerId: string): Promise<Call[]> {
     const d = requireDb();
     try {
-      return await d.select().from(calls).where(eq(calls.customerId, customerId)).orderBy(desc(calls.createdAt));
+      const rows = await d
+        .select({
+          id: calls.id,
+          customerId: calls.customerId,
+          projectId: calls.projectId,
+          phone: calls.phone,
+          direction: calls.direction,
+          callDate: calls.callDate,
+          durationSeconds: calls.durationSeconds,
+          audioFileUrl: calls.audioFileUrl,
+          transcriptText: calls.transcriptText,
+          summaryText: calls.summaryText,
+          actionItems: calls.actionItems,
+          memo: calls.memo,
+          status: calls.status,
+          createdAt: calls.createdAt,
+        })
+        .from(calls)
+        .where(eq(calls.customerId, customerId))
+        .orderBy(desc(calls.createdAt));
+      // 타입 호환: 무거운 필드는 null 로 채워 보낸다(펼칠 때 상세 조회로 대체)
+      return rows.map((r) => ({ ...r, words: null, originalTranscript: null })) as Call[];
     } catch (e) {
       fail("통화 목록", e);
     }

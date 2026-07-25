@@ -10,6 +10,7 @@ import * as gm from "./gaemyeong";
 import { isSetKey } from "./gaemyeong";
 import { runOcr, kickOcr } from "./ocr";
 import { findWishCandidates } from "./wish";
+import { processBackfill, backfillEnabled } from "./smsBackfill";
 import { smsStore, startSmsScheduler } from "./sms";
 import {
   calendarAvailable,
@@ -259,6 +260,36 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       res.json({ ok: true, id: row.id, auto });
     } catch (e) {
       handle(res, "POST sms-webhook", e);
+    }
+  });
+
+  // ── SMS backfill (Automate content://sms 대조·복구). 실시간 웹훅과 분리. ──
+  // 별도 secret + 배치 ≤200 + 본문·전화번호 비로그 + FEATURE_SMS_BACKFILL 게이트.
+  app.post(`${P}/sms-backfill`, async (req, res) => {
+    try {
+      if (!backfillEnabled()) return res.status(503).json({ error: "disabled" });
+      const secret = process.env.KOP_SMS_BACKFILL_SECRET || "";
+      const given = String(req.headers["x-knop-backfill-secret"] || req.query.secret || "");
+      if (!secret || given !== secret) return res.status(401).json({ error: "unauthorized" });
+
+      const body = req.body || {};
+      if (typeof body.deviceId !== "string" || !body.deviceId) return res.status(400).json({ error: "deviceId_required" });
+      const messages = Array.isArray(body.messages) ? body.messages : [];
+      if (messages.length > 200) return res.status(400).json({ error: "batch_too_large", max: 200 });
+      const dryRun = body.dryRun === false ? false : true; // 기본 dry-run(안전)
+
+      const result = await processBackfill({
+        deviceId: body.deviceId,
+        dryRun,
+        rangeFrom: body.rangeFrom ?? null,
+        rangeTo: body.rangeTo ?? null,
+        messages,
+      });
+      // 본문·전화번호 비로그 — counts 요약만 기록
+      console.log(`[SMS-BACKFILL] run=${result.runId} dry=${dryRun} counts=${JSON.stringify(result.counts)}`);
+      res.json(result);
+    } catch (e) {
+      handle(res, "POST sms-backfill", e);
     }
   });
 
@@ -1006,6 +1037,17 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       res.json({ queued: targets.length });
     } catch (e) {
       handle(res, "POST calls-retranscribe-pending", e);
+    }
+  });
+
+  // 통화 1건 전체(words 포함) — 목록은 words 를 빼고 오므로 펼칠 때 이걸로 받는다
+  app.get(`${P}/calls/:id`, requireAdmin, async (req, res) => {
+    try {
+      const call = await knopStore.getCall(req.params.id);
+      if (!call) return res.status(404).json({ error: "not_found" });
+      res.json(call);
+    } catch (e) {
+      handle(res, "GET call", e);
     }
   });
 

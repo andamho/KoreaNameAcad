@@ -1,6 +1,6 @@
 // 통화 전사: 화자 구분 + 음성 연동(클릭=이동, 더블클릭=그 문단 수정) + 편집 시 자동 학습
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Play, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { knopApi, type Call } from "@/lib/knopApi";
@@ -90,9 +90,15 @@ function autosize(el: HTMLTextAreaElement | null) {
   el.style.height = Math.min(el.scrollHeight + 2, 520) + "px";
 }
 
-export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () => void }) {
+export function CallTranscriptView({ call: callProp, onSaved }: { call: Call; onSaved: () => void }) {
   const { toast } = useToast();
   const qc = useQueryClient();
+  // 고객상세 목록은 words(수백KB~1MB)를 빼고 오므로, 펼쳐진 이 시점에 전체를 따로 받는다
+  const { data: fullCall } = useQuery({
+    queryKey: ["knop-call", callProp.id],
+    queryFn: () => knopApi.getCall(callProp.id),
+  });
+  const call = fullCall || callProp;
   const audioRef = useRef<HTMLAudioElement>(null);
   const editRef = useRef<HTMLTextAreaElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -310,6 +316,7 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
     onError: (e: any) => {
       toast({ title: "저장 실패(되돌림)", description: e?.message, variant: "destructive" });
       qc.invalidateQueries({ queryKey: ["knop-customer", call.customerId] });
+      qc.invalidateQueries({ queryKey: ["knop-call", call.id] });
     },
   });
 
@@ -361,13 +368,17 @@ export function CallTranscriptView({ call, onSaved }: { call: Call; onSaved: () 
     // 즉시 반영(낙관적): 편집창 닫기 + 캐시 갱신. 실제 업로드는 바뀐 문단만 백그라운드로.
     setEditKey(null);
     editCtxRef.current = null;
+    const newText = newWords.map((w) => w.word).join(" ");
+    // 이 통화 캐시(words 보관처) — 편집 결과가 화면에 그대로 남게
+    qc.setQueryData(["knop-call", call.id], (old: any) =>
+      old ? { ...old, transcriptText: newText, words: JSON.stringify(newWords) } : old,
+    );
+    // 고객상세 목록(요약/전사문 표시용, words 는 없음)
     qc.setQueryData(["knop-customer", call.customerId], (old: any) =>
       old?.calls
         ? {
             ...old,
-            calls: old.calls.map((c: any) =>
-              c.id === call.id ? { ...c, transcriptText: newWords.map((w) => w.word).join(" "), words: JSON.stringify(newWords) } : c,
-            ),
+            calls: old.calls.map((c: any) => (c.id === call.id ? { ...c, transcriptText: newText } : c)),
           }
         : old,
     );
