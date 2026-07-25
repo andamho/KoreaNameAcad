@@ -6,6 +6,7 @@ vite.config.ts.*
 *.tar.gz.env
 .env
 .env.*
+!.env.example
 google-vision-credentials.json
 zeus-calendar-key.json
 *-firebase-adminsdk-*.json
@@ -14,3 +15,6 @@ scripts/.production-hardening-host.pin
 
 # 이름분석표 로컬 worker DPAPI writer 비밀(로컬 전용)
 scripts/.name-report-writer.secret
+
+# AI 오케스트레이터 실행 로그(로컬 전용, 고객 데이터 포함 가능)
+.ai-runs/
