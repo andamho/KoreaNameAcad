@@ -1,38 +1,34 @@
-// Claude↔GPT 대화 계약 — 자유 장문 금지, JSON schema 강제. 파싱 실패 시 재요청(호출측), 미검증 응답으로 다음 단계 진행 금지.
+// Claude↔GPT 협업 계약 — 자유 장문 금지, 구조화 JSON 강제. 파싱 실패 시 재요청, 미검증 응답으로 진행 금지.
+//   역할: 오케스트레이터=조사·실행·적용·수집. Claude=증거 분석→원인·수정안·검증명령. GPT=검문(질문 금지, required_evidence 반환).
+//   Claude Code 내부 도구는 비활성 — Claude 가 직접 파일/셸을 조사한다고 가정하지 않는다.
 import { z } from "zod";
 
-export const CLAUDE_PHASES = ["analysis", "implementation", "test", "revision", "blocked", "complete"] as const;
 export const GPT_VERDICTS = ["approve", "revise", "blocked"] as const;
 
-// Claude(주담당): 조사·원인·수정계획·구현·테스트·실패분석.
+// Claude(주담당): 오케스트레이터가 준 증거만으로 분석. 장문 자유토론 금지 — 아래 구조만.
 export const ClaudeMessageSchema = z.object({
-  phase: z.enum(CLAUDE_PHASES),
-  summary: z.string().min(1),
-  evidence: z.array(z.string()).default([]),
-  files_to_change: z.array(z.string()).default([]),
-  // 실제 코드 수정(선택) — executor 가 워크스페이스에 적용해 diff 생성.
-  file_edits: z.array(z.object({ path: z.string().min(1), content: z.string() })).default([]),
-  commands: z.array(z.string()).default([]),
-  risks: z.array(z.string()).default([]),
-  // 측정 수치(전사/영상 등 목표 수치) — 완료 판정에 사용. 자유 텍스트 금지.
-  metrics: z.record(z.string(), z.number()).default({}),
-  needs_human_approval: z.boolean().default(false),
-  approval_reason: z.string().nullable().default(null),
+  problem: z.string().min(1),                                   // 현재 확인된 문제
+  evidence: z.array(z.string()).max(5).default([]),            // 핵심 증거 최대 5
+  root_cause: z.string().default("아직 미확정"),               // 확정 원인 또는 "아직 미확정"
+  proposed_changes: z.array(z.string()).max(3).default([]),    // 필수 수정 최대 3(설명)
+  // 실제 코드 변경(선택) — 오케스트레이터가 워크스페이스에 적용해 diff 생성(계획만으론 적용 불가).
+  file_edits: z.array(z.object({ path: z.string().min(1), content: z.string() })).max(10).default([]),
+  commands: z.array(z.string()).max(6).default([]),            // 오케스트레이터가 실행할 명령
+  expected_result: z.string().default(""),                     // 수정 후 기대 결과
+  remaining_uncertainty: z.array(z.string()).default([]),      // 미해결/추가 확인 필요
 });
 export type ClaudeMessage = z.infer<typeof ClaudeMessageSchema>;
 
-// GPT(조건부 감사자): 원인분석 검문·설계누락·과도기초공사 차단·회귀위험·diff·테스트·목표달성 판정.
+// GPT(감사자): 질문문 만들지 말 것. 증거 부족이면 required_evidence(≤3) 반환. required_changes ≤3.
 export const GptMessageSchema = z.object({
   verdict: z.enum(GPT_VERDICTS),
-  findings: z.array(z.string()).default([]),
-  required_changes: z.array(z.string()).default([]),
-  missing_evidence: z.array(z.string()).default([]),
+  reason: z.string().min(1).max(1200),                         // 한 문단 이내
+  required_changes: z.array(z.string()).max(3).default([]),
+  required_evidence: z.array(z.string()).max(3).default([]),
   goal_satisfied: z.boolean().default(false),
-  needs_human_approval: z.boolean().default(false),
 });
 export type GptMessage = z.infer<typeof GptMessageSchema>;
 
-// 관용 파싱: ```json 코드펜스/앞뒤 잡텍스트 제거 후 첫 {...} 블록만 파싱.
 function extractJson(raw: string): string | null {
   const fence = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
   const body = fence ? fence[1] : raw;
@@ -55,8 +51,7 @@ function parseWith<S extends z.ZodTypeAny>(schema: S, raw: string): { ok: true; 
 export const parseClaude = (raw: string) => parseWith(ClaudeMessageSchema, raw);
 export const parseGpt = (raw: string) => parseWith(GptMessageSchema, raw);
 
-// 스키마 안내 문자열(프롬프트에 삽입 — 모델이 정확한 JSON 을 내도록).
-export const CLAUDE_SCHEMA_HINT = `반드시 아래 JSON 만 출력(코드펜스 허용, 다른 설명 금지):
-{"phase":"analysis|implementation|test|revision|blocked|complete","summary":"짧은 핵심","evidence":["근거"],"files_to_change":["경로"],"file_edits":[{"path":"경로","content":"전체 파일 내용"}],"commands":["실행할 안전한 명령"],"risks":["위험"],"metrics":{"wer":0.05},"needs_human_approval":false,"approval_reason":null}`;
-export const GPT_SCHEMA_HINT = `반드시 아래 JSON 만 출력(코드펜스 허용, 다른 설명 금지):
-{"verdict":"approve|revise|blocked","findings":["문제점"],"required_changes":["필수 수정"],"missing_evidence":["누락 근거"],"goal_satisfied":false,"needs_human_approval":false}`;
+export const CLAUDE_SCHEMA_HINT = `반드시 아래 JSON 만 출력(코드펜스 허용, 다른 설명·도구 없이). 자유 장문 금지:
+{"problem":"현재 문제","evidence":["증거 최대5"],"root_cause":"확정 원인 또는 아직 미확정","proposed_changes":["필수 수정 최대3"],"file_edits":[{"path":"경로","content":"파일 전체 내용"}],"commands":["오케스트레이터가 실행할 명령"],"expected_result":"수정 후 기대 결과","remaining_uncertainty":[]}`;
+export const GPT_SCHEMA_HINT = `반드시 아래 JSON 만 출력(코드펜스 허용). 질문문 만들지 말 것 — 증거 부족이면 required_evidence(최대3) 반환. required_changes 최대3:
+{"verdict":"approve|revise|blocked","reason":"한 문단 이내","required_changes":[],"required_evidence":[],"goal_satisfied":false}`;
