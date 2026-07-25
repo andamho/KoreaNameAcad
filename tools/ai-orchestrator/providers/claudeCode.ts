@@ -44,11 +44,43 @@ function childEnv(): NodeJS.ProcessEnv {
   return env;
 }
 
+// ★근본 원인(증거 확정): Claude Code 가 조사 과제에서 자체 도구(Bash/PowerShell)를 시도 → plan 거부 → 재시도로 턴 소진 →
+//   간헐적 error_max_turns(exit 1). **도구를 비활성화**하면 단일 턴 JSON 응답(실행은 orchestrator 안전 executor 전담).
+const DISALLOWED_TOOLS = "Bash,PowerShell,Read,Edit,Write,Glob,Grep,WebFetch,WebSearch,Task,BashOutput,NotebookEdit,TodoWrite,KillShell,SlashCommand";
+
 function baseArgs(model: string, permissionMode: "plan" | "default"): string[] {
-  const maxTurns = String(Number(process.env.CLAUDE_CODE_MAX_TURNS || 12));
-  const args = ["-p", "--output-format", "json", "--max-turns", maxTurns, "--permission-mode", permissionMode];
+  const maxTurns = String(Number(process.env.CLAUDE_CODE_MAX_TURNS || 4)); // 도구 비활성이면 1턴이면 충분 — 여유 상한.
+  const args = ["-p", "--output-format", "json", "--max-turns", maxTurns, "--permission-mode", permissionMode, "--disallowed-tools", DISALLOWED_TOOLS];
   if (model) args.push("--model", model);
   return args;
+}
+
+export class ClaudeCodeError extends Error {
+  constructor(message: string, public kind: "timeout" | "max_turns" | "auth" | "permission" | "not_installed" | "unknown", public exitCode: number | null = null) { super(message); this.name = "ClaudeCodeError"; }
+}
+
+// claude -p 결과 추출 — exit code 무관하게 stdout JSON 우선 파싱. 실패 시 모드 구분(timeout/max_turns/auth/permission/unknown).
+function extractResult(r: { status: number | null; stdout: string; stderr: string; error?: Error }): string {
+  let data: any = null; try { data = JSON.parse(r.stdout); } catch { /* */ }
+  // 1) 유효한 result 가 있으면 exit code 와 무관하게 보존·반환.
+  if (data && typeof data.result === "string" && data.result && !data.is_error) return data.result;
+  // 2) spawn 레벨 오류(타임아웃 포함) 먼저.
+  if (r.error) {
+    const code = (r.error as any).code; const signal = (r.error as any).signal;
+    if (code === "ETIMEDOUT" || signal) throw new ClaudeCodeError("claude 제한시간 초과(timeout) — 자식 종료됨", "timeout", r.status);
+    throw new ClaudeCodeError(`claude 실행 실패(설치/PATH): ${maskForLog(String((r.error as any).message || r.error)).slice(0, 140)}`, "not_installed", r.status);
+  }
+  // 3) JSON 안의 실패 분류.
+  if (data && data.is_error) {
+    const sub = String(data.subtype || "");
+    if (sub === "error_max_turns") throw new ClaudeCodeError("max-turns 도달(도구 반복) — 도구 비활성 확인 필요", "max_turns", r.status);
+    if (/auth|login|unauthor|credential/i.test(sub) || data.api_error_status === 401) throw new ClaudeCodeError("Claude 인증 실패(구독 로그인 확인: claude 로그인 상태)", "auth", r.status);
+    if (Array.isArray(data.permission_denials) && data.permission_denials.length) throw new ClaudeCodeError(`권한 거부(도구 차단됨): ${maskForLog(String(sub)).slice(0, 80)}`, "permission", r.status);
+    throw new ClaudeCodeError(`claude 오류(${maskForLog(sub || "unknown").slice(0, 80)})`, "unknown", r.status);
+  }
+  // 4) 비정상 종료 + stdout 파싱 불가 → stderr(빈 값이면 unknown process failure).
+  const err = (r.stderr && r.stderr.trim()) ? r.stderr.slice(0, 200) : "unknown process failure";
+  throw new ClaudeCodeError(`claude 비정상 종료(exit ${r.status}): ${err}`, "unknown", r.status);
 }
 
 // 격리 cwd(빈 임시폴더) + plan 모드 → Claude Code 가 실제 워크스페이스를 읽거나 수정하지 않음.
@@ -77,14 +109,17 @@ export function claudeCodePreflight(model?: string): ClaudeCodePreflight {
   const v = spawnSync(bin, ["--version"], { env: childEnv(), encoding: "utf-8", timeout: 20000, shell: false, windowsHide: true });
   if (v.error || v.status !== 0) return { ...base, reason: `Claude Code 미설치/PATH 불가: ${maskForLog(String((v.error as any)?.message || v.stderr || "not found")).slice(0, 120)}` };
   base.installed = true; base.version = (v.stdout || "").trim().split(/\s+/).slice(0, 2).join(" ");
-  // 2) 구독 인증 + JSON 출력(짧은 확인).
-  const r = runClaude(bin, baseArgs(resolveClaudeCodeModel(model), "plan"), "정확히 JSON 만 출력: {\"ok\":true}");
-  if (r.error || r.status !== 0) return { ...base, reason: `claude -p 실행 실패(로그인/plan 확인): exit=${r.status} ${r.stderr.slice(0, 140)}` };
-  let jsonOk = false; try { const s = r.stdout.indexOf("{"), e = r.stdout.lastIndexOf("}"); const d = JSON.parse(r.stdout.slice(s, e + 1)); jsonOk = !!(d && (typeof d.result === "string" || typeof d.ok !== "undefined")); } catch { /* */ }
-  base.jsonOk = jsonOk;
-  base.ok = base.installed && jsonOk;
-  base.reason = base.ok ? `정상 — Claude Code ${base.version}, 구독 경로(API 키 제거), JSON 출력 OK` : "응답을 받았으나 JSON 파싱 실패(--output-format json/plan 확인)";
-  return base;
+  // 2) 구독 인증 + JSON 출력(짧은 확인). 도구 비활성 → 단일 턴.
+  try {
+    const r = runClaude(bin, baseArgs(resolveClaudeCodeModel(model), "plan"), "정확히 JSON 만 출력하라(도구 없이): {\"ok\":true}");
+    const result = extractResult(r); // 실패 시 ClaudeCodeError(kind 구분) throw
+    let jsonOk = false; try { const s = result.indexOf("{"), e = result.lastIndexOf("}"); const d = JSON.parse(result.slice(s, e + 1)); jsonOk = !!(d && typeof d === "object"); } catch { /* */ }
+    base.jsonOk = jsonOk; base.ok = base.installed && jsonOk;
+    base.reason = base.ok ? `정상 — Claude Code ${base.version}, 구독 경로(API 키 제거), JSON 출력 OK` : "응답을 받았으나 JSON 파싱 실패";
+    return base;
+  } catch (e: any) {
+    return { ...base, reason: `${e instanceof ClaudeCodeError ? `[${e.kind}] ` : ""}${maskForLog(String(e?.message ?? e)).slice(0, 160)}` };
+  }
 }
 
 export function claudeCodeProvider(explicitModel?: string): Provider {
@@ -94,13 +129,8 @@ export function claudeCodeProvider(explicitModel?: string): Provider {
     name: "claude-code",
     model: model || "claude-code(구독 기본 모델)",
     async complete(req: ProviderRequest): Promise<string> {
-      const r = runClaude(bin, baseArgs(model, "plan"), buildClaudeCodePrompt(req));
-      if (r.error) throw new Error(`claude 실행 실패(설치/PATH 확인): ${maskForLog(String((r.error as any).message || r.error)).slice(0, 160)}`);
-      if (r.status !== 0) throw new Error(`claude -p 실패(exit ${r.status}): ${r.stderr.slice(0, 200)}`);
-      let data: any; try { data = JSON.parse(r.stdout); } catch { throw new Error("claude -p 출력 JSON 파싱 실패(--output-format json 확인)"); }
-      const text = typeof data?.result === "string" ? data.result : (typeof data?.text === "string" ? data.text : "");
-      if (!text) throw new Error("claude -p 응답에 result 없음");
-      return text;
+      // 도구 비활성 + 단일 턴 JSON. exit code 무관하게 stdout JSON 우선(extractResult), 실패 모드 구분.
+      return extractResult(runClaude(bin, baseArgs(model, "plan"), buildClaudeCodePrompt(req)));
     },
   };
 }

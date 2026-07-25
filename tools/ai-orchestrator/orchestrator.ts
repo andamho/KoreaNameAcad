@@ -47,11 +47,18 @@ async function callStructured<T>(
 ): Promise<{ value: T; raw: string } | null> {
   let msgs = messages;
   for (let attempt = 0; attempt < 3; attempt++) {
-    const raw = await provider.complete({ system, messages: msgs });
+    let raw: string;
+    try { raw = await provider.complete({ system, messages: msgs }); }
+    catch (e: any) {
+      // provider 오류(인증·timeout·max_turns·설치 등)는 **같은 프롬프트로 재시도하지 않는다**(무한 재시도 금지). 즉시 실패.
+      const kind = e?.kind ? `[${e.kind}] ` : "";
+      log({ provider: provider.name, attempt, ok: false, providerError: kind + maskForLog(String(e?.message ?? e)).slice(0, 200) });
+      return null;
+    }
     const masked = maskForLog(raw);
     const r = parse(raw);
     if (r.ok) { log({ provider: provider.name, attempt, ok: true, response: maskForLog(JSON.stringify(r.value)) }); return { value: r.value, raw: masked }; }
-    log({ provider: provider.name, attempt, ok: false, error: r.error });
+    log({ provider: provider.name, attempt, ok: false, error: r.error }); // schema 위반만 정정 재요청.
     msgs = [...msgs, { role: "assistant", content: masked }, { role: "user", content: `이전 응답이 schema 위반이다(${r.error}). 설명 없이 정확한 JSON 만 다시 출력하라.` }];
   }
   return null;

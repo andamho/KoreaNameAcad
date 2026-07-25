@@ -18,8 +18,10 @@ export function runCommand(cmd: string, opts: { cwd: string; timeoutMs?: number 
   if (verdict.category === "blocked") {
     return { cmd: shown, executed: false, blocked: true, reason: verdict.reason, code: null, output: "" };
   }
-  const r = spawnSync(cmd, { cwd: opts.cwd, shell: true, encoding: "utf-8", timeout: opts.timeoutMs ?? 120000, maxBuffer: 8 * 1024 * 1024 });
-  const raw = `${r.stdout ?? ""}${r.stderr ?? ""}`;
+  // ★bash 로 실행 — 영상 파이프라인 명령이 POSIX 경로(`./venv/Scripts/python.exe`)라 Windows cmd.exe(shell:true)에선 실패한다.
+  //   allowlist 로 이미 검증된 cmd 를 bash -c 인자로 전달(shell 문자열 결합 아님). Windows=Git Bash, Unix=/bin/bash.
+  const r = spawnSync("bash", ["-c", cmd], { cwd: opts.cwd, encoding: "utf-8", timeout: opts.timeoutMs ?? 120000, maxBuffer: 16 * 1024 * 1024, killSignal: "SIGKILL", windowsHide: true });
+  const raw = r.error ? `${(r.error as any).message ?? r.error}\n${r.stdout ?? ""}${r.stderr ?? ""}` : `${r.stdout ?? ""}${r.stderr ?? ""}`;
   return {
     cmd: shown, executed: true, blocked: false, reason: "allowed",
     code: r.status ?? (r.error ? -1 : null),
