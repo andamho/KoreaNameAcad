@@ -11,6 +11,7 @@ import { Workspace, createTempWorkspace } from "./executor/workspace";
 import { makeMockProvider } from "./providers/mock";
 import { anthropicProvider } from "./providers/claude";
 import { openaiProvider } from "./providers/openai";
+import { checkProvider, renderChecks } from "./providers/check";
 import { demoClaudeResponses, demoGptResponses, DEMO_TASK } from "./scenarios";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -22,6 +23,16 @@ function arg(name: string): string | undefined {
 const flag = (name: string) => process.argv.includes(`--${name}`);
 
 async function main(): Promise<number> {
+  // 실제 API 사전 점검(키·모델·접근·구조화). 키 원문 미출력.
+  if (flag("check-providers")) {
+    const checks = [
+      await checkProvider("claude", anthropicProvider(arg("claude-model")), "ANTHROPIC_API_KEY"),
+      await checkProvider("gpt", openaiProvider(arg("openai-model")), "OPENAI_API_KEY"),
+    ];
+    console.log(renderChecks(checks));
+    return checks.every((c) => c.ok) ? 0 : 2;
+  }
+
   const mock = flag("mock");
   const task = arg("task") || (mock ? DEMO_TASK : "");
   if (!task) { console.error("❌ --task \"작업 목표\" 필요"); return 1; }
@@ -39,16 +50,17 @@ async function main(): Promise<number> {
     console.log(`[ai] mock 모드 — 데모 코드 작업으로 자동 왕복 검증(키 불필요). runId=${runId}`);
   } else {
     const hasKeys = !!(process.env.ANTHROPIC_API_KEY || "").trim() && !!(process.env.OPENAI_API_KEY || "").trim();
-    if (!hasKeys) {
-      console.error("❌ 실제 모드에는 API 키가 필요합니다(한 번만 설정).");
-      console.error("   .env 에 다음을 추가하세요(값은 서호님만 입력, 저장소·로그에 남기지 마세요):");
-      console.error("     ANTHROPIC_API_KEY=sk-ant-...");
-      console.error("     OPENAI_API_KEY=sk-...");
-      console.error("   그 전까지는 키 없이 흐름을 검증하려면: npm run ai:orchestrate -- --task \"...\" --mock");
+    const hasModels = !!(process.env.ANTHROPIC_MODEL || "").trim() && !!(process.env.OPENAI_MODEL || "").trim();
+    if (!hasKeys || !hasModels) {
+      console.error("❌ 실제 모드에는 키+모델이 필요합니다(한 번만 설정). .env 에 추가(값은 서호님만 입력, 저장소·로그 금지):");
+      console.error("     ANTHROPIC_API_KEY=sk-ant-...    OPENAI_API_KEY=sk-...");
+      console.error("     ANTHROPIC_MODEL=<사용 가능한 모델>    OPENAI_MODEL=<사용 가능한 모델>");
+      console.error("   설정 후 먼저 점검: npm run ai:orchestrate -- --check-providers");
+      console.error("   키 없이 흐름만 검증: npm run ai:orchestrate -- --task \"...\" --mock");
       return 2;
     }
-    claude = anthropicProvider();
-    gpt = openaiProvider();
+    claude = anthropicProvider(arg("claude-model"));
+    gpt = openaiProvider(arg("openai-model"));
     const wsPath = arg("workspace") || repoRoot;
     workspace = new Workspace(wsPath);
     try { workspace.assertNotMain(); }

@@ -1,16 +1,20 @@
-// Anthropic(Claude) 제공자 — SDK 의존 없이 fetch 로 Messages API 호출. 키는 env(ANTHROPIC_API_KEY).
-//   ⚠️ orchestrator 가 전송 전 익명화(anonymize)를 이미 적용한다. 여기서는 원문 로그 금지.
+// Anthropic(Claude) 제공자 — SDK 무의존 fetch. 모델은 **env(ANTHROPIC_MODEL)로만** 결정(코드 기본값 없음).
+//   키·모델 미설정이면 명확한 오류. orchestrator 가 전송 전 익명화하므로 여기서 원문 로그 금지.
 import type { Provider, ProviderRequest } from "./types";
 
-const DEFAULT_MODEL = process.env.AI_ORCHESTRATOR_CLAUDE_MODEL || "claude-opus-4-8";
+export function resolveClaudeModel(explicit?: string): string {
+  return (explicit || process.env.ANTHROPIC_MODEL || "").trim();
+}
 
-export function anthropicProvider(model = DEFAULT_MODEL): Provider {
+export function anthropicProvider(explicitModel?: string): Provider {
+  const model = resolveClaudeModel(explicitModel);
   return {
     name: "claude",
-    model,
+    model: model || "(ANTHROPIC_MODEL 미설정)",
     async complete(req: ProviderRequest): Promise<string> {
       const key = (process.env.ANTHROPIC_API_KEY || "").trim();
-      if (!key) throw new Error("ANTHROPIC_API_KEY 미설정 — 실제 Claude 호출 불가(mock 사용 또는 키 설정).");
+      if (!key) throw new Error("ANTHROPIC_API_KEY 미설정");
+      if (!model) throw new Error("ANTHROPIC_MODEL 미설정 — 사용할 모델을 .env 에 지정하세요(코드 기본값 없음).");
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
