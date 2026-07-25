@@ -18,7 +18,7 @@ import {
   MessageSquare,
   Inbox,
   Trash2,
-  Sparkles,
+  Bird,
   FileText,
 } from "lucide-react";
 import { knopApi } from "@/lib/knopApi";
@@ -61,7 +61,7 @@ export function KnopApp() {
     { key: "inbox", label: "입금", icon: Wallet },
     { key: "sms-inbox", label: "문자수신", icon: Inbox },
     { key: "sms", label: "안내문자", icon: MessageSquare },
-    { key: "notice", label: "개명후관리", icon: Sparkles },
+    { key: "notice", label: "개명후관리", icon: Bird },
     { key: "calendar", label: "달력", icon: CalendarDays },
     { key: "reports", label: "이름분석표", icon: FileText },
     { key: "corrections", label: "교정사전", icon: SpellCheck },
