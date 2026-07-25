@@ -15,11 +15,16 @@ import { maskForLog } from "../anonymize";
 
 export function resolveClaudeBin(): string {
   const home = os.homedir();
+  // ⚠️ Windows: spawn(shell:false)은 .cmd 실행 불가(EINVAL) → 반드시 **실제 .exe** 를 우선 사용.
   const cands = process.platform === "win32"
-    ? [path.join(home, ".local", "bin", "claude.exe"), path.join(process.env.LOCALAPPDATA || "", "Programs", "claude", "claude.exe"), path.join(process.env.APPDATA || "", "npm", "claude.cmd")]
+    ? [
+        path.join(process.env.APPDATA || "", "npm", "node_modules", "@anthropic-ai", "claude-code", "bin", "claude.exe"),
+        path.join(process.env.LOCALAPPDATA || "", "Programs", "claude", "claude.exe"),
+        path.join(home, ".local", "bin", "claude.exe"),
+      ]
     : [path.join(home, ".local", "bin", "claude"), "/usr/local/bin/claude", "/opt/homebrew/bin/claude"];
   for (const c of cands) { try { if (c && fs.existsSync(c)) return c; } catch { /* */ } }
-  return "claude"; // PATH 가정
+  return "claude"; // PATH 가정(비-Windows)
 }
 
 export function buildClaudeCodePrompt(req: ProviderRequest): string {

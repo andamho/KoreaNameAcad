@@ -34,8 +34,8 @@ export async function checkProvider(label: string, provider: Provider, keyEnv: s
   if (!subscription && !model) return { ...base, reason: `모델 미설정 — .env 에 ${label === "claude" ? "ANTHROPIC_MODEL" : "OPENAI_MODEL"} 지정 필요(코드 기본값 없음)` };
   try {
     const raw = await provider.complete({
-      system: "너는 점검용이다. 반드시 JSON 만 출력: {\"ok\":true}",
-      messages: [{ role: "user", content: "점검. {\"ok\":true} 만 출력하라." }],
+      system: "너는 점검용이다. 반드시 JSON 만 출력.",
+      messages: [{ role: "user", content: "점검. JSON 으로 {\"ok\":true} 만 출력하라." }],
       maxTokens: 50,
     });
     let parsed: any = null;

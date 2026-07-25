@@ -28,7 +28,10 @@ export function openaiProvider(explicitModel?: string): Provider {
       if (!key) throw new Error("OPENAI_API_KEY 미설정");
       if (!model) throw new Error("OPENAI_MODEL 미설정 — 사용할 모델을 .env 에 지정하세요(코드 기본값 없음).");
       // Responses API 입력: instructions(system) + input(대화). 구조화 출력=json_object.
-      const input = req.messages.map((m) => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.content }));
+      // ⚠️ json_object 모드는 **입력 메시지에 'json' 단어가 포함**돼야 함(OpenAI 400 방지). 없으면 지시 한 줄 추가.
+      const msgs = req.messages.map((m) => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.content }));
+      const hasJsonWord = msgs.some((m) => /json/i.test(m.content));
+      const input = hasJsonWord ? msgs : [...msgs, { role: "user" as const, content: "위 지시대로 JSON 만 출력하라." }];
       const res = await fetch("https://api.openai.com/v1/responses", {
         method: "POST",
         headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
