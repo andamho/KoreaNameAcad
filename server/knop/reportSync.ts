@@ -56,6 +56,7 @@ function renderOrRead(abs: string): Promise<Buffer> {
 }
 
 // 처리기용 raw pg 풀 (파라미터 쿼리·트랜잭션). drizzle db 는 raw query 미노출이라 별도 사용.
+// ⚠️ reportPool 은 **기존 직접 처리 경로(flag off)** 전용 — 소유자(NEON_DATABASE_URL) 사용(하위호환).
 let _pool: PgPool | null = null;
 export function reportPool(): PgPool {
   if (!_pool) {
@@ -65,6 +66,25 @@ export function reportPool(): PgPool {
     });
   }
   return _pool;
+}
+
+// 큐 name-report 워커 전용 최소권한 연결 URL — orchestration_report_processor.
+//   소유자 fallback **없음**(fail-closed): 큐 워커는 최소권한 role 로만 업무 DB 에 접근한다.
+export function resolveNameReportProcessorUrl(): string | null {
+  return (process.env.NAME_REPORT_DB_URL || "").trim() || null;
+}
+let _nrPool: PgPool | null = null;
+export function nameReportProcessorPool(): PgPool {
+  if (!_nrPool) {
+    const url = resolveNameReportProcessorUrl();
+    if (!url) throw new Error("NAME_REPORT_DB_URL 미설정 — 큐 name-report 워커는 최소권한 role(orchestration_report_processor) 로만 업무 DB 에 접근합니다(소유자 fallback 없음, fail-closed).");
+    _nrPool = new PgPool({
+      connectionString: url,
+      ssl: url.includes("sslmode=disable") ? undefined : { rejectUnauthorized: false },
+      connectionTimeoutMillis: 15000, idleTimeoutMillis: 30000, max: 3,
+    });
+  }
+  return _nrPool;
 }
 
 // 로컬 해시 캐시(재해싱 방지). DB(report_matches)가 원천이고, 이건 성능용 보조 캐시.
@@ -86,9 +106,9 @@ export type SyncResult = {
 
 // 처리기 deps 빌더 — 정상 경로(syncReports)와 큐 adapter(makeLocalNameReportDeps)가 **같은 실제 deps** 를 공유한다.
 //   render=로컬 Python·upload=R2·hashFile=파일 sha256(캐시). 복제 없음.
-function buildProcessorDeps(state: HashState): ProcessorDeps {
+function buildProcessorDeps(state: HashState, poolFn: () => PgPool = reportPool): ProcessorDeps {
   return {
-    db: { query: (sql, params) => reportPool().query(sql, params as any[]) as any },
+    db: { query: (sql, params) => poolFn().query(sql, params as any[]) as any },
     render: renderOrRead,
     upload: async (key, buf) => { await store.putObject(key, buf, "image/png"); return `/objects/${key}`; },
     hashFile: (abs) => {
@@ -113,7 +133,8 @@ function buildProcessorDeps(state: HashState): ProcessorDeps {
 //   ⚠️ 로컬 전용(reportsAvailable()==true 인 로컬 worker). 배포 서버는 report 폴더가 없어 사용하지 않는다.
 export function makeLocalNameReportDeps(): NameReportDeps {
   const state = loadState();
-  const base = buildProcessorDeps(state);
+  // 업무 DB 는 최소권한 role(orchestration_report_processor) 전용 풀로만 접근(소유자 아님).
+  const base = buildProcessorDeps(state, nameReportProcessorPool);
   // resolveInput 은 locator 계약(nameReportLocal)에 위임 — 해시 기반 로컬 인덱스 + 루트/traversal 안전.
   return { ...base, resolveInput: (ref) => resolveNameReportInput(base, ref) };
 }
@@ -121,10 +142,12 @@ export function makeLocalNameReportDeps(): NameReportDeps {
 let _syncing = false;
 export async function syncReports(): Promise<SyncResult> {
   const empty: SyncResult = { auto_matched: 0, needs_review: 0, attachment_failed: 0, processing_failed: 0, skipped: 0, processed: 0, added: 0, created: 0, queued: 0 };
-  if (!db || _syncing || !reportsAvailable()) return empty;
+  // 큐 모드는 drizzle db(소유자 연결) 불필요 — enqueue 는 최소권한 enqueue role 로, hashFile 은 로컬. 직접 처리 경로만 db 필요.
+  if (_syncing || !reportsAvailable()) return empty;
+  if (!nameReportQueueEnabled() && !db) return empty;
   _syncing = true;
   const state = loadState();
-  const deps: ProcessorDeps = buildProcessorDeps(state);
+  const deps: ProcessorDeps = buildProcessorDeps(state); // 직접 처리용(reportPool=소유자). 큐 모드는 hashFile 만 사용.
   const res: SyncResult = { ...empty };
 
   // 큐 모드: 직접 처리(processFile) 대신 name-report job 생성으로 분기. 기본 off(기존 동작 불변).

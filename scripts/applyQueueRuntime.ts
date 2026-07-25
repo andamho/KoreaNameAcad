@@ -35,9 +35,16 @@ function requireOwnerUrl(pinRequired: boolean): string {
 
 const SQL_0005 = () => fs.readFileSync(path.join(repoRoot, "migrations", "0005_job_cancel_request.sql"), "utf8");
 const SQL_0005B = () => fs.readFileSync(path.join(repoRoot, "migrations", "0005b_queue_runtime_grants.sql"), "utf8");
+const SQL_0005C = () => fs.readFileSync(path.join(repoRoot, "migrations", "0005c_name_report_processor_grants.sql"), "utf8");
 const ROLLBACK_SQL = `
   REVOKE ALL ON "jobs" FROM orchestration_writer, orchestration_reader;
   REVOKE ALL ON "job_executions" FROM orchestration_writer, orchestration_reader;
+  DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='orchestration_report_processor') THEN
+    EXECUTE 'REVOKE ALL ON "customers", "consultations", "crm_files", "report_matches" FROM orchestration_report_processor';
+    EXECUTE 'REVOKE USAGE ON SCHEMA public FROM orchestration_report_processor';
+    EXECUTE format('REVOKE ALL ON DATABASE %I FROM orchestration_report_processor', current_database());
+    EXECUTE 'DROP ROLE orchestration_report_processor';
+  END IF; END $$;
   DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='orchestration_enqueuer') THEN
     EXECUTE 'REVOKE ALL ON "jobs" FROM orchestration_enqueuer';
     EXECUTE 'REVOKE USAGE ON SCHEMA public FROM orchestration_enqueuer';
@@ -96,6 +103,19 @@ export function deployReadiness(ownerUrl: string): { hardFail: boolean } {
     }
   } else lines.push("enqueue URL: 미설정(이름분석표 큐 사용 시 필요) → WARN");
 
+  // 2c) name-report 업무 DB URL(NAME_REPORT_DB_URL) — 로컬 워커 전용. host 일치 + 자격이 owner 아님.
+  const nrdb = (process.env.NAME_REPORT_DB_URL || "").trim();
+  if (nrdb) {
+    const n = parseUrlSafe(nrdb);
+    if (!n) { lines.push("NAME_REPORT_DB_URL 파싱 실패 → FAIL"); hardFail = true; }
+    else {
+      const match = ownerParsed ? n.hostHash === ownerParsed.hostHash : false;
+      const isOwner = n.user === OWNER_ROLE || (ownerParsed && n.user === ownerParsed.user);
+      lines.push(`name-report DB host == owner host: ${match ? "PASS" : "FAIL"} · 자격 ≠ owner: ${isOwner ? "FAIL" : "PASS"}`);
+      if (!match || isOwner) hardFail = true;
+    }
+  } else lines.push("NAME_REPORT_DB_URL: 미설정(로컬 name-report 워커에서 필요) → WARN");
+
   // 3) admin URL host == worker/owner host + admin 자격이 owner 아님.
   if (admin) {
     const a = parseUrlSafe(admin);
@@ -147,8 +167,25 @@ async function inspect(c: pg.Client) {
         AND NOT has_table_privilege('orchestration_enqueuer','job_executions','INSERT')
         AND NOT has_table_privilege('orchestration_enqueuer','job_executions','UPDATE') AS ok`,
   )).rows[0].ok : false;
-  console.log(`[queue-mig] inspect: cancelColumns=${col}/2 · writer/reader=${wr}/2 · queueAdmin=${qa}/1 · enqueuer=${eq}/1 · writerInsert&ExecUpdate=${wIns} · readerSelect=${rSel} · adminSelect&CancelUpdate&NoInsert=${aOk} · enqueuerSelect&Insert&NoUpdate&NoExec=${eOk}`);
-  return { columnsApplied: col === 2, rolesPresent: wr === 2 && qa === 1 && eq === 1, grantsApplied: wIns === true && rSel === true && aOk === true && eOk === true };
+  // report_processor: 업무 테이블 최소권한(customers/consultations SELECT · crm_files SELECT,INSERT · report_matches SELECT,INSERT,UPDATE).
+  //   초과 금지: customers UPDATE·crm_files UPDATE·모든 DELETE·jobs 접근 없음. (업무 테이블 존재 시에만 검사)
+  const rp = (await c.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname='orchestration_report_processor'`)).rows[0].n;
+  const bizTables = (await c.query(`SELECT count(*)::int n FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('customers','consultations','crm_files','report_matches')`)).rows[0].n;
+  const rpOk = rp === 1 && bizTables === 4 ? (await c.query(
+    `SELECT has_table_privilege('orchestration_report_processor','customers','SELECT')
+        AND has_table_privilege('orchestration_report_processor','consultations','SELECT')
+        AND has_table_privilege('orchestration_report_processor','crm_files','SELECT')
+        AND has_table_privilege('orchestration_report_processor','crm_files','INSERT')
+        AND has_table_privilege('orchestration_report_processor','report_matches','SELECT')
+        AND has_table_privilege('orchestration_report_processor','report_matches','INSERT')
+        AND has_table_privilege('orchestration_report_processor','report_matches','UPDATE')
+        AND NOT has_table_privilege('orchestration_report_processor','customers','UPDATE')
+        AND NOT has_table_privilege('orchestration_report_processor','crm_files','UPDATE')
+        AND NOT has_table_privilege('orchestration_report_processor','crm_files','DELETE')
+        AND NOT has_table_privilege('orchestration_report_processor','jobs','SELECT') AS ok`,
+  )).rows[0].ok : false;
+  console.log(`[queue-mig] inspect: cancelColumns=${col}/2 · writer/reader=${wr}/2 · queueAdmin=${qa}/1 · enqueuer=${eq}/1 · reportProcessor=${rp}/1 · writerInsert&ExecUpdate=${wIns} · readerSelect=${rSel} · adminSelect&CancelUpdate&NoInsert=${aOk} · enqueuerSelect&Insert&NoUpdate&NoExec=${eOk} · reportProcMinPriv=${rpOk}`);
+  return { columnsApplied: col === 2, rolesPresent: wr === 2 && qa === 1 && eq === 1 && rp === 1, grantsApplied: wIns === true && rSel === true && aOk === true && eOk === true && rpOk === true };
 }
 
 export async function main(): Promise<number> {
@@ -176,11 +213,12 @@ export async function main(): Promise<number> {
     if (mode === "dry-run") console.log("[queue-mig] ⚠️ dry-run: 실제 DDL·GRANT 를 tx 안에서 수행 후 ROLLBACK(잠금 가능).");
     await c.query("BEGIN");
     try {
-      await c.query(SQL_0005());
-      await c.query(SQL_0005B());
+      await c.query(SQL_0005());   // idempotent(ADD COLUMN/INDEX IF NOT EXISTS) — 이미 적용돼도 no-op
+      await c.query(SQL_0005B());  // idempotent(CREATE ROLE IF NOT EXISTS + 멱등 GRANT)
+      await c.query(SQL_0005C());  // idempotent — name-report 최소권한 role(orchestration_report_processor)
       const s = await inspect(c);
       if (!(s.columnsApplied && s.rolesPresent && s.grantsApplied)) { await c.query("ROLLBACK"); return die(`post-verify 실패(columns=${s.columnsApplied} roles=${s.rolesPresent} grants=${s.grantsApplied}) → ROLLBACK`); }
-      if (mode === "apply") { await c.query("COMMIT"); console.log("[queue-mig] apply 완료(COMMIT) — cancel 컬럼 + writer/reader grants."); return 0; }
+      if (mode === "apply") { await c.query("COMMIT"); console.log("[queue-mig] apply 완료(COMMIT) — cancel 컬럼 + writer/reader/enqueuer/report_processor grants."); return 0; }
       await c.query("ROLLBACK"); console.log("[queue-mig] dry-run 통과(post-verify OK, 미반영)."); return 0;
     } catch (e: any) { await c.query("ROLLBACK").catch(() => {}); return die(`${mode} 실패: ${e?.message ?? e}`); }
   } finally { await c.end().catch(() => {}); }

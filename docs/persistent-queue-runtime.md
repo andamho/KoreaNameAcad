@@ -174,11 +174,12 @@ migration apply(0002→0004→hardening) → cancel-ack additive migration → w
 - `=true`: 파일 감지 후 직접 처리하지 않고 `enqueueDetectedReports()` 로 `name-report-attach` job 생성. **`ORCHESTRATION_ENQUEUE_URL` 미설정 시 fail-closed**(worker/owner 로 폴백하지 않음 → 이중 처리·과권한 방지).
 - 같은 파일 내용 → 같은 `inputAssetHash` → 같은 idempotency key(중복 job 없음). 직접 처리와 큐 처리는 상호 배타.
 
-### credential 4-분리(최소권한)
-- `ORCHESTRATION_ENQUEUE_URL` = **orchestration_enqueuer**: 감시·job 생성 전용. `jobs` **SELECT+INSERT 만**(createJob 필요분). UPDATE 없음(claim/heartbeat/complete/fail 불가) · `job_executions` 권한 전무(reaper·execution 변경 불가).
+### credential 5-분리(최소권한)
+- `ORCHESTRATION_ENQUEUE_URL` = **orchestration_enqueuer**: 감시·job 생성 전용. `jobs` **SELECT+INSERT 만**. UPDATE 없음 · `job_executions` 전무.
 - `ORCHESTRATION_WORKER_URL` = orchestration_writer: claim·heartbeat·complete·fail·reaper.
 - `ORCHESTRATION_ADMIN_URL` = orchestration_queue_admin: 조회·취소.
-- 소유자 `NEON_DATABASE_URL` 은 런타임 큐 작업에 재사용 금지. 0005b 가 enqueuer role·grants 생성, applyQueueRuntime inspect 가 최소권한(UPDATE/execution 부재) 검증, embedded PG E2E 로 실 role 강제 확인.
+- `NAME_REPORT_DB_URL` = **orchestration_report_processor**: 이름분석표 **업무 처리** 전용(로컬 워커). 실제 연산만: `customers`/`consultations` SELECT · `crm_files` SELECT,INSERT · `report_matches` SELECT,INSERT,UPDATE. DELETE·DDL·`jobs`·`customers` UPDATE **없음**. (0005c) — 소유자 fallback 없음(fail-closed).
+- 소유자 `NEON_DATABASE_URL` 은 런타임 큐/업무 작업에 재사용 금지. applyQueueRuntime inspect 가 각 role 최소권한(초과 부재)까지 검증, embedded PG E2E 로 실 role 강제 확인(30/30).
 
 ### locator 계약(`nameReportLocal.ts`)
 - job 에는 비-PII 만: `inputIdentity = { inputAssetHash, fileContentHash, locator:"reports-sha256:<sha256>" }`. **절대경로·파일명(=이름=PII) 저장 안 함.**

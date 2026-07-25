@@ -8,6 +8,7 @@
 //   (환경: WORKER_IDLE_MS 기본 2000 · REAPER_EVERY_MS 기본 30000 · WORKER_HEARTBEAT=true 로 장시간 heartbeat)
 //   name-report(실제 업무) adapter 는 **로컬 worker 전용**: WORKER_ENABLE_NAME_REPORT=true 이고 로컬 report 폴더가 있을 때만 등록.
 //   (배포/클라우드 worker 는 로컬 파일이 없어 등록하지 않는다 → cloud 는 preview 계산 adapter 만.)
+import "dotenv/config"; // 로컬: .env 의 NAME_REPORT_DB_URL·R2·Python 경로 로드(name-report 처리용). Railway: .env 없어 무해.
 import crypto from "crypto";
 import os from "os";
 import { acquireQueueClient, queueConnectionConfigured, queueHostHash } from "../server/jobQueue/connection";

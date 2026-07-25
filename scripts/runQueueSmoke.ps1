@@ -41,6 +41,18 @@ function Get-UrlHostForHash([string]$Url) {
   if (-not $u.Host) { throw "host 없음." }
   $h = $u.Host.ToLowerInvariant(); if ($u.Port -ge 0) { $h = "$h`:$($u.Port)" }; return $h
 }
+# 연결 문자열에 실제 비밀번호(user:pass@)가 들어있는지 검사 — 값은 절대 출력하지 않는다.
+#   Neon Connect 위젯이 비번을 placeholder/마스킹으로 보여준 걸 그대로 붙여넣으면 password 가 비어 pg 가 SCRAM 에러를 낸다.
+function Test-UrlHasPassword([string]$Url) {
+  $u = $null; try { $u = [System.Uri]$Url } catch { return $false }
+  $ui = $u.UserInfo; if (-not $ui) { return $false }
+  $i = $ui.IndexOf(':'); if ($i -lt 0) { return $false }
+  $pw = $ui.Substring($i + 1)
+  if ($pw.Length -eq 0) { return $false }
+  # 마스킹 문자(•/*)만 있는 placeholder 도 거부
+  if ($pw -match '^[•\*•\s]+$') { return $false }
+  return $true
+}
 function Get-Sha256Hex([string]$Text) {
   $sha = [System.Security.Cryptography.SHA256]::Create()
   try { return (($sha.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($Text)) | ForEach-Object { $_.ToString("x2") }) -join "") } finally { $sha.Dispose() }
@@ -82,6 +94,9 @@ try {
   }
   [void]$Script:Secrets.Add($workerUrl)
   if ($workerUrl -match "neondb_owner") { throw "worker URL 이 소유자(neondb_owner) 로 보입니다 — writer 자격만 허용(fail-closed)." }
+  if (-not $SelfTest -and -not (Test-UrlHasPassword $workerUrl)) {
+    throw "worker URL 에 비밀번호가 없습니다(user:PASSWORD@ 형태 아님). Neon 에서 해당 역할 'Reset password' 후 비밀번호가 포함된 완전한 연결 문자열을 복사해 붙여넣으세요. (값 미표시)"
+  }
 
   $workerHost = Get-UrlHostForHash $workerUrl
   [void]$Script:Secrets.Add($workerHost)
@@ -90,6 +105,9 @@ try {
 
   if ($adminUrl) {
     [void]$Script:Secrets.Add($adminUrl)
+    if (-not (Test-UrlHasPassword $adminUrl)) {
+      throw "admin URL 에 비밀번호가 없습니다 — Neon 에서 'Reset password' 후 완전한 연결 문자열을 복사하세요. (값 미표시)"
+    }
     $adminHost = Get-UrlHostForHash $adminUrl
     [void]$Script:Secrets.Add($adminHost)
     $adminHash = Get-Sha256Hex $adminHost
@@ -115,7 +133,8 @@ try {
   $env:ORCHESTRATION_WORKER_URL  = $workerUrl
   if ($adminUrl) { $env:ORCHESTRATION_ADMIN_URL = $adminUrl }
   if ($Mode -eq 'Preview') {
-    $env:SMOKE_MODE = 'preview'
+    $env:SMOKE_MODE          = 'preview'
+    $env:SMOKE_WORKER_INLINE = 'true'   # 자체 완결(별도 worker 창 불필요): create→inline 처리→succeeded 를 한 명령으로 검증
   } else {
     $env:SMOKE_MODE                 = 'name-report'
     $env:SMOKE_WORKER_INLINE        = 'true'

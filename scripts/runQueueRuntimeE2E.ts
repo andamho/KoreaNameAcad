@@ -36,6 +36,12 @@ export async function runQueueE2E(): Promise<{ ran: boolean; exitCode: number }>
   const rd = (p: string) => fs.readFileSync(path.join(root, p), "utf8");
   const S2 = rd("migrations/0002_create_persistent_job_queue.sql"), S4 = rd("migrations/0004_cross_agent_orchestration.sql");
   const S5 = rd("migrations/0005_job_cancel_request.sql"), S5B = rd("migrations/0005b_queue_runtime_grants.sql");
+  const S5C = rd("migrations/0005c_name_report_processor_grants.sql"), S1 = rd("migrations/0001_add_report_matches.sql");
+  // name-report 업무 테이블(최소권한 검증용) — 소유자 소유.
+  const BIZ = `
+    CREATE TABLE IF NOT EXISTS customers (id varchar PRIMARY KEY DEFAULT gen_random_uuid(), name text, created_at timestamptz, source_consultation_id varchar, deleted_at timestamptz);
+    CREATE TABLE IF NOT EXISTS consultations (id varchar PRIMARY KEY DEFAULT gen_random_uuid(), people_data text, num_people int, created_at timestamptz);
+    CREATE TABLE IF NOT EXISTS crm_files (id varchar PRIMARY KEY DEFAULT gen_random_uuid(), customer_id varchar, file_name text, file_type text, file_url text, memo text, created_at timestamptz DEFAULT now());`;
   const HARD = rd("migrations/hardening/0001_orchestration_immutability_roles.sql");
   const DEF = findHardening("0001_orchestration_immutability_roles")!;
 
@@ -63,8 +69,12 @@ export async function runQueueE2E(): Promise<{ ran: boolean; exitCode: number }>
   await ao.query(`ALTER ROLE orchestration_queue_admin LOGIN PASSWORD 'apw'`);
   await ao.query(`ALTER ROLE orchestration_reader LOGIN PASSWORD 'rpw'`);
   await ao.query(`ALTER ROLE orchestration_enqueuer LOGIN PASSWORD 'eqpw'`);
+  // name-report 업무 테이블 + 0001(report_matches) + 0005c(최소권한 role) 적용.
+  await ao.query(BIZ); await ao.query(S1); await ao.query(S5C);
+  await ao.query(`ALTER ROLE orchestration_report_processor LOGIN PASSWORD 'rppw'`);
   add("0005b: queue_admin role 생성됨(role 분리)", (await ao.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname='orchestration_queue_admin'`)).rows[0].n === 1);
   add("0005b: enqueuer role 생성됨(최소권한 분리)", (await ao.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname='orchestration_enqueuer'`)).rows[0].n === 1);
+  add("0005c: report_processor role 생성됨(업무 최소권한)", (await ao.query(`SELECT count(*)::int n FROM pg_roles WHERE rolname='orchestration_report_processor'`)).rows[0].n === 1);
   await ao.end();
 
   // ── writer 연결(소유자 아님)로 전체 런타임 경로 ──
@@ -112,6 +122,27 @@ export async function runQueueE2E(): Promise<{ ran: boolean; exitCode: number }>
     add("enqueuer 는 job_executions UPDATE(reaper/complete/fail) 불가", denyExecUpdate);
   } catch (e: any) { add("enqueuer 경로", false, String(e?.message ?? e).slice(0, 120)); }
   finally { await eqc.end().catch(() => {}); }
+
+  // ── report_processor 연결: 업무 테이블 최소권한(허용 연산 + 초과 거부) ──
+  const rpc = new pg.Client({ host: "localhost", port, user: "orchestration_report_processor", password: "rppw", database: "postgres" }); await rpc.connect();
+  try {
+    const q = wrap(rpc);
+    const allow = async (label: string, sql: string, params?: any[]) => { try { await q.query(sql, params); add(label, true); } catch (e: any) { add(label, false, String(e?.message ?? e).slice(0, 80)); } };
+    const deny  = async (label: string, sql: string, params?: any[]) => { let d = false; try { await q.query(sql, params); } catch { d = true; } add(label, d); };
+    await allow("report_processor: customers SELECT 가능", `SELECT id FROM customers LIMIT 1`);
+    await allow("report_processor: consultations SELECT 가능", `SELECT id FROM consultations LIMIT 1`);
+    // report_matches INSERT→UPDATE→SELECT (실제 processFile 연산)
+    await allow("report_processor: report_matches INSERT 가능", `INSERT INTO report_matches (id, file_name, file_path, file_hash, first_seen_at, extracted_name, report_type, status) VALUES ('rp-1','x.pdf','/x','h1',now(),'홍','individual','processing')`);
+    await allow("report_processor: report_matches UPDATE 가능", `UPDATE report_matches SET status='needs_review', updated_at=now() WHERE id='rp-1'`);
+    // crm_files SELECT+INSERT (자동첨부)
+    await allow("report_processor: crm_files INSERT 가능", `INSERT INTO crm_files (customer_id, file_name, file_type, file_url, memo) VALUES ('c1','f','image/png','/o','이름분석표:x.pdf')`);
+    // 초과 거부
+    await deny("report_processor: customers UPDATE 거부", `UPDATE customers SET name='x'`);
+    await deny("report_processor: crm_files DELETE 거부", `DELETE FROM crm_files`);
+    await deny("report_processor: report_matches DELETE 거부", `DELETE FROM report_matches`);
+    await deny("report_processor: jobs 접근 거부(큐 테이블 분리)", `SELECT 1 FROM jobs LIMIT 1`);
+  } catch (e: any) { add("report_processor 경로", false, String(e?.message ?? e).slice(0, 120)); }
+  finally { await rpc.end().catch(() => {}); }
 
   // ── admin(queue_admin) 연결: 목록·상세·취소 요청(cancel 컬럼 UPDATE) — INSERT 불가(최소권한) ──
   const adc = new pg.Client({ host: "localhost", port, user: "orchestration_queue_admin", password: "apw", database: "postgres" }); await adc.connect();
