@@ -10,7 +10,7 @@ import * as gm from "./gaemyeong";
 import { isSetKey } from "./gaemyeong";
 import { runOcr, kickOcr } from "./ocr";
 import { findWishCandidates } from "./wish";
-import { processBackfill, backfillEnabled } from "./smsBackfill";
+// (보류) import { processBackfill, backfillEnabled } from "./smsBackfill";
 import { smsStore, startSmsScheduler } from "./sms";
 import {
   calendarAvailable,
@@ -263,35 +263,8 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     }
   });
 
-  // ── SMS backfill (Automate content://sms 대조·복구). 실시간 웹훅과 분리. ──
-  // 별도 secret + 배치 ≤200 + 본문·전화번호 비로그 + FEATURE_SMS_BACKFILL 게이트.
-  app.post(`${P}/sms-backfill`, async (req, res) => {
-    try {
-      if (!backfillEnabled()) return res.status(503).json({ error: "disabled" });
-      const secret = process.env.KOP_SMS_BACKFILL_SECRET || "";
-      const given = String(req.headers["x-knop-backfill-secret"] || req.query.secret || "");
-      if (!secret || given !== secret) return res.status(401).json({ error: "unauthorized" });
-
-      const body = req.body || {};
-      if (typeof body.deviceId !== "string" || !body.deviceId) return res.status(400).json({ error: "deviceId_required" });
-      const messages = Array.isArray(body.messages) ? body.messages : [];
-      if (messages.length > 200) return res.status(400).json({ error: "batch_too_large", max: 200 });
-      const dryRun = body.dryRun === false ? false : true; // 기본 dry-run(안전)
-
-      const result = await processBackfill({
-        deviceId: body.deviceId,
-        dryRun,
-        rangeFrom: body.rangeFrom ?? null,
-        rangeTo: body.rangeTo ?? null,
-        messages,
-      });
-      // 본문·전화번호 비로그 — counts 요약만 기록
-      console.log(`[SMS-BACKFILL] run=${result.runId} dry=${dryRun} counts=${JSON.stringify(result.counts)}`);
-      res.json(result);
-    } catch (e) {
-      handle(res, "POST sms-backfill", e);
-    }
-  });
+  // (보류) SMS backfill 엔드포인트: 원장 지시로 작업 중단·미배포 상태.
+  // 코드는 server/knop/smsBackfill.ts + sql/sms_backfill.sql 에 보관(격리 검증 완료, 운영 미반영).
 
   // 스레드(전화번호별) 목록 / 상세 / 처리
   app.get(`${P}/sms-threads`, requireAdmin, async (_req, res) => {
