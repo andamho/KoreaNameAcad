@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, boolean, timestamp, integer, bigint, uniqueIndex, jsonb, index, foreignKey } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean, timestamp, integer, bigint, uniqueIndex, jsonb, index, foreignKey, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -466,6 +466,7 @@ export const customers = pgTable("customers", {
   email: text("email"),
   memo: text("memo"),
   namingWish: text("naming_wish"),                       // 개명 희망사항(고객이 원하는 새이름 방향 — 작명 참고자료)
+  renameMap: text("rename_map"),                         // 개명 전후 JSON [{before,after}] — 가족은 여러 명
   tags: text("tags"),                                   // JSON string[] (선택)
   sourceConsultationId: varchar("source_consultation_id"), // 상담신청에서 전환된 경우 원본 id
   deletedAt: timestamp("deleted_at"),                    // 휴지통(soft delete). null=활성, 값 있으면 삭제됨
@@ -484,6 +485,7 @@ export const insertCustomerSchema = z.object({
   email: z.string().optional().nullable(),
   memo: z.string().optional().nullable(),
   namingWish: z.string().optional().nullable(),
+  renameMap: z.string().optional().nullable(),
   tags: z.array(z.string()).optional(),
   sourceConsultationId: z.string().optional().nullable(),
 });
@@ -825,6 +827,8 @@ export const incomingSms = pgTable("incoming_sms", {
   receivedAt: timestamp("received_at").defaultNow().notNull(),
   processed: boolean("processed").default(false).notNull(), // 이 스레드로 달력 이벤트 생성됨 여부
   createdEventDate: text("created_event_date"),          // 생성된 상담 이벤트 날짜(중복방지)
+  ingestSource: text("ingest_source"),                   // null=레거시/실시간웹훅, 'backfill'=backfill 삽입분
+  backfillRunId: text("backfill_run_id"),                // backfill 신규삽입 행에만(실행분 식별)
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 export const insertIncomingSmsSchema = z.object({
@@ -836,6 +840,59 @@ export const insertIncomingSmsSchema = z.object({
 });
 export type InsertIncomingSms = z.infer<typeof insertIncomingSmsSchema>;
 export type IncomingSms = typeof incomingSms.$inferSelect;
+
+// ── SMS backfill (Automate content://sms → 서버 대조·복구). 실시간 웹훅과 분리. ──
+// dry-run도 감사 기록. backfill_run_id 는 서버 생성.
+export const smsBackfillRuns = pgTable("sms_backfill_runs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  deviceId: text("device_id").notNull(),
+  rangeFrom: timestamp("range_from", { withTimezone: true }),
+  rangeTo: timestamp("range_to", { withTimezone: true }),
+  dryRun: boolean("dry_run").notNull(),
+  counts: jsonb("counts"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// provider_id(content://sms _id) ↔ incoming_sms 매핑. 레거시 행엔 provider_id 없으므로 별도 테이블.
+export const smsProviderLinks = pgTable("sms_provider_links", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  deviceId: text("device_id").notNull(),
+  providerType: text("provider_type").notNull(),        // v1: 'sms'
+  providerId: text("provider_id").notNull(),            // content://sms _id
+  incomingSmsId: varchar("incoming_sms_id").notNull(),  // FK → incoming_sms.id (varchar)
+  linkType: text("link_type").notNull(),                // 'new' | 'legacy_linked'
+  backfillRunId: varchar("backfill_run_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  unique("sms_provider_links_provider_uq").on(t.deviceId, t.providerType, t.providerId),  // provider 1건 1링크
+  unique("sms_provider_links_row_uq").on(t.deviceId, t.providerType, t.incomingSmsId),     // 서버행 1건에 provider 1개
+  foreignKey({ columns: [t.incomingSmsId], foreignColumns: [incomingSms.id], name: "sms_provider_links_incoming_fk" })
+    .onDelete("restrict"),
+  foreignKey({ columns: [t.backfillRunId], foreignColumns: [smsBackfillRuns.id], name: "sms_provider_links_run_fk" })
+    .onDelete("restrict"),
+]);
+
+// 메시지별 감사(ambiguous·상태 추적). 본문·전화번호 미저장.
+export const smsBackfillItems = pgTable("sms_backfill_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  backfillRunId: varchar("backfill_run_id").notNull(),
+  deviceId: text("device_id").notNull(),
+  providerType: text("provider_type").notNull(),
+  providerId: text("provider_id").notNull(),
+  state: text("state").notNull(),                       // existing_exact|legacy_linked|new|ambiguous|invalid
+  customerState: text("customer_state"),               // matched|unmatched|skipped (dry-run은 null)
+  incomingSmsId: varchar("incoming_sms_id"),
+  candidateCount: integer("candidate_count"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  unique("sms_backfill_items_uq").on(t.backfillRunId, t.providerType, t.providerId),
+  foreignKey({ columns: [t.backfillRunId], foreignColumns: [smsBackfillRuns.id], name: "sms_backfill_items_run_fk" })
+    .onDelete("restrict"),
+]);
+// 참고: incoming_sms.backfill_run_id → sms_backfill_runs(id) nullable FK 는 정의 순서(incoming_sms 선행) 때문에
+//       Drizzle 인라인 대신 마이그레이션 SQL로 추가(ALTER … ADD CONSTRAINT … ON DELETE RESTRICT).
+export type SmsBackfillRun = typeof smsBackfillRuns.$inferSelect;
+export type SmsProviderLink = typeof smsProviderLinks.$inferSelect;
 
 // ── 인스타 자동화: 웹훅 수신 원문 로그 ──
 // Meta는 응답이 늦거나 실패하면 같은 이벤트를 재전송한다. dedupeKey 유니크 제약으로

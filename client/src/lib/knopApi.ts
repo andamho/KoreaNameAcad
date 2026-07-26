@@ -208,6 +208,9 @@ export const knopApi = {
   }) => req<CrmFile>("POST", "/api/kop/files", data),
   deleteFile: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/files/${id}`),
   ocrFile: (id: string) => req<{ ok: boolean; status: string; text?: string }>("POST", `/api/kop/files/${id}/ocr`),
+  // 이름분석표에서 개명 전 이름 뽑기(가족이면 전원)
+  reportNames: (customerId: string) =>
+    req<{ names: string[]; source?: string }>("POST", `/api/kop/customers/${customerId}/report-names`),
   wishCandidates: (customerId: string) =>
     req<{ candidates: { text: string; at: string | null; reason: string }[] }>(
       "POST",

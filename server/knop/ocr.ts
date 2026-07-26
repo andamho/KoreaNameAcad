@@ -66,3 +66,46 @@ export function kickOcr(fileId: string, fileType?: string | null): void {
   if (!isOcrTarget(fileType)) return;
   runOcr(fileId).catch((e) => console.error(`[OCR] kick 실패 ${fileId}: ${e?.message}`));
 }
+
+// ── 이름분석표에서 개명 전 이름 뽑기 (가족이면 전원) ──
+const NAMES_SCHEMA = {
+  type: "object",
+  properties: { names: { type: "array", items: { type: "string" } } },
+  required: ["names"],
+};
+const NAMES_SYSTEM =
+  "당신은 한국이름학교 이름분석표에서 '분석 대상자(사람)의 한글 이름'만 뽑는 도우미입니다.\n" +
+  "포함할 것: 표의 각 섹션 맨 위에 큰 글씨로 단독 표기된 사람 이름(그 옆에 오행 글자와 '○○세 직업'이 붙는다). 가족 분석표면 구성원 전원.\n" +
+  "반드시 제외할 것:\n" +
+  " - 주역 64괘 이름(화천대유·화지진·화택규·택천쾌·택산함·뇌화풍·뇌풍항·뇌천대장·진위뢰·건위천·천수송·산택손 등 두 글자 괘가 결합된 모든 표현)\n" +
+  " - 수리운 항목(다재다능·인기순조·재물계획·이산파멸·명망사해·지략배려 등)\n" +
+  " - 괄호 안 유명인 예시(조수미·유재석·이길여·임영웅·김미경 등)와 회사·상품명(스타벅스·비트코인 등)\n" +
+  " - 한자 이름 표기\n" +
+  "즉 '한자이름분석' 아래의 표 내용은 전부 이름이 아닙니다. 사람 이름만 순서대로 반환하세요.";
+
+export async function extractReportNames(customerId: string): Promise<{ names: string[]; source?: string }> {
+  if (!db) return { names: [] };
+  const files = await db.select().from(crmFiles).where(eq(crmFiles.customerId, customerId));
+  // 이름분석표(새이름 아님) 이미지 중 최신 1건
+  const target = files
+    .filter((f) => isOcrTarget(f.fileType) && !/새이름/.test(`${f.fileName || ""} ${f.memo || ""}`))
+    .sort((a, b) => new Date(b.uploadedAt as any).getTime() - new Date(a.uploadedAt as any).getTime())[0];
+  if (!target) return { names: [] };
+
+  const key = target.fileUrl.replace(/^\/objects\//, "");
+  const { buffer, contentType } = await objectStore.getObjectBuffer(key);
+  const out = await geminiJson<{ names: string[] }>(
+    NAMES_SYSTEM,
+    [
+      { text: "이 이름분석표에서 분석 대상자의 한글 이름만 순서대로 모두 뽑아줘." },
+      { inline_data: { mime_type: target.fileType || contentType || "image/png", data: buffer.toString("base64") } },
+    ],
+    NAMES_SCHEMA,
+    1024,
+  );
+  const names = (out.names || [])
+    .map((n) => (n || "").trim())
+    .filter((n) => /^[가-힣]{2,5}$/.test(n))
+    .filter((n, i, arr) => arr.indexOf(n) === i);
+  return { names, source: target.fileName };
+}

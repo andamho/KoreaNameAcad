@@ -8,7 +8,7 @@ import { randomUUID } from "crypto";
 import { learnFromEdit, listRules, upsertManualRule, setRuleEnabled, deleteRule, analyzeRules, seedRulesFromJsonOnce, exportLearnedToJson, revalidateAllRules } from "./learnedDict";
 import * as gm from "./gaemyeong";
 import { isSetKey } from "./gaemyeong";
-import { runOcr, kickOcr } from "./ocr";
+import { runOcr, kickOcr, extractReportNames } from "./ocr";
 import { findWishCandidates } from "./wish";
 // (보류) import { processBackfill, backfillEnabled } from "./smsBackfill";
 import { smsStore, startSmsScheduler } from "./sms";
@@ -716,6 +716,15 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       res.json(await runOcr(req.params.id));
     } catch (e) {
       handle(res, "POST file ocr", e);
+    }
+  });
+
+  // 이름분석표에서 개명 전 이름 뽑기(가족이면 전원) — 새 이름은 원장님이 직접 입력
+  app.post(`${P}/customers/:id/report-names`, requireAdmin, async (req, res) => {
+    try {
+      res.json(await extractReportNames(req.params.id));
+    } catch (e) {
+      handle(res, "POST report names", e);
     }
   });
 

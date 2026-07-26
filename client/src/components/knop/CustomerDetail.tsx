@@ -121,6 +121,8 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
   const [memoDraft, setMemoDraft] = useState<string | null>(null);
   const [wishDraft, setWishDraft] = useState<string | null>(null);
   const [wishCands, setWishCands] = useState<{ text: string; at: string | null; reason: string }[] | null>(null);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameDraft, setRenameDraft] = useState<{ before: string; after: string }[] | null>(null);
   const [phoneDraft, setPhoneDraft] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -197,6 +199,12 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
   });
   const miyongActive = (seqStatus as any)?.gaemyeong_request === "active";
   const jeonghwaActive = (seqStatus as any)?.gaemyeong_approved === "active";
+  // 개명 고객 판별: 구분이 '개명'이거나, 진행이 개명신청(1단계) 이상 — 상담만 받은 분과 구분
+  const isGaemyeong =
+    data?.customer?.kind === "개명" ||
+    (data?.projects || []).some((p: any) => knopStatusToMilestone(p.status) >= 1) ||
+    miyongActive ||
+    jeonghwaActive;
   const startMiyongMut = useMutation({
     mutationFn: () => knopApi.startSequence(customerId, "gaemyeong_request"),
     onSuccess: (r) => {
@@ -243,6 +251,39 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
       toast({ title: "희망사항 저장됨" });
     },
     onError: (e: any) => toast({ title: "저장 실패", description: e?.message, variant: "destructive" }),
+  });
+
+  // 개명 전후 저장(가족이면 여러 명). 빈 줄은 버린다.
+  const saveRenameMut = useMutation({
+    mutationFn: (pairs: { before: string; after: string }[]) => {
+      const clean = pairs.filter((p) => p.before.trim() && p.after.trim())
+        .map((p) => ({ before: p.before.trim(), after: p.after.trim() }));
+      return knopApi.updateCustomer(customerId, { renameMap: clean.length ? JSON.stringify(clean) : null });
+    },
+    onSuccess: () => {
+      setRenameDraft(null);
+      refresh();
+      toast({ title: "개명 내역 저장됨" });
+    },
+    onError: (e: any) => toast({ title: "저장 실패", description: e?.message, variant: "destructive" }),
+  });
+
+  // 이름분석표에서 개명 전 이름 자동으로 불러오기
+  const loadNamesMut = useMutation({
+    mutationFn: () => knopApi.reportNames(customerId),
+    onSuccess: (r) => {
+      if (!r.names.length) {
+        toast({ title: "이름을 찾지 못했습니다", description: "이름분석표가 첨부돼 있는지 확인해 주세요." });
+        return;
+      }
+      // 기존 입력값(새 이름)은 유지하면서 개명 전 이름만 채운다
+      setRenameDraft((prev) => {
+        const cur = prev || [];
+        return r.names.map((n, i) => ({ before: n, after: cur[i]?.after || "" }));
+      });
+      toast({ title: `개명 전 이름 ${r.names.length}명 불러옴`, description: r.source });
+    },
+    onError: (e: any) => toast({ title: "불러오기 실패", description: e?.message, variant: "destructive" }),
   });
 
   const findWishMut = useMutation({
@@ -410,6 +451,15 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
   }
 
   const { customer, projects, timeline, calls } = data;
+  // 개명 전후 목록(개명한 고객만 값이 있다)
+  const renamePairs: { before: string; after: string }[] = (() => {
+    try {
+      const arr = JSON.parse((customer as any).renameMap || "[]");
+      return Array.isArray(arr) ? arr.filter((p: any) => p?.before && p?.after) : [];
+    } catch {
+      return [];
+    }
+  })();
   // 이름분석표 먼저, 새이름은 그 아래(개명으로 받은 새 이름은 분석표 다음에 보는 게 자연스럽다)
   const files = [...(data.files || [])].sort((a, b) => {
     const rank = (f: any) => (/새이름/.test(`${f.fileName || ""} ${f.memo || ""}`) ? 1 : 0);
@@ -507,7 +557,24 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                   <Mail className="w-4 h-4 text-gray-400" /> {customer.email}
                 </span>
               )}
-              <span className="text-xs text-gray-400">등록 {fmtDate(customer.createdAt)}</span>
+              <span className="text-xs text-gray-400">
+                등록 {fmtDate(customer.createdAt)}
+                {/* 개명한 고객만: 개명 전 → 새 이름 (클릭하면 전원 편집) */}
+                {renamePairs.length > 0 && (
+                  <>
+                    {" · "}
+                    <button
+                      onClick={() => setRenameOpen((v) => !v)}
+                      className="hover:underline"
+                      title="클릭하면 가족 전원 개명 내역을 보고 수정할 수 있습니다"
+                    >
+                      개명 {renamePairs[0].before} → <b className="text-gray-700 font-semibold">{renamePairs[0].after}</b>
+                      {renamePairs.length > 1 && ` 외 ${renamePairs.length - 1}명`}
+                      <span className="ml-0.5 text-gray-300">{renameOpen ? "▴" : "▾"}</span>
+                    </button>
+                  </>
+                )}
+              </span>
               {data.referral?.referralSource && (
                 <span className="mt-1 inline-flex items-center gap-1.5 text-xs">
                   <span className="text-gray-400">문의경로</span>
@@ -586,8 +653,8 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
             )}
           </div>
           <div className="flex gap-2 shrink-0">
-            {/* 미용감사 시작(지난 개명자 소급 발송). 이미 시작됐으면 상태 표시 */}
-            {miyongActive ? (
+            {/* 미용감사·이름정화는 개명 고객에게만 해당 — 상담만 받은 고객에겐 숨긴다 */}
+            {isGaemyeong && (miyongActive ? (
               <span className="inline-flex items-center h-8 px-2.5 rounded-md bg-emerald-50 text-emerald-700 text-xs font-medium">
                 미용감사 발송중
               </span>
@@ -605,9 +672,9 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
               >
                 <Send className="w-4 h-4 mr-1" /> 미용감사
               </Button>
-            )}
+            ))}
             {/* 이름정화(개명허가 후) 수동 발송 — 기존 개명자 소급 */}
-            {jeonghwaActive ? (
+            {isGaemyeong && (jeonghwaActive ? (
               <span className="inline-flex items-center h-8 px-2.5 rounded-md bg-emerald-50 text-emerald-700 text-xs font-medium">
                 정화 발송중
               </span>
@@ -625,12 +692,104 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
               >
                 <Send className="w-4 h-4 mr-1" /> 이름정화
               </Button>
-            )}
+            ))}
             <Button variant="outline" size="sm" onClick={() => setSmsDialog(true)}>
               <Send className="w-4 h-4 mr-1" /> 문자
             </Button>
           </div>
         </div>
+
+        {/* 개명 내역 편집(가족이면 전원). 개명 고객만 노출 — 헤더의 "개명 …" 클릭 또는 최초 입력 버튼으로 연다. */}
+        {isGaemyeong && (renameOpen || renameDraft) && (
+          <div className="mt-3 rounded-lg border border-gray-100 bg-gray-50/50 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-gray-500">개명 내역 (개명 전 → 새 이름)</span>
+              <button
+                className="text-xs text-[#2ba0a6] hover:underline disabled:opacity-40"
+                disabled={loadNamesMut.isPending}
+                onClick={() => loadNamesMut.mutate()}
+                title="첨부된 이름분석표에서 개명 전 이름을 자동으로 불러옵니다"
+              >
+                {loadNamesMut.isPending ? "불러오는 중…" : "이름분석표에서 불러오기"}
+              </button>
+            </div>
+            <div className="space-y-1.5">
+              {(renameDraft ?? (renamePairs.length ? renamePairs : [{ before: "", after: "" }])).map((p, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Input
+                    value={p.before}
+                    placeholder="개명 전"
+                    onChange={(e) =>
+                      setRenameDraft((prev) => {
+                        const base = prev ?? (renamePairs.length ? [...renamePairs] : [{ before: "", after: "" }]);
+                        const next = [...base];
+                        next[i] = { ...next[i], before: e.target.value };
+                        return next;
+                      })
+                    }
+                    className="h-8 text-sm flex-1"
+                  />
+                  <span className="text-gray-400">→</span>
+                  <Input
+                    value={p.after}
+                    placeholder="새 이름"
+                    onChange={(e) =>
+                      setRenameDraft((prev) => {
+                        const base = prev ?? (renamePairs.length ? [...renamePairs] : [{ before: "", after: "" }]);
+                        const next = [...base];
+                        next[i] = { ...next[i], after: e.target.value };
+                        return next;
+                      })
+                    }
+                    className="h-8 text-sm flex-1 font-medium"
+                  />
+                  <button
+                    className="text-gray-300 hover:text-red-500 shrink-0"
+                    title="줄 삭제"
+                    onClick={() =>
+                      setRenameDraft((prev) => {
+                        const base = prev ?? [...renamePairs];
+                        return base.filter((_, j) => j !== i);
+                      })
+                    }
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <Button
+                size="sm"
+                disabled={saveRenameMut.isPending}
+                onClick={() => saveRenameMut.mutate(renameDraft ?? renamePairs)}
+              >
+                저장
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() =>
+                  setRenameDraft((prev) => [...(prev ?? renamePairs), { before: "", after: "" }])
+                }
+              >
+                ＋ 가족 추가
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => { setRenameDraft(null); setRenameOpen(false); }}>
+                닫기
+              </Button>
+            </div>
+          </div>
+        )}
+        {/* 개명 고객인데 아직 개명 내역이 없으면 입력 유도 */}
+        {isGaemyeong && renamePairs.length === 0 && !renameOpen && !renameDraft && (
+          <button
+            onClick={() => setRenameOpen(true)}
+            className="mt-3 text-xs text-[#2ba0a6] hover:underline"
+          >
+            ＋ 개명 내역 입력 (개명 전 → 새 이름)
+          </button>
+        )}
 
         {/* 고객 메모 */}
         <div className="mt-4">
