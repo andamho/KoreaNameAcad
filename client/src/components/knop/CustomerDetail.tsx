@@ -409,7 +409,12 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
     );
   }
 
-  const { customer, projects, timeline, files, calls } = data;
+  const { customer, projects, timeline, calls } = data;
+  // 이름분석표 먼저, 새이름은 그 아래(개명으로 받은 새 이름은 분석표 다음에 보는 게 자연스럽다)
+  const files = [...(data.files || [])].sort((a, b) => {
+    const rank = (f: any) => (/새이름/.test(`${f.fileName || ""} ${f.memo || ""}`) ? 1 : 0);
+    return rank(a) - rank(b);
+  });
 
   return (
     <div className="space-y-6">

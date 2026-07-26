@@ -18,6 +18,7 @@ import {
   reportsDir,
   isImageReport,
   REPORT_EXT,
+  REPORT_PREFIX,
 } from "./reports";
 import { readEvents, parseNameCount, calendarAvailable } from "./calendar";
 
@@ -177,7 +178,27 @@ export type SyncResult = {
   processing_failed: number; skipped: number; processed: number;
   // 하위호환(기존 호출부): added = 이번에 새로 자동첨부된 수
   added: number; created: number;
+  removed?: number; // 첨부 확인 후 폴더에서 정리한 새이름 PDF 수
 };
+
+// 고객정보에 확실히 첨부된 원본 파일만 폴더에서 삭제한다.
+// DB(crm_files.memo = "이름분석표:{파일명}")에 첨부 기록이 있을 때만 지운다 — 없으면 그대로 둔다.
+async function removeAttachedSourceFile(
+  q: { query: (sql: string, params?: unknown[]) => Promise<{ rows: any[] }> },
+  file: string,
+  abs: string,
+): Promise<boolean> {
+  try {
+    const { rows } = await q.query(`SELECT 1 FROM crm_files WHERE memo = $1 LIMIT 1`, [`${REPORT_PREFIX}${file}`]);
+    if (!rows.length) return false; // 첨부 확인 안 되면 삭제하지 않음
+    fs.unlinkSync(abs);
+    console.log(`[KOP] 새이름 PDF 정리(첨부 확인됨): ${file}`);
+    return true;
+  } catch (e: any) {
+    console.error(`[KOP] 새이름 PDF 정리 실패 ${file}: ${e?.message}`);
+    return false;
+  }
+}
 
 let _syncing = false;
 export async function syncReports(): Promise<SyncResult> {
@@ -223,6 +244,15 @@ export async function syncReports(): Promise<SyncResult> {
         else if (out.status === "attachment_failed") res.attachment_failed++;
         else if (out.status === "processing_failed") res.processing_failed++;
         else res.skipped++;
+
+        // 새이름 PDF 는 고객정보에 붙고 나면 폴더에서 정리한다(이름분석 원본은 그대로 둔다).
+        // 대상: 방금 첨부됨 / 이미 첨부돼 있음(수동매칭·중복) — 실제 삭제 여부는 DB 첨부 확인 후 결정.
+        const attachedStatus =
+          out.status === "auto_matched" || out.status === "manually_matched" || out.status === "duplicate";
+        if (/새이름/.test(r.file) && attachedStatus) {
+          const deleted = await removeAttachedSourceFile(deps.db, r.file, abs);
+          if (deleted) { res.removed = (res.removed || 0) + 1; delete state[abs]; }
+        }
       } catch (e: any) {
         console.error(`[KOP] 이름분석표 처리 오류 ${r.file}: ${e?.message}`);
         res.processing_failed++;
