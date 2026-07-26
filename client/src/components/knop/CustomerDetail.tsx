@@ -881,8 +881,20 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
               )}
               {files.map((f) => {
                 const isImg = (f.fileType || "").startsWith("image/");
+                // 개명 전 분석표와 새 이름 분석표를 한눈에 구분 (파일명·memo 로 판별)
+                const isNewName = /새이름/.test(`${f.fileName || ""} ${f.memo || ""}`);
                 return (
-                <div key={f.id} className="rounded-lg border border-gray-100 overflow-hidden">
+                <div key={f.id} className={`rounded-lg border overflow-hidden ${isNewName ? "border-[#56D5DB]/50" : "border-gray-100"}`}>
+                  {/* 어떤 분석표인지 상단에 명확히 표시 */}
+                  <div
+                    className={`px-3 py-1.5 text-xs font-semibold border-b ${
+                      isNewName
+                        ? "bg-[#56D5DB]/10 text-[#2ba0a6] border-[#56D5DB]/30"
+                        : "bg-gray-50 text-gray-600 border-gray-100"
+                    }`}
+                  >
+                    {isNewName ? "새 이름 분석표 (개명 후)" : isGaemyeong ? "이름분석표 (개명 전)" : "이름분석표"}
+                  </div>
                   {/* 이미지는 처음부터 크게 — 클릭하면 원본 화질로 열림 */}
                   {/* 가로는 칸을 꽉 채우고(크게 보임), 세로로 긴 건 이 안에서 스크롤 */}
                   {isImg && (
