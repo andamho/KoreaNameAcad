@@ -124,10 +124,16 @@ export function KnopApp() {
 
 // ── 오늘 해야 할 일 ──
 function TodayView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void }) {
+  const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["knop-today"],
     queryFn: () => knopApi.today(),
   });
+  // 커서만 올려도 미리 받아둔다(클릭 시 즉시 표시)
+  const prefetchCustomer = (id?: string | null) => {
+    if (!id) return;
+    qc.prefetchQuery({ queryKey: ["knop-customer", id], queryFn: () => knopApi.getCustomer(id) });
+  };
 
   const today = new Date();
   const dateLabel = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, "0")}.${String(
@@ -153,6 +159,7 @@ function TodayView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void })
             {data?.events.map((ev) => (
               <button
                 key={ev.id}
+                onMouseEnter={() => prefetchCustomer(ev.customerId)}
                 onClick={() => ev.customerId && onOpenCustomer(ev.customerId)}
                 className="w-full text-left flex items-center gap-3 rounded-lg border border-gray-100 px-3 py-2 hover:border-[#56D5DB]/50 hover:bg-[#56D5DB]/5 transition"
               >
@@ -179,6 +186,7 @@ function TodayView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void })
             {data?.actionProjects.map((p) => (
               <button
                 key={p.id}
+                onMouseEnter={() => prefetchCustomer(p.customerId)}
                 onClick={() => onOpenCustomer(p.customerId)}
                 className="w-full text-left flex items-center justify-between gap-2 rounded-lg border border-gray-100 px-3 py-2 hover:border-[#56D5DB]/50 hover:bg-[#56D5DB]/5 transition"
               >
@@ -255,6 +263,9 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
     refetchInterval: 60000,
   });
   const seqByCust = new Map((activeSeqs || []).map((s) => [s.customerId, s]));
+  // 행에 마우스를 올리는 순간 고객 상세를 미리 받아둔다(클릭 시 즉시 표시)
+  const prefetchCustomer = (id: string) =>
+    qc.prefetchQuery({ queryKey: ["knop-customer", id], queryFn: () => knopApi.getCustomer(id) });
   const advance = useMutation({
     // force=true 면 뒤 단계로도 되돌릴 수 있다(잘못 찍은 단계 수정용)
     mutationFn: ({ projectId, toStatus, force }: { projectId: string; toStatus: string; force?: boolean; toMilestone?: number }) =>
@@ -394,7 +405,13 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
 
       {/* 행 */}
       {rows.map((c) => (
-        <div key={c.id} className="relative group hidden sm:grid items-center px-2 pt-2.5 pb-6 border-b border-gray-100 hover:bg-gray-50/70 transition" style={GRID}>
+        <div
+          key={c.id}
+          // 마우스만 올려도 미리 받아둔다 → 클릭하는 순간 이미 도착해 즉시 열림
+          onMouseEnter={() => prefetchCustomer(c.id)}
+          className="relative group hidden sm:grid items-center px-2 pt-2.5 pb-6 border-b border-gray-100 hover:bg-gray-50/70 transition"
+          style={GRID}
+        >
           <button
             title="휴지통으로"
             onClick={(e) => { e.stopPropagation(); trashMut.mutate(c.id); }}
@@ -513,7 +530,7 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
       <div className="sm:hidden divide-y divide-gray-100">
         {rows.map((c) => {
           return (
-            <div key={c.id} className="py-3">
+            <div key={c.id} className="py-3" onTouchStart={() => prefetchCustomer(c.id)}>
               <div className="flex items-center gap-3">
                 <button className="flex-1 min-w-0 text-left" onClick={() => onOpenCustomer(c.id)}>
                   <div className="flex items-center flex-wrap gap-1">
@@ -612,23 +629,42 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
 // ── 달력: 실제 운영 "바른이름 달력" 임베드 (Firebase 실시간 동기화) ──
 function CalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void }) {
   const { toast } = useToast();
+  const qc = useQueryClient();
 
-  // 달력 앱(iframe)에서 일정 클릭 시 보내는 신호 수신 → 고객 매칭 → 이동
+  // 달력 앱(iframe)에서 오는 신호 수신.
+  //  - hover-customer: 일정 위에 커서만 올려도 미리 받아둠(달력 앱이 보내줄 때만 동작)
+  //  - open-customer : 고객 매칭 → 이동. 이동 직전에 상세도 즉시 요청해 대기시간 제거
   useEffect(() => {
     const onMsg = async (ev: MessageEvent) => {
       const d = ev.data;
-      if (!d || d.source !== "baruncal" || d.type !== "open-customer") return;
+      if (!d || d.source !== "baruncal") return;
+
+      if (d.type === "hover-customer") {
+        try {
+          const { customerId } = await knopApi.resolveCustomer(d.phone || "", d.name || d.title || "");
+          if (customerId) {
+            qc.prefetchQuery({ queryKey: ["knop-customer", customerId], queryFn: () => knopApi.getCustomer(customerId) });
+          }
+        } catch {
+          /* 미리받기 실패는 무시 */
+        }
+        return;
+      }
+
+      if (d.type !== "open-customer") return;
       try {
         const { customerId } = await knopApi.resolveCustomer(d.phone || "", d.name || d.title || "");
-        if (customerId) onOpenCustomer(customerId);
-        else toast({ title: "연결된 고객이 없습니다", description: d.name || d.title || d.phone || "" });
+        if (customerId) {
+          qc.prefetchQuery({ queryKey: ["knop-customer", customerId], queryFn: () => knopApi.getCustomer(customerId) });
+          onOpenCustomer(customerId);
+        } else toast({ title: "연결된 고객이 없습니다", description: d.name || d.title || d.phone || "" });
       } catch {
         toast({ title: "고객 이동 실패", variant: "destructive" });
       }
     };
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
-  }, [onOpenCustomer, toast]);
+  }, [onOpenCustomer, toast, qc]);
 
   return (
     <div className="space-y-3">

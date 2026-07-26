@@ -55,13 +55,27 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
     document.body.scrollTop = 0;
   }, [customerId]);
   const queryKey = ["knop-customer", customerId];
-  // 고객목록(보드) 캐시에 이미 있는 이름 — 상세 응답을 기다리지 않고 이름분석표 조회를 바로 시작하기 위함
-  const cachedName = (qc.getQueryData<any[]>(["knop-board"]) || []).find((c) => c.id === customerId)?.name as
-    | string
-    | undefined;
-  const { data, isLoading } = useQuery<CustomerDetailData>({
+  // 고객목록(보드) 캐시에는 이미 고객 전체 정보 + 진행단계가 있다.
+  // → 서버 응답을 기다리지 않고 그것으로 화면을 즉시 그리고(placeholder), 나머지는 도착하는 대로 채운다.
+  const cachedRow = (qc.getQueryData<any[]>(["knop-board"]) || []).find((c) => c.id === customerId);
+  const cachedName = cachedRow?.name as string | undefined;
+  const placeholder: CustomerDetailData | undefined = cachedRow
+    ? {
+        customer: cachedRow,
+        projects: cachedRow.projectId
+          ? [{ id: cachedRow.projectId, customerId, status: cachedRow.status, type: "개명", title: "", paymentStatus: null } as any]
+          : [],
+        timeline: [],
+        files: [],
+        events: [],
+        calls: [],
+        referral: null,
+      } as any
+    : undefined;
+  const { data, isLoading, isPlaceholderData } = useQuery<CustomerDetailData>({
     queryKey,
     queryFn: () => knopApi.getCustomer(customerId),
+    placeholderData: placeholder, // 즉시 렌더 — 빈 화면/스피너 없이 바로 뜬다
     // 전사 처리 중인 통화 또는 글자인식(OCR) 중인 이미지가 있으면 4초마다 자동 갱신
     refetchInterval: (query) => {
       const d = query.state.data as CustomerDetailData | undefined;
@@ -698,7 +712,9 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
               />
             </div>
             <div className="space-y-2">
-              {files.length === 0 && <p className="text-sm text-gray-400">첨부된 파일이 없습니다.</p>}
+              {files.length === 0 && (
+                <p className="text-sm text-gray-400">{isPlaceholderData ? "불러오는 중…" : "첨부된 파일이 없습니다."}</p>
+              )}
               {files.map((f) => {
                 const isImg = (f.fileType || "").startsWith("image/");
                 return (
@@ -958,7 +974,7 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
             <div className="space-y-2">
               {calls.length === 0 && (
                 <p className="text-sm text-gray-400">
-                  통화 녹음이 없습니다. 녹음 파일을 올리면 AI가 전사·요약합니다.
+                  {isPlaceholderData ? "불러오는 중…" : "통화 녹음이 없습니다. 녹음 파일을 올리면 AI가 전사·요약합니다."}
                 </p>
               )}
               {calls.map((c) => {
