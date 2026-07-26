@@ -150,7 +150,7 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
 
           {/* 원장 영상: 개명 비용 안내 (세로 숏폼 — 자동재생 없이 포스터 + 재생버튼) */}
           <div className="mt-12 flex flex-col sm:flex-row sm:items-center gap-6">
-            <div className="w-full sm:w-[280px] sm:flex-shrink-0">
+            <div className="w-full sm:w-[320px] sm:flex-shrink-0">
               <video
                 className="w-full rounded-2xl bg-black shadow-lg"
                 src="/video/cost-guide.mp4"
@@ -174,7 +174,7 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
                 개명 금액이 얼마인가요?
               </h3>
               <p className="text-base text-muted-foreground leading-relaxed">
-                한국이름학교 원장이 직접 개명 비용의 기준을 설명드립니다. (약 1분)
+                한국이름학교 대표 설명(1분)
               </p>
             </div>
           </div>
