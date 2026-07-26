@@ -29,9 +29,10 @@ async function main() {
   startReportSync();
   console.log("[이름분석표 워커] 폴더 감시 중 — 새 PDF 가 들어오면 자동으로 사이트에 올립니다.");
 
-  // 상담예정 링크 폴더 동기화: 시작 시 1회 + 15분마다 (달력에 상담일정이 바뀌어도 반영)
+  // 상담예정 링크 폴더 동기화: 시작 시 1회 + 1시간마다.
+  // (새 PDF 는 폴더 감시로 즉시 처리되므로 이 주기는 달력 일정 변경 반영용 — DB 컴퓨트 절약 위해 길게)
   syncReportLinks().catch((e: any) => console.error("[이름분석표 워커] 링크 동기화 오류:", e?.message));
-  setInterval(() => { syncReportLinks().catch(() => {}); }, 15 * 60 * 1000);
+  setInterval(() => { syncReportLinks().catch(() => {}); }, 60 * 60 * 1000);
 
 }
 

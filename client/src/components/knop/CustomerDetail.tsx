@@ -76,11 +76,19 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
     queryKey,
     queryFn: () => knopApi.getCustomer(customerId),
     placeholderData: placeholder, // 즉시 렌더 — 빈 화면/스피너 없이 바로 뜬다
-    // 전사 처리 중인 통화 또는 글자인식(OCR) 중인 이미지가 있으면 4초마다 자동 갱신
+    // 전사/글자인식이 "진짜 진행 중"일 때만 자동 갱신.
+    // 오래 전(1시간 초과) processing 으로 멈춰 있는 건은 폴링하지 않는다 — 예전 중단분 120건이
+    // 영원히 '전사 중'으로 남아 4초마다 DB를 깨우던 문제(=DB 컴퓨트 낭비) 차단.
     refetchInterval: (query) => {
       const d = query.state.data as CustomerDetailData | undefined;
+      const FRESH_MS = 60 * 60 * 1000;
+      const recentlyStarted = (t: unknown) => {
+        const ms = t ? new Date(t as any).getTime() : 0;
+        return ms > 0 && Date.now() - ms < FRESH_MS;
+      };
       const busy =
-        d?.calls?.some((c) => c.status === "processing") || d?.files?.some((f) => f.ocrStatus === "pending");
+        d?.calls?.some((c) => c.status === "processing" && recentlyStarted(c.createdAt)) ||
+        d?.files?.some((f) => f.ocrStatus === "pending" && recentlyStarted(f.uploadedAt));
       return busy ? 4000 : false;
     },
   });
@@ -1254,7 +1262,9 @@ function MessagesCard({ customerId }: { customerId: string }) {
   const { data: msgs, isLoading } = useQuery({
     queryKey: ["knop-customer-messages", customerId],
     queryFn: () => knopApi.customerMessages(customerId),
-    refetchInterval: 60000,
+    // 화면을 열어둔 채 두면 계속 DB를 깨우므로 간격을 넉넉히. 창으로 돌아오면 즉시 새로 받는다.
+    refetchInterval: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
   });
 
   const fmt = (at: string | null) => {

@@ -155,6 +155,7 @@ export const smsStore = {
       if (when.getTime() <= Date.now() + 1000) {
         return (await this.sendOne(row)) ?? row;
       }
+      rescheduleSmsTimer(); // 새 예약 반영 — 스케줄러가 그 시각에 깨도록
       return row;
     } catch (e) {
       fail("문자 예약", e);
@@ -228,11 +229,44 @@ export const smsStore = {
   },
 };
 
+// 스케줄러: 1분마다 묻지 않고 "다음 예약 시각"에 맞춰 깨어난다.
+// 예약이 없으면 길게 자므로 DB(Neon)가 잠들 수 있다 → 컴퓨트 절약. 발송 시각 정확도는 그대로.
 let _timer: NodeJS.Timeout | null = null;
+const MAX_SLEEP_MS = 60 * 60 * 1000; // 최대 1시간마다는 한 번 확인(안전망)
+const MIN_SLEEP_MS = 5_000;
+
+async function nextDueDelay(): Promise<number> {
+  if (!db) return MAX_SLEEP_MS;
+  try {
+    const [row] = await db
+      .select({ at: scheduledMessages.scheduledAt })
+      .from(scheduledMessages)
+      .where(eq(scheduledMessages.status, "scheduled"))
+      .orderBy(scheduledMessages.scheduledAt)
+      .limit(1);
+    if (!row?.at) return MAX_SLEEP_MS; // 예약 없음 → 길게 잔다
+    const wait = new Date(row.at as any).getTime() - Date.now();
+    return Math.max(MIN_SLEEP_MS, Math.min(MAX_SLEEP_MS, wait));
+  } catch {
+    return MAX_SLEEP_MS;
+  }
+}
+
+async function smsTick() {
+  await smsStore.runDue().catch(() => {});
+  const delay = await nextDueDelay();
+  _timer = setTimeout(smsTick, delay);
+}
+
 export function startSmsScheduler() {
   if (_timer) return;
-  console.log(`[KNOP SMS] 스케줄러 시작 (60초 간격, 발송모드=${LIVE ? "LIVE" : "DRY-RUN"})`);
-  _timer = setInterval(() => {
-    smsStore.runDue().catch(() => {});
-  }, 60_000);
+  console.log(`[KNOP SMS] 스케줄러 시작 (다음 예약시각 기준, 발송모드=${LIVE ? "LIVE" : "DRY-RUN"})`);
+  _timer = setTimeout(smsTick, MIN_SLEEP_MS);
+}
+
+// 새 예약이 생기면 그 시각에 맞춰 타이머를 다시 잡는다(늦게 깨는 일 없게).
+export function rescheduleSmsTimer() {
+  if (!_timer) return;
+  clearTimeout(_timer);
+  _timer = setTimeout(smsTick, MIN_SLEEP_MS);
 }

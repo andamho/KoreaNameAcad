@@ -1740,7 +1740,8 @@ export function startKindSyncScheduler() {
       console.error(`[KNOP] 구분/케이스 자동판정 실패: ${e?.message}`);
     }
   };
-  console.log("[KNOP] 개명/상담 구분·케이스 자동판정 스케줄러 시작 (10분 간격)");
+  // 달력 기반 자동판정은 급하지 않다 — DB(Neon)를 자주 깨우지 않도록 1시간 간격
+  console.log("[KNOP] 개명/상담 구분·케이스 자동판정 스케줄러 시작 (60분 간격)");
   setTimeout(run, 20_000); // 서버 기동 20초 후 1회
-  _kindTimer = setInterval(run, 10 * 60_000);
+  _kindTimer = setInterval(run, 60 * 60_000);
 }

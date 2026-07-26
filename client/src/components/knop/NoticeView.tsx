@@ -69,7 +69,9 @@ function ActivePanel({ onOpenCustomer }: { onOpenCustomer?: (id: string) => void
   const { data: rows } = useQuery<ActiveSequence[]>({
     queryKey: ["knop-notice-active"],
     queryFn: () => knopApi.listActiveSequences(),
-    refetchInterval: 30000,
+    // 화면 방치 시 DB를 계속 깨우지 않도록. 창으로 돌아오면 즉시 갱신.
+    refetchInterval: 10 * 60 * 1000,
+    refetchOnWindowFocus: true,
   });
   const cancelMut = useMutation({
     mutationFn: ({ customerId, setKey }: { customerId: string; setKey: string }) =>
@@ -161,7 +163,8 @@ function PendingPanel() {
   const { data: pending } = useQuery<NoticePending[]>({
     queryKey: ["knop-notice-pending"],
     queryFn: () => knopApi.listNoticePending(),
-    refetchInterval: 30000,
+    refetchInterval: 10 * 60 * 1000,
+    refetchOnWindowFocus: true,
   });
   const [dates, setDates] = useState<Record<string, string>>({});
   const refresh = () => qc.invalidateQueries({ queryKey: ["knop-notice-pending"] });

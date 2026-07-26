@@ -260,7 +260,9 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
   const { data: activeSeqs } = useQuery({
     queryKey: ["knop-notice-active"],
     queryFn: () => knopApi.listActiveSequences(),
-    refetchInterval: 60000,
+    // 관리문자 진행도는 급히 바뀌지 않는다 — 화면 방치 시 DB를 계속 깨우지 않도록 간격을 늘림
+    refetchInterval: 10 * 60 * 1000,
+    refetchOnWindowFocus: true,
   });
   const seqByCust = new Map((activeSeqs || []).map((s) => [s.customerId, s]));
   // 행에 마우스를 올리는 순간 고객 상세를 미리 받아둔다(클릭 시 즉시 표시)
