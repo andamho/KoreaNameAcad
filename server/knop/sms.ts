@@ -1,5 +1,6 @@
 // KNOP 문자 자동화: 템플릿 + 예약/발송 + 스케줄러 (solapi 재사용)
 // 안전장치: env KNOP_SMS_LIVE=1 일 때만 실제 발송. 없으면 dry-run(로그만).
+import { randomUUID } from "crypto";
 import { db } from "../db";
 import { DatabaseError } from "../storage";
 import { sendSMS } from "../sms";
@@ -176,18 +177,38 @@ export const smsStore = {
     }
   },
 
-  // 한 건 발송 (dry-run 가드) + 상태/타임라인 갱신
+  // 원자적 선점: scheduled → sending. RETURNING 을 받은 프로세스만 실제로 발송한다(중복 발송 차단).
+  async claimOne(id: string, attemptId: string): Promise<ScheduledMessage | undefined> {
+    const d = requireDb();
+    try {
+      const [row] = await d
+        .update(scheduledMessages)
+        .set({ status: "sending", claimedAt: new Date(), attemptId })
+        .where(and(eq(scheduledMessages.id, id), eq(scheduledMessages.status, "scheduled")))
+        .returning();
+      return row; // 없으면(다른 프로세스가 이미 선점/취소됨) undefined
+    } catch (e: any) {
+      console.error(`[KNOP SMS] 선점 실패 ${id}: ${e?.message}`);
+      return undefined;
+    }
+  },
+
+  // 한 건 발송 (dry-run 가드) + 상태/타임라인 갱신.
+  // 반드시 claimOne 으로 선점한 뒤 호출한다.
   async sendOne(msg: ScheduledMessage): Promise<ScheduledMessage | undefined> {
     const d = requireDb();
     try {
+      let providerMessageId: string | undefined;
       if (LIVE) {
-        await sendSMS(msg.phone, msg.content);
+        await d.update(scheduledMessages).set({ attemptedAt: new Date() }).where(eq(scheduledMessages.id, msg.id));
+        const r = await sendSMS(msg.phone, msg.content);
+        providerMessageId = r?.messageId;
       } else {
         console.log(`[KNOP SMS][DRY-RUN] → ${msg.phone}: ${msg.content.slice(0, 40)}… (KNOP_SMS_LIVE 미설정, 실제 발송 안 함)`);
       }
       const [row] = await d
         .update(scheduledMessages)
-        .set({ status: "sent", sentAt: new Date(), error: null })
+        .set({ status: "sent", sentAt: new Date(), error: null, providerMessageId: providerMessageId ?? null })
         .where(eq(scheduledMessages.id, msg.id))
         .returning();
       if (msg.customerId) {
@@ -202,26 +223,55 @@ export const smsStore = {
       }
       return row;
     } catch (e: any) {
+      // 발송 여부가 불확실하면 failed 로 단정하지 않는다(재발송 시 중복 위험) → 사람이 확인할 상태로 분리
+      const uncertain = e?.uncertain === true;
       await d
         .update(scheduledMessages)
-        .set({ status: "failed", error: e?.message?.slice(0, 300) })
+        .set({ status: uncertain ? "delivery_unknown" : "failed", error: e?.message?.slice(0, 300) })
         .where(eq(scheduledMessages.id, msg.id))
         .catch(() => {});
-      console.error(`[KNOP SMS] 발송 실패 ${msg.id}: ${e?.message}`);
+      console.error(`[KNOP SMS] 발송 ${uncertain ? "불확실(확인 필요)" : "실패"} ${msg.id}: ${e?.message}`);
       return undefined;
     }
   },
 
-  // 예약 시각이 된 문자들 발송
+  // 'sending' 으로 고착된 건 복구: 선점 후 프로세스가 죽은 경우.
+  // 공급자에 이미 보냈을 수 있으므로 재발송하지 않고 delivery_unknown 으로 분리한다.
+  async recoverStuckSending(olderThanMs = 10 * 60 * 1000): Promise<number> {
+    if (!db) return 0;
+    try {
+      const cutoff = new Date(Date.now() - olderThanMs);
+      const rows = await db
+        .update(scheduledMessages)
+        .set({ status: "delivery_unknown", error: "선점 후 중단됨(발송 여부 불확실) — 확인 필요" })
+        .where(and(eq(scheduledMessages.status, "sending"), lte(scheduledMessages.claimedAt, cutoff)))
+        .returning();
+      if (rows.length) console.warn(`[KNOP SMS] 고착 복구: ${rows.length}건 → delivery_unknown(확인 필요)`);
+      return rows.length;
+    } catch (e: any) {
+      console.error(`[KNOP SMS] 고착 복구 오류: ${e?.message}`);
+      return 0;
+    }
+  },
+
+  // 예약 시각이 된 문자들 발송. 각 건을 원자적으로 선점한 뒤에만 실제 발송한다.
   async runDue(): Promise<number> {
     if (!db) return 0;
     try {
+      await this.recoverStuckSending(); // 선점 후 중단된 건 먼저 정리
       const due = await db
-        .select()
+        .select({ id: scheduledMessages.id })
         .from(scheduledMessages)
         .where(and(eq(scheduledMessages.status, "scheduled"), lte(scheduledMessages.scheduledAt, new Date())));
-      for (const m of due) await this.sendOne(m);
-      return due.length;
+      let handled = 0;
+      for (const { id } of due) {
+        const attemptId = randomUUID();
+        const claimed = await this.claimOne(id, attemptId); // 선점 실패 = 다른 프로세스가 처리 중 → 건너뜀
+        if (!claimed) continue;
+        await this.sendOne(claimed);
+        handled++;
+      }
+      return handled;
     } catch (e: any) {
       console.error(`[KNOP SMS] 스케줄러 오류: ${e?.message}`);
       return 0;
@@ -232,7 +282,8 @@ export const smsStore = {
 // 스케줄러: 1분마다 묻지 않고 "다음 예약 시각"에 맞춰 깨어난다.
 // 예약이 없으면 길게 자므로 DB(Neon)가 잠들 수 있다 → 컴퓨트 절약. 발송 시각 정확도는 그대로.
 let _timer: NodeJS.Timeout | null = null;
-const MAX_SLEEP_MS = 60 * 60 * 1000; // 최대 1시간마다는 한 번 확인(안전망)
+// 인메모리 타이머만 쓰는 구조이므로 안전 확인 상한은 5분(타이머 유실·놓친 예약 회수용)
+const MAX_SLEEP_MS = 5 * 60 * 1000;
 const MIN_SLEEP_MS = 5_000;
 
 async function nextDueDelay(): Promise<number> {

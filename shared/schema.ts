@@ -775,8 +775,13 @@ export const scheduledMessages = pgTable("scheduled_messages", {
   content: text("content").notNull(),
   templateId: varchar("template_id"),
   direction: text("direction").default("발신").notNull(),
+  // scheduled → sending(선점) → sent | failed | delivery_unknown(발송 여부 불확실) | canceled
   status: text("status").notNull().default("scheduled"),
   setKey: text("set_key"),                           // 개명후관리 세트(gaemyeong_request/approved). 진행중 현황 집계용
+  claimedAt: timestamp("claimed_at"),                // 원자적 선점 시각(중복 발송 방지 · 고착 복구 기준)
+  attemptId: varchar("attempt_id"),                  // 이번 발송 시도 ID(공급자 응답과 대조)
+  attemptedAt: timestamp("attempted_at"),            // 공급자에 실제 요청한 시각
+  providerMessageId: text("provider_message_id"),    // 공급자(솔라피) 메시지 ID — 사후 확인용
   scheduledAt: timestamp("scheduled_at").notNull(),  // 예약 시각(즉시는 now)
   sentAt: timestamp("sent_at"),
   error: text("error"),
