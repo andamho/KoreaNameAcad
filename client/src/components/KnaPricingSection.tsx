@@ -148,6 +148,37 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
             </div>
           </div>
 
+          {/* 원장 영상: 개명 비용 안내 (세로 숏폼 — 자동재생 없이 포스터 + 재생버튼) */}
+          <div className="mt-12 flex flex-col sm:flex-row sm:items-center gap-6">
+            <div className="w-full sm:w-[280px] sm:flex-shrink-0">
+              <video
+                className="w-full rounded-2xl bg-black shadow-lg"
+                src="/video/cost-guide.mp4"
+                poster="/video/cost-guide.jpg"
+                controls
+                preload="none"
+                playsInline
+                data-testid="video-cost-guide"
+              >
+                <p className="text-sm text-muted-foreground p-4">
+                  브라우저가 영상을 지원하지 않습니다.{" "}
+                  <a href="/video/cost-guide.mp4" className="underline">
+                    영상 내려받기
+                  </a>
+                </p>
+              </video>
+            </div>
+            <div className="sm:flex-1">
+              <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400 mb-2">VIDEO</p>
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                개명 금액이 얼마인가요?
+              </h3>
+              <p className="text-base text-muted-foreground leading-relaxed">
+                한국이름학교 원장이 직접 개명 비용의 기준을 설명드립니다. (약 1분)
+              </p>
+            </div>
+          </div>
+
           {/* 버튼 영역 */}
           <div className="flex items-center gap-4 mt-10">
             <Link to="/services" onClick={() => saveScrollPosition("/")} className="inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-white px-4 py-1.5 text-sm font-medium text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
