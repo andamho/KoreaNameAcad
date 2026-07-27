@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Gem, Clock, Settings } from "lucide-react";
 import { Link } from "wouter";
 import IdentityMap from "./IdentityMap";
@@ -48,6 +49,23 @@ interface KnaPricingSectionProps {
 }
 
 export default function KnaPricingSection({ showHero = false }: KnaPricingSectionProps) {
+  // 영상이 화면에 들어오면 자동재생, 벗어나면 정지(배터리·데이터 절약).
+  // 브라우저 자동재생 정책상 음소거로 시작하며, 소리는 컨트롤에서 켤 수 있다.
+  const costVideoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const el = costVideoRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) el.play().catch(() => { /* 자동재생 차단 시 무시 */ });
+        else el.pause();
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   return (
     <>
       {/* Hero Section - only shown when showHero is true */}
@@ -148,35 +166,28 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
             </div>
           </div>
 
-          {/* 원장 영상: 개명 비용 안내 (세로 숏폼 — 자동재생 없이 포스터 + 재생버튼) */}
-          <div className="mt-12 flex flex-col sm:flex-row sm:items-center gap-6">
-            <div className="w-full sm:w-[320px] sm:flex-shrink-0">
-              <video
-                className="w-full rounded-2xl bg-black shadow-lg"
-                src="/video/cost-guide.mp4"
-                poster="/video/cost-guide.jpg"
-                controls
-                preload="none"
-                playsInline
-                data-testid="video-cost-guide"
-              >
-                <p className="text-sm text-muted-foreground p-4">
-                  브라우저가 영상을 지원하지 않습니다.{" "}
-                  <a href="/video/cost-guide.mp4" className="underline">
-                    영상 내려받기
-                  </a>
-                </p>
-              </video>
-            </div>
-            <div className="sm:flex-1">
-              <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400 mb-2">VIDEO</p>
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                개명 금액이 얼마인가요?
-              </h3>
-              <p className="text-base text-muted-foreground leading-relaxed">
-                한국이름학교 대표 설명(1분)
+          {/* 원장 영상: 화면에 들어오면 자동재생·반복(브라우저 정책상 음소거 시작, 소리는 컨트롤로) */}
+          <div className="mt-12 w-full sm:w-[320px]">
+            <video
+              ref={costVideoRef}
+              className="w-full rounded-2xl bg-black shadow-lg"
+              src="/video/cost-guide.mp4"
+              poster="/video/cost-guide.jpg"
+              controls
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              data-testid="video-cost-guide"
+            >
+              <p className="text-sm text-muted-foreground p-4">
+                브라우저가 영상을 지원하지 않습니다.{" "}
+                <a href="/video/cost-guide.mp4" className="underline">
+                  영상 내려받기
+                </a>
               </p>
-            </div>
+            </video>
+            <p className="mt-2 text-xs text-muted-foreground">한국이름학교 대표 설명(1분)</p>
           </div>
 
           {/* 버튼 영역 */}
