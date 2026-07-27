@@ -55,15 +55,27 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
   useEffect(() => {
     const el = costVideoRef.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
+    let inView = false;
+    const tryPlay = () => {
+      if (inView && document.visibilityState === "visible") {
+        el.play().catch(() => { /* 자동재생 차단 시 무시 — 사용자가 재생 버튼으로 */ });
+      }
+    };
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) el.play().catch(() => { /* 자동재생 차단 시 무시 */ });
+        inView = entry.isIntersecting;
+        if (inView) tryPlay();
         else el.pause();
       },
       { threshold: 0.5 },
     );
     io.observe(el);
-    return () => io.disconnect();
+    // 다른 탭에 있다가 돌아왔을 때도 이어서 재생
+    document.addEventListener("visibilitychange", tryPlay);
+    return () => {
+      io.disconnect();
+      document.removeEventListener("visibilitychange", tryPlay);
+    };
   }, []);
 
   return (
