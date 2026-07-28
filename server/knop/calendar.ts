@@ -134,7 +134,13 @@ export async function applyEventPhones(
 
 // ── 이름/인원 파싱 (작명완료 제목: "이름" 또는 "이름3") ──
 export function parseNameCount(title: string): { name: string; people: number } {
-  const t = (title || "").trim().replace(/^\d+\s*/, ""); // 혹시 앞 시간 있으면 제거
+  // 달력 제목 예: "이지은3(감1)" · "하주오(3)" · "김가연(남편참고)" · "고기원3" · "유소정"
+  // 괄호 메모를 떼야 이름이 정확해진다(안 떼면 "이지은3(감1)" 전체가 이름이 되어 매칭 실패).
+  const t = (title || "")
+    .trim()
+    .replace(/^\d+\s*/, "")      // 앞에 붙은 시간/숫자
+    .replace(/\([^)]*\)/g, "")   // 괄호 메모 제거
+    .trim();
   const m = t.match(/^(.*?)(\d+)?$/);
   return { name: (m?.[1] || "").trim(), people: m?.[2] ? parseInt(m[2], 10) : 1 };
 }
