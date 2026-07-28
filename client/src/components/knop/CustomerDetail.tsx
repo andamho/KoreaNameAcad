@@ -33,6 +33,14 @@ import { knopApi, type CustomerDetail as CustomerDetailData } from "@/lib/knopAp
 import { KNOP_MILESTONES, KNOP_MILESTONE_ENTRY, KNOP_PHONE_MILESTONE, knopStatusToMilestone } from "@shared/schema";
 
 const MS_TEAL = "#1D9E75"; // 진행바 색(고객목록 보드와 동일)
+
+// "진짜 진행 중"인지 판단(1시간 이내 시작분). 예전에 중단된 전사 120건이 영원히 '전사 중'으로
+// 남아 화면을 4초마다 새로고침하던 문제를 막는다. 오래된 건은 '전사 중단됨'으로 표시.
+const FRESH_MS = 60 * 60 * 1000;
+function isRecent(t: unknown): boolean {
+  const ms = t ? new Date(t as any).getTime() : 0;
+  return ms > 0 && Date.now() - ms < FRESH_MS;
+}
 import { CallTranscriptView } from "./CallTranscriptView";
 import { NewProjectDialog, NewEventDialog, SendSmsDialog } from "./dialogs";
 import {
@@ -81,14 +89,9 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
     // 영원히 '전사 중'으로 남아 4초마다 DB를 깨우던 문제(=DB 컴퓨트 낭비) 차단.
     refetchInterval: (query) => {
       const d = query.state.data as CustomerDetailData | undefined;
-      const FRESH_MS = 60 * 60 * 1000;
-      const recentlyStarted = (t: unknown) => {
-        const ms = t ? new Date(t as any).getTime() : 0;
-        return ms > 0 && Date.now() - ms < FRESH_MS;
-      };
       const busy =
-        d?.calls?.some((c) => c.status === "processing" && recentlyStarted(c.createdAt)) ||
-        d?.files?.some((f) => f.ocrStatus === "pending" && recentlyStarted(f.uploadedAt));
+        d?.calls?.some((c) => c.status === "processing" && isRecent(c.createdAt)) ||
+        d?.files?.some((f) => f.ocrStatus === "pending" && isRecent(f.uploadedAt));
       return busy ? 4000 : false;
     },
   });
@@ -1180,10 +1183,13 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                           {c.direction} · {fmtDateTime(c.callDate || c.createdAt)}
                           {c.status === "failed" && " · 전사실패"}
                         </div>
-                        {c.status === "processing" ? (
+                        {c.status === "processing" && isRecent(c.createdAt) ? (
                           <div className="text-sm text-[#3fc4ca] flex items-center gap-1.5">
                             <Loader2 className="w-3.5 h-3.5 animate-spin" /> 전사 중… (몇 분 소요)
                           </div>
+                        ) : c.status === "processing" ? (
+                          // 오래 전에 멈춘 건(예: 중단된 옛 작업) — 계속 "전사 중"으로 보이지 않게
+                          <div className="text-sm text-gray-400">전사 중단됨</div>
                         ) : (
                           <div className="text-sm text-gray-700 line-clamp-2">
                             {c.summaryText || "(요약 없음)"}
