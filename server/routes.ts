@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage, DatabaseError } from "./storage";
-import { insertConsultationSchema, insertNameStorySchema, insertContentSchema, contentCategoryEnum, type ContentCategory } from "@shared/schema";
+import { insertConsultationSchema, insertNameStorySchema, insertContentSchema, contentCategoryEnum, trustedDevices, type ContentCategory } from "@shared/schema";
 import { sendConsultationNotification, sendCommentNotification, sendInquiryNotification, sendInquiryReplyToUser } from "./email";
 import { sendSMS } from "./sms";
 import crypto from "crypto";
@@ -36,7 +36,7 @@ import { ObjectStorageService, validateR2VideoKey } from "./object_storage/objec
 import { db } from "./db";
 import { videoJobs, reviewDrafts, contents, transcodeDiagnostics, shortLinks } from "@shared/schema";
 
-import { desc as drizzleDesc, eq, and, or, isNull, lt, sql as dsql } from "drizzle-orm";
+import { desc as drizzleDesc, eq, and, or, isNull, lt, gt, sql as dsql } from "drizzle-orm";
 
 // heartbeat가 이 시간 이상 끊기면 stalled/abandoned 후보로 본다.
 const DIAG_STALE_MS = 3 * 60 * 1000;
@@ -176,11 +176,54 @@ function handleDbError(error: any, res: Response, route: string): Response {
 const TRUSTED_DEVICE_COOKIE = "kna_td";
 const TRUSTED_DEVICE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
-// 신뢰 기기 토큰 저장소: SHA-256 해시만 보관
-const trustedDevices = new Map<string, number>(); // tokenHash -> expiresAt
+// 신뢰 기기 토큰 저장소: SHA-256 해시만 보관.
+// DB 저장 — 예전에는 메모리 Map 이라 배포/재시작마다 전원 로그아웃 + OTP 재인증이었다.
+// DB 를 못 쓰는 상황(로컬·장애)에서도 로그인이 막히지 않도록 메모리 폴백을 남긴다.
+const trustedDevicesMem = new Map<string, number>(); // tokenHash -> expiresAt
 
 function hashTrustedToken(raw: string): string {
   return crypto.createHash("sha256").update(raw).digest("hex");
+}
+
+async function isTrustedDevice(tokenHash: string): Promise<boolean> {
+  if (db) {
+    try {
+      // 만료 비교는 반드시 SQL 에서 한다. expires_at 은 timestamp(시간대 없음)라
+      // JS 로 읽어 비교하면 서버 타임존에 따라 9시간이 어긋난다(KST 로컬 vs UTC 배포).
+      const [row] = await db
+        .select({ tokenHash: trustedDevices.tokenHash })
+        .from(trustedDevices)
+        .where(and(eq(trustedDevices.tokenHash, tokenHash), gt(trustedDevices.expiresAt, new Date())));
+      return !!row;
+    } catch (e: any) {
+      console.error(`[신뢰기기] 조회 실패(메모리로 대체): ${e?.message}`);
+    }
+  }
+  const exp = trustedDevicesMem.get(tokenHash);
+  return !!exp && Date.now() < exp;
+}
+
+async function rememberTrustedDevice(tokenHash: string, expiresAt: Date): Promise<void> {
+  trustedDevicesMem.set(tokenHash, expiresAt.getTime()); // 폴백용으로 항상 보관
+  if (!db) return;
+  try {
+    await db
+      .insert(trustedDevices)
+      .values({ tokenHash, expiresAt })
+      .onConflictDoUpdate({ target: trustedDevices.tokenHash, set: { expiresAt } });
+  } catch (e: any) {
+    console.error(`[신뢰기기] 저장 실패(메모리만 유지): ${e?.message}`);
+  }
+}
+
+async function forgetTrustedDevice(tokenHash: string): Promise<void> {
+  trustedDevicesMem.delete(tokenHash);
+  if (!db) return;
+  try {
+    await db.delete(trustedDevices).where(eq(trustedDevices.tokenHash, tokenHash));
+  } catch (e: any) {
+    console.error(`[신뢰기기] 삭제 실패: ${e?.message}`);
+  }
 }
 
 // OTP 발급 전역 쿨다운 (단일 관리자 계정 기준)
@@ -273,8 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const rawTrustedToken = (req as any).cookies?.[TRUSTED_DEVICE_COOKIE];
       if (rawTrustedToken) {
         const tokenHash = hashTrustedToken(rawTrustedToken);
-        const expiresAt = trustedDevices.get(tokenHash);
-        if (expiresAt && Date.now() < expiresAt) {
+        if (await isTrustedDevice(tokenHash)) {
           const token = getValidAdminToken();
           return res.json({ token });
         }
@@ -328,7 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (trustDevice === true) {
         const rawTrustedToken = crypto.randomBytes(32).toString("base64url");
         const tokenHash = hashTrustedToken(rawTrustedToken);
-        trustedDevices.set(tokenHash, Date.now() + TRUSTED_DEVICE_TTL_MS);
+        await rememberTrustedDevice(tokenHash, new Date(Date.now() + TRUSTED_DEVICE_TTL_MS));
         res.cookie(TRUSTED_DEVICE_COOKIE, rawTrustedToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
@@ -344,9 +386,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // 로그아웃: 신뢰 기기 쿠키 폐기
-  app.post("/api/admin/logout", (req, res) => {
+  app.post("/api/admin/logout", async (req, res) => {
     const rawToken = (req as any).cookies?.[TRUSTED_DEVICE_COOKIE];
-    if (rawToken) trustedDevices.delete(hashTrustedToken(rawToken));
+    if (rawToken) await forgetTrustedDevice(hashTrustedToken(rawToken));
     res.clearCookie(TRUSTED_DEVICE_COOKIE, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

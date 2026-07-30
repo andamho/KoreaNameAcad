@@ -747,6 +747,15 @@ export const correctionAudit = pgTable("correction_audit", {
   at: timestamp("at").defaultNow().notNull(),
 });
 
+// ── trusted_devices: 관리자 신뢰 기기 ──
+// 예전에는 서버 메모리 Map 이라 배포/재시작마다 전원 로그아웃 + 텔레그램 OTP 재인증이 필요했다.
+// 원문 토큰은 저장하지 않는다 — 쿠키의 원문을 SHA-256 해시한 값만 보관한다.
+export const trustedDevices = pgTable("trusted_devices", {
+  tokenHash: varchar("token_hash").primaryKey(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // ── sms_templates: 문자 템플릿 (설계서 §23) ──
 export const smsTemplates = pgTable("sms_templates", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
