@@ -510,7 +510,11 @@ export async function listActiveSequences(): Promise<ActiveSequence[]> {
     customerId: r.customerId!,
     customerName: r.customerName,
     setKey: r.setKey!,
-    setLabel: isSetKey(r.setKey!) ? NOTICE_SETS[r.setKey as SetKey].label : r.setKey!,
+    setLabel: isSetKey(r.setKey!)
+      ? NOTICE_SETS[r.setKey as SetKey].label
+      : r.setKey!.startsWith("newname:")
+        ? "새 이름 상담 안내" // 달력 작명완료 기준 단발 예약 (세트 아님)
+        : r.setKey!,
     total: r.total,
     sent: r.sent,
     nextAt: r.nextAt ?? null, // 이미 UTC ISO-Z 문자열

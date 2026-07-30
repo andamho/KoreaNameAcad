@@ -24,6 +24,11 @@ import {
   tomorrowKST,
   appendConsultEvent,
 } from "./calendar";
+import {
+  planNewNameNotices,
+  scheduleNewNameNotices,
+  startNewNameNoticeScheduler,
+} from "./newNameNotice";
 import { parseContact, analyzeThread, buildConsultEventDraft } from "./smsIntake";
 import { sendCalendarCheckNotification } from "../email";
 import { intakeStore } from "./intakeStore";
@@ -89,6 +94,7 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     .catch(() => {});
   startSmsScheduler();
   startKindSyncScheduler(); // 개명/상담 구분 자동판정 (달력 작명완료·개명 트랙 단계 반영)
+  startNewNameNoticeScheduler(); // 새 이름 상담 안내: 달력 작명완료 전날 09:00 예약(고객 단계와 무관)
   startReportSync(); // 이름분석 폴더 자동 동기화 (로컬만; 배포는 no-op)
 
   // 교정사전: 기존 로컬 JSON 규칙을 DB로 1회 이관 후, DB→로컬 JSON 재생성(어디서 고쳐도 반영)
@@ -390,6 +396,24 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       res.sendFile(full);
     } catch (e) {
       handle(res, "GET report file", e);
+    }
+  });
+
+  // ── 새 이름 상담 안내: 달력 작명완료 전날 09:00 예약 ──
+  // 미리보기(dry-run): 누구에게 언제 어떤 문구가 나갈지. 발송/DB 쓰기 없음.
+  app.get(`${P}/calendar/newname-preview`, requireAdmin, async (_req, res) => {
+    try {
+      res.json({ plans: await planNewNameNotices() });
+    } catch (e) {
+      handle(res, "GET newname preview", e);
+    }
+  });
+  // 지금 바로 예약 반영(스케줄러가 60분마다 하는 일을 수동으로 1회)
+  app.post(`${P}/calendar/newname-schedule`, requireAdmin, async (_req, res) => {
+    try {
+      res.json(await scheduleNewNameNotices());
+    } catch (e) {
+      handle(res, "POST newname schedule", e);
     }
   });
 
