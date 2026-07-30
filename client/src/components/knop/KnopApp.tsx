@@ -34,6 +34,7 @@ import { NoticeView } from "./NoticeView";
 import { VoiceAssistant } from "./VoiceAssistant";
 import { SmsView } from "./SmsView";
 import { SmsInboxView } from "./SmsInboxView";
+import { FbCalendarView } from "./FbCalendarView";
 import { NewCustomerDialog } from "./dialogs";
 import { StatusBadge, fmtDate, fmtTime } from "./lib";
 
@@ -628,69 +629,28 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
   );
 }
 
-// ── 달력: 실제 운영 "바른이름 달력" 임베드 (Firebase 실시간 동기화) ──
+// ── 달력: 실제 운영 "바른이름 달력"을 관리자 페이지가 직접 그린다 ──
+// 이전에는 달력 앱을 iframe 으로 끼웠는데, 크롬의 3rd-party 저장소 분리 때문에 iframe 안에서는
+// 구글 로그인이 유지되지 않아 로그인 배너만 반복되고 일정 수정이 아예 불가능했다.
+// → 서버(서비스계정)로 같은 Firestore events 배열을 직접 읽고 쓴다. 휴대폰 달력과 즉시 공유된다.
 function CalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void }) {
-  const { toast } = useToast();
-  const qc = useQueryClient();
-
-  // 달력 앱(iframe)에서 오는 신호 수신.
-  //  - hover-customer: 일정 위에 커서만 올려도 미리 받아둠(달력 앱이 보내줄 때만 동작)
-  //  - open-customer : 고객 매칭 → 이동. 이동 직전에 상세도 즉시 요청해 대기시간 제거
-  useEffect(() => {
-    const onMsg = async (ev: MessageEvent) => {
-      const d = ev.data;
-      if (!d || d.source !== "baruncal") return;
-
-      if (d.type === "hover-customer") {
-        try {
-          const { customerId } = await knopApi.resolveCustomer(d.phone || "", d.name || d.title || "");
-          if (customerId) {
-            qc.prefetchQuery({ queryKey: ["knop-customer", customerId], queryFn: () => knopApi.getCustomer(customerId) });
-          }
-        } catch {
-          /* 미리받기 실패는 무시 */
-        }
-        return;
-      }
-
-      if (d.type !== "open-customer") return;
-      try {
-        const { customerId } = await knopApi.resolveCustomer(d.phone || "", d.name || d.title || "");
-        if (customerId) {
-          qc.prefetchQuery({ queryKey: ["knop-customer", customerId], queryFn: () => knopApi.getCustomer(customerId) });
-          onOpenCustomer(customerId);
-        } else toast({ title: "연결된 고객이 없습니다", description: d.name || d.title || d.phone || "" });
-      } catch {
-        toast({ title: "고객 이동 실패", variant: "destructive" });
-      }
-    };
-    window.addEventListener("message", onMsg);
-    return () => window.removeEventListener("message", onMsg);
-  }, [onOpenCustomer, toast, qc]);
-
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-gray-900">바른이름 달력</h2>
-          <p className="text-sm text-gray-400">일정을 열어 "고객 보기"를 누르면 해당 고객 자료로 이동합니다</p>
+          <p className="text-sm text-gray-400">
+            일정을 눌러 수정·삭제할 수 있습니다 (휴대폰 달력과 같은 자료)
+          </p>
         </div>
         <a href={CALENDAR_URL} target="_blank" rel="noreferrer">
           <Button variant="outline" size="sm">
-            <ExternalLink className="w-4 h-4 mr-1" /> 새 창에서 열기
+            <ExternalLink className="w-4 h-4 mr-1" /> 달력 앱 열기
           </Button>
         </a>
       </div>
 
-      <Card className="overflow-hidden p-0">
-        <iframe
-          src={CALENDAR_URL}
-          title="바른이름 달력"
-          className="block w-full border-0"
-          style={{ height: "calc(100vh - 210px)", minHeight: 560 }}
-          allow="clipboard-read; clipboard-write"
-        />
-      </Card>
+      <FbCalendarView onOpenCustomer={onOpenCustomer} />
     </div>
   );
 }

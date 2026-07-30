@@ -23,6 +23,9 @@ import {
   newNameDuration,
   tomorrowKST,
   appendConsultEvent,
+  appendEvent,
+  updateEventById,
+  deleteEventById,
 } from "./calendar";
 import {
   planNewNameNotices,
@@ -834,6 +837,60 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       res.json(await knopStore.calendarAgenda());
     } catch (e) {
       handle(res, "GET calendar agenda", e);
+    }
+  });
+
+  // ── 바른이름 달력(Firebase) 직접 편집 ──
+  // 관리자 페이지는 iframe 안에서 구글 로그인이 유지되지 않는다(크롬 3rd-party 저장소 분리) →
+  // 여기서 서비스계정으로 같은 events 배열을 읽고 쓴다. 경로는 KNOP DB 달력(`/calendar`)과 구분해 `fb-calendar`.
+  app.get(`${P}/fb-calendar`, requireAdmin, async (_req, res) => {
+    try {
+      if (!calendarAvailable()) return res.status(400).json({ error: "calendar_key_missing" });
+      res.json(await readEvents());
+    } catch (e) {
+      handle(res, "GET fb-calendar", e);
+    }
+  });
+
+  app.post(`${P}/fb-calendar`, requireAdmin, async (req, res) => {
+    try {
+      if (!calendarAvailable()) return res.status(400).json({ error: "calendar_key_missing" });
+      const b = req.body || {};
+      if (!b.date || !b.title) return res.status(400).json({ error: "date_title_required" });
+      const { event } = await appendEvent({
+        date: String(b.date),
+        title: String(b.title),
+        cat: b.cat ? String(b.cat) : "상담",
+        repeat: b.repeat ? String(b.repeat) : "none",
+        phoneChange: !!b.phoneChange,
+        hongik: !!b.hongik,
+        gaemyeong: Number(b.gaemyeong) || 0,
+        clientPhone: b.clientPhone ? String(b.clientPhone) : "",
+        memo: b.memo ? String(b.memo) : "",
+      });
+      res.json(event);
+    } catch (e) {
+      handle(res, "POST fb-calendar", e);
+    }
+  });
+
+  app.patch(`${P}/fb-calendar/:id`, requireAdmin, async (req, res) => {
+    try {
+      if (!calendarAvailable()) return res.status(400).json({ error: "calendar_key_missing" });
+      const row = await updateEventById(req.params.id, req.body || {});
+      if (!row) return res.status(404).json({ error: "not_found" });
+      res.json(row);
+    } catch (e) {
+      handle(res, "PATCH fb-calendar", e);
+    }
+  });
+
+  app.delete(`${P}/fb-calendar/:id`, requireAdmin, async (req, res) => {
+    try {
+      if (!calendarAvailable()) return res.status(400).json({ error: "calendar_key_missing" });
+      res.json({ ok: await deleteEventById(req.params.id) });
+    } catch (e) {
+      handle(res, "DELETE fb-calendar", e);
     }
   });
 

@@ -132,6 +132,55 @@ export async function applyEventPhones(
   return { written };
 }
 
+// ── 관리자 페이지에서 직접 수정/삭제 ──
+// 달력 앱(iframe)은 크롬의 3rd-party 저장소 분리 때문에 관리자 페이지 안에서 로그인이 유지되지
+// 않는다 → 관리자 페이지는 iframe 대신 서버(서비스계정)로 같은 events 배열을 직접 고친다.
+// 필드 이름/모양은 달력 앱과 반드시 동일해야 한다(휴대폰 앱이 같은 배열을 읽는다).
+export const EDITABLE_FIELDS = [
+  "date",
+  "title",
+  "cat",
+  "repeat",
+  "phoneChange",
+  "hongik",
+  "gaemyeong",
+  "clientPhone",
+  "memo",
+] as const;
+
+export async function updateEventById(id: string, patch: Partial<CalEvent>): Promise<CalEvent | null> {
+  const ref = await getDataRef();
+  let updated: CalEvent | null = null;
+  await db().runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const data = (snap.data() || {}) as { events?: CalEvent[] };
+    const events = Array.isArray(data.events) ? data.events : [];
+    const target = events.find((e) => String(e.id) === String(id));
+    if (!target) return; // updated 는 null 로 남는다 → 라우트에서 404
+    for (const k of EDITABLE_FIELDS) {
+      if (patch[k] !== undefined) (target as any)[k] = patch[k];
+    }
+    updated = { ...target };
+    tx.set(ref, { ...data, events }, { merge: true });
+  });
+  return updated;
+}
+
+export async function deleteEventById(id: string): Promise<boolean> {
+  const ref = await getDataRef();
+  let removed = false;
+  await db().runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const data = (snap.data() || {}) as { events?: CalEvent[] };
+    const events = Array.isArray(data.events) ? data.events : [];
+    const next = events.filter((e) => String(e.id) !== String(id));
+    if (next.length === events.length) return;
+    removed = true;
+    tx.set(ref, { ...data, events: next }, { merge: true });
+  });
+  return removed;
+}
+
 // ── 이름/인원 파싱 (작명완료 제목: "이름" 또는 "이름3") ──
 export function parseNameCount(title: string): { name: string; people: number } {
   // 달력 제목 예: "이지은3(감1)" · "하주오(3)" · "김가연(남편참고)" · "고기원3" · "유소정"

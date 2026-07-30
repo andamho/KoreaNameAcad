@@ -237,6 +237,14 @@ export const knopApi = {
     req<CalendarEvent>("PATCH", `/api/kop/calendar/${id}`, data),
   deleteEvent: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/calendar/${id}`),
 
+  // 바른이름 달력(Firebase) 직접 편집 — 관리자 페이지 iframe 은 로그인이 유지되지 않아 서버 경유로 고친다
+  listFbCalendar: () => req<FbCalEvent[]>("GET", "/api/kop/fb-calendar"),
+  createFbEvent: (data: Partial<FbCalEvent> & { date: string; title: string }) =>
+    req<FbCalEvent>("POST", "/api/kop/fb-calendar", data),
+  updateFbEvent: (id: string, data: Partial<FbCalEvent>) =>
+    req<FbCalEvent>("PATCH", `/api/kop/fb-calendar/${id}`, data),
+  deleteFbEvent: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/fb-calendar/${id}`),
+
   // Calls (통화 녹음)
   createCall: (data: {
     customerId: string;
@@ -444,6 +452,20 @@ export type ActiveSequence = {
   total: number;
   sent: number;
   nextAt: string | null;
+};
+
+// 바른이름 달력(Firebase) 일정 1건 — 필드 이름은 달력 앱/휴대폰 앱과 동일해야 한다
+export type FbCalEvent = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  title: string;
+  cat: string; // 상담 | 작명완료 | WITH | 개완CHK | 개인
+  repeat?: string; // none | monthly | yearly | lunar-yearly
+  phoneChange?: boolean; // 작명완료 + 전화번호 작명
+  hongik?: boolean; // 홍익 상담
+  gaemyeong?: number; // 0=아님, 1~4=개명 횟수
+  clientPhone?: string;
+  memo?: string;
 };
 
 export type CalendarAgendaItem = {
