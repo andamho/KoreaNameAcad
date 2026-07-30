@@ -1469,12 +1469,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return res.redirect(302, target);
   };
 
-  // 루트 링크: /홍길동님이름분석표 (문자 발송용, 공개).
-  // '이름분석표' 포함 슬러그만 처리 → /admin 등 앱 페이지·정적파일과 충돌 없음.
+  // 루트 링크: /홍길동님이름분석표 · /홍길동님새이름 (문자 발송용, 공개).
+  // 아래 낱말이 든 슬러그만 처리 → /admin 등 앱 페이지·정적파일과 충돌 없음.
+  const REPORT_SLUG_WORDS = ["이름분석표", "새이름"];
   app.get("/:slug", async (req, res, next) => {
     try {
       const slug = String(req.params.slug || "");
-      if (!slug.includes("이름분석표")) return next(); // 리포트 링크가 아니면 앱(SPA)으로
+      if (!REPORT_SLUG_WORDS.some((w) => slug.includes(w))) return next(); // 리포트 링크가 아니면 앱(SPA)으로
       if (!db) return next();
       const [row] = await db.select().from(shortLinks).where(eq(shortLinks.slug, slug));
       if (!row) return next();
