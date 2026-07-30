@@ -33,6 +33,8 @@ const PUBLIC_BASE = (process.env.PUBLIC_BASE_URL || "https://korea-name-acad.com
 // 파일명 → 링크 슬러그: "하주오님 가족 이름분석.pdf" → "하주오님가족이름분석표" (파일명 그대로, 님 포함)
 function reportSlugFromFile(fileName: string): string {
   let b = fileName.replace(/\.(pdf|png|jpe?g|webp)$/i, "").replace(/\s*\(상세\)\s*/g, "");
+  // 새이름은 파일명 그대로("ㅇㅇㅇ님 새이름") — 뒤에 '이름분석표'를 붙이지 않는다.
+  if (/새이름/.test(b)) return b.replace(/\s+/g, "").replace(/[^0-9A-Za-z가-힣_-]/g, "").slice(0, 60);
   if (/이름분석(?!표)/.test(b)) b = b.replace(/이름분석(?!표)/g, "이름분석표");
   else if (!/이름분석표/.test(b)) b = b + "이름분석표";
   return b.replace(/\s+/g, "").replace(/[^0-9A-Za-z가-힣_-]/g, "").slice(0, 60);
@@ -42,8 +44,14 @@ function reportSlugFromFile(fileName: string): string {
 async function ensureReportLinkSlug(target: string, label: string, desiredSlug: string): Promise<string | null> {
   const pool = reportPool();
   try {
-    const ex = await pool.query("SELECT slug FROM short_links WHERE target=$1 LIMIT 1", [target]);
-    if (ex.rows[0]) return ex.rows[0].slug as string;
+    // 원하는 슬러그가 이미 그 대상을 가리키면 그대로 쓴다.
+    if (desiredSlug) {
+      const same = await pool.query("SELECT slug FROM short_links WHERE slug=$1 AND target=$2 LIMIT 1", [desiredSlug, target]);
+      if (same.rows[0]) return same.rows[0].slug as string;
+    }
+    // 원하는 슬러그를 먼저 시도한다. 같은 대상에 옛 슬러그가 있어도 그걸 재사용하지 않는다
+    // — 규칙이 바뀌면(예: 새이름은 뒤에 '이름분석표'를 안 붙임) 새 주소로 만들어야 하기 때문.
+    // 옛 슬러그 행은 지우지 않으므로 이미 보낸 링크는 계속 열린다.
     const tries = desiredSlug ? [desiredSlug, ...Array.from({ length: 30 }, (_, i) => `${desiredSlug}-${i + 2}`)] : [];
     for (const slug of tries) {
       try {
@@ -53,7 +61,9 @@ async function ensureReportLinkSlug(target: string, label: string, desiredSlug: 
         /* 슬러그 충돌 → 다음 후보 */
       }
     }
-    return null;
+    // 전부 실패하면 같은 대상의 기존 슬러그라도 쓴다(링크가 없는 것보다 낫다).
+    const ex = await pool.query("SELECT slug FROM short_links WHERE target=$1 LIMIT 1", [target]);
+    return ex.rows[0] ? (ex.rows[0].slug as string) : null;
   } catch (e: any) {
     console.error(`[KOP] 링크 슬러그 생성 실패: ${e?.message}`);
     return null;
@@ -80,7 +90,24 @@ async function upcomingConsultNames(): Promise<Set<string> | null> {
   }
 }
 
-// 이름분석링크 폴더를 '오늘 이후 상담예정자'로 동기화: 예정자 링크(.url) 생성 + 비예정자 링크 정리.
+// 새이름 링크는 상담 일정과 무관하게 만든다(작명완료 날 고객에게 보내는 것이라
+// '오늘 이후 상담예정' 조건에 애초에 걸리지 않는다 — 2026-07-30 김경순님 건).
+// 폴더 유지 기간은 링크 파일이 만들어진 시점부터 개인 1달 · 가족 2달(원장님 확정).
+const NEWNAME_LINK_KEEP_DAYS = { individual: 30, family: 60 } as const;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// 링크 파일이 만들어진 시각. birthtime 이 신뢰 못할 값(0)이면 mtime 으로 대체.
+function linkCreatedAt(p: string): number | null {
+  try {
+    const st = fs.statSync(p);
+    const b = st.birthtimeMs;
+    return b && b > 0 ? b : st.mtimeMs;
+  } catch {
+    return null;
+  }
+}
+
+// 이름분석링크 폴더 동기화: '오늘 이후 상담예정자' 링크 + 새이름 링크 생성, 나머지 정리.
 export async function syncReportLinks(): Promise<void> {
   if (!reportsAvailable()) return; // 로컬 전용
   const upcoming = await upcomingConsultNames();
@@ -89,21 +116,42 @@ export async function syncReportLinks(): Promise<void> {
     if (!fs.existsSync(LINK_DIR)) fs.mkdirSync(LINK_DIR, { recursive: true });
     const pool = reportPool();
     const rows = (await pool.query(
-      `SELECT DISTINCT ON (file_name) file_name, extracted_name, rendered_url
+      `SELECT DISTINCT ON (file_name) file_name, extracted_name, rendered_url, first_seen_at
        FROM report_matches WHERE rendered_url IS NOT NULL
        ORDER BY file_name, first_seen_at DESC`,
     )).rows;
     const wanted = new Set<string>();
     let made = 0;
+    const now = Date.now();
     for (const r of rows) {
       if (/상세/.test(r.file_name)) continue;
       const nm = baseName(r.extracted_name || "");
-      if (!nm || !upcoming.has(nm)) continue; // 상담예정자만
+      if (!nm) continue;
+      const isNewName = /새이름/.test(r.file_name);
+      const keepDays = /가족/.test(r.file_name) ? NEWNAME_LINK_KEEP_DAYS.family : NEWNAME_LINK_KEEP_DAYS.individual;
       const slug = reportSlugFromFile(r.file_name);
       if (!slug) continue;
-      wanted.add(`${slug}.txt`);
       const linkFile = path.join(LINK_DIR, `${slug}.txt`);
-      if (fs.existsSync(linkFile)) continue;
+      const exists = fs.existsSync(linkFile);
+
+      if (isNewName) {
+        if (exists) {
+          // 만든 시점부터 개인 1달 / 가족 2달 지나면 유지 목록에서 빼 → 아래 정리 단계에서 삭제
+          const born = linkCreatedAt(linkFile);
+          if (born !== null && now - born <= keepDays * DAY_MS) wanted.add(`${slug}.txt`);
+          continue;
+        }
+        // 아직 없으면 새로 만든다. 단, 오래전 파일이 뒤늦게 되살아나지 않도록
+        // 감지 시각이 유지 기간을 넘긴 건은 만들지 않는다.
+        const seen = r.first_seen_at ? new Date(r.first_seen_at).getTime() : now;
+        if (now - seen > keepDays * DAY_MS) continue;
+        wanted.add(`${slug}.txt`);
+      } else {
+        if (!upcoming.has(nm)) continue; // 일반 분석표는 상담예정자만
+        wanted.add(`${slug}.txt`);
+        if (exists) continue;
+      }
+
       const viewerTarget = `/img?src=${encodeURIComponent(r.rendered_url)}`;
       const usedSlug = await ensureReportLinkSlug(viewerTarget, String(r.file_name).replace(/\.[^.]+$/, ""), slug);
       if (!usedSlug) continue;
@@ -111,7 +159,8 @@ export async function syncReportLinks(): Promise<void> {
       fs.writeFileSync(linkFile, `${PUBLIC_BASE}/${usedSlug}`, "utf-8");
       made++;
     }
-    // 상담예정이 아닌 사람의 링크 파일은 폴더에서 제거(옛 .url 포함) → '오늘 이후 상담예정자'만 남음
+    // 유지 대상이 아닌 링크 파일은 폴더에서 제거(옛 .url 포함)
+    // → 남는 것: 오늘 이후 상담예정자 + 기한 안의 새이름
     let removed = 0;
     for (const f of fs.readdirSync(LINK_DIR)) {
       const low = f.toLowerCase();
