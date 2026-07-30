@@ -38,6 +38,9 @@ export type ProcessInput = {
   label: string;           // 첨부 표시용 라벨
   candidates: Candidate[]; // 후보 고객(이름 게이트 통과분) — 조회 실패면 null
   candidatesFailed?: boolean; // 후보/DB 조회 실패(요건 8)
+  // 새이름 파일처럼 판정 축이 다른 경우(달력 작명완료 기준) 바깥에서 결론을 넣는다.
+  // 있으면 신청일 기반 decideMatch 를 쓰지 않는다. → newNameMatch.ts
+  forced?: { status: "auto_matched" | "needs_review"; matchedCustomerId: string | null; reason: string };
 };
 
 export type ProcessResult = { status: MatchStatus; matchId: string; note: string };
@@ -65,7 +68,15 @@ export async function processFile(deps: ProcessorDeps, input: ProcessInput): Pro
     return { status: row.status, matchId: row.id, note: "이미 처리됨(재첨부 안 함)" };
   }
   if (row && row.status === "needs_review") {
-    return { status: "needs_review", matchId: row.id, note: "사람 확인 대기 중" };
+    // 새이름 파일(forced)은 판정 축이 달라 재판정한다.
+    // 예: 앱이 "김이나님 이름분석.pdf"(새 이름)로 저장 → 확인필요 → 원장님이 "김경순님 새이름.pdf"로
+    //     바꾸면 달력 작명완료로 찾을 수 있게 된다. 그대로 두면 영원히 대기 상태로 남는다.
+    if (!input.forced) return { status: "needs_review", matchId: row.id, note: "사람 확인 대기 중" };
+    if (row.file_name !== input.file) {
+      await db.query(`UPDATE report_matches SET file_name=$2, file_path=$3, extracted_name=$4, report_type=$5, updated_at=$6 WHERE id=$1`,
+        [row.id, input.file, input.absPath, input.extractedName, input.reportType, deps.now()]);
+      row = (await db.query(`SELECT * FROM report_matches WHERE id=$1`, [row.id])).rows[0];
+    }
   }
 
   // 요건 8: 후보 조회 실패면 추측 연결 금지
@@ -106,7 +117,9 @@ export async function processFile(deps: ProcessorDeps, input: ProcessInput): Pro
 
   // 판정 (기준 T = 저장된 first_seen_at, 절대 재설정 안 함)
   const info: ReportInfo = { firstSeenAt: new Date(row.first_seen_at), reportType: input.reportType };
-  const decision = decideMatch(info, input.candidates);
+  const decision = input.forced
+    ? { ...decideMatch(info, input.candidates), status: input.forced.status, matchedCustomerId: input.forced.matchedCustomerId, reason: input.forced.reason }
+    : decideMatch(info, input.candidates);
   // 기존 감사이력(관리자 처리 흔적)이 있으면 보존
   let prevAudit: any[] = [];
   try { prevAudit = JSON.parse(row.candidate_snapshot || "{}").audit || []; } catch { prevAudit = []; }

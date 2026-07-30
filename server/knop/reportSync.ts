@@ -21,6 +21,8 @@ import {
   REPORT_PREFIX,
 } from "./reports";
 import { readEvents, parseNameCount, calendarAvailable } from "./calendar";
+import { decideNewName, type NamingEvent, type NewNameCandidate } from "./newNameMatch";
+import { normalizePhone } from "@shared/schema";
 
 const PY = (process.env.KOP_WHISPER_PY || process.env.KNOP_WHISPER_PY)?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot/venv/Scripts/python.exe";
 
@@ -200,6 +202,40 @@ async function removeAttachedSourceFile(
   }
 }
 
+// 새이름 파일 판정: 달력의 '작명완료' 일정에서 같은 이름을 찾고,
+// 파일 저장일 기준 가족 두 달 / 혼자 한 달 안이면 그 고객에게 붙인다. (판정 규칙은 newNameMatch.ts)
+async function decideNewNameForFile(
+  q: { query: (sql: string, params?: any[]) => Promise<{ rows: any[] }> },
+  extractedName: string,
+  reportType: "family" | "individual",
+  absPath: string,
+): Promise<{ status: "auto_matched" | "needs_review"; matchedCustomerId: string | null; reason: string } | undefined> {
+  try {
+    if (!calendarAvailable()) return { status: "needs_review", matchedCustomerId: null, reason: "확인 필요: 달력 키 없음(새이름 판정 불가)" };
+    let savedAt = new Date();
+    try { savedAt = fs.statSync(absPath).mtime; } catch { /* 못 읽으면 지금 시각 */ }
+
+    const evtRows = await readEvents();
+    const events: NamingEvent[] = [];
+    for (const e of evtRows) {
+      if (!e.cat || !e.cat.includes("완료")) continue;
+      const nm = baseName(parseNameCount(e.title || "").name);
+      if (!nm) continue;
+      events.push({ date: String(e.date || ""), title: e.title || "", name: nm, phone: e.clientPhone ? normalizePhone(e.clientPhone) : null });
+    }
+
+    const custs = (await q.query(`SELECT id, name, normalized_phone FROM customers WHERE deleted_at IS NULL`)).rows;
+    const cands: NewNameCandidate[] = custs.map((c: any) => ({
+      customerId: c.id, customerName: baseName(c.name || ""), normalizedPhone: c.normalized_phone || null,
+    }));
+
+    const d = decideNewName(extractedName, reportType, savedAt, events, cands);
+    return { status: d.status, matchedCustomerId: d.matchedCustomerId, reason: d.reason };
+  } catch (e: any) {
+    return { status: "needs_review", matchedCustomerId: null, reason: `확인 필요: 새이름 판정 오류(${String(e?.message).slice(0, 120)})` };
+  }
+}
+
 let _syncing = false;
 export async function syncReports(): Promise<SyncResult> {
   const empty: SyncResult = { auto_matched: 0, needs_review: 0, attachment_failed: 0, processing_failed: 0, skipped: 0, processed: 0, added: 0, created: 0 };
@@ -235,8 +271,12 @@ export async function syncReports(): Promise<SyncResult> {
       const reportType = r.family ? "family" : "individual";
       try {
         const { candidates, failed } = await gatherCandidates(deps.db, extractedName, reportType);
+        // 새이름 파일은 판정 축이 다르다: 신청일이 아니라 '달력 작명완료 일정'으로 찾는다.
+        const forced = /새이름/.test(r.file)
+          ? await decideNewNameForFile(deps.db, extractedName, reportType, abs)
+          : undefined;
         const out = await processFile(deps, {
-          file: r.file, absPath: abs, extractedName, reportType, label: r.label, candidates, candidatesFailed: failed,
+          file: r.file, absPath: abs, extractedName, reportType, label: r.label, candidates, candidatesFailed: failed, forced,
         });
         res.processed++;
         if (out.status === "auto_matched") { res.auto_matched++; res.added++; }
