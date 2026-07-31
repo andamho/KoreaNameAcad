@@ -163,8 +163,19 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
       const { customerId } = await resolveCust(e);
       if (customerId) {
         qc.prefetchQuery({ queryKey: ["knop-customer", customerId], queryFn: () => knopApi.getCustomer(customerId) });
-        setDraft(null);
-        onOpenCustomer(customerId);
+        // 창이 열려 있으면 그 기록을 먼저 걷어내고 이동한다.
+        // 안 그러면 고객 화면에서 뒤로가기를 눌렀을 때 빈 기록 하나를 더 지나야 한다.
+        if (draft && (window.history.state as any)?.fbCalDialog) {
+          const afterClose = () => {
+            window.removeEventListener("popstate", afterClose);
+            onOpenCustomer(customerId);
+          };
+          window.addEventListener("popstate", afterClose);
+          setDraft(null); // 효과 정리에서 history.back() 이 실행된다
+        } else {
+          setDraft(null);
+          onOpenCustomer(customerId);
+        }
       } else {
         toast({ title: "연결된 고객이 없습니다", description: `${e.title} — 이름·번호가 고객자료와 다릅니다` });
       }
@@ -274,15 +285,21 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
           <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
         </Card>
       ) : (
-        <Card className="overflow-hidden -mx-4 rounded-none border-x-0 sm:mx-0 sm:rounded-xl sm:border-x">
-          <div className="grid grid-cols-7 border-b bg-gray-50 text-[11px] sm:text-xs font-semibold">
+        <Card className="overflow-hidden -mx-4 rounded-none border-0 sm:mx-0 sm:rounded-xl">
+          {/* 요일 머리: 달력 앱 .day-headers (배경 #eaeaf2, 14px/700, 일=#e53935 토=#1565c0 평일=#444) */}
+          <div className="grid grid-cols-7" style={{ background: "#eaeaf2" }}>
             {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
-              <div key={d} className={`py-1.5 text-center ${i === 0 ? "text-red-500" : i === 6 ? "text-blue-500" : "text-gray-600"}`}>
+              <div
+                key={d}
+                className="text-center font-bold"
+                style={{ fontSize: 14, padding: "5px 0", color: i === 0 ? "#e53935" : i === 6 ? "#1565c0" : "#444" }}
+              >
                 {d}
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7">
+          {/* 칸 사이 1px 회색(#ebebf0)이 비쳐 구분선이 된다 — 달력 앱 .calendar-grid 와 같은 방식 */}
+          <div className="grid grid-cols-7 gap-px" style={{ background: "#ebebf0" }}>
             {cells.map((d, i) => {
               const key = d ? dateKey(year, month, d) : `empty-${i}`;
               const list = d ? byDate.get(key) || [] : [];
@@ -291,9 +308,8 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
               return (
                 <div
                   key={key}
-                  className={`border-b border-r px-0 py-1 sm:p-1 ${isMobile ? "min-h-[86px]" : "min-h-[92px]"} ${
-                    d ? "cursor-pointer" : "bg-gray-50/50"
-                  } ${isSel && d ? "bg-violet-50" : d ? "hover:bg-violet-50/50" : ""}`}
+                  className={`flex flex-col overflow-hidden ${isMobile ? "min-h-[80px]" : "min-h-[92px]"} ${d ? "cursor-pointer" : ""}`}
+                  style={{ background: !d ? "#f3f4f8" : isSel ? "#efeaff" : isToday ? "#f0f0ff" : "#fff" }}
                   onClick={() => {
                     if (!d) return;
                     setSelected(key);
@@ -303,21 +319,38 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                 >
                   {d && (
                     <>
-                      <div
-                        className={`text-[11px] sm:text-xs mb-0.5 ${
-                          isToday ? "font-bold text-violet-700" : i % 7 === 0 ? "text-red-500" : i % 7 === 6 ? "text-blue-500" : "text-gray-500"
-                        }`}
-                      >
-                        {d}
+                      {/* 날짜: 달력 앱 .date-num (14px/700, 오늘은 원형 배경) */}
+                      <div className="flex justify-center" style={{ padding: "2px 1px 1px" }}>
+                        <span
+                          className="flex items-center justify-center font-bold"
+                          style={{
+                            fontSize: 14,
+                            lineHeight: 1,
+                            width: 22,
+                            height: 22,
+                            borderRadius: "50%",
+                            background: isToday ? "#18a999" : "transparent",
+                            color: isToday ? "#fff" : i % 7 === 0 ? "#e53935" : i % 7 === 6 ? "#1565c0" : "#222",
+                          }}
+                        >
+                          {d}
+                        </span>
                       </div>
 
-                      {/* 달력 앱과 같게: 칸 안에 분류색 막대 + 제목을 그대로 보여준다(모바일도 동일). */}
-                      <div className="space-y-[2px]">
+                      {/* 일정: 달력 앱 .events-list(padding 0 1px 1px, gap 1px) + .event-chip(11px/600, 1px 3px, radius 3px) */}
+                      <div className="flex flex-col overflow-hidden" style={{ padding: "0 1px 1px", gap: 1 }}>
                           {list.map((e, k) => (
                             <button
                               key={`${e.id}-${k}`}
-                              className="w-full text-left text-[11px] font-semibold leading-tight tracking-tighter px-[3px] py-[1px] rounded truncate"
-                              style={{ background: chipBg(e.cat), color: chipFg(e.cat) }}
+                              className="w-full text-left font-semibold whitespace-nowrap overflow-hidden"
+                              style={{
+                                background: chipBg(e.cat),
+                                color: chipFg(e.cat),
+                                fontSize: 11,
+                                lineHeight: 1.4,
+                                padding: "1px 3px",
+                                borderRadius: 3,
+                              }}
                               title={`${e.cat} · ${e.title}\n한 번 클릭=수정 · 더블클릭=고객 자료`}
                               onMouseEnter={() => prefetchCust(e)}
                               onClick={(ev) => {

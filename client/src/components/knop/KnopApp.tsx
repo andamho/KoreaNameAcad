@@ -48,6 +48,36 @@ export function KnopApp() {
   const [view, setView] = useState<View>("today");
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
 
+  // ── 휴대폰 뒤로가기 ──
+  // 탭 전환·고객 상세 열기는 React 상태만 바꿔서 브라우저 기록이 남지 않았다.
+  // 그래서 뒤로가기를 누르면 직전 화면이 아니라 관리자 페이지 자체를 빠져나갔다.
+  // 화면이 바뀔 때마다 기록을 남기고, 뒤로가기 때 그 화면으로 되돌린다.
+  const go = (next: { view?: View; customer?: string | null }) => {
+    const v = next.view ?? view;
+    const c = next.customer !== undefined ? next.customer : selectedCustomer;
+    if (v === view && c === selectedCustomer) return;
+    window.history.pushState({ ...(window.history.state || {}), knop: { view: v, customer: c } }, "");
+    setView(v);
+    setSelectedCustomer(c);
+  };
+  const openCustomer = (id: string) => go({ customer: id });
+
+  useEffect(() => {
+    // 첫 화면도 기록에 심어둔다 → 뒤로가기로 여기까지 되돌아올 수 있다
+    const st = window.history.state as any;
+    if (!st?.knop) {
+      window.history.replaceState({ ...(st || {}), knop: { view: "today", customer: null } }, "");
+    }
+    const onPop = (e: PopStateEvent) => {
+      const s = (e.state as any)?.knop;
+      if (!s) return; // 관리자 페이지 기록 밖 → 브라우저가 평소대로 페이지를 떠나게 둔다
+      setView(s.view as View);
+      setSelectedCustomer(s.customer ?? null);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
   if (!isVerifying && !isAdmin) {
     return (
       <Card className="p-12 text-center text-gray-500">
@@ -71,11 +101,8 @@ export function KnopApp() {
   return (
     <>
       <VoiceAssistant
-        onOpenCustomer={setSelectedCustomer}
-        onNavigate={(v) => {
-          setSelectedCustomer(null);
-          setView(v as View);
-        }}
+        onOpenCustomer={openCustomer}
+        onNavigate={(v) => go({ view: v as View, customer: null })}
       />
       <div className="space-y-6">
         {/* 상단 탭은 고객 상세를 열어도 항상 보이게 한다 — 탭을 누르면 고객 상세에서 빠져나온다 */}
@@ -87,10 +114,7 @@ export function KnopApp() {
             return (
               <button
                 key={t.key}
-                onClick={() => {
-                  setSelectedCustomer(null);
-                  setView(t.key);
-                }}
+                onClick={() => go({ view: t.key, customer: null })}
                 className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${
                   active
                     ? "border-[#56D5DB] text-gray-900"
@@ -104,16 +128,23 @@ export function KnopApp() {
         </div>
 
         {selectedCustomer ? (
-          <CustomerDetailView customerId={selectedCustomer} onBack={() => setSelectedCustomer(null)} />
+          <CustomerDetailView
+            customerId={selectedCustomer}
+            // 화면의 "뒤로" 도 브라우저 뒤로가기와 같은 동작이어야 기록이 어긋나지 않는다
+            onBack={() => {
+              if ((window.history.state as any)?.knop?.customer) window.history.back();
+              else go({ customer: null });
+            }}
+          />
         ) : (
           <>
-            {view === "today" && <TodayView onOpenCustomer={setSelectedCustomer} />}
-            {view === "customers" && <CustomersView onOpenCustomer={setSelectedCustomer} />}
-            {view === "inbox" && <InboxView onOpenCustomer={setSelectedCustomer} />}
+            {view === "today" && <TodayView onOpenCustomer={openCustomer} />}
+            {view === "customers" && <CustomersView onOpenCustomer={openCustomer} />}
+            {view === "inbox" && <InboxView onOpenCustomer={openCustomer} />}
             {view === "sms-inbox" && <SmsInboxView />}
             {view === "sms" && <SmsView />}
-            {view === "notice" && <NoticeView onOpenCustomer={setSelectedCustomer} />}
-            {view === "calendar" && <CalendarView onOpenCustomer={setSelectedCustomer} />}
+            {view === "notice" && <NoticeView onOpenCustomer={openCustomer} />}
+            {view === "calendar" && <CalendarView onOpenCustomer={openCustomer} />}
             {view === "reports" && <ReportReviewView />}
             {view === "corrections" && <CorrectionsView />}
           </>
