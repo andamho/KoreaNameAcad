@@ -18,10 +18,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, Plus, Trash2, Loader2, UserCheck, Pencil } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, Loader2, UserCheck, Pencil, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { knopApi, type FbCalEvent } from "@/lib/knopApi";
+import { getLunarDate } from "./lunar";
 
 // 달력 앱과 같은 분류/색 (CAT_COLORS 이식)
 const CATS = ["상담", "작명완료", "WITH", "개완CHK", "개인"] as const;
@@ -51,6 +52,12 @@ function kstTodayStr(): string {
 }
 function dateKey(y: number, m: number, d: number): string {
   return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
+// "2026년 8월 12일 (수)" — 검색 결과에 쓴다(달력 앱과 같은 형식)
+function labelFullDate(key: string): string {
+  const [y, m, d] = key.split("-").map(Number);
+  const w = ["일", "월", "화", "수", "목", "금", "토"][new Date(y, m - 1, d).getDay()];
+  return `${y}년 ${m}월 ${d}일 (${w})`;
 }
 function labelDate(key: string): string {
   const [y, m, d] = key.split("-").map(Number);
@@ -96,6 +103,8 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
   const [draft, setDraft] = useState<Draft | null>(null); // 열려 있는 편집/추가 대상
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null); // 한 번 클릭 vs 더블클릭 구분
   const swipe = useRef<{ x: number; y: number } | null>(null); // 좌우로 밀어 달 넘기기
+  const [searchOpen, setSearchOpen] = useState(false); // 일정 검색창 (달력 앱과 같은 기능)
+  const [query, setQuery] = useState("");
 
   const { data: events = [], isLoading, isError, isFetching } = useQuery({
     queryKey: ["knop-fb-calendar"],
@@ -263,10 +272,21 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
 
   const selectedList = byDate.get(selected) || [];
 
+  // 검색 결과 — 달력 앱과 같게 제목·메모에서 찾고 최신 날짜순
+  const searchHits = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return events
+      .filter((e) => (e.title || "").toLowerCase().includes(q) || (e.memo || "").toLowerCase().includes(q))
+      .sort((a, b) => (a.date < b.date ? 1 : -1));
+  }, [events, query]);
+
   return (
     <div className="space-y-3">
+      {/* 달력 앱처럼 연회색 바탕(#eaeaf2) 위에 달력이 떠 있게 한다. 모바일은 화면 끝까지 편다. */}
+      <div className="-mx-4 px-[5px] pt-1 pb-4 sm:mx-0 sm:rounded-2xl" style={{ background: "#eaeaf2" }}>
       {/* 월 이동 */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2 px-1 pb-1">
         <div className="flex items-center gap-0.5">
           <Button variant="ghost" size="icon" onClick={() => move(-1)} aria-label="이전 달">
             <ChevronLeft className="w-4 h-4" />
@@ -289,8 +309,29 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
             오늘
           </Button>
         </div>
-        {/* 새로고침·일정 추가 버튼은 뺐다 — 일정 추가는 아래 날짜 목록의 [추가]로 한다. */}
-        {isFetching && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
+        {/* 오른쪽: 검색 + 슬로건 (달력 앱과 같은 자리·문구) */}
+        <div className="flex items-center gap-2">
+          {isFetching && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
+          <button
+            type="button"
+            aria-label="일정 검색"
+            className="p-1 text-gray-700"
+            onClick={() => {
+              setSearchOpen(true);
+              setQuery("");
+            }}
+          >
+            <Search className="w-[21px] h-[21px]" strokeWidth={2.2} />
+          </button>
+          <div
+            className="text-right font-semibold whitespace-nowrap"
+            style={{ fontSize: 9.5, color: "#6a5acd", lineHeight: 1.35 }}
+          >
+            바른 이름으로
+            <br />
+            널리 세상을 이롭게
+          </div>
+        </div>
       </div>
 
       {isError ? (
@@ -303,7 +344,10 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
         </Card>
       ) : (
         <Card
-          className="overflow-hidden -mx-4 rounded-none border-0 shadow-none sm:mx-0 sm:rounded-xl"
+          // 달력 앱 .calendar-grid 와 같은 라운드 12px + 그림자(떠 있는 느낌).
+          // 좌우 5px 여백도 앱과 동일(.calendar-page padding: 0 5px).
+          className="overflow-hidden border-0"
+          style={{ borderRadius: 12, boxShadow: "0 8px 32px rgba(80, 80, 140, 0.18), 0 2px 8px rgba(80, 80, 140, 0.10)" }}
           // 좌우로 밀면 달 이동 (달력 앱과 같은 조작)
           onTouchStart={(ev) => {
             const t = ev.touches[0];
@@ -354,8 +398,8 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                 >
                   {d && (
                     <>
-                      {/* 날짜: 달력 앱 .date-num (14px/700, 오늘은 원형 배경) */}
-                      <div className="flex justify-center" style={{ padding: "2px 1px 1px" }}>
+                      {/* 날짜 + 음력: 달력 앱 .date-num(14px/700, 오늘은 원형) / .lunar-date(8px, #aaa) */}
+                      <div className="flex flex-col items-center" style={{ padding: "2px 1px 1px" }}>
                         <span
                           className="flex items-center justify-center font-bold"
                           style={{
@@ -372,6 +416,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                         >
                           {d}
                         </span>
+                        <span style={{ fontSize: 8, color: "#aaa", lineHeight: 1 }}>{getLunarDate(year, month, d)}</span>
                       </div>
 
                       {/* 일정: 달력 앱 .events-list(padding 0 1px 1px, gap 1px) + .event-chip(11px/600, 1px 3px, radius 3px) */}
@@ -418,6 +463,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
           </div>
         </Card>
       )}
+      </div>
 
       {/* 선택한 날짜의 일정: 모바일에서 제목이 잘리는 문제 해결 + 고객 이동 버튼 */}
       <Card className="p-3 space-y-2">
@@ -631,6 +677,53 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
               </Button>
             </div>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 일정 검색 — 달력 앱과 같은 규칙: 제목·메모에서 찾고 최신 날짜순, 누르면 그 날짜로 이동 */}
+      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>일정 검색</DialogTitle>
+          </DialogHeader>
+          <Input
+            autoFocus
+            value={query}
+            placeholder="제목 또는 메모로 검색"
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <div className="overflow-y-auto flex flex-col gap-2 mt-1">
+            {!query.trim() ? (
+              <div className="text-center text-gray-400 py-10 text-sm">검색어를 입력하세요</div>
+            ) : searchHits.length === 0 ? (
+              <div className="text-center text-gray-400 py-10 text-sm">검색 결과 없음</div>
+            ) : (
+              searchHits.map((e, k) => (
+                <button
+                  key={`${e.id}-${k}`}
+                  className="text-left rounded-2xl px-3.5 py-3"
+                  style={{ background: chipBg(e.cat), color: chipFg(e.cat) }}
+                  onClick={() => {
+                    const [ey, em] = e.date.split("-").map(Number);
+                    setYear(ey);
+                    setMonth(em);
+                    setSelected(e.date);
+                    setSearchOpen(false);
+                  }}
+                >
+                  <div className="text-[15px] font-bold flex items-center gap-1.5">
+                    {e.cat === "작명완료" && e.phoneChange ? <span>📞</span> : null}
+                    {e.hongik ? <HongikBadge size={18} /> : null}
+                    {e.title}
+                  </div>
+                  <div className="text-xs opacity-80">
+                    {labelFullDate(e.date)} · {e.cat}
+                  </div>
+                  {e.memo ? <div className="text-xs opacity-70 truncate">{e.memo}</div> : null}
+                </button>
+              ))
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
