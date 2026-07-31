@@ -350,7 +350,7 @@ export async function sendInquiryNotification(inquiry: Inquiry): Promise<void> {
             <p style="margin:0;font-size:13px;color:#888;margin-bottom:6px;">문의 내용</p>
             <p style="margin:0;font-size:15px;color:#222;white-space:pre-wrap;line-height:1.7;">${inquiry.content}</p>
           </div>
-          <a href="${SITE_URL}/admin"
+          <a href="${SITE_URL}/admin?tab=inquiries&id=${encodeURIComponent(inquiry.id)}"
             style="display:inline-block;background:#18a999;color:white;text-decoration:none;
                    padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;">
             관리자 페이지에서 답변하기 →

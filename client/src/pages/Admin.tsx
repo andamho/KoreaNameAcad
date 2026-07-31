@@ -1,5 +1,6 @@
 // v2
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useHashScroll } from '@/hooks/useHashScroll';
 import { useState, useRef, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Card } from "@/components/ui/card";
@@ -61,6 +62,11 @@ const categoryOptions = [
 
 export default function Admin() {
   const { toast } = useToast();
+  // 알림 메일에서 바로 오기: /admin?tab=inquiries&id=123 → 그 탭을 열고 해당 문의로 스크롤.
+  // 예전에는 /admin 만 가리켜서 목록 첫 화면에서 직접 찾아야 했다.
+  const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const initialTab = params.get("tab") || "knop";
+  const focusInquiryId = params.get("id") || "";
   const [contentDialogOpen, setContentDialogOpen] = useState(false);
   const [editingContent, setEditingContent] = useState<Content | null>(null);
   const [contentForm, setContentForm] = useState<InsertContent>({
@@ -99,6 +105,8 @@ export default function Admin() {
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [submittingReply, setSubmittingReply] = useState<string | null>(null);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  // 목록이 그려진 뒤 메일에서 지정한 문의로 이동
+  useHashScroll(inquiries.length, focusInquiryId ? `inquiry-${focusInquiryId}` : undefined);
   const [loadingInquiries, setLoadingInquiries] = useState(true);
   // 대화 내역(개별 메시지) — /inquiry 페이지와 동일하게 문의 관리 탭에서도 전체 대화·수정·삭제
   const [threadMessages, setThreadMessages] = useState<Record<string, Array<{ id: string; senderType: string; content: string; createdAt: string }>>>({});
@@ -318,7 +326,7 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <h1 className="text-3xl font-bold text-foreground mb-8">관리자 페이지</h1>
 
-        <Tabs defaultValue="knop" className="space-y-6">
+        <Tabs defaultValue={initialTab} className="space-y-6">
           <TabsList>
             <TabsTrigger value="knop" data-testid="tab-knop">
               <LayoutDashboard className="w-3.5 h-3.5 mr-1.5" />
@@ -372,7 +380,7 @@ export default function Admin() {
                   <span />
                 </div>
                 {inquiries.map((inq, idx) => (
-                  <div key={inq.id} className={idx !== 0 ? "border-t border-border/50" : ""}>
+                  <div key={inq.id} id={`inquiry-${inq.id}`} className={idx !== 0 ? "border-t border-border/50" : ""}>
                     {/* 모바일: 고정 4열은 넘치므로 2x2로 접힘 */}
                     <div className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-1 sm:grid-cols-[1fr_160px_100px_120px] sm:gap-2 items-center px-4 py-3">
                       <span className="font-medium text-sm">{maskName(inq.name)} 님</span>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useHashScroll } from '@/hooks/useHashScroll';
 import { Linkify } from "@/lib/linkify";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -140,6 +141,8 @@ export default function ExperienceAloneFate() {
 
   // 댓글
   const [comments, setComments] = useState<Comment[]>([]);
+  // 메일의 #comment-123 링크로 들어오면 그 댓글로 이동(목록이 그려진 뒤)
+  useHashScroll(comments.length);
   const [nickname, setNickname] = useState('');
   const [commentText, setCommentText] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
@@ -156,9 +159,10 @@ export default function ExperienceAloneFate() {
   const commentRef = useRef<HTMLDivElement>(null);
   const bannerRef = useRef<HTMLParagraphElement>(null);
 
-  // 페이지 진입 시 최상단으로
+  // 페이지 진입 시 최상단으로.
+  // 단 앵커(#comment-…)로 들어온 경우엔 그 댓글로 가야 하므로 건드리지 않는다.
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (!window.location.hash) window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {

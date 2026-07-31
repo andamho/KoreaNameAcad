@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useHashScroll } from '@/hooks/useHashScroll';
 import { Linkify } from "@/lib/linkify";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -121,6 +122,8 @@ export default function ExperienceShortLife() {
   const animatedTotal = useCountUp(calculated ? total : 0);
 
   const [comments, setComments] = useState<Comment[]>([]);
+  // 메일의 #comment-123 링크로 들어오면 그 댓글로 이동(목록이 그려진 뒤)
+  useHashScroll(comments.length);
   const [nickname, setNickname] = useState('');
   const [commentText, setCommentText] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
@@ -137,7 +140,8 @@ export default function ExperienceShortLife() {
   const commentRef = useRef<HTMLDivElement>(null);
   const bannerRef = useRef<HTMLParagraphElement>(null);
 
-  useEffect(() => { window.scrollTo(0, 0); }, []);
+  // 앵커(#comment-…)로 들어온 경우엔 맨 위로 보내지 않는다 — 그 댓글로 이동해야 하므로
+  useEffect(() => { if (!window.location.hash) window.scrollTo(0, 0); }, []);
 
   useEffect(() => {
     const el = bannerRef.current;
