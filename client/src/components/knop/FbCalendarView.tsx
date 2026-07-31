@@ -1,10 +1,14 @@
-// 관리자 페이지 전용 "바른이름 달력" 화면 (일정 추가/수정/삭제)
+// 관리자 페이지 전용 "바른이름 달력" 화면 (일정 추가/수정/삭제 + 고객 자료 바로 열기)
 //
 // 왜 직접 그리는가: 달력 앱을 iframe 으로 끼우면 크롬의 3rd-party 저장소 분리 때문에
 // iframe 안에서는 구글 로그인이 유지되지 않는다 → 로그인 배너만 반복되고 일정 수정이 불가능했다.
 // 여기서는 서버(서비스계정)를 거쳐 같은 Firestore events 배열을 직접 고치므로 로그인이 필요 없다.
 // 저장하는 필드 이름/모양은 달력 앱(휴대폰)과 동일해야 한다 — 같은 배열을 함께 읽고 쓴다.
-import { useMemo, useState } from "react";
+//
+// 조작 규칙(예전 iframe 달력과 같게):
+//  - PC: 일정 한 번 클릭 = 수정창, 더블클릭 = 그 고객 자료로 바로 이동(커서만 올려도 미리 받아둠)
+//  - 모바일: 칸이 좁아 제목이 잘리므로 날짜를 누르면 아래에 그날 일정이 전체 제목으로 펼쳐진다
+import { useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,19 +16,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, Plus, Trash2, Loader2, UserCheck, RefreshCw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, Loader2, UserCheck, RefreshCw, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { knopApi, type FbCalEvent } from "@/lib/knopApi";
 
 // 달력 앱과 같은 분류/색 (CAT_COLORS 이식)
 const CATS = ["상담", "작명완료", "WITH", "개완CHK", "개인"] as const;
 const CAT_COLOR: Record<string, string> = {
-  상담: "#FF8A80",
-  작명완료: "#82B1FF",
-  WITH: "#FFD54F",
-  개완CHK: "#CE93D8",
-  개인: "#90A4AE",
+  상담: "#FF8A80", // 빨강
+  작명완료: "#82B1FF", // 파랑
+  WITH: "#FFD54F", // 노랑
+  개완CHK: "#CE93D8", // 보라
+  개인: "#90A4AE", // 회색
 };
+// 달력 앱과 동일: 일정은 분류색 단색 배경 + 흰 글씨(.event-chip). 흐린 반투명은 색 구분이 안 된다.
+// WITH(노랑)만 흰 글씨 대비가 약해 목록에서는 진한 노랑을 쓴다(달력 앱 detail-event-item 규칙).
+const chipBg = (cat: string) => CAT_COLOR[cat] || "#888";
+const listBg = (cat: string) => (cat === "WITH" ? "#e6a800" : CAT_COLOR[cat] || "#424242");
 const REPEATS: Array<{ v: string; label: string }> = [
   { v: "none", label: "반복 없음" },
   { v: "monthly", label: "매월" },
@@ -41,16 +50,24 @@ function kstTodayStr(): string {
 function dateKey(y: number, m: number, d: number): string {
   return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
+function labelDate(key: string): string {
+  const [y, m, d] = key.split("-").map(Number);
+  const w = ["일", "월", "화", "수", "목", "금", "토"][new Date(y, m - 1, d).getDay()];
+  return `${m}월 ${d}일 (${w})`;
+}
 
 type Draft = Partial<FbCalEvent> & { date: string };
 
 export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void }) {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const isMobile = useIsMobile();
   const today = kstTodayStr();
   const [year, setYear] = useState(() => Number(today.slice(0, 4)));
   const [month, setMonth] = useState(() => Number(today.slice(5, 7))); // 1~12
+  const [selected, setSelected] = useState<string>(today); // 아래 목록에 펼칠 날짜
   const [draft, setDraft] = useState<Draft | null>(null); // 열려 있는 편집/추가 대상
+  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null); // 한 번 클릭 vs 더블클릭 구분
 
   const { data: events = [], isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["knop-fb-calendar"],
@@ -93,8 +110,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
         push(e.date, e);
         continue;
       }
-      // 지난 달 일정의 반복 표시 (원본 날짜가 이 달보다 이전일 때만)
-      const before = ey < year || (ey === year && em < month);
+      const before = ey < year || (ey === year && em < month); // 지난 일정의 반복 표시
       if (!before) continue;
       if (e.repeat === "monthly") push(dateKey(year, month, ed), e);
       else if ((e.repeat === "yearly" || e.repeat === "lunar-yearly") && em === month) push(dateKey(year, month, ed), e);
@@ -111,37 +127,62 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
   ];
   while (cells.length % 7 !== 0) cells.push(null);
 
+  // 달을 넘기면 아래 목록도 그 달로 따라간다(지난 달 날짜에 머물면 "0건"만 보인다).
   const move = (delta: number) => {
-    const m = month + delta;
-    if (m < 1) { setYear(year - 1); setMonth(12); }
-    else if (m > 12) { setYear(year + 1); setMonth(1); }
-    else setMonth(m);
+    let y = year;
+    let m = month + delta;
+    if (m < 1) { y -= 1; m = 12; }
+    else if (m > 12) { y += 1; m = 1; }
+    setYear(y);
+    setMonth(m);
+    const t = today.startsWith(`${y}-${String(m).padStart(2, "0")}`) ? today : dateKey(y, m, 1);
+    setSelected(t);
   };
 
-  // 편집창을 열면 그 일정의 고객을 미리 찾아둔다(이름 표시 + 클릭 시 즉시 이동).
-  const matched = useQuery({
-    queryKey: ["knop-fb-cal-match", draft?.id, draft?.clientPhone, draft?.title],
-    enabled: !!draft?.id,
-    queryFn: async () => {
-      const { customerId } = await knopApi.resolveCustomer(draft?.clientPhone || "", draft?.title || "");
-      if (!customerId) return { customerId: null as string | null, customerName: null as string | null };
-      const c = await knopApi.getCustomer(customerId); // 상세를 미리 받아두면 이동이 즉시 끝난다
-      qc.setQueryData(["knop-customer", customerId], c);
-      return { customerId, customerName: c.customer?.name ?? null };
-    },
-  });
-
-  const openCustomer = async (e: FbCalEvent) => {
+  // ── 일정 → 고객 자료 ──
+  const resolveKey = (e: FbCalEvent) => ["knop-fb-cal-match", e.clientPhone || "", e.title || ""];
+  const resolveCust = (e: FbCalEvent) =>
+    qc.fetchQuery({
+      queryKey: resolveKey(e),
+      queryFn: () => knopApi.resolveCustomer(e.clientPhone || "", e.title || ""),
+      staleTime: 60_000,
+    });
+  // 커서만 올려도 미리 찾아둔다 → 더블클릭하면 즉시 열린다(예전 iframe 달력과 같은 동작)
+  const prefetchCust = async (e: FbCalEvent) => {
     try {
-      const { customerId } = await knopApi.resolveCustomer(e.clientPhone || "", e.title || "");
+      const { customerId } = await resolveCust(e);
+      if (customerId) qc.prefetchQuery({ queryKey: ["knop-customer", customerId], queryFn: () => knopApi.getCustomer(customerId) });
+    } catch {
+      /* 미리받기 실패는 무시 */
+    }
+  };
+  const goCustomer = async (e: FbCalEvent) => {
+    try {
+      const { customerId } = await resolveCust(e);
       if (customerId) {
         qc.prefetchQuery({ queryKey: ["knop-customer", customerId], queryFn: () => knopApi.getCustomer(customerId) });
+        setDraft(null);
         onOpenCustomer(customerId);
-      } else toast({ title: "연결된 고객이 없습니다", description: e.title });
+      } else {
+        toast({ title: "연결된 고객이 없습니다", description: `${e.title} — 이름·번호가 고객자료와 다릅니다` });
+      }
     } catch {
       toast({ title: "고객 이동 실패", variant: "destructive" });
     }
   };
+
+  // 편집창을 열었을 때 그 일정의 고객 이름을 미리 보여준다
+  const matched = useQuery({
+    queryKey: ["knop-fb-cal-match-name", draft?.id, draft?.clientPhone, draft?.title],
+    enabled: !!draft?.id,
+    queryFn: async () => {
+      const { customerId } = await knopApi.resolveCustomer(draft?.clientPhone || "", draft?.title || "");
+      if (!customerId) return { customerId: null as string | null, customerName: null as string | null };
+      const c = await knopApi.getCustomer(customerId);
+      qc.setQueryData(["knop-customer", customerId], c);
+      return { customerId, customerName: c.customer?.name ?? null };
+    },
+  });
 
   const save = () => {
     if (!draft) return;
@@ -165,30 +206,43 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
     else createM.mutate(payload as Draft & { title: string });
   };
 
+  const selectedList = byDate.get(selected) || [];
+
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1">
+      {/* 월 이동 */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-0.5">
           <Button variant="ghost" size="icon" onClick={() => move(-1)} aria-label="이전 달">
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <div className="text-base font-bold text-gray-900 w-32 text-center">
-            {year}년 {month}월
+          <div className="text-base font-bold text-gray-900 w-24 sm:w-32 text-center">
+            {year}. {month}
           </div>
           <Button variant="ghost" size="icon" onClick={() => move(1)} aria-label="다음 달">
             <ChevronRight className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => { setYear(Number(today.slice(0, 4))); setMonth(Number(today.slice(5, 7))); }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setYear(Number(today.slice(0, 4)));
+              setMonth(Number(today.slice(5, 7)));
+              setSelected(today);
+            }}
+          >
             오늘
           </Button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {isFetching && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="w-4 h-4 mr-1" /> 새로고침
+          <Button variant="outline" size="sm" onClick={() => refetch()} aria-label="새로고침">
+            <RefreshCw className="w-4 h-4 sm:mr-1" />
+            <span className="hidden sm:inline">새로고침</span>
           </Button>
-          <Button size="sm" onClick={() => setDraft({ date: today, cat: "상담", repeat: "none" })}>
-            <Plus className="w-4 h-4 mr-1" /> 일정 추가
+          <Button size="sm" onClick={() => setDraft({ date: selected, cat: "상담", repeat: "none" })}>
+            <Plus className="w-4 h-4 sm:mr-1" />
+            <span className="hidden sm:inline">일정 추가</span>
           </Button>
         </div>
       </div>
@@ -203,9 +257,9 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
         </Card>
       ) : (
         <Card className="overflow-hidden">
-          <div className="grid grid-cols-7 border-b bg-gray-50 text-xs font-semibold">
+          <div className="grid grid-cols-7 border-b bg-gray-50 text-[11px] sm:text-xs font-semibold">
             {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
-              <div key={d} className={`py-2 text-center ${i === 0 ? "text-red-500" : i === 6 ? "text-blue-500" : "text-gray-600"}`}>
+              <div key={d} className={`py-1.5 text-center ${i === 0 ? "text-red-500" : i === 6 ? "text-blue-500" : "text-gray-600"}`}>
                 {d}
               </div>
             ))}
@@ -215,35 +269,69 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
               const key = d ? dateKey(year, month, d) : `empty-${i}`;
               const list = d ? byDate.get(key) || [] : [];
               const isToday = key === today;
+              const isSel = key === selected;
               return (
                 <div
                   key={key}
-                  className={`min-h-[92px] border-b border-r p-1 ${d ? "cursor-pointer hover:bg-violet-50/60" : "bg-gray-50/50"}`}
-                  onClick={() => d && setDraft({ date: key, cat: "상담", repeat: "none" })}
+                  className={`border-b border-r p-1 ${isMobile ? "min-h-[58px]" : "min-h-[92px]"} ${
+                    d ? "cursor-pointer" : "bg-gray-50/50"
+                  } ${isSel && d ? "bg-violet-50" : d ? "hover:bg-violet-50/50" : ""}`}
+                  onClick={() => {
+                    if (!d) return;
+                    setSelected(key);
+                    // PC 는 빈 칸을 누르면 바로 추가창(예전과 동일). 모바일은 아래 목록에서 추가한다.
+                    if (!isMobile && list.length === 0) setDraft({ date: key, cat: "상담", repeat: "none" });
+                  }}
                 >
                   {d && (
                     <>
-                      <div className={`text-xs mb-1 ${isToday ? "font-bold text-violet-700" : i % 7 === 0 ? "text-red-500" : i % 7 === 6 ? "text-blue-500" : "text-gray-500"}`}>
-                        {isToday ? `${d} ·오늘` : d}
+                      <div
+                        className={`text-[11px] sm:text-xs mb-0.5 ${
+                          isToday ? "font-bold text-violet-700" : i % 7 === 0 ? "text-red-500" : i % 7 === 6 ? "text-blue-500" : "text-gray-500"
+                        }`}
+                      >
+                        {d}
                       </div>
-                      <div className="space-y-1">
-                        {list.map((e, k) => (
-                          <button
-                            key={`${e.id}-${k}`}
-                            className="w-full text-left text-[11px] leading-tight px-1.5 py-1 rounded truncate text-gray-900"
-                            style={{ background: `${CAT_COLOR[e.cat] || "#ddd"}55` }}
-                            title={`${e.cat} · ${e.title}${e.memo ? ` · ${e.memo}` : ""}`}
-                            onClick={(ev) => {
-                              ev.stopPropagation();
-                              setDraft({ ...e, date: key });
-                            }}
-                          >
-                            {e.cat === "작명완료" && e.phoneChange ? "📞 " : ""}
-                            {e.hongik ? "⭕ " : ""}
-                            {e.title}
-                          </button>
-                        ))}
-                      </div>
+
+                      {isMobile ? (
+                        // 모바일: 칸이 좁아 제목이 한 글자만 보였다 → 색 점으로만 표시하고 전체 제목은 아래 목록에서 본다
+                        <div className="flex flex-wrap gap-0.5">
+                          {list.slice(0, 6).map((e, k) => (
+                            <span
+                              key={`${e.id}-${k}`}
+                              className="w-1.5 h-1.5 rounded-full"
+                              style={{ background: CAT_COLOR[e.cat] || "#bbb" }}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          {list.map((e, k) => (
+                            <button
+                              key={`${e.id}-${k}`}
+                              className="w-full text-left text-[11px] font-semibold leading-tight px-1.5 py-0.5 rounded truncate text-white"
+                              style={{ background: chipBg(e.cat) }}
+                              title={`${e.cat} · ${e.title}\n한 번 클릭=수정 · 더블클릭=고객 자료`}
+                              onMouseEnter={() => prefetchCust(e)}
+                              onClick={(ev) => {
+                                ev.stopPropagation();
+                                // 더블클릭이면 아래 onDoubleClick 이 이 타이머를 취소한다
+                                if (clickTimer.current) clearTimeout(clickTimer.current);
+                                clickTimer.current = setTimeout(() => setDraft({ ...e, date: key }), 220);
+                              }}
+                              onDoubleClick={(ev) => {
+                                ev.stopPropagation();
+                                if (clickTimer.current) clearTimeout(clickTimer.current);
+                                goCustomer(e);
+                              }}
+                            >
+                              {e.cat === "작명완료" && e.phoneChange ? "📞 " : ""}
+                              {e.hongik ? "⭕ " : ""}
+                              {e.title}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -253,16 +341,75 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
         </Card>
       )}
 
-      <div className="flex flex-wrap gap-3 text-xs text-gray-500">
-        {CATS.map((c) => (
-          <span key={c} className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-full" style={{ background: CAT_COLOR[c] }} /> {c}
-          </span>
-        ))}
-      </div>
+      {/* 선택한 날짜의 일정: 모바일에서 제목이 잘리는 문제 해결 + 고객 이동 버튼 */}
+      <Card className="p-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-bold text-gray-900">
+            {labelDate(selected)}
+            <span className="ml-2 text-xs font-normal text-gray-400">{selectedList.length}건</span>
+          </div>
+          <Button size="sm" variant="outline" onClick={() => setDraft({ date: selected, cat: "상담", repeat: "none" })}>
+            <Plus className="w-4 h-4 mr-1" /> 추가
+          </Button>
+        </div>
+
+        {selectedList.length === 0 ? (
+          <div className="text-sm text-gray-400 py-3 text-center">일정이 없습니다</div>
+        ) : (
+          <div className="space-y-1.5">
+            {selectedList.map((e, k) => (
+              <div
+                key={`${e.id}-${k}`}
+                className="flex items-center gap-2 rounded-xl p-2.5 text-white"
+                style={{ background: listBg(e.cat) }}
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-bold break-all">
+                    {e.cat === "작명완료" && e.phoneChange ? "📞 " : ""}
+                    {e.hongik ? "⭕ " : ""}
+                    {e.title}
+                  </div>
+                  <div className="text-[11px] text-white/85">
+                    {e.cat}
+                    {e.clientPhone ? ` · ${e.clientPhone}` : ""}
+                    {e.memo ? ` · ${e.memo}` : ""}
+                    {e.repeat && e.repeat !== "none" ? " · 반복" : ""}
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  className="shrink-0 bg-white/95 text-gray-900 hover:bg-white"
+                  onMouseEnter={() => prefetchCust(e)}
+                  onClick={() => goCustomer(e)}
+                >
+                  <UserCheck className="w-4 h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">고객</span>
+                </Button>
+                <Button
+                  size="sm"
+                  className="shrink-0 bg-black/25 text-white hover:bg-black/35"
+                  onClick={() => setDraft({ ...e, date: selected })}
+                >
+                  <Pencil className="w-4 h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">수정</span>
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-3 pt-1 text-[11px] text-gray-400">
+          {CATS.map((c) => (
+            <span key={c} className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full" style={{ background: CAT_COLOR[c] }} /> {c}
+            </span>
+          ))}
+          {!isMobile && <span className="ml-auto">일정 더블클릭 = 고객 자료로 이동</span>}
+        </div>
+      </Card>
 
       <Dialog open={!!draft} onOpenChange={(o) => !o && setDraft(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{draft?.id ? "일정 수정" : "새 일정 추가"}</DialogTitle>
           </DialogHeader>
@@ -289,8 +436,8 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                       key={c}
                       type="button"
                       onClick={() => setDraft({ ...draft, cat: c })}
-                      className={`px-2.5 py-1 rounded-full text-xs border ${draft.cat === c ? "border-violet-500 font-semibold" : "border-gray-200 text-gray-600"}`}
-                      style={{ background: draft.cat === c ? `${CAT_COLOR[c]}55` : undefined }}
+                      className={`px-2.5 py-1 rounded-full text-xs border ${draft.cat === c ? "border-transparent font-bold text-white" : "border-gray-200 text-gray-600"}`}
+                      style={{ background: draft.cat === c ? listBg(c) : undefined }}
                     >
                       {c}
                     </button>
@@ -358,14 +505,13 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                 <Textarea rows={2} value={draft.memo || ""} onChange={(e) => setDraft({ ...draft, memo: e.target.value })} />
               </div>
 
-              {/* 일정 → 고객 자료 바로 열기. 누르기 전에 누구인지 보이도록 이름을 미리 찾아 표시한다. */}
               {draft.id && (
                 <Button
                   variant="outline"
                   size="sm"
                   className="w-full"
                   disabled={matched.isLoading || !matched.data?.customerId}
-                  onClick={() => openCustomer(draft as FbCalEvent)}
+                  onClick={() => goCustomer(draft as FbCalEvent)}
                 >
                   {matched.isLoading ? (
                     <>
