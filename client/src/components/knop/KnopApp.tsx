@@ -12,7 +12,6 @@ import {
   Search,
   Plus,
   Phone,
-  ExternalLink,
   Wallet,
   SpellCheck,
   MessageSquare,
@@ -37,9 +36,6 @@ import { SmsInboxView } from "./SmsInboxView";
 import { FbCalendarView } from "./FbCalendarView";
 import { NewCustomerDialog } from "./dialogs";
 import { StatusBadge, fmtDate, fmtTime } from "./lib";
-
-// 실제 운영 달력 "바른이름 달력" (Firebase 호스팅, 실시간 동기화)
-const CALENDAR_URL = "https://calendar-zeus1000.web.app";
 
 type View = "today" | "customers" | "inbox" | "sms-inbox" | "sms" | "notice" | "calendar" | "reports" | "corrections";
 
@@ -665,23 +661,6 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
 // 구글 로그인이 유지되지 않아 로그인 배너만 반복되고 일정 수정이 아예 불가능했다.
 // → 서버(서비스계정)로 같은 Firestore events 배열을 직접 읽고 쓴다. 휴대폰 달력과 즉시 공유된다.
 function CalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void }) {
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-gray-900">바른이름 달력</h2>
-          <p className="text-sm text-gray-400">
-            일정을 눌러 수정·삭제할 수 있습니다 (휴대폰 달력과 같은 자료)
-          </p>
-        </div>
-        <a href={CALENDAR_URL} target="_blank" rel="noreferrer">
-          <Button variant="outline" size="sm">
-            <ExternalLink className="w-4 h-4 mr-1" /> 달력 앱 열기
-          </Button>
-        </a>
-      </div>
-
-      <FbCalendarView onOpenCustomer={onOpenCustomer} />
-    </div>
-  );
+  // 설명문·"달력 앱 열기" 버튼은 뺐다 — 달력이 화면을 다 쓰는 게 낫다.
+  return <FbCalendarView onOpenCustomer={onOpenCustomer} />;
 }

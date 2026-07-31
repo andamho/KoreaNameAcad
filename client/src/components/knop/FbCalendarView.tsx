@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, Plus, Trash2, Loader2, UserCheck, RefreshCw, Pencil } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, Loader2, UserCheck, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { knopApi, type FbCalEvent } from "@/lib/knopApi";
@@ -95,8 +95,9 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
   const [selected, setSelected] = useState<string>(today); // 아래 목록에 펼칠 날짜
   const [draft, setDraft] = useState<Draft | null>(null); // 열려 있는 편집/추가 대상
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null); // 한 번 클릭 vs 더블클릭 구분
+  const swipe = useRef<{ x: number; y: number } | null>(null); // 좌우로 밀어 달 넘기기
 
-  const { data: events = [], isLoading, isError, refetch, isFetching } = useQuery({
+  const { data: events = [], isLoading, isError, isFetching } = useQuery({
     queryKey: ["knop-fb-calendar"],
     queryFn: () => knopApi.listFbCalendar(),
   });
@@ -288,17 +289,8 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
             오늘
           </Button>
         </div>
-        <div className="flex items-center gap-1.5">
-          {isFetching && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
-          <Button variant="outline" size="sm" onClick={() => refetch()} aria-label="새로고침">
-            <RefreshCw className="w-4 h-4 sm:mr-1" />
-            <span className="hidden sm:inline">새로고침</span>
-          </Button>
-          <Button size="sm" onClick={() => setDraft({ date: selected, cat: "상담", repeat: "none" })}>
-            <Plus className="w-4 h-4 sm:mr-1" />
-            <span className="hidden sm:inline">일정 추가</span>
-          </Button>
-        </div>
+        {/* 새로고침·일정 추가 버튼은 뺐다 — 일정 추가는 아래 날짜 목록의 [추가]로 한다. */}
+        {isFetching && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
       </div>
 
       {isError ? (
@@ -310,9 +302,26 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
           <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
         </Card>
       ) : (
-        <Card className="overflow-hidden -mx-4 rounded-none border-0 sm:mx-0 sm:rounded-xl">
-          {/* 요일 머리: 달력 앱 .day-headers (배경 #eaeaf2, 14px/700, 일=#e53935 토=#1565c0 평일=#444) */}
-          <div className="grid grid-cols-7" style={{ background: "#eaeaf2" }}>
+        <Card
+          className="overflow-hidden -mx-4 rounded-none border-0 shadow-none sm:mx-0 sm:rounded-xl"
+          // 좌우로 밀면 달 이동 (달력 앱과 같은 조작)
+          onTouchStart={(ev) => {
+            const t = ev.touches[0];
+            swipe.current = { x: t.clientX, y: t.clientY };
+          }}
+          onTouchEnd={(ev) => {
+            const s = swipe.current;
+            swipe.current = null;
+            if (!s) return;
+            const t = ev.changedTouches[0];
+            const dx = t.clientX - s.x;
+            const dy = t.clientY - s.y;
+            // 가로로 충분히(50px) 밀었고 세로 움직임보다 클 때만 (스크롤과 헷갈리지 않게)
+            if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) move(dx < 0 ? 1 : -1);
+          }}
+        >
+          {/* 요일 머리: 색·크기는 달력 앱과 같게, 배경은 흰색 */}
+          <div className="grid grid-cols-7 bg-white">
             {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
               <div
                 key={d}
@@ -323,8 +332,8 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
               </div>
             ))}
           </div>
-          {/* 칸 사이 1px 회색(#ebebf0)이 비쳐 구분선이 된다 — 달력 앱 .calendar-grid 와 같은 방식 */}
-          <div className="grid grid-cols-7 gap-px" style={{ background: "#ebebf0" }}>
+          {/* 구분선 없이 전부 흰 바탕 (칸 사이 간격 0, 회색 배경 없음) */}
+          <div className="grid grid-cols-7 bg-white">
             {cells.map((d, i) => {
               const key = d ? dateKey(year, month, d) : `empty-${i}`;
               const list = d ? byDate.get(key) || [] : [];
@@ -333,8 +342,9 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
               return (
                 <div
                   key={key}
-                  className={`flex flex-col overflow-hidden ${isMobile ? "min-h-[80px]" : "min-h-[92px]"} ${d ? "cursor-pointer" : ""}`}
-                  style={{ background: !d ? "#f3f4f8" : isSel ? "#efeaff" : isToday ? "#f0f0ff" : "#fff" }}
+                  className={`flex flex-col overflow-hidden bg-white ${isMobile ? "min-h-[80px]" : "min-h-[92px]"} ${
+                    d ? "cursor-pointer" : ""
+                  }`}
                   onClick={() => {
                     if (!d) return;
                     setSelected(key);
@@ -355,6 +365,8 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                             height: 22,
                             borderRadius: "50%",
                             background: isToday ? "#18a999" : "transparent",
+                            // 칸 바탕이 모두 흰색이라, 고른 날짜는 테두리로만 표시한다
+                            border: !isToday && isSel ? "1.5px solid #6a5acd" : "1.5px solid transparent",
                             color: isToday ? "#fff" : i % 7 === 0 ? "#e53935" : i % 7 === 6 ? "#1565c0" : "#222",
                           }}
                         >
