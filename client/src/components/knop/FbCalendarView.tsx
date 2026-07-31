@@ -7,8 +7,10 @@
 //
 // 조작 규칙(예전 iframe 달력과 같게):
 //  - PC: 일정 한 번 클릭 = 수정창, 더블클릭 = 그 고객 자료로 바로 이동(커서만 올려도 미리 받아둠)
-//  - 모바일: 칸이 좁아 제목이 잘리므로 날짜를 누르면 아래에 그날 일정이 전체 제목으로 펼쳐진다
-import { useMemo, useRef, useState } from "react";
+//  - 모바일: 달력 앱과 똑같이 칸 안에 분류색 막대 + 제목을 보여준다. 관리자 페이지 좌우 여백(px-4)
+//    때문에 한 칸이 43px(앱은 53px)까지 좁아져 첫 글자만 보였으므로 그리드만 -mx-4 로 꽉 채운다.
+//    제목이 잘려도 날짜를 누르면 아래 목록에 전체 제목·번호·메모가 나온다.
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,9 +33,9 @@ const CAT_COLOR: Record<string, string> = {
   개인: "#90A4AE", // 회색
 };
 // 달력 앱과 동일: 일정은 분류색 단색 배경 + 흰 글씨(.event-chip). 흐린 반투명은 색 구분이 안 된다.
-// WITH(노랑)만 흰 글씨 대비가 약해 목록에서는 진한 노랑을 쓴다(달력 앱 detail-event-item 규칙).
+// 노랑(WITH)만 흰 글씨가 안 읽히므로 검정 글씨를 쓴다.
 const chipBg = (cat: string) => CAT_COLOR[cat] || "#888";
-const listBg = (cat: string) => (cat === "WITH" ? "#e6a800" : CAT_COLOR[cat] || "#424242");
+const chipFg = (cat: string) => (cat === "WITH" ? "#1a1a1a" : "#fff");
 const REPEATS: Array<{ v: string; label: string }> = [
   { v: "none", label: "반복 없음" },
   { v: "monthly", label: "매월" },
@@ -206,6 +208,22 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
     else createM.mutate(payload as Draft & { title: string });
   };
 
+  // 휴대폰 뒤로가기: 일정 창이 열려 있으면 창만 닫는다.
+  // 기록을 안 남기면 뒤로가기가 관리자 페이지 자체를 빠져나가 버린다.
+  const dialogOpen = !!draft;
+  useEffect(() => {
+    if (!dialogOpen) return;
+    const onPop = () => setDraft(null);
+    window.history.pushState({ fbCalDialog: true }, "");
+    window.addEventListener("popstate", onPop);
+    return () => {
+      window.removeEventListener("popstate", onPop);
+      // 화면의 닫기/저장으로 닫은 경우엔 우리가 넣은 기록을 되돌려 놓는다
+      // (뒤로가기로 닫혔으면 이미 사라져 있으므로 건드리지 않는다)
+      if ((window.history.state as any)?.fbCalDialog) window.history.back();
+    };
+  }, [dialogOpen]);
+
   const selectedList = byDate.get(selected) || [];
 
   return (
@@ -256,7 +274,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
           <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
         </Card>
       ) : (
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden -mx-4 rounded-none border-x-0 sm:mx-0 sm:rounded-xl sm:border-x">
           <div className="grid grid-cols-7 border-b bg-gray-50 text-[11px] sm:text-xs font-semibold">
             {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
               <div key={d} className={`py-1.5 text-center ${i === 0 ? "text-red-500" : i === 6 ? "text-blue-500" : "text-gray-600"}`}>
@@ -273,7 +291,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
               return (
                 <div
                   key={key}
-                  className={`border-b border-r p-1 ${isMobile ? "min-h-[58px]" : "min-h-[92px]"} ${
+                  className={`border-b border-r px-0 py-1 sm:p-1 ${isMobile ? "min-h-[86px]" : "min-h-[92px]"} ${
                     d ? "cursor-pointer" : "bg-gray-50/50"
                   } ${isSel && d ? "bg-violet-50" : d ? "hover:bg-violet-50/50" : ""}`}
                   onClick={() => {
@@ -293,24 +311,13 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                         {d}
                       </div>
 
-                      {isMobile ? (
-                        // 모바일: 칸이 좁아 제목이 한 글자만 보였다 → 색 점으로만 표시하고 전체 제목은 아래 목록에서 본다
-                        <div className="flex flex-wrap gap-0.5">
-                          {list.slice(0, 6).map((e, k) => (
-                            <span
-                              key={`${e.id}-${k}`}
-                              className="w-1.5 h-1.5 rounded-full"
-                              style={{ background: CAT_COLOR[e.cat] || "#bbb" }}
-                            />
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="space-y-1">
+                      {/* 달력 앱과 같게: 칸 안에 분류색 막대 + 제목을 그대로 보여준다(모바일도 동일). */}
+                      <div className="space-y-[2px]">
                           {list.map((e, k) => (
                             <button
                               key={`${e.id}-${k}`}
-                              className="w-full text-left text-[11px] font-semibold leading-tight px-1.5 py-0.5 rounded truncate text-white"
-                              style={{ background: chipBg(e.cat) }}
+                              className="w-full text-left text-[11px] font-semibold leading-tight tracking-tighter px-[3px] py-[1px] rounded truncate"
+                              style={{ background: chipBg(e.cat), color: chipFg(e.cat) }}
                               title={`${e.cat} · ${e.title}\n한 번 클릭=수정 · 더블클릭=고객 자료`}
                               onMouseEnter={() => prefetchCust(e)}
                               onClick={(ev) => {
@@ -330,8 +337,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                               {e.title}
                             </button>
                           ))}
-                        </div>
-                      )}
+                      </div>
                     </>
                   )}
                 </div>
@@ -360,8 +366,8 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
             {selectedList.map((e, k) => (
               <div
                 key={`${e.id}-${k}`}
-                className="flex items-center gap-2 rounded-xl p-2.5 text-white"
-                style={{ background: listBg(e.cat) }}
+                className="flex items-center gap-2 rounded-xl p-2.5"
+                style={{ background: chipBg(e.cat), color: chipFg(e.cat) }}
               >
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-bold break-all">
@@ -369,7 +375,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                     {e.hongik ? "⭕ " : ""}
                     {e.title}
                   </div>
-                  <div className="text-[11px] text-white/85">
+                  <div className="text-[11px] opacity-80">
                     {e.cat}
                     {e.clientPhone ? ` · ${e.clientPhone}` : ""}
                     {e.memo ? ` · ${e.memo}` : ""}
@@ -436,8 +442,8 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                       key={c}
                       type="button"
                       onClick={() => setDraft({ ...draft, cat: c })}
-                      className={`px-2.5 py-1 rounded-full text-xs border ${draft.cat === c ? "border-transparent font-bold text-white" : "border-gray-200 text-gray-600"}`}
-                      style={{ background: draft.cat === c ? listBg(c) : undefined }}
+                      className={`px-2.5 py-1 rounded-full text-xs border ${draft.cat === c ? "border-transparent font-bold" : "border-gray-200 text-gray-600"}`}
+                      style={draft.cat === c ? { background: chipBg(c), color: chipFg(c) } : undefined}
                     >
                       {c}
                     </button>
