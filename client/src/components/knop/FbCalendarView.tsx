@@ -58,6 +58,31 @@ function labelDate(key: string): string {
   return `${m}월 ${d}일 (${w})`;
 }
 
+// 홍익 상담 표시 — 달력 앱의 원형 '홍' 배지(.hongik-badge 13px / .hongik-badge-detail 18px).
+// 빨강 바탕 + 흰 글씨.
+function HongikBadge({ size }: { size: 13 | 18 }) {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: "#e53935",
+        color: "#fff",
+        fontSize: size === 13 ? 8 : 10,
+        fontWeight: 900,
+        lineHeight: 1,
+        flexShrink: 0,
+      }}
+    >
+      홍
+    </span>
+  );
+}
+
 type Draft = Partial<FbCalEvent> & { date: string };
 
 export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void }) {
@@ -342,7 +367,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                           {list.map((e, k) => (
                             <button
                               key={`${e.id}-${k}`}
-                              className="w-full text-left font-semibold whitespace-nowrap overflow-hidden"
+                              className="w-full text-left font-semibold whitespace-nowrap overflow-hidden flex items-center"
                               style={{
                                 background: chipBg(e.cat),
                                 color: chipFg(e.cat),
@@ -350,6 +375,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                                 lineHeight: 1.4,
                                 padding: "1px 3px",
                                 borderRadius: 3,
+                                gap: 2, // 달력 앱 .event-chip 과 동일
                               }}
                               title={`${e.cat} · ${e.title}\n한 번 클릭=수정 · 더블클릭=고객 자료`}
                               onMouseEnter={() => prefetchCust(e)}
@@ -365,9 +391,10 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                                 goCustomer(e);
                               }}
                             >
-                              {e.cat === "작명완료" && e.phoneChange ? "📞 " : ""}
-                              {e.hongik ? "⭕ " : ""}
-                              {e.title}
+                              {e.cat === "작명완료" && e.phoneChange ? <span style={{ fontSize: 8 }}>📞</span> : null}
+                              {e.hongik ? <HongikBadge size={13} /> : null}
+                              {/* 말줄임(…) 없이 자른다 — 앱과 같은 방식이라야 글자가 한 자 더 보인다 */}
+                              <span className="overflow-hidden">{e.title}</span>
                             </button>
                           ))}
                       </div>
@@ -403,10 +430,10 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                 style={{ background: chipBg(e.cat), color: chipFg(e.cat) }}
               >
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold break-all">
-                    {e.cat === "작명완료" && e.phoneChange ? "📞 " : ""}
-                    {e.hongik ? "⭕ " : ""}
-                    {e.title}
+                  <div className="text-sm font-bold break-all flex items-center gap-1.5">
+                    {e.cat === "작명완료" && e.phoneChange ? <span>📞</span> : null}
+                    {e.hongik ? <HongikBadge size={18} /> : null}
+                    <span>{e.title}</span>
                   </div>
                   <div className="text-[11px] opacity-80">
                     {e.cat}
@@ -496,7 +523,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                   </div>
                   <label className="flex items-center gap-2 text-sm">
                     <Checkbox checked={!!draft.hongik} onCheckedChange={(v) => setDraft({ ...draft, hongik: !!v })} />
-                    ⭕ 홍익 상담
+                    <HongikBadge size={18} /> 홍익 상담
                   </label>
                   <div>
                     <label className="text-xs text-gray-500">개명 횟수 (0=개명 아님)</label>
