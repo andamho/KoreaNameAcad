@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, Plus, Trash2, Loader2, UserCheck, Pencil, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trash2, Loader2, UserCheck, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { knopApi, type FbCalEvent } from "@/lib/knopApi";
@@ -53,16 +53,17 @@ function kstTodayStr(): string {
 function dateKey(y: number, m: number, d: number): string {
   return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
+// "8월 12일 (수)" — 날짜 팝업 제목(달력 앱 openDetail 과 같은 형식)
+function labelDate(key: string): string {
+  const [y, m, d] = key.split("-").map(Number);
+  const w = ["일", "월", "화", "수", "목", "금", "토"][new Date(y, m - 1, d).getDay()];
+  return `${m}월 ${d}일 (${w})`;
+}
 // "2026년 8월 12일 (수)" — 검색 결과에 쓴다(달력 앱과 같은 형식)
 function labelFullDate(key: string): string {
   const [y, m, d] = key.split("-").map(Number);
   const w = ["일", "월", "화", "수", "목", "금", "토"][new Date(y, m - 1, d).getDay()];
   return `${y}년 ${m}월 ${d}일 (${w})`;
-}
-function labelDate(key: string): string {
-  const [y, m, d] = key.split("-").map(Number);
-  const w = ["일", "월", "화", "수", "목", "금", "토"][new Date(y, m - 1, d).getDay()];
-  return `${m}월 ${d}일 (${w})`;
 }
 
 // 홍익 상담 표시 — 달력 앱의 원형 '홍' 배지(.hongik-badge 13px / .hongik-badge-detail 18px).
@@ -103,6 +104,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
   const [draft, setDraft] = useState<Draft | null>(null); // 열려 있는 편집/추가 대상
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null); // 한 번 클릭 vs 더블클릭 구분
   const swipe = useRef<{ x: number; y: number } | null>(null); // 좌우로 밀어 달 넘기기
+  const [detailDate, setDetailDate] = useState<string | null>(null); // 날짜를 누르면 뜨는 그날 일정 팝업
   const [searchOpen, setSearchOpen] = useState(false); // 일정 검색창 (달력 앱과 같은 기능)
   const [query, setQuery] = useState("");
 
@@ -270,7 +272,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
     };
   }, [dialogOpen]);
 
-  const selectedList = byDate.get(selected) || [];
+  const detailList = detailDate ? byDate.get(detailDate) || [] : [];
 
   // 검색 결과 — 달력 앱과 같게 제목·메모에서 찾고 최신 날짜순
   const searchHits = useMemo(() => {
@@ -376,8 +378,12 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
               </div>
             ))}
           </div>
-          {/* 구분선 없이 전부 흰 바탕 (칸 사이 간격 0, 회색 배경 없음) */}
-          <div className="grid grid-cols-7 bg-white">
+          {/* 구분선 없이 전부 흰 바탕. 아래 목록을 없앤 대신 달력이 화면 높이를 채운다
+              (달력 앱 .calendar-grid 의 grid-auto-rows: 1fr 과 같은 방식 — 주마다 같은 높이) */}
+          <div
+            className="grid grid-cols-7 bg-white"
+            style={{ gridAutoRows: "1fr", height: `calc(100dvh - ${isMobile ? 230 : 260}px)`, minHeight: 420 }}
+          >
             {cells.map((d, i) => {
               const key = d ? dateKey(year, month, d) : `empty-${i}`;
               const list = d ? byDate.get(key) || [] : [];
@@ -386,14 +392,12 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
               return (
                 <div
                   key={key}
-                  className={`flex flex-col overflow-hidden bg-white ${isMobile ? "min-h-[80px]" : "min-h-[92px]"} ${
-                    d ? "cursor-pointer" : ""
-                  }`}
+                  className={`flex flex-col overflow-hidden bg-white ${d ? "cursor-pointer" : ""}`}
                   onClick={() => {
                     if (!d) return;
+                    // 달력 앱과 같게: 날짜를 누르면 그날 일정 팝업이 뜬다(보기 + 추가)
                     setSelected(key);
-                    // PC 는 빈 칸을 누르면 바로 추가창(예전과 동일). 모바일은 아래 목록에서 추가한다.
-                    if (!isMobile && list.length === 0) setDraft({ date: key, cat: "상담", repeat: "none" });
+                    setDetailDate(key);
                   }}
                 >
                   {d && (
@@ -438,9 +442,12 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                               onMouseEnter={() => prefetchCust(e)}
                               onClick={(ev) => {
                                 ev.stopPropagation();
-                                // 더블클릭이면 아래 onDoubleClick 이 이 타이머를 취소한다
+                                // 한 번 누르면 그날 일정 팝업(앱과 동일), 더블클릭이면 아래에서 이 타이머를 취소한다
                                 if (clickTimer.current) clearTimeout(clickTimer.current);
-                                clickTimer.current = setTimeout(() => setDraft({ ...e, date: key }), 220);
+                                clickTimer.current = setTimeout(() => {
+                                  setSelected(key);
+                                  setDetailDate(key);
+                                }, 220);
                               }}
                               onDoubleClick={(ev) => {
                                 ev.stopPropagation();
@@ -465,72 +472,91 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
       )}
       </div>
 
-      {/* 선택한 날짜의 일정: 모바일에서 제목이 잘리는 문제 해결 + 고객 이동 버튼 */}
-      <Card className="p-3 space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-bold text-gray-900">
-            {labelDate(selected)}
-            <span className="ml-2 text-xs font-normal text-gray-400">{selectedList.length}건</span>
+      {/* 날짜 팝업 — 달력 앱 detail-modal 과 같은 구성: 그날 일정 목록 + "새 일정 추가" */}
+      <Dialog open={!!detailDate} onOpenChange={(o) => !o && setDetailDate(null)}>
+        <DialogContent className="max-w-md max-h-[85vh] flex flex-col" style={{ background: "#f2f2f7" }}>
+          <DialogHeader>
+            <DialogTitle>{detailDate ? labelDate(detailDate) : ""}</DialogTitle>
+          </DialogHeader>
+          <div className="text-[13px] text-gray-400 font-medium -mt-2 mb-1">
+            {detailList.length ? `일정 ${detailList.length}건` : "오늘의 일정"}
           </div>
-          <Button size="sm" variant="outline" onClick={() => setDraft({ date: selected, cat: "상담", repeat: "none" })}>
-            <Plus className="w-4 h-4 mr-1" /> 추가
-          </Button>
-        </div>
 
-        {selectedList.length === 0 ? (
-          <div className="text-sm text-gray-400 py-3 text-center">일정이 없습니다</div>
-        ) : (
-          <div className="space-y-1.5">
-            {selectedList.map((e, k) => (
-              <div
-                key={`${e.id}-${k}`}
-                className="flex items-center gap-2 rounded-xl p-2.5"
-                style={{ background: chipBg(e.cat), color: chipFg(e.cat) }}
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold break-all flex items-center gap-1.5">
-                    {e.cat === "작명완료" && e.phoneChange ? <span>📞</span> : null}
-                    {e.hongik ? <HongikBadge size={18} /> : null}
-                    <span>{e.title}</span>
+          <div className="overflow-y-auto flex flex-col gap-2.5 flex-1">
+            {detailList.length === 0 ? (
+              <div className="text-center text-gray-300 py-6 text-sm">일정 없음</div>
+            ) : (
+              detailList.map((e, k) => (
+                <div
+                  key={`${e.id}-${k}`}
+                  className="flex items-center gap-2 px-3.5 py-4"
+                  style={{ background: chipBg(e.cat), color: chipFg(e.cat), borderRadius: 18 }}
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold text-[15px] flex items-center gap-1.5 flex-wrap">
+                      {e.hongik ? <HongikBadge size={18} /> : null}
+                      <span className="break-all">{e.title}</span>
+                      {e.gaemyeong ? (
+                        <span style={{ fontSize: 10, background: "#fff3e0", color: "#e65100", borderRadius: 4, padding: "1px 5px" }}>
+                          개명 {e.gaemyeong}회
+                        </span>
+                      ) : null}
+                      {e.phoneChange ? (
+                        <span style={{ fontSize: 10, background: "rgba(255,255,255,0.9)", color: "#1565c0", borderRadius: 4, padding: "1px 5px" }}>
+                          📞번호변경
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="text-[11px] opacity-80">
+                      {e.cat}
+                      {e.repeat && e.repeat !== "none" ? " · 반복" : ""}
+                      {e.clientPhone ? ` · ${e.clientPhone}` : ""}
+                      {e.memo ? ` · ${e.memo}` : ""}
+                    </div>
                   </div>
-                  <div className="text-[11px] opacity-80">
-                    {e.cat}
-                    {e.clientPhone ? ` · ${e.clientPhone}` : ""}
-                    {e.memo ? ` · ${e.memo}` : ""}
-                    {e.repeat && e.repeat !== "none" ? " · 반복" : ""}
-                  </div>
+                  <Button
+                    size="sm"
+                    className="shrink-0 bg-white/95 text-gray-900 hover:bg-white"
+                    onMouseEnter={() => prefetchCust(e)}
+                    onClick={() => goCustomer(e)}
+                  >
+                    <UserCheck className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="shrink-0 bg-black/25 text-white hover:bg-black/35"
+                    onClick={() => {
+                      setDetailDate(null);
+                      setDraft({ ...e, date: detailDate! });
+                    }}
+                  >
+                    수정
+                  </Button>
                 </div>
-                <Button
-                  size="sm"
-                  className="shrink-0 bg-white/95 text-gray-900 hover:bg-white"
-                  onMouseEnter={() => prefetchCust(e)}
-                  onClick={() => goCustomer(e)}
-                >
-                  <UserCheck className="w-4 h-4 sm:mr-1" />
-                  <span className="hidden sm:inline">고객</span>
-                </Button>
-                <Button
-                  size="sm"
-                  className="shrink-0 bg-black/25 text-white hover:bg-black/35"
-                  onClick={() => setDraft({ ...e, date: selected })}
-                >
-                  <Pencil className="w-4 h-4 sm:mr-1" />
-                  <span className="hidden sm:inline">수정</span>
-                </Button>
-              </div>
-            ))}
+              ))
+            )}
           </div>
-        )}
 
-        <div className="flex flex-wrap gap-3 pt-1 text-[11px] text-gray-400">
-          {CATS.map((c) => (
-            <span key={c} className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full" style={{ background: CAT_COLOR[c] }} /> {c}
-            </span>
-          ))}
-          {!isMobile && <span className="ml-auto">일정 더블클릭 = 고객 자료로 이동</span>}
-        </div>
-      </Card>
+          <button
+            type="button"
+            className="w-full text-white font-bold"
+            style={{
+              marginTop: 8,
+              padding: 15,
+              borderRadius: 18,
+              fontSize: 16,
+              background: "linear-gradient(135deg, #5b6ef5, #a855f7)",
+            }}
+            onClick={() => {
+              const date = detailDate!;
+              setDetailDate(null);
+              setDraft({ date, cat: "상담", repeat: "none" });
+            }}
+          >
+            + 새 일정 추가
+          </button>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!draft} onOpenChange={(o) => !o && setDraft(null)}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
