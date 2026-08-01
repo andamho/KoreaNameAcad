@@ -4,6 +4,8 @@
 import "dotenv/config"; // DB·R2 환경변수 로드 (db import 전에)
 import { startReportSync, syncReports, syncReportLinks } from "./reportSync";
 import { reportsAvailable, reportsDir } from "./reports";
+import { startNamingSync, syncNamingLinks, namingAvailable } from "./namingSync";
+import { scheduleDaily } from "./dailyCheckpoint";
 
 async function main() {
   console.log("========================================");
@@ -29,11 +31,19 @@ async function main() {
   startReportSync();
   console.log("[이름분석표 워커] 폴더 감시 중 — 새 PDF 가 들어오면 자동으로 사이트에 올립니다.");
 
-  // 상담예정 링크 폴더 동기화: 시작 시 1회 + 1시간마다.
-  // (새 PDF 는 폴더 감시로 즉시 처리되므로 이 주기는 달력 일정 변경 반영용 — DB 컴퓨트 절약 위해 길게)
-  syncReportLinks().catch((e: any) => console.error("[이름분석표 워커] 링크 동기화 오류:", e?.message));
-  setInterval(() => { syncReportLinks().catch(() => {}); }, 60 * 60 * 1000);
+  // 상담예정 링크 폴더 동기화: 시작 시 1회 + 매일 아침 08:40(KST).
+  // 새 PDF 는 폴더 감시로 즉시 처리되므로 이 주기가 하는 일은 '지난 상담자 링크 정리'뿐이다.
+  // 예전에는 1시간마다 돌면서 대부분 "생성 0 · 정리 0" 인데도 Neon 컴퓨트를 깨워
+  // 하루 24회 과금됐다 → 서버 스케줄러들과 같은 아침 점검 하루 1회로 통일.
+  scheduleDaily("이름분석 링크 폴더 동기화", () => syncReportLinks(), 0);
 
+  // 작명장 PDF → 이미지 링크 (PDF 1개 = 링크 1개). 폴더 없으면 조용히 건너뜀.
+  if (namingAvailable()) {
+    await syncNamingLinks().catch((e: any) => console.error("[작명장] 초기 링크 동기화 오류:", e?.message));
+    startNamingSync();
+  } else {
+    console.log("[작명장] PDF 폴더가 없어 건너뜀");
+  }
 }
 
 process.on("SIGINT", () => { console.log("[이름분석표 워커] 종료(SIGINT)"); process.exit(0); });
