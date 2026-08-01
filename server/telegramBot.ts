@@ -81,6 +81,15 @@ const short = (s: string, n = 28) => (s.length > n ? s.slice(0, n) + "…" : s);
 
 const LABEL_TEXT: Record<string, string> = { consultation: "[이름분석 상담후기]", rename: "[개명후기]" };
 
+/** 스톡 이미지를 찾을 때 실제로 쓴 검색어. searchThumbnails가 앞 3개만 붙여 쓰는 것과 동일하게 표시. */
+function searchQueryText(d: ReviewDraft): string {
+  const kw = j.parse<string[]>(d.thumbnailKeywords, []).map(k => (k || "").trim()).filter(Boolean);
+  if (!kw.length) return "";
+  const used = kw.slice(0, 3).join(" ");
+  const rest = kw.slice(3);
+  return `<code>${escapeHtml(used)}</code>${rest.length ? ` <i>(미사용: ${escapeHtml(rest.join(", "))})</i>` : ""}`;
+}
+
 function summaryText(d: ReviewDraft): string {
   return [
     `📋 <b>현재 선택</b>`,
@@ -90,6 +99,7 @@ function summaryText(d: ReviewDraft): string {
     `• 게시 제목: ${d.selectedTitle ? `<b>${escapeHtml(titleWithLabel(d.thumbnailLabel, d.selectedTitle))}</b>` : "미선택"}`,
     `• 썸네일 문구: ${d.selectedThumbnailTitle ? `<b>${escapeHtml(d.selectedThumbnailTitle)}</b>` : "미선택"}`,
     `• 썸네일 이미지: ${d.selectedThumbnailUrl ? "선택됨 ✅" : "미선택"}`,
+    ...(searchQueryText(d) ? [`• 이미지 검색어: ${searchQueryText(d)}`] : []),
   ].join("\n");
 }
 
@@ -136,7 +146,7 @@ async function presentDraft(chatId: string, d: ReviewDraft) {
   }
 
   // 2) 본문
-  const bodyLabel = d.category === "nameStory" ? "📖 <b>이름이야기 본문</b>" : "📝 <b>다듬은 본문</b>";
+  const bodyLabel = d.category === "nameStory" ? "📖 <b>이름이야기 본문</b>" : "📝 <b>후기 본문</b>(원문 그대로, 개인정보만 익명화)";
   await sendMessage(chatId,
     `${bodyLabel}\n\n${escapeHtml(d.polishedContent || "")}\n\n<i>본문을 고치려면 새 내용을 그냥 메시지로 보내주세요.</i>`);
 
@@ -192,7 +202,8 @@ async function sendThumbnailChoices(chatId: string, d: ReviewDraft) {
     return;
   }
   await sendMediaGroupUrls(chatId, thumbs.map(t => t.thumbUrl || t.url));
-  await sendMessage(chatId, "🌄 <b>썸네일 이미지</b> 번호를 고르거나, 마음에 안 들면 다시 찾으세요:",
+  const q = searchQueryText(d);
+  await sendMessage(chatId, `🌄 <b>썸네일 이미지</b> 번호를 고르거나, 마음에 안 들면 다시 찾으세요:${q ? `\n🔎 검색어: ${q}` : ""}`,
     ik([
       thumbs.map((_, i) => ({ text: `${i + 1}`, data: `TH|${d.id}|${i}` })),
       [{ text: "🔄 다른 썸네일 더 찾기", data: `MT|${d.id}` }],
