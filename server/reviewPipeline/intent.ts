@@ -101,7 +101,10 @@ export async function parseIntent(message: string, draft: DraftSummary): Promise
 /** editBody instruction(부분 수정)을 실제 본문에 적용 */
 export async function applyBodyEdit(currentBody: string, instruction: string): Promise<string> {
   const text = await geminiText(
-    `당신은 "한국이름학교" 후기 본문 편집자입니다. 주어진 본문을 사용자 지시대로 수정하되, 개인정보는 계속 익명화 상태를 유지하고 정중한 톤을 지킵니다. 수정된 본문 전체만 출력하세요(설명·따옴표 없이).`,
+    `당신은 "한국이름학교" 후기 본문 편집자입니다. 주어진 본문을 사용자 지시대로 수정하세요.
+- 지시받은 부분만 고치고, 나머지는 한 글자도 바꾸지 않습니다. 지시에 없는 오탈자·구어체·이모지·줄바꿈을 임의로 다듬지 마세요(원문 그대로 유지가 원칙).
+- 개인정보는 계속 익명화 상태를 유지합니다.
+- 수정된 본문 전체만 출력하세요(설명·따옴표 없이).`,
     `[현재 본문]\n${currentBody}\n\n[수정 지시]\n${instruction}`,
     1500,
   );

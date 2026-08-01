@@ -217,7 +217,9 @@ async function pushTextLine(layers: sharp.OverlayOptions[], text: string, color:
  */
 export async function composeThumbnail(imageBuffer: Buffer, title: string, label = ""): Promise<Buffer> {
   const base = await sharp(imageBuffer, { failOn: "none" })
-    .resize(THUMB, THUMB, { fit: "cover", position: "attention" })
+    // 중앙 고정 크롭. "attention"은 밝은 배경·고대비 영역으로 크롭이 끌려가
+    // 피사체가 좌우로 쏠려 보이고 결과도 매번 달라져서 사용하지 않는다.
+    .resize(THUMB, THUMB, { fit: "cover", position: "centre" })
     .composite([{ input: Buffer.from(GRADIENT_SVG), top: 0, left: 0 }])
     .toBuffer();
 
