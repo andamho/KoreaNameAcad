@@ -282,12 +282,32 @@ export const smsStore = {
 // 스케줄러: 1분마다 묻지 않고 "다음 예약 시각"에 맞춰 깨어난다.
 // 예약이 없으면 길게 자므로 DB(Neon)가 잠들 수 있다 → 컴퓨트 절약. 발송 시각 정확도는 그대로.
 let _timer: NodeJS.Timeout | null = null;
-// 인메모리 타이머만 쓰는 구조이므로 안전 확인 상한은 5분(타이머 유실·놓친 예약 회수용)
-const MAX_SLEEP_MS = 5 * 60 * 1000;
 const MIN_SLEEP_MS = 5_000;
+// DB 조회 실패 등 예외 상황에서만 쓰는 짧은 재시도 간격
+const RETRY_SLEEP_MS = 5 * 60 * 1000;
+
+// 안전 확인은 '매일 아침 발송 전 한 번'만 한다.
+// 이 스캔은 실제 발송용이 아니라, 인메모리 타이머가 유실됐을 때 회수하는 보험이다.
+// 예전에는 5분마다 돌아서 Neon 컴퓨트가 하루 종일 깨어 있었다(자동 절전 기준과 같은 5분).
+// 문자는 전부 오전 9~10시에 나가므로, 그 직전에 한 번 확인하면 충분하다.
+const CHECKPOINT_KST_HOUR = 8;
+const CHECKPOINT_KST_MIN = 40;
+
+// 다음 '아침 점검 시각'(08:40 KST)까지 남은 ms
+export function msUntilMorningCheckpoint(now: Date = new Date()): number {
+  const KST = 9 * 3600 * 1000;
+  const k = new Date(now.getTime() + KST); // UTC 필드를 KST 처럼 읽는다
+  let cp = Date.UTC(
+    k.getUTCFullYear(), k.getUTCMonth(), k.getUTCDate(),
+    CHECKPOINT_KST_HOUR, CHECKPOINT_KST_MIN, 0,
+  ) - KST;
+  if (cp <= now.getTime()) cp += 24 * 3600 * 1000; // 오늘 것이 지났으면 내일
+  return cp - now.getTime();
+}
 
 async function nextDueDelay(): Promise<number> {
-  if (!db) return MAX_SLEEP_MS;
+  const checkpoint = msUntilMorningCheckpoint();
+  if (!db) return RETRY_SLEEP_MS;
   try {
     const [row] = await db
       .select({ at: scheduledMessages.scheduledAt })
@@ -295,11 +315,13 @@ async function nextDueDelay(): Promise<number> {
       .where(eq(scheduledMessages.status, "scheduled"))
       .orderBy(scheduledMessages.scheduledAt)
       .limit(1);
-    if (!row?.at) return MAX_SLEEP_MS; // 예약 없음 → 길게 잔다
+    // 예약이 없으면 내일 아침 점검까지 잔다 → 그 사이 Neon 컴퓨트가 잠든다
+    if (!row?.at) return Math.max(MIN_SLEEP_MS, checkpoint);
     const wait = new Date(row.at as any).getTime() - Date.now();
-    return Math.max(MIN_SLEEP_MS, Math.min(MAX_SLEEP_MS, wait));
+    // 다음 예약 시각과 아침 점검 중 이른 쪽에 깨어난다
+    return Math.max(MIN_SLEEP_MS, Math.min(wait, checkpoint));
   } catch {
-    return MAX_SLEEP_MS;
+    return RETRY_SLEEP_MS;
   }
 }
 
