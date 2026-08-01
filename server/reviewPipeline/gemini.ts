@@ -21,6 +21,7 @@ export type GeminiPart =
 type GenConfig = {
   maxOutputTokens?: number;
   responseSchema?: Record<string, any>;
+  temperature?: number;
 };
 
 async function call(systemText: string, parts: GeminiPart[], cfg: GenConfig): Promise<string> {
@@ -28,7 +29,7 @@ async function call(systemText: string, parts: GeminiPart[], cfg: GenConfig): Pr
     system_instruction: { parts: [{ text: systemText }] },
     contents: [{ role: "user", parts }],
     generationConfig: {
-      temperature: 0.4,
+      temperature: cfg.temperature ?? 0.4,
       maxOutputTokens: cfg.maxOutputTokens ?? 2048,
       // 2.5 flash의 thinking이 출력 토큰을 소모해 JSON이 잘리는 것 방지(비활성화)
       thinkingConfig: { thinkingBudget: 0 },
@@ -59,8 +60,8 @@ async function call(systemText: string, parts: GeminiPart[], cfg: GenConfig): Pr
 }
 
 /** 구조화 JSON 응답을 파싱해 반환 */
-export async function geminiJson<T>(systemText: string, parts: GeminiPart[], responseSchema: Record<string, any>, maxOutputTokens = 2048): Promise<T> {
-  let text = await call(systemText, parts, { responseSchema, maxOutputTokens });
+export async function geminiJson<T>(systemText: string, parts: GeminiPart[], responseSchema: Record<string, any>, maxOutputTokens = 2048, temperature?: number): Promise<T> {
+  let text = await call(systemText, parts, { responseSchema, maxOutputTokens, temperature });
   // 방어적 코드펜스 제거
   text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
   try {

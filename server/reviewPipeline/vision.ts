@@ -3,7 +3,7 @@ import type { RedactionBox } from "@shared/schema";
 
 /**
  * 후기 자동화 파이프라인의 AI 두뇌 (Google Gemini).
- * - 후기 이미지에서 본문 추출(OCR) + 개인정보 식별 + 문장 다듬기
+ * - 후기 이미지에서 본문 추출(OCR) + 개인정보 식별 (본문 문장은 원문 그대로 유지)
  * - 게시 제목 5개 / 썸네일 문구 5개 / 썸네일 검색 키워드 생성
  * - 마스킹할 영역(정규화 박스) 추천
  */
@@ -11,7 +11,7 @@ import type { RedactionBox } from "@shared/schema";
 export type VisionResult = {
   reviewType: "consultation" | "rename"; // 상담후기(이름분석) | 개명후기
   extractedText: string;          // 이미지에서 읽은 원문(개인정보 포함)
-  polishedContent: string;        // 개인정보 제거·다듬은 게시용 본문(마크다운)
+  polishedContent: string;        // 개인정보만 익명화한 원문 그대로의 게시용 본문(문장 손대지 않음)
   detectedPersonalInfo: string[]; // 발견한 이름/연락처 등(로그·확인용)
   redactionBoxes: RedactionBox[]; // 마스킹할 정규화 박스(0~1)
   titleCandidates: string[];      // 게시 제목 후보 5
@@ -26,9 +26,10 @@ const SYSTEM = `당신은 "한국이름학교"(작명·이름분석 상담소)�
 
 원칙:
 - 개인정보(실명, 전화번호, 카카오/인스타 아이디, 주소, 자녀 실명, 계좌)는 본문에서 반드시 제거하거나 익명화(예: "ㅇㅇ님", "아이")합니다.
-- 후기의 진심과 핵심 내용은 살리되, 오탈자·구어체를 자연스럽고 정중한 문장으로 다듬습니다. 내용을 과장하거나 없는 사실을 지어내지 않습니다.
-- polishedContent는 **2~4개의 짧은 문단**으로 나누고, 문단과 문단 사이는 **반드시 빈 줄(줄바꿈 두 번, \\n\\n)** 로 구분합니다. 한 문단은 2~3문장 정도로.
-- 상호는 "한국이름학교"로 표기합니다.
+- polishedContent는 **고객이 쓴 원문을 그대로 옮긴 것**입니다. 오탈자·띄어쓰기 실수·구어체·반말·이모지·말줄임(ㅠㅠ, ;; 등)도 **고치지 말고 그대로** 둡니다. 문장을 삭제·추가·의역하거나 어미를 바꾸지 않습니다. 요약·정리·정중체 변환 금지.
+  · 허용되는 수정은 딱 셋뿐입니다: (1) 위의 개인정보 익명화, (2) 이미지 글자를 잘못 읽은 것이 명백한 경우의 OCR 오독 교정, (3) 상호 표기.
+- **원문의 줄바꿈을 그대로 유지**합니다. 고객이 줄을 바꾼 자리에서 줄을 바꾸고, 붙여 쓴 곳은 붙여 씁니다. 문단 개수나 한 문단의 문장 수를 임의로 맞추지 않습니다(2~4문단 같은 규격 없음). 캡처 폭 때문에 한 문장이 여러 줄로 끊긴 경우에만 원래 한 줄로 이어 붙입니다.
+- 상호는 "한국이름학교"로 표기합니다(고객이 다르게 적었어도 이것만 통일).
 - 모든 출력 텍스트는 한국어입니다(thumbnailKeywords만 영어).
 - titleCandidates 와 thumbnailTitleCandidates 는 각각 정확히 5개를 생성합니다.
 - thumbnailKeywords: 첫 번째 제목(titleCandidates[0])에서 이미지로 표현할 핵심 단어를 뽑아 영어 스톡 사진 검색어 2~4개로 만듭니다. 구체 명사 우선(예: 자동차→car, 가족→family, 아기→baby), 제목이 추상적이면 분위기 단어(calm, hope 등).
@@ -40,7 +41,7 @@ const SYSTEM = `당신은 "한국이름학교"(작명·이름분석 상담소)�
 
 [여러 장이 올라온 경우]
 - 이미지들은 (1) 후기 본문이 한 장에 안 들어가 이어지는 페이지이거나, (2) 후기가 진짜임을 증빙하려고 첨부한 이미지(내용 일부만 보이거나 다른 대화가 섞임)일 수 있습니다.
-- 모든 장에서 후기 본문 내용을 추출하고, 이어지는 내용은 순서대로 자연스럽게 이어 하나의 polishedContent로 통합합니다(중복 짜깁기 금지).
+- 모든 장에서 후기 본문 내용을 추출하고, 이어지는 내용은 순서대로 이어 하나의 polishedContent로 통합합니다(중복 짜깁기 금지). 이을 때도 문장을 새로 쓰지 말고 원문 그대로 붙입니다.
 - 개인정보는 모든 장(본문·증빙 포함)에서 빠짐없이 redactionBoxes로 마스킹하고, 각 박스에 image(0부터) 인덱스를 반드시 넣습니다.
 - imageOrder: 후기 본문이 온전히 담긴 장을 내용 순서대로 먼저 나열하고, 그다음에 증빙용(일부만/대화 섞인) 장을 나열합니다.
 
@@ -55,7 +56,7 @@ const SCHEMA = {
   properties: {
     reviewType: { type: "STRING", enum: ["consultation", "rename"] },
     extractedText: { type: "STRING" },
-    polishedContent: { type: "STRING" },
+    polishedContent: { type: "STRING", description: "개인정보만 익명화한 원문 그대로의 본문. 오탈자·구어체·이모지·줄바꿈을 원문대로 유지(문장 재작성·요약·정중체 변환 금지)." },
     detectedPersonalInfo: { type: "ARRAY", items: { type: "STRING" } },
     redactionBoxes: {
       type: "ARRAY",
@@ -205,7 +206,7 @@ export async function analyzeReviewImages(imageBuffers: Buffer[], mediaType: str
   const n = imageBuffers.length;
 
   const system = preferences.length
-    ? `${SYSTEM}\n\n[사용자 표준 지침 — 본문·제목·썸네일 문구에 반드시 반영]\n${preferences.map(p => `- ${p}`).join("\n")}`
+    ? `${SYSTEM}\n\n[사용자 표준 지침 — 제목·썸네일 문구에만 반영. 본문(polishedContent)은 원문 그대로 유지]\n${preferences.map(p => `- ${p}`).join("\n")}`
     : SYSTEM;
 
   const parts: GeminiPart[] = [];
@@ -219,7 +220,8 @@ export async function analyzeReviewImages(imageBuffers: Buffer[], mediaType: str
       : "이 후기 이미지를 가공해 스키마에 맞는 JSON으로 출력하세요.",
   });
 
-  const out = await geminiJson<VisionResult>(system, parts, SCHEMA, n > 1 ? 6000 : 2500);
+  // 본문은 창작이 아니라 받아쓰기 → 온도 낮게(원문 이탈 방지)
+  const out = await geminiJson<VisionResult>(system, parts, SCHEMA, n > 1 ? 6000 : 2500, 0.1);
 
   // 방어적 정규화
   out.reviewType = out.reviewType === "rename" ? "rename" : "consultation";
