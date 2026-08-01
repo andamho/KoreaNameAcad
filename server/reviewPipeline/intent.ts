@@ -11,6 +11,7 @@ export type IntentAction =
   | { type: "setTitle"; index?: number; text?: string }
   | { type: "setThumbnailTitle"; index?: number; text?: string }
   | { type: "setThumbnail"; index: number }
+  | { type: "showChoices"; which: "title" | "thumbnailTitle" | "thumbnail" }
   | { type: "moreTitles" }
   | { type: "moreThumbnailTitles" }
   | { type: "moreThumbnails"; keywords?: string; fromTitle?: boolean }
@@ -45,13 +46,14 @@ const SCHEMA = {
         properties: {
           type: {
             type: "STRING",
-            enum: ["setTitle", "setThumbnailTitle", "setThumbnail", "moreTitles", "moreThumbnailTitles", "moreThumbnails", "setLabel", "editBody", "maskMore", "maskRegion", "remask", "publish", "naverPackage", "preview", "savePreference", "help", "unknown"],
+            enum: ["setTitle", "setThumbnailTitle", "setThumbnail", "showChoices", "moreTitles", "moreThumbnailTitles", "moreThumbnails", "setLabel", "editBody", "maskMore", "maskRegion", "remask", "publish", "naverPackage", "preview", "savePreference", "help", "unknown"],
           },
           index: { type: "INTEGER" },
           text: { type: "STRING" },
           keywords: { type: "STRING", description: "moreThumbnails에서 새 검색어(영어). 예: sea, family, sunset" },
           fromTitle: { type: "BOOLEAN", description: "moreThumbnails에서 현재 제목의 핵심단어로 찾을 때 true" },
           labelType: { type: "STRING", enum: ["consultation", "rename"], description: "setLabel에서 후기 종류" },
+          which: { type: "STRING", enum: ["title", "thumbnailTitle", "thumbnail"], description: "showChoices에서 다시 보여줄 후보 종류" },
           top: { type: "NUMBER", description: "maskRegion 세로 시작 위치(0=맨위,1=맨아래)" },
           bottom: { type: "NUMBER", description: "maskRegion 세로 끝 위치(0~1)" },
           newText: { type: "STRING" },
@@ -75,6 +77,8 @@ export async function parseIntent(message: string, draft: DraftSummary): Promise
 
 규칙:
 - "제목 2번" → {type:setTitle, index:2}. "제목을 ○○로" → {type:setTitle, text:"○○"}.
+- "제목 다시 고를래/제목 후보 다시 보여줘/아까 제목 목록/제목 바꿀래" 처럼 **이미 뽑아둔 후보를 다시 보고 고르겠다**는 뜻이면 → {type:showChoices, which:"title"}. 썸네일 문구면 which:"thumbnailTitle", 썸네일 이미지면 which:"thumbnail".
+  · 구분 기준: "다시 보여줘/다시 고를래/바꿀래"는 showChoices(기존 후보 재표시), "다른 거/새로/마음에 안 들어/다시 추천"은 아래의 more* (새로 생성). 애매하면 showChoices.
 - "제목 다른 거/다시 추천/제목 마음에 안 들어/다른 제목 5개" → {type:moreTitles} (게시 제목 후보 새로 5개 생성).
 - "썸네일 문구 다른 거/문구 다시 추천/문구 마음에 안 들어/다른 문구 5개" → {type:moreThumbnailTitles} (썸네일 문구 후보 새로 5개).
 - "썸네일 문구/카피 N번" → {type:setThumbnailTitle, index:N}. "썸네일 문구를 '○○'로/○○로 바꿔/수정" 처럼 직접 문구를 주면 → {type:setThumbnailTitle, text:"○○"}. "썸네일/이미지 N번" → {type:setThumbnail, index:N}.

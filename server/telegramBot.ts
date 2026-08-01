@@ -113,6 +113,12 @@ function mainActionKeyboard(d: ReviewDraft) {
   if (d.category !== "nameStory") {
     rows.push([{ text: "🏷 상담후기", data: `LB|${d.id}|consultation` }, { text: "🏷 개명후기", data: `LB|${d.id}|rename` }]);
   }
+  // 이미 고른 것도 언제든 다시 바꿀 수 있게(후보 목록 재전송, AI 호출 없음)
+  rows.push([
+    { text: "🔁 제목", data: `RT|${d.id}` },
+    { text: "🔁 문구", data: `RC|${d.id}` },
+    { text: "🔁 이미지", data: `RM|${d.id}` },
+  ]);
   rows.push([{ text: "🖼 미리보기", data: `PV|${d.id}` }]);
   rows.push([{ text: "🏠 홈페이지 게시", data: `PUB|${d.id}` }, { text: "📋 네이버용 받기", data: `NV|${d.id}` }]);
   return ik(rows);
@@ -172,7 +178,7 @@ async function sendTitleChoices(chatId: string, d: ReviewDraft) {
   }
   await sendMessage(chatId, "📌 <b>게시 제목</b>을 고르거나, 마음에 안 들면 다시 추천/직접 입력하세요:",
     ik([
-      ...titles.map((t, i) => [{ text: `${i + 1}) ${t}`, data: `T|${d.id}|${i}` }]),
+      ...titles.map((t, i) => [{ text: `${t === d.selectedTitle ? "✅ " : ""}${i + 1}) ${t}`, data: `T|${d.id}|${i}` }]),
       [{ text: "🔄 다른 제목 5개 추천", data: `MTI|${d.id}` }],
       [{ text: "✏️ 제목 직접 입력하기", data: `INT|${d.id}` }],
     ]));
@@ -187,7 +193,7 @@ async function sendThumbTitleChoices(chatId: string, d: ReviewDraft) {
   }
   await sendMessage(chatId, "🏷️ <b>썸네일 문구</b>를 고르거나, 다시 추천/직접 입력하세요:",
     ik([
-      ...tt.map((t, i) => [{ text: `${i + 1}) ${t}`, data: `TT|${d.id}|${i}` }]),
+      ...tt.map((t, i) => [{ text: `${t === d.selectedThumbnailTitle ? "✅ " : ""}${i + 1}) ${t}`, data: `TT|${d.id}|${i}` }]),
       [{ text: "🔄 다른 문구 5개 추천", data: `MTC|${d.id}` }],
       [{ text: "✏️ 썸네일 문구 직접 입력", data: `INC|${d.id}` }],
     ]));
@@ -205,7 +211,7 @@ async function sendThumbnailChoices(chatId: string, d: ReviewDraft) {
   const q = searchQueryText(d);
   await sendMessage(chatId, `🌄 <b>썸네일 이미지</b> 번호를 고르거나, 마음에 안 들면 다시 찾으세요:${q ? `\n🔎 검색어: ${q}` : ""}`,
     ik([
-      thumbs.map((_, i) => ({ text: `${i + 1}`, data: `TH|${d.id}|${i}` })),
+      thumbs.map((t, i) => ({ text: `${t.url === d.selectedThumbnailUrl ? "✅" : ""}${i + 1}`, data: `TH|${d.id}|${i}` })),
       [{ text: "🔄 다른 썸네일 더 찾기", data: `MT|${d.id}` }],
       [{ text: "🔎 제목으로 다시 찾기", data: `MTT|${d.id}` }],
       [{ text: "✏️ 키워드 직접 입력하기", data: `INK|${d.id}` }],
@@ -244,6 +250,13 @@ async function runActions(chatId: string, draftId: string, actions: IntentAction
         const lab = LABEL_TEXT[a.labelType] || a.labelType;
         d = (await storage.updateReviewDraft(d.id, { thumbnailLabel: lab, composedThumbnailPath: null }))!;
         notes.push(`분류 라벨 → ${lab}`);
+        break;
+      }
+      case "showChoices": {
+        if (a.which === "thumbnailTitle") await sendThumbTitleChoices(chatId, d);
+        else if (a.which === "thumbnail") await sendThumbnailChoices(chatId, d);
+        else await sendTitleChoices(chatId, d);
+        choicesResent = true;
         break;
       }
       case "moreTitles": {
@@ -430,6 +443,7 @@ async function sendHelp(chatId: string) {
     `   • <b>이름이야기</b> 글을 올리려면 <code>/이</code> 뒤에 내용을 붙여 보내세요(마스킹 없이 제목·썸네일 생성 → 이름이야기 카테고리 게시).\n` +
     `2. 제목·썸네일 문구·썸네일 이미지를 <b>버튼</b>으로 고르거나, <b>말로</b> 지시하세요.\n` +
     `   예: "2번 제목으로 하고 썸네일은 3번, 더 가려주고 게시해줘"\n` +
+    `   • 고른 뒤에도 <b>🔁 제목 / 🔁 문구 / 🔁 이미지</b> 버튼으로 언제든 다시 고를 수 있어요("제목 다시 보여줘"라고 말해도 돼요). 현재 고른 항목엔 ✅가 붙습니다.\n` +
     `3. <b>본문 수정</b>은 새 내용/지시를 그냥 메시지로 보내면 됩니다.\n` +
     `4. "게시" → 홈페이지 등록, "네이버" → 블로그 복붙 패키지.\n\n` +
     `📌 <b>취향 기억</b>: "앞으로 항상 이모지 쓰지 마"처럼 말하면 저장돼 다음 후기부터 자동 적용돼요.\n` +
@@ -521,6 +535,15 @@ async function handleUpdate(update: any) {
     if (kind === "INC") { // 썸네일 문구 직접 입력
       pendingInput.set(chatId, { mode: "thumbTitle", draftId });
       await sendMessage(chatId, "✏️ 썸네일에 넣을 <b>문구</b>를 입력해서 보내주세요.");
+      return;
+    }
+    // 이미 고른 뒤에도 다시 바꾸기 — 저장된 후보 목록을 그대로 다시 보여준다(AI 호출 없음)
+    if (kind === "RT" || kind === "RC" || kind === "RM") {
+      const d = await storage.getReviewDraft(draftId);
+      if (!d) { await sendMessage(chatId, "❌ 초안을 찾을 수 없어요."); return; }
+      if (kind === "RT") await sendTitleChoices(chatId, d);
+      else if (kind === "RC") await sendThumbTitleChoices(chatId, d);
+      else await sendThumbnailChoices(chatId, d);
       return;
     }
     const map: Record<string, IntentAction> = {
