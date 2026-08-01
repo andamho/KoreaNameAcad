@@ -1,4 +1,18 @@
-import type { ThumbnailCandidate } from "@shared/schema";
+import type { ThumbnailCandidate, SearchTerm } from "@shared/schema";
+
+/**
+ * 저장된 검색어를 SearchTerm[]로 정규화.
+ * 예전 후기는 thumbnailKeywords가 문자열 배열(["family","hope"])이라 둘 다 받는다.
+ */
+export function parseTerms(raw: unknown): SearchTerm[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((t: any) => ({
+      query: String(typeof t === "string" ? t : t?.query || "").trim(),
+      angle: typeof t === "string" ? undefined : (String(t?.angle || "").trim() || undefined),
+    }))
+    .filter(t => !!t.query);
+}
 
 /**
  * 후기 분위기 키워드로 무료 스톡 이미지 후보 5장을 가져온다.
@@ -95,27 +109,30 @@ async function searchOne(query: string, page: number): Promise<Candidate[]> {
  * 키워드를 한 문자열로 붙이면(AND 검색) 결과가 급격히 좁아지므로,
  * **검색어마다 따로 검색해 관점을 다양화**하고 번갈아 섞어서 5장을 고른다.
  */
-export async function searchThumbnails(keywords: string[], page = 1): Promise<ThumbnailCandidate[]> {
-  const kws = (keywords || []).map(k => (k || "").trim()).filter(Boolean).slice(0, MAX_KEYWORDS);
-  const queries = kws.length ? kws : ["calm", "hope"];
+export async function searchThumbnails(terms: SearchTerm[] | string[], page = 1): Promise<ThumbnailCandidate[]> {
+  const list = parseTerms(terms).slice(0, MAX_KEYWORDS);
+  const queries: SearchTerm[] = list.length ? list : [{ query: "calm", angle: "상징" }, { query: "hope", angle: "상징" }];
 
   const pick = (lists: Candidate[][]): ThumbnailCandidate[] => {
     // 검색어별 순위를 유지한 채 섞고, 1:1로 자르기 나쁜 비율만 뒤로 민다
     const merged = interleave(lists.map(l => [...l].sort((a, b) => squarePenalty(a) - squarePenalty(b))));
     return merged.slice(0, PER_PAGE).map(({ aspect, ...c }) => c);
   };
+  // 어떤 검색어가 찾아온 사진인지 표시(검수 화면에서 보여줌)
+  const tag = (cs: Candidate[], t: SearchTerm) => cs.map(c => ({ ...c, query: t.query, angle: t.angle }));
 
-  const lists = await Promise.all(queries.map(q => searchOne(q, page)));
+  const lists = await Promise.all(queries.map(async t => tag(await searchOne(t.query, page), t)));
   const primary = pick(lists);
   if (primary.length) return primary;
 
   // 해당 페이지가 비면(결과 소진) 1페이지로 순환
   if (page > 1) {
-    const first = pick(await Promise.all(queries.map(q => searchOne(q, 1))));
+    const first = pick(await Promise.all(queries.map(async t => tag(await searchOne(t.query, 1), t))));
     if (first.length) return first;
   }
   // 키워드가 너무 구체적이라 0건이면 일반 키워드로 1회 재시도
-  return pick([await searchOne("warm light calm", 1)]);
+  const fb: SearchTerm = { query: "warm light calm", angle: "대체" };
+  return pick([tag(await searchOne(fb.query, 1), fb)]);
 }
 
 /** URL에서 이미지 바이트를 받아온다(합성·업로드용) */

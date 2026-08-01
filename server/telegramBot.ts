@@ -10,6 +10,7 @@ import {
 } from "./reviewPipeline";
 import { parseIntent, applyBodyEdit, type IntentAction, type DraftSummary } from "./reviewPipeline/intent";
 import { toEnglishKeywords } from "./reviewPipeline/vision";
+import { parseTerms } from "./reviewPipeline/thumbnails";
 import type { ReviewDraft, ThumbnailCandidate } from "@shared/schema";
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN?.trim() || "";
@@ -61,8 +62,10 @@ async function sendDocumentBuffer(chatId: string, buffer: Buffer, filename: stri
   return res.json();
 }
 
-async function sendMediaGroupUrls(chatId: string, urls: string[]) {
-  const media = urls.slice(0, 10).map((url, i) => ({ type: "photo", media: url, caption: `썸네일 ${i + 1}` }));
+async function sendMediaGroupUrls(chatId: string, items: Array<{ url: string; caption?: string }>) {
+  const media = items.slice(0, 10).map((it, i) => ({
+    type: "photo", media: it.url, caption: it.caption || `썸네일 ${i + 1}`,
+  }));
   return tg("sendMediaGroup", { chat_id: chatId, media });
 }
 
@@ -81,13 +84,20 @@ const short = (s: string, n = 28) => (s.length > n ? s.slice(0, n) + "…" : s);
 
 const LABEL_TEXT: Record<string, string> = { consultation: "[이름분석 상담후기]", rename: "[개명후기]" };
 
-/** 스톡 이미지를 찾을 때 실제로 쓴 검색어. searchThumbnails가 앞 3개만 붙여 쓰는 것과 동일하게 표시. */
-function searchQueryText(d: ReviewDraft): string {
-  const kw = j.parse<string[]>(d.thumbnailKeywords, []).map(k => (k || "").trim()).filter(Boolean);
-  if (!kw.length) return "";
-  const used = kw.slice(0, 3).join(" ");
-  const rest = kw.slice(3);
-  return `<code>${escapeHtml(used)}</code>${rest.length ? ` <i>(미사용: ${escapeHtml(rest.join(", "))})</i>` : ""}`;
+/** 스톡 이미지를 찾을 때 쓴 검색어들(관점별). 여러 줄 목록으로 표시. */
+function searchTermsBlock(d: ReviewDraft): string {
+  const terms = parseTerms(j.parse<unknown[]>(d.thumbnailKeywords, []));
+  if (!terms.length) return "";
+  return terms
+    .map(t => `  · ${t.angle ? `<b>${escapeHtml(t.angle)}</b>: ` : ""}<code>${escapeHtml(t.query)}</code>`)
+    .join("\n");
+}
+
+/** 요약용 한 줄 표시: "장면/감정/행동/상징" */
+function searchTermsInline(d: ReviewDraft): string {
+  const terms = parseTerms(j.parse<unknown[]>(d.thumbnailKeywords, []));
+  if (!terms.length) return "";
+  return terms.map(t => escapeHtml(t.query)).join(" · ");
 }
 
 function summaryText(d: ReviewDraft): string {
@@ -99,7 +109,7 @@ function summaryText(d: ReviewDraft): string {
     `• 게시 제목: ${d.selectedTitle ? `<b>${escapeHtml(titleWithLabel(d.thumbnailLabel, d.selectedTitle))}</b>` : "미선택"}`,
     `• 썸네일 문구: ${d.selectedThumbnailTitle ? `<b>${escapeHtml(d.selectedThumbnailTitle)}</b>` : "미선택"}`,
     `• 썸네일 이미지: ${d.selectedThumbnailUrl ? "선택됨 ✅" : "미선택"}`,
-    ...(searchQueryText(d) ? [`• 이미지 검색어: ${searchQueryText(d)}`] : []),
+    ...(searchTermsInline(d) ? [`• 이미지 검색어: ${searchTermsInline(d)}`] : []),
   ].join("\n");
 }
 
@@ -207,9 +217,15 @@ async function sendThumbnailChoices(chatId: string, d: ReviewDraft) {
       ik([[{ text: "🔄 다른 썸네일 찾기", data: `MT|${d.id}` }]]));
     return;
   }
-  await sendMediaGroupUrls(chatId, thumbs.map(t => t.thumbUrl || t.url));
-  const q = searchQueryText(d);
-  await sendMessage(chatId, `🌄 <b>썸네일 이미지</b> 번호를 고르거나, 마음에 안 들면 다시 찾으세요:${q ? `\n🔎 검색어: ${q}` : ""}`,
+  // 각 사진 캡션에 "몇 번 / 어떤 관점의 어떤 검색어로 찾았는지" 표시
+  await sendMediaGroupUrls(chatId, thumbs.map((t, i) => ({
+    url: t.thumbUrl || t.url,
+    caption: `${i + 1}. ${t.angle ? `[${t.angle}] ` : ""}${t.query || ""}`.trim(),
+  })));
+  const block = searchTermsBlock(d);
+  await sendMessage(chatId,
+    `🌄 <b>썸네일 이미지</b> 번호를 고르거나, 마음에 안 들면 다시 찾으세요:` +
+    (block ? `\n\n🔎 <b>이번 검색어 (관점별)</b>\n${block}\n<i>사진 캡션에 어떤 검색어로 찾은 건지 적혀 있어요. 마음에 드는 관점이 있으면 "○○로 더 찾아줘"라고 하세요.</i>` : ""),
     ik([
       thumbs.map((t, i) => ({ text: `${t.url === d.selectedThumbnailUrl ? "✅" : ""}${i + 1}`, data: `TH|${d.id}|${i}` })),
       [{ text: "🔄 다른 썸네일 더 찾기", data: `MT|${d.id}` }],
@@ -633,7 +649,7 @@ async function handleUpdate(update: any) {
       } else {
         await sendMessage(chatId, "🔎 입력한 키워드로 썸네일 찾는 중…");
         const eng = await toEnglishKeywords(text);
-        await runActions(chatId, pending.draftId, [{ type: "moreThumbnails", keywords: eng.join(" ") }]);
+        await runActions(chatId, pending.draftId, [{ type: "moreThumbnails", keywords: eng.map(t => t.query).join(" ") }]);
       }
       return;
     }

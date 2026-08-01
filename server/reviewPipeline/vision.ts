@@ -1,5 +1,20 @@
 import { geminiJson, type GeminiPart } from "./gemini";
-import type { RedactionBox } from "@shared/schema";
+import type { RedactionBox, SearchTerm } from "@shared/schema";
+
+const ANGLES = ["장면", "감정", "행동", "상징"] as const;
+
+/** Gemini가 돌려준 검색어 배열을 정규화(빈 값 제거, 최대 4개, 관점 라벨 보정). */
+function normalizeTerms(raw: any): SearchTerm[] {
+  const arr: SearchTerm[] = (Array.isArray(raw) ? raw : [])
+    .map((t: any, i: number) => ({
+      query: String(typeof t === "string" ? t : t?.query || "").trim(),
+      angle: String(t?.angle || ANGLES[i] || "").trim() || undefined,
+    }))
+    .filter((t: SearchTerm) => !!t.query);
+  // 같은 검색어 중복 제거
+  const seen = new Set<string>();
+  return arr.filter(t => { const k = t.query.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 4);
+}
 
 /**
  * 후기 자동화 파이프라인의 AI 두뇌 (Google Gemini).
@@ -16,7 +31,7 @@ export type VisionResult = {
   redactionBoxes: RedactionBox[]; // 마스킹할 정규화 박스(0~1)
   titleCandidates: string[];      // 게시 제목 후보 5
   thumbnailTitleCandidates: string[]; // 썸네일에 얹을 짧은 문구 후보 5
-  thumbnailKeywords: string[];    // 스톡 이미지 검색 키워드(영문 우선)
+  thumbnailSearchTerms: SearchTerm[]; // 4가지 관점(장면/감정/행동/상징)의 영어 스톡 검색어
   imageOrder?: number[];          // 게시 이미지 순서(내용→증빙)
   crops?: Array<{ image: number; top: number; bottom: number }>; // 이미지별 상/하단 자르기(0~1000)
 };
@@ -30,9 +45,14 @@ const SYSTEM = `당신은 "한국이름학교"(작명·이름분석 상담소)�
   · 허용되는 수정은 딱 셋뿐입니다: (1) 위의 개인정보 익명화, (2) 이미지 글자를 잘못 읽은 것이 명백한 경우의 OCR 오독 교정, (3) 상호 표기.
 - **원문의 줄바꿈을 그대로 유지**합니다. 고객이 줄을 바꾼 자리에서 줄을 바꾸고, 붙여 쓴 곳은 붙여 씁니다. 문단 개수나 한 문단의 문장 수를 임의로 맞추지 않습니다(2~4문단 같은 규격 없음). 캡처 폭 때문에 한 문장이 여러 줄로 끊긴 경우에만 원래 한 줄로 이어 붙입니다.
 - 상호는 "한국이름학교"로 표기합니다(고객이 다르게 적었어도 이것만 통일).
-- 모든 출력 텍스트는 한국어입니다(thumbnailKeywords만 영어).
+- 모든 출력 텍스트는 한국어입니다(thumbnailSearchTerms의 query만 영어).
 - titleCandidates 와 thumbnailTitleCandidates 는 각각 정확히 5개를 생성합니다.
-- thumbnailKeywords: 첫 번째 제목(titleCandidates[0])에서 이미지로 표현할 핵심 단어를 뽑아 영어 스톡 사진 검색어 2~4개로 만듭니다. 구체 명사 우선(예: 자동차→car, 가족→family, 아기→baby), 제목이 추상적이면 분위기 단어(calm, hope 등).
+- thumbnailSearchTerms(스톡 사진 검색어): 첫 번째 제목(titleCandidates[0])이 담고 있는 장면을 상상해, **서로 다른 4가지 관점**의 영어 검색어를 정확히 4개 만듭니다. 같은 뜻을 반복하지 말고 관점을 확실히 다르게 하세요.
+  · angle="장면": 그 장면을 그대로 묘사 (예: mother holding newborn baby)
+  · angle="감정": 인물의 감정·표정 중심 (예: relieved smiling woman)
+  · angle="행동": 구체적인 행동·상황 중심 (예: family walking together park)
+  · angle="상징": 개념을 상징하는 사물·풍경 (예: new beginning sunrise)
+  · query는 영어 2~4단어. 사람이 나오는 장면이면 인물을 명시(woman, family, baby 등). 상호·대괄호 라벨은 넣지 않습니다.
 - redactionBoxes(매우 중요): 이미지에 **눈에 보이는** 개인정보를 하나도 빠짐없이 가릴 박스 목록입니다. 대상 = 실명(고객·자녀·지인 이름), 전화번호, 카카오톡/인스타 아이디·닉네임, 이메일, 주소, 계좌번호, 사람 얼굴.
   · 각 박스는 box_2d = [ymin, xmin, ymax, xmax] 형식이며 각 값은 이미지 대비 0~1000 정규화 정수입니다(왼쪽 위가 0,0).
   · **이름/번호가 적힌 글자 줄 전체를 정확히 감싸도록** 박스를 잡으세요. 글자보다 살짝 크게 잡아 완전히 덮이게 합니다.
@@ -75,7 +95,18 @@ const SCHEMA = {
     },
     titleCandidates: { type: "ARRAY", items: { type: "STRING" } },
     thumbnailTitleCandidates: { type: "ARRAY", items: { type: "STRING" } },
-    thumbnailKeywords: { type: "ARRAY", items: { type: "STRING" } },
+    thumbnailSearchTerms: {
+      type: "ARRAY",
+      description: "서로 다른 4가지 관점의 영어 스톡 검색어(정확히 4개).",
+      items: {
+        type: "OBJECT",
+        properties: {
+          angle: { type: "STRING", enum: ["장면", "감정", "행동", "상징"] },
+          query: { type: "STRING", description: "영어 검색어 2~4단어" },
+        },
+        required: ["angle", "query"],
+      },
+    },
     imageOrder: {
       type: "ARRAY", items: { type: "INTEGER" },
       description: "게시할 이미지 최종 순서(인덱스 0부터). 후기 본문이 온전히 담긴 장을 내용 순서대로 먼저, 증빙용(내용 일부만/대화 섞임) 장을 뒤에.",
@@ -94,7 +125,7 @@ const SCHEMA = {
       },
     },
   },
-  required: ["reviewType", "extractedText", "polishedContent", "detectedPersonalInfo", "redactionBoxes", "titleCandidates", "thumbnailTitleCandidates", "thumbnailKeywords"],
+  required: ["reviewType", "extractedText", "polishedContent", "detectedPersonalInfo", "redactionBoxes", "titleCandidates", "thumbnailTitleCandidates", "thumbnailSearchTerms"],
 };
 
 /** 후기 종류 → 썸네일 라벨 (대괄호 포함) */
@@ -119,54 +150,88 @@ const NAMESTORY_SCHEMA = {
   properties: {
     titleCandidates: { type: "ARRAY", items: { type: "STRING" } },
     thumbnailTitleCandidates: { type: "ARRAY", items: { type: "STRING" } },
-    thumbnailKeywords: { type: "ARRAY", items: { type: "STRING" } },
+    thumbnailSearchTerms: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          angle: { type: "STRING", enum: ["장면", "감정", "행동", "상징"] },
+          query: { type: "STRING", description: "영어 검색어 2~4단어" },
+        },
+        required: ["angle", "query"],
+      },
+    },
   },
-  required: ["titleCandidates", "thumbnailTitleCandidates", "thumbnailKeywords"],
+  required: ["titleCandidates", "thumbnailTitleCandidates", "thumbnailSearchTerms"],
 };
 
 /** 이름이야기(사용자가 쓴 글) → 제목5·썸네일문구5·썸네일 검색어. 글 내용은 바꾸지 않음. */
-export async function analyzeNameStoryText(text: string, preferences: string[] = []): Promise<{ titleCandidates: string[]; thumbnailTitleCandidates: string[]; thumbnailKeywords: string[] }> {
+export async function analyzeNameStoryText(text: string, preferences: string[] = []): Promise<{ titleCandidates: string[]; thumbnailTitleCandidates: string[]; thumbnailSearchTerms: SearchTerm[] }> {
   const prefBlock = preferences.length ? `\n[사용자 표준 지침 — 제목·문구에 반영]\n${preferences.map(p => `- ${p}`).join("\n")}` : "";
   const system = `당신은 "한국이름학교"의 "이름이야기" 콘텐츠 편집자입니다. 아래 글을 바탕으로 게시용 메타데이터만 생성하세요(글 내용 자체는 바꾸지 않음).
 - titleCandidates: 게시글 제목 후보 정확히 5개. 자연스럽고 클릭하고 싶게. 한국어.
 - thumbnailTitleCandidates: 썸네일에 크게 얹을 짧은 문구 정확히 5개(각 6~16자).
-- thumbnailKeywords: 첫 제목(titleCandidates[0])의 핵심 단어를 영어 스톡 사진 검색어 2~4개로. 구체 명사 우선.${prefBlock}`;
-  const out = await geminiJson<{ titleCandidates: string[]; thumbnailTitleCandidates: string[]; thumbnailKeywords: string[] }>(
+- thumbnailSearchTerms: 첫 제목(titleCandidates[0])의 장면을 상상해 서로 다른 4가지 관점의 영어 스톡 검색어 정확히 4개. angle은 장면(그대로 묘사)/감정(표정·감정)/행동(구체적 행동)/상징(상징하는 사물·풍경). query는 영어 2~4단어, 서로 겹치지 않게.${prefBlock}`;
+  const out = await geminiJson<{ titleCandidates: string[]; thumbnailTitleCandidates: string[]; thumbnailSearchTerms: SearchTerm[] }>(
     system, [{ text: text || "" }], NAMESTORY_SCHEMA, 700,
   );
   return {
     titleCandidates: (out.titleCandidates || []).slice(0, 5),
     thumbnailTitleCandidates: (out.thumbnailTitleCandidates || []).slice(0, 5),
-    thumbnailKeywords: (out.thumbnailKeywords || []).slice(0, 6),
+    thumbnailSearchTerms: normalizeTerms(out.thumbnailSearchTerms),
   };
 }
 
 /** 사용자가 띄어쓰기로 입력한 키워드(한글 등)를 영어 스톡 검색어로 변환 */
-export async function toEnglishKeywords(input: string): Promise<string[]> {
+export async function toEnglishKeywords(input: string): Promise<SearchTerm[]> {
   const t = (input || "").trim();
   if (!t) return [];
+  const fallback = (): SearchTerm[] => t.split(/\s+/).slice(0, 4).map(q => ({ query: q, angle: "직접입력" }));
   const system = `사용자가 띄어쓰기로 나열한 이미지 검색 키워드를 영어 스톡 사진 검색어로 변환하세요.
 - 각 단어를 자연스러운 영어로(예: 축소판→miniature, 하늘→sky, 바다→sea, 가족→family). 이미 영어면 그대로.
-- keywords 배열로 출력.`;
+- 입력한 단어 수만큼, 순서대로 keywords 배열로 출력. 임의로 늘리거나 합치지 마세요.`;
   try {
     const out = await geminiJson<{ keywords: string[] }>(system, [{ text: t }], KEYWORDS_SCHEMA, 200);
-    const kw = (out.keywords || []).map((k) => k.trim()).filter(Boolean);
-    return kw.length ? kw.slice(0, 6) : t.split(/\s+/).slice(0, 6);
+    const kw = (out.keywords || []).map((k) => (k || "").trim()).filter(Boolean).slice(0, 4);
+    return kw.length ? kw.map(q => ({ query: q, angle: "직접입력" })) : fallback();
   } catch {
-    return t.split(/\s+/).slice(0, 6);
+    return fallback();
   }
 }
 
-/** 제목에서 이미지로 표현할 핵심 단어 → 영어 스톡 검색어 2~4개 */
-export async function keywordsFromTitle(title: string): Promise<string[]> {
+const TERMS_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    terms: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          angle: { type: "STRING", enum: ["장면", "감정", "행동", "상징"] },
+          query: { type: "STRING", description: "영어 검색어 2~4단어" },
+        },
+        required: ["angle", "query"],
+      },
+    },
+  },
+  required: ["terms"],
+};
+
+/** 문구(제목·썸네일 문구) → 서로 다른 4가지 관점의 영어 스톡 검색어 */
+export async function keywordsFromTitle(title: string): Promise<SearchTerm[]> {
   if (!title || !title.trim()) return [];
-  const system = `제목에서 이미지(스톡 사진)로 표현할 핵심 단어를 뽑아, 영어 스톡 검색어 2~4개를 keywords 배열로 출력하세요.
-- 구체 명사 우선(예: 자동차→car, 가족→family, 아기→baby, 바다→sea).
-- 제목이 추상적이면 분위기 단어(calm, hope, warm 등).
-- [대괄호 라벨]이나 상호명(한국이름학교)은 제외.`;
+  const system = `주어진 한국어 문구가 담고 있는 장면을 상상해, 스톡 사진을 찾을 **서로 다른 4가지 관점**의 영어 검색어를 정확히 4개 만드세요.
+- angle="장면": 그 장면을 그대로 묘사 (예: mother holding newborn baby)
+- angle="감정": 인물의 감정·표정 중심 (예: relieved smiling woman)
+- angle="행동": 구체적인 행동·상황 중심 (예: family walking together park)
+- angle="상징": 개념을 상징하는 사물·풍경 (예: new beginning sunrise)
+규칙:
+- query는 영어 2~4단어. 4개가 서로 확실히 다른 사진을 불러오도록 겹치지 않게.
+- 사람이 나오는 장면이면 인물을 명시(woman, family, baby, man 등).
+- [대괄호 라벨]이나 상호명(한국이름학교)은 검색어에 넣지 않습니다.`;
   try {
-    const out = await geminiJson<{ keywords: string[] }>(system, [{ text: title }], KEYWORDS_SCHEMA, 200);
-    return (out.keywords || []).slice(0, 4);
+    const out = await geminiJson<{ terms: SearchTerm[] }>(system, [{ text: title }], TERMS_SCHEMA, 400);
+    return normalizeTerms(out.terms);
   } catch {
     return [];
   }
@@ -241,7 +306,7 @@ export async function analyzeReviewImages(imageBuffers: Buffer[], mediaType: str
   }).filter((b) => Number.isFinite(b.x) && Number.isFinite(b.y) && b.w > 0 && b.h > 0);
   out.titleCandidates = (out.titleCandidates || []).slice(0, 5);
   out.thumbnailTitleCandidates = (out.thumbnailTitleCandidates || []).slice(0, 5);
-  out.thumbnailKeywords = (out.thumbnailKeywords || []).slice(0, 6);
+  out.thumbnailSearchTerms = normalizeTerms((out as any).thumbnailSearchTerms);
   out.detectedPersonalInfo = out.detectedPersonalInfo || [];
   // imageOrder 정규화: 유효 인덱스만, 누락분은 뒤에 원래 순서로 채움
   const order = (out.imageOrder || []).filter((i) => Number.isInteger(i) && i >= 0 && i < n);

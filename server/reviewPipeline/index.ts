@@ -6,8 +6,8 @@ import { analyzeReviewImages, analyzeNameStoryText, labelForReviewType, generate
 import type { ContentCategory } from "@shared/schema";
 import { detectPIIBoxes, visionAvailable } from "./ocr";
 import { maskImage, composeThumbnail, cropTopBottom } from "./imaging";
-import { searchThumbnails, fetchImageBuffer } from "./thumbnails";
-import type { ReviewDraft, RedactionBox, ThumbnailCandidate, InsertContent } from "@shared/schema";
+import { searchThumbnails, fetchImageBuffer, parseTerms } from "./thumbnails";
+import type { ReviewDraft, RedactionBox, ThumbnailCandidate, InsertContent, SearchTerm } from "@shared/schema";
 
 const objectStorage = new ObjectStorageService();
 
@@ -110,7 +110,7 @@ export async function processNewReview(
   // 5) 스톡 썸네일 검색
   let thumbnails: ThumbnailCandidate[] = [];
   try {
-    thumbnails = await searchThumbnails(vision.thumbnailKeywords);
+    thumbnails = await searchThumbnails(vision.thumbnailSearchTerms);
   } catch (e: any) {
     console.error("[pipeline] 썸네일 검색 실패:", e?.message);
   }
@@ -131,7 +131,7 @@ export async function processNewReview(
     titleCandidates: j.str(vision.titleCandidates),
     thumbnailTitleCandidates: j.str(vision.thumbnailTitleCandidates),
     thumbnailCandidates: j.str(thumbnails),
-    thumbnailKeywords: j.str(vision.thumbnailKeywords),
+    thumbnailKeywords: j.str(vision.thumbnailSearchTerms),
     thumbnailPage: 1,
     selectedTitle: vision.titleCandidates[0] ?? null,
     selectedThumbnailTitle: vision.thumbnailTitleCandidates[0] ?? null,
@@ -149,7 +149,7 @@ export async function processNameStory(text: string, chatId: string): Promise<Re
   const meta = await analyzeNameStoryText(text, prefs);
 
   let thumbnails: ThumbnailCandidate[] = [];
-  try { thumbnails = await searchThumbnails(meta.thumbnailKeywords); }
+  try { thumbnails = await searchThumbnails(meta.thumbnailSearchTerms); }
   catch (e: any) { console.error("[namestory] 썸네일 검색 실패:", e?.message); }
 
   return storage.createReviewDraft({
@@ -168,7 +168,7 @@ export async function processNameStory(text: string, chatId: string): Promise<Re
     titleCandidates: j.str(meta.titleCandidates),
     thumbnailTitleCandidates: j.str(meta.thumbnailTitleCandidates),
     thumbnailCandidates: j.str(thumbnails),
-    thumbnailKeywords: j.str(meta.thumbnailKeywords),
+    thumbnailKeywords: j.str(meta.thumbnailSearchTerms),
     thumbnailPage: 1,
     selectedTitle: meta.titleCandidates[0] ?? null,
     selectedThumbnailTitle: meta.thumbnailTitleCandidates[0] ?? null,
@@ -212,18 +212,19 @@ export async function moreThumbnailTitles(draft: ReviewDraft): Promise<{ draft: 
  * 목록이 바뀌므로 기존 썸네일 선택은 초기화.
  */
 export async function moreThumbnails(draft: ReviewDraft, newKeywords?: string, fromTitle = false): Promise<{ draft: ReviewDraft; candidates: ThumbnailCandidate[] }> {
-  let keywords: string[];
+  const saved = () => parseTerms(j.parse<unknown[]>(draft.thumbnailKeywords, []));
+  let keywords: SearchTerm[];
   let page: number;
   if (fromTitle) {
-    // 현재 선택된 제목에서 핵심 단어 추출
+    // 현재 선택된 제목에서 4가지 관점의 검색어 생성
     const tk = await keywordsFromTitle(draft.selectedTitle || "");
-    keywords = tk.length ? tk : j.parse<string[]>(draft.thumbnailKeywords, []);
+    keywords = tk.length ? tk : saved();
     page = 1;
   } else if (newKeywords && newKeywords.trim()) {
-    keywords = newKeywords.trim().split(/[\s,]+/).filter(Boolean).slice(0, 4);
+    keywords = newKeywords.trim().split(/[\s,]+/).filter(Boolean).slice(0, 4).map(q => ({ query: q, angle: "직접입력" }));
     page = 1;
   } else {
-    keywords = j.parse<string[]>(draft.thumbnailKeywords, []);
+    keywords = saved();
     page = (draft.thumbnailPage || 1) + 1;
   }
   const candidates = await searchThumbnails(keywords, page);
@@ -241,9 +242,9 @@ export async function moreThumbnails(draft: ReviewDraft, newKeywords?: string, f
  * 주어진 문구(썸네일 문구·제목)의 핵심 단어로 썸네일 후보를 새로 검색.
  * 검색 결과가 없으면 기존 후보를 그대로 두고 draft를 건드리지 않는다.
  */
-export async function thumbnailsForText(draft: ReviewDraft, text: string): Promise<{ draft: ReviewDraft; candidates: ThumbnailCandidate[]; keywords: string[] }> {
+export async function thumbnailsForText(draft: ReviewDraft, text: string): Promise<{ draft: ReviewDraft; candidates: ThumbnailCandidate[]; keywords: SearchTerm[] }> {
   const fromText = await keywordsFromTitle(text);
-  const keywords = fromText.length ? fromText : j.parse<string[]>(draft.thumbnailKeywords, []);
+  const keywords = fromText.length ? fromText : parseTerms(j.parse<unknown[]>(draft.thumbnailKeywords, []));
   if (!keywords.length) return { draft, candidates: [], keywords: [] };
   const candidates = await searchThumbnails(keywords, 1);
   if (!candidates.length) return { draft, candidates: [], keywords };

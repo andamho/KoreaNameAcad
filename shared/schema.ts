@@ -248,6 +248,14 @@ export type ThumbnailCandidate = {
   source: string;     // "pexels" | "pixabay"
   photographer?: string;
   sourceUrl?: string; // 출처 페이지
+  query?: string;     // 이 사진을 찾아온 검색어
+  angle?: string;     // 그 검색어의 관점(장면/감정/행동/상징)
+};
+
+/** 스톡 검색어 한 개 = 관점 + 영어 검색어. (thumbnailKeywords 컬럼에 JSON 배열로 저장) */
+export type SearchTerm = {
+  query: string;   // 영어 검색어 (예: "worried woman sitting alone")
+  angle?: string;  // 관점 라벨 (장면 | 감정 | 행동 | 상징)
 };
 
 // ── 후기 자동화: 채팅별 취향/지침 메모리 ──
