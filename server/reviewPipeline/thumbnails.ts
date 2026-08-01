@@ -5,12 +5,19 @@ import type { ThumbnailCandidate } from "@shared/schema";
  * 우선순위: Pexels → Pixabay (키가 있는 쪽 사용). 둘 다 없으면 빈 배열.
  */
 
-const PER_PAGE = 5;
+const PER_PAGE = 5;        // 사용자에게 최종으로 보여줄 장수
+const PER_KEYWORD = 8;     // 검색어 하나당 가져올 후보 수
+const MAX_KEYWORDS = 4;    // 동시에 검색할 관점(검색어) 수
 
-async function searchPexels(query: string, page = 1): Promise<ThumbnailCandidate[]> {
+/** 내부용: 정사각 적합도 판정을 위해 원본 비율을 함께 들고 다닌다 */
+type Candidate = ThumbnailCandidate & { aspect?: number };
+
+async function searchPexels(query: string, page = 1): Promise<Candidate[]> {
   const key = process.env.PEXELS_API_KEY?.trim();
   if (!key) return [];
-  const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${PER_PAGE}&page=${page}&orientation=landscape`;
+  // orientation은 걸지 않는다. 1:1로 자르므로 가로 고정보다 정사각에 가까운 사진이 유리 →
+  // 결과를 받은 뒤 비율로 걸러낸다(아래 squarePenalty).
+  const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${PER_KEYWORD}&page=${page}`;
   const res = await fetch(url, { headers: { Authorization: key } });
   if (!res.ok) throw new Error(`Pexels ${res.status}`);
   const data: any = await res.json();
@@ -20,13 +27,14 @@ async function searchPexels(query: string, page = 1): Promise<ThumbnailCandidate
     source: "pexels",
     photographer: p.photographer,
     sourceUrl: p.url,
-  })).filter((c: ThumbnailCandidate) => !!c.url);
+    aspect: p.width && p.height ? p.width / p.height : undefined,
+  })).filter((c: Candidate) => !!c.url);
 }
 
-async function searchPixabay(query: string, page = 1): Promise<ThumbnailCandidate[]> {
+async function searchPixabay(query: string, page = 1): Promise<Candidate[]> {
   const key = process.env.PIXABAY_API_KEY?.trim();
   if (!key) return [];
-  const url = `https://pixabay.com/api/?key=${key}&q=${encodeURIComponent(query)}&per_page=${PER_PAGE}&page=${page}&image_type=photo&orientation=horizontal&safesearch=true`;
+  const url = `https://pixabay.com/api/?key=${key}&q=${encodeURIComponent(query)}&per_page=${PER_KEYWORD}&page=${page}&image_type=photo&safesearch=true`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Pixabay ${res.status}`);
   const data: any = await res.json();
@@ -36,40 +44,78 @@ async function searchPixabay(query: string, page = 1): Promise<ThumbnailCandidat
     source: "pixabay",
     photographer: h.user,
     sourceUrl: h.pageURL,
-  })).filter((c: ThumbnailCandidate) => !!c.url);
+    aspect: h.imageWidth && h.imageHeight ? h.imageWidth / h.imageHeight : undefined,
+  })).filter((c: Candidate) => !!c.url);
 }
 
-export async function searchThumbnails(keywords: string[], page = 1): Promise<ThumbnailCandidate[]> {
-  const query = (keywords && keywords.length ? keywords.slice(0, 3) : ["calm", "hope"]).join(" ");
-  const providers: Array<(q: string, p?: number) => Promise<ThumbnailCandidate[]>> = [];
+/**
+ * 1:1 썸네일로 자를 때의 손해. 정사각(1.0)에 가까울수록 0에 가깝고,
+ * 파노라마(2.5:1)나 세로로 긴 사진은 좌우/상하가 크게 잘리므로 뒤로 밀린다.
+ */
+function squarePenalty(c: Candidate): number {
+  if (!c.aspect || !isFinite(c.aspect)) return 0.35; // 비율을 모르면 중간 정도로 취급
+  const r = c.aspect >= 1 ? c.aspect : 1 / c.aspect;
+  return Math.min(1, (r - 1) / 2);                    // 1:1→0, 3:1→1
+}
+
+/** 검색어별 결과를 한 장씩 번갈아 뽑아 섞는다(한 검색어가 목록을 독점하지 않게). */
+function interleave(lists: Candidate[][]): Candidate[] {
+  const out: Candidate[] = [];
+  const seen = new Set<string>();
+  const depth = Math.max(0, ...lists.map(l => l.length));
+  for (let i = 0; i < depth; i++) {
+    for (const list of lists) {
+      const c = list[i];
+      if (!c || seen.has(c.url)) continue;
+      seen.add(c.url);
+      out.push(c);
+    }
+  }
+  return out;
+}
+
+/** 검색어 하나로 사용 가능한 제공자에서 결과를 가져온다(먼저 성공한 쪽 사용). */
+async function searchOne(query: string, page: number): Promise<Candidate[]> {
+  const providers: Array<(q: string, p?: number) => Promise<Candidate[]>> = [];
   if (process.env.PEXELS_API_KEY) providers.push(searchPexels);
   if (process.env.PIXABAY_API_KEY) providers.push(searchPixabay);
-
   for (const provider of providers) {
     try {
       const results = await provider(query, page);
-      if (results.length) return results.slice(0, PER_PAGE);
+      if (results.length) return results;
     } catch (e: any) {
-      console.error(`[thumbnails] ${provider.name} 실패: ${e?.message}`);
+      console.error(`[thumbnails] ${provider.name}("${query}") 실패: ${e?.message}`);
     }
-  }
-  // 해당 페이지가 비면(결과 소진) 1페이지로 순환
-  if (page > 1) {
-    for (const provider of providers) {
-      try {
-        const results = await provider(query, 1);
-        if (results.length) return results.slice(0, PER_PAGE);
-      } catch { /* ignore */ }
-    }
-  }
-  // 키워드가 너무 구체적이라 0건이면 일반 키워드로 1회 재시도
-  for (const provider of providers) {
-    try {
-      const results = await provider("warm light calm", 1);
-      if (results.length) return results.slice(0, PER_PAGE);
-    } catch { /* ignore */ }
   }
   return [];
+}
+
+/**
+ * 키워드들로 스톡 이미지 후보를 찾는다.
+ * 키워드를 한 문자열로 붙이면(AND 검색) 결과가 급격히 좁아지므로,
+ * **검색어마다 따로 검색해 관점을 다양화**하고 번갈아 섞어서 5장을 고른다.
+ */
+export async function searchThumbnails(keywords: string[], page = 1): Promise<ThumbnailCandidate[]> {
+  const kws = (keywords || []).map(k => (k || "").trim()).filter(Boolean).slice(0, MAX_KEYWORDS);
+  const queries = kws.length ? kws : ["calm", "hope"];
+
+  const pick = (lists: Candidate[][]): ThumbnailCandidate[] => {
+    // 검색어별 순위를 유지한 채 섞고, 1:1로 자르기 나쁜 비율만 뒤로 민다
+    const merged = interleave(lists.map(l => [...l].sort((a, b) => squarePenalty(a) - squarePenalty(b))));
+    return merged.slice(0, PER_PAGE).map(({ aspect, ...c }) => c);
+  };
+
+  const lists = await Promise.all(queries.map(q => searchOne(q, page)));
+  const primary = pick(lists);
+  if (primary.length) return primary;
+
+  // 해당 페이지가 비면(결과 소진) 1페이지로 순환
+  if (page > 1) {
+    const first = pick(await Promise.all(queries.map(q => searchOne(q, 1))));
+    if (first.length) return first;
+  }
+  // 키워드가 너무 구체적이라 0건이면 일반 키워드로 1회 재시도
+  return pick([await searchOne("warm light calm", 1)]);
 }
 
 /** URL에서 이미지 바이트를 받아온다(합성·업로드용) */
