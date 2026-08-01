@@ -237,6 +237,26 @@ export async function moreThumbnails(draft: ReviewDraft, newKeywords?: string, f
   return { draft: updated, candidates };
 }
 
+/**
+ * 주어진 문구(썸네일 문구·제목)의 핵심 단어로 썸네일 후보를 새로 검색.
+ * 검색 결과가 없으면 기존 후보를 그대로 두고 draft를 건드리지 않는다.
+ */
+export async function thumbnailsForText(draft: ReviewDraft, text: string): Promise<{ draft: ReviewDraft; candidates: ThumbnailCandidate[]; keywords: string[] }> {
+  const fromText = await keywordsFromTitle(text);
+  const keywords = fromText.length ? fromText : j.parse<string[]>(draft.thumbnailKeywords, []);
+  if (!keywords.length) return { draft, candidates: [], keywords: [] };
+  const candidates = await searchThumbnails(keywords, 1);
+  if (!candidates.length) return { draft, candidates: [], keywords };
+  const updated = (await storage.updateReviewDraft(draft.id, {
+    thumbnailCandidates: j.str(candidates),
+    thumbnailKeywords: j.str(keywords),
+    thumbnailPage: 1,
+    selectedThumbnailUrl: null,     // 후보가 바뀌었으므로 이전 선택은 초기화
+    composedThumbnailPath: null,
+  }))!;
+  return { draft: updated, candidates, keywords };
+}
+
 /** 다중 이미지 경로 헬퍼 (신규 배열 우선, 없으면 단일 값) */
 function maskedList(d: ReviewDraft): string[] {
   return j.parse<string[]>(d.maskedImagePaths, d.maskedImagePath ? [d.maskedImagePath] : []);

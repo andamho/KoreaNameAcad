@@ -6,7 +6,7 @@
 import { storage } from "./storage";
 import {
   processNewReview, processNameStory, regenerateMask, composeSelectedThumbnail,
-  publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, moreThumbnailTitles, titleWithLabel, formatParagraphs, addManualMaskBand, draftJson as j,
+  publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, moreThumbnailTitles, thumbnailsForText, titleWithLabel, formatParagraphs, addManualMaskBand, draftJson as j,
 } from "./reviewPipeline";
 import { parseIntent, applyBodyEdit, type IntentAction, type DraftSummary } from "./reviewPipeline/intent";
 import { toEnglishKeywords } from "./reviewPipeline/vision";
@@ -238,7 +238,24 @@ async function runActions(chatId: string, draftId: string, actions: IntentAction
       }
       case "setThumbnailTitle": {
         const t = a.text ?? (a.index ? thumbTitles[a.index - 1] : undefined);
-        if (t) { d = (await storage.updateReviewDraft(d.id, { selectedThumbnailTitle: t, composedThumbnailPath: null }))!; notes.push(`썸네일 문구 → ${short(t)}`); }
+        if (t) {
+          const changed = t !== d.selectedThumbnailTitle;
+          d = (await storage.updateReviewDraft(d.id, { selectedThumbnailTitle: t, composedThumbnailPath: null }))!;
+          notes.push(`썸네일 문구 → ${short(t)}`);
+          // 문구가 바뀌면 그 문구에 맞는 이미지를 자동으로 다시 찾아준다
+          if (changed) {
+            if (notes.length) { await sendMessage(chatId, "✅ " + notes.join("\n✅ ")); notes.length = 0; }
+            await sendMessage(chatId, `🔎 "${escapeHtml(t)}"에 어울리는 이미지 5장을 찾는 중…`);
+            try {
+              const r = await thumbnailsForText(d, t);
+              if (r.candidates.length) { d = r.draft; await sendThumbnailChoices(chatId, d); choicesResent = true; }
+              else await sendMessage(chatId, "😶 이 문구로는 새 이미지를 못 찾아서 기존 후보를 그대로 둘게요.");
+            } catch (e: any) {
+              console.error("[bot] 문구 기반 썸네일 검색 실패:", e?.message);
+              await sendMessage(chatId, "⚠️ 이미지 재검색에 실패해서 기존 후보를 그대로 둘게요.");
+            }
+          }
+        }
         break;
       }
       case "setThumbnail": {
