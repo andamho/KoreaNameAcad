@@ -16,6 +16,7 @@ import { and, eq, inArray, isNotNull, like } from "drizzle-orm";
 import { customers, normalizePhone, scheduledMessages, smsTemplates } from "@shared/schema";
 import { findPhone, parseNameCount, readEvents, calendarAvailable, type CalEvent } from "./calendar";
 import { smsStore } from "./sms";
+import { scheduleDaily } from "./dailyCheckpoint";
 
 const TEMPLATE_NAME = "새 이름 상담 안내";
 export const NEWNAME_SET_PREFIX = "newname:";
@@ -162,11 +163,14 @@ export async function scheduleNewNameNotices(): Promise<{ scheduled: NewNamePlan
   return { scheduled, skipped };
 }
 
-// ── 스케줄러: 달력을 주기적으로 읽어 새 작명완료 일정을 예약한다 ──
-// 달력 변경은 급하지 않고 Neon 을 자주 깨우면 비용이 든다 → 60분 간격(구분 동기화와 동일 정책).
-let _timer: NodeJS.Timeout | null = null;
+// ── 스케줄러: 달력을 읽어 새 작명완료 일정을 예약한다 ──
+// 발송은 작명완료 전날 09:00 이고, 예약만 미리 잡아두면 되므로 자주 볼 이유가 없다.
+// 예전에는 60분 간격(하루 24회)이라 Neon 컴퓨트가 계속 깨어 있었다
+// → 아침 점검(08:40 KST) 하루 한 번으로 통일.
+let _started = false;
 export function startNewNameNoticeScheduler() {
-  if (_timer) return;
+  if (_started) return;
+  _started = true;
   const run = async () => {
     try {
       const r = await scheduleNewNameNotices();
@@ -177,7 +181,5 @@ export function startNewNameNoticeScheduler() {
       console.error(`[KOP] 새이름 상담 안내 예약 실패: ${e?.message}`);
     }
   };
-  console.log("[KOP] 새 이름 상담 안내 스케줄러 시작 (달력 작명완료 전날 09:00 · 60분 간격 점검)");
-  setTimeout(run, 30_000); // 서버 기동 30초 후 1회
-  _timer = setInterval(run, 60 * 60_000);
+  scheduleDaily("새 이름 상담 안내 예약(달력 작명완료 전날 09:00)", run, 30_000);
 }

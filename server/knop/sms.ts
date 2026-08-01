@@ -5,6 +5,7 @@ import { db } from "../db";
 import { DatabaseError } from "../storage";
 import { sendSMS } from "../sms";
 import { knopStore } from "./store";
+import { msUntilMorningCheckpoint } from "./dailyCheckpoint";
 import { and, desc, eq, lte } from "drizzle-orm";
 import {
   smsTemplates,
@@ -286,24 +287,10 @@ const MIN_SLEEP_MS = 5_000;
 // DB 조회 실패 등 예외 상황에서만 쓰는 짧은 재시도 간격
 const RETRY_SLEEP_MS = 5 * 60 * 1000;
 
-// 안전 확인은 '매일 아침 발송 전 한 번'만 한다.
+// 안전 확인은 '매일 아침 발송 전 한 번'만 한다(공용 점검 시각 = 08:40 KST).
 // 이 스캔은 실제 발송용이 아니라, 인메모리 타이머가 유실됐을 때 회수하는 보험이다.
 // 예전에는 5분마다 돌아서 Neon 컴퓨트가 하루 종일 깨어 있었다(자동 절전 기준과 같은 5분).
-// 문자는 전부 오전 9~10시에 나가므로, 그 직전에 한 번 확인하면 충분하다.
-const CHECKPOINT_KST_HOUR = 8;
-const CHECKPOINT_KST_MIN = 40;
-
-// 다음 '아침 점검 시각'(08:40 KST)까지 남은 ms
-export function msUntilMorningCheckpoint(now: Date = new Date()): number {
-  const KST = 9 * 3600 * 1000;
-  const k = new Date(now.getTime() + KST); // UTC 필드를 KST 처럼 읽는다
-  let cp = Date.UTC(
-    k.getUTCFullYear(), k.getUTCMonth(), k.getUTCDate(),
-    CHECKPOINT_KST_HOUR, CHECKPOINT_KST_MIN, 0,
-  ) - KST;
-  if (cp <= now.getTime()) cp += 24 * 3600 * 1000; // 오늘 것이 지났으면 내일
-  return cp - now.getTime();
-}
+export { msUntilMorningCheckpoint } from "./dailyCheckpoint";
 
 async function nextDueDelay(): Promise<number> {
   const checkpoint = msUntilMorningCheckpoint();

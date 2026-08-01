@@ -9,6 +9,7 @@ import { statusRank, stageOf, statusToMilestone } from "./stateMachine";
 import { readEvents, parseNameCount, eventStartAt } from "./calendar";
 import { listReports, baseName, reportDateForName } from "./reports";
 import { sql } from "drizzle-orm";
+import { scheduleDaily } from "./dailyCheckpoint";
 
 export type ResolveResult = {
   match: "code" | "exact" | "alias" | "name" | "ambiguous" | "merge_candidate" | "none";
@@ -1726,7 +1727,7 @@ export const knopStore = {
 // 개명/상담 구분 자동판정 스케줄러.
 // 이전에는 관리자가 sync-kinds 를 직접 호출할 때만 돌아서(화면 버튼도 없었음)
 // 달력에 작명완료가 있어도 개명 카테고리로 안 들어가는 문제가 있었다 → 주기 실행으로 해결.
-let _kindTimer: NodeJS.Timeout | null = null;
+let _kindTimer: boolean = false;
 export function startKindSyncScheduler() {
   if (_kindTimer) return;
   const run = async () => {
@@ -1740,8 +1741,8 @@ export function startKindSyncScheduler() {
       console.error(`[KNOP] 구분/케이스 자동판정 실패: ${e?.message}`);
     }
   };
-  // 달력 기반 자동판정은 급하지 않다 — DB(Neon)를 자주 깨우지 않도록 1시간 간격
-  console.log("[KNOP] 개명/상담 구분·케이스 자동판정 스케줄러 시작 (60분 간격)");
-  setTimeout(run, 20_000); // 서버 기동 20초 후 1회
-  _kindTimer = setInterval(run, 60 * 60_000);
+  // 달력 기반 자동판정은 급하지 않다. 예전에는 60분 간격(하루 24회)이라
+  // Neon 컴퓨트가 계속 깨어 있었다 → 아침 점검(08:40 KST) 하루 한 번으로 통일.
+  _kindTimer = true; // 중복 기동 방지
+  scheduleDaily("개명/상담 구분·케이스 자동판정", run);
 }
