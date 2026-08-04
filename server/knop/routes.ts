@@ -10,6 +10,8 @@ import * as gm from "./gaemyeong";
 import { isSetKey } from "./gaemyeong";
 import { runOcr, kickOcr, extractReportNames } from "./ocr";
 import { findWishCandidates } from "./wish";
+import { db } from "../db";
+import { sql } from "drizzle-orm";
 // (보류) import { processBackfill, backfillEnabled } from "./smsBackfill";
 import { smsStore, startSmsScheduler } from "./sms";
 import {
@@ -236,7 +238,20 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       // KOP_ 우선, 기존 KNOP_ 도 인식(환경변수 이름 바꿔도 안 끊기게)
       const secret = (process.env.KOP_SMS_WEBHOOK_SECRET || process.env.KNOP_SMS_WEBHOOK_SECRET) || "";
       const given = String(req.headers["x-knop-secret"] || req.query.secret || "");
-      if (!secret || given !== secret) return res.status(401).json({ error: "unauthorized" });
+      // 진단 기록: 요청이 서버까지 오는지 / 왜 거부되는지 남긴다(비밀값 자체는 저장하지 않는다).
+      // 2026-07-25 이후 문자가 한 건도 안 들어왔는데 매크로는 정상 실행돼 원인을 못 좁혔다.
+      const logAttempt = (ok: boolean, reason: string) => {
+        const ip = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim();
+        db?.execute?.(
+          sql`INSERT INTO sms_webhook_log (ok, reason, ip, secret_configured, given_len, match)
+              VALUES (${ok}, ${reason}, ${ip}, ${!!secret}, ${given.length}, ${!!secret && given === secret})`,
+        ).catch(() => {});
+      };
+      if (!secret || given !== secret) {
+        logAttempt(false, !secret ? "서버에 비밀값 미설정" : given ? "비밀값 불일치" : "비밀값 안 보냄");
+        return res.status(401).json({ error: "unauthorized" });
+      }
+      logAttempt(true, "통과");
       // MacroDroid 등: JSON 본문 또는 쿼리 파라미터 어느 쪽으로 와도, 키 대소문자 무관하게 받음
       const lower = (o: Record<string, any>) => {
         const m: Record<string, any> = {};
