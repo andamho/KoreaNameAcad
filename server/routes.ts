@@ -173,6 +173,8 @@ function handleDbError(error: any, res: Response, route: string): Response {
   return res.status(500).json({ error: "Internal server error" });
 }
 
+const SITE_URL = (process.env.PUBLIC_BASE_URL?.trim() || "https://korea-name-acad.com").replace(/\/+$/, "");
+
 const TRUSTED_DEVICE_COOKIE = "kna_td";
 const TRUSTED_DEVICE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -688,15 +690,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const comment = await storage.replyToExperienceComment(req.params.id, reply.trim());
       // 답변 알림 발송 (연락처 등록한 경우)
       if (comment.notifyContact) {
+        // 답글만 보내면 돌아올 길이 없어 대화가 끊긴다 → 그 댓글로 바로 가는 링크를 붙인다.
+        // #comment-<id> 앵커는 페이지에서 해당 댓글로 스크롤 + 잠깐 강조된다.
+        const commentUrl = `${SITE_URL}/experience-zone/${comment.pageId}#comment-${comment.id}`;
         if (comment.notifyContactType === "sms") {
-          const smsText = `[한국이름학교] 체험존 댓글에 이름의신이 답글을 달았습니다.\n\n${reply.trim()}`;
+          const smsText = `[한국이름학교] 남기신 글에 이름의신이 답글을 달았습니다.\n\n${reply.trim()}\n\n▶ 확인하기\n${commentUrl}`;
           sendSMS(comment.notifyContact, smsText).catch(err => console.error("[SMS] 체험존 답글 알림 실패:", err));
         } else {
           sendInquiryReplyToUser({
             contact: comment.notifyContact,
             contactType: "email",
             name: comment.nickname,
-            adminReply: reply.trim(),
+            // 이메일 본문에도 그 댓글로 가는 링크를 같이 넣는다(문자와 동일)
+            adminReply: `${reply.trim()}\n\n▶ 확인하기\n${commentUrl}`,
           } as any).catch(err => console.error("[이메일] 체험존 답글 알림 실패:", err));
         }
       }

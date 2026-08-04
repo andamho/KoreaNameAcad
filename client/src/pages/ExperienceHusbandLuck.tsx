@@ -124,7 +124,7 @@ export default function ExperienceHusbandLuck() {
   const [nickname, setNickname] = useState('');
   const [commentText, setCommentText] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
-  const [wantsNotify, setWantsNotify] = useState(false);
+  const [wantsNotify, setWantsNotify] = useState(true); // 기본 켜짐 — 답글을 달아도 알릴 길이 없던 건이 25건 중 17건이었다(끄고 싶으면 끌 수 있다)
   const [notifyContact, setNotifyContact] = useState('');
   const [notifyContactType, setNotifyContactType] = useState<'sms' | 'email'>('sms');
   const [submitting, setSubmitting] = useState(false);
@@ -583,8 +583,12 @@ export default function ExperienceHusbandLuck() {
               <div className="space-y-1.5">
                 <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
                   <input type="checkbox" checked={wantsNotify} onChange={e => setWantsNotify(e.target.checked)} className="rounded accent-[#18a999]" />
-                  답변 알림 받기
+                  답변이 달리면 알려드릴게요
                 </label>
+                {/* 비공개 글이 74% 라 '어디에 쓰이는지' 를 밝혀야 연락처를 남긴다 */}
+                <p className="text-[11px] text-muted-foreground/70 pl-6 leading-relaxed">
+                  연락처는 답변 알림에만 쓰고, 다른 곳에 쓰지 않습니다.
+                </p>
                 {wantsNotify && (
                   <div className="flex items-center gap-2 pl-5">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground flex-shrink-0">
