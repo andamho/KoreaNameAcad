@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2, Image as ImageIcon, Video, Eye, Send, CheckCircle2, XCircle, Clock, CalendarDays } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
+import { seqLabel, seqBadgeClass } from "./lib";
 import {
   knopApi,
   type NoticeConfig,
@@ -109,12 +110,8 @@ function ActivePanel({ onOpenCustomer }: { onOpenCustomer?: (id: string) => void
                 <span className="text-sm font-medium text-gray-900 truncate group-hover:text-[#2ba0a6]">
                   {s.customerName}
                 </span>
-                <span
-                  className={`shrink-0 text-[11px] px-1.5 py-0.5 rounded-full ${
-                    s.setKey === "gaemyeong_request" ? "bg-emerald-100 text-emerald-700" : "bg-violet-100 text-violet-700"
-                  }`}
-                >
-                  {s.setKey === "gaemyeong_request" ? "미용감사" : "정화하기"}
+                <span className={`shrink-0 text-[11px] px-1.5 py-0.5 rounded-full ${seqBadgeClass(s)}`}>
+                  {seqLabel(s)}
                 </span>
               </button>
 
@@ -141,7 +138,7 @@ function ActivePanel({ onOpenCustomer }: { onOpenCustomer?: (id: string) => void
                 size="sm"
                 className="shrink-0 text-gray-400 hover:text-red-500"
                 onClick={() => {
-                  if (window.confirm(`${s.customerName} 님의 ${s.setKey === "gaemyeong_request" ? "미용감사" : "정화하기"} 남은 문자를 모두 취소할까요?`)) {
+                  if (window.confirm(`${s.customerName} 님의 ${seqLabel(s)} 남은 문자를 모두 취소할까요?`)) {
                     cancelMut.mutate({ customerId: s.customerId, setKey: s.setKey });
                   }
                 }}

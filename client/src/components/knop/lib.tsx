@@ -113,3 +113,22 @@ export function timelineMeta(type: string): { label: string; dot: string } {
       return { label: type, dot: "bg-gray-300" };
   }
 }
+
+// 진행중 문자 세트의 짧은 이름(배지·확인창용).
+// 예전에는 화면마다 "gaemyeong_request 면 미용감사, 아니면 정화하기" 로 단정해서
+// 새로 생긴 새이름 안내가 '정화하기' 로 잘못 표시됐다(2026-08-02). 한 곳에서만 정한다.
+export function seqLabel(seq: { setKey?: string | null; setLabel?: string | null } | null | undefined): string {
+  const k = seq?.setKey || "";
+  if (k === "gaemyeong_request") return "미용감사";
+  if (k === "gaemyeong_approved") return "정화하기";
+  if (k.startsWith("newname:")) return "새이름 안내";
+  return seq?.setLabel || k || "문자";
+}
+
+// 배지 색: 세트별로 구분(미용감사 초록 · 정화하기 보라 · 새이름 하늘)
+export function seqBadgeClass(seq: { setKey?: string | null } | null | undefined): string {
+  const k = seq?.setKey || "";
+  if (k === "gaemyeong_request") return "bg-emerald-100 text-emerald-700";
+  if (k.startsWith("newname:")) return "bg-sky-100 text-sky-700";
+  return "bg-violet-100 text-violet-700";
+}

@@ -35,7 +35,7 @@ import { SmsView } from "./SmsView";
 import { SmsInboxView } from "./SmsInboxView";
 import { FbCalendarView } from "./FbCalendarView";
 import { NewCustomerDialog } from "./dialogs";
-import { StatusBadge, fmtDate, fmtTime } from "./lib";
+import { StatusBadge, fmtDate, fmtTime, seqLabel } from "./lib";
 
 type View = "today" | "customers" | "inbox" | "sms-inbox" | "sms" | "notice" | "calendar" | "reports" | "corrections";
 
@@ -267,7 +267,9 @@ function ProgressChips({ milestone, seq }: { milestone: number; seq?: { setKey: 
       </span>
       {seq && (
         <span className="shrink-0 text-[11px] px-1.5 py-0.5 rounded-full bg-sky-100 text-sky-700 font-medium">
-          {seq.setKey === "gaemyeong_request" ? "미용감사" : "정화하기"} {seq.sent}/{seq.total}
+          {/* 라벨은 서버가 준 setLabel 을 쓴다. 예전엔 "미용감사 아니면 정화하기"로 단정해서
+              새 이름 상담 안내가 '정화하기'로 잘못 표시됐다. */}
+          {seqLabel(seq)} {seq.sent}/{seq.total}
         </span>
       )}
     </>
