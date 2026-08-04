@@ -12,6 +12,7 @@ import { runOcr, kickOcr, extractReportNames } from "./ocr";
 import { findWishCandidates } from "./wish";
 import { db } from "../db";
 import { sql } from "drizzle-orm";
+import { startSmsHealthCheck } from "./smsHealth";
 // (보류) import { processBackfill, backfillEnabled } from "./smsBackfill";
 import { smsStore, startSmsScheduler } from "./sms";
 import {
@@ -100,6 +101,7 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
   startSmsScheduler();
   startKindSyncScheduler(); // 개명/상담 구분 자동판정 (달력 작명완료·개명 트랙 단계 반영)
   startNewNameNoticeScheduler(); // 새 이름 상담 안내: 달력 작명완료 전날 09:00 예약(고객 단계와 무관)
+  startSmsHealthCheck(); // 문자 수집이 끊겼는지 아침 점검(2026-07-25 끊긴 걸 10일 뒤에 발견한 뒤 추가)
   startReportSync(); // 이름분석 폴더 자동 동기화 (로컬만; 배포는 no-op)
 
   // 교정사전: 기존 로컬 JSON 규칙을 DB로 1회 이관 후, DB→로컬 JSON 재생성(어디서 고쳐도 반영)

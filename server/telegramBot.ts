@@ -696,6 +696,15 @@ export async function sendAdminOtp(code: string): Promise<void> {
   });
 }
 
+// 운영 알림(장애 감지 등)을 원장님 텔레그램으로. 설정이 없으면 조용히 넘어간다.
+export async function notifyAdmin(text: string): Promise<void> {
+  const chatId = ALLOWED[0];
+  if (!chatId || !TOKEN) { console.error("[알림] 텔레그램 미설정:", text); return; }
+  await tg("sendMessage", { chat_id: chatId, text, parse_mode: "HTML" }).catch((e: any) =>
+    console.error("[알림] 텔레그램 발송 실패:", e?.message),
+  );
+}
+
 export function startTelegramBot() {
   if (!TOKEN) { console.log("[bot] TELEGRAM_BOT_TOKEN 미설정 → 봇 비활성화"); return; }
   if (_running) return;
