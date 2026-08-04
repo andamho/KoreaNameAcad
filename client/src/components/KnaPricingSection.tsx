@@ -182,7 +182,8 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
               데스크탑에서 영상만 왼쪽에 붙어 오른쪽 872px 가 비어 있었다 →
               그 자리에 문구·소개·버튼을 나란히 둔다. 모바일에서는 위아래로 쌓인다. */}
           <div className="mt-12 flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10">
-          <div className="w-full sm:w-[320px] shrink-0">
+          {/* 폭 420px = 바로 위 금액 표(lg:w-[420px])와 왼쪽·오른쪽 끝을 맞춘다 */}
+          <div className="w-full sm:w-[420px] shrink-0">
             <video
               ref={costVideoRef}
               className="w-full rounded-2xl bg-black shadow-lg"
