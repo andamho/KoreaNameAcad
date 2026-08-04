@@ -77,12 +77,10 @@ export function Hero() {
           src="/main-mountain.webp"
           alt=""
           aria-hidden="true"
-          className={`absolute select-none pointer-events-none ${imageLoaded ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
-          style={
-            isDesktop
-              ? { left: "17.34%", top: "19.91%", width: "12.86vw" }
-              : { left: "32.03%", top: "14.21%", width: "35.94vw" }
-          }
+          className={`absolute select-none pointer-events-none
+            left-[32.03%] top-[14.21%] w-[35.94vw]
+            md:left-[17.34%] md:top-[19.91%] md:w-[12.86vw]
+            ${imageLoaded ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
           loading="eager"
           decoding="async"
         />
