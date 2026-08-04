@@ -2,7 +2,7 @@
 // 각 세트: 안내 + 1/2/3주 점검 = 4건을 예약 발송. 발송 시각은 예약일 오전 9~10시 랜덤(KST).
 // 안내 문자에는 짧은 링크(이미지/영상) + 저장방법 안내를 자동 첨부.
 import crypto from "crypto";
-import { and, asc, eq, sql, isNotNull } from "drizzle-orm";
+import { and, asc, eq, sql, inArray, isNotNull } from "drizzle-orm";
 import { db } from "../db";
 import { sendSMS } from "../sms";
 import {
@@ -502,7 +502,9 @@ export async function listActiveSequences(): Promise<ActiveSequence[]> {
     })
     .from(scheduledMessages)
     .innerJoin(customers, eq(scheduledMessages.customerId, customers.id))
-    .where(isNotNull(scheduledMessages.setKey))
+    // 진행중 현황은 '관리 시퀀스'만 보여준다 — 미용감사·정화하기.
+    // 새이름 안내(newname:날짜)는 단발 예약이라 여기 섞이면 오해를 준다(원장님 요청).
+    .where(inArray(scheduledMessages.setKey, ["gaemyeong_request", "gaemyeong_approved"]))
     .groupBy(scheduledMessages.customerId, customers.name, scheduledMessages.setKey)
     .having(sql`count(*) FILTER (WHERE ${scheduledMessages.status} = 'scheduled') > 0`)
     .orderBy(sql`min(${scheduledMessages.scheduledAt}) FILTER (WHERE ${scheduledMessages.status} = 'scheduled') ASC`);
