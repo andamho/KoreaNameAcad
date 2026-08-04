@@ -178,8 +178,11 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
             </div>
           </div>
 
-          {/* 원장 영상: 화면에 들어오면 자동재생·반복(브라우저 정책상 음소거 시작, 소리는 컨트롤로) */}
-          <div className="mt-12 w-full sm:w-[320px]">
+          {/* 원장 영상 + 오른쪽 안내.
+              데스크탑에서 영상만 왼쪽에 붙어 오른쪽 872px 가 비어 있었다 →
+              그 자리에 문구·소개·버튼을 나란히 둔다. 모바일에서는 위아래로 쌓인다. */}
+          <div className="mt-12 flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10">
+          <div className="w-full sm:w-[320px] shrink-0">
             <video
               ref={costVideoRef}
               className="w-full rounded-2xl bg-black shadow-lg"
@@ -199,21 +202,26 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
                 </a>
               </p>
             </video>
-            <p className="mt-2 text-xs text-muted-foreground text-center leading-relaxed">
-              <span className="font-bold text-foreground">Founder &amp; CEO</span>
-              <br />
-              한국이름학교 | 와츠유어네임 이름연구협회
-            </p>
           </div>
 
-          {/* 버튼 영역 */}
-          <div className="flex items-center gap-4 mt-10">
-            <Link to="/services" onClick={() => saveScrollPosition("/")} className="inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-white px-4 py-1.5 text-sm font-medium text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
-              지금 신청 <span className="ml-1">›</span>
-            </Link>
-            <Link to="/inquiry" className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition">
-              실시간 상담 <span className="ml-0.5">›</span>
-            </Link>
+            {/* 오른쪽: 안내 문구 + 소개 + 신청 버튼 (예전엔 영상 아래·한참 떨어진 곳에 있었다) */}
+            <div className="w-full sm:flex-1 text-center sm:text-left">
+              <h3 className="text-lg sm:text-xl font-bold text-foreground">개명 금액이 궁금하신가요?</h3>
+              <p className="mt-2 text-sm text-muted-foreground">대표님이 직접 설명드립니다. (1분)</p>
+              <p className="mt-5 text-xs text-muted-foreground leading-relaxed">
+                <span className="font-bold text-foreground">Founder &amp; CEO</span>
+                <br />
+                한국이름학교 | 와츠유어네임 이름연구협회
+              </p>
+              <div className="flex items-center justify-center sm:justify-start gap-4 mt-7">
+                <Link to="/services" onClick={() => saveScrollPosition("/")} className="inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-white px-4 py-1.5 text-sm font-medium text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
+                  지금 신청 <span className="ml-1">›</span>
+                </Link>
+                <Link to="/inquiry" className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition">
+                  실시간 상담 <span className="ml-0.5">›</span>
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
