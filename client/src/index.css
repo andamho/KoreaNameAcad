@@ -132,7 +132,7 @@
 .hamburger-line {
   display: block;
   width: 26px;
-  height: 2.8px;
+  height: 3px;
   /* 좌측 로고(new-logo.png)의 대표색과 일치 — 밝고 선명한 부분 평균 #20AFC3 */
   background-color: #20AFC3;
   border-radius: 2px;
@@ -140,9 +140,16 @@
   transform-origin: center;
 }
 
+/* 위·아래는 굵게, 가운데는 얇게 — 모든 화면에서 동일하게 보이도록 명시한다.
+   예전에는 세 줄 두께가 같았는데 데스크탑(DPR 1)에서만 소수점 반올림으로
+   그렇게 보였고 모바일(DPR 2)에서는 밋밋했다. */
+.hamburger-line.line-2 {
+  height: 2px;
+}
+
 @media (max-width: 767px) {
   .hamburger-line {
-    height: 2.56px;
+    height: 3px;
     /* 모바일도 로고색으로 통일(예전 #18a999 는 초록빛이라 로고와 달랐다) */
     background-color: #20AFC3;
   }
@@ -151,7 +158,7 @@
 @media (min-width: 768px) {
   .hamburger-line {
     width: 22px;
-    height: 2.8px;
+    height: 3px;
   }
   
   /* 데스크탑용 애니메이션 - gap 5px에 맞춤 */
