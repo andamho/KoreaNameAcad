@@ -148,10 +148,11 @@
 }
 
 @media (max-width: 767px) {
-  .hamburger-line {
-    height: 3px;
-    /* 모바일도 로고색으로 통일(예전 #18a999 는 초록빛이라 로고와 달랐다) */
-    background-color: #20AFC3;
+  /* 모바일: 세 줄 모두 가운데 줄 굵기(2px)로 통일하고 색은 검정 */
+  .hamburger-line,
+  .hamburger-line.line-2 {
+    height: 2px;
+    background-color: #000000;
   }
 }
 
