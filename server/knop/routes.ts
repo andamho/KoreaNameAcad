@@ -251,7 +251,6 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
         logAttempt(false, !secret ? "서버에 비밀값 미설정" : given ? "비밀값 불일치" : "비밀값 안 보냄");
         return res.status(401).json({ error: "unauthorized" });
       }
-      logAttempt(true, "통과");
       // MacroDroid 등: JSON 본문 또는 쿼리 파라미터 어느 쪽으로 와도, 키 대소문자 무관하게 받음
       const lower = (o: Record<string, any>) => {
         const m: Record<string, any> = {};
@@ -264,14 +263,33 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
         const kk = k.toLowerCase();
         return b[kk] !== undefined && b[kk] !== "" ? b[kk] : q[kk];
       };
-      const parsed = insertIncomingSmsSchema.parse({
-        contactName: pick("contactName") ?? null,
-        phone: pick("phone"),
-        body: pick("body"),
-        direction: pick("direction"),
-        receivedAt: pick("receivedAt"),
-      });
-      const row = await intakeStore.add(parsed);
+      // 인증은 통과하는데 저장이 안 되는 상황이 있어(2026-08-04) 어느 단계에서 막히는지 남긴다.
+      // 개인정보는 안 남긴다 — 어떤 항목이 왔는지와 값의 길이만.
+      const shape = () =>
+        ["contactName", "phone", "body", "direction", "receivedAt"]
+          .map((k) => { const v = pick(k); return `${k}=${v === undefined ? "없음" : v === null ? "null" : String(v).length + "자"}`; })
+          .join(" ") + ` | 받은키: ${[...Object.keys(b), ...Object.keys(q)].join(",") || "(없음)"}`;
+      let parsed;
+      try {
+        parsed = insertIncomingSmsSchema.parse({
+          contactName: pick("contactName") ?? null,
+          phone: pick("phone"),
+          body: pick("body"),
+          direction: pick("direction"),
+          receivedAt: pick("receivedAt"),
+        });
+      } catch (e: any) {
+        logAttempt(false, `본문 검증 실패: ${String(e?.message).slice(0, 150)} | ${shape()}`);
+        throw e;
+      }
+      let row;
+      try {
+        row = await intakeStore.add(parsed);
+      } catch (e: any) {
+        logAttempt(false, `저장 실패: ${String(e?.message).slice(0, 150)} | ${shape()}`);
+        throw e;
+      }
+      logAttempt(true, `저장됨 id=${row.id.slice(0, 8)} | ${shape()}`);
       // 자동처리(옵션): KNOP_INTAKE_AUTO=1 → 스레드 분석. 실제 기록/이메일은 KNOP_INTAKE_LIVE=1 일 때만
       let auto: any = null;
       if ((process.env.KOP_INTAKE_AUTO || process.env.KNOP_INTAKE_AUTO) === "1") {
