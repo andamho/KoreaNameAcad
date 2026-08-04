@@ -7,6 +7,7 @@ import { sendSMS } from "./sms";
 import crypto from "crypto";
 import { registerObjectStorageRoutes } from "./object_storage";
 import { registerKnopRoutes } from "./knop/routes";
+import { ensureShortLink } from "./knop/gaemyeong";
 import { knopStore } from "./knop/store";
 import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutubeStatus, uploadYoutubeVideo, setYoutubeThumbnail } from "./youtube";
 import { instagramConfigured, getInstagramStatus, publishInstagramReel } from "./instagram/publish";
@@ -690,19 +691,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const comment = await storage.replyToExperienceComment(req.params.id, reply.trim());
       // 답변 알림 발송 (연락처 등록한 경우)
       if (comment.notifyContact) {
-        // 답글만 보내면 돌아올 길이 없어 대화가 끊긴다 → 그 댓글로 바로 가는 링크를 붙인다.
-        // #comment-<id> 앵커는 페이지에서 해당 댓글로 스크롤 + 잠깐 강조된다.
-        const commentUrl = `${SITE_URL}/experience-zone/${comment.pageId}#comment-${comment.id}`;
+        // 답글 본문은 넣지 않고 '링크만' 보낸다(원장님 확정).
+        //   문자에서 다 읽어버리면 다시 들어올 이유가 없어 대화가 거기서 끝난다.
+        //   페이지로 들어와야 궁금한 걸 댓글로 다시 남기며 소통이 이어진다.
+        // 주소는 짧은링크로 — 댓글 ID(36자)가 붙은 원주소는 95바이트라 문자가 지저분해진다.
+        const target = `/experience-zone/${comment.pageId}#comment-${comment.id}`;
+        let url = `${SITE_URL}${target}`;
+        try {
+          const slug = await ensureShortLink(target, `${comment.nickname} 댓글 답글`, "comment");
+          url = `${SITE_URL}/s/${slug}`;
+        } catch (e: any) {
+          console.error("[체험존] 짧은링크 생성 실패(원주소로 발송):", e?.message);
+        }
+        const body = `[한국이름학교] 남기신 글에 이름의신이 답글을 달았습니다.\n\n▶ 확인하기\n${url}`;
         if (comment.notifyContactType === "sms") {
-          const smsText = `[한국이름학교] 남기신 글에 이름의신이 답글을 달았습니다.\n\n${reply.trim()}\n\n▶ 확인하기\n${commentUrl}`;
-          sendSMS(comment.notifyContact, smsText).catch(err => console.error("[SMS] 체험존 답글 알림 실패:", err));
+          sendSMS(comment.notifyContact, body).catch(err => console.error("[SMS] 체험존 답글 알림 실패:", err));
         } else {
           sendInquiryReplyToUser({
             contact: comment.notifyContact,
             contactType: "email",
             name: comment.nickname,
-            // 이메일 본문에도 그 댓글로 가는 링크를 같이 넣는다(문자와 동일)
-            adminReply: `${reply.trim()}\n\n▶ 확인하기\n${commentUrl}`,
+            adminReply: `이름의신이 답글을 달았습니다.\n\n▶ 확인하기\n${url}`,
           } as any).catch(err => console.error("[이메일] 체험존 답글 알림 실패:", err));
         }
       }
@@ -1471,7 +1480,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     db!.update(shortLinks).set({ clicks: (row.clicks ?? 0) + 1 }).where(eq(shortLinks.id, row.id)).catch(() => {});
     const imgSrc = imgSrcOfTarget(row.target);
     if (imgSrc) return res.type("html").send(imageViewerHtml(imgSrc));
-    const target = row.target.startsWith("/") ? `${req.protocol}://${req.get("host")}${row.target}` : row.target;
+    // req.protocol 은 프록시(Railway) 뒤에서 http 로 잡혀 https 사이트로 한 번 더 튕긴다 → SITE_URL 사용
+    const target = row.target.startsWith("/") ? `${SITE_URL}${row.target}` : row.target;
     return res.redirect(302, target);
   };
 
