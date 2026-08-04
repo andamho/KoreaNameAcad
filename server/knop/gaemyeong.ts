@@ -507,7 +507,11 @@ export async function listActiveSequences(): Promise<ActiveSequence[]> {
     .where(inArray(scheduledMessages.setKey, ["gaemyeong_request", "gaemyeong_approved"]))
     .groupBy(scheduledMessages.customerId, customers.name, scheduledMessages.setKey)
     .having(sql`count(*) FILTER (WHERE ${scheduledMessages.status} = 'scheduled') > 0`)
-    .orderBy(sql`min(${scheduledMessages.scheduledAt}) FILTER (WHERE ${scheduledMessages.status} = 'scheduled') ASC`);
+    // 남은 횟수가 많은 사람이 위로(관리가 더 남은 순), 같으면 이름 ㄱㄴㄷ 순.
+    .orderBy(
+      sql`(count(*) - count(*) FILTER (WHERE ${scheduledMessages.status} = 'sent')) DESC`,
+      sql`${customers.name} ASC`,
+    );
   return rows.map((r) => ({
     customerId: r.customerId!,
     customerName: r.customerName,
