@@ -199,7 +199,11 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
                 </a>
               </p>
             </video>
-            <p className="mt-2 text-xs text-muted-foreground">한국이름학교 대표 설명(1분)</p>
+            <p className="mt-2 text-xs text-muted-foreground text-center leading-relaxed">
+              <span className="font-bold text-foreground">Founder &amp; CEO</span>
+              <br />
+              한국이름학교 | 와츠유어네임 이름연구협회
+            </p>
           </div>
 
           {/* 버튼 영역 */}
