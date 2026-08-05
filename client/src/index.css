@@ -154,7 +154,7 @@
   .hamburger-line,
   .hamburger-line.line-2 {
     width: 21px;
-    height: 2px;
+    height: 1.5px;
     background-color: #000000;
   }
 }
@@ -202,7 +202,7 @@
   animation: line2-fade 0.22s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
 }
 
-/* 이동량 8px = 줄 간격 6px + 선 두께 2px. 두 선이 정확히 가운데에서 만나야 X 가 대칭이 된다.
+/* 이동량 7.5px = 줄 간격 6px + 선 두께 1.5px. 두 선이 정확히 가운데에서 만나야 X 가 대칭이 된다.
    (예전 9px 는 두께 2.56px 시절 값이라, 2px 로 바꾼 뒤에는 1px 씩 지나쳐 팔 길이가 달라 보였다) */
 @keyframes line1-to-x {
   0% {
@@ -212,10 +212,10 @@
     transform: translateY(0) rotate(0);
   }
   50% {
-    transform: translateY(8px) rotate(0);
+    transform: translateY(7.5px) rotate(0);
   }
   100% {
-    transform: translateY(8px) rotate(45deg);
+    transform: translateY(7.5px) rotate(45deg);
   }
 }
 
@@ -246,10 +246,10 @@
     transform: translateY(0) rotate(0);
   }
   50% {
-    transform: translateY(-8px) rotate(0);
+    transform: translateY(-7.5px) rotate(0);
   }
   100% {
-    transform: translateY(-8px) rotate(-45deg);
+    transform: translateY(-7.5px) rotate(-45deg);
   }
 }
 
@@ -260,10 +260,10 @@
 
 @keyframes line1-from-x {
   0% {
-    transform: translateY(8px) rotate(45deg);
+    transform: translateY(7.5px) rotate(45deg);
   }
   50% {
-    transform: translateY(8px) rotate(0);
+    transform: translateY(7.5px) rotate(0);
   }
   80% {
     transform: translateY(0) rotate(0);
@@ -294,10 +294,10 @@
 
 @keyframes line3-from-x {
   0% {
-    transform: translateY(-8px) rotate(-45deg);
+    transform: translateY(-7.5px) rotate(-45deg);
   }
   50% {
-    transform: translateY(-8px) rotate(0);
+    transform: translateY(-7.5px) rotate(0);
   }
   80% {
     transform: translateY(0) rotate(0);
