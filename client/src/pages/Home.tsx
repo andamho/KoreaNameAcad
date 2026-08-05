@@ -286,7 +286,7 @@ export default function Home() {
               <img
                 src="/expzone-bg.webp"
                 alt="체험존"
-                className="w-full h-52 object-fill"
+                className="w-full h-[280px] object-fill"
                 loading="eager"
                 fetchPriority="high"
                 decoding="sync"
@@ -305,12 +305,12 @@ export default function Home() {
               <img
                 src={astronot}
                 alt="우주비행사"
-                className="absolute left-1/2 -translate-x-1/2 -bottom-8 w-[115px] h-[115px] object-contain drop-shadow-xl"
+                className="absolute left-1/2 -translate-x-1/2 bottom-[40px] w-[115px] h-[115px] object-contain drop-shadow-xl"
                 loading="eager"
                 decoding="sync"
               />
             </div>
-            <div className="bg-white px-6 pt-14 pb-6 flex flex-col items-center text-center gap-4">
+            <div className="bg-white px-6 pt-6 pb-6 flex flex-col items-center text-center gap-4">
               <p className="text-[15px] text-gray-500 font-medium tracking-wide">EXPERIENCE ZONE</p>
               <h2 className="text-xl font-extrabold text-gray-900 leading-snug">
                 이름 속 운명을<br/>직접 체험해보세요.
