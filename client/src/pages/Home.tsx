@@ -286,7 +286,7 @@ export default function Home() {
               <img
                 src="/expzone-bg.webp"
                 alt="체험존"
-                className="w-full h-52 object-cover object-bottom"
+                className="w-full h-52 object-fill"
                 loading="eager"
                 fetchPriority="high"
                 decoding="sync"

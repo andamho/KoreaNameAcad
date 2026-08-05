@@ -502,7 +502,7 @@ export default function TikTokHome() {
               onClick={e => e.stopPropagation()}
             >
               <div className="relative">
-                <img src="/expzone-bg.webp" alt="체험존" className="w-full h-52 object-cover object-bottom" loading="eager" fetchPriority="high" decoding="sync" />
+                <img src="/expzone-bg.webp" alt="체험존" className="w-full h-52 object-fill" loading="eager" fetchPriority="high" decoding="sync" />
                 <img src={astronot} alt="우주비행사" className="absolute left-1/2 -translate-x-1/2 -bottom-8 object-contain drop-shadow-xl" style={{ width: 115, height: 115 }} loading="eager" decoding="sync" />
               </div>
               <div className="bg-white px-6 pt-14 pb-6 flex flex-col items-center text-center gap-4">
