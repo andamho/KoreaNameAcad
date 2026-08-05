@@ -454,11 +454,13 @@ export default function NameStories() {
       {/* Hero Section with character on right */}
       <section className="relative overflow-hidden py-16 md:py-24">
         {/* 배경 이미지 - 최적화된 img 태그 */}
-        {/* 배경: 데스크탑·모바일 모두 namestory-bg.webp */}
+        {/* 배경: 데스크탑·모바일 모두 namestory-bg.webp.
+            이 그림은 가운데가 단색이고 색면이 아래쪽·가장자리에 몰려 있다.
+            섹션이 낮아 object-cover 로 위아래가 잘리면 단색만 보이므로 아래쪽을 기준으로 맞춘다. */}
         <img
           src="/namestory-bg.webp"
           alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-bottom"
           fetchPriority="high"
           loading="eager"
           decoding="sync"
