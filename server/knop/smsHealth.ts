@@ -70,8 +70,33 @@ export async function runSmsHealthCheck(): Promise<void> {
   }
   lines.push("", "휴대폰 매크로가 정상 실행돼도 서버 저장에서 막힐 수 있습니다.");
   const text = lines.join("\n");
+
+  // 같은 알림을 반복해서 보내지 않는다.
+  // 이 점검은 서버가 뜰 때도 한 번 도는데, 배포가 잦은 날엔 재시작마다 같은 알림이 나갔다(2026-08-05).
+  // 12시간에 한 번만 보낸다 — 하루 한 번 아침 점검에는 영향 없다.
+  if (!(await shouldSendAlert("sms_health", 12))) {
+    console.log("[KOP] 문자 수집 이상 — 최근에 이미 알림, 이번엔 건너뜀");
+    return;
+  }
   console.error("[KOP] 문자 수집 이상 — 알림 발송:", text.replace(/<[^>]+>/g, ""));
   await notifyAdmin(text);
+}
+
+// 마지막 발송이 cooldownHours 보다 오래됐을 때만 true. 기록은 DB 라 재시작해도 유지된다.
+async function shouldSendAlert(key: string, cooldownHours: number): Promise<boolean> {
+  if (!db) return true;
+  try {
+    const r = (await db.execute(sql`
+      INSERT INTO ops_alert_state (key, last_sent_at) VALUES (${key}, now())
+      ON CONFLICT (key) DO UPDATE SET last_sent_at = now()
+      WHERE ops_alert_state.last_sent_at < now() - (${cooldownHours} || ' hours')::interval
+      RETURNING key
+    `)).rows as any[];
+    return r.length > 0; // 갱신됐다는 건 쿨다운이 지났다는 뜻
+  } catch (e: any) {
+    console.error(`[KOP] 알림 중복 확인 실패(그냥 보냄): ${e?.message}`);
+    return true;
+  }
 }
 
 export function startSmsHealthCheck(): void {
