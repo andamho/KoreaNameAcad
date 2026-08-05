@@ -1063,6 +1063,19 @@ html.ua-tiktok    .kna-experience-page .text-7xl { font-size: 59px !important; }
   animation: kna-fadeIn 700ms ease forwards 150ms;
 }
 
+/* 히어로 강조 두 줄 — 사이트 티파니 블루(#00b7b1).
+   배경이 같은 청록 계열이라 그냥 얹으면 대비 1.33 로 묻힌다.
+   흰 외곽선을 얇게 둘러 배경에서 떠 보이게 한다. */
+.kna-tiffany {
+  display: inline-block;
+  color: var(--tiffany);
+  -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.9);
+  paint-order: stroke fill;
+  text-shadow:
+    0 1px 2px rgba(255, 255, 255, 0.9),
+    0 0 12px rgba(255, 255, 255, 0.55);
+}
+
 /* ① 글자 내부 '흰색 광택'이 좌우로 흐르는 효과 */
 .kna-shine {
   background: linear-gradient(90deg,
