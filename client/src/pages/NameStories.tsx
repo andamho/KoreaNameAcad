@@ -452,7 +452,8 @@ export default function NameStories() {
       <Navbar />
       
       {/* Hero Section with character on right */}
-      <section className="relative overflow-hidden py-16 md:py-24">
+      {/* 배경 이미지의 하늘색과 같은 색을 깔아둔다 — 모바일에서 이미지가 위쪽을 다 못 채워도 이어져 보이게 */}
+      <section className="relative overflow-hidden py-16 md:py-24 bg-[#73d8fc]">
         {/* 배경 이미지 - 최적화된 img 태그 */}
         {/* 배경: 데스크탑·모바일 모두 namestory-bg.webp.
             이 그림은 가운데가 단색이고 색면이 아래쪽·가장자리에 몰려 있다.
@@ -460,7 +461,7 @@ export default function NameStories() {
         <img
           src="/namestory-bg.webp"
           alt=""
-          className="absolute inset-0 w-full h-full object-cover object-bottom"
+          className="absolute inset-0 w-full h-full object-contain object-bottom md:object-cover"
           fetchPriority="high"
           loading="eager"
           decoding="sync"
