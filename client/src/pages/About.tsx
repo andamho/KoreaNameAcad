@@ -79,7 +79,7 @@ export default function About() {
         <img
           src="/academy-bg.webp"
           alt=""
-          className="absolute inset-0 w-full h-full object-cover object-top"
+          className="absolute inset-0 w-full h-full object-fill"
           fetchPriority="high"
           loading="eager"
           decoding="sync"

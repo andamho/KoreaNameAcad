@@ -308,31 +308,32 @@
 }
 
 /* 데스크탑 keyframes - 모바일 keyframe 이후에 배치하여 우선순위 확보 */
-/* 데스크탑도 8px = 간격 5px + 두께 3px. 예전 7.8px 은 두께 2.8px 시절 값. */
+/* 데스크탑 7.5px = 줄 중심 사이 거리. 두께가 3/2/3 로 달라
+   '간격 5 + (3+2)/2 = 7.5' 이다. 8px 로 두면 0.5px 씩 지나쳐 X 팔 길이가 어긋난다. */
 @keyframes line1-to-x-desktop {
   0% { transform: translateY(0) rotate(0); }
   20% { transform: translateY(0) rotate(0); }
-  50% { transform: translateY(8px) rotate(0); }
-  100% { transform: translateY(8px) rotate(45deg); }
+  50% { transform: translateY(7.5px) rotate(0); }
+  100% { transform: translateY(7.5px) rotate(45deg); }
 }
 
 @keyframes line3-to-x-desktop {
   0% { transform: translateY(0) rotate(0); }
   20% { transform: translateY(0) rotate(0); }
-  50% { transform: translateY(-8px) rotate(0); }
-  100% { transform: translateY(-8px) rotate(-45deg); }
+  50% { transform: translateY(-7.5px) rotate(0); }
+  100% { transform: translateY(-7.5px) rotate(-45deg); }
 }
 
 @keyframes line1-from-x-desktop {
-  0% { transform: translateY(8px) rotate(45deg); }
-  50% { transform: translateY(8px) rotate(0); }
+  0% { transform: translateY(7.5px) rotate(45deg); }
+  50% { transform: translateY(7.5px) rotate(0); }
   80% { transform: translateY(0) rotate(0); }
   100% { transform: translateY(0) rotate(0); }
 }
 
 @keyframes line3-from-x-desktop {
-  0% { transform: translateY(-8px) rotate(-45deg); }
-  50% { transform: translateY(-8px) rotate(0); }
+  0% { transform: translateY(-7.5px) rotate(-45deg); }
+  50% { transform: translateY(-7.5px) rotate(0); }
   80% { transform: translateY(0) rotate(0); }
   100% { transform: translateY(0) rotate(0); }
 }
