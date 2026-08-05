@@ -305,7 +305,7 @@ export default function Home() {
               <img
                 src={astronot}
                 alt="우주비행사"
-                className="absolute left-1/2 -translate-x-1/2 bottom-[40px] w-[115px] h-[115px] object-contain drop-shadow-xl"
+                className="absolute left-1/2 -translate-x-1/2 bottom-[98px] w-[115px] h-[115px] object-contain drop-shadow-xl"
                 loading="eager"
                 decoding="sync"
               />
