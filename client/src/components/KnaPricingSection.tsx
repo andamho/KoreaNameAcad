@@ -210,8 +210,8 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
               <h3 className="text-lg sm:text-xl font-bold text-foreground">개명 금액이 궁금하신가요?</h3>
               <p className="mt-2 text-sm text-muted-foreground">대표님이 직접 설명드립니다. (1분)</p>
               <p className="mt-5 text-xs text-muted-foreground leading-relaxed">
-                <span className="font-bold text-foreground">Founder &amp; CEO</span>
-                <br />
+                {/* 직함은 아래 소속(12px)보다 커야 위계가 잡힌다 → 14px */}
+                <span className="block text-sm font-bold text-foreground">Founder &amp; CEO</span>
                 한국이름학교 | 와츠유어네임 이름연구협회
               </p>
               <div className="flex items-center justify-center sm:justify-start gap-4 mt-7">
