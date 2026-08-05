@@ -1068,12 +1068,29 @@ html.ua-tiktok    .kna-experience-page .text-7xl { font-size: 59px !important; }
    흰 외곽선을 얇게 둘러 배경에서 떠 보이게 한다. */
 .kna-tiffany {
   display: inline-block;
-  color: var(--tiffany);
-  -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.9);
-  paint-order: stroke fill;
-  text-shadow:
-    0 1px 2px rgba(255, 255, 255, 0.9),
-    0 0 12px rgba(255, 255, 255, 0.55);
+  /* 티파니 → 민트 → 흰 광택이 좌우로 흐른다(기존 반짝임 유지) */
+  background: linear-gradient(90deg,
+    var(--tiffany) 0%,
+    var(--mint) 35%,
+    #ffffff 49%,
+    #ffffff 51%,
+    var(--mint) 65%,
+    var(--tiffany) 100%);
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: kna-flow 7s ease-in-out infinite;
+  /* 배경이 같은 청록 계열이라 글자가 묻힌다 → 흰 그림자로 살짝 띄운다 */
+  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.95))
+          drop-shadow(0 0 6px rgba(255, 255, 255, 0.5));
+}
+
+/* 모바일 배경은 크림색이라 흰 그림자가 오히려 글자를 흐리게 만든다 → 옅은 그늘로 바꾼다 */
+@media (max-width: 767px) {
+  .kna-tiffany {
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
+  }
 }
 
 /* ① 글자 내부 '흰색 광택'이 좌우로 흐르는 효과 */
