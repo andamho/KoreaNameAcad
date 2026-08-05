@@ -49,8 +49,9 @@ import navbarLogoImage from "@assets/file_000000009b2c7206ad0a70c0142cb99a_17669
 // 모든 페이지 배경이미지 즉시 다운로드 (앱 로드 시 바로 시작)
 const _bgPreloads = [
   // 홈 모바일/데스크탑 히어로는 Hero.tsx에서 @assets 임포트로 처리
-  '/expzone.webp',         // 체험존 모바일
-  '/expzonebg.webp',       // 체험존 데스크탑
+  '/expzone-bg.webp',      // 체험존(데스크탑·모바일 공통)
+  '/namestory-bg.webp',    // 이름이야기
+  '/academy-bg.webp',      // 협회소개
   '/astronot.webp',        // 체험존 캐릭터
   '/mesh-header-hero.png', // 체험존 모바일 기존
   '/gradbg2.png',          // 헤더 그라디언트
