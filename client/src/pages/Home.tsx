@@ -291,6 +291,17 @@ export default function Home() {
                 fetchPriority="high"
                 decoding="sync"
               />
+              {/* 배경 아래쪽을 볼록하게 깎는다 — 체험존 페이지와 같은 모양.
+                  흰색이 위를 덮고 가운데만 아래로 불룩 남는다.
+                  path 는 체험존 페이지(ExperienceZone.tsx)와 같은 곡선이고 폭만 팝업에 맞춘다. */}
+              <svg
+                viewBox="0 0 1200 150"
+                preserveAspectRatio="none"
+                className="absolute bottom-0 left-0 w-full h-9 block"
+                aria-hidden="true"
+              >
+                <path d="M0,152 L0,0 Q600,152 1200,0 L1200,152 Z" fill="#ffffff" />
+              </svg>
               <img
                 src={astronot}
                 alt="우주비행사"
