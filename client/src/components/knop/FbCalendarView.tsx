@@ -382,7 +382,9 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
               (달력 앱 .calendar-grid 의 grid-auto-rows: 1fr 과 같은 방식 — 주마다 같은 높이) */}
           <div
             className="grid grid-cols-7 bg-white"
-            style={{ gridAutoRows: "1fr", height: `calc(100dvh - ${isMobile ? 230 : 260}px)`, minHeight: 420 }}
+            // 한 줄의 최소 높이는 화면을 6줄로 나눈 값(= 화면을 꽉 채움)이고,
+            // 일정이 많은 주는 auto 로 그만큼 늘어난다(잘리지 않게).
+            style={{ gridAutoRows: `minmax(max(${isMobile ? 80 : 92}px, calc((100dvh - ${isMobile ? 230 : 260}px) / 6)), auto)` }}
           >
             {cells.map((d, i) => {
               const key = d ? dateKey(year, month, d) : `empty-${i}`;
@@ -392,7 +394,8 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
               return (
                 <div
                   key={key}
-                  className={`flex flex-col overflow-hidden bg-white ${d ? "cursor-pointer" : ""}`}
+                  // overflow-hidden 을 걸면 일정이 많을 때 잘린다 → 칸은 내용만큼 늘어나게 둔다
+                  className={`flex flex-col bg-white ${d ? "cursor-pointer" : ""}`}
                   onClick={() => {
                     if (!d) return;
                     // 달력 앱과 같게: 날짜를 누르면 그날 일정 팝업이 뜬다(보기 + 추가)
@@ -424,7 +427,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
                       </div>
 
                       {/* 일정: 달력 앱 .events-list(padding 0 1px 1px, gap 1px) + .event-chip(11px/600, 1px 3px, radius 3px) */}
-                      <div className="flex flex-col overflow-hidden" style={{ padding: "0 1px 1px", gap: 1 }}>
+                      <div className="flex flex-col" style={{ padding: "0 1px 1px", gap: 1 }}>
                           {list.map((e, k) => (
                             <button
                               key={`${e.id}-${k}`}
