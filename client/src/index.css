@@ -138,6 +138,18 @@
   border-radius: 2px;
   transition: all 0.22s cubic-bezier(0.4, 0.0, 0.2, 1);
   transform-origin: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 줄 안에 들어가는 문구 — 줄 크기에 맞춰 정확히 채운다 */
+.hamburger-line svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
 }
 
 /* 위·아래는 굵게, 가운데는 얇게 — 모든 화면에서 동일하게 보이도록 명시한다.

@@ -15,6 +15,35 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 const logoImage = "/new-logo.png";
 
+// 삼선 세 줄 안에 넣는 문구. 눈에 잘 안 띄게 아주 작은 회색 글씨로 한 줄씩 들어간다.
+// SVG 로 넣는 이유: 줄 크기가 화면마다 다르다(모바일 21×1.5px, 데스크탑 22×3px).
+// preserveAspectRatio="none" + textLength 로 어떤 크기든 줄 안에 정확히 한 줄로 채워진다.
+// aria-hidden: 버튼에는 이미 "메뉴" 라는 이름이 있어 읽어주면 오히려 방해가 된다.
+function HamburgerWords() {
+  return (
+    <svg
+      viewBox="0 0 240 12"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      focusable="false"
+      /* 크기는 inline 으로 준다. 전역 svg 규칙(아이콘용 1em)이 클래스 규칙을 눌러
+         16×16px 로 나오는 문제가 있었다. */
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }}
+    >
+      <text
+        x="0"
+        y="9.4"
+        textLength="240"
+        lengthAdjust="spacingAndGlyphs"
+        fontSize="10"
+        fill="#9aa0a6"
+      >
+        미안합니다 용서하세요 감사합니다 사랑합니다
+      </text>
+    </svg>
+  );
+}
+
 
 
 // 카테고리 옵션
@@ -509,9 +538,9 @@ export function Navbar() {
                 className="flex items-center gap-2 md:gap-2 md:scale-100 -mr-[14px] sm:mr-0 sm:pr-3 no-default-hover-elevate no-default-active-elevate"
               >
                 <div className={`hamburger-icon ${menuOpen ? 'open' : ''} ${hasBeenOpened ? 'animated' : ''}`}>
-                  <span className="hamburger-line line-1"></span>
-                  <span className="hamburger-line line-2"></span>
-                  <span className="hamburger-line line-3"></span>
+                  <span className="hamburger-line line-1"><HamburgerWords /></span>
+                  <span className="hamburger-line line-2"><HamburgerWords /></span>
+                  <span className="hamburger-line line-3"><HamburgerWords /></span>
                 </div>
                 <span className="hidden md:inline text-sm font-medium">메뉴</span>
               </Button>
