@@ -77,12 +77,12 @@ export function Hero() {
           src="/main-mountain.webp"
           alt=""
           aria-hidden="true"
-          className={`absolute select-none pointer-events-none
+          className="absolute select-none pointer-events-none
             left-[32.03%] top-[14.21%] w-[35.94vw]
-            md:left-[17.34%] md:top-[19.91%] md:w-[12.86vw]
-            ${imageLoaded ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
+            md:left-[17.34%] md:top-[19.91%] md:w-[12.86vw]"
           loading="eager"
-          decoding="async"
+          fetchPriority="high"
+          decoding="sync"
         />
         {/* Bottom gradient to hide danger section character */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-background to-transparent" />
