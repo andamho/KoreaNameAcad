@@ -80,8 +80,23 @@
     <meta name="twitter:image" content="https://korea-name-acad.com/og-image-3.png">
 
     <!-- ✅ favicon (브라우저 탭 아이콘) -->
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <!-- 구글은 /favicon.ico 를 먼저 찾는다. 없으면 HTML 이 대신 응답해 아이콘을 못 읽는다 -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
     
+    <!-- ✅ 검색엔진용 조직 정보(로고 포함) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "한국이름학교",
+      "alternateName": "와츠유어네임 이름연구협회",
+      "url": "https://korea-name-acad.com",
+      "logo": "https://korea-name-acad.com/icon-512.png",
+      "image": "https://korea-name-acad.com/og-image-3.png"
+    }
+    </script>
+
     <!-- ✅ PWA manifest (홈 화면 추가 시 아이콘) -->
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-512.png">
