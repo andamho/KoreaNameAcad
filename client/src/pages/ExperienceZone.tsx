@@ -5,8 +5,6 @@ import type { LucideIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAdmin } from "@/contexts/AdminContext";
-import expzonebg1 from "@/assets/expzonebg1";
-import exzonebgdesk from "@/assets/exzonebgdesk";
 import astronot from "@/assets/astronot";
 
 const experiences: {
@@ -127,22 +125,12 @@ export default function ExperienceZone() {
 
       {/* Hero Section — overflow-hidden은 이미지 클리핑용, SVG는 section 밖으로 분리 */}
       <section className="relative overflow-hidden pt-16 pb-4 md:pt-24 md:pb-6">
-        {/* 배경 - 모바일/데스크탑 공통 */}
-        {/* 모바일 배경 (세로 이미지) */}
+        {/* 배경 - 데스크탑·모바일 공통(초록→노랑 그라데이션).
+            부드러운 세로 그라데이션이라 어느 비율로 잘려도 자연스럽다. */}
         <img
-          src={expzonebg1}
+          src="/expzone-bg.webp"
           alt=""
-          className="absolute inset-0 w-full h-full object-cover object-bottom md:hidden"
-          fetchPriority="high"
-          loading="eager"
-          decoding="sync"
-          aria-hidden="true"
-        />
-        {/* 데스크탑 배경 (가로 이미지) */}
-        <img
-          src={exzonebgdesk}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover object-bottom hidden md:block"
+          className="absolute inset-0 w-full h-full object-cover object-bottom"
           fetchPriority="high"
           loading="eager"
           decoding="sync"

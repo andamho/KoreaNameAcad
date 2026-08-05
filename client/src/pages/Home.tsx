@@ -23,7 +23,6 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import analysisExampleImage from "@assets/hongildong-analysis.jpg";
 import newYearImage from "@assets/newYearPopup_optimized.jpg";
-import expzonebg1 from "@/assets/expzonebg1";
 import astronot from "@/assets/astronot";
 import characterImage from "@assets/KakaoTalk_20251226_135549799_1766724973553.png";
 import effortCharacterImage from "@assets/KakaoTalk_20251226_152116391_1766730095506.png";
@@ -285,7 +284,7 @@ export default function Home() {
           >
             <div className="relative">
               <img
-                src={expzonebg1}
+                src="/expzone-bg.webp"
                 alt="체험존"
                 className="w-full h-52 object-cover object-bottom"
                 loading="eager"
