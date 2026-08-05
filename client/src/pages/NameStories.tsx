@@ -12,10 +12,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import type { Content } from "@shared/schema";
 import storiesCharacterImage from "@assets/KakaoTalk_20251226_141747822_1766726282057.png";
-import yellowBrightImage from "@/assets/yellow_bright_portrait";
 
+// 상단 배경(데스크탑·모바일 공통)을 미리 받아둔다
 const _heroBgPreload = new Image();
-_heroBgPreload.src = yellowBrightImage;
+_heroBgPreload.src = "/namestory-bg.webp";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -454,20 +454,16 @@ export default function NameStories() {
       {/* Hero Section with character on right */}
       <section className="relative overflow-hidden py-16 md:py-24">
         {/* 배경 이미지 - 최적화된 img 태그 */}
-        {/* 배경: 데스크탑은 새 이미지(namestory-bg.webp), 모바일은 기존 세로형 유지.
-            picture 로 브라우저가 하나만 내려받게 한다(둘 다 받지 않도록). */}
-        <picture>
-          <source media="(min-width: 768px)" srcSet="/namestory-bg.webp" type="image/webp" />
-          <img
-            src={yellowBrightImage}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            fetchPriority="high"
-            loading="eager"
-            decoding="sync"
-            aria-hidden="true"
-          />
-        </picture>
+        {/* 배경: 데스크탑·모바일 모두 namestory-bg.webp */}
+        <img
+          src="/namestory-bg.webp"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          fetchPriority="high"
+          loading="eager"
+          decoding="sync"
+          aria-hidden="true"
+        />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
             {/* Character - on top for mobile, right for desktop */}
