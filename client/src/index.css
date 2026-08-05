@@ -148,9 +148,12 @@
 }
 
 @media (max-width: 767px) {
-  /* 모바일: 세 줄 모두 가운데 줄 굵기(2px)로 통일하고 색은 검정 */
+  /* 모바일: 세 줄 모두 가운데 줄 굵기(2px)로 통일하고 색은 검정.
+     길이는 21px(원장님 지정). X 로 바뀔 때 두 선을 가운데로 옮기는 거리(8px)는
+     '줄 간격 6 + 두께 2' 라 길이와 무관하므로 X 대칭은 그대로 유지된다. */
   .hamburger-line,
   .hamburger-line.line-2 {
+    width: 21px;
     height: 2px;
     background-color: #000000;
   }
