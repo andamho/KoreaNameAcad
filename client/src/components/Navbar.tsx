@@ -538,11 +538,11 @@ export function Navbar() {
                       href={item.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-4 px-4 py-2 rounded-lg hover-elevate active-elevate-2 group"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg hover-elevate active-elevate-2 group"
                       data-testid={`menu-item-${index}`}
                       onClick={() => setMenuOpen(false)}
                     >
-                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                      <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                         <item.icon className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1">
@@ -553,10 +553,10 @@ export function Navbar() {
                     <button
                       key={index}
                       onClick={item.action}
-                      className="w-full flex items-center gap-4 px-4 py-2 rounded-lg hover-elevate active-elevate-2 group text-left"
+                      className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover-elevate active-elevate-2 group text-left"
                       data-testid={`menu-item-${index}`}
                     >
-                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                      <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                         <item.icon className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1">
@@ -575,10 +575,10 @@ export function Navbar() {
                           setMenuOpen(false);
                           setShowWriteDialog(true);
                         }}
-                        className="w-full flex items-center gap-4 px-4 py-2 rounded-lg hover-elevate active-elevate-2 group text-left"
+                        className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover-elevate active-elevate-2 group text-left"
                         data-testid="button-write-menu"
                       >
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                           <PenSquare className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1">
@@ -591,7 +591,7 @@ export function Navbar() {
                           setMenuOpen(false);
                           goToPage('/drafts');
                         }}
-                        className="w-full flex items-center gap-4 px-4 py-2 rounded-lg hover-elevate active-elevate-2 group text-left"
+                        className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover-elevate active-elevate-2 group text-left"
                         data-testid="button-drafts-menu"
                       >
                         <div className="w-10 h-10 bg-yellow-500/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-yellow-500/20 transition-colors">
@@ -604,10 +604,10 @@ export function Navbar() {
                       </button>
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-4 px-4 py-2 rounded-lg hover-elevate active-elevate-2 group text-left"
+                        className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover-elevate active-elevate-2 group text-left"
                         data-testid="button-admin-logout"
                       >
-                        <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-muted/80 transition-colors">
+                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                           <LogOut className="h-5 w-5 text-muted-foreground" />
                         </div>
                         <div className="flex-1">
@@ -622,10 +622,10 @@ export function Navbar() {
                         setMenuOpen(false);
                         setShowLoginDialog(true);
                       }}
-                      className="w-full flex items-center gap-4 px-4 py-2 rounded-lg hover-elevate active-elevate-2 group text-left"
+                      className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover-elevate active-elevate-2 group text-left"
                       data-testid="button-admin-login-menu"
                     >
-                      <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-muted/80 transition-colors">
+                      <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                         <Lock className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <div className="flex-1">
