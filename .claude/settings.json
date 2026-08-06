@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "permissions": {
+    "ask": [
+      "Bash(git commit)",
+      "Bash(git commit *)",
+      "Bash(git push)",
+      "Bash(git push *)",
+      "Bash(railway up)",
+      "Bash(railway up *)",
+      "Bash(railway deploy)",
+      "Bash(railway deploy *)",
+      "Bash(railway redeploy)",
+      "Bash(railway redeploy *)",
+      "Bash(npm run db:push)",
+      "Bash(npm run db:push *)",
+      "Bash(npx drizzle-kit push)",
+      "Bash(npx drizzle-kit push *)"
+    ],
+    "deny": [
+      "Bash(git reset --hard *)",
+      "Bash(git clean -fd *)",
+      "Bash(git clean -fdx *)"
+    ]
+  }
+}

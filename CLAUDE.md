@@ -101,3 +101,24 @@ Get-NetTCPConnection -LocalPort 5000 -State Listen | ForEach-Object { (Get-CimIn
 - 소통은 쉬운 일상 언어로 한다. (PROJECT.md의 User Preferences 준수)
 - 검증하지 않은 것을 검증했다고 말하지 않는다. 테스트가 실패하면 실패했다고 출력과 함께 보고한다.
 - 건너뛴 단계가 있으면 무엇을 왜 건너뛰었는지 명시한다.
+
+---
+
+## Git 및 배포 안전 규칙
+
+(§3 승인 규칙의 구체화. `.claude/settings.json` 의 permissions 로도 강제된다 —
+ `git commit`·`git push`·Railway 배포·운영 DB push = **ask(승인 후 실행)**.)
+
+- 사용자가 명시적으로 요청하기 전에는 git commit을 실행하지 않는다.
+- commit 실행 직전에는 변경 파일과 커밋 메시지를 먼저 보고하고 승인을 받는다.
+- 사용자의 명시적인 승인 전에는 git push와 실제 배포 명령을 실행하지 않는다.
+  사용자가 승인하면 Claude가 직접 실행할 수 있다(사용자가 터미널에 직접 입력하게 하지 않는다).
+- commit·push·배포 전에는 반드시 먼저 보고한다: 변경된 파일 / 주요 변경 내용 /
+  실행할 커밋 메시지 / push 대상 브랜치와 원격 저장소 / 배포 대상 환경 / 예상 영향과 위험.
+- "커밋해" "푸시해" "배포해" 같은 명시적 승인이 있을 때만 실행한다.
+  **Auto 모드에서도 이 세 작업은 승인 없이 실행하지 않는다.**
+- `git reset --hard`, `git clean -fd`, `git clean -fdx` 는 deny 로 유지한다.
+  사용자가 요청하더라도 즉시 실행하지 말고 **위험과 대안을 먼저 보고**한다.
+- `.claude/settings.json` 과 CLAUDE.md 의 안전 규칙을 임의로 완화하지 않는다.
+- 타입 검사는 `npm run check` 로 실행한다.
+- 요청 범위 밖의 파일은 수정하지 않는다.
