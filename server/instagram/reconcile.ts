@@ -83,9 +83,15 @@ async function syncJobMirror(
 }
 
 // ── 조회 ─────────────────────────────────────────────────────────────────────
+// 만료 판정은 DB 에서 한다. timestamp(without tz) 컬럼을 드라이버가 로컬 타임존으로
+// 해석해 9시간 어긋나므로, JS 로 읽어와 비교하면 안 된다(now() 와 같은 기준으로만 비교).
 async function loadPublication(jobId: string, accountId: string): Promise<any | null> {
   const r: any = await requireDb().execute(sql`
-    select * from ig_publications
+    select *,
+           (container_created_at is not null
+            and container_created_at <= (now() at time zone 'UTC') - interval '24 hours')
+             as container_expired
+      from ig_publications
      where video_job_id = ${jobId} and instagram_account_id = ${accountId}
      limit 1
   `);
@@ -96,7 +102,7 @@ function toView(row: any): PublicationView {
   return {
     state: row.state,
     creationId: row.creation_id ?? null,
-    containerCreatedAt: row.container_created_at ? new Date(row.container_created_at) : null,
+    containerExpired: row.container_expired === true,
     checkAttempt: Number(row.check_attempt ?? 0),
     mediaId: row.media_id ?? null,
   };
@@ -106,11 +112,13 @@ function toView(row: any): PublicationView {
 // 행 없음 → 생성 + 리스 획득 / published → 0행(중단) / publishing+유효리스 → 0행(중단)
 // publishing+만료리스 → publish_unknown 으로 전환 후 리스 탈취
 // COALESCE 로 lease_expires_at NULL 이 영구 잠금이 되지 않게 한다.
+// [주의] 시각 컬럼에 JS Date 를 넣지 않는다. node-postgres 가 Date 를 로컬 오프셋으로
+// 직렬화해 timestamp(without tz) 컬럼에 KST 벽시계가 저장되고, now() 기준 비교와 9시간 어긋난다.
+// 새 컨테이너의 생성시각은 항상 DB 의 now() 로 기록한다.
 async function acquireLease(opts: {
   jobId: string;
   accountId: string;
   creationId: string | null;
-  containerCreatedAt: Date | null;
   convertedR2Key?: string | null;
   contentFingerprint?: string | null;
 }): Promise<{ row: any; leaseToken: string } | null> {
@@ -121,7 +129,7 @@ async function acquireLease(opts: {
       converted_r2_key, content_fingerprint, container_generation, state,
       lease_token, lease_expires_at, claimed_at, updated_at
     ) values (
-      ${opts.jobId}, ${opts.accountId}, ${opts.creationId}, ${opts.containerCreatedAt},
+      ${opts.jobId}, ${opts.accountId}, ${opts.creationId}, (now() at time zone 'UTC'),
       ${opts.convertedR2Key ?? null}, ${opts.contentFingerprint ?? null}, 1, 'publishing',
       ${leaseToken}, now() + ${`${Math.round(LEASE_MS / 1000)} seconds`}::interval, now(), now()
     )
@@ -174,7 +182,7 @@ async function fenceReplaceContainer(opts: {
   const r: any = await requireDb().execute(sql`
     update ig_publications
        set creation_id = ${opts.newCreationId},
-           container_created_at = now(),
+           container_created_at = (now() at time zone 'UTC'),
            container_generation = container_generation + 1,
            converted_r2_key = coalesce(${opts.convertedR2Key ?? null}, converted_r2_key),
            check_attempt = 0,
@@ -388,7 +396,6 @@ export async function startInstagramPublish(opts: {
     jobId: opts.jobId,
     accountId,
     creationId: created.creationId,
-    containerCreatedAt: new Date(),
     convertedR2Key: opts.convertedR2Key,
     contentFingerprint: opts.contentFingerprint,
   });
@@ -413,7 +420,7 @@ export async function startInstagramPublish(opts: {
     publicationId: lease.row.id,
     creationId: created.creationId,
     leaseToken: lease.leaseToken,
-    containerCreatedAt: new Date(),
+    containerExpired: false, // 방금 만든 컨테이너
     checkAttempt: 0,
   });
 }
@@ -426,7 +433,7 @@ async function pollThenAct(ctx: {
   publicationId: string;
   creationId: string;
   leaseToken: string;
-  containerCreatedAt: Date | null;
+  containerExpired: boolean;
   checkAttempt: number;
 }): Promise<Outcome> {
   let last: { statusCode: string; raw: any } = { statusCode: "IN_PROGRESS", raw: null };
@@ -456,7 +463,6 @@ export async function reconcilePublication(jobId: string): Promise<Outcome> {
     jobId,
     accountId,
     creationId: pub.creation_id,
-    containerCreatedAt: pub.container_created_at ? new Date(pub.container_created_at) : null,
   });
   if (!lease) {
     return { state: "blocked", reason: "이미 게시됐거나 다른 실행이 리스를 쥐고 있음" };
@@ -469,7 +475,7 @@ export async function reconcilePublication(jobId: string): Promise<Outcome> {
     publicationId: pub.id,
     creationId: pub.creation_id,
     leaseToken: lease.leaseToken,
-    containerCreatedAt: pub.container_created_at ? new Date(pub.container_created_at) : null,
+    containerExpired: pub.container_expired === true, // DB 판정값 그대로
     checkAttempt: Number(pub.check_attempt ?? 0),
     statusCode: status.statusCode,
     raw: status.raw,
@@ -484,7 +490,7 @@ async function applyDecision(ctx: {
   publicationId: string;
   creationId: string;
   leaseToken: string;
-  containerCreatedAt: Date | null;
+  containerExpired: boolean;
   checkAttempt: number;
   statusCode: string;
   raw: unknown;
@@ -493,11 +499,11 @@ async function applyDecision(ctx: {
   const view: PublicationView = {
     state: ctx.stateOverride ?? "publishing",
     creationId: ctx.creationId,
-    containerCreatedAt: ctx.containerCreatedAt,
+    containerExpired: ctx.containerExpired,
     checkAttempt: ctx.checkAttempt,
     mediaId: null,
   };
-  const action = decideNextAction(view, ctx.statusCode, new Date());
+  const action = decideNextAction(view, ctx.statusCode);
 
   switch (action.kind) {
     case "finalize_published":
@@ -629,7 +635,7 @@ export async function replaceExpiredContainer(opts: {
   const token = await igToken();
   const status = await igFetchContainerStatus({ token, creationId: pub.creation_id });
   const view = toView(pub);
-  const action = decideNextAction(view, status.statusCode, new Date());
+  const action = decideNextAction(view, status.statusCode);
   if (action.kind !== "replace_container") {
     return { state: "blocked", reason: `교체 불가 — 현재 status=${status.statusCode}` };
   }
@@ -638,7 +644,6 @@ export async function replaceExpiredContainer(opts: {
     jobId: opts.jobId,
     accountId,
     creationId: pub.creation_id,
-    containerCreatedAt: pub.container_created_at ? new Date(pub.container_created_at) : null,
   });
   if (!lease) return { state: "blocked", reason: "리스 획득 실패" };
 
@@ -671,7 +676,7 @@ export async function replaceExpiredContainer(opts: {
     publicationId: pub.id,
     creationId: created.creationId,
     leaseToken: lease.leaseToken,
-    containerCreatedAt: new Date(),
+    containerExpired: false, // 방금 교체한 컨테이너
     checkAttempt: 0,
   });
 }

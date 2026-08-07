@@ -7,8 +7,8 @@
 /** 유예 재조회 간격(ms). 인덱스 = 현재 check_attempt */
 export const GRACE_DELAYS_MS = [30_000, 60_000, 120_000] as const;
 
-/** IG 컨테이너 TTL. 이 시간을 넘기면 EXPIRED 로 본다 */
-export const CONTAINER_TTL_MS = 24 * 3600 * 1000;
+// IG 컨테이너 TTL(24시간)의 판정 기준은 아래 CONTAINER_EXPIRED_SQL 하나뿐이다.
+// JS 쪽 ms 상수를 두면 다시 애플리케이션에서 시각을 계산하게 되므로 두지 않는다.
 
 /** 리스 유효기간 */
 export const LEASE_MS = 5 * 60_000;
@@ -18,7 +18,13 @@ export type IgStatusCode = "IN_PROGRESS" | "FINISHED" | "ERROR" | "PUBLISHED" | 
 export type PublicationView = {
   state: "publishing" | "published" | "publish_unknown";
   creationId: string | null;
-  containerCreatedAt: Date | null;
+  /**
+   * 컨테이너 만료 여부. **DB 에서 판정한 값을 그대로 받는다.**
+   * JS 에서 시각을 비교하지 않는 이유: timestamp(without tz) 컬럼을 node-postgres 가
+   * 로컬 타임존(Asia/Seoul)으로 해석해 DB 의 UTC 기준과 9시간 어긋난다.
+   * 판정은 SQL 의 now() 와 같은 기준으로만 한다(reconcile.ts 의 loadPublication 참조).
+   */
+  containerExpired: boolean;
   checkAttempt: number;
   mediaId: string | null;
 };
@@ -37,17 +43,20 @@ export type Action =
   /** 손대지 말고 중단 */
   | { kind: "abort"; reason: string };
 
-/** 컨테이너가 TTL 을 넘겼는가 (IG 가 EXPIRED 를 안 줄 때의 보조 판정) */
-export function isContainerExpired(containerCreatedAt: Date | null, now: Date): boolean {
-  if (!containerCreatedAt) return false;
-  return now.getTime() - containerCreatedAt.getTime() > CONTAINER_TTL_MS;
-}
+/**
+ * 컨테이너 만료 판정 SQL. **애플리케이션에서 시각 계산을 하지 않는다.**
+ * timestamp(without tz) 컬럼과 now() 를 DB 안에서 같은 기준으로 비교한다.
+ * 경계: 생성 후 23:59:59 는 만료 아님, 정확히 24:00:00 부터 만료.
+ */
+export const CONTAINER_EXPIRED_SQL =
+  "(container_created_at is not null " +
+  "and container_created_at <= (now() at time zone 'UTC') - interval '24 hours')";
 
 /**
  * 컨테이너 상태 조회 결과 + 현재 publication 으로 다음 행동을 정한다.
  * 여기서 절대 하지 않는 것: PUBLISHED 인데 media_id 를 못 찾았다고 다시 publish 하기.
  */
-export function decideNextAction(pub: PublicationView, statusCode: IgStatusCode, now: Date): Action {
+export function decideNextAction(pub: PublicationView, statusCode: IgStatusCode): Action {
   // 이미 끝난 건 무조건 중단 (중복 게시 방지의 첫 관문)
   if (pub.state === "published") {
     return { kind: "abort", reason: "이미 게시 완료(published)" };
@@ -73,8 +82,8 @@ export function decideNextAction(pub: PublicationView, statusCode: IgStatusCode,
 
     case "IN_PROGRESS":
     case "ERROR": {
-      if (isContainerExpired(pub.containerCreatedAt, now)) {
-        return { kind: "replace_container", reason: "컨테이너 생성 후 24시간 초과" };
+      if (pub.containerExpired) {
+        return { kind: "replace_container", reason: "컨테이너 생성 후 24시간 경과(DB 판정)" };
       }
       const next = pub.checkAttempt + 1;
       if (next > GRACE_DELAYS_MS.length) {

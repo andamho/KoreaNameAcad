@@ -21,19 +21,17 @@ delete process.env.INSTAGRAM_ACCESS_TOKEN;
 const {
   decideNextAction,
   toLegacyJobStatus,
-  isContainerExpired,
   GRACE_DELAYS_MS,
-  CONTAINER_TTL_MS,
+  CONTAINER_EXPIRED_SQL,
 } = await import("../../server/instagram/publishDecision");
 const { igCreateReelContainer, igFetchContainerStatus, igMediaPublish } = await import(
   "../../server/instagram/publish"
 );
 
-const NOW = new Date("2026-08-07T00:00:00Z");
 const basePub = {
   state: "publishing" as const,
   creationId: "CONTAINER_1",
-  containerCreatedAt: new Date(NOW.getTime() - 60_000),
+  containerExpired: false, // 만료 여부는 DB 가 판정해 넘겨준다(JS 시각 계산 없음)
   checkAttempt: 0,
   mediaId: null as string | null,
 };
@@ -41,69 +39,69 @@ const basePub = {
 // ── 1) 상태기계 ──────────────────────────────────────────────────────────────
 describe("decideNextAction — 기존 creation_id 상태별 분기", () => {
   test("PUBLISHED: media_id 가 있으면 완료 확정", () => {
-    const a = decideNextAction({ ...basePub, mediaId: "M1" }, "PUBLISHED", NOW);
+    const a = decideNextAction({ ...basePub, mediaId: "M1" }, "PUBLISHED");
     assert.equal(a.kind, "finalize_published");
     assert.equal((a as any).mediaId, "M1");
   });
 
   test("PUBLISHED: media_id 를 못 찾아도 완료 확정하고 재게시하지 않는다", () => {
-    const a = decideNextAction({ ...basePub, mediaId: null }, "PUBLISHED", NOW);
+    const a = decideNextAction({ ...basePub, mediaId: null }, "PUBLISHED");
     assert.equal(a.kind, "finalize_published");
     assert.equal((a as any).mediaId, null);
     assert.notEqual(a.kind, "publish_existing"); // 절대 재게시로 가지 않는다
   });
 
   test("FINISHED: 기존 creation_id 로 게시", () => {
-    const a = decideNextAction(basePub, "FINISHED", NOW);
+    const a = decideNextAction(basePub, "FINISHED");
     assert.equal(a.kind, "publish_existing");
     assert.equal((a as any).creationId, "CONTAINER_1");
   });
 
   test("EXPIRED: 이때만 컨테이너 교체 허용", () => {
-    const a = decideNextAction(basePub, "EXPIRED", NOW);
+    const a = decideNextAction(basePub, "EXPIRED");
     assert.equal(a.kind, "replace_container");
   });
 
   test("state=published 면 무슨 status 가 와도 중단", () => {
     for (const s of ["FINISHED", "ERROR", "IN_PROGRESS", "PUBLISHED", "EXPIRED"]) {
-      const a = decideNextAction({ ...basePub, state: "published" }, s, NOW);
+      const a = decideNextAction({ ...basePub, state: "published" }, s);
       assert.equal(a.kind, "abort", `status=${s} 인데 중단하지 않았다`);
     }
   });
 
   test("알 수 없는 status_code 는 성공으로 오해하지 않는다", () => {
-    const a = decideNextAction(basePub, "SOMETHING_NEW", NOW);
+    const a = decideNextAction(basePub, "SOMETHING_NEW");
     assert.equal(a.kind, "abort");
   });
 
   test("creation_id 가 없으면 중단", () => {
-    const a = decideNextAction({ ...basePub, creationId: null }, "FINISHED", NOW);
+    const a = decideNextAction({ ...basePub, creationId: null }, "FINISHED");
     assert.equal(a.kind, "abort");
   });
 });
 
 describe("ERROR 유예 — 30/60/120초, off-by-one 없음", () => {
   test("최초 ERROR(check_attempt=0) → 30초 뒤 재확인, attempt=1", () => {
-    const a = decideNextAction({ ...basePub, checkAttempt: 0 }, "ERROR", NOW);
+    const a = decideNextAction({ ...basePub, checkAttempt: 0 }, "ERROR");
     assert.equal(a.kind, "schedule_recheck");
     assert.equal((a as any).delayMs, 30_000);
     assert.equal((a as any).nextAttempt, 1);
   });
 
   test("attempt=1 → 60초, attempt=2", () => {
-    const a = decideNextAction({ ...basePub, checkAttempt: 1 }, "ERROR", NOW);
+    const a = decideNextAction({ ...basePub, checkAttempt: 1 }, "ERROR");
     assert.equal((a as any).delayMs, 60_000);
     assert.equal((a as any).nextAttempt, 2);
   });
 
   test("attempt=2 → 120초, attempt=3", () => {
-    const a = decideNextAction({ ...basePub, checkAttempt: 2 }, "ERROR", NOW);
+    const a = decideNextAction({ ...basePub, checkAttempt: 2 }, "ERROR");
     assert.equal((a as any).delayMs, 120_000);
     assert.equal((a as any).nextAttempt, 3);
   });
 
   test("attempt=3(소진) → 최종 실패. 무한 대기하지 않는다", () => {
-    const a = decideNextAction({ ...basePub, checkAttempt: 3 }, "ERROR", NOW);
+    const a = decideNextAction({ ...basePub, checkAttempt: 3 }, "ERROR");
     assert.equal(a.kind, "fail_final");
   });
 
@@ -112,36 +110,46 @@ describe("ERROR 유예 — 30/60/120초, off-by-one 없음", () => {
   });
 
   test("IN_PROGRESS 도 같은 유예 사다리를 탄다", () => {
-    const a = decideNextAction({ ...basePub, checkAttempt: 0 }, "IN_PROGRESS", NOW);
+    const a = decideNextAction({ ...basePub, checkAttempt: 0 }, "IN_PROGRESS");
     assert.equal(a.kind, "schedule_recheck");
     assert.equal((a as any).delayMs, 30_000);
   });
 
   test("실제 사고 재현: ERROR → 재조회에서 FINISHED → 새 컨테이너 없이 게시", () => {
-    const first = decideNextAction({ ...basePub, checkAttempt: 0 }, "ERROR", NOW);
+    const first = decideNextAction({ ...basePub, checkAttempt: 0 }, "ERROR");
     assert.equal(first.kind, "schedule_recheck");
-    const second = decideNextAction({ ...basePub, checkAttempt: 1 }, "FINISHED", NOW);
+    const second = decideNextAction({ ...basePub, checkAttempt: 1 }, "FINISHED");
     assert.equal(second.kind, "publish_existing");
     assert.equal((second as any).creationId, "CONTAINER_1"); // 같은 컨테이너
   });
 });
 
-describe("컨테이너 24시간 만료", () => {
-  test("TTL 초과면 ERROR 여도 교체로 간다", () => {
-    const old = new Date(NOW.getTime() - CONTAINER_TTL_MS - 1000);
-    const a = decideNextAction({ ...basePub, containerCreatedAt: old }, "ERROR", NOW);
+describe("컨테이너 24시간 만료 — 판정은 DB, 코드는 결과만 쓴다", () => {
+  test("DB 가 만료라고 하면 ERROR 여도 교체로 간다", () => {
+    const a = decideNextAction({ ...basePub, containerExpired: true }, "ERROR");
     assert.equal(a.kind, "replace_container");
   });
 
-  test("TTL 이내면 유예 재확인", () => {
-    const a = decideNextAction(basePub, "ERROR", NOW);
+  test("DB 가 만료라고 하면 IN_PROGRESS 여도 교체로 간다", () => {
+    const a = decideNextAction({ ...basePub, containerExpired: true }, "IN_PROGRESS");
+    assert.equal(a.kind, "replace_container");
+  });
+
+  test("만료 아니면 유예 재확인", () => {
+    const a = decideNextAction(basePub, "ERROR");
     assert.equal(a.kind, "schedule_recheck");
   });
 
-  test("isContainerExpired 경계", () => {
-    assert.equal(isContainerExpired(new Date(NOW.getTime() - CONTAINER_TTL_MS + 1000), NOW), false);
-    assert.equal(isContainerExpired(new Date(NOW.getTime() - CONTAINER_TTL_MS - 1000), NOW), true);
-    assert.equal(isContainerExpired(null, NOW), false);
+  test("만료 플래그가 FINISHED/PUBLISHED 결론을 뒤집지 않는다", () => {
+    assert.equal(decideNextAction({ ...basePub, containerExpired: true }, "FINISHED").kind, "publish_existing");
+    assert.equal(decideNextAction({ ...basePub, containerExpired: true }, "PUBLISHED").kind, "finalize_published");
+  });
+
+  test("판정 SQL 은 now() 기준이고 코드에 시각 보정이 없다", () => {
+    assert.match(CONTAINER_EXPIRED_SQL, /\(now\(\) at time zone 'UTC'\) - interval '24 hours'/);
+    assert.match(CONTAINER_EXPIRED_SQL, /container_created_at <=/);
+    // ±9시간 같은 임의 보정이 들어오면 실패한다
+    assert.doesNotMatch(CONTAINER_EXPIRED_SQL, /9 hours|32400|\+ interval/);
   });
 });
 
@@ -217,15 +225,15 @@ describe("Graph API 래퍼 — fetch 목킹", () => {
     mock(() => ({ ok: true, body: { id: "C1", status_code: seq[i++] } }));
 
     let pub = { ...basePub };
-    let action = decideNextAction(pub, (await igFetchContainerStatus({ token: "T", creationId: "C1" })).statusCode, NOW);
+    let action = decideNextAction(pub, (await igFetchContainerStatus({ token: "T", creationId: "C1" })).statusCode);
     assert.equal(action.kind, "schedule_recheck");
     pub = { ...pub, checkAttempt: (action as any).nextAttempt };
 
-    action = decideNextAction(pub, (await igFetchContainerStatus({ token: "T", creationId: "C1" })).statusCode, NOW);
+    action = decideNextAction(pub, (await igFetchContainerStatus({ token: "T", creationId: "C1" })).statusCode);
     assert.equal(action.kind, "schedule_recheck");
     pub = { ...pub, checkAttempt: (action as any).nextAttempt };
 
-    action = decideNextAction(pub, (await igFetchContainerStatus({ token: "T", creationId: "C1" })).statusCode, NOW);
+    action = decideNextAction(pub, (await igFetchContainerStatus({ token: "T", creationId: "C1" })).statusCode);
     assert.equal(action.kind, "publish_existing");
     assert.equal((action as any).creationId, "CONTAINER_1"); // 컨테이너 재생성 없음
   });
