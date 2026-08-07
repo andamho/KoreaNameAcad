@@ -9,7 +9,8 @@ import { registerObjectStorageRoutes } from "./object_storage";
 import { registerKnopRoutes } from "./knop/routes";
 import { ensureShortLink } from "./knop/gaemyeong";
 import { knopStore } from "./knop/store";
-import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutubeStatus, uploadYoutubeVideo, setYoutubeThumbnail } from "./youtube";
+import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutubeStatus, uploadYoutubeVideo, setYoutubeThumbnail, getYoutubeVideoState } from "./youtube";
+import { setThumbnailWithRetry, mergeErrorLog, type ThumbnailAttempt } from "./youtubeThumbnailPolicy";
 import { instagramConfigured, getInstagramStatus } from "./instagram/publish";
 import {
   startInstagramPublish,
@@ -60,7 +61,12 @@ async function publishYoutubeAndThumbnailFromBuffer(opts: {
   description: string;
   tags: string[];
   privacyStatus: string;
-}): Promise<{ ytVideoId: string | null; thumbnailSet: boolean; errors: { youtube?: string; thumbnail?: string } }> {
+}): Promise<{
+  ytVideoId: string | null;
+  thumbnailSet: boolean;
+  errors: { youtube?: string; thumbnail?: string };
+  thumbnailAttempts: ThumbnailAttempt[];
+}> {
   const { r2Key, jobId, ytTitle, description, tags, privacyStatus } = opts;
   const errors: { youtube?: string; thumbnail?: string } = {};
   let ytVideoId: string | null = null;
@@ -75,7 +81,7 @@ async function publishYoutubeAndThumbnailFromBuffer(opts: {
     videoContentType = g.contentType;
   } catch (e: any) {
     errors.youtube = "영상 로드 실패: " + (e?.message || "");
-    return { ytVideoId, thumbnailSet, errors };
+    return { ytVideoId, thumbnailSet, errors, thumbnailAttempts: [] };
   }
 
   // YouTube 업로드 (원본 그대로 — 유튜브는 HEVC도 허용)
@@ -96,17 +102,37 @@ async function publishYoutubeAndThumbnailFromBuffer(opts: {
     if (db) await db.update(videoJobs).set({ ytStatus: "failed", updatedAt: new Date() }).where(eq(videoJobs.id, jobId));
   }
 
-  // 커스텀 썸네일: 영상 맨 앞(0.25초) 프레임(같은 buffer, 단일 프레임)
+  // 커스텀 썸네일: 영상 맨 앞(0.25초) 프레임.
+  // [중요] 프레임 추출은 딱 한 번. 최초 시도와 재시도 2회 모두 같은 Buffer 를 쓴다(SHA-256 동일).
+  // 썸네일이 끝내 실패해도 영상은 published 그대로 두고 재업로드하지 않는다(유튜브 기본 썸네일 사용).
+  const thumbnailAttempts: ThumbnailAttempt[] = [];
   if (ytVideoId) {
     try {
       const frame = await extractFrameJpeg(videoBuffer, 0.25);
-      await setYoutubeThumbnail(ytVideoId, frame, "image/jpeg");
-      thumbnailSet = true;
+      const jpegSha256 = crypto.createHash("sha256").update(frame).digest("hex");
+      const run = await setThumbnailWithRetry({
+        videoId: ytVideoId,
+        image: frame,
+        jpegSha256,
+        setThumbnail: (id, img) => setYoutubeThumbnail(id, img, "image/jpeg"),
+        getVideoState: (id) => getYoutubeVideoState(id),
+      });
+      thumbnailAttempts.push(...run.attempts);
+      if (run.ok) {
+        thumbnailSet = true;
+        delete errors.thumbnail; // 재시도로 성공 → 최종 오류는 남기지 않는다(이력은 보존)
+      } else {
+        const last = run.attempts[run.attempts.length - 1];
+        errors.thumbnail =
+          `썸네일 설정 실패(${run.attempts.length}회 시도): ` +
+          `${last?.httpStatus ?? "network"}${last?.reason ? ` ${last.reason}` : ""} — 유튜브 기본 썸네일 사용`;
+      }
     } catch (e: any) {
+      // 프레임 추출 자체 실패 등 재시도 대상이 아닌 경우
       errors.thumbnail = e?.message || "thumbnail set failed";
     }
   }
-  return { ytVideoId, thumbnailSet, errors };
+  return { ytVideoId, thumbnailSet, errors, thumbnailAttempts };
 }
 
 // ── transcode 진단 실행(비게시) — 게시/DB 게시상태 안 건드림 ──
@@ -1261,8 +1287,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      if (Object.keys(errors).length) {
-        await db.update(videoJobs).set({ errorLog: JSON.stringify(errors), updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+      // error_log: 기존 내용을 덮어쓰지 않고 병합. 썸네일 시도 이력은 최대 3건까지 보관.
+      // 썸네일이 이번에 성공했으면 과거 thumbnail 오류까지 지운다(spread 로 부활하는 것 방지).
+      // 이 블록은 기록일 뿐이므로, 실패해도 배포 결과(영상 published)를 뒤집지 않는다.
+      try {
+        if (Object.keys(errors).length || yt.thumbnailAttempts.length || thumbnailSet) {
+          const patch: Record<string, unknown> = { ...errors };
+          if (yt.thumbnailAttempts.length) patch.thumbnailAttempts = yt.thumbnailAttempts;
+          const clearKeys = thumbnailSet ? ["thumbnail"] : [];
+          await db
+            .update(videoJobs)
+            .set({ errorLog: mergeErrorLog(job.errorLog, patch, { clearKeys }), updatedAt: new Date() })
+            .where(eq(videoJobs.id, job.id));
+        }
+      } catch (e: any) {
+        console.error(`[video deploy] error_log 기록 실패(배포 결과에는 영향 없음): ${e?.message}`);
       }
 
       res.json({

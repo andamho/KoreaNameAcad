@@ -5,6 +5,11 @@ import { OAuth2Client } from "google-auth-library";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { oauthTokens } from "@shared/schema";
+import {
+  YoutubeThumbnailError,
+  parseYoutubeErrorReason,
+  type YoutubeVideoState,
+} from "./youtubeThumbnailPolicy";
 
 const PROVIDER = "youtube";
 const SCOPES = [
@@ -179,25 +184,70 @@ export async function uploadYoutubeVideo(opts: {
   return { videoId: result.id };
 }
 
-/** 커스텀 썸네일 설정 (영상 맨 앞 프레임 등). 채널이 커스텀 썸네일 사용 가능해야 함. */
+/**
+ * 커스텀 썸네일 설정 (영상 맨 앞 프레임 등). 채널이 커스텀 썸네일 사용 가능해야 함.
+ * 실패는 YoutubeThumbnailError 로 던진다 — HTTP 상태와 YouTube reason 을 구조적으로 전달해
+ * 호출부가 문자열 검색 없이 재시도 여부를 판정할 수 있게 한다.
+ * 연결 실패·타임아웃은 status=null, networkFailure=true 로 전달된다.
+ */
 export async function setYoutubeThumbnail(
   videoId: string,
   image: Buffer,
   mimeType = "image/jpeg",
 ): Promise<void> {
   const accessToken = await getAccessToken();
-  const r = await fetch(
-    `https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${encodeURIComponent(videoId)}&uploadType=media`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": mimeType.startsWith("image/") ? mimeType : "image/jpeg",
+  let r: Response;
+  try {
+    r = await fetch(
+      `https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${encodeURIComponent(videoId)}&uploadType=media`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": mimeType.startsWith("image/") ? mimeType : "image/jpeg",
+        },
+        body: image,
       },
-      body: image,
-    },
-  );
+    );
+  } catch (e: any) {
+    throw new YoutubeThumbnailError({
+      status: null,
+      reason: null,
+      bodyText: String(e?.message ?? e),
+      networkFailure: true,
+    });
+  }
   if (!r.ok) {
-    throw new Error(`썸네일 설정 실패: ${r.status} ${await r.text()}`);
+    const bodyText = await r.text().catch(() => "");
+    throw new YoutubeThumbnailError({
+      status: r.status,
+      reason: parseYoutubeErrorReason(bodyText),
+      bodyText,
+    });
+  }
+}
+
+/**
+ * 영상의 업로드·처리 상태 조회(진단용). 기존 youtube.readonly 스코프로 충분하다.
+ * 조회 실패는 던지지 않고 null 을 돌려준다 — 진단이 본 흐름을 막으면 안 된다.
+ */
+export async function getYoutubeVideoState(videoId: string): Promise<YoutubeVideoState | null> {
+  try {
+    const accessToken = await getAccessToken();
+    const r = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=status,processingDetails&id=${encodeURIComponent(videoId)}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+    if (!r.ok) return null;
+    const j: any = await r.json();
+    const it = j?.items?.[0];
+    if (!it) return null;
+    return {
+      uploadStatus: it.status?.uploadStatus ?? null,
+      processingStatus: it.processingDetails?.processingStatus ?? null,
+      processingFailureReason: it.processingDetails?.processingFailureReason ?? null,
+    };
+  } catch {
+    return null;
   }
 }
