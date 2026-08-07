@@ -185,7 +185,12 @@ export async function renderViewerHtml(setKey: SetKey): Promise<string> {
   // 제목(figcaption)은 보여주지 않는다. 올릴 때 붙은 파일 이름이 그대로 남아
   // 화면에 "2024_02_06 23_24", "002" 같은 게 찍혔다. 제목은 관리 화면에서만 쓴다.
   // 출처 안내는 영상마다가 아니라 맨 아래에 한 번만 붙인다.
-  const SAVE_TIP = "📌 이미지를 저장하시려면, 사진을 꾹 눌러 “이미지 저장”을 선택하세요.";
+  // 저장 안내는 첫 이미지 위에 한 번만. 예전엔 이미지마다 붙어 같은 문장이 반복됐다.
+  // 아이콘은 이모지(📌) 대신 선 아이콘 — 기기마다 모양이 달라지지 않고 글자색과 어울린다.
+  const SAVE_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>';
+  const SAVE_TIP = "이미지를 저장하시려면, 사진을 꾹 눌러 “이미지 저장”을 선택하세요.";
+  let savedTipShown = false;
   const blocks = assets
     .map((a) => {
       // 눌러서 유튜브로 넘어가는 방식. 영상 주인이 '다른 사이트에서 재생 금지'를 걸어두면
@@ -204,7 +209,9 @@ export async function renderViewerHtml(setKey: SetKey): Promise<string> {
           : `<video src="${esc(a.target)}" controls playsinline preload="metadata"></video>`;
         return `<figure>${player}</figure>`;
       }
-      return `<div class="savetip">${esc(SAVE_TIP)}</div><figure><img src="${esc(a.target)}" alt="" loading="lazy"></figure>`;
+      const tip = savedTipShown ? "" : `<div class="savetip">${SAVE_ICON}<span>${esc(SAVE_TIP)}</span></div>`;
+      savedTipShown = true;
+      return `${tip}<figure><img src="${esc(a.target)}" alt="" loading="lazy"></figure>`;
     })
     .join("\n");
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8">
@@ -227,7 +234,8 @@ figcaption{padding:8px 12px;font-size:13px;color:#666}
 .vlink-empty{width:100%;aspect-ratio:16/9;background:#e9edee}
 .play{position:absolute;left:0;right:0;top:0;bottom:0;margin:auto;width:62px;height:44px;border-radius:11px;background:rgba(0,0,0,.72)}
 .play::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-42%,-50%);border-style:solid;border-width:9px 0 9px 15px;border-color:transparent transparent transparent #fff}
-.savetip{margin:0 2px 8px;font-size:12.5px;color:#3fa0a6;line-height:1.6;text-align:center;font-weight:500}
+.savetip{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 2px 10px;font-size:12.5px;color:#3fa0a6;line-height:1.6;font-weight:500}
+.savetip svg{width:15px;height:15px;flex-shrink:0}
 .empty{padding:60px 0;text-align:center;color:#aaa}
 </style></head><body><div class="wrap">
 <header><span class="b">한국이름학교</span></header>
