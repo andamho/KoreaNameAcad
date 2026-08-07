@@ -3,10 +3,7 @@ import { Gem, Clock, Settings } from "lucide-react";
 import { Link } from "wouter";
 import IdentityMap from "./IdentityMap";
 import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_1766729101276.png";
-import costbg from "@/assets/costbg";
 
-const _costbgPreload = new Image();
-_costbgPreload.src = costbg;
 import { saveScrollPosition } from "@/hooks/use-scroll-restore";
 
 const pricingData = {
@@ -85,9 +82,10 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
         <section className="relative overflow-hidden py-16 md:py-24">
           {/* 배경 이미지 - 최적화된 img 태그 */}
           <img
-            src={costbg}
+            src="/pricing-bg.webp"
             alt=""
-            className="absolute inset-0 w-full h-full object-cover"
+            /* 히어로만 조금 어둡게 — 글자·캐릭터가 또렷해진다(대리석 결은 남는 정도) */
+            className="absolute inset-0 w-full h-full object-cover brightness-[0.8]"
             fetchPriority="high"
             loading="eager"
             decoding="sync"
@@ -101,14 +99,14 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
                 className="w-auto h-40 md:h-56 flex-shrink-0 order-1 md:order-2"
               />
               <div className="text-center md:text-left order-2 md:order-1">
-                <p className="text-sm font-medium tracking-wide text-slate-600 mb-2">PRICE & GUIDE</p>
+                <p className="text-sm font-medium tracking-wide text-white/80 mb-2">PRICE & GUIDE</p>
                 <h1 
                   className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4"
                   data-testid="heading-pricing"
                 >
                   비용 및 시간
                 </h1>
-                <p className="text-lg md:text-2xl text-slate-700" data-testid="text-pricing-policy">모든 비용은 이름연구협회 규정에 따릅니다</p>
+                <p className="text-lg md:text-2xl text-white" data-testid="text-pricing-policy">모든 비용은 이름연구협회 규정에 따릅니다</p>
               </div>
             </div>
           </div>
@@ -116,7 +114,19 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
       )}
 
       {/* Pricing Content Section */}
-      <section id="pricing" className={`relative overflow-hidden bg-white dark:bg-background ${showHero ? 'kna-pricing-section-hero pt-16 md:pt-24 pb-24' : 'kna-pricing-section'}`}>
+      <section id="pricing" className={`relative overflow-hidden ${showHero ? 'kna-pricing-section-hero pt-16 md:pt-24 pb-24' : 'kna-pricing-section bg-white dark:bg-background'}`}>
+        {/* 비용 페이지에서는 히어로와 같은 대리석 배경을 이어 깐다.
+            히어로(어두움) → 흰 띠 → 검은 금액표 로 톤이 두 번 튀던 것을 한 덩어리로 만든다. */}
+        {showHero && (
+          <img
+            src="/pricing-bg.webp"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="eager"
+            decoding="sync"
+            aria-hidden="true"
+          />
+        )}
         <div className={`kna-pricing-inner relative max-w-6xl mx-auto px-6 lg:px-8 ${showHero ? 'pt-8 sm:pt-10' : 'pt-24 pb-24 lg:pt-48 lg:pb-48'}`}>
           {/* Section header - only shown when Hero is NOT displayed */}
           {!showHero && (
@@ -207,18 +217,18 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
 
             {/* 오른쪽: 안내 문구 + 소개 + 신청 버튼 (예전엔 영상 아래·한참 떨어진 곳에 있었다) */}
             <div className="w-full sm:flex-1 text-center sm:text-left">
-              <h3 className="text-lg sm:text-xl font-bold text-foreground">개명 금액이 궁금하신가요?</h3>
-              <p className="mt-2 text-sm text-muted-foreground">대표님이 직접 설명드립니다. (1분)</p>
-              <p className="mt-5 text-xs text-muted-foreground leading-relaxed">
+              <h3 className={`text-lg sm:text-xl font-bold ${showHero ? "text-white" : "text-foreground"}`}>개명 금액이 궁금하신가요?</h3>
+              <p className={`mt-2 text-sm ${showHero ? "text-white" : "text-muted-foreground"}`}>대표님이 직접 설명드립니다. (1분)</p>
+              <p className={`mt-5 text-xs leading-relaxed ${showHero ? "text-white" : "text-muted-foreground"}`}>
                 {/* 직함은 아래 소속(12px)보다 커야 위계가 잡힌다 → 14px */}
-                <span className="block text-sm font-bold text-foreground">Founder &amp; CEO</span>
+                <span className={`block text-sm font-bold ${showHero ? "text-white" : "text-foreground"}`}>Founder &amp; CEO</span>
                 한국이름학교 | 와츠유어네임 이름연구협회
               </p>
               <div className="flex items-center justify-center sm:justify-start gap-4 mt-7">
-                <Link to="/services" onClick={() => saveScrollPosition("/")} className="inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-white px-4 py-1.5 text-sm font-medium text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
+                <Link to="/services" onClick={() => saveScrollPosition("/")} className={`inline-flex items-center justify-center rounded-full px-4 py-1.5 text-sm font-medium transition ${showHero ? "bg-white text-gray-900 hover:bg-gray-100" : "bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100"}`}>
                   지금 신청 <span className="ml-1">›</span>
                 </Link>
-                <Link to="/inquiry" className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition">
+                <Link to="/inquiry" className={`inline-flex items-center text-sm font-medium transition ${showHero ? "text-white hover:text-white/80" : "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"}`}>
                   실시간 상담 <span className="ml-0.5">›</span>
                 </Link>
               </div>
@@ -257,8 +267,7 @@ function PricingTable({ sectionIndex, heading, columns, rows }: PricingTableProp
   return (
     <div className="space-y-2">
       <h3 
-        className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-base lg:text-lg font-semibold text-[#5ce1e6]"
-        style={{ background: "rgba(92, 225, 230, 0.1)" }}
+        className="inline-flex items-center gap-2 px-1 py-1.5 text-base lg:text-lg font-semibold text-white"
         data-testid={`heading-${headingId}`}
       >
         {getIcon()}
