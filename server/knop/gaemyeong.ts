@@ -242,8 +242,10 @@ figcaption{padding:8px 12px;font-size:13px;color:#666}
 .vlink-empty{width:100%;aspect-ratio:16/9;background:#e9edee}
 .play{position:absolute;left:0;right:0;top:0;bottom:0;margin:auto;width:62px;height:44px;border-radius:11px;background:rgba(0,0,0,.72)}
 .play::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-42%,-50%);border-style:solid;border-width:9px 0 9px 15px;border-color:transparent transparent transparent #fff}
-.savetip{display:flex;align-items:center;justify-content:center;gap:6px;margin:2px 2px 16px;font-size:12.5px;color:#000;line-height:1.6;font-weight:500}
-.savetip svg{width:15px;height:15px;flex-shrink:0}
+/* 좁은 화면에서 문구가 두 줄이 되면 가운데 맞춤일 때 아이콘이 두 줄 사이로 내려간다.
+   위쪽 맞춤으로 두고 첫 줄 글자 높이만큼만 내려 첫 줄과 나란히 오게 한다. */
+.savetip{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin:2px 2px 16px;font-size:12.5px;color:#000;line-height:1.6;font-weight:500}
+.savetip svg{width:15px;height:15px;flex-shrink:0;margin-top:2.5px}
 .empty{padding:60px 0;text-align:center;color:#aaa}
 </style></head><body><div class="wrap">
 <header><img src="/new-logo.png" alt="" ><div class="brand"><div class="b1">한국이름학교</div><div class="b2">와츠유어네임 이름연구협회</div></div></header>
