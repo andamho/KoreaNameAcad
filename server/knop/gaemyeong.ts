@@ -185,14 +185,16 @@ export async function renderViewerHtml(setKey: SetKey): Promise<string> {
   // 제목(figcaption)은 보여주지 않는다. 올릴 때 붙은 파일 이름이 그대로 남아
   // 화면에 "2024_02_06 23_24", "002" 같은 게 찍혔다. 제목은 관리 화면에서만 쓴다.
   // 출처 안내는 영상마다가 아니라 맨 아래에 한 번만 붙인다.
-  // 저장 안내는 첫 이미지 위에 한 번만. 예전엔 이미지마다 붙어 같은 문장이 반복됐다.
+  // 저장 안내는 마지막 이미지 '아래'에 한 번만. 예전엔 이미지마다 붙어 같은 문장이 반복됐다.
   // 아이콘은 이모지(📌) 대신 선 아이콘 — 기기마다 모양이 달라지지 않고 글자색과 어울린다.
   const SAVE_ICON =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>';
   const SAVE_TIP = "이미지를 저장하시려면, 사진을 꾹 눌러 “이미지 저장”을 선택하세요.";
-  let savedTipShown = false;
+  const lastImageIdx = assets.map((a) => a.kind).lastIndexOf("image");
   const blocks = assets
-    .map((a) => {
+    .map((a, i) => {
+      const tip =
+        i === lastImageIdx ? `<div class="savetip">${SAVE_ICON}<span>${esc(SAVE_TIP)}</span></div>` : "";
       // 눌러서 유튜브로 넘어가는 방식. 영상 주인이 '다른 사이트에서 재생 금지'를 걸어두면
       // 페이지 안에서는 검은 오류창만 뜬다. 그때는 대표 그림만 보여주고 눌러서 보게 한다.
       if (a.kind === "videolink") {
@@ -209,9 +211,7 @@ export async function renderViewerHtml(setKey: SetKey): Promise<string> {
           : `<video src="${esc(a.target)}" controls playsinline preload="metadata"></video>`;
         return `<figure>${player}</figure>`;
       }
-      const tip = savedTipShown ? "" : `<div class="savetip">${SAVE_ICON}<span>${esc(SAVE_TIP)}</span></div>`;
-      savedTipShown = true;
-      return `${tip}<figure><img src="${esc(a.target)}" alt="" loading="lazy"></figure>`;
+      return `<figure><img src="${esc(a.target)}" alt="" loading="lazy"></figure>${tip}`;
     })
     .join("\n");
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8">
@@ -220,7 +220,15 @@ export async function renderViewerHtml(setKey: SetKey): Promise<string> {
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:#f6f8f9;color:#222;-webkit-text-size-adjust:100%}
 .wrap{max-width:640px;margin:0 auto;padding:16px}
-header{text-align:center;padding:18px 0 12px}header .b{display:inline-block;font-weight:700;color:#3fc4ca;letter-spacing:.02em}
+/* 머리말은 홈페이지 내비바 좌측과 같게 — 로고 + 한국이름학교 + 와츠유어네임 이름연구협회.
+   글꼴도 같은 고려대학교체를 쓴다(파일은 /fonts 에 이미 있다). */
+@font-face{font-family:'KoreaUnivB';src:url('/fonts/KoreaUnivB.woff2') format('woff2'),url('/fonts/KoreaUnivB.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'KoreaUnivL';src:url('/fonts/KoreaUnivL.woff2') format('woff2'),url('/fonts/KoreaUnivL.ttf') format('truetype');font-weight:300;font-style:normal;font-display:swap}
+header{display:flex;align-items:center;justify-content:center;gap:4px;padding:14px 0 16px}
+header img{height:84px;width:auto;display:block}
+header .brand{text-align:left;color:#000}
+header .b1{font-family:'KoreaUnivB',sans-serif;font-size:19.9px;line-height:1.1;letter-spacing:-0.025em}
+header .b2{font-family:'KoreaUnivL',sans-serif;font-size:10.9px;line-height:1.1;letter-spacing:-0.025em;margin-top:2px}
 figure{margin:0 0 16px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.06)}
 figure img,figure video{display:block;width:100%;height:auto;background:#000;border-radius:14px}
 .ytwrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden}
@@ -234,11 +242,11 @@ figcaption{padding:8px 12px;font-size:13px;color:#666}
 .vlink-empty{width:100%;aspect-ratio:16/9;background:#e9edee}
 .play{position:absolute;left:0;right:0;top:0;bottom:0;margin:auto;width:62px;height:44px;border-radius:11px;background:rgba(0,0,0,.72)}
 .play::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-42%,-50%);border-style:solid;border-width:9px 0 9px 15px;border-color:transparent transparent transparent #fff}
-.savetip{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 2px 10px;font-size:12.5px;color:#3fa0a6;line-height:1.6;font-weight:500}
+.savetip{display:flex;align-items:center;justify-content:center;gap:6px;margin:2px 2px 16px;font-size:12.5px;color:#000;line-height:1.6;font-weight:500}
 .savetip svg{width:15px;height:15px;flex-shrink:0}
 .empty{padding:60px 0;text-align:center;color:#aaa}
 </style></head><body><div class="wrap">
-<header><span class="b">한국이름학교</span></header>
+<header><img src="/new-logo.png" alt="" ><div class="brand"><div class="b1">한국이름학교</div><div class="b2">와츠유어네임 이름연구협회</div></div></header>
 ${blocks || '<div class="empty">준비 중입니다.</div>'}
 ${assets.some((a) => a.kind === "video" || a.kind === "videolink") ? '<div class="credit">이 영상들은 한국이름학교와 무관합니다.<br>‘미용감사’ 하시는데 도움되실 거 같아 소개해드립니다.</div>' : ""}
 </div></body></html>`;
