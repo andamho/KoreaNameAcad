@@ -102,13 +102,16 @@ async function publishYoutubeAndThumbnailFromBuffer(opts: {
     if (db) await db.update(videoJobs).set({ ytStatus: "failed", updatedAt: new Date() }).where(eq(videoJobs.id, jobId));
   }
 
-  // 커스텀 썸네일: 영상 맨 앞(0.25초) 프레임.
+  // 커스텀 썸네일: 영상 맨 앞(0.15초) 프레임.
+  // 편집 규칙상 정지 썸네일 이미지가 앞 0.4초 동안 들어간다(실측: 0.40초에 본편 전환).
+  // 0.25초는 경계까지 여유가 0.15초뿐이라, 썸네일 길이가 조금만 짧아져도 본편 프레임을 잡는다.
+  // 0.15초로 당겨 여유를 확보한다(실측 밝기 YAVG 145/100 — 페이드인 어두움 없음).
   // [중요] 프레임 추출은 딱 한 번. 최초 시도와 재시도 2회 모두 같은 Buffer 를 쓴다(SHA-256 동일).
   // 썸네일이 끝내 실패해도 영상은 published 그대로 두고 재업로드하지 않는다(유튜브 기본 썸네일 사용).
   const thumbnailAttempts: ThumbnailAttempt[] = [];
   if (ytVideoId) {
     try {
-      const frame = await extractFrameJpeg(videoBuffer, 0.25);
+      const frame = await extractFrameJpeg(videoBuffer, 0.15);
       const jpegSha256 = crypto.createHash("sha256").update(frame).digest("hex");
       const run = await setThumbnailWithRetry({
         videoId: ytVideoId,
