@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Image as ImageIcon, Video, Eye, Send, CheckCircle2, XCircle, Clock, CalendarDays } from "lucide-react";
+import { Trash2, Image as ImageIcon, Video, Eye, Send, CheckCircle2, XCircle, Clock, CalendarDays, ChevronUp, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { seqLabel, seqBadgeClass } from "./lib";
@@ -406,6 +406,36 @@ function AssetEditor({ cfg, onChange }: { cfg: NoticeConfig; onChange: () => voi
     mutationFn: (id: string) => knopApi.deleteNoticeAsset(id),
     onSuccess: onChange,
   });
+  // 순서 바꾸기 — 목록에 보이는 차례가 모아보기 페이지에 그대로 나온다
+  const moveMut = useMutation({
+    mutationFn: ({ id, dir }: { id: string; dir: "up" | "down" }) => knopApi.moveNoticeAsset(id, dir),
+    onSuccess: onChange,
+  });
+  // 영상 보여주는 방식 전환 (페이지에서 재생 ↔ 눌러서 유튜브로)
+  const modeMut = useMutation({
+    mutationFn: (id: string) => knopApi.toggleNoticeAssetPlayMode(id),
+    onSuccess: (r) => {
+      onChange();
+      toast({ title: r.kind === "videolink" ? "눌러서 유튜브로 이동합니다" : "페이지에서 바로 재생합니다" });
+    },
+  });
+  // 유튜브 등 영상 주소를 붙여넣어 바로 추가 (파일 업로드 없이)
+  const [videoUrl, setVideoUrl] = useState("");
+  const [videoTitle, setVideoTitle] = useState("");
+  const addLink = useMutation({
+    mutationFn: () =>
+      knopApi.addNoticeVideo(cfg.setKey, {
+        title: videoTitle.trim() || "영상",
+        url: videoUrl.trim(),
+      }),
+    onSuccess: () => {
+      setVideoUrl("");
+      setVideoTitle("");
+      onChange();
+      toast({ title: "영상 링크 추가됨" });
+    },
+    onError: (e: any) => toast({ title: "추가 실패", description: e?.message, variant: "destructive" }),
+  });
 
   return (
     <Card className="p-4 space-y-3">
@@ -423,9 +453,28 @@ function AssetEditor({ cfg, onChange }: { cfg: NoticeConfig; onChange: () => voi
       <p className="text-xs text-gray-400 -mt-1">
         올린 이미지·영상은 <b>링크 하나</b>로 묶여 한 화면에서 보여집니다. 문자엔 이 링크만 들어갑니다.
       </p>
+      <p className="text-xs text-gray-400 -mt-1">아래 차례대로 모아보기 페이지에 나옵니다. 화살표로 순서를 바꾸세요.</p>
       <div className="flex flex-wrap gap-2">
-        {cfg.assets.map((a) => (
+        {cfg.assets.map((a, idx) => (
           <div key={a.id} className="flex items-center gap-2 rounded-lg border border-gray-200 px-2.5 py-1.5">
+            <div className="flex flex-col">
+              <button
+                onClick={() => moveMut.mutate({ id: a.id, dir: "up" })}
+                disabled={idx === 0}
+                title="위로"
+                className="text-gray-300 hover:text-[#3fc4ca] disabled:opacity-30 disabled:hover:text-gray-300"
+              >
+                <ChevronUp className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => moveMut.mutate({ id: a.id, dir: "down" })}
+                disabled={idx === cfg.assets.length - 1}
+                title="아래로"
+                className="text-gray-300 hover:text-[#3fc4ca] disabled:opacity-30 disabled:hover:text-gray-300"
+              >
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+            </div>
             {a.kind === "image" ? (
               <img src={a.target} className="w-9 h-11 object-cover rounded" alt={a.title} />
             ) : (
@@ -433,6 +482,15 @@ function AssetEditor({ cfg, onChange }: { cfg: NoticeConfig; onChange: () => voi
             )}
             <div className="text-xs">
               <div className="font-medium text-gray-800">{a.title}</div>
+              {a.kind !== "image" && (
+                <button
+                  onClick={() => modeMut.mutate(a.id)}
+                  title="영상이 페이지에서 안 나오면 눌러서 바꾸세요"
+                  className="text-[11px] text-gray-500 underline decoration-dotted hover:text-[#3fc4ca]"
+                >
+                  {a.kind === "videolink" ? "눌러서 유튜브로" : "페이지에서 재생"}
+                </button>
+              )}
               <a href={a.url} target="_blank" rel="noreferrer" className="text-[#3fc4ca] hover:underline">
                 {a.url.replace(/^https?:\/\//, "")}
               </a>
@@ -476,6 +534,29 @@ function AssetEditor({ cfg, onChange }: { cfg: NoticeConfig; onChange: () => voi
           />
         </label>
         <span className="text-xs text-gray-400">영상 원본을 올리면 자동으로 짧은 링크로 만들어 문자에 넣습니다.</span>
+      </div>
+      {/* 유튜브 등 영상 주소로 추가 — 파일을 올릴 필요 없이 주소만 붙여넣으면 된다 */}
+      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
+        <input
+          value={videoUrl}
+          onChange={(e) => setVideoUrl(e.target.value)}
+          placeholder="영상 링크 붙여넣기 (예: https://youtu.be/...)"
+          className="flex-1 min-w-[240px] text-sm rounded-md border border-gray-200 px-3 py-1.5 focus:outline-none focus:border-[#56D5DB]"
+        />
+        <input
+          value={videoTitle}
+          onChange={(e) => setVideoTitle(e.target.value)}
+          placeholder="이름(관리용)"
+          className="w-36 text-sm rounded-md border border-gray-200 px-3 py-1.5 focus:outline-none focus:border-[#56D5DB]"
+        />
+        <button
+          onClick={() => addLink.mutate()}
+          disabled={!videoUrl.trim() || addLink.isPending}
+          className="inline-flex items-center gap-1.5 text-sm rounded-md border border-gray-200 px-3 py-1.5 hover:border-[#56D5DB] disabled:opacity-40"
+        >
+          <Video className="w-4 h-4" /> {addLink.isPending ? "추가 중…" : "링크로 추가"}
+        </button>
+        <span className="w-full text-xs text-gray-400">이름은 관리 화면에서만 쓰입니다. 모아보기 페이지에는 나오지 않습니다.</span>
       </div>
     </Card>
   );

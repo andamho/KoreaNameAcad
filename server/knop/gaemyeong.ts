@@ -182,19 +182,29 @@ function youtubeId(url: string): string | null {
 
 export async function renderViewerHtml(setKey: SetKey): Promise<string> {
   const assets = await assetsForSet(setKey);
-  // 영상 아래엔 외부 제작물 출처 고지(고정), 이미지 '바로 위'엔 저장 안내를 붙인다.
-  const VIDEO_CREDIT = "※ 포웨이 행복연구소 제작 영상입니다(한국이름학교와 무관). 미용감사에 참고하시기 좋아 소개해 드려요.";
+  // 제목(figcaption)은 보여주지 않는다. 올릴 때 붙은 파일 이름이 그대로 남아
+  // 화면에 "2024_02_06 23_24", "002" 같은 게 찍혔다. 제목은 관리 화면에서만 쓴다.
+  // 출처 안내는 영상마다가 아니라 맨 아래에 한 번만 붙인다.
   const SAVE_TIP = "📌 이미지를 저장하시려면, 사진을 꾹 눌러 “이미지 저장”을 선택하세요.";
   const blocks = assets
     .map((a) => {
+      // 눌러서 유튜브로 넘어가는 방식. 영상 주인이 '다른 사이트에서 재생 금지'를 걸어두면
+      // 페이지 안에서는 검은 오류창만 뜬다. 그때는 대표 그림만 보여주고 눌러서 보게 한다.
+      if (a.kind === "videolink") {
+        const yt = youtubeId(a.target);
+        const thumb = yt ? `https://img.youtube.com/vi/${yt}/hqdefault.jpg` : "";
+        return `<figure><a class="vlink" href="${esc(a.target)}" target="_blank" rel="noreferrer">${
+          thumb ? `<img src="${thumb}" alt="" loading="lazy">` : `<div class="vlink-empty"></div>`
+        }<span class="play"></span></a></figure>`;
+      }
       if (a.kind === "video") {
         const yt = youtubeId(a.target);
         const player = yt
           ? `<div class="ytwrap"><iframe src="https://www.youtube.com/embed/${yt}" title="${esc(a.title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`
           : `<video src="${esc(a.target)}" controls playsinline preload="metadata"></video>`;
-        return `<figure>${player}<figcaption>${esc(a.title)}</figcaption><div class="credit">${esc(VIDEO_CREDIT)}</div></figure>`;
+        return `<figure>${player}</figure>`;
       }
-      return `<div class="savetip">${esc(SAVE_TIP)}</div><figure><img src="${esc(a.target)}" alt="${esc(a.title)}" loading="lazy"><figcaption>${esc(a.title)}</figcaption></figure>`;
+      return `<div class="savetip">${esc(SAVE_TIP)}</div><figure><img src="${esc(a.target)}" alt="" loading="lazy"></figure>`;
     })
     .join("\n");
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8">
@@ -209,12 +219,18 @@ figure img,figure video{display:block;width:100%;height:auto;background:#000}
 .ytwrap{position:relative;width:100%;aspect-ratio:16/9;background:#000}
 .ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 figcaption{padding:8px 12px;font-size:13px;color:#666}
-.credit{padding:8px 12px 12px;font-size:12px;color:#8a8f93;line-height:1.6;border-top:1px solid #f0f2f3}
+.credit{margin:2px 2px 22px;font-size:12.5px;color:#8a8f93;line-height:1.7;text-align:center}
+.vlink{display:block;position:relative;background:#000}
+.vlink img{display:block;width:100%;height:auto}
+.vlink-empty{width:100%;aspect-ratio:16/9;background:#000}
+.play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:62px;height:44px;border-radius:11px;background:rgba(0,0,0,.72)}
+.play::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-42%,-50%);border-style:solid;border-width:9px 0 9px 15px;border-color:transparent transparent transparent #fff}
 .savetip{margin:0 2px 8px;font-size:12.5px;color:#3fa0a6;line-height:1.6;text-align:center;font-weight:500}
 .empty{padding:60px 0;text-align:center;color:#aaa}
 </style></head><body><div class="wrap">
 <header><span class="b">한국이름학교</span></header>
 ${blocks || '<div class="empty">준비 중입니다.</div>'}
+${assets.some((a) => a.kind === "video" || a.kind === "videolink") ? '<div class="credit">이 영상들은 한국이름학교와 무관합니다.<br>‘미용감사’ 하시는데 도움되실 거 같아 소개해드립니다.</div>' : ""}
 </div></body></html>`;
 }
 
@@ -268,6 +284,39 @@ export async function addVideoAsset(setKey: SetKey, title: string, videoUrl: str
     .values({ setKey, kind: "video", title, shortLinkId: link.id, sortOrder: Date.now() % 100000 })
     .returning();
   return { id: row.id, kind: "video", title, slug: link.slug, url: shortUrl(link.slug), target: url, sortOrder: row.sortOrder };
+}
+
+// 영상 보여주는 방식 전환: 페이지에서 재생(video) ↔ 눌러서 유튜브로(videolink).
+// 영상 주인이 외부 재생을 막아둔 경우 페이지에선 검은 오류창만 뜨므로 후자로 바꾼다.
+export async function toggleAssetPlayMode(id: string): Promise<string | null> {
+  const d = requireDb();
+  const [row] = await d.select().from(noticeAssets).where(eq(noticeAssets.id, id));
+  if (!row || (row.kind !== "video" && row.kind !== "videolink")) return null;
+  const next = row.kind === "video" ? "videolink" : "video";
+  await d.update(noticeAssets).set({ kind: next }).where(eq(noticeAssets.id, id));
+  return next;
+}
+
+// 첨부 순서를 한 칸 위/아래로 옮긴다.
+// sortOrder 는 지금까지 Date.now() % 100000 으로 넣었다. 이 값은 100초마다 0 으로 되돌아가서
+// 나중에 올린 게 앞에 오는 일이 생긴다. 옮길 때 0,1,2… 로 다시 매겨 그 문제도 같이 없앤다.
+export async function moveAsset(id: string, dir: "up" | "down"): Promise<boolean> {
+  const d = requireDb();
+  const [row] = await d.select().from(noticeAssets).where(eq(noticeAssets.id, id));
+  if (!row) return false;
+  const list = await d
+    .select()
+    .from(noticeAssets)
+    .where(eq(noticeAssets.setKey, row.setKey))
+    .orderBy(asc(noticeAssets.sortOrder), asc(noticeAssets.createdAt));
+  const i = list.findIndex((a) => a.id === id);
+  const j = dir === "up" ? i - 1 : i + 1;
+  if (i < 0 || j < 0 || j >= list.length) return false;
+  [list[i], list[j]] = [list[j], list[i]];
+  for (let k = 0; k < list.length; k++) {
+    await d.update(noticeAssets).set({ sortOrder: k }).where(eq(noticeAssets.id, list[k].id));
+  }
+  return true;
 }
 
 // 이미 업로드된 R2 경로(/objects/...)를 첨부로 등록 (영상 원본 업로드용)

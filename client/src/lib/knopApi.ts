@@ -406,6 +406,10 @@ export const knopApi = {
   addNoticeAssetFile: (setKey: string, data: { title: string; objectPath: string; kind: "image" | "video" }) =>
     req<NoticeAsset>("POST", `/api/kop/notice/${setKey}/asset-file`, data),
   deleteNoticeAsset: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/notice/asset/${id}`),
+  moveNoticeAsset: (id: string, dir: "up" | "down") =>
+    req<{ ok: boolean }>("POST", `/api/kop/notice/asset/${id}/move`, { dir }),
+  toggleNoticeAssetPlayMode: (id: string) =>
+    req<{ ok: boolean; kind: string }>("POST", `/api/kop/notice/asset/${id}/playmode`, {}),
   previewNotice: (setKey: string, name?: string) =>
     req<NoticePreview[]>("GET", `/api/kop/notice/${setKey}/preview${name ? `?name=${encodeURIComponent(name)}` : ""}`),
   testNotice: (setKey: string, data: { phone: string; step?: number; name?: string }) =>

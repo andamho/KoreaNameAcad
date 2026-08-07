@@ -1448,6 +1448,25 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     }
   });
 
+  app.post(`${P}/notice/asset/:id/playmode`, requireAdmin, async (req, res) => {
+    try {
+      const kind = await gm.toggleAssetPlayMode(req.params.id);
+      if (!kind) return res.status(400).json({ error: "not_video" });
+      res.json({ ok: true, kind });
+    } catch (e) {
+      handle(res, "POST notice asset playmode", e);
+    }
+  });
+
+  app.post(`${P}/notice/asset/:id/move`, requireAdmin, async (req, res) => {
+    try {
+      const dir = req.body?.dir === "down" ? "down" : "up";
+      res.json({ ok: await gm.moveAsset(req.params.id, dir) });
+    } catch (e) {
+      handle(res, "POST notice asset move", e);
+    }
+  });
+
   app.delete(`${P}/notice/asset/:id`, requireAdmin, async (req, res) => {
     try {
       res.json({ ok: await gm.deleteAsset(req.params.id) });
