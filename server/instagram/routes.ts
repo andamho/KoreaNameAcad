@@ -25,6 +25,9 @@ function verifyToken(): string | undefined {
 
 export function registerInstagramRoutes(app: Express, requireAdmin: RequestHandler) {
   startIgTokenRefresh();
+  // [주의] 인스타 게시 미완료 복구(startInstagramPublishRecovery)는 여기서 부르지 않는다.
+  // scheduleDaily 의 타이머가 unref 되지 않아, 이 파일을 import 하는 테스트 프로세스가 끝나지 않는다.
+  // 실제 기동은 server/index.ts 의 listen 콜백에서 한다(텔레그램 봇과 같은 위치).
 
   // ── 웹훅 검증 핸드셰이크 (Meta 대시보드에서 URL 저장할 때 1회 호출, 공개) ──
   app.get("/api/instagram/webhook", (req: Request, res: Response) => {

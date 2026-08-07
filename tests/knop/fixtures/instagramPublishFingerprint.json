@@ -1,0 +1,395 @@
+{
+  "columns": [
+    {
+      "table_name": "ig_account_binding",
+      "column_name": "provider",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_account_binding",
+      "column_name": "account_id",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_account_binding",
+      "column_name": "username",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_account_binding",
+      "column_name": "oauth_token_id",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_account_binding",
+      "column_name": "token_fingerprint",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_account_binding",
+      "column_name": "source",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "'oauth'::text"
+    },
+    {
+      "table_name": "ig_account_binding",
+      "column_name": "bound_at",
+      "data_type": "timestamp without time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "ig_account_binding",
+      "column_name": "updated_at",
+      "data_type": "timestamp without time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "video_job_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "instagram_account_id",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "creation_id",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "container_created_at",
+      "data_type": "timestamp without time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "container_generation",
+      "data_type": "integer",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "1"
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "converted_r2_key",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "content_fingerprint",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "media_id",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "state",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "lease_token",
+      "data_type": "character varying",
+      "character_maximum_length": 64,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "lease_expires_at",
+      "data_type": "timestamp without time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "publish_attempt_count",
+      "data_type": "integer",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "check_attempt",
+      "data_type": "integer",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "next_check_at",
+      "data_type": "timestamp without time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "last_reconciled_at",
+      "data_type": "timestamp without time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "claimed_at",
+      "data_type": "timestamp without time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "published_at",
+      "data_type": "timestamp without time zone",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publications",
+      "column_name": "updated_at",
+      "data_type": "timestamp without time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "ig_publish_events",
+      "column_name": "id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "ig_publish_events",
+      "column_name": "publication_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publish_events",
+      "column_name": "video_job_id",
+      "data_type": "character varying",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publish_events",
+      "column_name": "creation_id",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publish_events",
+      "column_name": "event_type",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publish_events",
+      "column_name": "status_code",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publish_events",
+      "column_name": "raw_response",
+      "data_type": "jsonb",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publish_events",
+      "column_name": "from_state",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publish_events",
+      "column_name": "to_state",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publish_events",
+      "column_name": "attempt",
+      "data_type": "integer",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publish_events",
+      "column_name": "note",
+      "data_type": "text",
+      "character_maximum_length": null,
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ig_publish_events",
+      "column_name": "occurred_at",
+      "data_type": "timestamp without time zone",
+      "character_maximum_length": null,
+      "is_nullable": "NO",
+      "column_default": "now()"
+    }
+  ],
+  "constraints": [
+    {
+      "tbl": "ig_account_binding",
+      "conname": "ig_account_binding_pkey",
+      "contype": "p",
+      "def": "PRIMARY KEY (provider)"
+    },
+    {
+      "tbl": "ig_publications",
+      "conname": "ig_publications_pkey",
+      "contype": "p",
+      "def": "PRIMARY KEY (id)"
+    },
+    {
+      "tbl": "ig_publications",
+      "conname": "ig_publications_job_account_uniq",
+      "contype": "u",
+      "def": "UNIQUE (video_job_id, instagram_account_id)"
+    },
+    {
+      "tbl": "ig_publish_events",
+      "conname": "ig_publish_events_publication_fk",
+      "contype": "f",
+      "def": "FOREIGN KEY (publication_id) REFERENCES ig_publications(id) ON DELETE SET NULL"
+    },
+    {
+      "tbl": "ig_publish_events",
+      "conname": "ig_publish_events_pkey",
+      "contype": "p",
+      "def": "PRIMARY KEY (id)"
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "ig_account_binding",
+      "indexname": "ig_account_binding_pkey",
+      "indexdef": "CREATE UNIQUE INDEX ig_account_binding_pkey ON public.ig_account_binding USING btree (provider)"
+    },
+    {
+      "tablename": "ig_publications",
+      "indexname": "ig_publications_creation_idx",
+      "indexdef": "CREATE INDEX ig_publications_creation_idx ON public.ig_publications USING btree (creation_id)"
+    },
+    {
+      "tablename": "ig_publications",
+      "indexname": "ig_publications_job_account_uniq",
+      "indexdef": "CREATE UNIQUE INDEX ig_publications_job_account_uniq ON public.ig_publications USING btree (video_job_id, instagram_account_id)"
+    },
+    {
+      "tablename": "ig_publications",
+      "indexname": "ig_publications_job_idx",
+      "indexdef": "CREATE INDEX ig_publications_job_idx ON public.ig_publications USING btree (video_job_id)"
+    },
+    {
+      "tablename": "ig_publications",
+      "indexname": "ig_publications_pending_idx",
+      "indexdef": "CREATE INDEX ig_publications_pending_idx ON public.ig_publications USING btree (next_check_at) WHERE (state <> 'published'::text)"
+    },
+    {
+      "tablename": "ig_publications",
+      "indexname": "ig_publications_pkey",
+      "indexdef": "CREATE UNIQUE INDEX ig_publications_pkey ON public.ig_publications USING btree (id)"
+    },
+    {
+      "tablename": "ig_publish_events",
+      "indexname": "ig_publish_events_job_idx",
+      "indexdef": "CREATE INDEX ig_publish_events_job_idx ON public.ig_publish_events USING btree (video_job_id, occurred_at)"
+    },
+    {
+      "tablename": "ig_publish_events",
+      "indexname": "ig_publish_events_pkey",
+      "indexdef": "CREATE UNIQUE INDEX ig_publish_events_pkey ON public.ig_publish_events USING btree (id)"
+    },
+    {
+      "tablename": "ig_publish_events",
+      "indexname": "ig_publish_events_pub_idx",
+      "indexdef": "CREATE INDEX ig_publish_events_pub_idx ON public.ig_publish_events USING btree (publication_id, occurred_at)"
+    }
+  ]
+}

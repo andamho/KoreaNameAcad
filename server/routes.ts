@@ -10,7 +10,12 @@ import { registerKnopRoutes } from "./knop/routes";
 import { ensureShortLink } from "./knop/gaemyeong";
 import { knopStore } from "./knop/store";
 import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutubeStatus, uploadYoutubeVideo, setYoutubeThumbnail } from "./youtube";
-import { instagramConfigured, getInstagramStatus, publishInstagramReel } from "./instagram/publish";
+import { instagramConfigured, getInstagramStatus } from "./instagram/publish";
+import {
+  startInstagramPublish,
+  reconcilePublication,
+  recoverPendingPublications,
+} from "./instagram/reconcile";
 import { registerInstagramRoutes } from "./instagram/routes";
 import { sendAdminOtp } from "./telegramBot";
 import { otpStore, generateOtp, computeOtpHash, verifyOtpCode, OTP_TTL_MS } from "./otpStore";
@@ -1200,7 +1205,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // 3-a) 인스타그램 릴스 게시 (변환본을 R2 공개 URL로 전달)
+      //      ERROR 를 만나면 즉시 실패로 확정하지 않고 유예 재확인을 예약한 뒤 반환한다(pending).
+      //      게시권·리스·재확인 상태의 정본은 ig_publications 다. 아래 igStatus 는 화면용 사본.
       let igMediaId: string | null = null;
+      let igPending: { reason: string; delayMs: number } | null = null;
       if (targetInstagram) {
         try {
           if (!h264) throw new Error(errors.instagram || "변환 영상 없음");
@@ -1212,9 +1220,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const igCaption = [String(instagramCaption || "").trim(), INSTAGRAM_CAPTION_FOOTER, INSTAGRAM_HASHTAGS]
             .filter(Boolean)
             .join("\n\n");
-          const result = await publishInstagramReel({ videoUrl: publicVideoUrl, caption: igCaption });
-          igMediaId = result.mediaId;
-          await db.update(videoJobs).set({ igStatus: "published", igMediaId, updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
+          const outcome = await startInstagramPublish({
+            jobId: job.id,
+            videoUrl: publicVideoUrl,
+            caption: igCaption,
+            convertedR2Key: igKey,
+            contentFingerprint: crypto.createHash("sha256").update(`${r2Key}\n${igCaption}`).digest("hex"),
+          });
+          if (outcome.state === "published") {
+            igMediaId = outcome.mediaId;
+          } else if (outcome.state === "pending") {
+            igPending = { reason: outcome.reason, delayMs: outcome.delayMs };
+          } else {
+            errors.instagram = outcome.reason;
+          }
         } catch (e: any) {
           errors.instagram = e?.message || "instagram publish failed";
           await db.update(videoJobs).set({ igStatus: "failed", updatedAt: new Date() }).where(eq(videoJobs.id, job.id));
@@ -1251,7 +1270,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         youtubeTitle: ytTitle,
         youtube: ytVideoId ? { ok: true, videoId: ytVideoId, url: `https://youtu.be/${ytVideoId}` } : { ok: false, error: errors.youtube },
         thumbnail: ytVideoId ? (thumbnailSet ? { ok: true } : { ok: false, error: errors.thumbnail || "설정 안됨" }) : null,
-        instagram: targetInstagram ? (igMediaId ? { ok: true, mediaId: igMediaId } : { ok: false, error: errors.instagram }) : null,
+        instagram: !targetInstagram
+          ? null
+          : igMediaId
+            ? { ok: true, mediaId: igMediaId }
+            : igPending
+              ? { ok: false, pending: true, retryInSec: Math.round(igPending.delayMs / 1000), note: igPending.reason }
+              : { ok: false, error: errors.instagram },
         tiktok: targetTiktok ? (ttPublishId ? { ok: true, publishId: ttPublishId, privacy: ttPrivacy } : { ok: false, error: errors.tiktok }) : null,
         homepage: willInsertHomepage ? (errors.homepage ? { ok: false, error: errors.homepage } : { ok: true, contentId }) : null,
       });
@@ -1296,18 +1321,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 3) 인스타만 재수행 (유튜브/홈페이지 함수 호출 없음)
       let igMediaId: string | null = null;
       let errMsg: string | undefined;
+      let pending: { reason: string; retryInSec: number } | null = null;
       const t0 = Date.now();
       try {
-        const objectStorage = new ObjectStorageService();
-        // 스트리밍 변환(전체 Buffer 미생성) + 1080 다운스케일
-        const h264 = await transcodeR2VideoToH264(job.videoR2Key);
-        const igKey = `uploads/ig-${crypto.randomUUID()}.mp4`;
-        await objectStorage.putObject(igKey, h264, "video/mp4");
-        const publicVideoUrl = `${PUBLIC_MEDIA_BASE_URL}/objects/${igKey}`;
-        const igCaption = [body, INSTAGRAM_CAPTION_FOOTER, INSTAGRAM_HASHTAGS].filter(Boolean).join("\n\n");
-        const result = await publishInstagramReel({ videoUrl: publicVideoUrl, caption: igCaption });
-        igMediaId = result.mediaId;
-        await db.update(videoJobs).set({ igStatus: "published", igMediaId, errorLog: null, updatedAt: new Date() }).where(eq(videoJobs.id, jobId));
+        // [중요] 새 컨테이너부터 만들지 않는다. 기존 creation_id 상태를 먼저 확인해서
+        //        PUBLISHED/FINISHED 면 재게시·재생성 없이 그 컨테이너로 끝낸다(중복 게시 방지).
+        const first = await reconcilePublication(jobId).catch((e: any) => ({
+          state: "blocked" as const,
+          reason: e?.message || "reconcile 실패",
+        }));
+
+        if (first.state === "published") {
+          igMediaId = (first as any).mediaId ?? null;
+          await db.update(videoJobs).set({ igStatus: "published", igMediaId, errorLog: null, updatedAt: new Date() }).where(eq(videoJobs.id, jobId));
+        } else if (first.state === "pending") {
+          pending = { reason: (first as any).reason, retryInSec: Math.round((first as any).delayMs / 1000) };
+        } else if (first.state === "blocked" && /게시 기록 없음/.test((first as any).reason || "")) {
+          // 이 잡에 대한 게시 기록 자체가 없을 때만 새로 변환·업로드해서 처음부터 시작한다.
+          const objectStorage = new ObjectStorageService();
+          const h264 = await transcodeR2VideoToH264(job.videoR2Key);
+          const igKey = `uploads/ig-${crypto.randomUUID()}.mp4`;
+          await objectStorage.putObject(igKey, h264, "video/mp4");
+          const publicVideoUrl = `${PUBLIC_MEDIA_BASE_URL}/objects/${igKey}`;
+          const igCaption = [body, INSTAGRAM_CAPTION_FOOTER, INSTAGRAM_HASHTAGS].filter(Boolean).join("\n\n");
+          const outcome = await startInstagramPublish({
+            jobId,
+            videoUrl: publicVideoUrl,
+            caption: igCaption,
+            convertedR2Key: igKey,
+            contentFingerprint: crypto.createHash("sha256").update(`${job.videoR2Key}\n${igCaption}`).digest("hex"),
+          });
+          if (outcome.state === "published") {
+            igMediaId = outcome.mediaId;
+            await db.update(videoJobs).set({ igStatus: "published", igMediaId, errorLog: null, updatedAt: new Date() }).where(eq(videoJobs.id, jobId));
+          } else if (outcome.state === "pending") {
+            pending = { reason: outcome.reason, retryInSec: Math.round(outcome.delayMs / 1000) };
+          } else {
+            throw new Error(outcome.reason);
+          }
+        } else {
+          throw new Error((first as any).reason || "재시도 불가");
+        }
       } catch (e: any) {
         errMsg = e?.message || "retry failed";
         // 이력 보존: 기존 errorLog에 이번 시도를 append (완전 덮어쓰지 않음)
@@ -1323,7 +1377,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         jobId,
         retryCount: job.igRetryCount,
         elapsedSec: ((Date.now() - t0) / 1000).toFixed(1),
-        instagram: igMediaId ? { ok: true, mediaId: igMediaId } : { ok: false, error: errMsg },
+        instagram: igMediaId
+          ? { ok: true, mediaId: igMediaId }
+          : pending
+            ? { ok: false, pending: true, retryInSec: pending.retryInSec, note: pending.reason }
+            : { ok: false, error: errMsg },
       });
     } catch (error: any) {
       console.error("[retry-instagram]", error);

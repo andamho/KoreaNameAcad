@@ -5,6 +5,7 @@
 import crypto from "crypto";
 import { igAppId, igAppSecret, exchangeCodeForShortToken, exchangeForLongToken, saveIgToken } from "./tokens";
 import { getMe } from "./client";
+import { bindAccountFromOAuth } from "./accountBinding";
 
 // 필요한 스코프. content_publish는 기존 릴스 자동배포를 유지하기 위해 계속 포함한다
 // (재인증하면 이전 토큰 권한은 이걸로 대체되므로 빠뜨리면 릴스 배포가 깨진다).
@@ -83,6 +84,22 @@ export async function completeOAuth(code: string): Promise<{ username: string; e
     scope: short.permissions,
     accountLabel: me.username,
   });
+
+  // 계정 ID 바인딩 — 토큰 교환 응답의 user_id 를 그대로 쓴다(추가 API 호출 없음).
+  // 다른 계정이 이미 묶여 있으면 자동 교체하지 않고 conflict 로 잠근다 → 이후 게시가 막힌다.
+  const accountId = short.userId || (me as any)?.id;
+  if (accountId) {
+    const { conflict } = await bindAccountFromOAuth({
+      accountId: String(accountId),
+      accessToken: long.accessToken,
+      username: me.username,
+    });
+    if (conflict) {
+      console.error("[IG OAuth] 계정 충돌로 바인딩을 교체하지 않았습니다 — 인스타 게시가 차단됩니다.");
+    }
+  } else {
+    console.error("[IG OAuth] user_id 를 얻지 못해 계정 바인딩을 저장하지 못했습니다.");
+  }
 
   console.log(`[IG OAuth] 연결 완료: @${me.username}, 만료 ${long.expiresAt.toISOString()}`);
   return { username: me.username, expiresAt: long.expiresAt, scopes: short.permissions };

@@ -60,6 +60,16 @@ export const MIGRATIONS: MigrationDef[] = [
     expectedSqlSha256: "26bd51fddc9f3049347b628a5384d22e6bcda5297d32b01a53b6edf3e51715a8",
     expectedFixtureSha256: "b8903b24c0acf078ccd99c28b16e8b7e75c801dd1377f78b028bb1d357d74737",
   },
+  {
+    // 인스타 게시 조정 3테이블(additive). 기존 video_jobs / oauth_tokens 는 무변경(ALTER 0건).
+    // fixture 는 2026-08-07 dry-run(단일 트랜잭션 → ROLLBACK)에서 실제 카탈로그로 생성한 값이다.
+    id: "0005_instagram_publish_reconciliation",
+    sqlFile: "0005_instagram_publish_reconciliation.sql",
+    expectedNewTables: ["ig_account_binding", "ig_publications", "ig_publish_events"],
+    fingerprintFixture: "tests/knop/fixtures/instagramPublishFingerprint.json",
+    expectedSqlSha256: "dc061858f4363dfa7592fe2f77566729dae630d24f7721c2a5cdfe21388a9102",
+    expectedFixtureSha256: "3b0db05dd1ab121d7c166a9150eb0640764beb5dea9695288e3839b683180d84",
+  },
 ];
 
 // id 또는 경로("migrations/0001_add_report_matches.sql")로 조회 → 기존 CLI 호출 형식과 하위호환.

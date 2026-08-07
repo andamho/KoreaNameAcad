@@ -1,20 +1,20 @@
-// ── Instagram 릴스 자동배포 (Instagram API with Instagram Login) ──
-// graph.instagram.com 사용. 2단계 게시: 컨테이너 생성 → 처리 대기 → 게시.
-// 인스타는 video_url이 "공개 인터넷 주소"여야 함 → R2 객체를 실서버(/objects/)로 서빙.
+// ── Instagram 릴스 게시 — Graph API 얇은 래퍼 ───────────────────────────────
+// graph.instagram.com (Instagram API with Instagram Login). 2단계 게시: 컨테이너 → 처리대기 → 게시.
+// 인스타는 video_url 이 "공개 인터넷 주소"여야 함 → R2 객체를 실서버(/objects/)로 서빙.
+//
+// [중요] 이 파일은 HTTP 호출만 한다. 폴링·유예·리스·중복방지 같은 판단은 전부
+// reconcile.ts(오케스트레이션) + publishDecision.ts(순수 판정) 로 옮겼다.
+// 예전 구조는 ERROR 를 곧바로 최종 실패로 확정하고 creation_id 를 버려서,
+// 나중에 FINISHED 가 된 컨테이너를 다시 찾아갈 수 없었다.
 //
 // 토큰은 oauth_tokens 테이블에서 읽고 만료 전 자동 갱신된다(tokens.ts).
-// .env의 INSTAGRAM_ACCESS_TOKEN은 DB가 비었을 때의 폴백으로만 남아 있다.
 import { IG_GRAPH, getIgToken } from "./tokens";
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
-}
 
 export async function instagramConfigured(): Promise<boolean> {
   return !!(await getIgToken());
 }
 
-async function igToken(): Promise<string> {
+export async function igToken(): Promise<string> {
   const t = await getIgToken();
   if (!t) throw new Error("인스타 토큰 없음 — /admin에서 인스타 연결 필요");
   return t.accessToken;
@@ -34,52 +34,54 @@ export async function getInstagramStatus(): Promise<{ connected: boolean; userna
   }
 }
 
-/** 릴스 게시. videoUrl은 공개 접근 가능한 mp4 URL이어야 함. 반환: 게시된 mediaId */
-export async function publishInstagramReel(opts: {
+/** 1단계: 릴스 컨테이너 생성. videoUrl 은 공개 접근 가능한 mp4 URL 이어야 한다 */
+export async function igCreateReelContainer(opts: {
+  token: string;
   videoUrl: string;
-  caption?: string;
-}): Promise<{ mediaId: string }> {
-  const t = await igToken();
-
-  // 1) 미디어 컨테이너 생성 (REELS)
-  const createParams = new URLSearchParams({
+  caption: string;
+}): Promise<{ creationId: string; raw: unknown }> {
+  const params = new URLSearchParams({
     media_type: "REELS",
     video_url: opts.videoUrl,
     caption: opts.caption || "",
-    access_token: t,
+    access_token: opts.token,
   });
-  const c = await fetch(`${IG_GRAPH}/me/media`, { method: "POST", body: createParams });
-  const cj: any = await c.json();
-  if (!c.ok || !cj?.id) {
-    throw new Error(`인스타 컨테이너 생성 실패: ${JSON.stringify(cj)}`);
-  }
-  const creationId = cj.id;
+  const r = await fetch(`${IG_GRAPH}/me/media`, { method: "POST", body: params });
+  const j: any = await r.json();
+  if (!r.ok || !j?.id) throw new Error(`인스타 컨테이너 생성 실패: ${JSON.stringify(j)}`);
+  return { creationId: String(j.id), raw: j };
+}
 
-  // 2) 처리 상태 폴링 (인스타가 영상을 가져와 인코딩 — 시간 걸림)
-  let finished = false;
-  for (let i = 0; i < 45; i++) {
-    await sleep(4000);
-    const s = await fetch(`${IG_GRAPH}/${creationId}?fields=status_code,status&access_token=${t}`);
-    const sj: any = await s.json();
-    if (sj?.status_code === "FINISHED") {
-      finished = true;
-      break;
-    }
-    if (sj?.status_code === "ERROR") {
-      throw new Error(`인스타 영상 처리 실패: ${JSON.stringify(sj)}`);
-    }
-    // IN_PROGRESS면 계속 대기
+/**
+ * 2단계: 컨테이너 처리 상태 조회.
+ * status_code: IN_PROGRESS | FINISHED | ERROR | PUBLISHED | EXPIRED
+ * [주의] ERROR 는 최종 상태가 아닐 수 있다. 실제로 ERROR 를 낸 컨테이너가 뒤늦게 FINISHED 가 된
+ * 사례가 있었다(2026-08-06). 그래서 여기서는 판단하지 않고 원문 그대로 올려보낸다.
+ */
+export async function igFetchContainerStatus(opts: {
+  token: string;
+  creationId: string;
+}): Promise<{ statusCode: string; raw: any }> {
+  const r = await fetch(
+    `${IG_GRAPH}/${encodeURIComponent(opts.creationId)}?fields=id,status_code,status&access_token=${opts.token}`,
+  );
+  const j: any = await r.json();
+  if (!r.ok && !j?.status_code) {
+    throw new Error(`인스타 컨테이너 상태 조회 실패: ${JSON.stringify(j?.error ?? j)}`);
   }
-  if (!finished) throw new Error("인스타 영상 처리 시간 초과(3분).");
+  return { statusCode: String(j?.status_code ?? "UNKNOWN"), raw: j };
+}
 
-  // 3) 게시
-  const p = await fetch(`${IG_GRAPH}/me/media_publish`, {
+/** 3단계: 게시. 반드시 리스를 쥔 실행만 호출해야 한다(reconcile.ts 가 보장) */
+export async function igMediaPublish(opts: {
+  token: string;
+  creationId: string;
+}): Promise<{ mediaId: string; raw: unknown }> {
+  const r = await fetch(`${IG_GRAPH}/me/media_publish`, {
     method: "POST",
-    body: new URLSearchParams({ creation_id: creationId, access_token: t }),
+    body: new URLSearchParams({ creation_id: opts.creationId, access_token: opts.token }),
   });
-  const pj: any = await p.json();
-  if (!p.ok || !pj?.id) {
-    throw new Error(`인스타 게시 실패: ${JSON.stringify(pj)}`);
-  }
-  return { mediaId: pj.id };
+  const j: any = await r.json();
+  if (!r.ok || !j?.id) throw new Error(`인스타 게시 실패: ${JSON.stringify(j)}`);
+  return { mediaId: String(j.id), raw: j };
 }

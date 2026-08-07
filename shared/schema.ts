@@ -220,6 +220,74 @@ export const oauthTokens = pgTable("oauth_tokens", {
 
 export type OAuthToken = typeof oauthTokens.$inferSelect;
 
+// ── 인스타 릴스 게시 조정(reconciliation) ────────────────────────────────────
+// 마이그레이션 0005. 기존 video_jobs / oauth_tokens 는 무변경.
+//
+// 정본은 여기다: 컨테이너 ID·재확인 횟수·다음 확인시각·리스·게시권 전부 ig_publications.
+// video_jobs.ig_status / ig_media_id 는 화면 호환용 사본이며 기존 어휘만 쓴다
+// (queued|uploading|retrying|published|failed|skipped). 불일치 시 ig_publications 가 이긴다.
+
+/** OAuth 계정 바인딩 — 게시할 때마다 /me 를 호출하지 않기 위한 고정값. 토큰 원문은 저장 금지 */
+export const igAccountBinding = pgTable("ig_account_binding", {
+  provider: text("provider").primaryKey(),              // "instagram"
+  accountId: text("account_id").notNull(),              // IG user ID
+  username: text("username"),                           // 진단 기록용
+  oauthTokenId: text("oauth_token_id"),                 // oauth_tokens.provider (논리 참조)
+  tokenFingerprint: varchar("token_fingerprint", { length: 64 }), // sha256(access_token)
+  source: text("source").default("oauth").notNull(),    // oauth | backfill
+  boundAt: timestamp("bound_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+/** 게시권·리스의 유일한 권위. UNIQUE(video_job_id, instagram_account_id) 가 중복 게시의 최종 방어선 */
+export const igPublications = pgTable(
+  "ig_publications",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    videoJobId: varchar("video_job_id").notNull(),
+    instagramAccountId: text("instagram_account_id").notNull(), // 컨테이너 생성 시점 스냅숏
+    creationId: text("creation_id"),
+    containerCreatedAt: timestamp("container_created_at"),      // EXPIRED(24h) 판정
+    containerGeneration: integer("container_generation").default(1).notNull(),
+    convertedR2Key: text("converted_r2_key"),
+    contentFingerprint: varchar("content_fingerprint", { length: 64 }), // 진단 전용
+    mediaId: text("media_id"),                                  // PUBLISHED 인데 역조회 실패면 NULL
+    state: text("state").notNull(),                             // publishing|published|publish_unknown
+    leaseToken: varchar("lease_token", { length: 64 }),
+    leaseExpiresAt: timestamp("lease_expires_at"),
+    publishAttemptCount: integer("publish_attempt_count").default(0).notNull(),
+    checkAttempt: integer("check_attempt").default(0).notNull(), // 완료된 유예 재조회 수(0/1/2/3)
+    nextCheckAt: timestamp("next_check_at"),
+    lastReconciledAt: timestamp("last_reconciled_at"),
+    claimedAt: timestamp("claimed_at").defaultNow().notNull(),
+    publishedAt: timestamp("published_at"),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    jobAccountUniq: unique("ig_publications_job_account_uniq").on(t.videoJobId, t.instagramAccountId),
+  }),
+);
+
+/** 상태조회 응답 이력 — 재조회 응답 전문과 상태 전환 시각을 전부 남긴다 */
+export const igPublishEvents = pgTable("ig_publish_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  publicationId: varchar("publication_id"),
+  videoJobId: varchar("video_job_id").notNull(),
+  creationId: text("creation_id"),
+  eventType: text("event_type").notNull(),
+  statusCode: text("status_code"),
+  rawResponse: jsonb("raw_response"),
+  fromState: text("from_state"),
+  toState: text("to_state"),
+  attempt: integer("attempt"),
+  note: text("note"),
+  occurredAt: timestamp("occurred_at").defaultNow().notNull(),
+});
+
+export type IgAccountBinding = typeof igAccountBinding.$inferSelect;
+export type IgPublication = typeof igPublications.$inferSelect;
+export type IgPublishEvent = typeof igPublishEvents.$inferSelect;
+
 // ── transcode 진단(비게시) — 원본으로 변환만 돌려 자원/시간/종료를 기록. 게시 상태 안 건드림 ──
 // 주의: 내구성 작업 큐가 아님. 같은 Node 프로세스의 비동기 작업이며, heartbeat/phase/abandoned로
 //       "행이 영구 running으로 남는 문제"만 완화한다(컨테이너 사망 원인 완전 기록은 보장 못 함).
