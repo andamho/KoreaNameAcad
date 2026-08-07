@@ -215,15 +215,17 @@ export async function renderViewerHtml(setKey: SetKey): Promise<string> {
 .wrap{max-width:640px;margin:0 auto;padding:16px}
 header{text-align:center;padding:18px 0 12px}header .b{display:inline-block;font-weight:700;color:#3fc4ca;letter-spacing:.02em}
 figure{margin:0 0 16px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.06)}
-figure img,figure video{display:block;width:100%;height:auto;background:#000}
-.ytwrap{position:relative;width:100%;aspect-ratio:16/9;background:#000}
-.ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+figure img,figure video{display:block;width:100%;height:auto;background:#000;border-radius:14px}
+.ytwrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden}
+.ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:14px}
 figcaption{padding:8px 12px;font-size:13px;color:#666}
 .credit{margin:2px 2px 22px;font-size:12.5px;color:#8a8f93;line-height:1.7;text-align:center}
-.vlink{display:block;position:relative;background:#000}
-.vlink img{display:block;width:100%;height:auto}
-.vlink-empty{width:100%;aspect-ratio:16/9;background:#000}
-.play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:62px;height:44px;border-radius:11px;background:rgba(0,0,0,.72)}
+.vlink{display:block;position:relative;border-radius:14px;overflow:hidden}
+/* 유튜브 대표 그림(hqdefault)은 4:3 이라 위아래에 검은 띠가 들어 있다.
+   16:9 로 잘라내면 딱 영상 부분만 남는다. */
+.vlink img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.vlink-empty{width:100%;aspect-ratio:16/9;background:#e9edee}
+.play{position:absolute;left:0;right:0;top:0;bottom:0;margin:auto;width:62px;height:44px;border-radius:11px;background:rgba(0,0,0,.72)}
 .play::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-42%,-50%);border-style:solid;border-width:9px 0 9px 15px;border-color:transparent transparent transparent #fff}
 .savetip{margin:0 2px 8px;font-size:12.5px;color:#3fa0a6;line-height:1.6;text-align:center;font-weight:500}
 .empty{padding:60px 0;text-align:center;color:#aaa}
