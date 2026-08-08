@@ -175,6 +175,8 @@
   .hamburger-line {
     width: 22px;
     height: 3px;
+    /* 모바일과 같은 검정. 예전엔 로고색(#20AFC3)이었는데 화면마다 색이 달랐다. */
+    background-color: #000000;
   }
   
   /* 데스크탑용 애니메이션 - gap 5px에 맞춤 */
