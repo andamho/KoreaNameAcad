@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Upload, X, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 interface ImageManagerProps {
   images: string[];
@@ -20,26 +21,40 @@ export function ImageManager({
   onUpload,
   isUploading,
 }: ImageManagerProps) {
+  const { toast } = useToast();
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
+  // 사진 붙이기. 예전에는 실패해도 아무 표시가 없어서 "그냥 안 붙는다"로 보였다.
+  // 실패한 파일 이름과 이유를 반드시 알려준다.
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("[ImageManager] handleFileChange triggered");
     const files = e.target.files;
-    console.log("[ImageManager] files:", files?.length);
     if (files) {
+      const failed: string[] = [];
+      let done = 0;
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        console.log("[ImageManager] processing file:", file.name, file.type);
-        if (file.type.startsWith("image/")) {
-          console.log("[ImageManager] calling onUpload for:", file.name);
-          try {
-            await onUpload(file);
-            console.log("[ImageManager] onUpload completed for:", file.name);
-          } catch (err) {
-            console.error("[ImageManager] onUpload error:", err);
-          }
+        // 브라우저가 형식을 못 읽는 경우가 있다(빈 값). 그때도 그림 파일이면 그대로 시도한다.
+        const looksImage = file.type.startsWith("image/") || /\.(jpe?g|png|gif|webp|avif|bmp|heic|heif)$/i.test(file.name);
+        if (!looksImage) {
+          failed.push(`${file.name} (그림 파일이 아님)`);
+          continue;
         }
+        try {
+          await onUpload(file);
+          done++;
+        } catch (err: any) {
+          failed.push(`${file.name} (${err?.message || "올리기 실패"})`);
+        }
+      }
+      if (failed.length) {
+        toast({
+          title: `사진 ${failed.length}장을 올리지 못했습니다`,
+          description: failed.join(" / "),
+          variant: "destructive",
+        });
+      } else if (done > 1) {
+        toast({ title: `사진 ${done}장을 추가했습니다` });
       }
     }
     e.target.value = "";
