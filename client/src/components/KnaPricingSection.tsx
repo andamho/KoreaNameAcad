@@ -6,6 +6,12 @@ import pricingCharacterImage from "@assets/KakaoTalk_20251226_150428417_17667291
 
 import { saveScrollPosition } from "@/hooks/use-scroll-restore";
 
+// 배경을 미리 받아둔다.
+// 이 코드는 화면이 그려지기 전(묶음 파일을 읽는 시점)에 실행되므로 요청이 그만큼 빨리 나간다.
+// 예전엔 화면이 그려진 뒤에야 요청이 나가 1.5초 뒤 시작 → 3.1초에 도착했다(운영 실측).
+const _pricingBgPreload = new Image();
+_pricingBgPreload.src = "/pricing-bg.webp";
+
 const pricingData = {
   sections: [
     {
