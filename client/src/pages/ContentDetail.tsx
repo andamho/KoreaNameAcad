@@ -182,7 +182,18 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
       toast({ title: "제목과 내용을 입력해주세요.", variant: "destructive" });
       return;
     }
-    updateMutation.mutate(editForm);
+    // 붙인 사진을 본문에 넣어 저장한다.
+    // 예전에는 editForm 만 보내서, 사진을 아무리 붙여도 저장하는 순간 전부 버려졌다
+    // ("추가했는데 안 붙는다"의 원인). 목록 화면과 같은 방식으로 맞춘다.
+    const finalThumbnail = editForm.thumbnail || uploadedImages[0] || "";
+    // 본문에 이미 들어 있던 사진 표시를 지우고, 지금 목록으로 다시 만든다.
+    // 대표 사진은 따로 보여지므로 본문에서는 뺀다(중복 방지).
+    const cleanContent = editForm.content.replace(/!\[[^\]]*\]\([^)]+\)\n*/g, "").trim();
+    const contentImages = uploadedImages.filter(img => img !== finalThumbnail);
+    const imagesMarkdown = contentImages.map(img => `![이미지](${img})`).join("\n");
+    const finalContent = imagesMarkdown ? `${imagesMarkdown}\n\n${cleanContent}` : cleanContent;
+
+    updateMutation.mutate({ ...editForm, thumbnail: finalThumbnail, content: finalContent });
   };
 
   if (isLoading) {
