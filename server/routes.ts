@@ -636,10 +636,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ── 체험존 진단 로그 (댓글) ──
+  // 비밀 댓글 '본인 확인 열쇠'.
+  // 예전에는 화면에서만 가리고 서버는 내용을 그대로 내려보내서, 주소창으로 API 를 치면
+  // 비밀글 내용과 전화번호가 그대로 보였다. 이제 서버에서 가린다.
+  // 열쇠는 댓글 번호로 계산한다(DB 에 저장하지 않는다). 답글 알림 문자 링크에 담아
+  // 그 문자를 받은 본인만 자기 글을 볼 수 있게 한다.
+  function commentViewToken(commentId: string): string | null {
+    const secret = process.env.ADMIN_PASSWORD?.trim();
+    if (!secret) return null;
+    return crypto.createHmac("sha256", secret).update(`comment_view_${commentId}`).digest("hex").slice(0, 16);
+  }
+  function isValidCommentToken(commentId: string, token?: string): boolean {
+    if (!token) return false;
+    const expected = commentViewToken(commentId);
+    if (!expected || token.length !== expected.length) return false;
+    try {
+      return crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expected));
+    } catch {
+      return false;
+    }
+  }
+
   app.get("/api/experience-comments/:pageId", async (req, res) => {
     try {
       const comments = await storage.getExperienceComments(req.params.pageId);
-      return res.json(comments);
+
+      // 관리자는 그대로 본다
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+      const validToken = getValidAdminToken();
+      const isAdmin = !!token && !!validToken && token === validToken;
+      if (isAdmin) return res.json(comments);
+
+      // 본인 열쇠를 가지고 온 댓글 하나만 열어준다
+      const openId = typeof req.query.c === "string" ? req.query.c : null;
+      const openTok = typeof req.query.t === "string" ? req.query.t : undefined;
+      const opened = openId && isValidCommentToken(openId, openTok) ? openId : null;
+
+      const safe = comments.map((c: any) => {
+        // 연락처는 누구에게도 내려보내지 않는다(관리자 제외)
+        const { notifyContact, notifyContactType, ...rest } = c;
+        if (!c.isPrivate || c.id === opened) return rest;
+        return { ...rest, content: "", reply: null, locked: true };
+      });
+      return res.json(safe);
     } catch (error: any) {
       return handleDbError(error, res, "GET /api/experience-comments");
     }
@@ -729,7 +769,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         //   문자에서 다 읽어버리면 다시 들어올 이유가 없어 대화가 거기서 끝난다.
         //   페이지로 들어와야 궁금한 걸 댓글로 다시 남기며 소통이 이어진다.
         // 주소는 짧은링크로 — 댓글 ID(36자)가 붙은 원주소는 95바이트라 문자가 지저분해진다.
-        const target = `/experience-zone/${comment.pageId}#comment-${comment.id}`;
+        // 비밀 댓글은 서버가 내용을 가리므로, 본인 열쇠를 링크에 담아야 자기 글과 답글을 볼 수 있다.
+        const tok = commentViewToken(comment.id);
+        const q = tok ? `?c=${comment.id}&t=${tok}` : "";
+        const target = `/experience-zone/${comment.pageId}${q}#comment-${comment.id}`;
         let url = `${SITE_URL}${target}`;
         try {
           const slug = await ensureShortLink(target, `${comment.nickname} 댓글 답글`, "comment");

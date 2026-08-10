@@ -97,6 +97,9 @@ interface Comment {
   reply: string | null;
   repliedAt: string | null;
   createdAt: string;
+  // 관리자에게만 내려온다(연락처를 남겼는지 확인용)
+  notifyContact?: string | null;
+  notifyContactType?: string | null;
 }
 
 // ── 카운트 애니메이션 훅 ──
@@ -190,7 +193,15 @@ export default function ExperienceAloneFate() {
 
   useEffect(() => {
     if (!isAdmin) setUsageCount(getTodayUsage()); // 어드민은 0으로 시작 (새로고침 리셋)
-    fetch('/api/experience-comments/alone-fate')
+    fetch('/api/experience-comments/alone-fate' + (() => {
+      const q = new URLSearchParams(window.location.search);
+      const c = q.get('c'), t = q.get('t');
+      return c && t ? `?c=${encodeURIComponent(c)}&t=${encodeURIComponent(t)}` : '';
+    })(), (() => {
+      // 관리자면 인증을 함께 보낸다 — 그래야 비밀글 내용과 연락처가 내려온다
+      const tk = localStorage.getItem('kna_admin_token');
+      return tk ? { headers: { Authorization: `Bearer ${tk}` } } : undefined;
+    })())
       .then(r => r.json())
       .then(data => setComments(Array.isArray(data) ? data : []))
       .catch(() => {});
@@ -792,7 +803,7 @@ export default function ExperienceAloneFate() {
                 <p className="text-center text-muted-foreground text-base py-8">아직 진단 기록이 없습니다.<br />첫 번째 기록을 남겨보세요!</p>
               )}
               {comments.map(c => (
-                c.isPrivate && !isAdmin ? (
+                c.isPrivate && !isAdmin && !c.content ? (
                   <div key={c.id} id={`comment-${c.id}`} className="rounded-2xl px-4 py-3 bg-muted/30 border border-dashed border-border/50 flex items-center justify-between text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Lock className="w-3.5 h-3.5 flex-shrink-0" />
@@ -806,6 +817,10 @@ export default function ExperienceAloneFate() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-base text-foreground">{c.nickname}</span>
+                      {/* 관리자만: 연락처를 남겼는지, 무엇으로 남겼는지 바로 보이게 */}
+                      {isAdmin && (c.notifyContact
+                        ? <span className="text-xs text-[#18a999] font-medium">{c.notifyContactType === "email" ? "메일" : "문자"} {c.notifyContact}</span>
+                        : <span className="text-xs text-muted-foreground/60">연락처 없음</span>)}
                         {c.totalStrokes && (
                           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${DANGER.includes(c.totalStrokes) ? 'bg-red-400/15 text-red-500' : 'bg-[#18a999]/10 text-[#18a999]'}`}>
                             총운 {c.totalStrokes}획
