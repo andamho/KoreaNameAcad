@@ -24,7 +24,15 @@ import { readEvents, parseNameCount, calendarAvailable } from "./calendar";
 import { decideNewName, type NamingEvent, type NewNameCandidate } from "./newNameMatch";
 import { normalizePhone } from "@shared/schema";
 
-const PY = (process.env.KOP_WHISPER_PY || process.env.KNOP_WHISPER_PY)?.trim() || "C:/Users/iimoo/Desktop/video-caption-bot/venv/Scripts/python.exe";
+// PDF → 이미지 변환용 파이썬(PyMuPDF 필요).
+// 예전에는 video-caption-bot 의 venv 를 썼는데 그 폴더가 사라져서 2026-08-11 렌더가 전부 실패했다.
+// (증상: 새 PDF 를 넣어도 링크가 안 생김. status=attachment_failed, 사유 "렌더/업로드 실패")
+// 전사(whisper)용 파이썬과 분리한다 — 한쪽이 없어져도 다른 쪽이 멈추지 않게.
+const PY =
+  process.env.KOP_PDF_PY?.trim() ||
+  process.env.KOP_WHISPER_PY?.trim() ||
+  process.env.KNOP_WHISPER_PY?.trim() ||
+  "C:/Users/iimoo/AppData/Local/Programs/Python/Python311/python.exe";
 
 // 문자 발송용 링크(.url 바로가기)를 저장할 로컬 폴더 + 링크가 가리킬 공개 도메인
 const LINK_DIR = (process.env.KOP_REPORT_LINK_DIR || "C:/Users/iimoo/Desktop/이름분석링크").trim();
