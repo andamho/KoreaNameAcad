@@ -115,72 +115,60 @@ function linkCreatedAt(p: string): number | null {
   }
 }
 
-// 이름분석링크 폴더 동기화: '오늘 이후 상담예정자' 링크 + 새이름 링크 생성, 나머지 정리.
-export async function syncReportLinks(): Promise<void> {
-  if (!reportsAvailable()) return; // 로컬 전용
-  const upcoming = await upcomingConsultNames();
-  if (!upcoming) return; // 달력 못 읽으면 아무 것도 안 함(전체 생성 방지)
+// 이름분석 링크 만들기.
+//
+// 규칙(원장님 지시, 2026-08-11):
+//  · 새로 들어온 PDF 는 누구 것인지 몰라도 무조건 링크를 만든다.
+//    (사이트에 올리려고 폴더에 넣는 PDF 는 어차피 다 상담 대상이라, 달력에 상담 일정이
+//     아직 없다는 이유로 링크가 안 생기면 손이 간다.)
+//  · 예전 것까지 한꺼번에 만들지는 않는다. 지금 폴더에 쌓인 100여 건은 그대로 둔다.
+//  · 삭제는 하지 않는다. 링크 파일 정리는 원장님이 직접 하신다.
+
+// 파일 하나에 대한 링크 파일 생성. 이미 있으면 그대로 둔다.
+export async function makeReportLink(fileName: string, renderedUrl: string): Promise<boolean> {
+  if (!renderedUrl) return false;
+  if (/상세/.test(fileName)) return false; // 상세설명본은 링크를 만들지 않는다
+  const slug = reportSlugFromFile(fileName);
+  if (!slug) return false;
   try {
     if (!fs.existsSync(LINK_DIR)) fs.mkdirSync(LINK_DIR, { recursive: true });
-    const pool = reportPool();
-    const rows = (await pool.query(
-      `SELECT DISTINCT ON (file_name) file_name, extracted_name, rendered_url, first_seen_at
-       FROM report_matches WHERE rendered_url IS NOT NULL
-       ORDER BY file_name, first_seen_at DESC`,
-    )).rows;
-    const wanted = new Set<string>();
-    let made = 0;
-    const now = Date.now();
-    for (const r of rows) {
-      if (/상세/.test(r.file_name)) continue;
-      const nm = baseName(r.extracted_name || "");
-      if (!nm) continue;
-      const isNewName = /새이름/.test(r.file_name);
-      const keepDays = /가족/.test(r.file_name) ? NEWNAME_LINK_KEEP_DAYS.family : NEWNAME_LINK_KEEP_DAYS.individual;
-      const slug = reportSlugFromFile(r.file_name);
-      if (!slug) continue;
-      const linkFile = path.join(LINK_DIR, `${slug}.txt`);
-      const exists = fs.existsSync(linkFile);
-
-      if (isNewName) {
-        if (exists) {
-          // 만든 시점부터 개인 1달 / 가족 2달 지나면 유지 목록에서 빼 → 아래 정리 단계에서 삭제
-          const born = linkCreatedAt(linkFile);
-          if (born !== null && now - born <= keepDays * DAY_MS) wanted.add(`${slug}.txt`);
-          continue;
-        }
-        // 아직 없으면 새로 만든다. 단, 오래전 파일이 뒤늦게 되살아나지 않도록
-        // 감지 시각이 유지 기간을 넘긴 건은 만들지 않는다.
-        const seen = r.first_seen_at ? new Date(r.first_seen_at).getTime() : now;
-        if (now - seen > keepDays * DAY_MS) continue;
-        wanted.add(`${slug}.txt`);
-      } else {
-        if (!upcoming.has(nm)) continue; // 일반 분석표는 상담예정자만
-        wanted.add(`${slug}.txt`);
-        if (exists) continue;
-      }
-
-      const viewerTarget = `/img?src=${encodeURIComponent(r.rendered_url)}`;
-      const usedSlug = await ensureReportLinkSlug(viewerTarget, String(r.file_name).replace(/\.[^.]+$/, ""), slug);
-      if (!usedSlug) continue;
-      // 텍스트 파일: 열어서 Ctrl+A→Ctrl+C 로 복사해 카톡/문자에 붙여넣기. 주소는 한글 그대로(가독).
-      fs.writeFileSync(linkFile, `${PUBLIC_BASE}/${usedSlug}`, "utf-8");
-      made++;
-    }
-    // 유지 대상이 아닌 링크 파일은 폴더에서 제거(옛 .url 포함)
-    // → 남는 것: 오늘 이후 상담예정자 + 기한 안의 새이름
-    let removed = 0;
-    for (const f of fs.readdirSync(LINK_DIR)) {
-      const low = f.toLowerCase();
-      if ((low.endsWith(".txt") || low.endsWith(".url")) && !wanted.has(f)) {
-        try { fs.unlinkSync(path.join(LINK_DIR, f)); removed++; } catch { /* noop */ }
-      }
-    }
-    if (made || removed) console.log(`[KOP] 상담예정 링크 동기화: 생성 ${made} · 정리 ${removed} (상담예정 ${upcoming.size}명)`);
+    const linkFile = path.join(LINK_DIR, `${slug}.txt`);
+    if (fs.existsSync(linkFile)) return false;
+    const viewerTarget = `/img?src=${encodeURIComponent(renderedUrl)}`;
+    const usedSlug = await ensureReportLinkSlug(viewerTarget, fileName.replace(/\.[^.]+$/, ""), slug);
+    if (!usedSlug) return false;
+    // 텍스트 파일: 열어서 Ctrl+A→Ctrl+C 로 복사해 카톡/문자에 붙여넣기. 주소는 한글 그대로(가독).
+    fs.writeFileSync(linkFile, `${PUBLIC_BASE}/${usedSlug}`, "utf-8");
+    console.log(`[KOP] 이름분석 링크 생성: ${slug}`);
+    return true;
   } catch (e: any) {
-    console.error(`[KOP] 상담예정 링크 동기화 오류: ${e?.message}`);
+    console.error(`[KOP] 링크 생성 실패 ${fileName}: ${e?.message}`);
+    return false;
   }
 }
+
+// 안전망: 처리 직후 링크를 못 만든 건이 있으면 최근 3일 안의 것만 채운다.
+// (예전 것까지 되살아나지 않도록 창을 좁게 둔다.)
+export async function syncReportLinks(): Promise<void> {
+  if (!reportsAvailable()) return; // 로컬 전용
+  try {
+    const pool = reportPool();
+    const rows = (await pool.query(
+      `SELECT DISTINCT ON (file_name) file_name, rendered_url, first_seen_at
+       FROM report_matches
+       WHERE rendered_url IS NOT NULL AND first_seen_at > now() - interval '3 days'
+       ORDER BY file_name, first_seen_at DESC`,
+    )).rows;
+    let made = 0;
+    for (const r of rows) {
+      if (await makeReportLink(String(r.file_name), String(r.rendered_url))) made++;
+    }
+    if (made) console.log(`[KOP] 이름분석 링크 보충: ${made}개 (최근 3일 ${rows.length}건 중)`);
+  } catch (e: any) {
+    console.error(`[KOP] 이름분석 링크 동기화 오류: ${e?.message}`);
+  }
+}
+
 const RENDER = fileURLToPath(new URL("./py/render_pdf.py", import.meta.url));
 const store = new ObjectStorageService();
 
@@ -359,7 +347,7 @@ export async function syncReports(): Promise<SyncResult> {
     if (res.auto_matched || res.needs_review || res.attachment_failed || res.processing_failed) {
       console.log(`[KOP] 이름분석표 동기화: 자동연결 ${res.auto_matched} · 확인필요 ${res.needs_review} · 첨부실패 ${res.attachment_failed} · 처리실패 ${res.processing_failed} (처리 ${res.processed})`);
     }
-    await syncReportLinks(); // 오늘 이후 상담예정자 링크 폴더 동기화
+    await syncReportLinks(); // 방금 들어온 PDF 의 링크 생성(최근 3일 창)
     return res;
   } catch (e: any) {
     console.error(`[KOP] 이름분석표 동기화 오류: ${e?.message}`);
