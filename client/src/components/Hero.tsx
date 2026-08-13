@@ -68,17 +68,20 @@ export function Hero() {
           loading="eager"
           decoding="sync"
         />
-        {/* 산 그림.
-            예전에는 배경 이미지 안에 그려져 있었는데, 배경이 object-cover 라
-            가로 폭을 바꿔도 배율이 그대로여서 글자만 작아지고 산은 그대로였다.
-            별도 요소로 올리고 폭을 vw 로 잡아 글자와 같이 커지고 작아지게 한다.
-            위치·크기는 예전 산이 있던 자리 그대로(데스크탑 좌17.34% 상19.91% 폭12.86%). */}
+        {/* 구름 그림(예전 산 자리 그대로 — 좌10% 상19.91% 폭12.86%).
+            배경이 object-cover 라 배경 안에 그려 넣으면 가로 폭을 바꿔도 배율이
+            그대로여서 글자만 작아진다. 그래서 별도 요소로 올리고 폭을 vw 로 잡아
+            글자와 같이 커지고 작아지게 한다.
+            속이 비어 있는 선 그림 그대로 쓴다(원장님 선택). 연한 하늘 배경에
+            흰 선이 묻히지 않도록 그림자만 살짝 준다.
+            속을 옅게 채운 것도 만들어 뒀다 — main-cloud-filled.webp. */}
         <img
-          src="/main-mountain.webp"
+          src="/main-cloud.webp"
           alt=""
           aria-hidden="true"
           className="hidden md:block absolute select-none pointer-events-none
             md:left-[10%] md:top-[19.91%] md:w-[12.86vw]"
+          style={{ filter: 'drop-shadow(0 3px 5px rgba(2, 90, 110, 0.35))' }}
           loading="eager"
           fetchPriority="high"
           decoding="sync"
@@ -90,13 +93,14 @@ export function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative h-full flex items-center justify-center">
         <div className="text-center max-w-4xl mx-auto space-y-8 hero-wrap">
           <div>
-            {/* 모바일 전용 산 — 글자 바로 위에 붙여 간격을 항상 35px 로 유지한다.
+            {/* 모바일 전용 구름 — 글자 바로 위에 붙여 간격을 항상 35px 로 유지한다.
                 예전처럼 화면 높이 비율로 띄우면 폰 길이에 따라 24~74px 로 달라졌다. */}
             <img
-              src="/main-mountain.webp"
+              src="/main-cloud.webp"
               alt=""
               aria-hidden="true"
               className="md:hidden mx-auto select-none pointer-events-none w-[31.63vw] mb-[35px]"
+              style={{ filter: 'drop-shadow(0 3px 5px rgba(2, 90, 110, 0.35))' }}
               loading="eager"
               fetchPriority="high"
               decoding="sync"
