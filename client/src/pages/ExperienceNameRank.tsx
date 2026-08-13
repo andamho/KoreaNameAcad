@@ -249,10 +249,6 @@ export default function ExperienceNameRank() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-base text-foreground">{c.nickname}</span>
-                      {/* 관리자만: 연락처를 남겼는지, 무엇으로 남겼는지 바로 보이게 */}
-                      {isAdmin && (c.notifyContact
-                        ? <span className="text-xs text-[#18a999] font-medium">{c.notifyContactType === "email" ? "메일" : "문자"} {c.notifyContact}</span>
-                        : <span className="text-xs text-muted-foreground/60">연락처 없음</span>)}
                       {c.isPrivate && <span className="flex items-center gap-1 text-xs text-muted-foreground"><Lock className="w-3 h-3" /> 비공개</span>}
                     </div>
                     <div className="flex items-center gap-2">
@@ -265,6 +261,13 @@ export default function ExperienceNameRank() {
                       )}
                     </div>
                   </div>
+                  {isAdmin && (
+                    <div className="-mt-1">
+                      {c.notifyContact
+                        ? <span className="text-xs text-[#18a999] font-medium">{c.notifyContactType === "email" ? "메일" : "문자"} {c.notifyContact}</span>
+                        : <span className="text-xs text-muted-foreground/60">연락처 없음</span>}
+                    </div>
+                  )}
                   <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap"><Linkify>{c.content}</Linkify></p>
                   {c.reply && parseReplies(c.reply).map((r, i) => (
                     <div key={i} className="mt-2 ml-3 pl-3 border-l-2 border-[#18a999]/30 space-y-0.5">
@@ -285,10 +288,14 @@ export default function ExperienceNameRank() {
                         onInput={e => { const t = e.currentTarget; t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }}
                             className="flex-1 bg-background border border-border rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#18a999] transition resize-y min-h-[72px]"
                             maxLength={1000} rows={3} autoFocus />
-                          <button onClick={() => submitEditReply(c.id, i)}
-                            className="px-3 py-1.5 rounded-lg bg-[#18a999] text-white text-xs font-bold transition">저장</button>
-                          <button onClick={() => setEditingReply(null)}
-                            className="px-3 py-1.5 rounded-lg border border-border text-xs transition">취소</button>
+                          {/* 저장·취소를 세로로 쌓는다. 나란히 두면 좁은 화면에서 글자가
+                              두 줄로 접히고 글 쓰는 칸까지 좁아졌다. */}
+                          <div className="flex flex-col gap-1 shrink-0">
+                            <button onClick={() => submitEditReply(c.id, i)}
+                              className="px-2 py-1 rounded-lg bg-[#18a999] text-white text-xs font-bold whitespace-nowrap transition">저장</button>
+                            <button onClick={() => setEditingReply(null)}
+                              className="px-2 py-1 rounded-lg border border-border text-xs whitespace-nowrap transition">취소</button>
+                          </div>
                         </div>
                       ) : (
                         <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap"><Linkify>{r.text}</Linkify></p>
