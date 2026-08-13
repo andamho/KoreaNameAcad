@@ -666,10 +666,10 @@ export default function ExperienceChildrenLuck() {
                       </div>
                       {editingReply?.commentId === c.id && editingReply.index === i ? (
                         <div className="flex gap-2 mt-1">
-                          <input value={editReplyText} onChange={e => setEditReplyText(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && submitEditReply(c.id, i)}
-                            className="flex-1 bg-background border border-border rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#18a999] transition"
-                            maxLength={200} autoFocus />
+                          <textarea value={editReplyText} onChange={e => setEditReplyText(e.target.value)}
+                        onInput={e => { const t = e.currentTarget; t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }}
+                            className="flex-1 bg-background border border-border rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#18a999] transition resize-y min-h-[72px]"
+                            maxLength={1000} rows={3} autoFocus />
                           <button onClick={() => submitEditReply(c.id, i)}
                             className="px-3 py-1.5 rounded-lg bg-[#18a999] text-white text-xs font-bold transition">저장</button>
                           <button onClick={() => setEditingReply(null)}
@@ -682,10 +682,12 @@ export default function ExperienceChildrenLuck() {
                   ))}
                   {isAdmin && replyingTo === c.id && (
                     <div className="mt-2 ml-3 pl-3 border-l-2 border-[#18a999]/30 flex gap-2">
-                      <input value={replyText} onChange={e => setReplyText(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && !replySubmitting && submitReply(c.id)}
-                        placeholder="답글을 입력하세요" maxLength={200}
-                        className="flex-1 bg-background border border-border rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#18a999] transition" />
+                      {/* 여러 줄 입력. 엔터는 줄바꿈이고 저장은 버튼으로 한다.
+                          예전엔 한 줄 input 이라 줄바꿈을 못 넣었고 엔터가 곧 전송이었다. */}
+                      <textarea value={replyText} onChange={e => setReplyText(e.target.value)}
+                        onInput={e => { const t = e.currentTarget; t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }}
+                        placeholder="답글을 입력하세요" maxLength={1000} rows={3}
+                        className="flex-1 bg-background border border-border rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#18a999] transition resize-y min-h-[72px]" />
                       <button onClick={() => submitReply(c.id)} disabled={replySubmitting || !replyText.trim()}
                         className="px-3 py-1.5 rounded-lg bg-[#18a999] text-white text-xs font-bold disabled:opacity-40 transition">
                         {replySubmitting ? '...' : '등록'}
