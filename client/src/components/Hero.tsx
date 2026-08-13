@@ -128,7 +128,7 @@ export function Hero() {
               </span>
             </h1>
             
-            <p className="text-muted-foreground tracking-wide mt-[18px] hero-sub" style={{fontSize: pFontSize, lineHeight: '1.42'}}>
+            <p className="text-muted-foreground tracking-wide mt-[1.125rem] hero-sub" style={{fontSize: pFontSize, lineHeight: '1.42'}}>
               한글·한자이름만으로 운명상담<br/>
               [정확도 80% 이상]
             </p>

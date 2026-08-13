@@ -481,19 +481,10 @@ export default function NameStories() {
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4" style={{ color: '#1e2a4a' }} data-testid="text-stories-title">
                 흥미진진 이름이야기
               </h1>
-              <p className="text-[1rem] md:text-2xl text-slate-700 mb-8">
+              {/* '전체보기' 는 머리글에서 빼고 목록 맨 아래로 옮겼다. */}
+              <p className="text-[1rem] md:text-2xl text-slate-700">
                 이름에 담긴 흥미로운 이야기들을 만나보세요
               </p>
-              <a
-                href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=10&tab=1#contentslist_block"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 py-2 font-semibold text-sm text-white transition-opacity duration-200 hover:opacity-70 active:scale-[0.98]"
-                data-testid="link-blog-stories"
-              >
-                <span>전체보기</span>
-                <span className="text-lg">›</span>
-              </a>
             </div>
           </div>
         </div>
@@ -518,6 +509,21 @@ export default function NameStories() {
               ))}
             </div>
           ) : null}
+
+          {/* 머리글에 있던 '전체보기' — 다 읽고 난 자리에 둔다.
+              색은 다른 페이지 버튼과 같은 것(#18a999 바탕 / 흰 글자). */}
+          <div className="mt-12 text-center">
+            <a
+              href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=10&tab=1#contentslist_block"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full font-semibold text-sm shadow-sm bg-[#56D5DB] text-white transition-all duration-200 hover:bg-[#4ac5cb] hover:shadow-md active:scale-[0.98]"
+              data-testid="link-blog-stories"
+            >
+              <span>전체보기</span>
+              <span className="text-base">›</span>
+            </a>
+          </div>
         </div>
       </main>
 

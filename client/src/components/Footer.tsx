@@ -88,10 +88,12 @@ export function Footer() {
         <div className="text-center mb-6">
           {/* 홈 히어로와 같은 짜임 — 위 두 줄이 크고 굵게, 셋째 줄은 보통 굵기,
               그 아래 애니메이션 없는 얇은 가로줄. 줄 간격(0.15em)은 히어로와 같다.
-              셋째 줄 19px 은 바로 아래 안내문(14px)보다 커야 해서 잡은 값이다
-              (히어로도 셋째 줄이 안내문의 1.37배). */}
+              셋째 줄 1.1875rem(=19px) 은 바로 아래 안내문(14px)보다 커야 해서
+              잡은 값이다 (히어로도 셋째 줄이 안내문의 1.37배).
+              크기를 rem 으로 잡아야 폰 폭에 따라 같이 커지고 작아진다 —
+              전에는 px 라 작은 폰에서 이 문구만 더 커 보였다. */}
           <h2 className="font-bold tracking-tight flex flex-col items-center"
-              style={{ fontSize: 'clamp(24px, 6.4vw, 28px)', lineHeight: '1.2', gap: '0.15em' }}>
+              style={{ fontSize: '1.5rem', lineHeight: '1.2', gap: '0.15em' }}>
             <span className="kna-highlight kna-footer-highlight">
               <span className="kna-shine">이름이 맑아야</span>
             </span>
@@ -99,13 +101,13 @@ export function Footer() {
               <span className="kna-shine">인생이 맑다</span>
             </span>
             <span className="text-white font-normal relative"
-                  style={{ whiteSpace: 'nowrap', fontSize: '19px', marginTop: '1.3em' }}>
+                  style={{ whiteSpace: 'nowrap', fontSize: '1.1875rem', marginTop: '1.3em' }}>
               이름 안에 너 있다
               <span className="kna-underline-plain kna-underline-light" aria-hidden="true" />
             </span>
           </h2>
-          {/* 히어로와 같은 18px — 가로줄이 이 사이 딱 가운데 오도록 맞춘 값이다. */}
-          <p className="text-sm text-white/80 mt-[18px]">
+          {/* 히어로와 같은 1.125rem(=18px) — 가로줄이 이 사이 딱 가운데 오게 한 값. */}
+          <p className="text-sm text-white/80 mt-[1.125rem]">
             한글·한자이름만으로 운명상담
             <br />
             <span className="text-white/60">[정확도 80% 이상]</span>

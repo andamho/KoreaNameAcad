@@ -1178,7 +1178,7 @@ html.ua-tiktok    .kna-experience-page .text-7xl { font-size: 59px !important; }
   /* 좌우 여백. 계산상 가운데(차이 0.05px)인데도 왼쪽이 튀어나와 보인다 —
      왼쪽 끝이 'ㅇ'(둥근 모양), 오른쪽 끝이 'ㅏ'(곧은 획)라 생기는 착시다.
      그래서 왼쪽을 조금 더 들여 눈에 맞춘다. */
-  left: 0.10em; right: 0.04em; bottom: -10px;   /* 아래 안내문(18px 간격)의 딱 한가운데 */
+  left: 0.10em; right: 0.04em; bottom: -0.625rem;   /* 아래 안내문(18px 간격)의 딱 한가운데 */
   height: 1px;
   border-radius: 999px;
   background: rgba(17, 24, 39, 0.45);
