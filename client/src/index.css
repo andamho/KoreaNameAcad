@@ -1096,6 +1096,23 @@ html.ua-tiktok    .kna-experience-page .text-7xl { font-size: 59px !important; }
   animation: kna-flow 7s ease-in-out infinite;
 }
 
+/* 모바일: 배경(청록)과 글자색이 같은 계열이라 히어로 문구가 묻힌다.
+   모바일에서만 더 진한 청록으로 낮춘다(데스크탑은 그대로). */
+@media (max-width: 767px) {
+  .kna-tiffany {
+    background: linear-gradient(90deg,
+      #04566a 0%,
+      #0b7d95 35%,
+      #7fe3f2 49%,
+      #7fe3f2 51%,
+      #0b7d95 65%,
+      #04566a 100%);
+    background-size: 240% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+}
+
 /* ① 글자 내부 '흰색 광택'이 좌우로 흐르는 효과 */
 .kna-shine {
   background: linear-gradient(90deg,
@@ -1148,6 +1165,25 @@ html.ua-tiktok    .kna-experience-page .text-7xl { font-size: 59px !important; }
 }
 
 /* ② 밑줄에도 같은 흐름 적용 */
+/* 정지된 검정 밑줄 — 애니메이션 없이, 글자 너비에 맞춰 그어진다.
+   '이름 안에 너 있다' 아래에 쓴다(흐르는 청록 밑줄은 위 두 줄에서 뺐다). */
+/* 히어로 강조 두 줄만 나눔스퀘어. '이름 안에 너 있다' 와 본문은 원래 글꼴 그대로.
+   글꼴 파일은 이미 /fonts 에 있다(ExtraBold 포함). */
+.hero-title .kna-highlight {
+  font-family: 'Nanum Square', 'Pretendard Variable', sans-serif;
+}
+
+.kna-underline-plain {
+  position: absolute;
+  /* 좌우 여백. 계산상 가운데(차이 0.05px)인데도 왼쪽이 튀어나와 보인다 —
+     왼쪽 끝이 'ㅇ'(둥근 모양), 오른쪽 끝이 'ㅏ'(곧은 획)라 생기는 착시다.
+     그래서 왼쪽을 조금 더 들여 눈에 맞춘다. */
+  left: 0.10em; right: 0.04em; bottom: -10px;   /* 아래 안내문(18px 간격)의 딱 한가운데 */
+  height: 1px;
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.45);
+}
+
 .kna-underline {
   position: absolute;
   left: 0; right: 0; bottom: -10px;
@@ -1428,14 +1464,16 @@ html.ua-tiktok .kna-intro-bottom .h-\[420px\],
 /* 모바일 전용: 히어로 콘텐츠 상단 여백 보정 (80px 패딩으로 인한 불균형 해소) */
 @media (max-width: 767px) {
   .hero-wrap {
-    margin-top: -40px;
+    /* 글자 묶음을 산 그림 쪽으로 끌어올린다(2026-08-13 문구 교체 후 아래가 비어서) */
+    margin-top: -50px;
   }
 }
 
 /* 데스크탑 전용: 히어로 폰트 증가 */
 @media (min-width: 768px) {
   .hero-title {
-    font-size: clamp(41px, 9vw, 62px) !important;
+    /* 2026-08-13 문구 교체 후 크기 조정 */
+    font-size: clamp(68px, 14.7vw, 101px) !important;
   }
   .hero-sub {
     font-size: clamp(19px, 4.6vw, 27px) !important;

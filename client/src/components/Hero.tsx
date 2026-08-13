@@ -44,10 +44,10 @@ export function Hero() {
     ? 'clamp(25px, 5.4vw, 34px)' 
     : isTikTok 
     ? 'clamp(25px, 5.4vw, 34px)'
-    : 'clamp(31px, 6.8vw, 47px)';
+    : 'clamp(44px, 9.2vw, 65px)';
   
   // 데스크탑 전용 20% 증가된 폰트 크기
-  const h1FontSizeDesktop = 'clamp(41px, 9vw, 62px)';
+  const h1FontSizeDesktop = 'clamp(52px, 11.3vw, 78px)';
     
   const pFontSize = isInstagram 
     ? 'clamp(14px, 3.2vw, 18px)' 
@@ -78,8 +78,8 @@ export function Hero() {
           alt=""
           aria-hidden="true"
           className="absolute select-none pointer-events-none
-            left-[32.03%] top-[14.21%] w-[35.94vw]
-            md:left-[17.34%] md:top-[19.91%] md:w-[12.86vw]"
+            left-[32.03%] top-[18%] w-[31.63vw]
+            md:left-[10%] md:top-[19.91%] md:w-[12.86vw]"
           loading="eager"
           fetchPriority="high"
           decoding="sync"
@@ -91,19 +91,23 @@ export function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative h-full flex items-center justify-center">
         <div className="text-center max-w-4xl mx-auto space-y-8 hero-wrap">
           <div>
-            <h1 className="font-bold tracking-tight break-keep text-center hero-title" style={{fontSize: h1FontSize, lineHeight: '1.2', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.15em'}} aria-label="고달픈 인생 이름 하나로 이유를 찾고 운이 술술 풀리는 새 이름으로, 인생역전하세요.">
-              <span className="text-gray-900 dark:text-white">고달픈 인생</span>
-              <span className="text-gray-900 dark:text-white" style={{whiteSpace: 'nowrap'}}>이름 하나로 이유를 찾고</span>
+            <h1 className="font-bold tracking-tight break-keep text-center hero-title" style={{fontSize: h1FontSize, lineHeight: '1.2', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.15em'}} aria-label="이름이 맑아야 인생이 맑다 이름 안에 너 있다">
+              {/* 위 두 줄이 강조(티파니·굵게), 아래 한 줄은 검정·보통 굵기 */}
               <span className="kna-highlight">
-                <span className="kna-tiffany">운이 술술 풀리는</span>
+                <span className="kna-tiffany">이름이 맑아야</span>
               </span>
               <span className="kna-highlight">
-                <span className="kna-tiffany">새 이름으로, 인생역전하세요.</span>
-                <span className="kna-underline" aria-hidden="true" />
+                <span className="kna-tiffany">인생이 맑다</span>
+              </span>
+              {/* 이 줄만 절반 크기. 위 두 줄과 떨어뜨리고 아래 안내문에 붙인다. */}
+              <span className="font-normal text-gray-900 dark:text-white" style={{whiteSpace: 'nowrap', fontSize: '0.5em', marginTop: '1.3em', position: 'relative'}}>
+                이름 안에 너 있다
+                {/* 아래 안내문과의 사이 딱 중간에 오는 가로줄(문구 길이에 맞춤) */}
+                <span className="kna-underline-plain" aria-hidden="true" />
               </span>
             </h1>
             
-            <p className="text-muted-foreground tracking-wide mt-7 hero-sub" style={{fontSize: pFontSize, lineHeight: '1.42'}}>
+            <p className="text-muted-foreground tracking-wide mt-[18px] hero-sub" style={{fontSize: pFontSize, lineHeight: '1.42'}}>
               한글·한자이름만으로 운명상담<br/>
               [정확도 80% 이상]
             </p>
