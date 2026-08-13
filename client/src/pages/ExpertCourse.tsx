@@ -35,10 +35,10 @@ export default function ExpertCourse() {
             <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
               <GraduationCap className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-[22px] md:text-4xl lg:text-5xl font-extrabold text-white mb-4" data-testid="text-expert-title">
+            <h1 className="text-[1.375rem] md:text-4xl lg:text-5xl font-extrabold text-white mb-4" data-testid="text-expert-title">
               전문가 과정
             </h1>
-            <p className="text-[16px] md:text-xl text-white/90 max-w-2xl">
+            <p className="text-[1rem] md:text-xl text-white/90 max-w-2xl">
               한국이름학교에서 제공하는 전문가 과정을 만나보세요
             </p>
           </div>

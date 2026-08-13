@@ -315,7 +315,7 @@ export default function ExperienceShortLife() {
 
             {/* 실화 */}
             <div className="relative px-7 pt-9 pb-7 border-b border-white/8">
-              <p className="text-[10px] font-bold tracking-[0.4em] text-[#56D5DB] uppercase mb-5">A True Story</p>
+              <p className="text-[0.625rem] font-bold tracking-[0.4em] text-[#56D5DB] uppercase mb-5">A True Story</p>
               <p className="text-white/70 text-base leading-[2]">
                 정말 가까운 분이<br />
                 얼마 전에 스스로 생을 마감하셨습니다.
@@ -336,7 +336,7 @@ export default function ExperienceShortLife() {
 
             {/* 단명운 설명 */}
             <div className="relative px-7 py-7 border-b border-white/8">
-              <p className="text-[10px] font-bold tracking-[0.3em] text-white/25 uppercase mb-5">단명운이란</p>
+              <p className="text-[0.625rem] font-bold tracking-[0.3em] text-white/25 uppercase mb-5">단명운이란</p>
               <p className="text-white/65 text-base leading-[2] mb-5">
                 이름 획수를 모두 더했을 때 나오는 숫자, <span className="text-white font-bold">총운</span>에<br />
                 <span className="text-red-400 font-black text-xl glow-red">14 · 20 · 10 · 12</span>가 들어있다면<br />
@@ -372,7 +372,7 @@ export default function ExperienceShortLife() {
 
             {/* 예시 */}
             <div className="relative px-7 py-6">
-              <p className="text-[10px] font-bold tracking-[0.3em] text-white/25 uppercase mb-4">Example · 홍길동</p>
+              <p className="text-[0.625rem] font-bold tracking-[0.3em] text-white/25 uppercase mb-4">Example · 홍길동</p>
               <div className="grid grid-cols-3 gap-2 mb-3">
                 {[{ char:'홍', stroke:8 }, { char:'길', stroke:5 }, { char:'동', stroke:6 }].map(({ char, stroke }) => (
                   <div key={char} className="rounded-xl px-3 py-3 text-center" style={{ background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)' }}>
@@ -551,14 +551,14 @@ export default function ExperienceShortLife() {
                   </div>
                   <div className="flex-1 p-4 space-y-3">
                     <div className="flex items-center gap-3">
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#18a999]/10 text-[#18a999] border border-[#18a999]/20 flex-shrink-0">자음</span>
+                      <span className="text-[0.6875rem] font-bold px-2 py-0.5 rounded bg-[#18a999]/10 text-[#18a999] border border-[#18a999]/20 flex-shrink-0">자음</span>
                       <div className="flex flex-wrap gap-2 text-lg font-medium text-foreground">
                         {item.consonants.map(c => <span key={c}>{c}</span>)}
                       </div>
                     </div>
                     <div className="h-px bg-border w-full" />
                     <div className="flex items-center gap-3">
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800 flex-shrink-0">모음</span>
+                      <span className="text-[0.6875rem] font-bold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800 flex-shrink-0">모음</span>
                       <div className="flex flex-wrap gap-2 text-lg font-medium text-foreground">
                         {item.vowels.map(v => <span key={v}>{v}</span>)}
                       </div>
@@ -606,7 +606,7 @@ export default function ExperienceShortLife() {
                   답변이 달리면 알려드릴게요
                 </label>
                 {/* 비공개 글이 74% 라 '어디에 쓰이는지' 를 밝혀야 연락처를 남긴다 */}
-                <p className="text-[11px] text-muted-foreground/70 pl-6 leading-relaxed">
+                <p className="text-[0.6875rem] text-muted-foreground/70 pl-6 leading-relaxed">
                   연락처는 답변 알림에만 쓰고, 다른 곳에 쓰지 않습니다.
                 </p>
                 {wantsNotify && (

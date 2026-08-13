@@ -43,11 +43,11 @@ import { FamilyNameLuckInfographic } from "@/components/FamilyNameLuckInfographi
 
 const INLINE_IG_STYLES = `
   html.ua-instagram .ig-tt-dialog h2,
-  html.ua-instagram .ig-tt-dialog [class*="text-[25px]"] {
+  html.ua-instagram .ig-tt-dialog [class*="text-[1.5625rem]"] {
     font-size: 20px !important;
   }
   html.ua-instagram .ig-tt-dialog h3,
-  html.ua-instagram .ig-tt-dialog [class*="text-[21px]"] {
+  html.ua-instagram .ig-tt-dialog [class*="text-[1.3125rem]"] {
     font-size: 17px !important;
   }
   html.ua-instagram .ig-tt-dialog p,
@@ -501,7 +501,7 @@ export default function InstagramHome() {
                 <img src={astronot} alt="우주비행사" className="absolute left-1/2 -translate-x-1/2 -bottom-8 object-contain drop-shadow-xl" style={{ width: 115, height: 115 }} loading="eager" decoding="sync" />
               </div>
               <div className="bg-white px-6 pt-14 pb-6 flex flex-col items-center text-center gap-4">
-                <p className="text-[15px] text-gray-500 font-medium tracking-wide">EXPERIENCE ZONE</p>
+                <p className="text-[0.9375rem] text-gray-500 font-medium tracking-wide">EXPERIENCE ZONE</p>
                 <h2 className="text-xl font-extrabold text-gray-900 leading-snug">이름 속 운명을<br/>직접 체험해보세요.</h2>
                 <button onClick={() => { closeExpPopup(); setLocation('/experience-zone'); }} className="w-full py-3 bg-[#18a999] text-white font-bold rounded-xl text-base hover:bg-[#149085] transition-colors">체험존 바로가기</button>
                 <button onClick={() => closeExpPopup(true)} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">오늘 하루 안 보기</button>
@@ -547,7 +547,7 @@ export default function InstagramHome() {
               <p className="text-sm md:text-base font-semibold text-foreground">
                 Founder & CEO 안서호
               </p>
-              <p className="text-[11px] md:text-[14px] text-muted-foreground mt-1">
+              <p className="text-[0.6875rem] md:text-[0.875rem] text-muted-foreground mt-1">
                 한국이름학교 | 와츠유어네임 이름연구협회
               </p>
             </div>
@@ -582,7 +582,7 @@ export default function InstagramHome() {
 
             {/* Header */}
             <div className="text-center mb-10">
-              <h2 className="ig-dialog-title mb-8 text-[25px] font-semibold tiffany whitespace-nowrap" data-testid="section-title">
+              <h2 className="ig-dialog-title mb-8 text-[1.5625rem] font-semibold tiffany whitespace-nowrap" data-testid="section-title">
                 이름분석 운명상담이란
               </h2>
               <p className="text-white/80 text-lg leading-relaxed">
@@ -594,21 +594,21 @@ export default function InstagramHome() {
             <div className="grid gap-6 mb-16" data-testid="analysis-scope">
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-1">
                 <Layers className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-[21px] font-semibold">16가지 세부 운세<br />종합 분석</h3>
+                <h3 className="mb-2 text-[1.3125rem] font-semibold">16가지 세부 운세<br />종합 분석</h3>
                 <p className="text-lg leading-relaxed text-white/70 text-left">
                   수리운·주역괘운의 세밀한 분석을 통해 인생의 총체적 방향을 진단합니다.
                 </p>
               </div>
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-2">
                 <Compass className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-[21px] font-semibold">7개 인생 시기별 운의<br />흐름 파악</h3>
+                <h3 className="mb-2 text-[1.3125rem] font-semibold">7개 인생 시기별 운의<br />흐름 파악</h3>
                 <p className="text-lg leading-relaxed text-white/70 text-left">
                   초년·중년·말년 등 7개 시기를 분석하여 시기별 강점과 전환점을 명확히 제시합니다.
                 </p>
               </div>
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-3">
                 <Clock className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-[21px] font-semibold">과거·현재·미래<br />정밀 진단</h3>
+                <h3 className="mb-2 text-[1.3125rem] font-semibold">과거·현재·미래<br />정밀 진단</h3>
                 <p className="text-lg leading-relaxed text-white/70 text-left">
                   지나온 일, 현재 처한 상황, 다가올 운을 세밀히 파악합니다.
                 </p>
@@ -617,11 +617,11 @@ export default function InstagramHome() {
 
             {/* 상담 내용 */}
             <div data-testid="consulting-content">
-              <h3 className="tiffany mb-10 text-center text-[21px] font-semibold">상담 내용</h3>
+              <h3 className="tiffany mb-10 text-center text-[1.3125rem] font-semibold">상담 내용</h3>
               <div className="space-y-10">
                 <div className="flex flex-col" data-testid="content-item-1">
                   <div>
-                    <h4 className="mb-1 text-[21px] font-semibold flex items-center gap-3">
+                    <h4 className="mb-1 text-[1.3125rem] font-semibold flex items-center gap-3">
                       <CheckCircle className="h-[21px] w-[21px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
                       타고난 강점과 자질
                     </h4>
@@ -633,7 +633,7 @@ export default function InstagramHome() {
 
                 <div className="flex flex-col" data-testid="content-item-2">
                   <div>
-                    <h4 className="mb-1 text-[21px] font-semibold flex items-center gap-3">
+                    <h4 className="mb-1 text-[1.3125rem] font-semibold flex items-center gap-3">
                       <MapPin className="h-[21px] w-[21px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
                       인생 방향성
                     </h4>
@@ -645,7 +645,7 @@ export default function InstagramHome() {
 
                 <div className="flex flex-col" data-testid="content-item-3">
                   <div>
-                    <h4 className="mb-1 text-[21px] font-semibold flex items-center gap-3">
+                    <h4 className="mb-1 text-[1.3125rem] font-semibold flex items-center gap-3">
                       <TriangleAlert className="h-[21px] w-[21px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
                       주의해야 할 흉운
                     </h4>
@@ -688,10 +688,10 @@ export default function InstagramHome() {
           {/* Fixed Header */}
           <div className="shrink-0 px-6 py-6 sm:px-8 bg-[#0A0D11] flex items-start justify-between border-b border-white/5">
             <div>
-              <h1 className="text-[22px] sm:text-[26px] font-bold text-[#56D5DB] tracking-tight">
+              <h1 className="text-[1.375rem] sm:text-[1.625rem] font-bold text-[#56D5DB] tracking-tight">
                 등본상 가족 상담 원칙
               </h1>
-              <p className="mt-3 text-[17px] font-semibold tracking-tight text-white/85">
+              <p className="mt-3 text-[1.0625rem] font-semibold tracking-tight text-white/85">
                 가족은 운명 공동체로, 서로 이름운의 영향을 강하게 주고 받습니다.
               </p>
             </div>
@@ -716,14 +716,14 @@ export default function InstagramHome() {
                       <Heart className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-[19px] font-bold text-white">부부, 혼의 연결</h3>
-                      <p className="mt-1 text-[15px] text-white/60">
+                      <h3 className="text-[1.1875rem] font-bold text-white">부부, 혼의 연결</h3>
+                      <p className="mt-1 text-[0.9375rem] text-white/60">
                         · '결혼'은 본래 '혼(魂)을 연결한다'는 뜻에서 유래
                       </p>
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10">
-                    <p className="text-[17px] leading-relaxed text-white font-medium">
+                    <p className="text-[1.0625rem] leading-relaxed text-white font-medium">
                       · 일심동체처럼 몸과 마음이 강력히 연결
                     </p>
                   </div>
@@ -735,14 +735,14 @@ export default function InstagramHome() {
                       <Baby className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-[19px] font-bold text-white">자녀, 혈육</h3>
-                      <p className="mt-1 text-[15px] text-white/60">
+                      <h3 className="text-[1.1875rem] font-bold text-white">자녀, 혈육</h3>
+                      <p className="mt-1 text-[0.9375rem] text-white/60">
                         · 혈육: 피로 연결되고 살로 이어진 관계
                       </p>
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10">
-                    <p className="text-[17px] leading-relaxed text-white font-medium">
+                    <p className="text-[1.0625rem] leading-relaxed text-white font-medium">
                       · 분리된 듯 보이나 결코 분리될 수 없는 특별한 연대
                     </p>
                   </div>
@@ -757,8 +757,8 @@ export default function InstagramHome() {
                       <LifeBuoy className="h-5 w-5" />
                     </div>
                     <div className="w-full">
-                      <h3 className="text-[19px] font-bold text-white">이름운, 서로에게 영향</h3>
-                      <div className="mt-2 space-y-1 text-[15px] text-white/60">
+                      <h3 className="text-[1.1875rem] font-bold text-white">이름운, 서로에게 영향</h3>
+                      <div className="mt-2 space-y-1 text-[0.9375rem] text-white/60">
                         <div className="flex justify-between px-1 border-b border-white/5 py-1"><span>남편</span> <span>↔</span> <span>아내</span></div>
                         <div className="flex justify-between px-1 border-b border-white/5 py-1"><span>부모</span> <span>↔</span> <span>자녀</span></div>
                         <div className="flex justify-between px-1 py-1"><span>자녀</span> <span>↔</span> <span>자녀</span></div>
@@ -766,10 +766,10 @@ export default function InstagramHome() {
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10 space-y-2">
-                    <p className="text-[17px] text-white font-medium">
+                    <p className="text-[1.0625rem] text-white font-medium">
                       · 부부의 이름운은 결혼과 함께 상호작용
                     </p>
-                    <p className="text-[17px] text-white font-medium">
+                    <p className="text-[1.0625rem] text-white font-medium">
                       · 자녀의 초년운 ↔ 부모의 중년운에 영향
                     </p>
                   </div>
@@ -781,17 +781,17 @@ export default function InstagramHome() {
                       <Zap className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-[19px] font-bold text-white">에너지의 원리</h3>
-                      <p className="mt-1 text-[15px] text-white/60">
+                      <h3 className="text-[1.1875rem] font-bold text-white">에너지의 원리</h3>
+                      <p className="mt-1 text-[0.9375rem] text-white/60">
                         · 가정 내 에너지 분배
                       </p>
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10 space-y-2">
-                    <p className="text-[17px] text-white font-medium">
+                    <p className="text-[1.0625rem] text-white font-medium">
                       · 한 사람의 운이 좋아지면, 가족 전체에도 영향
                     </p>
-                    <p className="text-[17px] text-white font-medium">
+                    <p className="text-[1.0625rem] text-white font-medium">
                       · 가족 중 한 사람의 불운이 전체 균형을 흔들 수 있음
                     </p>
                   </div>
@@ -806,17 +806,17 @@ export default function InstagramHome() {
                       <Users className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-[19px] font-bold text-white">따라서, 등본상 가족은 함께</h3>
+                      <h3 className="text-[1.1875rem] font-bold text-white">따라서, 등본상 가족은 함께</h3>
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10 space-y-3">
-                    <p className="text-[17px] text-white font-medium">
+                    <p className="text-[1.0625rem] text-white font-medium">
                       · 가족 전체 이름운을 조화롭게 분석
                     </p>
-                    <p className="text-[17px] text-white font-medium">
+                    <p className="text-[1.0625rem] text-white font-medium">
                       · 개명이 필요한 경우, 가족 전체의 균형을 고려해 진행
                     </p>
-                    <p className="text-[17px] text-white font-medium">
+                    <p className="text-[1.0625rem] text-white font-medium">
                       · 한 사람만 개명해도, 가족 전체에 긍정적 파급 효과
                     </p>
                   </div>

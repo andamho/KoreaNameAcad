@@ -481,7 +481,7 @@ export default function NameStories() {
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4" style={{ color: '#1e2a4a' }} data-testid="text-stories-title">
                 흥미진진 이름이야기
               </h1>
-              <p className="text-[16px] md:text-2xl text-slate-700 mb-8">
+              <p className="text-[1rem] md:text-2xl text-slate-700 mb-8">
                 이름에 담긴 흥미로운 이야기들을 만나보세요
               </p>
               <a

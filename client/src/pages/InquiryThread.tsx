@@ -161,7 +161,7 @@ export default function InquiryThread() {
                           key={msg.id}
                           className={`flex flex-col gap-1 ${isRight ? "items-end" : "items-start"}`}
                         >
-                          <p className={`text-[10px] font-medium ${isRight ? "text-muted-foreground" : "text-[#18a999]"}`}>
+                          <p className={`text-[0.625rem] font-medium ${isRight ? "text-muted-foreground" : "text-[#18a999]"}`}>
                             {label}
                           </p>
                           <div
@@ -181,7 +181,7 @@ export default function InquiryThread() {
                               {msg.content}
                             </Linkify>
                           </div>
-                          <p className="text-[10px] text-muted-foreground">{formatDateTime(msg.createdAt)}</p>
+                          <p className="text-[0.625rem] text-muted-foreground">{formatDateTime(msg.createdAt)}</p>
                         </div>
                       );
                     })}

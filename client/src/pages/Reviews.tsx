@@ -772,7 +772,7 @@ export default function Reviews() {
                   data-testid={`stat-${index}`}
                 >
                   <div 
-                    className="text-[36px] leading-[1.4] sm:text-5xl md:text-[60px] font-extrabold md:leading-relaxed mb-3 sm:mb-4 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent w-full px-2"
+                    className="text-[2.25rem] leading-[1.4] sm:text-5xl md:text-[3.75rem] font-extrabold md:leading-relaxed mb-3 sm:mb-4 bg-gradient-to-r from-[#007C73] to-[#00B8A9] bg-clip-text text-transparent w-full px-2"
                     style={{ WebkitTextStroke: '0px' }}
                     data-animate-number
                     data-target={numValue}
@@ -780,7 +780,7 @@ export default function Reviews() {
                   >
                     {stat.multiline ? '0년' : (suffix === '%' ? '0%' : '0+')}
                   </div>
-                  <div className="flex items-center justify-center gap-2 text-[13px] sm:text-[18px] md:text-[24px] font-semibold text-muted-foreground">
+                  <div className="flex items-center justify-center gap-2 text-[0.8125rem] sm:text-[1.125rem] md:text-[1.5rem] font-semibold text-muted-foreground">
                     <IconComponent className="w-[16px] h-[16px] sm:w-[20px] sm:h-[20px] md:w-[28px] md:h-[28px] opacity-65" strokeWidth={2} />
                     <span>{stat.label}</span>
                   </div>
@@ -823,7 +823,7 @@ export default function Reviews() {
                 </div>
 
                 {/* Content */}
-                <p className="text-[13px] sm:text-[18px] md:text-[24px] leading-snug md:leading-relaxed text-foreground mb-2 md:mb-6">
+                <p className="text-[0.8125rem] sm:text-[1.125rem] md:text-[1.5rem] leading-snug md:leading-relaxed text-foreground mb-2 md:mb-6">
                   "{testimonial.content}"
                 </p>
 
@@ -869,7 +869,7 @@ export default function Reviews() {
                 </div>
 
                 {/* Content */}
-                <p className="text-[13px] sm:text-[18px] md:text-[24px] leading-snug md:leading-relaxed text-foreground mb-2 md:mb-6">
+                <p className="text-[0.8125rem] sm:text-[1.125rem] md:text-[1.5rem] leading-snug md:leading-relaxed text-foreground mb-2 md:mb-6">
                   "{testimonial.content}"
                 </p>
 

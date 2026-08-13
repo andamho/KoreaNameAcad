@@ -403,7 +403,7 @@ export default function ExperienceAloneFate() {
 
             {/* 훅 */}
             <div className="relative px-7 pt-9 pb-7 border-b border-white/8">
-              <p className="text-[10px] font-bold tracking-[0.4em] text-[#56D5DB] uppercase mb-5">Energy Frequency Diagnosis</p>
+              <p className="text-[0.625rem] font-bold tracking-[0.4em] text-[#56D5DB] uppercase mb-5">Energy Frequency Diagnosis</p>
               <p className="text-3xl md:text-4xl font-extrabold text-white leading-[1.5] mb-2">
                 "나는 혼자가 편해."
               </p>
@@ -439,7 +439,7 @@ export default function ExperienceAloneFate() {
 
             {/* 단명수 경고 */}
             <div className="relative px-7 py-7 border-b border-white/8" style={{ background: 'rgba(239,68,68,0.06)' }}>
-              <p className="text-[10px] font-bold tracking-[0.3em] text-red-400/50 uppercase mb-4">Critical Warning</p>
+              <p className="text-[0.625rem] font-bold tracking-[0.3em] text-red-400/50 uppercase mb-4">Critical Warning</p>
               <p className="text-white/70 text-base leading-[1.9] mb-3">
                 그리고 <span className="text-white font-bold">10, 12는</span><br />
                 고립시키는 것만으로 끝나지 않습니다.
@@ -697,14 +697,14 @@ export default function ExperienceAloneFate() {
                   </div>
                   <div className="flex-1 p-4 space-y-3">
                     <div className="flex items-center gap-3">
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#18a999]/10 text-[#18a999] border border-[#18a999]/20 flex-shrink-0">자음</span>
+                      <span className="text-[0.6875rem] font-bold px-2 py-0.5 rounded bg-[#18a999]/10 text-[#18a999] border border-[#18a999]/20 flex-shrink-0">자음</span>
                       <div className="flex flex-wrap gap-2 text-lg font-medium text-foreground">
                         {item.consonants.map(c => <span key={c} className="hover:text-[#18a999] cursor-default transition-colors">{c}</span>)}
                       </div>
                     </div>
                     <div className="h-px bg-border w-full" />
                     <div className="flex items-center gap-3">
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800 flex-shrink-0">모음</span>
+                      <span className="text-[0.6875rem] font-bold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800 flex-shrink-0">모음</span>
                       <div className="flex flex-wrap gap-2 text-lg font-medium text-foreground">
                         {item.vowels.map(v => <span key={v} className="hover:text-purple-500 cursor-default transition-colors">{v}</span>)}
                       </div>
@@ -766,7 +766,7 @@ export default function ExperienceAloneFate() {
                   답변이 달리면 알려드릴게요
                 </label>
                 {/* 비공개 글이 74% 라 '어디에 쓰이는지' 를 밝혀야 연락처를 남긴다 */}
-                <p className="text-[11px] text-muted-foreground/70 pl-6 leading-relaxed">
+                <p className="text-[0.6875rem] text-muted-foreground/70 pl-6 leading-relaxed">
                   연락처는 답변 알림에만 쓰고, 다른 곳에 쓰지 않습니다.
                 </p>
                 {wantsNotify && (

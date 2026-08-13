@@ -308,7 +308,7 @@ export default function ExperienceChildrenLuck() {
             </div>
 
             <div className="relative px-7 pt-9 pb-7 border-b border-white/8">
-              <p className="text-[10px] font-bold tracking-[0.4em] text-[#56D5DB] uppercase mb-5">Children Fortune Analysis</p>
+              <p className="text-[0.625rem] font-bold tracking-[0.4em] text-[#56D5DB] uppercase mb-5">Children Fortune Analysis</p>
               <p className="text-3xl md:text-4xl font-extrabold text-white leading-[1.5] mb-2">"자식과의 관계,<br />이름이 결정합니다."</p>
               <p className="text-white/40 text-sm font-medium mb-6">노력해도 잘 안 되는 건 이름의 관계운 영향이 크기 때문입니다.</p>
               <div className="border-l-2 border-[#56D5DB]/40 pl-4">
@@ -322,13 +322,13 @@ export default function ExperienceChildrenLuck() {
 
             {/* 예시: 안정환 */}
             <div className="relative px-7 py-6 border-b border-white/8">
-              <p className="text-[10px] font-bold tracking-[0.3em] text-white/25 uppercase mb-4">Example · 안정환</p>
+              <p className="text-[0.625rem] font-bold tracking-[0.3em] text-white/25 uppercase mb-4">Example · 안정환</p>
               <div className="flex items-center gap-3 mb-4">
                 {['안','정','환'].map((c, i) => (
                   <div key={c} className={`flex-1 rounded-xl px-3 py-3 text-center transition-all ${i === 0 ? 'opacity-30' : ''}`}
                     style={{ background:'rgba(255,255,255,0.05)', border: i > 0 ? '1px solid rgba(86,213,219,0.25)' : '1px solid rgba(255,255,255,0.08)' }}>
                     <p className="text-white font-black text-xl">{c}</p>
-                    <p className="text-white/30 text-[10px] mt-1">{i === 0 ? '성씨' : i === 1 ? '중간 글자' : '마지막 글자'}</p>
+                    <p className="text-white/30 text-[0.625rem] mt-1">{i === 0 ? '성씨' : i === 1 ? '중간 글자' : '마지막 글자'}</p>
                   </div>
                 ))}
               </div>
@@ -587,7 +587,7 @@ export default function ExperienceChildrenLuck() {
                   답변이 달리면 알려드릴게요
                 </label>
                 {/* 비공개 글이 74% 라 '어디에 쓰이는지' 를 밝혀야 연락처를 남긴다 */}
-                <p className="text-[11px] text-muted-foreground/70 pl-6 leading-relaxed">
+                <p className="text-[0.6875rem] text-muted-foreground/70 pl-6 leading-relaxed">
                   연락처는 답변 알림에만 쓰고, 다른 곳에 쓰지 않습니다.
                 </p>
                 {wantsNotify && (

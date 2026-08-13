@@ -229,7 +229,7 @@ export default function Inquiry() {
                 {threadToken && (
                   <div className="mt-2 space-y-3 text-left bg-muted/40 rounded-xl p-4">
                     <p className="text-xs md:text-sm font-semibold text-foreground">내 문의 대화방 링크</p>
-                    <p className="text-[11px] md:text-xs text-muted-foreground leading-relaxed">
+                    <p className="text-[0.6875rem] md:text-xs text-muted-foreground leading-relaxed">
                       이 링크를 저장해두시면 답변 확인 및 추가 문의를 이어서 하실 수 있습니다.
                     </p>
                     <div className="flex items-center gap-2">
@@ -407,7 +407,7 @@ export default function Inquiry() {
                               <div className="space-y-2 bg-background border border-border/40 rounded-lg p-3">
                                 {(threadMessages[inq.id] ?? []).map(msg => (
                                   <div key={msg.id} className={`flex flex-col gap-0.5 ${msg.senderType === "admin" ? "items-end" : "items-start"}`}>
-                                    <p className={`text-[10px] font-medium ${msg.senderType === "admin" ? "text-[#18a999]" : "text-muted-foreground"}`}>
+                                    <p className={`text-[0.625rem] font-medium ${msg.senderType === "admin" ? "text-[#18a999]" : "text-muted-foreground"}`}>
                                       {msg.senderType === "admin" ? "관리자" : inq.name}
                                     </p>
                                     {editingMsg?.id === msg.id ? (
@@ -445,14 +445,14 @@ export default function Inquiry() {
                                       </div>
                                     )}
                                     <div className="flex items-center gap-2">
-                                      <p className="text-[10px] text-muted-foreground">{formatDateTime(msg.createdAt)}</p>
+                                      <p className="text-[0.625rem] text-muted-foreground">{formatDateTime(msg.createdAt)}</p>
                                       {/* 관리자 메시지만 개별 수정·삭제 (임시 메시지는 새로고침 후) */}
                                       {msg.senderType === "admin" && !msg.id.startsWith("__tmp__") && editingMsg?.id !== msg.id && (
                                         <>
                                           <button onClick={() => setEditingMsg({ id: msg.id, text: msg.content })}
-                                            className="text-[10px] text-muted-foreground hover:text-[#18a999] transition">수정</button>
+                                            className="text-[0.625rem] text-muted-foreground hover:text-[#18a999] transition">수정</button>
                                           <button onClick={() => deleteMsg(inq.id, msg.id)}
-                                            className="text-[10px] text-muted-foreground hover:text-red-500 transition">삭제</button>
+                                            className="text-[0.625rem] text-muted-foreground hover:text-red-500 transition">삭제</button>
                                         </>
                                       )}
                                     </div>

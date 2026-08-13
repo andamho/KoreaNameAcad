@@ -174,7 +174,7 @@ export function ImageManager({
               <img src={img} alt="" className="w-full h-full object-cover" />
               
               {/* 순번 표시 (왼쪽 상단) */}
-              <span className="absolute top-0.5 left-0.5 text-white/90 text-[10px] font-bold bg-black/60 px-1.5 py-0.5 rounded z-10">{idx + 1}</span>
+              <span className="absolute top-0.5 left-0.5 text-white/90 text-[0.625rem] font-bold bg-black/60 px-1.5 py-0.5 rounded z-10">{idx + 1}</span>
               
               {/* 삭제 버튼 (오른쪽 상단) - 드래그 방지 */}
               <button
@@ -194,7 +194,7 @@ export function ImageManager({
               
               {/* 대표 표시 (왼쪽 하단) */}
               {thumbnail === img && (
-                <div className="absolute bottom-0.5 left-0.5 bg-primary text-primary-foreground text-[10px] px-1 rounded z-10">
+                <div className="absolute bottom-0.5 left-0.5 bg-primary text-primary-foreground text-[0.625rem] px-1 rounded z-10">
                   대표
                 </div>
               )}

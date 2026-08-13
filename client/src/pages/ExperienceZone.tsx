@@ -199,7 +199,7 @@ export default function ExperienceZone() {
                 {isAvailable ? (
                   <ChevronRight className="flex-shrink-0 w-5 h-5 text-[#18a999]" />
                 ) : (
-                  <div className="flex-shrink-0 text-[11px] text-muted-foreground/35 tracking-widest font-light">
+                  <div className="flex-shrink-0 text-[0.6875rem] text-muted-foreground/35 tracking-widest font-light">
                     준비중
                   </div>
                 )}

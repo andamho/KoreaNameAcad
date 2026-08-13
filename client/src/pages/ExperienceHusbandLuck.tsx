@@ -319,7 +319,7 @@ export default function ExperienceHusbandLuck() {
             </div>
 
             <div className="relative px-7 pt-9 pb-7 border-b border-white/8">
-              <p className="text-[10px] font-bold tracking-[0.4em] text-[#56D5DB] uppercase mb-5">Spouse Fortune Analysis</p>
+              <p className="text-[0.625rem] font-bold tracking-[0.4em] text-[#56D5DB] uppercase mb-5">Spouse Fortune Analysis</p>
               <p className="text-3xl md:text-4xl font-extrabold text-white leading-[1.5] mb-2">"노력해도 잘 안 돼..."</p>
               <p className="text-white/40 text-sm font-medium mb-6">이유가 이름 안에 있을 수 있습니다.</p>
               <div className="border-l-2 border-[#56D5DB]/40 pl-4 space-y-3">
@@ -332,7 +332,7 @@ export default function ExperienceHusbandLuck() {
             </div>
 
             <div className="relative px-7 py-6 border-b border-white/8">
-              <p className="text-[10px] font-bold tracking-[0.3em] text-white/25 uppercase mb-4">Example · 김연아</p>
+              <p className="text-[0.625rem] font-bold tracking-[0.3em] text-white/25 uppercase mb-4">Example · 김연아</p>
               <div className="flex items-center gap-4">
                 <div className="flex-1 rounded-xl px-4 py-3 text-center" style={{ background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)' }}>
                   <p className="text-white/40 text-xs mb-1">성씨 · 김</p>
@@ -449,7 +449,7 @@ export default function ExperienceHusbandLuck() {
                       </div>
                       <p className="text-xs mt-1" style={{ color: OHANG_COLOR[result.surnameOhang] }}>
                         {OHANG_HANJA[result.surnameOhang]}({result.surnameOhang})
-                        {result.isKim && <span className="text-white/30 block text-[10px]">김씨 특례 적용</span>}
+                        {result.isKim && <span className="text-white/30 block text-[0.625rem]">김씨 특례 적용</span>}
                       </p>
                       <p className="text-white/25 text-xs mt-1">배우자</p>
                     </div>
@@ -596,7 +596,7 @@ export default function ExperienceHusbandLuck() {
                   답변이 달리면 알려드릴게요
                 </label>
                 {/* 비공개 글이 74% 라 '어디에 쓰이는지' 를 밝혀야 연락처를 남긴다 */}
-                <p className="text-[11px] text-muted-foreground/70 pl-6 leading-relaxed">
+                <p className="text-[0.6875rem] text-muted-foreground/70 pl-6 leading-relaxed">
                   연락처는 답변 알림에만 쓰고, 다른 곳에 쓰지 않습니다.
                 </p>
                 {wantsNotify && (

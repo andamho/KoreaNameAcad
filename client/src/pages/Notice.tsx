@@ -35,10 +35,10 @@ export default function Notice() {
             <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
               <Bell className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-[22px] md:text-4xl lg:text-5xl font-extrabold text-white mb-4" data-testid="text-notice-title">
+            <h1 className="text-[1.375rem] md:text-4xl lg:text-5xl font-extrabold text-white mb-4" data-testid="text-notice-title">
               공지사항
             </h1>
-            <p className="text-[16px] md:text-xl text-white/90 max-w-2xl">
+            <p className="text-[1rem] md:text-xl text-white/90 max-w-2xl">
               한국이름학교의 새로운 소식을 확인하세요
             </p>
           </div>

@@ -202,7 +202,7 @@ export default function ExperienceNameRank() {
                   답변이 달리면 알려드릴게요
                 </label>
                 {/* 비공개 글이 74% 라 '어디에 쓰이는지' 를 밝혀야 연락처를 남긴다 */}
-                <p className="text-[11px] text-muted-foreground/70 pl-6 leading-relaxed">
+                <p className="text-[0.6875rem] text-muted-foreground/70 pl-6 leading-relaxed">
                   연락처는 답변 알림에만 쓰고, 다른 곳에 쓰지 않습니다.
                 </p>
                 {wantsNotify && (

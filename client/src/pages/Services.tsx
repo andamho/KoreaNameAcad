@@ -372,7 +372,7 @@ export default function Services() {
       <section className="py-16 md:py-24 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-left mb-12">
           <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400 mb-2">PREMIUM SERVICES</p>
-          <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
+          <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[1.5625rem] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl">
             진단부터 작명까지, 통합 이름 솔루션
           </h2>
           <button
@@ -445,7 +445,7 @@ export default function Services() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-left mb-12">
             <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400 mb-2">HOW IT WORKS</p>
-            <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[25px] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl" data-testid="text-process-title">
+            <h2 className="bg-gradient-to-r from-[#0f766e] to-[#4fd1c5] dark:from-[#58C4C4] dark:to-[#6DD4D4] bg-clip-text text-[1.5625rem] font-extrabold leading-tight text-transparent sm:text-3xl md:text-4xl" data-testid="text-process-title">
               진행 과정
             </h2>
           </div>
@@ -453,7 +453,7 @@ export default function Services() {
           <div className="grid md:grid-cols-2 gap-10">
             {/* 이름상담 진행과정 */}
             <div className="bg-white dark:bg-slate-800/50 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8" data-testid="card-process-consultation">
-              <h3 className="text-[21px] md:text-2xl font-bold mb-2">
+              <h3 className="text-[1.3125rem] md:text-2xl font-bold mb-2">
                 이름상담
               </h3>
               <p className="text-base text-muted-foreground mb-6">
@@ -488,7 +488,7 @@ export default function Services() {
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
                             {isConsultCore(idx) && (
-                              <span className="inline-flex items-center rounded-full bg-[#56D5DB]/15 px-2.5 py-1 text-[11px] font-semibold text-[#0b7f82] dark:text-[#58C4C4]">
+                              <span className="inline-flex items-center rounded-full bg-[#56D5DB]/15 px-2.5 py-1 text-[0.6875rem] font-semibold text-[#0b7f82] dark:text-[#58C4C4]">
                                 핵심 상담 과정
                               </span>
                             )}
@@ -519,7 +519,7 @@ export default function Services() {
 
             {/* 개명 진행 과정 */}
             <div className="bg-white dark:bg-slate-800/50 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 md:p-8" data-testid="card-process-rename">
-              <h3 className="text-[21px] md:text-2xl font-bold mb-2">
+              <h3 className="text-[1.3125rem] md:text-2xl font-bold mb-2">
                 개명
               </h3>
               <p className="text-base text-muted-foreground mb-6">
@@ -558,7 +558,7 @@ export default function Services() {
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
                             {isRenameCore(idx) && (
-                              <span className="inline-flex items-center rounded-full bg-[#56D5DB]/15 px-2.5 py-1 text-[11px] font-semibold text-[#0b7f82] dark:text-[#58C4C4]">
+                              <span className="inline-flex items-center rounded-full bg-[#56D5DB]/15 px-2.5 py-1 text-[0.6875rem] font-semibold text-[#0b7f82] dark:text-[#58C4C4]">
                                 핵심 작명 과정
                               </span>
                             )}
@@ -626,10 +626,10 @@ export default function Services() {
           {/* Fixed Header */}
           <div className="sticky top-0 z-10 px-6 py-6 sm:px-8 bg-[#0A0D11]/95 backdrop-blur flex items-start justify-between">
             <div>
-              <h1 className="text-[22px] sm:text-[26px] font-bold text-[#56D5DB] tracking-tight" data-testid="section-title">
+              <h1 className="text-[1.375rem] sm:text-[1.625rem] font-bold text-[#56D5DB] tracking-tight" data-testid="section-title">
                 이름분석 운명상담이란
               </h1>
-              <p className="mt-2 text-[17px] leading-relaxed text-white/65">
+              <p className="mt-2 text-[1.0625rem] leading-relaxed text-white/65">
                 사주 없이 한글·한자 이름에 내재된 운명의 흐름을, 체계적으로 해석하는 전문 상담 서비스입니다.
               </p>
             </div>
@@ -647,10 +647,10 @@ export default function Services() {
                 <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
                   <Layers className="h-6 w-6" aria-hidden="true" />
                 </div>
-                <h3 className="text-[19px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
+                <h3 className="text-[1.1875rem] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
                   16가지 세부 운세<br />종합 분석
                 </h3>
-                <p className="mt-2 text-[17px] leading-relaxed text-white/65">
+                <p className="mt-2 text-[1.0625rem] leading-relaxed text-white/65">
                   수리운·주역괘운의 세밀한 분석을 통해 인생의 총체적 방향을 진단합니다.
                 </p>
               </div>
@@ -658,10 +658,10 @@ export default function Services() {
                 <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
                   <Compass className="h-6 w-6" aria-hidden="true" />
                 </div>
-                <h3 className="text-[19px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
+                <h3 className="text-[1.1875rem] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
                   7개 인생 시기별 운의<br />흐름 파악
                 </h3>
-                <p className="mt-2 text-[17px] leading-relaxed text-white/65">
+                <p className="mt-2 text-[1.0625rem] leading-relaxed text-white/65">
                   초년·중년·말년 등 7개 시기를 분석하여 시기별 강점과 전환점을 명확히 제시합니다.
                 </p>
               </div>
@@ -669,10 +669,10 @@ export default function Services() {
                 <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#56D5DB]/10 text-[#56D5DB]">
                   <Clock className="h-6 w-6" aria-hidden="true" />
                 </div>
-                <h3 className="text-[19px] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
+                <h3 className="text-[1.1875rem] font-semibold tracking-tight text-white group-hover:text-[#56D5DB] transition-colors">
                   과거·현재·미래<br />정밀 진단
                 </h3>
-                <p className="mt-2 text-[17px] leading-relaxed text-white/65">
+                <p className="mt-2 text-[1.0625rem] leading-relaxed text-white/65">
                   지나온 일, 현재 처한 상황, 다가올 운을 세밀히 파악합니다.
                 </p>
               </div>
@@ -685,31 +685,31 @@ export default function Services() {
             <div className="grid gap-12 lg:grid-cols-2">
               {/* 상담 내용 */}
               <div data-testid="consulting-content">
-                <h2 className="text-[24px] sm:text-[26px] font-semibold tracking-tight text-[#56D5DB] mb-6">
+                <h2 className="text-[1.5rem] sm:text-[1.625rem] font-semibold tracking-tight text-[#56D5DB] mb-6">
                   상담 내용
                 </h2>
                 <div className="space-y-8 pl-1">
                   <div className="group" data-testid="content-item-0">
-                    <h3 className="text-[19px] font-bold text-white mb-1.5">고민 원인 분석</h3>
-                    <p className="text-[17px] leading-relaxed text-white/65">
+                    <h3 className="text-[1.1875rem] font-bold text-white mb-1.5">고민 원인 분석</h3>
+                    <p className="text-[1.0625rem] leading-relaxed text-white/65">
                       이름 분석 데이터를 바탕으로 현재 겪고 있는 문제의 근본 원인을 명확하게 진단합니다.
                     </p>
                   </div>
                   <div className="group" data-testid="content-item-1">
-                    <h3 className="text-[19px] font-bold text-white mb-1.5">타고난 강점과 자질</h3>
-                    <p className="text-[17px] leading-relaxed text-white/65">
+                    <h3 className="text-[1.1875rem] font-bold text-white mb-1.5">타고난 강점과 자질</h3>
+                    <p className="text-[1.0625rem] leading-relaxed text-white/65">
                       선천적 재능과 특징 그리고 성격적 특성을 구체적으로 분석합니다.
                     </p>
                   </div>
                   <div className="group" data-testid="content-item-2">
-                    <h3 className="text-[19px] font-bold text-white mb-1.5">인생 방향성</h3>
-                    <p className="text-[17px] leading-relaxed text-white/65">
+                    <h3 className="text-[1.1875rem] font-bold text-white mb-1.5">인생 방향성</h3>
+                    <p className="text-[1.0625rem] leading-relaxed text-white/65">
                       어떤 일을 할 때 성공하는지, 어떤 선택이 유리한지 명확히 제시합니다.
                     </p>
                   </div>
                   <div className="group" data-testid="content-item-3">
-                    <h3 className="text-[19px] font-bold text-white mb-1.5">주의해야 할 흉운</h3>
-                    <p className="text-[17px] leading-relaxed text-white/65">
+                    <h3 className="text-[1.1875rem] font-bold text-white mb-1.5">주의해야 할 흉운</h3>
+                    <p className="text-[1.0625rem] leading-relaxed text-white/65">
                       발전을 저해하는 장애 요소와 극복 방안을 제시합니다.
                     </p>
                   </div>
@@ -718,7 +718,7 @@ export default function Services() {
 
               {/* 진행 과정 */}
               <div data-testid="process-flow">
-                <h2 className="text-[24px] sm:text-[26px] font-semibold tracking-tight text-[#56D5DB] mb-6">
+                <h2 className="text-[1.5rem] sm:text-[1.625rem] font-semibold tracking-tight text-[#56D5DB] mb-6">
                   진행 과정
                 </h2>
                 <div className="space-y-8">
@@ -726,10 +726,10 @@ export default function Services() {
                   <div className="flex items-start gap-5" data-testid="process-step-1">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-[#56D5DB]">01</div>
                     <div className="pt-0.5 w-full">
-                      <div className="text-[19px] font-bold text-white mb-1.5">상담 일정 예약</div>
+                      <div className="text-[1.1875rem] font-bold text-white mb-1.5">상담 일정 예약</div>
                       <div className="flex gap-3">
                         <div className="mt-1.5 h-[15px] w-[3px] shrink-0 rounded-full bg-[#56D5DB]"></div>
-                        <div className="text-[17px] leading-relaxed text-white/60">
+                        <div className="text-[1.0625rem] leading-relaxed text-white/60">
                           신청서 접수 및 입금 확인 후 예약 확정
                         </div>
                       </div>
@@ -741,14 +741,14 @@ export default function Services() {
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#56D5DB] text-sm font-bold text-white">02</div>
                     <div className="pt-0.5 w-full">
                       <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                        <span className="core-process-badge rounded-full bg-[#56D5DB]/[0.15] px-2 py-0.5 text-[11px] font-bold text-[#56D5DB]">
+                        <span className="core-process-badge rounded-full bg-[#56D5DB]/[0.15] px-2 py-0.5 text-[0.6875rem] font-bold text-[#56D5DB]">
                           핵심 상담 과정
                         </span>
                       </div>
-                      <div className="text-[19px] font-bold text-white mb-1.5">이름분석표(PDF) 발송</div>
+                      <div className="text-[1.1875rem] font-bold text-white mb-1.5">이름분석표(PDF) 발송</div>
                       <div className="flex gap-3">
                         <div className="mt-1.5 h-[15px] w-[3px] shrink-0 rounded-full bg-[#56D5DB]"></div>
-                        <div className="text-[17px] leading-relaxed text-white/60">
+                        <div className="text-[1.0625rem] leading-relaxed text-white/60">
                           상담 시작 직전 발송
                         </div>
                       </div>
@@ -760,14 +760,14 @@ export default function Services() {
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#56D5DB] text-sm font-bold text-white">03</div>
                     <div className="pt-0.5 w-full">
                       <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                        <span className="core-process-badge rounded-full bg-[#56D5DB]/[0.15] px-2 py-0.5 text-[11px] font-bold text-[#56D5DB]">
+                        <span className="core-process-badge rounded-full bg-[#56D5DB]/[0.15] px-2 py-0.5 text-[0.6875rem] font-bold text-[#56D5DB]">
                           핵심 상담 과정
                         </span>
                       </div>
-                      <div className="text-[19px] font-bold text-white mb-1.5">1:1 전화 상담 진행</div>
+                      <div className="text-[1.1875rem] font-bold text-white mb-1.5">1:1 전화 상담 진행</div>
                       <div className="flex gap-3">
                         <div className="mt-1.5 h-[15px] w-[3px] shrink-0 rounded-full bg-[#56D5DB]"></div>
-                        <div className="text-[17px] leading-relaxed text-white/60">
+                        <div className="text-[1.0625rem] leading-relaxed text-white/60">
                           분석표를 토대로 심층 상담
                         </div>
                       </div>
@@ -808,10 +808,10 @@ export default function Services() {
           {/* Fixed Header - 고정 영역 */}
           <div className="shrink-0 px-6 py-6 sm:px-8 bg-[#0A0D11] flex items-start justify-between border-b border-white/5">
             <div>
-              <h1 className="text-[22px] sm:text-[26px] font-bold text-[#56D5DB] tracking-tight">
+              <h1 className="text-[1.375rem] sm:text-[1.625rem] font-bold text-[#56D5DB] tracking-tight">
                 등본상 가족 상담 원칙
               </h1>
-              <p className="mt-3 text-[17px] font-semibold tracking-tight text-white/85">
+              <p className="mt-3 text-[1.0625rem] font-semibold tracking-tight text-white/85">
                 가족은 운명 공동체로, 서로 이름운의 영향을 강하게 주고 받습니다.
               </p>
             </div>
@@ -836,14 +836,14 @@ export default function Services() {
                       <Heart className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-[19px] font-bold text-white">부부, 혼의 연결</h3>
-                      <p className="mt-1 text-[15px] text-white/60">
+                      <h3 className="text-[1.1875rem] font-bold text-white">부부, 혼의 연결</h3>
+                      <p className="mt-1 text-[0.9375rem] text-white/60">
                         · '결혼'은 본래 '혼(魂)을 연결한다'는 뜻에서 유래
                       </p>
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10">
-                    <p className="text-[17px] leading-relaxed text-white font-medium">
+                    <p className="text-[1.0625rem] leading-relaxed text-white font-medium">
                       · 일심동체처럼 몸과 마음이 강력히 연결
                     </p>
                   </div>
@@ -855,14 +855,14 @@ export default function Services() {
                       <Baby className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-[19px] font-bold text-white">자녀, 혈육</h3>
-                      <p className="mt-1 text-[15px] text-white/60">
+                      <h3 className="text-[1.1875rem] font-bold text-white">자녀, 혈육</h3>
+                      <p className="mt-1 text-[0.9375rem] text-white/60">
                         · 혈육: 피로 연결되고 살로 이어진 관계
                       </p>
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10">
-                    <p className="text-[17px] leading-relaxed text-white font-medium">
+                    <p className="text-[1.0625rem] leading-relaxed text-white font-medium">
                       · 분리된 듯 보이나 결코 분리될 수 없는 특별한 연대
                     </p>
                   </div>
@@ -907,8 +907,8 @@ export default function Services() {
                       <LifeBuoy className="h-5 w-5" />
                     </div>
                     <div className="w-full">
-                      <h3 className="text-[19px] font-bold text-white">이름운, 서로에게 영향</h3>
-                      <div className="mt-2 space-y-1 text-[15px] text-white/60">
+                      <h3 className="text-[1.1875rem] font-bold text-white">이름운, 서로에게 영향</h3>
+                      <div className="mt-2 space-y-1 text-[0.9375rem] text-white/60">
                         <div className="flex justify-between px-1 border-b border-white/5 py-1"><span>남편</span> <span>↔</span> <span>아내</span></div>
                         <div className="flex justify-between px-1 border-b border-white/5 py-1"><span>부모</span> <span>↔</span> <span>자녀</span></div>
                         <div className="flex justify-between px-1 py-1"><span>자녀</span> <span>↔</span> <span>자녀</span></div>
@@ -916,10 +916,10 @@ export default function Services() {
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10 space-y-2">
-                    <p className="text-[17px] text-white font-medium">
+                    <p className="text-[1.0625rem] text-white font-medium">
                       · 부부의 이름운은 결혼과 함께 상호작용
                     </p>
-                    <p className="text-[17px] text-white font-medium">
+                    <p className="text-[1.0625rem] text-white font-medium">
                       · 자녀의 초년운 ↔ 부모의 중년운에 영향
                     </p>
                   </div>
@@ -931,14 +931,14 @@ export default function Services() {
                       <Zap className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-[19px] font-bold text-white">에너지의 원리</h3>
-                      <p className="mt-1 text-[15px] text-white/60">
+                      <h3 className="text-[1.1875rem] font-bold text-white">에너지의 원리</h3>
+                      <p className="mt-1 text-[0.9375rem] text-white/60">
                         이름은 '소리'보다 '글자'가 강합니다
                       </p>
                     </div>
                   </div>
                   <div className="pt-4 border-t border-white/10">
-                    <p className="text-[17px] leading-relaxed text-white font-medium">
+                    <p className="text-[1.0625rem] leading-relaxed text-white font-medium">
                       · 이름에는 소리 에너지도 있지만, 그보다 훨씬 강력한 것이 바로 글자 에너지입니다.<br />
                       · 소리 에너지는 말하는 순간 사라지지만, 글자 에너지는 폐기하기 전까지 계속 존재합니다.
                     </p>
@@ -962,18 +962,18 @@ export default function Services() {
               <article className={`${familyAnimated ? 'family-card-bot' : ''} rounded-2xl border-2 border-[#56D5DB]/30 bg-[#56D5DB]/[0.05] p-8 relative overflow-hidden shadow-[0_0_40px_-10px_rgba(86,213,219,0.15)] z-10`}>
                 <div className="absolute inset-0 bg-gradient-to-b from-[#56D5DB]/5 to-transparent"></div>
                 <div className="relative text-left">
-                  <div className="inline-block rounded-full border border-[#56D5DB]/30 bg-[#56D5DB]/[0.15] px-3 py-1 text-[13px] font-bold text-[#56D5DB] mb-3">
+                  <div className="inline-block rounded-full border border-[#56D5DB]/30 bg-[#56D5DB]/[0.15] px-3 py-1 text-[0.8125rem] font-bold text-[#56D5DB] mb-3">
                     핵심 결론
                   </div>
-                  <h3 className="text-[19px] font-bold text-[#56D5DB] mb-4">
+                  <h3 className="text-[1.1875rem] font-bold text-[#56D5DB] mb-4">
                     등본상 가족은 더 깊게 연결됩니다
                   </h3>
-                  <p className="text-[17px] leading-relaxed text-white/80 mb-6">
+                  <p className="text-[1.0625rem] leading-relaxed text-white/80 mb-6">
                     법적 에너지권 안에서 글자 에너지로 깊게 연결된 등본상 가족은{" "}
                     <br className="hidden sm:block" />더욱 긴밀하며 상당한 영향을 미칩니다.
                   </p>
                   <div className="rounded-xl bg-[#0A0D11] border border-[#56D5DB]/30 p-5 shadow-inner">
-                    <p className="text-[17px] font-bold text-[#56D5DB] text-center leading-relaxed">
+                    <p className="text-[1.0625rem] font-bold text-[#56D5DB] text-center leading-relaxed">
                       "그래서 등본상 가족 전체의 이름분석을 진행하셔야<br className="hidden sm:block" /> 정확한 운명상담이 가능합니다."
                     </p>
                   </div>
@@ -982,7 +982,7 @@ export default function Services() {
 
               {/* 추천 글 섹션 */}
               <div className="mt-16 border-t border-white/10 pt-10">
-                <h3 className="text-[19px] font-bold text-white mb-6 flex items-center gap-2">
+                <h3 className="text-[1.1875rem] font-bold text-white mb-6 flex items-center gap-2">
                   <span className="inline-block w-1 h-5 bg-[#56D5DB] rounded-full"></span>
                   같이 보시면 좋은 글
                 </h3>
@@ -997,14 +997,14 @@ export default function Services() {
                     <div className="flex items-start gap-4">
                       <span className="text-3xl filter grayscale group-hover:grayscale-0 transition-all">🤦‍♀️</span>
                       <div className="flex-1">
-                        <h4 className="text-[17px] font-bold text-white group-hover:text-[#56D5DB] transition-colors leading-snug">
+                        <h4 className="text-[1.0625rem] font-bold text-white group-hover:text-[#56D5DB] transition-colors leading-snug">
                           "아빠가 바람이 났습니다" <br className="sm:hidden" />
-                          <span className="text-white/50 font-normal text-[15px] sm:ml-2">엄마 이름 때문에</span>
+                          <span className="text-white/50 font-normal text-[0.9375rem] sm:ml-2">엄마 이름 때문에</span>
                         </h4>
-                        <p className="mt-2 text-[15px] text-white/60 leading-relaxed line-clamp-2">
+                        <p className="mt-2 text-[0.9375rem] text-white/60 leading-relaxed line-clamp-2">
                           아빠가 바람이 났습니다. 네이버에 치면 나오는 유명인입니다. 아빠의 바람으로 집안이 엉망진창되었습니다...
                         </p>
-                        <div className="mt-3 flex items-center text-[13px] font-bold text-[#56D5DB]/90 opacity-80 group-hover:opacity-100">
+                        <div className="mt-3 flex items-center text-[0.8125rem] font-bold text-[#56D5DB]/90 opacity-80 group-hover:opacity-100">
                           터치해서 전체 내용 보기
                           <svg className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                         </div>
@@ -1022,13 +1022,13 @@ export default function Services() {
                     <div className="flex items-start gap-4">
                       <span className="text-3xl filter grayscale group-hover:grayscale-0 transition-all">⚖️</span>
                       <div className="flex-1">
-                        <h4 className="text-[17px] font-bold text-white group-hover:text-[#56D5DB] transition-colors leading-snug">
+                        <h4 className="text-[1.0625rem] font-bold text-white group-hover:text-[#56D5DB] transition-colors leading-snug">
                           개명한 이름 때문에 아빠가 돌아가시고...
                         </h4>
-                        <p className="mt-2 text-[15px] text-white/60 leading-relaxed line-clamp-2">
+                        <p className="mt-2 text-[0.9375rem] text-white/60 leading-relaxed line-clamp-2">
                           어느날 인스타로 디엠이 왔습니다. 너무 살기 힘들다며 죽고 싶다고까지 했습니다. 젊으신 분이 그러시면...
                         </p>
-                        <div className="mt-3 flex items-center text-[13px] font-bold text-[#56D5DB]/90 opacity-80 group-hover:opacity-100">
+                        <div className="mt-3 flex items-center text-[0.8125rem] font-bold text-[#56D5DB]/90 opacity-80 group-hover:opacity-100">
                           터치해서 전체 내용 보기
                           <svg className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                         </div>
