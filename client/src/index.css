@@ -1184,6 +1184,30 @@ html.ua-tiktok    .kna-experience-page .text-7xl { font-size: 59px !important; }
   background: rgba(17, 24, 39, 0.45);
 }
 
+/* 히어로 아래 '지금 신청 / 후기 보기' — 글자는 폰 폭 따라 커지는데 버튼만
+   14px 로 고정돼 있어서, 큰 폰에서 버튼이 상대적으로 작아 보였다.
+   여백을 em 으로 잡아 글자가 커지면 버튼도 같은 비율로 커진다.
+   데스크탑은 예전 값(14px / 6px 16px) 그대로 둔다. */
+.hero-cta,
+.hero-cta-link {
+  /* 아래 한계를 14px 로 두면 작은 폰(375px 이하)에서 그 한계에 걸려
+     글자만 안 줄어든다 — 그래서 작은 폰일수록 버튼이 더 커 보였다.
+     한계를 12px 로 낮춰 폰 폭 어디서나 큰 글자와 같은 비율(0.308)이 되게 한다. */
+  font-size: clamp(12px, 3.6vw, 18px);
+}
+.hero-cta {
+  padding: 0.45em 1.15em;
+}
+@media (min-width: 768px) {
+  .hero-cta,
+  .hero-cta-link {
+    font-size: 14px;
+  }
+  .hero-cta {
+    padding: 6px 16px;
+  }
+}
+
 /* 같은 얇은 줄인데 어두운 배경(푸터)에 올릴 때 — 색만 흰색으로 바꾼다. */
 .kna-underline-plain.kna-underline-light {
   background: rgba(255, 255, 255, 0.45);
