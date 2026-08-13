@@ -357,8 +357,8 @@ export default function Services() {
                 전문적인 이름 서비스
               </h1>
               <p className="text-xl md:text-2xl text-slate-700">
-                고달픈 인생,<br />
-                이름 하나로 이유와 해결책을
+                이름이 맑아야 인생이 맑다<br />
+                이름 안에 너 있다
               </p>
             </div>
           </div>

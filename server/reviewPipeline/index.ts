@@ -337,14 +337,13 @@ export async function publishReview(draft: ReviewDraft): Promise<{ contentId: st
 }
 
 // 네이버 블로그 본문 하단에 항상 붙이는 홍보/신청 블록
-const NAVER_FOOTER = `😩고달픈 인생,
-이름 하나로 이유와 해결책을!
+const NAVER_FOOTER = `✨이름이 맑아야
+인생이 맑다!
 
 🔍한글.한자이름만으로 운명상담
 [정확도 80%👆]
 
-🌸운이 술술 풀리는 이름으로
-인생역전!
+🌸이름 안에 너 있다
 
 🔮이름상담 및 작명 [신청방법]
 아래 링크통해

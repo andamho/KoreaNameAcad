@@ -350,14 +350,15 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
                 <div className="kna-promo mt-8 rounded-2xl py-10 px-6 text-center relative overflow-hidden bg-white border border-gray-100">
                   <div className="relative z-10">
                     <div className="font-bold tracking-tight text-center" style={{ fontSize: 'clamp(18px, 4vw, 24px)', lineHeight: '1.35', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1em' }}>
-                      <span className="text-gray-900">고달픈 인생</span>
-                      <span className="text-gray-900">이름 하나로 이유를 찾고</span>
                       <span className="kna-highlight">
-                        <span className="kna-shine">운이 술술 풀리는</span>
+                        <span className="kna-shine">이름이 맑아야</span>
                       </span>
                       <span className="kna-highlight">
-                        <span className="kna-shine">새 이름으로, 인생역전하세요.</span>
-                        <span className="kna-underline" aria-hidden="true" />
+                        <span className="kna-shine">인생이 맑다</span>
+                      </span>
+                      <span className="text-gray-900 font-normal relative" style={{ marginTop: '0.5em' }}>
+                        이름 안에 너 있다
+                        <span className="kna-underline-plain" aria-hidden="true" />
                       </span>
                     </div>
                     <div className="text-muted-foreground text-sm mt-4 mb-5 flex flex-col items-center" style={{ gap: '0.1em' }}>

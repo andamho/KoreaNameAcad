@@ -226,7 +226,7 @@ export default function KnaStepsSection() {
               step={2}
               icon={<MapPin className="h-6 w-6" />}
               title="운명 상담"
-              desc="고달픈 인생의 이유를 이름 분석 운명 상담을 통해 명확히 찾아드립니다."
+              desc="인생이 맑지 않은 이유를 이름 분석 운명 상담을 통해 명확히 찾아드립니다."
               footerLabel="핵심: 원인 규명"
               footerNext="다음: 인생 역전 >"
               isScrollActive={activeCards.has(2)}

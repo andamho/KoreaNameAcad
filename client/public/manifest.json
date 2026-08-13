@@ -1,7 +1,7 @@
 {
   "name": "한국이름학교",
   "short_name": "한국이름학교",
-  "description": "이름만으로 이유를 찾고, 운이 풀리는 새이름으로 인생역전하세요!",
+  "description": "이름이 맑아야 인생이 맑다 — 이름 안에 너 있다",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0F172A",

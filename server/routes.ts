@@ -1102,14 +1102,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const FIXED_HASHTAGS = "#한국이름학교 #와츠유어네임이름연구협회 #작명 #개명 #이름분석 #이름풀이";
 
   // 인스타 캡션 맨 아래 항상 붙는 고정 문구 (사용자 지정)
-  const INSTAGRAM_CAPTION_FOOTER = `😩고달픈 인생,
-이름 하나로 이유와 해결책을!
+  const INSTAGRAM_CAPTION_FOOTER = `✨이름이 맑아야
+인생이 맑다!
 
 🔍한글.한자이름만으로 운명상담
 [정확도 80%👆]
 
-🌸운이 술술 풀리는 이름으로
-인생역전!
+🌸이름 안에 너 있다
 
 🔮이름상담 및 작명 [신청방법]
 프로필 링크통해
