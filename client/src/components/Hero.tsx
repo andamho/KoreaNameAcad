@@ -99,8 +99,13 @@ export function Hero() {
               src="/main-cloud.webp"
               alt=""
               aria-hidden="true"
-              className="md:hidden mx-auto select-none pointer-events-none w-[31.63vw] mb-[35px]"
-              style={{ filter: 'drop-shadow(0 3px 5px rgba(2, 90, 110, 0.35))' }}
+              className="md:hidden mx-auto select-none pointer-events-none w-[25.3vw] mb-[35px]"
+              style={{
+                filter: 'drop-shadow(0 3px 5px rgba(2, 90, 110, 0.35))',
+                /* 가운데에서 오른쪽으로 밀어 '맑아야' 오른쪽 끝에 맞추고, 살짝 위로.
+                   transform 이라 글자 위치는 그대로 두고 구름만 움직인다. */
+                transform: 'translate(19.7vw, -10px)',
+              }}
               loading="eager"
               fetchPriority="high"
               decoding="sync"
