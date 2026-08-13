@@ -44,7 +44,7 @@ export function Hero() {
     ? 'clamp(25px, 5.4vw, 34px)' 
     : isTikTok 
     ? 'clamp(25px, 5.4vw, 34px)'
-    : 'clamp(44px, 9.2vw, 65px)';
+    : 'clamp(40px, 11.7vw, 65px)';
   
   // 데스크탑 전용 20% 증가된 폰트 크기
   const h1FontSizeDesktop = 'clamp(52px, 11.3vw, 78px)';
@@ -77,8 +77,7 @@ export function Hero() {
           src="/main-mountain.webp"
           alt=""
           aria-hidden="true"
-          className="absolute select-none pointer-events-none
-            left-[32.03%] top-[18%] w-[31.63vw]
+          className="hidden md:block absolute select-none pointer-events-none
             md:left-[10%] md:top-[19.91%] md:w-[12.86vw]"
           loading="eager"
           fetchPriority="high"
@@ -91,6 +90,17 @@ export function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative h-full flex items-center justify-center">
         <div className="text-center max-w-4xl mx-auto space-y-8 hero-wrap">
           <div>
+            {/* 모바일 전용 산 — 글자 바로 위에 붙여 간격을 항상 35px 로 유지한다.
+                예전처럼 화면 높이 비율로 띄우면 폰 길이에 따라 24~74px 로 달라졌다. */}
+            <img
+              src="/main-mountain.webp"
+              alt=""
+              aria-hidden="true"
+              className="md:hidden mx-auto select-none pointer-events-none w-[31.63vw] mb-[35px]"
+              loading="eager"
+              fetchPriority="high"
+              decoding="sync"
+            />
             <h1 className="font-bold tracking-tight break-keep text-center hero-title" style={{fontSize: h1FontSize, lineHeight: '1.2', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.15em'}} aria-label="이름이 맑아야 인생이 맑다 이름 안에 너 있다">
               {/* 위 두 줄이 강조(티파니·굵게), 아래 한 줄은 검정·보통 굵기 */}
               <span className="kna-highlight">
