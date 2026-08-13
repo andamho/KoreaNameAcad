@@ -477,7 +477,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                   className="kna-inapp-zoom self-start ml-10 text-xs font-bold text-tiffany-dark bg-tiffany-light/80 border border-tiffany/20 px-4 py-2 rounded-full hover:bg-tiffany-light transition flex items-center gap-1"
                   data-testid="button-family-policy-form"
                 >
-                  원칙 자세히 보기 <span className="text-[10px]">›</span>
+                  원칙 자세히 보기 <span className="text-[0.625rem]">›</span>
                 </button>
               </div>
             </div>
@@ -1019,11 +1019,11 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
               />
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div className="flex flex-col items-center">
-                  <span className="kna-inapp-zoom-2x text-xs sm:text-[15px] font-bold tracking-wide text-white/90">Nonghyup Bank</span>
+                  <span className="kna-inapp-zoom-2x text-xs sm:text-[0.9375rem] font-bold tracking-wide text-white/90">Nonghyup Bank</span>
                 </div>
 
                 <div className="flex flex-col items-center space-y-2">
-                  <div className="text-lg sm:text-[31px] font-mono font-bold tracking-wider text-white whitespace-nowrap text-center">
+                  <div className="text-lg sm:text-[1.9375rem] font-mono font-bold tracking-wider text-white whitespace-nowrap text-center">
                     351 8205 8124 53
                   </div>
 
@@ -1045,7 +1045,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                 </div>
 
                 <div className="text-center">
-                  <span className="kna-inapp-zoom-3x text-[11px] sm:text-[14px] font-medium text-white/80 tracking-tight">
+                  <span className="kna-inapp-zoom-3x text-[0.6875rem] sm:text-[0.875rem] font-medium text-white/80 tracking-tight">
                     예금주: 와츠유어네임 이름연구협회
                   </span>
                 </div>
@@ -1134,7 +1134,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
       <div className="flex-shrink-0 border-t border-slate-100 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.08)] z-[9999] relative">
         <div className="px-4 py-3 pb-[calc(12px+env(safe-area-inset-bottom))] flex items-center gap-4">
           <div className="flex-1">
-            <div className="text-[10px] text-slate-500 font-bold mb-0.5">총 상담비</div>
+            <div className="text-[0.625rem] text-slate-500 font-bold mb-0.5">총 상담비</div>
             <div className="text-lg form-title-font font-bold text-slate-900 tracking-tight">
               {totalPrice.toLocaleString()}원
             </div>

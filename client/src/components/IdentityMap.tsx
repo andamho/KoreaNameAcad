@@ -164,7 +164,7 @@ export default function IdentityMap() {
 
       {/* n1: 홍길동 - 이메일보다 위로, 이름 라벨은 위에, 박스 20% 축소 */}
       <div className="id-node absolute top-[8%] md:top-[15%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" id="n1" style={{ "--c": "#ff4757", animationDelay: "0s" } as React.CSSProperties}>
-        <div className="mb-1 text-white text-[10px] md:text-xs font-semibold">이름</div>
+        <div className="mb-1 text-white text-[0.625rem] md:text-xs font-semibold">이름</div>
         <div className="anchor text-white font-black text-base md:text-lg px-3 md:px-3.5 py-1.5 rounded-xl whitespace-nowrap" style={{ background: "#ff3b4f", boxShadow: "0 0 25px rgba(255, 59, 79, 0.5)", border: "1.5px solid rgba(255,255,255,0.25)" }}>홍길동</div>
       </div>
 
@@ -175,7 +175,7 @@ export default function IdentityMap() {
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">전화번호</div>
+        <div className="text-[#adbdcc] text-[0.625rem] md:text-xs font-semibold">전화번호</div>
       </div>
 
       {/* n4: 여권이름 - 데스크탑 선 25% 더 길게 */}
@@ -187,7 +187,7 @@ export default function IdentityMap() {
             <path d="M14 18v-2a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v2"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">여권이름</div>
+        <div className="text-[#adbdcc] text-[0.625rem] md:text-xs font-semibold">여권이름</div>
       </div>
 
       {/* n3: 차량번호 - 중심에 가깝게 */}
@@ -200,7 +200,7 @@ export default function IdentityMap() {
             <circle cx="17" cy="17" r="2"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">차량번호</div>
+        <div className="text-[#adbdcc] text-[0.625rem] md:text-xs font-semibold">차량번호</div>
       </div>
 
       {/* n5: 아이디 - 모바일에서 더 아래 왼쪽으로 */}
@@ -212,7 +212,7 @@ export default function IdentityMap() {
             <path d="M12 16h.01"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">아이디</div>
+        <div className="text-[#adbdcc] text-[0.625rem] md:text-xs font-semibold">아이디</div>
       </div>
 
       {/* n6: 비밀번호 */}
@@ -222,7 +222,7 @@ export default function IdentityMap() {
             <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3-3.5 3.5z"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">비밀번호</div>
+        <div className="text-[#adbdcc] text-[0.625rem] md:text-xs font-semibold">비밀번호</div>
       </div>
 
       {/* n7: 인스타명 - 모바일에서 더 아래로 */}
@@ -234,7 +234,7 @@ export default function IdentityMap() {
             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold whitespace-nowrap">인스타명</div>
+        <div className="text-[#adbdcc] text-[0.625rem] md:text-xs font-semibold whitespace-nowrap">인스타명</div>
       </div>
 
       {/* n8: 사업자명 - 모바일에서 더 아래로, 데스크탑 선 80% 더 길게 */}
@@ -245,7 +245,7 @@ export default function IdentityMap() {
             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold whitespace-nowrap">사업자명</div>
+        <div className="text-[#adbdcc] text-[0.625rem] md:text-xs font-semibold whitespace-nowrap">사업자명</div>
       </div>
 
       {/* n9: 이메일주소 - 홍길동보다 아래로 */}
@@ -256,7 +256,7 @@ export default function IdentityMap() {
             <polyline points="22,6 12,13 2,6"/>
           </svg>
         </div>
-        <div className="text-[#adbdcc] text-[10px] md:text-xs font-semibold">이메일주소</div>
+        <div className="text-[#adbdcc] text-[0.625rem] md:text-xs font-semibold">이메일주소</div>
       </div>
 
       <svg ref={svgRef} className="absolute top-0 left-0 w-full h-full pointer-events-none z-10"></svg>

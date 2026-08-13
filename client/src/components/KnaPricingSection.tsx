@@ -139,7 +139,7 @@ export default function KnaPricingSection({ showHero = false }: KnaPricingSectio
             <div className="text-left mb-12">
               <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400 mb-2">PRICE & GUIDE</p>
               <h2 
-                className="text-[25px] md:text-4xl font-extrabold text-[#18a999] dark:text-[#58C4C4] mb-4"
+                className="text-[1.5625rem] md:text-4xl font-extrabold text-[#18a999] dark:text-[#58C4C4] mb-4"
                 data-testid="heading-pricing-section"
               >
                 비용 및 시간

@@ -870,7 +870,7 @@ export function Navbar() {
                           className="w-full h-full object-cover pointer-events-none"
                         />
                         {writeForm.thumbnail === img && (
-                          <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1 rounded">
+                          <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-[0.625rem] px-1 rounded">
                             대표
                           </div>
                         )}

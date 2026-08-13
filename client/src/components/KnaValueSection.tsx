@@ -147,7 +147,7 @@ function CircleNode({ node, radius }: { node: Node; radius: number }) {
         <div className="rounded-full border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-[6px] shadow-lg group-hover:border-[#7EE8E2] transition-colors">
           <div className="w-32 h-32 md:w-44 md:h-44 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 shadow-md flex flex-col items-center justify-center p-4 text-center">
             <div className="mb-2">{node.icon}</div>
-            <span className="text-gray-900 dark:text-foreground font-semibold text-[21px] md:text-[22px] leading-tight whitespace-pre-line tracking-tight">
+            <span className="text-gray-900 dark:text-foreground font-semibold text-[1.3125rem] md:text-[1.375rem] leading-tight whitespace-pre-line tracking-tight">
               {node.title}
             </span>
           </div>
@@ -199,7 +199,7 @@ function MobileCircleItem({ node }: { node: Node }) {
         <div className="mb-2">{node.mobileIcon}</div>
         <span 
           className={`text-gray-900 dark:text-foreground font-semibold leading-tight whitespace-pre-line tracking-tight transition-all duration-500 text-center ${
-            isVisible ? 'text-[20px]' : 'text-[19px]'
+            isVisible ? 'text-[1.25rem]' : 'text-[1.1875rem]'
           }`}
         >
           {node.mobileTitle || node.title}
@@ -260,11 +260,11 @@ function MobileCenterLogo() {
         
         {/* 텍스트 레이어 - 스크롤 전에만 표시 */}
         <div className={`flex flex-col items-center justify-center transition-opacity duration-500 ease-in-out ${isVisible ? 'opacity-0' : 'opacity-100'}`}>
-          <span className="font-black text-[#18a999] tracking-tight text-[18px]">
+          <span className="font-black text-[#18a999] tracking-tight text-[1.125rem]">
             한국이름학교
           </span>
           <div className="w-8 h-[2px] bg-[#18a999]/40 my-1.5 rounded-full" />
-          <p className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.3em]">Identity</p>
+          <p className="text-[0.5625rem] text-gray-400 font-bold uppercase tracking-[0.3em]">Identity</p>
         </div>
       </div>
     </div>
@@ -286,7 +286,7 @@ export default function KnaValueSection() {
         {/* 헤더 */}
         <header className="relative z-10 text-left mb-16 lg:mb-24">
           <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400 mb-2">WHY CHOOSE US</p>
-          <h2 className="text-[#18a999] text-[25px] sm:text-3xl md:text-4xl font-extrabold tracking-tight">
+          <h2 className="text-[#18a999] text-[1.5625rem] sm:text-3xl md:text-4xl font-extrabold tracking-tight">
             알면 알수록, 한국이름학교
           </h2>
           <p className="mt-3 text-lg text-gray-700 dark:text-muted-foreground">
@@ -341,11 +341,11 @@ export default function KnaValueSection() {
 
                 {/* 텍스트 레이어 */}
                 <div className={`flex flex-col items-center justify-center transition-opacity duration-300 ease-in-out ${showLogo ? 'opacity-0' : 'opacity-100 group-hover:opacity-0'}`}>
-                  <h3 className="text-[26px] md:text-[32px] font-black tracking-tighter text-[#18a999] mb-2 select-none">
+                  <h3 className="text-[1.625rem] md:text-[2rem] font-black tracking-tighter text-[#18a999] mb-2 select-none">
                     한국이름학교
                   </h3>
                   <div className="w-10 h-[3px] bg-[#18a999]/40 my-2 rounded-full" />
-                  <p className="text-[12px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-[0.4em] select-none">
+                  <p className="text-[0.75rem] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-[0.4em] select-none">
                     Identity
                   </p>
                 </div>
@@ -384,10 +384,10 @@ export default function KnaValueSection() {
             {/* STEP 01 */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 shadow-[0_10px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_rgba(45,212,191,0.15)] transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex flex-col items-center text-center">
-                <span className="step-label text-[15px] md:text-[16px] font-bold tracking-widest mb-4 px-4 py-2 rounded-full bg-teal-50 dark:bg-teal-900/30 text-[#2dd4bf]">
+                <span className="step-label text-[0.9375rem] md:text-[1rem] font-bold tracking-widest mb-4 px-4 py-2 rounded-full bg-teal-50 dark:bg-teal-900/30 text-[#2dd4bf]">
                   STEP 01
                 </span>
-                <h3 className="text-[21px] md:text-[22px] font-semibold text-gray-900 dark:text-foreground mb-3 break-keep">
+                <h3 className="text-[1.3125rem] md:text-[1.375rem] font-semibold text-gray-900 dark:text-foreground mb-3 break-keep">
                   상담·개명 후기 기반<br/>1차 검증
                 </h3>
                 <p className="text-lg leading-relaxed text-gray-700 dark:text-muted-foreground break-keep">
@@ -400,10 +400,10 @@ export default function KnaValueSection() {
             {/* STEP 02 */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 shadow-[0_10px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_rgba(45,212,191,0.15)] transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex flex-col items-center text-center">
-                <span className="step-label text-[15px] md:text-[16px] font-bold tracking-widest mb-4 px-4 py-2 rounded-full bg-teal-50 dark:bg-teal-900/30 text-[#2dd4bf]">
+                <span className="step-label text-[0.9375rem] md:text-[1rem] font-bold tracking-widest mb-4 px-4 py-2 rounded-full bg-teal-50 dark:bg-teal-900/30 text-[#2dd4bf]">
                   STEP 02
                 </span>
-                <h3 className="text-[21px] md:text-[22px] font-semibold text-gray-900 dark:text-foreground mb-3 break-keep">
+                <h3 className="text-[1.3125rem] md:text-[1.375rem] font-semibold text-gray-900 dark:text-foreground mb-3 break-keep">
                   이름만으로 운명상담 통해<br/>2차 검증
                 </h3>
                 <p className="text-lg leading-relaxed text-gray-700 dark:text-muted-foreground break-keep">

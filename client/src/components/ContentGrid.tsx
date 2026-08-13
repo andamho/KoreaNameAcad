@@ -294,7 +294,7 @@ function ContentCard({ content, basePath, index = 0 }: ContentCardProps) {
         
         {/* 임시저장 배지 (관리자만 볼 수 있음) */}
         {isAdmin && content.isDraft && (
-          <div className="absolute top-1 left-1 z-10 px-1.5 py-0.5 bg-yellow-500 text-white text-[10px] font-medium rounded">
+          <div className="absolute top-1 left-1 z-10 px-1.5 py-0.5 bg-yellow-500 text-white text-[0.625rem] font-medium rounded">
             임시
           </div>
         )}
@@ -443,7 +443,7 @@ function ContentCard({ content, basePath, index = 0 }: ContentCardProps) {
                   >
                     <img src={img} alt="" className="w-full h-full object-cover pointer-events-none" />
                     {editForm.thumbnail === img && (
-                      <div className="absolute top-0.5 left-0.5 bg-primary text-primary-foreground text-[10px] px-1 rounded">
+                      <div className="absolute top-0.5 left-0.5 bg-primary text-primary-foreground text-[0.625rem] px-1 rounded">
                         대표
                       </div>
                     )}

@@ -311,7 +311,7 @@ export default function Home() {
               />
             </div>
             <div className="bg-white px-6 pt-6 pb-6 flex flex-col items-center text-center gap-4">
-              <p className="text-[15px] text-gray-500 font-medium tracking-wide">EXPERIENCE ZONE</p>
+              <p className="text-[0.9375rem] text-gray-500 font-medium tracking-wide">EXPERIENCE ZONE</p>
               <h2 className="text-xl font-extrabold text-gray-900 leading-snug">
                 이름 속 운명을<br/>직접 체험해보세요.
               </h2>
@@ -414,7 +414,7 @@ export default function Home() {
 
             {/* Header */}
             <div className="text-center mb-10">
-              <h2 className="mb-8 text-[25px] font-semibold tiffany sm:text-3xl md:text-4xl break-keep" data-testid="section-title">
+              <h2 className="mb-8 text-[1.5625rem] font-semibold tiffany sm:text-3xl md:text-4xl break-keep" data-testid="section-title">
                 이름분석 운명상담이란
               </h2>
               <p className="text-white/80 text-base md:text-base leading-relaxed">
@@ -426,21 +426,21 @@ export default function Home() {
             <div className="grid gap-6 md:grid-cols-3 mb-16" data-testid="analysis-scope">
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-1">
                 <Layers className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">16가지 세부 운세<br />종합 분석</h3>
+                <h3 className="mb-2 text-[1.3125rem] md:text-[1.375rem] font-semibold">16가지 세부 운세<br />종합 분석</h3>
                 <p className="text-lg md:text-lg leading-relaxed text-white/70">
                   수리운·주역괘운의 세밀한 분석을 통해 인생의 총체적 방향을 진단합니다.
                 </p>
               </div>
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-2">
                 <Compass className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">7개 인생 시기별 운의<br />흐름 파악</h3>
+                <h3 className="mb-2 text-[1.3125rem] md:text-[1.375rem] font-semibold">7개 인생 시기별 운의<br />흐름 파악</h3>
                 <p className="text-lg md:text-lg leading-relaxed text-white/70">
                   초년·중년·말년 등 7개 시기를 분석하여 시기별 강점과 전환점을 명확히 제시합니다.
                 </p>
               </div>
               <div className="glass rounded-2xl p-6 text-center" data-testid="scope-card-3">
                 <Clock className="mx-auto mb-3 h-10 w-10 text-[#81D8D0]" aria-hidden="true" />
-                <h3 className="mb-2 text-[21px] md:text-[22px] font-semibold">과거·현재·미래<br />정밀 진단</h3>
+                <h3 className="mb-2 text-[1.3125rem] md:text-[1.375rem] font-semibold">과거·현재·미래<br />정밀 진단</h3>
                 <p className="text-lg md:text-lg leading-relaxed text-white/70">
                   지나온 일, 현재 처한 상황, 다가올 운을 세밀히 파악합니다.
                 </p>
@@ -449,12 +449,12 @@ export default function Home() {
 
             {/* 상담 내용 */}
             <div data-testid="consulting-content">
-              <h3 className="tiffany mb-10 text-center text-[25px] font-semibold sm:text-3xl md:text-4xl">상담 내용</h3>
+              <h3 className="tiffany mb-10 text-center text-[1.5625rem] font-semibold sm:text-3xl md:text-4xl">상담 내용</h3>
               <div className="space-y-10">
                 <div className="flex flex-col md:flex-row md:items-center md:gap-6" data-testid="content-item-1">
                   <CheckCircle className="hidden md:block h-[22px] w-[22px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
-                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold flex items-center gap-3">
+                    <h4 className="mb-1 text-[1.3125rem] md:text-[1.375rem] font-semibold flex items-center gap-3">
                       <CheckCircle className="h-[21px] w-[21px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
                       타고난 강점과 자질
                     </h4>
@@ -467,7 +467,7 @@ export default function Home() {
                 <div className="flex flex-col md:flex-row md:items-center md:gap-6" data-testid="content-item-2">
                   <MapPin className="hidden md:block h-[22px] w-[22px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
-                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold flex items-center gap-3">
+                    <h4 className="mb-1 text-[1.3125rem] md:text-[1.375rem] font-semibold flex items-center gap-3">
                       <MapPin className="h-[21px] w-[21px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
                       인생 방향성
                     </h4>
@@ -480,7 +480,7 @@ export default function Home() {
                 <div className="flex flex-col md:flex-row md:items-center md:gap-6" data-testid="content-item-3">
                   <TriangleAlert className="hidden md:block h-[22px] w-[22px] shrink-0 text-[#81D8D0]" aria-hidden="true" />
                   <div>
-                    <h4 className="mb-1 text-[21px] md:text-[22px] font-semibold flex items-center gap-3">
+                    <h4 className="mb-1 text-[1.3125rem] md:text-[1.375rem] font-semibold flex items-center gap-3">
                       <TriangleAlert className="h-[21px] w-[21px] md:hidden shrink-0 text-[#81D8D0]" aria-hidden="true" />
                       주의해야 할 흉운
                     </h4>
@@ -494,10 +494,10 @@ export default function Home() {
 
             {/* 진행 과정 */}
             <div className="mt-16" data-testid="process-flow">
-              <h3 className="tiffany mb-10 text-center text-[25px] font-semibold sm:text-3xl md:text-4xl">진행 과정</h3>
+              <h3 className="tiffany mb-10 text-center text-[1.5625rem] font-semibold sm:text-3xl md:text-4xl">진행 과정</h3>
               
               <div className="bg-neutral-900 rounded-2xl shadow-sm border border-white/10 p-6 md:p-8">
-                <h3 className="text-[21px] md:text-2xl font-bold mb-2 text-white">
+                <h3 className="text-[1.3125rem] md:text-2xl font-bold mb-2 text-white">
                   이름상담
                 </h3>
                 <p className="text-base text-white/70 mb-6">
@@ -540,7 +540,7 @@ export default function Home() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-                            <span className="inline-flex items-center rounded-full bg-[#56D5DB]/20 px-2.5 py-1 text-[11px] font-semibold text-[#58C4C4]">
+                            <span className="inline-flex items-center rounded-full bg-[#56D5DB]/20 px-2.5 py-1 text-[0.6875rem] font-semibold text-[#58C4C4]">
                               핵심 상담 과정
                             </span>
                             <p className="text-lg font-semibold text-white">이름분석표(PDF) 발송</p>
@@ -566,7 +566,7 @@ export default function Home() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-                            <span className="inline-flex items-center rounded-full bg-[#56D5DB]/20 px-2.5 py-1 text-[11px] font-semibold text-[#58C4C4]">
+                            <span className="inline-flex items-center rounded-full bg-[#56D5DB]/20 px-2.5 py-1 text-[0.6875rem] font-semibold text-[#58C4C4]">
                               핵심 상담 과정
                             </span>
                             <p className="text-lg font-semibold text-white">1:1 전화 상담 진행</p>

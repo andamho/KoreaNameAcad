@@ -9,7 +9,7 @@ export default function KnaDangerSection() {
         
         <header className="text-left mb-16">
           <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400 mb-2">THE POWER OF NAMES</p>
-          <h2 className="text-[#18a999] text-[25px] sm:text-3xl md:text-4xl font-extrabold tracking-tight">
+          <h2 className="text-[#18a999] text-[1.5625rem] sm:text-3xl md:text-4xl font-extrabold tracking-tight">
             이름, 모르면 위험합니다
           </h2>
         </header>
@@ -20,7 +20,7 @@ export default function KnaDangerSection() {
             <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
               <Zap className="w-5 h-5 fill-orange-500 stroke-white" strokeWidth={2.5} />
             </div>
-            <h3 className="text-[23px] md:text-[24px] font-bold text-gray-900 dark:text-foreground tracking-tight">
+            <h3 className="text-[1.4375rem] md:text-[1.5rem] font-bold text-gray-900 dark:text-foreground tracking-tight">
               이름은 힘이 셉니다
             </h3>
           </div>
@@ -79,7 +79,7 @@ export default function KnaDangerSection() {
                 <path d="M9 9l6 6M15 9l-6 6" />
               </svg>
             </div>
-            <h3 className="text-[23px] md:text-[24px] font-bold text-gray-900 dark:text-foreground tracking-tight">
+            <h3 className="text-[1.4375rem] md:text-[1.5rem] font-bold text-gray-900 dark:text-foreground tracking-tight">
               이러시면 안됩니다
             </h3>
           </div>
@@ -139,7 +139,7 @@ export default function KnaDangerSection() {
 function StackItem({ title, children, isLast = false }: { title: string; children: React.ReactNode; isLast?: boolean }) {
   return (
     <article className={`py-5 ${!isLast ? 'border-b border-gray-200 dark:border-border' : ''}`}>
-      <h4 className="text-[21px] md:text-[22px] font-semibold text-gray-900 dark:text-foreground mb-2 break-keep">
+      <h4 className="text-[1.3125rem] md:text-[1.375rem] font-semibold text-gray-900 dark:text-foreground mb-2 break-keep">
         {title}
       </h4>
       <p className="text-lg leading-relaxed text-gray-700 dark:text-muted-foreground relative pl-4 break-keep">

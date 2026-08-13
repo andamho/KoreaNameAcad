@@ -87,7 +87,7 @@ export function HomeBlogGrid() {
                   }}
                 />
                 {content.isVideo && (
-                  <div className="absolute top-2 right-2 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded">
+                  <div className="absolute top-2 right-2 bg-black/70 text-white text-[0.625rem] px-1.5 py-0.5 rounded">
                     VIDEO
                   </div>
                 )}

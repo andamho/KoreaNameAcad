@@ -52,12 +52,12 @@ const StepCard = forwardRef<HTMLElement, StepCardProps>(
                 STEP 0{step}
               </span>
               {badge && (
-                <span className="inline-flex items-center rounded-full bg-gray-900 dark:bg-white px-2 py-0.5 text-[11px] font-bold text-white dark:text-gray-900">
+                <span className="inline-flex items-center rounded-full bg-gray-900 dark:bg-white px-2 py-0.5 text-[0.6875rem] font-bold text-white dark:text-gray-900">
                   {badge}
                 </span>
               )}
             </div>
-            <h3 className="mt-1 text-[21px] md:text-[22px] font-semibold tracking-tight text-gray-900 dark:text-foreground">{title}</h3>
+            <h3 className="mt-1 text-[1.3125rem] md:text-[1.375rem] font-semibold tracking-tight text-gray-900 dark:text-foreground">{title}</h3>
           </div>
         </div>
 
@@ -179,7 +179,7 @@ export default function KnaStepsSection() {
       <div className="kna-steps-inner relative mx-auto max-w-6xl px-6 pt-24 pb-24 lg:pt-48 lg:pb-48 lg:px-8">
         <header className="text-left mb-12 sm:mb-16">
           <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-gray-400">3-STEP FLOW</p>
-          <h2 className="mt-4 text-[25px] sm:text-3xl md:text-4xl font-extrabold tracking-tight text-[#18a999]">
+          <h2 className="mt-4 text-[1.5625rem] sm:text-3xl md:text-4xl font-extrabold tracking-tight text-[#18a999]">
             복잡한 인생 문제,<br />
             올바른 시작은 하나면 충분합니다
           </h2>
@@ -246,7 +246,7 @@ export default function KnaStepsSection() {
 
           <div className="mt-8 lg:hidden">
             <div className="mx-auto flex max-w-sm items-center gap-3 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-card px-5 py-2.5 text-sm text-gray-700 dark:text-gray-300 shadow-sm ring-1 ring-gray-100 dark:ring-gray-800">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#18a999] text-white text-[10px] font-bold">!</span>
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#18a999] text-white text-[0.625rem] font-bold">!</span>
               <span className="font-semibold">위의 [지금 신청] 버튼을 눌러주세요</span>
             </div>
           </div>

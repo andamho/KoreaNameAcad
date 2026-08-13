@@ -22,7 +22,7 @@ export default function KnaIntroBlock() {
         <div className="relative mx-auto max-w-6xl px-6 pt-24 pb-24 lg:pt-48 lg:pb-48 lg:px-8">
           <header className="text-left mb-16">
             <p className="text-sm font-medium tracking-wide text-white/60 mb-2">I SEE YOU</p>
-            <h2 className="text-[#18a999] text-[25px] font-extrabold leading-tight sm:text-3xl md:text-4xl break-keep">
+            <h2 className="text-[#18a999] text-[1.5625rem] font-extrabold leading-tight sm:text-3xl md:text-4xl break-keep">
               열심히 노력하며 살아가지만
             </h2>
             <p className="mt-4 text-lg md:text-xl text-white/90 break-keep">
@@ -35,9 +35,9 @@ export default function KnaIntroBlock() {
             <div className="order-1 md:order-1 text-center md:text-left">
               <p className="text-lg md:text-xl leading-[1.8] text-white/90 md:mb-10">
                 한국이름학교는<br />
-                <strong className="text-white text-[22px] border-b-2 border-[#2FB5B5]/50">18년간 45만 명</strong>의 임상 경험을 바탕으로,<br />
-                사주 없이 <strong className="text-white text-[22px] border-b-2 border-[#2FB5B5]/50">한글·한자 이름만으로</strong><br />
-                <strong className="text-white text-[22px] border-b-2 border-[#2FB5B5]/50">80% 이상의 정확도</strong>를 갖춘<br />
+                <strong className="text-white text-[1.375rem] border-b-2 border-[#2FB5B5]/50">18년간 45만 명</strong>의 임상 경험을 바탕으로,<br />
+                사주 없이 <strong className="text-white text-[1.375rem] border-b-2 border-[#2FB5B5]/50">한글·한자 이름만으로</strong><br />
+                <strong className="text-white text-[1.375rem] border-b-2 border-[#2FB5B5]/50">80% 이상의 정확도</strong>를 갖춘<br />
                 운명상담을 제공합니다.
               </p>
               
@@ -57,9 +57,9 @@ export default function KnaIntroBlock() {
               {/* SNS 팔로워 - 데스크톱에서만 보임 */}
               <div className="hidden md:inline-flex items-start gap-3 bg-white/10 backdrop-blur-sm px-5 py-4 rounded-xl">
                 <span className="text-yellow-400 text-lg">⭐</span>
-                <p className="text-[15px] text-white/80 text-left">
+                <p className="text-[0.9375rem] text-white/80 text-left">
                   이미 SNS 팔로워 <b className="text-white">5만 명</b>이 관심을 가지고 있습니다.<br />
-                  <span className="text-[13px] text-white/60">(200만 뷰 이상 조회수 다수)</span>
+                  <span className="text-[0.8125rem] text-white/60">(200만 뷰 이상 조회수 다수)</span>
                 </p>
               </div>
             </div>
@@ -118,9 +118,9 @@ export default function KnaIntroBlock() {
             <div className="order-4 md:hidden flex justify-center">
               <div className="inline-flex items-start gap-3 bg-white/10 backdrop-blur-sm px-5 py-4 rounded-xl">
                 <span className="text-yellow-400 text-lg">⭐</span>
-                <p className="text-[15px] text-white/80 text-left">
+                <p className="text-[0.9375rem] text-white/80 text-left">
                   이미 SNS 팔로워 <b className="text-white">5만 명</b>이 관심을 가지고 있습니다.<br />
-                  <span className="text-[13px] text-white/60">(200만 뷰 이상 조회수 다수)</span>
+                  <span className="text-[0.8125rem] text-white/60">(200만 뷰 이상 조회수 다수)</span>
                 </p>
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function KnaIntroBlock() {
 
         <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
           <header className="text-center mb-14">
-            <h3 className="text-[28px] md:text-[32px] font-extrabold text-white mb-4 break-keep">
+            <h3 className="text-[1.75rem] md:text-[2rem] font-extrabold text-white mb-4 break-keep">
               내 삶, 어디가 막혀 있을까요?
             </h3>
             <p className="text-white/70 text-base md:text-lg">
@@ -258,7 +258,7 @@ function FateCard({
           }}
         >
           <div className="text-5xl mb-8 opacity-90">{icon}</div>
-          <h3 className="text-xl md:text-[22px] font-bold text-white leading-snug mb-6 break-keep">
+          <h3 className="text-xl md:text-[1.375rem] font-bold text-white leading-snug mb-6 break-keep">
             "{question}"
           </h3>
           <p className="text-sm text-[#2FB5B5] font-semibold mt-auto animate-bounce">
@@ -276,7 +276,7 @@ function FateCard({
           }}
         >
           <div className="text-4xl mb-5 text-[#2FB5B5]">{backIcon}</div>
-          <h3 className="text-xl md:text-[22px] font-extrabold text-gray-900 mb-4 break-keep">
+          <h3 className="text-xl md:text-[1.375rem] font-extrabold text-gray-900 mb-4 break-keep">
             {title}
           </h3>
           <p className="text-base text-gray-600 leading-relaxed break-keep tracking-tight">

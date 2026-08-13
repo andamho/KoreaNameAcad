@@ -57,10 +57,10 @@ export default function KnaMythTruthSection() {
     <section className="kna-myth-truth-section relative overflow-hidden bg-white dark:bg-background">
       <div className="kna-myth-truth-inner relative max-w-6xl mx-auto px-6 lg:px-8 pt-24 pb-24 lg:pt-48 lg:pb-48">
         <header className="text-left mb-10">
-          <span className="text-[13px] font-bold tracking-wider uppercase text-gray-500 dark:text-gray-400 mb-3 block">
+          <span className="text-[0.8125rem] font-bold tracking-wider uppercase text-gray-500 dark:text-gray-400 mb-3 block">
             Naming & Destiny FAQ
           </span>
-          <h2 className="text-[25px] sm:text-3xl md:text-4xl font-extrabold leading-tight text-[#18a999] dark:text-[#58C4C4] tracking-tight">
+          <h2 className="text-[1.5625rem] sm:text-3xl md:text-4xl font-extrabold leading-tight text-[#18a999] dark:text-[#58C4C4] tracking-tight">
             운명의 방향을 바꾸는 선택,<br />개명에 대한 모든 것
           </h2>
         </header>
@@ -106,7 +106,7 @@ function AccordionItem({ q, children, ...props }: { q: string; children: React.R
         aria-expanded={open ? "true" : "false"}
         data-testid={`button-accordion-${q.substring(0, 10)}`}
       >
-        <span className="text-[21px] md:text-[22px] font-semibold text-gray-900 dark:text-foreground break-keep tracking-tight group-hover:text-[#0ABAB5] dark:group-hover:text-[#58C4C4] transition-colors">{q}</span>
+        <span className="text-[1.3125rem] md:text-[1.375rem] font-semibold text-gray-900 dark:text-foreground break-keep tracking-tight group-hover:text-[#0ABAB5] dark:group-hover:text-[#58C4C4] transition-colors">{q}</span>
         <span 
           className={`relative w-5 h-5 flex-shrink-0 transition-transform duration-300 ${open ? "rotate-45" : ""}`}
           aria-hidden="true"
