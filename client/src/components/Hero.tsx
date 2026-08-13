@@ -102,9 +102,11 @@ export function Hero() {
               className="md:hidden mx-auto select-none pointer-events-none w-[25.3vw] mb-[35px]"
               style={{
                 filter: 'drop-shadow(0 3px 5px rgba(2, 90, 110, 0.35))',
-                /* 가운데에서 오른쪽으로 밀어 '맑아야' 오른쪽 끝에 맞추고, 살짝 위로.
+                /* 가운데에서 오른쪽으로 밀고 살짝 위로.
+                   19.7vw 면 구름 오른쪽 끝이 '맑아야' 끝에 딱 맞고, 거기서
+                   '야' 한 글자 폭의 1/3(3.45vw)만큼 더 내보낸다.
                    transform 이라 글자 위치는 그대로 두고 구름만 움직인다. */
-                transform: 'translate(19.7vw, -10px)',
+                transform: 'translate(23.15vw, -10px)',
               }}
               loading="eager"
               fetchPriority="high"
