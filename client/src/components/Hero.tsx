@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { clearScrollPosition } from "@/hooks/use-scroll-restore";
 import mainbgmobile from "@/assets/mainbgmobile";
 import bgmaindesk from "@/assets/bgmaindesk";
+import maincloud from "@/assets/maincloud";
 
 const heroImageMobile = mainbgmobile;
 const heroImageDesktop = bgmaindesk;
@@ -13,6 +14,10 @@ const mobilePreload = new Image();
 mobilePreload.src = heroImageMobile;
 const desktopPreload = new Image();
 desktopPreload.src = heroImageDesktop;
+// 구름도 배경과 같이 코드 안에 넣어 뒀다. 파일로 두면 화면이 그려진 뒤에야
+// 따로 받아오느라 한 박자 늦게 떴다.
+const cloudPreload = new Image();
+cloudPreload.src = maincloud;
 
 export function Hero() {
   const [location, setLocation] = useLocation();
@@ -74,9 +79,11 @@ export function Hero() {
             글자와 같이 커지고 작아지게 한다.
             속이 비어 있는 선 그림 그대로 쓴다(원장님 선택). 연한 하늘 배경에
             흰 선이 묻히지 않도록 그림자만 살짝 준다.
-            속을 옅게 채운 것도 만들어 뒀다 — main-cloud-filled.webp. */}
+            속을 옅게 채운 것도 만들어 뒀다 — main-cloud-filled.webp.
+            그림은 배경과 같이 코드 안에 넣었다(assets/maincloud). 파일로 두면
+            첫 화면이 그려진 뒤에야 따로 받아오느라 한 박자 늦게 떴다. */}
         <img
-          src="/main-cloud.webp"
+          src={maincloud}
           alt=""
           aria-hidden="true"
           className="hidden md:block absolute select-none pointer-events-none
@@ -96,7 +103,7 @@ export function Hero() {
             {/* 모바일 전용 구름 — 글자 바로 위에 붙여 간격을 항상 35px 로 유지한다.
                 예전처럼 화면 높이 비율로 띄우면 폰 길이에 따라 24~74px 로 달라졌다. */}
             <img
-              src="/main-cloud.webp"
+              src={maincloud}
               alt=""
               aria-hidden="true"
               className="md:hidden mx-auto select-none pointer-events-none w-[25.3vw] mb-[35px]"
