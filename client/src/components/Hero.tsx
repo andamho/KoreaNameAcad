@@ -106,7 +106,7 @@ export function Hero() {
               src={maincloud}
               alt=""
               aria-hidden="true"
-              className="md:hidden mx-auto select-none pointer-events-none w-[25.3vw] mb-[35px]"
+              className="hero-cloud-m md:hidden mx-auto select-none pointer-events-none w-[25.3vw] mb-[35px]"
               style={{
                 filter: 'drop-shadow(0 3px 5px rgba(2, 90, 110, 0.35))',
                 /* 가운데에서 오른쪽으로 밀고 살짝 위로.

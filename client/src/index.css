@@ -472,6 +472,16 @@ html.ua-tiktok p.hero-sub {
   line-height: 1.42 !important;
 }
 
+/* 모바일 구름도 글자와 같이 82% 로. 글자만 줄이면 구름만 커 보인다.
+   폭 25.3 × 0.82 = 20.75vw, 오른쪽으로 미는 거리 23.15 × 0.82 = 18.98vw,
+   글자와의 간격 35 × 0.82 = 28.7px, 위로 올림 10 × 0.82 = 8.2px */
+html.ua-instagram .hero-cloud-m,
+html.ua-tiktok .hero-cloud-m {
+  width: 20.75vw !important;
+  margin-bottom: 28.7px !important;
+  transform: translate(18.98vw, -8.2px) !important;
+}
+
 /* /ig·/tt 는 히어로 판(.hero-wrap) 자체가 이미 82% 로 줄어든다.
    여기서 또 82% 를 먹이면 두 번 줄어드니 일반 화면 값을 그대로 쓴다. */
 html.ua-instagram .ig-shell h1.hero-title,
@@ -482,6 +492,14 @@ html.ua-tiktok .ig-shell h1.hero-title {
 html.ua-instagram .ig-shell p.hero-sub,
 html.ua-tiktok .ig-shell p.hero-sub {
   font-size: clamp(16px, 3.8vw, 22px) !important;
+}
+
+/* /ig·/tt 의 구름도 판이 이미 줄이니 원래 값 그대로. */
+html.ua-instagram .ig-shell .hero-cloud-m,
+html.ua-tiktok .ig-shell .hero-cloud-m {
+  width: 25.3vw !important;
+  margin-bottom: 35px !important;
+  transform: translate(23.15vw, -10px) !important;
 }
 
 /* 다이얼로그 내부 요소 - 인앱 브라우저 폰트 크기 조정 */
