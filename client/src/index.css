@@ -410,42 +410,47 @@ select {
   }
 }
 
-/* 네비바 로고 - 인앱에서 82% (84px × 0.82 = 69px).
-   내비바만 82% 축소에서 빠져 있어 혼자 커 보였다. 본문과 같은 비율로 맞춘다. */
+/* 네비바 로고 - 인앱 브라우저에서도 모바일과 동일하게 84px (7% 줄임) */
 html.ua-instagram .kna-navbar img,
 html.ua-tiktok .kna-navbar img {
-  height: 69px !important;
+  height: 84px !important;
   width: auto !important;
 }
 
-/* 메뉴 오버레이 — 인앱 82% 축소를 뺐다.
-   메뉴 글자에는 이미 0.82 가 한 번 들어가 있어서, 판까지 82% 로 줄이면
-   0.82 가 두 번 곱해져 360px 폰에서 화면상 10.3px 밖에 안 됐다.
-   판 축소만 빼면 12.6px 로 읽을 만해진다. 폭을 122% 로 늘려 놓은 것도
-   축소를 되돌리려던 짝이라 함께 뺀다. */
+/* 메뉴 오버레이 - 인앱 브라우저에서 82% 축소 (페이지와 동일한 비율) */
+html.ua-instagram .kna-menu-overlay,
+html.ua-tiktok .kna-menu-overlay {
+  transform: scale(0.82) !important;
+  transform-origin: top right !important;
+  width: 122% !important;
+}
 
-/* 네비바 브랜드 텍스트 - 인앱에서 82% (17.3px × 0.82 = 14.2px) */
+/* 네비바 브랜드 텍스트 - 인앱 브라우저 (7% 추가 줄임) */
 html.ua-instagram .kna-brand-main,
 html.ua-tiktok .kna-brand-main {
-  font-size: 14.2px !important;
+  font-size: 17.3px !important; /* 18.6px × 0.93 = 17.3px */
   line-height: 1.1 !important;
 }
 
 html.ua-instagram .kna-brand-sub,
 html.ua-tiktok .kna-brand-sub {
   font-family: 'KoreaUnivL', sans-serif !important; /* 라이트체 */
-  font-size: 7.8px !important; /* 9.5px × 0.82 = 7.8px */
+  font-size: 9.5px !important; /* 10.2px × 0.93 = 9.5px */
   line-height: 1.1 !important;
   margin-top: 2px !important;
   letter-spacing: -0.025em !important;
 }
 
-/* 인스타 인앱에서 h1·p 크기를 통째로 덮어쓰던 규칙은 뺐다.
-   글자 자동 확대는 위(html, body)의 text-size-adjust: 100% 로 이미 막혀 있는데,
-   이 규칙까지 걸리니 화면의 모든 제목은 36px 이하로 눌리고 모든 본문은 17px
-   이상으로 밀려 올라갔다. 홈 히어로가 26px 로 반토막 나고 아래 본문만 커 보인
-   게 이 때문이다. 크기는 각 화면이 정한 값을 그대로 쓴다.
-   (틱톡 쪽에도 같은 규칙이 있었고 함께 뺐다.) */
+/* 인스타그램 인앱 브라우저 전용: 자동 폰트 축소 방지 */
+html.ua-instagram h1 {
+  font-size: clamp(26px, 5.8vw, 36px) !important;
+  line-height: 1.15 !important;
+}
+
+html.ua-instagram p {
+  font-size: clamp(17px, 3.8vw, 22px) !important;
+  line-height: 1.4 !important;
+}
 
 /* 다이얼로그 내부 요소 - 인앱 브라우저 폰트 크기 조정 */
 
@@ -577,7 +582,16 @@ html.ua-instagram .review-section-title {
   }
 }
 
-/* 틱톡 인앱의 h1·p 일괄 크기 규칙도 뺐다 — 위 인스타 쪽 설명과 같은 이유. */
+/* 틱톡 인앱 브라우저 전용: 자동 폰트 축소 방지 */
+html.ua-tiktok h1 {
+  font-size: clamp(26px, 5.6vw, 36px) !important;
+  line-height: 1.15 !important;
+}
+
+html.ua-tiktok p {
+  font-size: clamp(17px, 3.6vw, 22px) !important;
+  line-height: 1.4 !important;
+}
 
 /* Footer 푸터 텍스트 크기 조정 (인앱 브라우저) */
 html.ua-tiktok .kna-footer-title {

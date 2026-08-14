@@ -41,16 +41,24 @@ export function Hero() {
   const isInstagram = location === '/ig';
   const isTikTok = location === '/tt';
   
-  // 크기는 /ig·/tt 전용 화면에서도 홈과 똑같이 쓴다.
-  // 예전에는 그 두 화면만 따로 작은 값(25~34px)을 썼는데, 문구를 새로
-  // 짜면서 홈만 바뀌어 두 화면의 생김새가 어긋났다. 그 화면들은 바깥에서
-  // 전체를 82% 로 줄이고 있으니, 같은 모양이 그대로 작아지면 된다.
-  const h1FontSize = 'clamp(40px, 11.7vw, 65px)';
+  // 폰트 크기 결정 (전체화면에 맞게 확대)
+  // 데스크탑: 20% 증가 (52px → 62px, 34px → 41px)
+  // 모바일: 기존 유지 (34px ~ 52px)
+  // 모바일: 10% 축소 (34px → 31px, 52px → 47px)
+  const h1FontSize = isInstagram
+    ? 'clamp(25px, 5.4vw, 34px)'
+    : isTikTok
+    ? 'clamp(25px, 5.4vw, 34px)'
+    : 'clamp(40px, 11.7vw, 65px)';
 
   // 데스크탑 전용 20% 증가된 폰트 크기
   const h1FontSizeDesktop = 'clamp(52px, 11.3vw, 78px)';
 
-  const pFontSize = 'clamp(16px, 3.8vw, 22px)';
+  const pFontSize = isInstagram
+    ? 'clamp(14px, 3.2vw, 18px)'
+    : isTikTok
+    ? 'clamp(14px, 3.2vw, 18px)'
+    : 'clamp(16px, 3.8vw, 22px)';
 
   const pFontSizeDesktop = 'clamp(19px, 4.6vw, 27px)';
 
@@ -112,13 +120,11 @@ export function Hero() {
               decoding="sync"
             />
             <h1 className="font-bold tracking-tight break-keep text-center hero-title" style={{fontSize: h1FontSize, lineHeight: '1.2', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.15em'}} aria-label="이름이 맑아야 인생이 맑다 이름 안에 너 있다">
-              {/* 위 두 줄이 강조(티파니·굵게), 아래 한 줄은 검정·보통 굵기.
-                  세 줄 다 nowrap — 인앱 브라우저처럼 폭 계산이 다른 곳에서
-                  '이름이 맑아야' 가 두 줄로 접히는 일이 있었다. */}
-              <span className="kna-highlight" style={{whiteSpace: 'nowrap'}}>
+              {/* 위 두 줄이 강조(티파니·굵게), 아래 한 줄은 검정·보통 굵기 */}
+              <span className="kna-highlight">
                 <span className="kna-tiffany">이름이 맑아야</span>
               </span>
-              <span className="kna-highlight" style={{whiteSpace: 'nowrap'}}>
+              <span className="kna-highlight">
                 <span className="kna-tiffany">인생이 맑다</span>
               </span>
               {/* 이 줄만 절반 크기. 위 두 줄과 떨어뜨리고 아래 안내문에 붙인다. */}
