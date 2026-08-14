@@ -41,25 +41,17 @@ export function Hero() {
   const isInstagram = location === '/ig';
   const isTikTok = location === '/tt';
   
-  // 폰트 크기 결정 (전체화면에 맞게 확대)
-  // 데스크탑: 20% 증가 (52px → 62px, 34px → 41px)
-  // 모바일: 기존 유지 (34px ~ 52px)
-  // 모바일: 10% 축소 (34px → 31px, 52px → 47px)
-  const h1FontSize = isInstagram 
-    ? 'clamp(25px, 5.4vw, 34px)' 
-    : isTikTok 
-    ? 'clamp(25px, 5.4vw, 34px)'
-    : 'clamp(40px, 11.7vw, 65px)';
-  
+  // 크기는 /ig·/tt 전용 화면에서도 홈과 똑같이 쓴다.
+  // 예전에는 그 두 화면만 따로 작은 값(25~34px)을 썼는데, 문구를 새로
+  // 짜면서 홈만 바뀌어 두 화면의 생김새가 어긋났다. 그 화면들은 바깥에서
+  // 전체를 82% 로 줄이고 있으니, 같은 모양이 그대로 작아지면 된다.
+  const h1FontSize = 'clamp(40px, 11.7vw, 65px)';
+
   // 데스크탑 전용 20% 증가된 폰트 크기
   const h1FontSizeDesktop = 'clamp(52px, 11.3vw, 78px)';
-    
-  const pFontSize = isInstagram 
-    ? 'clamp(14px, 3.2vw, 18px)' 
-    : isTikTok 
-    ? 'clamp(14px, 3.2vw, 18px)'
-    : 'clamp(16px, 3.8vw, 22px)';
-  
+
+  const pFontSize = 'clamp(16px, 3.8vw, 22px)';
+
   const pFontSizeDesktop = 'clamp(19px, 4.6vw, 27px)';
 
   return (
