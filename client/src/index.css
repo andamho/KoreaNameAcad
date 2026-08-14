@@ -458,17 +458,20 @@ html.ua-instagram p {
    그런데 새 문구의 '이름 안에 너 있다' 는 제목의 절반 크기라, 눌린 제목의
    절반(13px)이 밀어 올려진 안내문(17px)보다 작아져 순서가 뒤집혔다.
    (일반 21.1 > 16.0 인데 인앱은 13.0 < 17.0)
-   세 줄을 한꺼번에 82% 로 줄이면 순서가 그대로 유지된다.
-   40~65 × 0.82 = 32.8~53.3 / 16~22 × 0.82 = 13.1~18 */
+   세 줄을 한꺼번에 줄이면 순서가 그대로 유지된다.
+   인스타 브라우저가 글자를 자체적으로 더 키워서, 82% 한 번으로는 여전히
+   커 보인다고 하셔서 문구에만 82% 를 한 번 더 넣는다(0.82 × 0.82 = 0.672).
+   버튼은 제외 — 문구 세 줄만이다.
+   40~65 × 0.672 = 26.9~43.7 / 16~22 × 0.672 = 10.7~14.8 */
 html.ua-instagram h1.hero-title,
 html.ua-tiktok h1.hero-title {
-  font-size: clamp(32.8px, 9.59vw, 53.3px) !important;
+  font-size: clamp(26.9px, 7.86vw, 43.7px) !important;
   line-height: 1.2 !important;
 }
 
 html.ua-instagram p.hero-sub,
 html.ua-tiktok p.hero-sub {
-  font-size: clamp(13.1px, 3.12vw, 18px) !important;
+  font-size: clamp(10.7px, 2.56vw, 14.8px) !important;
   line-height: 1.42 !important;
 }
 
@@ -482,16 +485,16 @@ html.ua-tiktok .hero-cloud-m {
   transform: translate(18.98vw, -8.2px) !important;
 }
 
-/* /ig·/tt 는 히어로 판(.hero-wrap) 자체가 이미 82% 로 줄어든다.
-   여기서 또 82% 를 먹이면 두 번 줄어드니 일반 화면 값을 그대로 쓴다. */
+/* /ig·/tt 는 히어로 판(.hero-wrap) 자체가 이미 82% 로 줄인다.
+   그래서 여기서는 82% 를 한 번만 먹여 최종 0.672 로 맞춘다. */
 html.ua-instagram .ig-shell h1.hero-title,
 html.ua-tiktok .ig-shell h1.hero-title {
-  font-size: clamp(40px, 11.7vw, 65px) !important;
+  font-size: clamp(32.8px, 9.59vw, 53.3px) !important;
 }
 
 html.ua-instagram .ig-shell p.hero-sub,
 html.ua-tiktok .ig-shell p.hero-sub {
-  font-size: clamp(16px, 3.8vw, 22px) !important;
+  font-size: clamp(13.1px, 3.12vw, 18px) !important;
 }
 
 /* /ig·/tt 의 구름도 판이 이미 줄이니 원래 값 그대로. */
