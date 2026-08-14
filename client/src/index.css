@@ -452,6 +452,37 @@ html.ua-instagram p {
   line-height: 1.4 !important;
 }
 
+/* 히어로만 위 일괄 규칙에서 빼고 '일반 화면의 82%' 로 맞춘다.
+   일괄 규칙은 제목을 36px 이하로 누르고 본문을 17px 이상으로 밀어 올린다.
+   그런데 새 문구의 '이름 안에 너 있다' 는 제목의 절반 크기라, 눌린 제목의
+   절반(13px)이 밀어 올려진 안내문(17px)보다 작아져 순서가 뒤집혔다.
+   (일반 21.1 > 16.0 인데 인앱은 13.0 < 17.0)
+   세 줄을 한꺼번에 82% 로 줄이면 순서가 그대로 유지된다.
+   40~65 × 0.82 = 32.8~53.3 / 16~22 × 0.82 = 13.1~18 */
+html.ua-instagram h1.hero-title,
+html.ua-tiktok h1.hero-title {
+  font-size: clamp(32.8px, 9.59vw, 53.3px) !important;
+  line-height: 1.2 !important;
+}
+
+html.ua-instagram p.hero-sub,
+html.ua-tiktok p.hero-sub {
+  font-size: clamp(13.1px, 3.12vw, 18px) !important;
+  line-height: 1.42 !important;
+}
+
+/* /ig·/tt 는 히어로 판(.hero-wrap) 자체가 이미 82% 로 줄어든다.
+   여기서 또 82% 를 먹이면 두 번 줄어드니 일반 화면 값을 그대로 쓴다. */
+html.ua-instagram .ig-shell h1.hero-title,
+html.ua-tiktok .ig-shell h1.hero-title {
+  font-size: clamp(40px, 11.7vw, 65px) !important;
+}
+
+html.ua-instagram .ig-shell p.hero-sub,
+html.ua-tiktok .ig-shell p.hero-sub {
+  font-size: clamp(16px, 3.8vw, 22px) !important;
+}
+
 /* 다이얼로그 내부 요소 - 인앱 브라우저 폰트 크기 조정 */
 
 /* h4, text-[1.3125rem], text-[1.375rem] - "1번째 분석 대상" 등 - 15px */
