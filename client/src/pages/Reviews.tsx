@@ -439,14 +439,60 @@ export default function Reviews() {
     if (isInstagram || isTikTok) {
       const className = isInstagram ? "ua-instagram" : "ua-tiktok";
       document.documentElement.classList.add(className);
-        // 인앱 브라우저용 82% 축소 규칙은 뺐다. 글자 크기가 화면 폭에
-        // 맞춰 움직이게 바뀌어서, 이 규칙이 걸리면 앱 안에서만 글자가
-        // 눌리거나 커졌다. 이제 일반 브라우저와 같은 크기로 보인다.
+      
+      const styleId = `inapp-style-${className}`;
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+          html.${className} {
+            font-size: 14px !important;
+          }
+          html.${className} h1 {
+            font-size: clamp(18px, 4.5vw, 22px) !important;
+          }
+          html.${className} h2 {
+            font-size: clamp(16px, 4vw, 20px) !important;
+          }
+          html.${className} h3, html.${className} h4 {
+            font-size: clamp(15px, 3.8vw, 18px) !important;
+          }
+          html.${className} p, html.${className} li, html.${className} span {
+            font-size: 14px !important;
+          }
+          html.${className} .text-sm {
+            font-size: 13px !important;
+          }
+          html.${className} .text-base {
+            font-size: 14px !important;
+          }
+          html.${className} .text-lg {
+            font-size: 14px !important;
+          }
+          html.${className} .text-xl {
+            font-size: 15px !important;
+          }
+          html.${className} .text-2xl {
+            font-size: 16px !important;
+          }
+          html.${className} .text-3xl {
+            font-size: 18px !important;
+          }
+          html.${className} .text-4xl {
+            font-size: 20px !important;
+          }
+        `;
+        document.head.appendChild(style);
+      }
       
       console.log(`[Reviews] 인앱 브라우저 감지: ${className}, User Agent: ${userAgent}`);
       
       return () => {
         document.documentElement.classList.remove(className);
+        const styleElement = document.getElementById(styleId);
+        if (styleElement) {
+          styleElement.remove();
+        }
       };
     }
   }, []);

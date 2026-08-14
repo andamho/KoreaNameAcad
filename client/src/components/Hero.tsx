@@ -112,11 +112,13 @@ export function Hero() {
               decoding="sync"
             />
             <h1 className="font-bold tracking-tight break-keep text-center hero-title" style={{fontSize: h1FontSize, lineHeight: '1.2', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.15em'}} aria-label="이름이 맑아야 인생이 맑다 이름 안에 너 있다">
-              {/* 위 두 줄이 강조(티파니·굵게), 아래 한 줄은 검정·보통 굵기 */}
-              <span className="kna-highlight">
+              {/* 위 두 줄이 강조(티파니·굵게), 아래 한 줄은 검정·보통 굵기.
+                  세 줄 다 nowrap — 인앱 브라우저처럼 폭 계산이 다른 곳에서
+                  '이름이 맑아야' 가 두 줄로 접히는 일이 있었다. */}
+              <span className="kna-highlight" style={{whiteSpace: 'nowrap'}}>
                 <span className="kna-tiffany">이름이 맑아야</span>
               </span>
-              <span className="kna-highlight">
+              <span className="kna-highlight" style={{whiteSpace: 'nowrap'}}>
                 <span className="kna-tiffany">인생이 맑다</span>
               </span>
               {/* 이 줄만 절반 크기. 위 두 줄과 떨어뜨리고 아래 안내문에 붙인다. */}
