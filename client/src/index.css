@@ -427,31 +427,22 @@ html.ua-tiktok .kna-menu-overlay {
   width: 122% !important;
 }
 
-/* 네비바 브랜드 텍스트 - 인앱 브라우저 (7% 추가 줄임) */
+/* 네비바 브랜드 텍스트 — 기준자를 안 따르는 예외.
+   위 .kna-brand-main / -sub 가 px 로 못박혀 있어(19.9 / 10.9px) 기준자 조절이
+   안 먹는다. 그래서 여기서 직접 1.30 으로 나눈다. */
 html.ua-instagram .kna-brand-main,
 html.ua-tiktok .kna-brand-main {
-  font-size: 14.7px !important; /* 일반 19.9px × 0.9 = 17.9px */
+  font-size: 15.31px !important; /* 19.9 ÷ 1.3 */
   line-height: 1.1 !important;
 }
 
 html.ua-instagram .kna-brand-sub,
 html.ua-tiktok .kna-brand-sub {
-  font-family: 'KoreaUnivL', sans-serif !important; /* 라이트체 */
-  font-size: 8px !important; /* 일반 10.9px × 0.9 = 9.8px */
+  font-family: 'KoreaUnivL', sans-serif !important;
+  font-size: 8.38px !important; /* 10.9 ÷ 1.3 */
   line-height: 1.1 !important;
   margin-top: 2px !important;
   letter-spacing: -0.025em !important;
-}
-
-/* 인스타그램 인앱 브라우저 전용: 자동 폰트 축소 방지 */
-html.ua-instagram h1 {
-  font-size: clamp(26px, 5.8vw, 36px) !important;
-  line-height: 1.15 !important;
-}
-
-html.ua-instagram p {
-  font-size: clamp(17px, 3.8vw, 22px) !important;
-  line-height: 1.4 !important;
 }
 
 /* 히어로만 위 일괄 규칙에서 빼고 '일반 화면의 73.8%(0.82 x 0.9)' 로 맞춘다.
@@ -464,13 +455,13 @@ html.ua-instagram p {
    40~65 x 0.738 = 29.5~48 / 16~22 x 0.738 = 11.8~16.2 */
 html.ua-instagram h1.hero-title,
 html.ua-tiktok h1.hero-title {
-  font-size: clamp(29.5px, 8.63vw, 48px) !important;
+  font-size: clamp(30.77px, 9vw, 50px) !important;   /* 40~65 / 11.7vw ÷ 1.3 */
   line-height: 1.2 !important;
 }
 
 html.ua-instagram p.hero-sub,
 html.ua-tiktok p.hero-sub {
-  font-size: clamp(11.8px, 2.8vw, 16.2px) !important;
+  font-size: clamp(12.31px, 2.92vw, 16.92px) !important;   /* 16~22 / 3.8vw ÷ 1.3 */
   line-height: 1.42 !important;
 }
 
@@ -484,12 +475,12 @@ html.ua-tiktok p.hero-sub {
    40~65 × 1.0976 = 43.9~71.3 / 16~22 × 1.0976 = 17.6~24.1 */
 html.ua-instagram .ig-shell h1.hero-title,
 html.ua-tiktok .ig-shell h1.hero-title {
-  font-size: clamp(36px, 10.53vw, 58.5px) !important;
+  font-size: clamp(30.77px, 9vw, 50px) !important;
 }
 
 html.ua-instagram .ig-shell p.hero-sub,
 html.ua-tiktok .ig-shell p.hero-sub {
-  font-size: clamp(14.4px, 3.42vw, 19.8px) !important;
+  font-size: clamp(12.31px, 2.92vw, 16.92px) !important;
 }
 
 /* /ig·/tt 는 히어로 판 자체가 0.82 로 줄어드니 구름도 그만큼 작아진다.
@@ -502,212 +493,34 @@ html.ua-tiktok .ig-shell .hero-cloud-m {
   transform: translate(28.23vw, -12.2px) !important;
 }
 
-/* 다이얼로그 내부 요소 - 인앱 브라우저 폰트 크기 조정 */
-
-/* h4, text-[1.3125rem], text-[1.375rem] - "1번째 분석 대상" 등 - 15px */
-html.ua-instagram .ig-tt-dialog h4,
-html.ua-tiktok .ig-tt-dialog h4,
-html.ua-instagram .ig-tt-dialog [class*="text-[1.3125rem]"],
-html.ua-instagram .ig-tt-dialog [class*="text-[1.375rem]"],
-html.ua-tiktok .ig-tt-dialog [class*="text-[1.3125rem]"],
-html.ua-tiktok .ig-tt-dialog [class*="text-[1.375rem]"] {
-  font-size: 15px !important;
-}
-
-/* 타이틀 (이름분석운명상담, 이름감명) - 18px */
-/* .ig-tt-title 클래스로 specificity 높임 */
-html.ua-instagram .ig-tt-dialog .ig-tt-title,
-html.ua-tiktok .ig-tt-dialog .ig-tt-title,
-html.ua-instagram .ig-tt-dialog h2,
-html.ua-tiktok .ig-tt-dialog h2 {
-  font-size: 18px !important;
-}
-
-/* label, .text-lg - 등본상 가족인원, 주민등본 사진, 연락처 등 최상위 - 16px */
-html.ua-instagram .ig-tt-dialog label,
-html.ua-tiktok .ig-tt-dialog label,
-html.ua-instagram .ig-tt-dialog .text-lg,
-html.ua-tiktok .ig-tt-dialog .text-lg {
-  font-size: 16px !important;
-}
-
-/* 분석 대상 카드 내부 label - 이름, 성별, 태어난 연도, 하는일 - 14px */
-html.ua-instagram .ig-tt-dialog .rounded-xl label,
-html.ua-tiktok .ig-tt-dialog .rounded-xl label,
-html.ua-instagram .ig-tt-dialog [class*="Card"] label,
-html.ua-tiktok .ig-tt-dialog [class*="Card"] label {
-  font-size: 14px !important;
-}
-
-/* 라디오/체크박스 옵션 라벨 (예, 아니오, 주중 2시, 주말 2시, 지인소개 등) - 14px (인앱 확대 후 ~16px로 표시) */
-/* 순서 중요: rounded-xl 규칙 뒤에 와야 함 */
-html.ua-instagram .ig-tt-dialog label.cursor-pointer,
-html.ua-tiktok .ig-tt-dialog label.cursor-pointer,
-html.ua-instagram .ig-tt-dialog label.cursor-pointer span,
-html.ua-tiktok .ig-tt-dialog label.cursor-pointer span {
-  font-size: 14px !important;
-}
-
-/* p - 14px */
-html.ua-instagram .ig-tt-dialog p,
-html.ua-tiktok .ig-tt-dialog p {
-  font-size: 14px !important;
-}
-
-/* text-base - 12px */
-html.ua-instagram .ig-tt-dialog .text-base,
-html.ua-tiktok .ig-tt-dialog .text-base {
-  font-size: 12px !important;
-}
-
-/* text-sm - 10px */
-html.ua-instagram .ig-tt-dialog .text-sm,
-html.ua-tiktok .ig-tt-dialog .text-sm {
-  font-size: 10px !important;
-}
-
-/* button - 12px */
-html.ua-instagram .ig-tt-dialog button,
-html.ua-tiktok .ig-tt-dialog button {
-  font-size: 12px !important;
-}
-
 /* 자세히 보기 버튼 82% 축소 (px-3 py-1 → px-2.5 py-0.5) */
 html.ua-instagram .ig-tt-dialog button[data-testid="button-family-policy-form"],
 html.ua-tiktok .ig-tt-dialog button[data-testid="button-family-policy-form"] {
   padding: 3px 10px !important;
 }
 
-/* input, textarea, select - 13px */
-html.ua-instagram .ig-tt-dialog input,
-html.ua-instagram .ig-tt-dialog textarea,
-html.ua-instagram .ig-tt-dialog select,
-html.ua-tiktok .ig-tt-dialog input,
-html.ua-tiktok .ig-tt-dialog textarea,
-html.ua-tiktok .ig-tt-dialog select {
-  font-size: 13px !important;
-}
-
-/* input placeholder - 13px */
-html.ua-instagram .ig-tt-dialog input::placeholder,
-html.ua-instagram .ig-tt-dialog textarea::placeholder,
-html.ua-tiktok .ig-tt-dialog input::placeholder,
-html.ua-tiktok .ig-tt-dialog textarea::placeholder {
-  font-size: 13px !important;
-}
-
-/* Footer 푸터 텍스트 크기 조정 (인앱 브라우저) */
-html.ua-instagram .kna-footer-title {
-  font-size: 14px !important;
-}
-
-html.ua-instagram .kna-footer-follow {
-  font-size: 16px !important;
-}
-
 html.ua-instagram .kna-footer-subtitle {
-  font-size: 9px !important;
-  line-height: 1.3 !important;
-}
+  line-height: 1.3 !important;}
 
 html.ua-instagram .kna-footer-copyright {
-  font-size: 8px !important;
-  line-height: 1.3 !important;
-}
-
-/* Reviews 페이지 제목 크기 조정 (인앱 브라우저) */
-html.ua-instagram .review-section-title {
-  font-size: 26px !important;
-}
+  line-height: 1.3 !important;}
 
 @media (min-width: 640px) {
-  html.ua-instagram .review-section-title {
-    font-size: 32px !important;
-  }
 }
 
 @media (min-width: 768px) {
-  html.ua-instagram .review-section-title {
-    font-size: 38px !important;
-  }
-}
-
-/* 틱톡 인앱 브라우저 전용: 자동 폰트 축소 방지 */
-html.ua-tiktok h1 {
-  font-size: clamp(26px, 5.6vw, 36px) !important;
-  line-height: 1.15 !important;
-}
-
-html.ua-tiktok p {
-  font-size: clamp(17px, 3.6vw, 22px) !important;
-  line-height: 1.4 !important;
-}
-
-/* Footer 푸터 텍스트 크기 조정 (인앱 브라우저) */
-html.ua-tiktok .kna-footer-title {
-  font-size: 14px !important;
-}
-
-html.ua-tiktok .kna-footer-follow {
-  font-size: 16px !important;
 }
 
 html.ua-tiktok .kna-footer-subtitle {
-  font-size: 9px !important;
-  line-height: 1.3 !important;
-}
+  line-height: 1.3 !important;}
 
 html.ua-tiktok .kna-footer-copyright {
-  font-size: 8px !important;
-  line-height: 1.3 !important;
-}
-
-/* Reviews 페이지 제목 크기 조정 (인앱 브라우저) */
-html.ua-tiktok .review-section-title {
-  font-size: 26px !important;
-}
+  line-height: 1.3 !important;}
 
 @media (min-width: 640px) {
-  html.ua-tiktok .review-section-title {
-    font-size: 32px !important;
-  }
 }
 
 @media (min-width: 768px) {
-  html.ua-tiktok .review-section-title {
-    font-size: 38px !important;
-  }
-}
-
-/* 인앱 브라우저 섹션 서브타이틀 크기 조정 (82% 적용) */
-/* text-sm (14px) × 0.82 = 약 11.5px → 12px 사용 */
-html.ua-instagram .text-sm.tracking-wide,
-html.ua-tiktok .text-sm.tracking-wide {
-  font-size: 12px !important;
-}
-
-/* ========================================
-   인앱 브라우저: Steps/Danger 섹션 카드 텍스트 크기 (82% 적용)
-   ======================================== */
-/* Steps 섹션: 인앱에서도 모바일 원본 크기 유지 */
-html.ua-instagram .kna-steps-section h2[class*="text-[1.5625rem]"],
-html.ua-tiktok .kna-steps-section h2[class*="text-[1.5625rem]"] {
-  font-size: 25px !important;
-}
-html.ua-instagram .kna-steps-section p.text-lg,
-html.ua-tiktok .kna-steps-section p.text-lg {
-  font-size: 18px !important;
-  line-height: 1.75 !important;
-}
-html.ua-instagram .kna-steps-section .text-xs,
-html.ua-tiktok .kna-steps-section .text-xs {
-  font-size: 12px !important;
-}
-html.ua-instagram .kna-steps-section h3[class*="text-[1.3125rem]"],
-html.ua-instagram .kna-steps-section h3[class*="text-[1.375rem]"],
-html.ua-tiktok .kna-steps-section h3[class*="text-[1.3125rem]"],
-html.ua-tiktok .kna-steps-section h3[class*="text-[1.375rem]"] {
-  font-size: 21px !important;
 }
 
 /* Danger 섹션 — 인앱에서 일반 화면과 같은 크기로 보이게.
@@ -718,73 +531,21 @@ html.ua-tiktok .kna-steps-section h3[class*="text-[1.375rem]"] {
    rem 으로 적는다(일반 rem × 0.769).
    틱톡 배수는 아직 못 재서 같은 값을 쓴다. 재고 나면 분리한다. */
 html.ua-instagram .kna-danger-section h2[class*="text-[1.5625rem]"],
-html.ua-tiktok .kna-danger-section h2[class*="text-[1.5625rem]"] {
-  font-size: 1.2019rem !important; /* 1.5625 ÷ 1.30 */
-}
+html.ua-tiktok .kna-danger-section h2[class*="text-[1.5625rem]"] { /* 1.5625 ÷ 1.30 */
+;}
 html.ua-instagram .kna-danger-section h3[class*="text-[1.4375rem]"],
 html.ua-instagram .kna-danger-section h3[class*="text-[1.5rem]"],
 html.ua-tiktok .kna-danger-section h3[class*="text-[1.4375rem]"],
-html.ua-tiktok .kna-danger-section h3[class*="text-[1.5rem]"] {
-  font-size: 1.1058rem !important; /* 1.4375 ÷ 1.30 */
-}
+html.ua-tiktok .kna-danger-section h3[class*="text-[1.5rem]"] { /* 1.4375 ÷ 1.30 */
+;}
 html.ua-instagram .kna-danger-section h4[class*="text-[1.3125rem]"],
 html.ua-instagram .kna-danger-section h4[class*="text-[1.375rem]"],
 html.ua-tiktok .kna-danger-section h4[class*="text-[1.3125rem]"],
-html.ua-tiktok .kna-danger-section h4[class*="text-[1.375rem]"] {
-  font-size: 1.0096rem !important; /* 1.3125 ÷ 1.30 */
-}
-html.ua-instagram .kna-danger-section p.text-lg,
-html.ua-tiktok .kna-danger-section p.text-lg {
-  font-size: 0.8654rem !important; /* 1.125 ÷ 1.30 */
-  line-height: 1.75 !important;
-}
+html.ua-tiktok .kna-danger-section h4[class*="text-[1.375rem]"] { /* 1.3125 ÷ 1.30 */
+;}
 html.ua-instagram .kna-danger-section .text-sm,
-html.ua-tiktok .kna-danger-section .text-sm {
-  font-size: 0.6731rem !important; /* 0.875 ÷ 1.30 */
-}
-
-/* MythTruth 섹션: 인앱에서도 모바일 원본 크기 유지 */
-html.ua-instagram .kna-myth-truth-section h2[class*="text-[1.5625rem]"],
-html.ua-tiktok .kna-myth-truth-section h2[class*="text-[1.5625rem]"] {
-  font-size: 25px !important;
-}
-html.ua-instagram .kna-myth-truth-section span[class*="text-[1.3125rem]"],
-html.ua-instagram .kna-myth-truth-section span[class*="text-[1.375rem]"],
-html.ua-tiktok .kna-myth-truth-section span[class*="text-[1.3125rem]"],
-html.ua-tiktok .kna-myth-truth-section span[class*="text-[1.375rem]"] {
-  font-size: 21px !important;
-}
-html.ua-instagram .kna-myth-truth-section .text-lg,
-html.ua-tiktok .kna-myth-truth-section .text-lg {
-  font-size: 18px !important;
-  line-height: 1.75 !important;
-}
-html.ua-instagram .kna-myth-truth-section .text-sm,
-html.ua-tiktok .kna-myth-truth-section .text-sm {
-  font-size: 14px !important;
-}
-
-/* ======================================
-   체험존 페이지(.kna-experience-page) 인스타·틱톡 텍스트 82% 축소
-   (Instagram WebView가 ~22% 팽창 → 미리 82%로 줄여 상쇄)
-   기본px × 0.82 계산값 적용
-   ====================================== */
-html.ua-instagram .kna-experience-page .text-lg,
-html.ua-tiktok    .kna-experience-page .text-lg  { font-size: 15px !important; }
-html.ua-instagram .kna-experience-page .text-xl,
-html.ua-tiktok    .kna-experience-page .text-xl  { font-size: 16px !important; }
-html.ua-instagram .kna-experience-page .text-2xl,
-html.ua-tiktok    .kna-experience-page .text-2xl { font-size: 20px !important; }
-html.ua-instagram .kna-experience-page .text-3xl,
-html.ua-tiktok    .kna-experience-page .text-3xl { font-size: 25px !important; }
-html.ua-instagram .kna-experience-page .text-4xl,
-html.ua-tiktok    .kna-experience-page .text-4xl { font-size: 30px !important; }
-html.ua-instagram .kna-experience-page .text-5xl,
-html.ua-tiktok    .kna-experience-page .text-5xl { font-size: 39px !important; }
-html.ua-instagram .kna-experience-page .text-6xl,
-html.ua-tiktok    .kna-experience-page .text-6xl { font-size: 49px !important; }
-html.ua-instagram .kna-experience-page .text-7xl,
-html.ua-tiktok    .kna-experience-page .text-7xl { font-size: 59px !important; }
+html.ua-tiktok .kna-danger-section .text-sm { /* 0.875 ÷ 1.30 */
+;}
 
 /* LIGHT MODE */
 :root {
@@ -1250,6 +1011,7 @@ html.ua-tiktok    .kna-experience-page .text-7xl { font-size: 59px !important; }
   html {
     font-size: 4.2667vw;
   }
+
 }
 
 /* 히어로 아래 '지금 신청 / 후기 보기' — 글자는 폰 폭 따라 커지는데 버튼만
@@ -1656,9 +1418,7 @@ html.ua-tiktok .identity-map-inner .id-node .anchor svg {
   height: 16px !important;
 }
 /* 홍길동 이름 뱃지: text-base (16px) → 13px */
-.ig-shell .identity-map-inner #n1 .anchor,
-html.ua-instagram .identity-map-inner #n1 .anchor,
-html.ua-tiktok .identity-map-inner #n1 .anchor {
+.ig-shell .identity-map-inner #n1 .anchor {
   font-size: 13px !important;
   padding: 6px 10px !important;
   width: auto !important;
@@ -1667,31 +1427,8 @@ html.ua-tiktok .identity-map-inner #n1 .anchor {
   min-height: auto !important;
 }
 /* 노드 라벨: text-[0.625rem] (10px) → 8px */
-.ig-shell .identity-map-inner .id-node > div:last-child,
-html.ua-instagram .identity-map-inner .id-node > div:last-child,
-html.ua-tiktok .identity-map-inner .id-node > div:last-child {
+.ig-shell .identity-map-inner .id-node > div:last-child {
   font-size: 8px !important;
-}
-/* Pricing 섹션: 인앱 82% 축소 규칙 */
-html.ua-instagram .kna-pricing-inner h2[class*="text-[1.5625rem]"],
-html.ua-tiktok .kna-pricing-inner h2[class*="text-[1.5625rem]"] {
-  font-size: 21px !important;
-}
-html.ua-instagram .kna-pricing-inner p.text-lg,
-html.ua-tiktok .kna-pricing-inner p.text-lg {
-  font-size: 15px !important;
-}
-html.ua-instagram .kna-pricing-inner .text-sm,
-html.ua-tiktok .kna-pricing-inner .text-sm {
-  font-size: 11.5px !important;
-}
-html.ua-instagram .kna-pricing-inner .text-base,
-html.ua-tiktok .kna-pricing-inner .text-base {
-  font-size: 13px !important;
-}
-html.ua-instagram .kna-pricing-inner .text-xs,
-html.ua-tiktok .kna-pricing-inner .text-xs {
-  font-size: 10px !important;
 }
 
 /* 인앱 모든 섹션 상하 패딩 통일 (3단계 섹션 기준: pt-24 pb-24 = 96px) */
@@ -1758,15 +1495,11 @@ html.ua-tiktok .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded
   }
 }
 /* 인앱 브라우저: text-[1.3125rem] (스크롤 전): 15px */
-.ig-shell .kna-value-section [class*="text-[1.3125rem]"],
-html.ua-instagram .kna-value-section [class*="text-[1.3125rem]"],
-html.ua-tiktok .kna-value-section [class*="text-[1.3125rem]"] {
+.ig-shell .kna-value-section [class*="text-[1.3125rem]"] {
   font-size: 15px !important;
 }
 /* 인앱 브라우저: text-[1.375rem] (스크롤 후): 19px */
-.ig-shell .kna-value-section [class*="text-[1.375rem]"],
-html.ua-instagram .kna-value-section [class*="text-[1.375rem]"],
-html.ua-tiktok .kna-value-section [class*="text-[1.375rem]"] {
+.ig-shell .kna-value-section [class*="text-[1.375rem]"] {
   font-size: 19px !important;
 }
 /* 원 내부 아이콘: w-10 h-10 (40px) → 33px */
@@ -1777,23 +1510,19 @@ html.ua-tiktok .kna-value-section [class*="w-10"][class*="h-10"] {
   height: 33px !important;
 }
 /* 한국이름학교 중앙 로고 텍스트: text-[1.125rem] (스크롤 전) → 16px */
-.ig-shell .kna-value-section [class*="text-[1.125rem]"],
-html.ua-instagram .kna-value-section [class*="text-[1.125rem]"],
-html.ua-tiktok .kna-value-section [class*="text-[1.125rem]"] {
+.ig-shell .kna-value-section [class*="text-[1.125rem]"] {
   font-size: 16px !important;
 }
-/* Identity 텍스트: text-[0.5625rem] → 9px 고정 (브라우저 자동 확대 방지) */
-.ig-shell .kna-value-section [class*="text-[0.5625rem]"],
-html.ua-instagram .kna-value-section [class*="text-[0.5625rem]"],
-html.ua-tiktok .kna-value-section [class*="text-[0.5625rem]"] {
+/* Identity 텍스트 — /ig·/tt 전용 화면에서는 9px 고정 */
+.ig-shell .kna-value-section [class*="text-[0.5625rem]"] {
   font-size: 9px !important;
   -webkit-text-size-adjust: none !important;
   text-size-adjust: none !important;
 }
+/* 인앱에서는 따로 지정하지 않는다 — 기준자가 이미 1.30 을 나누고 있어서
+   원래 크기(0.5625rem)를 그대로 쓰면 화면에서 크롬과 같아진다. */
 /* 본문 설명 텍스트: text-lg (18px) → 16px */
-.ig-shell .kna-value-section [class*="text-lg"],
-html.ua-instagram .kna-value-section [class*="text-lg"],
-html.ua-tiktok .kna-value-section [class*="text-lg"] {
+.ig-shell .kna-value-section [class*="text-lg"] {
   font-size: 16px !important;
 }
 
@@ -1898,30 +1627,19 @@ html.ua-instagram .kna-footer .pt-8,
 html.ua-tiktok .kna-footer .pt-8 {
   padding-top: 0 !important;
 }
-
-.ig-shell .kna-footer button,
-html.ua-instagram .kna-footer button,
-html.ua-tiktok .kna-footer button {
+.ig-shell .kna-footer button {
   padding: 5px 12px !important;
   font-size: 13px !important;
 }
 
 /* 인앱 푸터 모든 텍스트 크기 통일 (글로벌 p 규칙 override) */
-.ig-shell .kna-footer p,
-html.ua-instagram .kna-footer p,
-html.ua-tiktok .kna-footer p {
+.ig-shell .kna-footer p {
   font-size: 12px !important;
 }
-
-.ig-shell .kna-footer .footer-org-name,
-html.ua-instagram .kna-footer .footer-org-name,
-html.ua-tiktok .kna-footer .footer-org-name {
+.ig-shell .kna-footer .footer-org-name {
   font-size: 12px !important;
 }
-
-.ig-shell .kna-footer .text-xs,
-html.ua-instagram .kna-footer .text-xs,
-html.ua-tiktok .kna-footer .text-xs {
+.ig-shell .kna-footer .text-xs {
   font-size: 10px !important;
 }
 
@@ -1933,15 +1651,13 @@ html.ua-tiktok .legal-page-content {
 
 /* 인앱 STEP 01/02 라벨 82% 축소 */
 html.ua-instagram .step-label,
-html.ua-tiktok .step-label {
-  font-size: 12.3px !important; /* 15px × 0.82 = 12.3px */
-}
+html.ua-tiktok .step-label { /* 15px × 0.82 = 12.3px */
+;}
 
 /* 인앱 핵심 상담 과정 뱃지 82% 축소 */
 html.ua-instagram .core-process-badge,
-html.ua-tiktok .core-process-badge {
-  font-size: 9px !important; /* 11px × 0.82 = 9px */
-}
+html.ua-tiktok .core-process-badge { /* 11px × 0.82 = 9px */
+;}
 
 /* 인앱 Sheet 모달 82% 스케일링 */
 /* zoom 속성이 모든 자식 요소(폰트, 패딩, 마진, 아이콘 등)를 자동으로 82% 축소 */
@@ -1955,87 +1671,45 @@ html.ua-tiktok .family-policy-sheet,
 }
 
 /* Sheet 모달 내부 글로벌 h1/p 규칙 무효화 - 원본 크기 유지 */
-html.ua-instagram .analysis-detail-sheet h1,
-html.ua-tiktok .analysis-detail-sheet h1,
 .ig-shell .analysis-detail-sheet h1,
-html.ua-instagram .family-policy-sheet h1,
-html.ua-tiktok .family-policy-sheet h1,
 .ig-shell .family-policy-sheet h1 {
   font-size: 22px !important; /* 원본 text-[1.375rem] */
   line-height: 1.2 !important;
 }
-
-html.ua-instagram .analysis-detail-sheet h2,
-html.ua-tiktok .analysis-detail-sheet h2,
 .ig-shell .analysis-detail-sheet h2,
-html.ua-instagram .family-policy-sheet h2,
-html.ua-tiktok .family-policy-sheet h2,
 .ig-shell .family-policy-sheet h2 {
   font-size: 24px !important; /* 원본 text-[1.5rem] */
 }
-
-html.ua-instagram .analysis-detail-sheet h3,
-html.ua-tiktok .analysis-detail-sheet h3,
 .ig-shell .analysis-detail-sheet h3,
-html.ua-instagram .family-policy-sheet h3,
-html.ua-tiktok .family-policy-sheet h3,
 .ig-shell .family-policy-sheet h3 {
   font-size: 19px !important; /* 원본 text-[1.1875rem] */
 }
-
-html.ua-instagram .analysis-detail-sheet p,
-html.ua-tiktok .analysis-detail-sheet p,
 .ig-shell .analysis-detail-sheet p,
-html.ua-instagram .family-policy-sheet p,
-html.ua-tiktok .family-policy-sheet p,
 .ig-shell .family-policy-sheet p {
   font-size: 17px !important; /* 원본 text-[1.0625rem] */
   line-height: 1.6 !important;
 }
 
 /* Sheet 모달 스텝 제목/설명 (div 태그) - 일관된 크기 */
-html.ua-instagram .analysis-detail-sheet .text-\[19px\],
-html.ua-tiktok .analysis-detail-sheet .text-\[19px\],
 .ig-shell .analysis-detail-sheet .text-\[19px\],
-html.ua-instagram .family-policy-sheet .text-\[19px\],
-html.ua-tiktok .family-policy-sheet .text-\[19px\],
 .ig-shell .family-policy-sheet .text-\[19px\] {
   font-size: 19px !important;
 }
-
-html.ua-instagram .analysis-detail-sheet .text-\[17px\],
-html.ua-tiktok .analysis-detail-sheet .text-\[17px\],
 .ig-shell .analysis-detail-sheet .text-\[17px\],
-html.ua-instagram .family-policy-sheet .text-\[17px\],
-html.ua-tiktok .family-policy-sheet .text-\[17px\],
 .ig-shell .family-policy-sheet .text-\[17px\] {
   font-size: 17px !important;
 }
-
-html.ua-instagram .analysis-detail-sheet .text-\[15px\],
-html.ua-tiktok .analysis-detail-sheet .text-\[15px\],
 .ig-shell .analysis-detail-sheet .text-\[15px\],
-html.ua-instagram .family-policy-sheet .text-\[15px\],
-html.ua-tiktok .family-policy-sheet .text-\[15px\],
 .ig-shell .family-policy-sheet .text-\[15px\] {
   font-size: 15px !important;
 }
-
-html.ua-instagram .analysis-detail-sheet .text-\[13px\],
-html.ua-tiktok .analysis-detail-sheet .text-\[13px\],
 .ig-shell .analysis-detail-sheet .text-\[13px\],
-html.ua-instagram .family-policy-sheet .text-\[13px\],
-html.ua-tiktok .family-policy-sheet .text-\[13px\],
 .ig-shell .family-policy-sheet .text-\[13px\] {
   font-size: 13px !important;
 }
 
 /* h4 태그 (블로그 카드 제목 등) */
-html.ua-instagram .analysis-detail-sheet h4,
-html.ua-tiktok .analysis-detail-sheet h4,
 .ig-shell .analysis-detail-sheet h4,
-html.ua-instagram .family-policy-sheet h4,
-html.ua-tiktok .family-policy-sheet h4,
 .ig-shell .family-policy-sheet h4 {
   font-size: 17px !important;
 }
@@ -2214,92 +1888,10 @@ html.ua-tiktok .family-policy-sheet h4,
   100% { opacity: 1; }
 }
 
-/* 인앱 페이지 버튼 82% 축소 (다이얼로그 외부) */
-html.ua-instagram button:not(.ig-tt-dialog button),
-html.ua-tiktok button:not(.ig-tt-dialog button) {
-  font-size: 82% !important;
-}
-
-/* =====================================================
-   인앱 브라우저 상세 페이지 82% 최적화
-   - 후기, 이름이야기, 공지사항, 한국이름학교 등 모든 상세 페이지
-   - 임시저장소 페이지
-   ===================================================== */
-
-/* 상세 페이지 제목 (h1, h2, h3) 82% */
-html.ua-instagram article h1,
-html.ua-tiktok article h1 {
-  font-size: clamp(20px, 5vw, 25px) !important;
-}
-
-html.ua-instagram article h2,
-html.ua-tiktok article h2 {
-  font-size: clamp(18px, 4.5vw, 22px) !important;
-}
-
-html.ua-instagram article h3,
-html.ua-tiktok article h3 {
-  font-size: clamp(16px, 4vw, 18px) !important;
-}
-
-/* 상세 페이지 본문 p 82% */
-html.ua-instagram article p,
-html.ua-tiktok article p,
-html.ua-instagram .prose p,
-html.ua-tiktok .prose p {
-  font-size: clamp(13px, 3.5vw, 15px) !important;
-  line-height: 1.7 !important;
-}
-
-/* 상세 페이지 날짜/메타 정보 */
-html.ua-instagram article .text-sm,
-html.ua-tiktok article .text-sm,
-html.ua-instagram article .text-muted-foreground,
-html.ua-tiktok article .text-muted-foreground {
-  font-size: 12px !important;
-}
-
-/* 임시저장소 페이지 82% */
-html.ua-instagram .drafts-page h1,
-html.ua-tiktok .drafts-page h1 {
-  font-size: clamp(20px, 5vw, 25px) !important;
-}
-
-html.ua-instagram .drafts-page h2,
-html.ua-tiktok .drafts-page h2,
-html.ua-instagram .drafts-page h3,
-html.ua-tiktok .drafts-page h3 {
-  font-size: clamp(14px, 4vw, 16px) !important;
-}
-
-html.ua-instagram .drafts-page p,
-html.ua-tiktok .drafts-page p {
-  font-size: clamp(12px, 3.5vw, 14px) !important;
-}
-
-/* 카드/그리드 제목 82% */
-html.ua-instagram .content-grid h3,
-html.ua-tiktok .content-grid h3,
-html.ua-instagram .story-card h3,
-html.ua-tiktok .story-card h3 {
-  font-size: clamp(12px, 3vw, 14px) !important;
-}
-
-/* 카드 날짜 */
-html.ua-instagram .content-grid .text-xs,
-html.ua-tiktok .content-grid .text-xs,
-html.ua-instagram .story-card .text-xs,
-html.ua-tiktok .story-card .text-xs {
-  font-size: 10px !important;
-}
-
-/* 상세 페이지 뒤로가기 버튼 ("< 후기 목록" 등) 82% */
-html.ua-instagram article + main span[style*="clamp"],
-html.ua-tiktok article + main span[style*="clamp"],
-html.ua-instagram main > div > div > a > span,
-html.ua-tiktok main > div > div > a > span {
-  font-size: 11px !important;
-}
+/* 인앱 전용 line-height 보정은 두지 않는다.
+   글자 크기만 1/1.3 로 줄이면 줄 간격은 크롬 규칙(무단위 배수)이 그대로
+   따라오므로, 폰에서 확대될 때 크롬과 같은 줄 간격이 된다.
+   여기서 1.7 을 강제하면 크롬(1.625)과 달라져 줄 간격만 어긋났다. */
 
 /* 자동문구 섹션 (프로모션) 82% */
 html.ua-instagram .kna-promo,
@@ -2308,79 +1900,10 @@ html.ua-tiktok .kna-promo {
   transform-origin: top center;
 }
 
-html.ua-instagram .kna-promo .font-bold,
-html.ua-tiktok .kna-promo .font-bold {
-  font-size: clamp(15px, 3.5vw, 20px) !important;
-}
-
-html.ua-instagram .kna-promo .text-sm,
-html.ua-tiktok .kna-promo .text-sm {
-  font-size: 11px !important;
-}
-
-html.ua-instagram .kna-promo a,
-html.ua-tiktok .kna-promo a {
-  font-size: 11px !important;
-}
-
 /* IdentityMap 인앱 82% 스케일 */
 html.ua-instagram .identity-map-inner,
 html.ua-tiktok .identity-map-inner {
   zoom: 0.82;
-}
-
-/* ========== 상담 신청서 스타일 ========== */
-/* 인앱 브라우저: Dialog는 Portal로 렌더링되어 .ig-shell 밖에 있으므로 html 셀렉터 사용 */
-/* 특정 요소만 82% 크기 - zoom 대신 font-size 사용 (iOS 인앱 브라우저 호환) */
-html.ua-instagram .kna-step-indicator,
-html.ua-tiktok .kna-step-indicator,
-html.ua-instagram .kna-inapp-zoom,
-html.ua-tiktok .kna-inapp-zoom {
-  font-size: 13px !important;
-}
-
-/* kna-inapp-zoom 내부 모든 자식 요소에도 13px 강제 적용 */
-html.ua-instagram .kna-inapp-zoom *,
-html.ua-tiktok .kna-inapp-zoom * {
-  font-size: 13px !important;
-}
-
-/* text-xs(12px) 요소에 82% 적용: 12px × 0.82 = ~10px */
-html.ua-instagram .kna-inapp-zoom.text-xs,
-html.ua-tiktok .kna-inapp-zoom.text-xs,
-html.ua-instagram .kna-inapp-zoom .text-xs,
-html.ua-tiktok .kna-inapp-zoom .text-xs {
-  font-size: 10px !important;
-}
-
-/* kna-inapp-zoom-xs: text-xs 전용 82% 축소 클래스 */
-html.ua-instagram .kna-inapp-zoom-xs,
-html.ua-tiktok .kna-inapp-zoom-xs {
-  font-size: 10px !important;
-}
-
-/* 82% x 82% = 약 67% (더 작게) */
-html.ua-instagram .kna-inapp-zoom-2x,
-html.ua-tiktok .kna-inapp-zoom-2x {
-  font-size: 67% !important;
-}
-
-/* 82% x 82% x 82% = 약 55% (가장 작게) */
-html.ua-instagram .kna-inapp-zoom-3x,
-html.ua-tiktok .kna-inapp-zoom-3x {
-  font-size: 55% !important;
-}
-
-/* textarea placeholder에 82% zoom 적용 */
-html.ua-instagram .kna-inapp-zoom-textarea::placeholder,
-html.ua-tiktok .kna-inapp-zoom-textarea::placeholder {
-  font-size: 82%;
-}
-
-/* input placeholder에 82% zoom 적용 */
-html.ua-instagram .kna-inapp-zoom-input::placeholder,
-html.ua-tiktok .kna-inapp-zoom-input::placeholder {
-  font-size: 82%;
 }
 
 /* Glassmorphism 카드 */
@@ -2448,4 +1971,112 @@ html.ua-tiktok .kna-inapp-zoom-input::placeholder {
 .border-tiffany { border-color: #14b8a6; }
 .border-tiffany-light { border-color: #ccfbf1; }
 
+/* ===== 인앱(인스타·틱톡) 글자 크기 보정 =====
+   두 앱의 브라우저는 화면에 그릴 때 글자를 1.30 배로 키운다(폰 실측: 지정
+   14.42px → 실제 18.8px, 크기가 다른 6개 요소가 모두 1.297~1.303). 그림은 1.00.
+   그래서 글자 크기만 미리 1/1.30 로 적어두면 화면에서 크롬과 같아진다.
 
+   기준자(html font-size)를 줄이는 방법은 쓰지 않는다. rem 은 글자뿐 아니라
+   여백·버튼 높이까지 정하기 때문에, 그렇게 하면 버튼이 23% 눌리고 잘림이 는다
+   (실측 확인: 지금 신청 30.7 → 23.6px).
+
+   여기서는 실제로 쓰이는 글자 크기 클래스만 묶어서 처리한다. 여백·위치·크기·
+   그림은 건드리지 않는다. */
+@media (max-width: 767px) {
+  /* 크기 클래스가 없어 물려받기만 하는 글자(예: '분석 시작' 버튼)용.
+     body 에 주면 물려받는 글자만 바뀌고, rem 은 html 기준이라 여백·크기는
+     그대로다. 1rem ÷ 1.3 = 0.7692rem */
+  html.ua-instagram body,
+  html.ua-tiktok body { font-size: 0.7692rem; }
+
+  html.ua-instagram .text-2xl,
+  html.ua-tiktok .text-2xl { font-size: 1.1538rem; }
+  html.ua-instagram .text-3xl,
+  html.ua-tiktok .text-3xl { font-size: 1.4423rem; }
+  html.ua-instagram .text-4xl,
+  html.ua-tiktok .text-4xl { font-size: 1.7308rem; }
+  html.ua-instagram .text-5xl,
+  html.ua-tiktok .text-5xl { font-size: 2.3077rem; }
+  html.ua-instagram .text-base,
+  html.ua-tiktok .text-base { font-size: 0.7692rem; }
+  html.ua-instagram .text-lg,
+  html.ua-tiktok .text-lg { font-size: 0.8654rem; }
+  html.ua-instagram .text-sm,
+  html.ua-tiktok .text-sm { font-size: 0.6731rem; }
+  html.ua-instagram .text-xl,
+  html.ua-tiktok .text-xl { font-size: 0.9615rem; }
+  html.ua-instagram .text-xs,
+  html.ua-tiktok .text-xs { font-size: 0.5769rem; }
+  html.ua-instagram .text-\[0\.5625rem\],
+  html.ua-tiktok .text-\[0\.5625rem\] { font-size: 0.4327rem; }
+  html.ua-instagram .text-\[0\.625rem\],
+  html.ua-tiktok .text-\[0\.625rem\] { font-size: 0.4808rem; }
+  html.ua-instagram .text-\[0\.6875rem\],
+  html.ua-tiktok .text-\[0\.6875rem\] { font-size: 0.5288rem; }
+  html.ua-instagram .text-\[0\.75rem\],
+  html.ua-tiktok .text-\[0\.75rem\] { font-size: 0.5769rem; }
+  html.ua-instagram .text-\[0\.8125rem\],
+  html.ua-tiktok .text-\[0\.8125rem\] { font-size: 0.625rem; }
+  html.ua-instagram .text-\[0\.9375rem\],
+  html.ua-tiktok .text-\[0\.9375rem\] { font-size: 0.7212rem; }
+  html.ua-instagram .text-\[1\.125rem\],
+  html.ua-tiktok .text-\[1\.125rem\] { font-size: 0.8654rem; }
+  html.ua-instagram .text-\[1\.1875rem\],
+  html.ua-tiktok .text-\[1\.1875rem\] { font-size: 0.9135rem; }
+  html.ua-instagram .text-\[1\.3125rem\],
+  html.ua-tiktok .text-\[1\.3125rem\] { font-size: 1.0096rem; }
+  html.ua-instagram .text-\[1\.375rem\],
+  html.ua-tiktok .text-\[1\.375rem\] { font-size: 1.0577rem; }
+  html.ua-instagram .text-\[1\.4375rem\],
+  html.ua-tiktok .text-\[1\.4375rem\] { font-size: 1.1058rem; }
+  html.ua-instagram .text-\[1\.5625rem\],
+  html.ua-tiktok .text-\[1\.5625rem\] { font-size: 1.2019rem; }
+  html.ua-instagram .text-\[1\.625rem\],
+  html.ua-tiktok .text-\[1\.625rem\] { font-size: 1.25rem; }
+  html.ua-instagram .text-\[1\.75rem\],
+  html.ua-tiktok .text-\[1\.75rem\] { font-size: 1.3462rem; }
+  html.ua-instagram .text-\[1rem\],
+  html.ua-tiktok .text-\[1rem\] { font-size: 0.7692rem; }
+  html.ua-instagram .text-\[2\.25rem\],
+  html.ua-tiktok .text-\[2\.25rem\] { font-size: 1.7308rem; }
+
+  /* 인라인(style=) 으로 크기를 직접 준 곳 — 4 그룹뿐이라 여기서 함께 처리한다.
+     히어로 제목·안내문(clamp)과 푸터 제목·셋째 줄. 인라인이라 !important 필요. */
+  html.ua-instagram .kna-footer h2,
+  html.ua-tiktok .kna-footer h2 {
+    font-size: 1.1538rem !important;   /* 1.5 ÷ 1.3 */
+  }
+  html.ua-instagram .kna-footer h2 > span:last-child,
+  html.ua-tiktok .kna-footer h2 > span:last-child {
+    font-size: 0.9135rem !important;   /* 1.1875 ÷ 1.3 */
+  }
+
+  /* 히어로 버튼 — clamp(vw) 라 클래스 규칙에 안 걸린다. 여기서 글자만 보정한다.
+     여백은 em 이라 글자에 비례하는데, 글자를 1/1.3 로 줄이면 여백도 같이 줄어
+     버튼이 작아진다. 그래서 여백은 원래 크기(px)로 고정해 크롬과 맞춘다. */
+  html.ua-instagram .hero-cta,
+  html.ua-instagram .hero-cta-link,
+  html.ua-tiktok .hero-cta,
+  html.ua-tiktok .hero-cta-link {
+    font-size: clamp(9.23px, 2.77vw, 13.85px);   /* 12~18 / 3.6vw ÷ 1.3 */
+  }
+  html.ua-instagram .hero-cta,
+  html.ua-tiktok .hero-cta {
+    padding: 0.585em 1.495em;   /* 0.45em 1.15em × 1.3 — 글자가 작아진 만큼 되돌림 */
+  }
+
+  /* em 으로 잡은 간격 보정 — 글자를 1/1.3 로 줄이면 em 간격도 같이 줄지만,
+     폰에서 되돌려 커지는 건 글자뿐이라 간격만 좁아진 채 남는다.
+     그래서 간격에만 1.3 을 곱해 크롬과 같은 px 가 되게 한다.
+     (실측: 히어로 gap 크롬 6.318px, 셋째줄 margin-top 27.378px,
+      푸터 gap 3.456px, 푸터 셋째줄 margin-top 23.712px)
+     히어로 버튼 padding 은 이미 보정되어 크롬과 같다(5.832/14.904px). */
+  html.ua-instagram .hero-title,
+  html.ua-tiktok .hero-title { gap: 0.195em !important; }          /* 0.15 × 1.3 */
+  html.ua-instagram .hero-title > span:last-child,
+  html.ua-tiktok .hero-title > span:last-child { margin-top: 1.69em !important; }  /* 1.3 × 1.3 */
+  html.ua-instagram .kna-footer h2,
+  html.ua-tiktok .kna-footer h2 { gap: 0.195em !important; }
+  html.ua-instagram .kna-footer h2 > span:last-child,
+  html.ua-tiktok .kna-footer h2 > span:last-child { margin-top: 1.69em !important; }
+}

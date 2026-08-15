@@ -301,34 +301,34 @@ export function NameAnalysisPhone() {
         
         /* 인앱 브라우저 82% 스케일링 */
         html.ua-instagram .phone-name-title,
-        html.ua-tiktok .phone-name-title { font-size: 23px !important; }
+        html.ua-tiktok .phone-name-title { font-size: 21.54px !important; }
         
         html.ua-instagram .phone-val-num,
-        html.ua-tiktok .phone-val-num { font-size: 21px !important; }
+        html.ua-tiktok .phone-val-num { font-size: 20.0px !important; }
         
         html.ua-instagram .phone-val-text,
-        html.ua-tiktok .phone-val-text { font-size: 12px !important; }
+        html.ua-tiktok .phone-val-text { font-size: 11.54px !important; }
         
         html.ua-instagram .phone-element-info,
-        html.ua-tiktok .phone-element-info { font-size: 11px !important; }
+        html.ua-tiktok .phone-element-info { font-size: 10.0px !important; }
         
         html.ua-instagram .phone-section-title,
-        html.ua-tiktok .phone-section-title { font-size: 10px !important; }
+        html.ua-tiktok .phone-section-title { font-size: 9.23px !important; }
         
         html.ua-instagram .phone-card-header,
-        html.ua-tiktok .phone-card-header { font-size: 9px !important; }
+        html.ua-tiktok .phone-card-header { font-size: 7.69px !important; }
         
         html.ua-instagram .phone-desc-text,
-        html.ua-tiktok .phone-desc-text { font-size: 9px !important; }
+        html.ua-tiktok .phone-desc-text { font-size: 8.46px !important; }
         
         html.ua-instagram .phone-super-tag,
-        html.ua-tiktok .phone-super-tag { font-size: 8px !important; }
+        html.ua-tiktok .phone-super-tag { font-size: 7.69px !important; }
         
         html.ua-instagram .phone-like-badge,
-        html.ua-tiktok .phone-like-badge { font-size: 8px !important; }
+        html.ua-tiktok .phone-like-badge { font-size: 7.69px !important; }
         
         html.ua-instagram .phone-tag,
-        html.ua-tiktok .phone-tag { font-size: 8px !important; }
+        html.ua-tiktok .phone-tag { font-size: 6.92px !important; }
         
         html.ua-instagram .name-phone,
         html.ua-tiktok .name-phone {
@@ -349,7 +349,7 @@ export function NameAnalysisPhone() {
         }
         html.ua-instagram .phone-hint,
         html.ua-tiktok .phone-hint {
-          font-size: 11px !important;
+          font-size: 10px !important; /* 13 ÷ 1.30 */
         }
       `}</style>
       
@@ -366,7 +366,7 @@ export function NameAnalysisPhone() {
                 <h2 className="phone-name-title">홍길동</h2>
                 <div className="phone-section-title" style={{ marginTop: '8px' }}>NAME ANALYSIS (오행운)</div>
                 <div className="phone-element-info" style={{ marginTop: '4px', display: 'block' }}><span style={{ color: '#f97316', fontWeight: 600 }}>토/목</span>{">"}<span>화</span></div>
-                <div className="phone-element-info" style={{ marginTop: '2px', fontSize: '11px', display: 'block' }}>ㆍ인간관계운 <span style={{ color: '#f97316' }}>상극</span>{"&"}상생</div>
+                <div className="phone-element-info" style={{ marginTop: '2px', display: 'block' }}>ㆍ인간관계운 <span style={{ color: '#f97316' }}>상극</span>{"&"}상생</div>
               </div>
 
               <div className="phone-section-title">NAME ANALYSIS (수리운)</div>
