@@ -38,6 +38,7 @@ export function SizeProbe() {
 
       setLines([
         `${ua} · 폭 ${window.innerWidth} · 기준자 ${n(px("html"))}`,
+        `기기폭 ${window.screen.width} · 배율 ${window.devicePixelRatio}`,
         `제목 ${n(px(".hero-title"))} · 안내문 ${n(px(".hero-sub"))}`,
         `셋째줄 ${n(
           title?.lastElementChild
