@@ -1426,6 +1426,21 @@ html.ua-tiktok .identity-map-inner .id-node .anchor svg {
   min-width: auto !important;
   min-height: auto !important;
 }
+/* 홍길동 이름표만 가로형으로 되돌린다.
+   바로 위 .id-node .anchor 규칙이 모든 노드를 33×33 정사각형으로 잡는데,
+   이 이름표는 글자가 들어가는 가로 상자라 예외가 필요하다.
+   예전에는 이 예외가 .ig-shell 과 인앱에 함께 걸려 있었는데, 인앱 글자 크기를
+   정리하면서 인앱 쪽이 함께 지워져 27×27(33 × zoom 0.82)이 되고 글자가 넘쳤다.
+   크기 예외만 되살린다 — font-size 는 지금 값이 크롬과 맞으므로 넣지 않고,
+   zoom: 0.82 와 다른 원형 노드는 건드리지 않는다. */
+html.ua-instagram .identity-map-inner #n1 .anchor,
+html.ua-tiktok .identity-map-inner #n1 .anchor {
+  padding: 6px 10px !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  min-height: auto !important;
+}
 /* 노드 라벨: text-[0.625rem] (10px) → 8px */
 .ig-shell .identity-map-inner .id-node > div:last-child {
   font-size: 8px !important;
