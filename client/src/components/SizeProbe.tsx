@@ -54,6 +54,32 @@ export function SizeProbe() {
         `비용제목 ${n(px(".kna-pricing-inner h2"))} · 위험본문 ${n(
           px(".kna-danger-section p.text-lg")
         )}`,
+        // '두 번의 확인, 평생의 안심' 아래 STEP 01/02 — 글자 크기와 이름표 상자
+        `STEP ${n(
+          (() => {
+            const s = Array.prototype.slice.call(document.querySelectorAll(".kna-value-section *")).find(
+              (e) => !e.children.length && (e.textContent || "").trim().startsWith("STEP 0")
+            );
+            return s ? parseFloat(getComputedStyle(s).fontSize) : null;
+          })()
+        )} · 안심 ${n(
+          (() => {
+            const s = Array.prototype.slice.call(document.querySelectorAll(".kna-value-section *")).find(
+              (e) => (e.textContent || "").includes("평생의 안심") && !e.querySelector("span span")
+            );
+            return s ? parseFloat(getComputedStyle(s).fontSize) : null;
+          })()
+        )}`,
+        `이름표 ${(() => {
+          const a = Array.prototype.slice.call(document.querySelectorAll(".anchor")).find(
+            (e) => (e.textContent || "").trim() === "홍길동"
+          );
+          if (!a) return "-";
+          const r = a.getBoundingClientRect();
+          return `${r.width.toFixed(0)}×${r.height.toFixed(0)} 글자 ${n(
+            parseFloat(getComputedStyle(a).fontSize)
+          )}${a.scrollWidth > a.clientWidth + 1 ? " 넘침" : ""}`;
+        })()}`,
       ]);
     };
 
