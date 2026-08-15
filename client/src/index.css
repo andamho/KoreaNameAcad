@@ -410,11 +410,12 @@ select {
   }
 }
 
-/* 네비바 로고 - 인앱에서 73.8% (84 x 0.738 = 62px).
-   내비바만 축소에서 빠져 있어 본문보다 커 보였다. */
+/* 네비바 로고 - 그림이라 인앱 축소를 주지 않는다(구름과 같은 이유).
+   인앱 축소는 브라우저가 글자를 키우는 걸 상쇄하려는 것이고,
+   그림은 키워지지 않으므로 줄이면 그냥 작아지기만 한다. 일반과 같은 84px. */
 html.ua-instagram .kna-navbar img,
 html.ua-tiktok .kna-navbar img {
-  height: 62px !important;
+  height: 84px !important;
   width: auto !important;
 }
 
@@ -473,15 +474,10 @@ html.ua-tiktok p.hero-sub {
   line-height: 1.42 !important;
 }
 
-/* 모바일 구름도 글자와 같이 73.8% 로. 글자만 줄이면 구름만 커 보인다.
-   폭 25.3 × 0.9 = 22.77vw, 오른쪽으로 미는 거리 23.15 × 0.9 = 20.84vw,
-   글자와의 간격 35 × 0.9 = 31.5px, 위로 올림 10 × 0.9 = 9px */
-html.ua-instagram .hero-cloud-m,
-html.ua-tiktok .hero-cloud-m {
-  width: 18.67vw !important;
-  margin-bottom: 25.8px !important;
-  transform: translate(17.08vw, -7.4px) !important;
-}
+/* 구름(그림)에는 인앱 축소를 주지 않는다.
+   인앱 축소는 브라우저가 글자를 키우는 걸 상쇄하려고 넣는 것인데,
+   그림은 키워지지 않으므로 줄이면 그냥 작아지기만 한다. 일반 화면과 같은
+   크기로 둔다(Hero.tsx 의 25.3vw 그대로). */
 
 /* /ig·/tt 는 히어로 판(.hero-wrap) 자체가 이미 82% 로 줄인다.
    판이 이미 0.82 니 여기서는 0.9 만 더 준다(최종 0.738).
@@ -496,12 +492,14 @@ html.ua-tiktok .ig-shell p.hero-sub {
   font-size: clamp(14.4px, 3.42vw, 19.8px) !important;
 }
 
-/* /ig·/tt 의 구름도 판이 이미 0.82 니 0.9 만 더 준다(최종 0.738). */
+/* /ig·/tt 는 히어로 판 자체가 0.82 로 줄어드니 구름도 그만큼 작아진다.
+   그림은 인앱에서 키워지지 않으므로 그 축소만큼 되돌려 원래 크기로 맞춘다.
+   25.3 ÷ 0.82 = 30.85vw, 23.15 ÷ 0.82 = 28.23vw, 35 ÷ 0.82 = 42.7px */
 html.ua-instagram .ig-shell .hero-cloud-m,
 html.ua-tiktok .ig-shell .hero-cloud-m {
-  width: 22.77vw !important;
-  margin-bottom: 31.5px !important;
-  transform: translate(20.84vw, -9px) !important;
+  width: 30.85vw !important;
+  margin-bottom: 42.7px !important;
+  transform: translate(28.23vw, -12.2px) !important;
 }
 
 /* 다이얼로그 내부 요소 - 인앱 브라우저 폰트 크기 조정 */
