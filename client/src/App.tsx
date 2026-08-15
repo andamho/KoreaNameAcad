@@ -83,6 +83,10 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home}/>
+      {/* 크기 확인용 — 홈과 같은 화면인데 확인 상자가 함께 뜬다.
+          인스타·틱톡 프로필 링크에는 물음표(?)를 못 넣는 경우가 있어
+          물음표 없는 주소로도 열 수 있게 둔다. 확인이 끝나면 지운다. */}
+      <Route path="/size" component={Home}/>
       <Route path="/ig" component={InstagramHome}/>
       <Route path="/tt" component={TikTokHome}/>
       <Route path="/detail-info" component={DetailInfo}/>
