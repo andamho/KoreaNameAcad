@@ -35,6 +35,7 @@ import InquiryThread from "@/pages/InquiryThread";
 import NotFound from "@/pages/not-found";
 import { SizeProbe } from "@/components/SizeProbe";
 import { ValueSectionProbe } from "@/components/ValueSectionProbe";
+import { FlashProbe } from "@/components/FlashProbe";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
 import reviewsCharacterImage from "@assets/KakaoTalk_20251226_140721227_1766725962281.png";
@@ -284,6 +285,7 @@ function App() {
           <SizeProbe />
           {/* 임시 측정기 — 확인 끝나면 제거 */}
           <ValueSectionProbe />
+          <FlashProbe />
         </TooltipProvider>
       </AdminProvider>
     </QueryClientProvider>

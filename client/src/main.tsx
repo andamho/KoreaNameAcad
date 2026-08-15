@@ -1,6 +1,10 @@
+import { startFlashRecorder } from "./flashRecorder";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
+
+// 임시: 인앱에서 글자가 커졌다 작아지는 현상 기록 (확인 후 제거)
+startFlashRecorder();
 
 // 고려대학교 볼드체 폰트 로드
 const loadKoreaUnivFont = async () => {
