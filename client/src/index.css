@@ -474,25 +474,6 @@ html.ua-tiktok p.hero-sub {
   line-height: 1.42 !important;
 }
 
-/* 홈 히어로 아래 섹션들도 인앱에서 90% 로.
-   /ig·/tt 가 쓰는 방식(zoom)과 같게 한다 — 글자만 골라 줄이면 중첩된 곳에서
-   0.9 가 두세 번 곱해져 들쭉날쭉해진다. 섹션째 줄이면 짜임이 유지된다.
-   .ig-shell 은 이미 82% zoom 이 걸려 있어 여기서 제외한다(:not). */
-html.ua-instagram :not(.ig-shell) > * > .kna-danger-section > div,
-html.ua-tiktok :not(.ig-shell) > * > .kna-danger-section > div,
-html.ua-instagram :not(.ig-shell) > * > .kna-value-section > div,
-html.ua-tiktok :not(.ig-shell) > * > .kna-value-section > div,
-html.ua-instagram :not(.ig-shell) > * > .kna-intro-block > div,
-html.ua-tiktok :not(.ig-shell) > * > .kna-intro-block > div,
-html.ua-instagram :not(.ig-shell) .kna-myth-truth-inner,
-html.ua-tiktok :not(.ig-shell) .kna-myth-truth-inner,
-html.ua-instagram :not(.ig-shell) .kna-steps-inner,
-html.ua-tiktok :not(.ig-shell) .kna-steps-inner,
-html.ua-instagram :not(.ig-shell) .kna-pricing-inner,
-html.ua-tiktok :not(.ig-shell) .kna-pricing-inner {
-  zoom: 0.9;
-}
-
 /* 구름(그림)에는 인앱 축소를 주지 않는다.
    인앱 축소는 브라우저가 글자를 키우는 걸 상쇄하려고 넣는 것인데,
    그림은 키워지지 않으므로 줄이면 그냥 작아지기만 한다. 일반 화면과 같은
