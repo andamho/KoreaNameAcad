@@ -75,6 +75,22 @@ export function SizeProbe() {
             return s ? parseFloat(getComputedStyle(s).fontSize) : null;
           })()
         )}`,
+        // STEP 01/02 카드의 제목('1차 검증')과 본문
+        `검증제목 ${n(
+          (() => {
+            const h = Array.prototype.slice
+              .call(document.querySelectorAll(".kna-value-section h3"))
+              .find((e) => (e.textContent || "").includes("검증"));
+            return h ? parseFloat(getComputedStyle(h).fontSize) : null;
+          })()
+        )} · 검증본문 ${n(
+          (() => {
+            const p = Array.prototype.slice
+              .call(document.querySelectorAll(".kna-value-section p.text-lg"))
+              .find((e) => (e.textContent || "").includes("확인합니다"));
+            return p ? parseFloat(getComputedStyle(p).fontSize) : null;
+          })()
+        )}`,
         // '열심히 노력하면 살아가지만' ~ '내 삶, 어디가 막혀 있을까요?' 구간.
         // 글자 크기별로 몇 개씩 있는지 묶어서 보여준다(작은 화면에 다 못 넣으므로).
         `인트로 ${(() => {
