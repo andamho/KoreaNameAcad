@@ -13,7 +13,10 @@ export function SizeProbe() {
   const [lines, setLines] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!new URLSearchParams(window.location.search).has("size")) return;
+    // 주소 어디에든 size 라는 글자가 있으면 켠다.
+    // 인스타·틱톡은 링크를 자기 주소로 감싸면서 물음표 뒤를 떼기도 해서,
+    // #size 처럼 붙여도 되도록 넓게 잡는다.
+    if (!/size/i.test(window.location.href)) return;
 
     const px = (sel: string) => {
       const el = document.querySelector(sel);
@@ -37,7 +40,9 @@ export function SizeProbe() {
       const title = document.querySelector(".hero-title");
 
       setLines([
-        `${ua} · 폭 ${window.innerWidth} · 기준자 ${n(px("html"))}`,
+        // 화면이 옛 것인지 새 것인지 구분하려고 붙인 표시.
+        // 이 줄이 안 보이면 캐시에 남은 옛 화면이다.
+        `버전 B · ${ua} · 폭 ${window.innerWidth} · 기준자 ${n(px("html"))}`,
         `기기폭 ${window.screen.width} · 배율 ${window.devicePixelRatio}`,
         `제목 ${n(px(".hero-title"))} · 안내문 ${n(px(".hero-sub"))}`,
         `셋째줄 ${n(
