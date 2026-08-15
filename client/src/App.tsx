@@ -33,6 +33,7 @@ import ExperienceNameRank from "@/pages/ExperienceNameRank";
 import Inquiry from "@/pages/Inquiry";
 import InquiryThread from "@/pages/InquiryThread";
 import NotFound from "@/pages/not-found";
+import { SizeProbe } from "@/components/SizeProbe";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
 import reviewsCharacterImage from "@assets/KakaoTalk_20251226_140721227_1766725962281.png";
@@ -274,6 +275,8 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          {/* 주소에 ?size=1 을 붙였을 때만 뜨는 크기 확인용 상자 */}
+          <SizeProbe />
         </TooltipProvider>
       </AdminProvider>
     </QueryClientProvider>
