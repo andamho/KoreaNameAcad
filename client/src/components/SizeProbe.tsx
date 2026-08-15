@@ -70,6 +70,31 @@ export function SizeProbe() {
             return s ? parseFloat(getComputedStyle(s).fontSize) : null;
           })()
         )}`,
+        // '열심히 노력하면 살아가지만' ~ '내 삶, 어디가 막혀 있을까요?' 구간.
+        // 글자 크기별로 몇 개씩 있는지 묶어서 보여준다(작은 화면에 다 못 넣으므로).
+        `인트로 ${(() => {
+          const box = document.querySelector(".kna-intro-top");
+          const box2 = document.querySelector(".kna-intro-bottom");
+          const list = Array.prototype.slice
+            .call(document.querySelectorAll(".kna-intro-top *, .kna-intro-bottom *"))
+            .filter((e) => {
+              if (e.children.length) return false;
+              if (!(e.textContent || "").trim()) return false;
+              const r = e.getBoundingClientRect();
+              return r.width > 1 && r.height > 1;
+            });
+          if (!list.length) return box || box2 ? "요소없음" : "-";
+          const cnt: Record<string, number> = {};
+          list.forEach((e) => {
+            const k = parseFloat(getComputedStyle(e).fontSize).toFixed(1);
+            cnt[k] = (cnt[k] || 0) + 1;
+          });
+          return Object.keys(cnt)
+            .sort((a, b) => parseFloat(b) - parseFloat(a))
+            .slice(0, 6)
+            .map((k) => `${k}×${cnt[k]}`)
+            .join(" ");
+        })()}`,
         `이름표 ${(() => {
           const a = Array.prototype.slice.call(document.querySelectorAll(".anchor")).find(
             (e) => (e.textContent || "").trim() === "홍길동"
