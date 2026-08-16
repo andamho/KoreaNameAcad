@@ -103,6 +103,35 @@ export function PageSizeProbe() {
         );
       });
 
+      // [시험 D] 폰이 글자를 얼마나 키우는지 법칙 자체를 잰다.
+      // 지정한 크기(px)를 넣고 실제로 그려진 크기를 읽어 입력→출력 대응을 만든다.
+      // 좁은 칸과 넓은 칸 두 곳에 같은 눈금을 넣어 담는 상자가 영향을 주는지도 본다.
+      if (/sized/i.test(window.location.pathname)) {
+        const 눈금 = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32];
+        const 만들기 = (폭: string) => {
+          const box = document.createElement("div");
+          box.style.cssText = `position:absolute;left:-9999px;top:0;width:${폭}`;
+          document.body.appendChild(box);
+          const 값 = 눈금.map((px) => {
+            const s = document.createElement("p");
+            s.style.fontSize = px + "px";
+            s.textContent = "한글 글자 크기 시험 문장입니다";
+            box.appendChild(s);
+            return parseFloat(getComputedStyle(s).fontSize);
+          });
+          box.remove();
+          return 값;
+        };
+        const 좁 = 만들기("160px");
+        const 넓 = 만들기("320px");
+        out.push(
+          "눈금(좁) " + 눈금.map((v, i) => `${v}→${좁[i].toFixed(1)}`).join(" ")
+        );
+        out.push(
+          "눈금(넓) " + 눈금.map((v, i) => `${v}→${넓[i].toFixed(1)}`).join(" ")
+        );
+      }
+
       // 가로로 넘치는 요소가 있는지 (화면 밖으로 삐져나가는지)
       let 넘침 = 0;
       els.forEach((e) => {
