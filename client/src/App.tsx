@@ -40,6 +40,7 @@ import { PageSizeProbe } from "@/components/PageSizeProbe";
 import { RulerProbe } from "@/components/RulerProbe";
 import { AuditProbe } from "@/components/AuditProbe";
 import { 인앱표시유지 } from "@/lib/inapp";
+import { StyleWatchProbe } from "@/components/StyleWatchProbe";
 import { FlashProbe } from "@/components/FlashProbe";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
@@ -318,6 +319,8 @@ function App() {
           <RulerProbe />
           {/* 임시 감사기 — 전수 비교 + 주입 스타일 수명 */}
           <AuditProbe />
+          {/* 임시 감시기 — 글자가 작아지는 순간의 주입 스타일 기록 */}
+          <StyleWatchProbe />
           <Router />
           {/* 주소에 ?size=1 을 붙였을 때만 뜨는 크기 확인용 상자 */}
           <SizeProbe />
