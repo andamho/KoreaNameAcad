@@ -37,6 +37,7 @@ import { SizeProbe } from "@/components/SizeProbe";
 import { ValueSectionProbe } from "@/components/ValueSectionProbe";
 import { CircleFrameProbe } from "@/components/CircleFrameProbe";
 import { PageSizeProbe } from "@/components/PageSizeProbe";
+import { RulerProbe } from "@/components/RulerProbe";
 import { FlashProbe } from "@/components/FlashProbe";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
@@ -304,6 +305,8 @@ function App() {
       <AdminProvider>
         <TooltipProvider>
           <Toaster />
+          {/* 임시 눈금 시험 — 페이지 맨 위에 실제로 보이게 둔다 */}
+          <RulerProbe />
           <Router />
           {/* 주소에 ?size=1 을 붙였을 때만 뜨는 크기 확인용 상자 */}
           <SizeProbe />
