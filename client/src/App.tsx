@@ -137,10 +137,14 @@ function App() {
     const isInstagram = userAgent.includes('Instagram');
     const isTikTok = userAgent.includes('TikTok') || userAgent.includes('musical_ly');
     
-    if (isInstagram) {
-      document.documentElement.classList.add('ua-instagram');
-    } else if (isTikTok) {
-      document.documentElement.classList.add('ua-tiktok');
+    // 클래스는 index.html 의 인라인 코드가 첫 화면 전에 이미 붙인다.
+    // 여기서는 혹시 그 코드가 못 돌았을 때를 대비한 보조 장치로만 둔다
+    // (이미 붙어 있으면 아무 일도 하지 않는다).
+    const de = document.documentElement;
+    if (isInstagram && !de.classList.contains('ua-instagram')) {
+      de.classList.add('ua-instagram');
+    } else if (isTikTok && !de.classList.contains('ua-tiktok')) {
+      de.classList.add('ua-tiktok');
     }
 
     // 체험존 페이지 전용 인앱 브라우저 스타일 (82% 비율, 영구 주입)
