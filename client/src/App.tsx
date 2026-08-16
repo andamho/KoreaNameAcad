@@ -41,6 +41,7 @@ import { RulerProbe } from "@/components/RulerProbe";
 import { AuditProbe } from "@/components/AuditProbe";
 import { 인앱표시유지 } from "@/lib/inapp";
 import { StyleWatchProbe } from "@/components/StyleWatchProbe";
+import { ButtonHeightProbe } from "@/components/ButtonHeightProbe";
 import { FlashProbe } from "@/components/FlashProbe";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
@@ -112,6 +113,8 @@ function Router() {
       <Route path="/services/sized" component={Services}/>
       {/* [임시 감사] 서비스 페이지 전수 비교용 주소 */}
       <Route path="/services/sizee" component={Services}/>
+      {/* [임시 진단] 서비스 버튼 높이 조사용 주소 */}
+      <Route path="/services/sizeh" component={Services}/>
       <Route path="/reviews" component={Reviews}/>
       <Route path="/reviews/:id">
         {(params) => <ContentDetail backPath="/reviews" backLabel="후기 목록" />}
@@ -319,6 +322,8 @@ function App() {
           <RulerProbe />
           {/* 임시 감사기 — 전수 비교 + 주입 스타일 수명 */}
           <AuditProbe />
+          {/* 임시 진단기 — 서비스 버튼 높이만 */}
+          <ButtonHeightProbe />
           {/* 임시 감시기 — 글자가 작아지는 순간의 주입 스타일 기록 */}
           <StyleWatchProbe />
           <Router />

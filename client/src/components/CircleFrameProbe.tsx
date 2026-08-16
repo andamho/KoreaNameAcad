@@ -24,8 +24,8 @@ export function CircleFrameProbe() {
 
   useEffect(() => {
     if (!/size/i.test(window.location.href)) return;
-    // 눈금 시험(/sized)·감사(/sizee) 화면에서는 뜨지 않는다. 그 숫자를 가린다.
-    if (/sized|sizee/i.test(window.location.pathname)) return;
+    // 눈금(/sized)·감사(/sizee)·버튼높이(/sizeh) 화면에서는 뜨지 않는다. 그 숫자를 가린다.
+    if (/sized|sizee|sizeh/i.test(window.location.pathname)) return;
 
     const shortCls = (el: Element | null) => {
       const c = (el && (el.className as unknown)) || "";
