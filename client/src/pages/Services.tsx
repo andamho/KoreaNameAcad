@@ -200,57 +200,18 @@ export default function Services() {
       if (!document.getElementById(styleId)) {
         const style = document.createElement('style');
         style.id = styleId;
+        // 여기 있던 인앱 font-size 강제 지정은 전부 걷어냈다.
+        //
+        // 기준자(html)를 14px 로 못박고 h1~h4 · p/li/span · .text-sm/.text-lg/.text-4xl ·
+        // button 까지 px 로 고정하던 82% 시절 블록이었다. !important 라서
+        // index.css 의 공통 ÷1.3 보정(34개)을 전부 이겼고, 폰에서 20/16/15/14/13px 로
+        // 굳은 뒤 인앱 확대 ×1.30 이 곱해져 크롬보다 크게 보였다.
+        // 크기는 index.css 의 공통 보정 체계에 맡긴다.
+        //
+        // font-size 가 아닌 여백 지정만 남긴다.
         style.textContent = `
-          html.${className} {
-            font-size: 14px !important;
-          }
-          html.${className} h1 {
-            font-size: clamp(18px, 4.5vw, 22px) !important;
-          }
-          html.${className} h2 {
-            font-size: clamp(16px, 4vw, 20px) !important;
-          }
-          html.${className} h3, html.${className} h4 {
-            font-size: clamp(15px, 3.8vw, 18px) !important;
-          }
-          html.${className} p, html.${className} li, html.${className} span {
-            font-size: 14px !important;
-          }
-          html.${className} .text-sm {
-            font-size: 13px !important;
-          }
-          html.${className} .text-base {
-            font-size: 14px !important;
-          }
-          html.${className} .text-lg {
-            font-size: 14px !important;
-          }
-          html.${className} .text-xl {
-            font-size: 15px !important;
-          }
-          html.${className} .text-2xl {
-            font-size: 16px !important;
-          }
-          html.${className} .text-3xl {
-            font-size: 18px !important;
-          }
-          html.${className} .text-4xl {
-            font-size: 20px !important;
-          }
-          html.${className} [data-testid="text-process-title"] {
-            font-size: clamp(20px, 5vw, 24px) !important;
-          }
-          html.${className} button {
-            font-size: 13px !important;
-          }
-          /* 핵심 상담/작명 과정 뱃지 - 82% 적용 (11px × 0.82 = 9px) */
-          html.${className} [data-testid^="process-consultation-step"] .text-\\[11px\\],
-          html.${className} [data-testid^="process-rename-step"] .text-\\[11px\\] {
-            font-size: 9px !important;
-          }
-          /* 서비스 카드 버튼들 - 82% 적용 */
+          /* 서비스 카드 버튼 여백 */
           html.${className} [data-testid^="button-service-"] {
-            font-size: 11px !important;
             padding: 3px 13px !important;
           }
         `;
@@ -260,7 +221,10 @@ export default function Services() {
       console.log(`[Services] 인앱 브라우저 감지: ${className}, User Agent: ${userAgent}`);
       
       return () => {
-        document.documentElement.classList.remove(className);
+        // 주의: 여기서 ua-instagram / ua-tiktok 표시를 떼면 안 된다.
+        // 그 표시는 index.html 이 첫 paint 전에 붙이고 사이트 전체의 인앱 보정이
+        // 거기에 걸려 있다. 서비스 페이지를 떠날 때 떼면 그 뒤로 방문하는
+        // 모든 페이지에서 보정이 통째로 꺼진다. 주입한 스타일만 거둔다.
         const styleElement = document.getElementById(styleId);
         if (styleElement) {
           styleElement.remove();

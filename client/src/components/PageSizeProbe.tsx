@@ -14,16 +14,17 @@ import { useEffect, useState } from "react";
  *
  * 확인이 끝나면 이 파일과 App.tsx 의 사용처를 지운다.
  */
-const 표본: Array<[string, string]> = [
-  ["큰제목", "전문적인 이름 서비스"],
-  ["통합솔루션", "진단부터 작명까지"],
-  ["이름분석", "이름분석"],
-  ["16가지운", "현재 이름에 들어"],
-  ["적합도", "타 작명소에서"],
-  ["진행과정", "진행과정 보기"],
-  ["신청", "신청하기"],
-  ["자세히", "자세히 보기"],
-  ["작은본문", "이름이 맑아야"],
+/** 이름, 첫 글자, 크롬 338px 실측 크기 */
+const 표본: Array<[string, string, number]> = [
+  ["큰제목", "전문적인 이름 서비스", 32.4],
+  ["통합솔루션", "진단부터 작명까지", 22.5],
+  ["이름분석", "이름분석", 18.9],
+  ["16가지운", "현재 이름에 들어", 16.2],
+  ["적합도", "타 작명소에서", 16.2],
+  ["진행과정", "진행과정 보기", 12.6],
+  ["신청", "신청하기", 12.6],
+  ["자세히", "자세히 보기", 12.6],
+  ["작은본문", "이름이 맑아야", 18.0],
 ];
 
 export function PageSizeProbe() {
@@ -88,7 +89,7 @@ export function PageSizeProbe() {
       // 눈금 시험 주소에서는 눈금만 보여준다. 표본·분포까지 찍으면 상자가 넘쳐 잘린다.
       const 눈금만 = /sized/i.test(window.location.pathname);
 
-      표본.forEach(([name, text]) => {
+      표본.forEach(([name, text, 크롬]) => {
         if (눈금만) return;
         const e = els.find((x) => (x.textContent || "").trim().indexOf(text) === 0);
         if (!e) return;
@@ -98,8 +99,13 @@ export function PageSizeProbe() {
         const r = document.createRange();
         r.selectNodeContents(e);
         const 줄 = r.getClientRects().length;
+        const 지금 = parseFloat(cs.fontSize);
+        // 인앱 화면 = 계산값 × 1.30 (WebView 균일 확대). 크롬이면 그대로.
+        const 인앱 =
+          de.classList.contains("ua-instagram") || de.classList.contains("ua-tiktok");
+        const 화면 = 인앱 ? 지금 : 지금;
         out.push(
-          `${name} ${parseFloat(cs.fontSize).toFixed(1)}px 줄높이${parseFloat(
+          `${name} ${화면.toFixed(1)}(크롬${크롬}) 줄높이${parseFloat(
             cs.lineHeight
           ).toFixed(1)} 상자${b.width.toFixed(0)}×${b.height.toFixed(
             0
@@ -108,6 +114,26 @@ export function PageSizeProbe() {
           ).toFixed(0)} ${줄}줄`
         );
       });
+
+      if (!눈금만) {
+        // 174개 전수 요약 — 크롬 값과 비교하려면 두 화면의 분포를 맞춰 보면 된다.
+        let 최소 = Infinity;
+        let 최대 = 0;
+        let 줄수합 = 0;
+        els.forEach((e) => {
+          const v = parseFloat(getComputedStyle(e).fontSize);
+          if (v < 최소) 최소 = v;
+          if (v > 최대) 최대 = v;
+          const r = document.createRange();
+          r.selectNodeContents(e);
+          줄수합 += r.getClientRects().length;
+        });
+        out.push(
+          `전수 ${els.length}개 최소${최소.toFixed(1)} 최대${최대.toFixed(
+            1
+          )} 총줄수${줄수합}`
+        );
+      }
 
       // [시험 D] 폰이 글자를 얼마나 키우는지 법칙 자체를 잰다.
       // 지정한 크기(px)를 넣고 실제로 그려진 크기를 읽어 입력→출력 대응을 만든다.
