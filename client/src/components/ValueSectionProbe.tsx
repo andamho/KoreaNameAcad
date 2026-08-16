@@ -16,6 +16,15 @@ import { useEffect, useState } from "react";
  *
  * 확인이 끝나면 이 파일과 App.tsx 의 사용처를 지운다.
  */
+declare global {
+  interface Window {
+    __CIRCLE?: Record<
+      string,
+      { 작은글자: number; 큰글자: number; 작은원: number; 큰원: number }
+    >;
+  }
+}
+
 type Row = {
   name: string;
   fs: number | null;
@@ -110,18 +119,33 @@ export function ValueSectionProbe() {
         pick("STEP02내용", h2),
       ].filter(Boolean) as Row[];
 
-      // 원 자체 크기도 같이 본다 (글자가 원 밖으로 나가는지 판단하려고)
+      // 원은 스크롤이 멈춘 자리에서만 커지므로, 스쳐 지나간 값도 놓치지 않도록
+      // 지금까지 본 가장 작은 값과 가장 큰 값을 함께 기억한다.
       circles.forEach((el, i) => {
-        const r = pick(
-          `원${i + 1}${/1\.25rem/.test(el.className as string) ? "후" : "전"}`,
-          el
-        );
+        const r = pick(`원${i + 1}`, el);
         if (!r) return;
         const circle = el.closest("div.rounded-full") as HTMLElement | null;
-        if (circle) {
-          const cb = circle.getBoundingClientRect();
-          r.name += `/원${cb.width.toFixed(0)}`;
+        const dia = circle ? circle.getBoundingClientRect().width : 0;
+        const fs = r.fs ?? 0;
+        const key = `원${i + 1}`;
+        const seen = (window.__CIRCLE = window.__CIRCLE || {});
+        const s = (seen[key] = seen[key] || {
+          작은글자: fs,
+          큰글자: fs,
+          작은원: dia,
+          큰원: dia,
+        });
+        if (fs > 0) {
+          s.작은글자 = Math.min(s.작은글자, fs);
+          s.큰글자 = Math.max(s.큰글자, fs);
         }
+        if (dia > 0) {
+          s.작은원 = Math.min(s.작은원, dia);
+          s.큰원 = Math.max(s.큰원, dia);
+        }
+        r.name = `${key} 글자${s.작은글자.toFixed(1)}→${s.큰글자.toFixed(
+          1
+        )} 원${s.작은원.toFixed(0)}→${s.큰원.toFixed(0)}`;
         out.push(r);
       });
 
