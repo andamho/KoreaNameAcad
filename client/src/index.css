@@ -1291,13 +1291,12 @@ html.ua-tiktok .kna-danger-section .text-sm { /* 0.875 ÷ 1.30 */
    - html.ua-instagram, html.ua-tiktok 셀렉터 사용
    ============================================ */
 
-/* 인앱: kna-intro-top/bottom 82% 축소 */
-html.ua-instagram .kna-intro-top > div,
-html.ua-tiktok .kna-intro-top > div,
-html.ua-instagram .kna-intro-bottom > div,
-html.ua-tiktok .kna-intro-bottom > div {
-  zoom: 0.82 !important;
-}
+/*
+ * 인앱(ua-instagram / ua-tiktok) 인트로 82% 축소는 제거했다.
+ * 글자를 1/1.3 로 보정하기 전에 만든 규칙이라, 보정이 끝난 지금은
+ * 크롬과 같아진 크기를 한 번 더 줄여 이 섹션만 18% 작게 보였다.
+ * .ig-shell(/ig·/tt)의 같은 축소는 아래 다른 자리에 있고 그대로 둔다.
+ */
 
 /* 인앱: kna-intro-top, kna-value-section - 상하 패딩은 아래 통일 규칙에서 적용됨 */
 
@@ -1627,9 +1626,9 @@ html.ua-tiktok .kna-footer .footer-line-break {
   display: block !important;
 }
 
-.ig-shell .kna-footer > div,
-html.ua-instagram .kna-footer > div,
-html.ua-tiktok .kna-footer > div {
+/* 인앱(ua-instagram / ua-tiktok) 쪽 82% 축소는 제거했다. 인트로와 같은 이유다.
+   .ig-shell 은 82% 체계가 아직 유효하므로 그대로 둔다. */
+.ig-shell .kna-footer > div {
   zoom: 0.82 !important;
 }
 
