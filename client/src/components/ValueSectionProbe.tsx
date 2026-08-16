@@ -90,6 +90,17 @@ export function ValueSectionProbe() {
         (e.textContent || "").includes("2차 검증")
       );
 
+      // 원 안 글자 — 스크롤에 따라 1.1875rem ↔ 1.25rem 으로 바뀌는 요소.
+      // 화면에 실제로 보이는 것만 고른다.
+      const circles = all(".kna-value-section span").filter((e) => {
+        const c = e.className;
+        return (
+          typeof c === "string" &&
+          /text-\[1\.(25|1875)rem\]/.test(c) &&
+          e.getBoundingClientRect().width > 0
+        );
+      });
+
       const out = [
         pick("안심제목", title),
         pick("설명문", desc),
@@ -98,6 +109,21 @@ export function ValueSectionProbe() {
         pick("STEP02", step2),
         pick("STEP02내용", h2),
       ].filter(Boolean) as Row[];
+
+      // 원 자체 크기도 같이 본다 (글자가 원 밖으로 나가는지 판단하려고)
+      circles.forEach((el, i) => {
+        const r = pick(
+          `원${i + 1}${/1\.25rem/.test(el.className as string) ? "후" : "전"}`,
+          el
+        );
+        if (!r) return;
+        const circle = el.closest("div.rounded-full") as HTMLElement | null;
+        if (circle) {
+          const cb = circle.getBoundingClientRect();
+          r.name += `/원${cb.width.toFixed(0)}`;
+        }
+        out.push(r);
+      });
 
       setVw(window.innerWidth);
       setRows(out);
