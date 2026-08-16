@@ -116,6 +116,13 @@ export default function ExperienceZone() {
         document.head.appendChild(style);
       }
 
+      // 이 페이지를 떠날 때 자기가 만든 스타일만 거둔다.
+      // 거두지 않았더니 여기서 넣은 html { font-size: 14px !important } 가 그대로 남아
+      // 내비바로 홈에 갔을 때 기준자가 못박혀 화면 전체 글자가 작아졌다.
+      // ua-instagram / ua-tiktok 표시는 App 이 관리하므로 여기서 손대지 않는다.
+      return () => {
+        document.getElementById(styleId)?.remove();
+      };
     }
   }, []);
 
