@@ -114,12 +114,83 @@ export function AuditProbe() {
           }
         });
 
+        // 가로로 넘치는 요소
+        let 넘침 = 0;
+        els.forEach((e) => {
+          const b = e.getBoundingClientRect();
+          if (b.right > window.innerWidth + 1 || b.left < -1) 넘침 += 1;
+        });
+
         결과.push(`[감사] 표시${인앱표시 || "없음"} 요소${els.length}개`);
-        결과.push(`크기어긋남 ${크기틀림}개 · 줄수어긋남 ${줄틀림}개`);
+        결과.push(
+          `크기어긋남 ${크기틀림}개 · 줄수어긋남 ${줄틀림}개 · 넘침 ${넘침}개 · 문서폭 ${document.documentElement.scrollWidth}`
+        );
         크기목록.forEach((s) => 결과.push(" 크기 " + s));
         줄목록.forEach((s) => 결과.push(" 줄 " + s));
         결과.push("가장 작은 글자:");
         작은것.forEach((s) => 결과.push(" " + s));
+
+        // 버튼 줄높이 추적 — 어떤 선언이 이기는지 이름으로 본다.
+        const 버튼 = els.find(
+          (e) => (e.textContent || "").trim().indexOf("진행과정 보기") === 0
+        );
+        if (버튼) {
+          const cs = getComputedStyle(버튼);
+          결과.push(
+            `[버튼] 크기${parseFloat(cs.fontSize).toFixed(1)} 줄높이${parseFloat(
+              cs.lineHeight
+            ).toFixed(1)} 상자${버튼.getBoundingClientRect().height.toFixed(0)}`
+          );
+          결과.push(
+            ` class=${(버튼.className || "").toString().slice(0, 46)}`
+          );
+          const 목록: string[] = [];
+          for (let i = 0; i < document.styleSheets.length; i++) {
+            let rs: CSSRuleList;
+            try {
+              rs = document.styleSheets[i].cssRules;
+            } catch {
+              continue;
+            }
+            const walk = (list: CSSRuleList, cond: string | null) => {
+              for (let j = 0; j < list.length; j++) {
+                const r = list[j] as CSSStyleRule & { cssRules?: CSSRuleList };
+                if (!r.selectorText) {
+                  if (r.cssRules)
+                    walk(
+                      r.cssRules,
+                      (r as unknown as CSSMediaRule).conditionText || cond
+                    );
+                  continue;
+                }
+                if (!r.style) continue;
+                const v = r.style.getPropertyValue("line-height");
+                if (!v) continue;
+                const 맞 = r.selectorText
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter((s) => {
+                    try {
+                      return 버튼.matches(s);
+                    } catch {
+                      return false;
+                    }
+                  });
+                if (!맞.length) continue;
+                const 켜 = cond ? window.matchMedia(cond).matches : true;
+                목록.push(
+                  ` ${목록.length + 1}) ${맞[0].slice(0, 40)} = ${v}${
+                    r.style.getPropertyPriority("line-height") ? " !imp" : ""
+                  }${cond ? ` @${cond.slice(0, 20)}${켜 ? "" : "(꺼짐)"}` : ""} [시트${i}]`
+                );
+              }
+            };
+            walk(rs, null);
+          }
+          (목록.length ? 목록 : [" 매칭 line-height 규칙 없음"]).forEach((s) =>
+            결과.push(s)
+          );
+        }
         set줄(결과);
       }, 350);
     };

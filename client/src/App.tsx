@@ -108,10 +108,8 @@ function Router() {
       <Route path="/services/sizec" component={Services}/>
       {/* [임시 시험 D] 폰이 글자를 키우는 법칙 자체를 재는 주소 */}
       <Route path="/services/sized" component={Services}/>
-      {/* [임시 감사] 전수 비교 + 주입 스타일 수명 확인용 주소 */}
+      {/* [임시 감사] 서비스 페이지 전수 비교용 주소 */}
       <Route path="/services/sizee" component={Services}/>
-      <Route path="/pricing/sizee" component={Pricing}/>
-      <Route path="/reviews/sizee" component={Reviews}/>
       <Route path="/reviews" component={Reviews}/>
       <Route path="/reviews/:id">
         {(params) => <ContentDetail backPath="/reviews" backLabel="후기 목록" />}
