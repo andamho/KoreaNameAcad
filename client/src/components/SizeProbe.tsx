@@ -16,7 +16,8 @@ export function SizeProbe() {
     // 주소 어디에든 size 라는 글자가 있으면 켠다.
     // 인스타·틱톡은 링크를 자기 주소로 감싸면서 물음표 뒤를 떼기도 해서,
     // #size 처럼 붙여도 되도록 넓게 잡는다.
-    if (!/size/i.test(window.location.href)) return;
+    // 화면을 가리지 않도록 /size 에서는 뜨지 않는다. /sizeall 에서만 켠다.
+    if (!/sizeall/i.test(window.location.href)) return;
 
     const px = (sel: string) => {
       const el = document.querySelector(sel);

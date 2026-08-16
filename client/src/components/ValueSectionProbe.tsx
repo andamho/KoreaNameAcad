@@ -41,7 +41,8 @@ export function ValueSectionProbe() {
   const [vw, setVw] = useState(0);
 
   useEffect(() => {
-    if (!/size/i.test(window.location.href)) return;
+    // 화면을 가리지 않도록 /size 에서는 뜨지 않는다. /sizeall 에서만 켠다.
+    if (!/sizeall/i.test(window.location.href)) return;
 
     const all = (sel: string) =>
       Array.prototype.slice.call(document.querySelectorAll(sel)) as HTMLElement[];

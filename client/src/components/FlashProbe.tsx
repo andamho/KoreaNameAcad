@@ -8,7 +8,8 @@ export function FlashProbe() {
   const [lines, setLines] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!/size/i.test(window.location.href)) return;
+    // 화면을 가리지 않도록 /size 에서는 뜨지 않는다. /sizeall 에서만 켠다.
+    if (!/sizeall/i.test(window.location.href)) return;
 
     const build = () => {
       const log = window.__FLASH || [];

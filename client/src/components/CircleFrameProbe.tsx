@@ -51,28 +51,56 @@ export function CircleFrameProbe() {
       return `${b.width.toFixed(1)}×${b.height.toFixed(1)}`;
     };
 
-    // 원1 = 화면에 보이는 첫 번째 모바일 원
-    const find = () => {
+    // 커지는 것은 화면 한가운데 들어온 원 하나뿐이다.
+    // 손으로 정확히 맞추기 어려우므로, 지금 가운데에 가장 가까운 원을 스스로 고른다.
+    // 추적을 시작할 때 한 번 고르고, 그 뒤 2초는 같은 원만 본다.
+    let locked: { txt: HTMLElement; idx: number } | null = null;
+
+    const list = () => {
       const sec = document.querySelector(".kna-value-section");
-      if (!sec) return null;
-      const txt = (
+      if (!sec) return [] as HTMLElement[];
+      return (
         Array.prototype.slice.call(sec.querySelectorAll("span")) as HTMLElement[]
       ).filter(
         (e) =>
           typeof e.className === "string" &&
           /text-\[1\.(25|1875)rem\]/.test(e.className) &&
           e.getBoundingClientRect().width > 0
-      )[0];
-      if (!txt) return null;
+      );
+    };
+
+    const lockNearest = () => {
+      const els = list();
+      if (!els.length) {
+        locked = null;
+        return;
+      }
+      const mid = window.innerHeight / 2;
+      let best = 0;
+      let bestD = Infinity;
+      els.forEach((e, i) => {
+        const b = e.getBoundingClientRect();
+        const d = Math.abs(b.top + b.height / 2 - mid);
+        if (d < bestD) {
+          bestD = d;
+          best = i;
+        }
+      });
+      locked = { txt: els[best], idx: best + 1 };
+    };
+
+    const find = () => {
+      if (!locked || !locked.txt.isConnected) return null;
+      const txt = locked.txt;
       const circle = txt.closest("div.rounded-full") as HTMLElement | null;
       const wrapper = circle?.parentElement || null;
-      return { txt, circle, wrapper };
+      return { txt, circle, wrapper, idx: locked.idx };
     };
 
     const snap = () => {
       const t = find();
       if (!t) return "요소없음";
-      const { txt, circle, wrapper } = t;
+      const { txt, circle, wrapper, idx } = t;
       const cs = getComputedStyle(txt);
       const r = document.createRange();
       r.selectNodeContents(txt);
@@ -81,12 +109,13 @@ export function CircleFrameProbe() {
       const p2 = p1?.parentElement || null;
       const p3 = p2?.parentElement || null;
       return [
-        `겉${shortCls(wrapper)}|${tf(wrapper)}|${rect(wrapper)}`,
-        `원${shortCls(circle)}|${tf(circle)}|${rect(circle)}`,
-        `글${shortCls(txt)}|${tf(txt)}|${rect(txt)}`,
-        `크기${parseFloat(cs.fontSize).toFixed(2)}`,
-        `렌더${rb.width.toFixed(1)}×${rb.height.toFixed(1)}`,
-        `부모${rect(p1)} ${rect(p2)} ${rect(p3)}`,
+        `[원${idx}] 겉 ${tf(wrapper)} ${rect(wrapper)}`,
+        `원 ${shortCls(circle)}`,
+        `   ${tf(circle)} ${rect(circle)}`,
+        `글 ${shortCls(txt)} ${tf(txt)}`,
+        `   상자${rect(txt)} 크기${parseFloat(cs.fontSize).toFixed(2)}`,
+        `   렌더${rb.width.toFixed(1)}×${rb.height.toFixed(1)}`,
+        `부모 ${rect(p1)} ${rect(p2)} ${rect(p3)}`,
       ].join("\n");
     };
 
@@ -98,14 +127,15 @@ export function CircleFrameProbe() {
       window.clearTimeout(stop);
       const out: string[] = [];
       prev = "";
+      lockNearest();
       const t0 = performance.now();
       const step = () => {
         const now = Math.round(performance.now() - t0);
         const s = snap();
         if (s !== prev) {
           prev = s;
-          out.push(`${now}ms\n${s}`);
-          setLines(out.slice(-6));
+          out.push(`${now}ms ${s}`);
+          setLines(out.slice(-3));
         }
         if (now < 2000) raf = requestAnimationFrame(step);
       };
@@ -136,20 +166,22 @@ export function CircleFrameProbe() {
         position: "fixed",
         left: 4,
         right: 4,
-        top: "22%",
+        bottom: 4,
         zIndex: 2147483647,
-        background: "rgba(0,40,90,0.94)",
+        background: "rgba(0,40,90,0.93)",
         color: "#fff",
-        font: "10px/1.35 monospace",
-        padding: "6px 7px",
+        font: "9px/1.3 monospace",
+        padding: "4px 6px",
         borderRadius: 6,
         pointerEvents: "none",
         whiteSpace: "pre",
-        overflowX: "auto",
-        maxHeight: "46%",
+        overflow: "hidden",
+        maxHeight: "34vh",
       }}
     >
-      {["[원1 프레임 기록] 바뀐 프레임만"].concat(lines).join("\n")}
+      {["[원 프레임 기록] 가운데 원 하나, 바뀐 프레임만"]
+        .concat(lines)
+        .join("\n")}
     </div>
   );
 }
