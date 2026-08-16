@@ -20,6 +20,52 @@ import { useEffect, useState } from "react";
  */
 const 확대 = 1.303;
 
+/** 한 요소에 매칭되는 특정 속성의 선언을 전부 찾아 준다. */
+function 규칙목록(el: HTMLElement, 속성: string) {
+  const 목록: string[] = [];
+  for (let i = 0; i < document.styleSheets.length; i++) {
+    let rs: CSSRuleList;
+    try {
+      rs = document.styleSheets[i].cssRules;
+    } catch {
+      continue;
+    }
+    const walk = (list: CSSRuleList, cond: string | null) => {
+      for (let j = 0; j < list.length; j++) {
+        const r = list[j] as CSSStyleRule & { cssRules?: CSSRuleList };
+        // 요즘 브라우저는 일반 규칙도 cssRules 를 갖는다. selectorText 를 먼저 본다.
+        if (!r.selectorText) {
+          if (r.cssRules)
+            walk(r.cssRules, (r as unknown as CSSMediaRule).conditionText || cond);
+          continue;
+        }
+        if (!r.style) continue;
+        const v = r.style.getPropertyValue(속성);
+        if (!v) continue;
+        const 맞 = r.selectorText
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => {
+            try {
+              return el.matches(s);
+            } catch {
+              return false;
+            }
+          });
+        if (!맞.length) continue;
+        const 켜 = cond ? window.matchMedia(cond).matches : true;
+        목록.push(
+          ` ${목록.length + 1}) ${맞[0].slice(0, 38)} = ${v}${
+            r.style.getPropertyPriority(속성) ? " !imp" : ""
+          }${cond ? ` @${cond.slice(0, 18)}${켜 ? "" : "(꺼짐)"}` : ""} [시트${i}]`
+        );
+      }
+    };
+    walk(rs, null);
+  }
+  return 목록.length ? 목록 : [` 매칭 ${속성} 규칙 없음`];
+}
+
 export function AuditProbe() {
   const [줄, set줄] = useState<string[]>([]);
 
@@ -130,6 +176,17 @@ export function AuditProbe() {
         결과.push("가장 작은 글자:");
         작은것.forEach((s) => 결과.push(" " + s));
 
+        // 어긋난 요소의 font-size cascade를 그대로 뽑는다.
+        const 어긋난 = els.filter((e, i) => Math.abs(A[i].fs - B[i].fs / 배수) > 0.3);
+        어긋난.slice(0, 2).forEach((e) => {
+          결과.push(
+            `[어긋남] ${(e.textContent || "").trim().slice(0, 10)} 계산${parseFloat(
+              getComputedStyle(e).fontSize
+            ).toFixed(1)} class=${(e.className || "").toString().slice(0, 30)}`
+          );
+          규칙목록(e, "font-size").forEach((s) => 결과.push(s));
+        });
+
         // 버튼 줄높이 추적 — 어떤 선언이 이기는지 이름으로 본다.
         const 버튼 = els.find(
           (e) => (e.textContent || "").trim().indexOf("진행과정 보기") === 0
@@ -144,52 +201,7 @@ export function AuditProbe() {
           결과.push(
             ` class=${(버튼.className || "").toString().slice(0, 46)}`
           );
-          const 목록: string[] = [];
-          for (let i = 0; i < document.styleSheets.length; i++) {
-            let rs: CSSRuleList;
-            try {
-              rs = document.styleSheets[i].cssRules;
-            } catch {
-              continue;
-            }
-            const walk = (list: CSSRuleList, cond: string | null) => {
-              for (let j = 0; j < list.length; j++) {
-                const r = list[j] as CSSStyleRule & { cssRules?: CSSRuleList };
-                if (!r.selectorText) {
-                  if (r.cssRules)
-                    walk(
-                      r.cssRules,
-                      (r as unknown as CSSMediaRule).conditionText || cond
-                    );
-                  continue;
-                }
-                if (!r.style) continue;
-                const v = r.style.getPropertyValue("line-height");
-                if (!v) continue;
-                const 맞 = r.selectorText
-                  .split(",")
-                  .map((s) => s.trim())
-                  .filter((s) => {
-                    try {
-                      return 버튼.matches(s);
-                    } catch {
-                      return false;
-                    }
-                  });
-                if (!맞.length) continue;
-                const 켜 = cond ? window.matchMedia(cond).matches : true;
-                목록.push(
-                  ` ${목록.length + 1}) ${맞[0].slice(0, 40)} = ${v}${
-                    r.style.getPropertyPriority("line-height") ? " !imp" : ""
-                  }${cond ? ` @${cond.slice(0, 20)}${켜 ? "" : "(꺼짐)"}` : ""} [시트${i}]`
-                );
-              }
-            };
-            walk(rs, null);
-          }
-          (목록.length ? 목록 : [" 매칭 line-height 규칙 없음"]).forEach((s) =>
-            결과.push(s)
-          );
+          규칙목록(버튼, "line-height").forEach((s) => 결과.push(s));
         }
         set줄(결과);
       }, 350);
