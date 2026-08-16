@@ -36,6 +36,7 @@ import NotFound from "@/pages/not-found";
 import { SizeProbe } from "@/components/SizeProbe";
 import { ValueSectionProbe } from "@/components/ValueSectionProbe";
 import { CircleFrameProbe } from "@/components/CircleFrameProbe";
+import { PageSizeProbe } from "@/components/PageSizeProbe";
 import { FlashProbe } from "@/components/FlashProbe";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
@@ -291,6 +292,7 @@ function App() {
           {/* 임시 측정기 — 확인 끝나면 제거 */}
           <ValueSectionProbe />
           <CircleFrameProbe />
+          <PageSizeProbe />
           <FlashProbe />
         </TooltipProvider>
       </AdminProvider>
