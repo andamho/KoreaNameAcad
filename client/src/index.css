@@ -2051,6 +2051,18 @@ html.ua-tiktok .identity-map-inner {
     font-size: 0.6731rem;
     line-height: 0.9615rem;   /* 1.25 ÷ 1.3 */
   }
+
+  /* 서비스 버튼 안의 › 화살표.
+     .text-base 는 Tailwind 가 글자(1rem)와 줄 간격(1.5rem)을 함께 주는데,
+     인앱 보정이 글자만 나눠 줄 간격이 rem 인 채로 남았다. 그 줄 간격이
+     버튼 안에서 가장 높은 줄상자가 되어 버튼 높이를 혼자 정하고 있었다.
+     실기기 실측: 화살표 줄높이 28.2 (버튼 글자는 18.1), 감추면 높이 -10.1.
+     전역 .text-base 는 건드리지 않고, text-sm 버튼 안의 화살표로만 좁힌다.
+     글자 크기·여백·가로폭은 손대지 않는다. */
+  html.ua-instagram button.text-sm > .text-base,
+  html.ua-tiktok button.text-sm > .text-base {
+    line-height: 1.1538rem;   /* 1.5 ÷ 1.3 */
+  }
   html.ua-instagram .text-xl,
   html.ua-tiktok .text-xl { font-size: 0.9615rem; }
   html.ua-instagram .text-xs,
