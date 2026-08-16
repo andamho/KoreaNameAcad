@@ -1500,15 +1500,14 @@ html.ua-tiktok .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded
   height: 195px !important;
 }
 /* 원 내부 텍스트: 스크롤 애니메이션 유지 (작음→큼) */
-/* 일반 모바일 브라우저 (lg 미만) */
-@media (max-width: 1023px) {
-  .kna-value-section [class*="text-[1.3125rem]"] {
-    font-size: 15px !important;
-  }
-  .kna-value-section [class*="text-[1.375rem]"] {
-    font-size: 19px !important;
-  }
-}
+/*
+ * 일반 모바일(lg 미만) 15px/19px 강제 규칙은 삭제했다.
+ * 원래 대상은 클래스가 스크롤로 바뀌던 원 중앙 글자(text-[21px] ↔ text-[22px])였는데
+ * 그 요소가 지금은 1.1875rem ↔ 1.25rem 을 쓰므로 규칙에 걸리지 않는다.
+ * 남아 있던 동안에는 [class*=] 부분일치가 md:text-[1.375rem] 까지 모바일에서 잡아
+ * 원 안 글자 6개와 STEP 01·02 제목을 19px 로 묶어 두는 부작용만 냈다.
+ * 크기는 Tailwind cascade 에 맡긴다.
+ */
 /* 인앱 브라우저: text-[1.3125rem] (스크롤 전): 15px */
 .ig-shell .kna-value-section [class*="text-[1.3125rem]"] {
   font-size: 15px !important;
