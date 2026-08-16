@@ -116,6 +116,43 @@ export function PageSizeProbe() {
       });
 
       if (!눈금만) {
+        // 서비스 페이지 버튼 실측 — 폭·높이·글자·여백을 그대로 찍는다.
+        // 크롬 338px 기준값을 괄호로 함께 둔다.
+        const 버튼기준: Record<string, string> = {
+          "진행과정 보기": "107.8×28.8",
+          "신청하기": "83.0×28.8",
+          "자세히 보기": "96.9×28.8",
+          "지금 신청": "94.4×25.2",
+        };
+        // els 는 '직접 글자를 가진 요소'만 모은다. 감싸개를 넣은 버튼은
+        // 직접 글자가 없어 빠지므로 여기서는 DOM 을 직접 훑는다.
+        const 버튼 = (
+          Array.prototype.slice.call(document.querySelectorAll("button")) as HTMLElement[]
+        ).filter((e) => {
+          const c = (e.className || "").toString();
+          return (
+            /rounded-full/.test(c) &&
+            /text-sm/.test(c) &&
+            e.getBoundingClientRect().width > 2
+          );
+        });
+        버튼.forEach((e, i) => {
+          const cs = getComputedStyle(e);
+          const b = e.getBoundingClientRect();
+          const 글 = (e.textContent || "").trim().slice(0, 7);
+          const 키 = Object.keys(버튼기준).find((k) => 글.indexOf(k.slice(0, 4)) === 0);
+          const sp = e.querySelector(".kna-btn-fit");
+          out.push(
+            `버튼${i + 1} ${글}${sp ? "★" : ""} ${b.width.toFixed(1)}×${b.height.toFixed(
+              1
+            )}${키 ? `(크롬${버튼기준[키]})` : ""} 글자${parseFloat(cs.fontSize).toFixed(
+              1
+            )} 여백${parseFloat(cs.paddingTop).toFixed(1)}/${parseFloat(
+              cs.paddingLeft
+            ).toFixed(1)}`
+          );
+        });
+
         // 174개 전수 요약 — 크롬 값과 비교하려면 두 화면의 분포를 맞춰 보면 된다.
         let 최소 = Infinity;
         let 최대 = 0;
