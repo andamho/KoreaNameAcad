@@ -2040,12 +2040,19 @@ html.ua-tiktok .identity-map-inner {
   html.ua-tiktok .text-\[1\.125rem\] { font-size: 0.8654rem; }
   html.ua-instagram .text-\[1\.1875rem\],
   html.ua-tiktok .text-\[1\.1875rem\] { font-size: 0.9135rem; }
+  /* 원 안 글자가 커지는 상태(스크롤 후). 작은 상태 1.1875rem 만 보정돼 있어
+     커질 때만 크롬보다 30% 튀었다. */
+  html.ua-instagram .text-\[1\.25rem\],
+  html.ua-tiktok .text-\[1\.25rem\] { font-size: 0.9615rem; }
   html.ua-instagram .text-\[1\.3125rem\],
   html.ua-tiktok .text-\[1\.3125rem\] { font-size: 1.0096rem; }
   html.ua-instagram .text-\[1\.375rem\],
   html.ua-tiktok .text-\[1\.375rem\] { font-size: 1.0577rem; }
   html.ua-instagram .text-\[1\.4375rem\],
   html.ua-tiktok .text-\[1\.4375rem\] { font-size: 1.1058rem; }
+  /* 서비스 페이지 제목에서 쓴다. 빠져 있었다. */
+  html.ua-instagram .text-\[1\.5rem\],
+  html.ua-tiktok .text-\[1\.5rem\] { font-size: 1.1538rem; }
   html.ua-instagram .text-\[1\.5625rem\],
   html.ua-tiktok .text-\[1\.5625rem\] { font-size: 1.2019rem; }
   html.ua-instagram .text-\[1\.625rem\],
