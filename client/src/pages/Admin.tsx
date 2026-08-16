@@ -168,6 +168,34 @@ export default function Admin() {
     queryKey: ["/api/consultations"],
   });
 
+  // 신청서 이름 검색. 목록을 통째로 받아 오므로 화면에서 걸러낸다.
+  const [consultationSearch, setConsultationSearch] = useState("");
+  const filteredConsultations = (() => {
+    const q = consultationSearch.trim().toLowerCase();
+    if (!q) return consultations;
+    // 띄어쓰기는 무시하고 견준다. '홍 길동' 으로 쳐도 '홍길동' 이 걸린다.
+    const 납작 = (v: unknown) => String(v ?? "").toLowerCase().replace(/\s+/g, "");
+    const 찾는말 = 납작(q);
+    return consultations?.filter((c) => {
+      const 이름들: string[] = [
+        c.depositorName,
+        c.referrerName,
+        c.evaluationKoreanName,
+        c.evaluationChineseName,
+        ...(Array.isArray(c.peopleData) ? c.peopleData.map((p: any) => p?.name) : []),
+        ...(Array.isArray(c.nameChangeData)
+          ? c.nameChangeData.flatMap((n: any) => [
+              n?.currentName,
+              n?.previousName,
+              n?.koreanName,
+              n?.chineseName,
+            ])
+          : []),
+      ].filter(Boolean) as string[];
+      return 이름들.some((n) => 납작(n).includes(찾는말));
+    });
+  })();
+
   useEffect(() => { fetchInquiries(); }, []);
 
   const { data: contents, isLoading: loadingContents } = useQuery<Content[]>({
@@ -336,7 +364,11 @@ export default function Admin() {
               문의 관리 ({inquiries?.length || 0})
             </TabsTrigger>
             <TabsTrigger value="consultations" data-testid="tab-consultations">
-              신청서 관리 ({consultations?.length || 0})
+              신청서 관리 (
+              {consultationSearch
+                ? `${filteredConsultations?.length ?? 0}/${consultations?.length ?? 0}`
+                : consultations?.length || 0}
+              )
             </TabsTrigger>
             <TabsTrigger value="contents" data-testid="tab-contents">
               콘텐츠 관리 ({contents?.length || 0})
@@ -561,14 +593,45 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="consultations" className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Input
+                value={consultationSearch}
+                onChange={(e) => setConsultationSearch(e.target.value)}
+                placeholder="이름으로 검색 (신청자·입금자·소개자·개명 전후 이름)"
+                className="max-w-sm"
+                data-testid="input-consultation-search"
+              />
+              {consultationSearch && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setConsultationSearch("")}
+                    data-testid="button-consultation-search-clear"
+                  >
+                    지우기
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    {filteredConsultations?.length ?? 0}건
+                  </span>
+                </>
+              )}
+            </div>
+
             {loadingConsultations ? (
               <div className="text-center py-8">로딩 중...</div>
             ) : consultations && consultations.length === 0 ? (
               <Card className="p-8 text-center">
                 <p className="text-muted-foreground">아직 신청서가 없습니다.</p>
               </Card>
+            ) : filteredConsultations && filteredConsultations.length === 0 ? (
+              <Card className="p-8 text-center">
+                <p className="text-muted-foreground">
+                  '{consultationSearch}' 와 맞는 신청서가 없습니다.
+                </p>
+              </Card>
             ) : (
-              consultations?.map((consultation) => (
+              filteredConsultations?.map((consultation) => (
                 <Card key={consultation.id} className="p-6 space-y-4" data-testid={`consultation-${consultation.id}`}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-2 flex-1">
