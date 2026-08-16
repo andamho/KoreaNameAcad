@@ -77,28 +77,31 @@ export function RulerProbe() {
         } 표시[${de.className || "없음"}]`
       );
 
-      // 대표 8px 요소에 font-size 를 주는 규칙을 모두 찾는다.
-      const 대표 = 좁Ref.current?.querySelector<HTMLElement>(
-        'span[data-px="8"][data-mode="A"]'
-      );
-      const 목록: string[] = [];
-      if (대표) {
+      // 어떤 요소든 font-size 를 지정하는 매칭 규칙을 전부 찾아 준다.
+      const 추적 = (el: HTMLElement | null | undefined) => {
+        if (!el) return ["요소 없음"];
+        const 목록: string[] = [];
+        let 못연시트 = 0;
         for (let i = 0; i < document.styleSheets.length; i++) {
           let rs: CSSRuleList;
           try {
             rs = document.styleSheets[i].cssRules;
           } catch {
-            목록.push(`시트${i} 열람불가`);
+            못연시트 += 1;
             continue;
           }
           const walk = (list: CSSRuleList, cond: string | null) => {
             for (let j = 0; j < list.length; j++) {
               const r = list[j] as CSSStyleRule & { cssRules?: CSSRuleList };
-              if (r.cssRules) {
-                walk(r.cssRules, (r as unknown as CSSMediaRule).conditionText || cond);
+              // 주의: 요즘 브라우저는 일반 규칙도 cssRules 를 갖는다(중첩 지원).
+              // 그래서 selectorText 가 있으면 먼저 일반 규칙으로 다룬다.
+              if (!r.selectorText) {
+                if (r.cssRules) {
+                  walk(r.cssRules, (r as unknown as CSSMediaRule).conditionText || cond);
+                }
                 continue;
               }
-              if (!r.selectorText || !r.style) continue;
+              if (!r.style) continue;
               const v = r.style.getPropertyValue("font-size");
               if (!v) continue;
               const 맞음 = r.selectorText
@@ -106,23 +109,77 @@ export function RulerProbe() {
                 .map((s) => s.trim())
                 .filter((s) => {
                   try {
-                    return 대표.matches(s);
+                    return el.matches(s);
                   } catch {
                     return false;
                   }
                 });
               if (!맞음.length) continue;
+              const 켜짐 = cond ? window.matchMedia(cond).matches : true;
               목록.push(
-                `${맞음[0].slice(0, 40)} = ${v}${
+                `${목록.length + 1}) ${맞음[0].slice(0, 46)} = ${v}${
                   r.style.getPropertyPriority("font-size") ? " !imp" : ""
-                }${cond ? ` @${cond}` : ""}`
+                }${cond ? ` @${cond.slice(0, 22)}${켜짐 ? "" : "(꺼짐)"}` : ""} [시트${i}]`
               );
             }
           };
           walk(rs, null);
         }
-      }
-      set규칙(목록.length ? 목록.slice(0, 6) : ["매칭 규칙 없음"]);
+        if (못연시트) 목록.push(`(열람불가 시트 ${못연시트}개)`);
+        return 목록.length ? 목록 : ["매칭 규칙 없음"];
+      };
+
+      const 대표 = 좁Ref.current?.querySelector<HTMLElement>(
+        'span[data-px="8"][data-mode="A"]'
+      );
+
+      const 줄들: string[] = [];
+      줄들.push(
+        `[시험 8px A] style="${대표?.getAttribute("style") || "-"}" 계산=${
+          대표 ? getComputedStyle(대표).fontSize : "-"
+        }`
+      );
+      추적(대표).forEach((s) => 줄들.push("  " + s));
+
+      // 실제 서비스 페이지 대표 5개도 같은 방식으로 추적한다.
+      const 찾기 = (글: string) => {
+        const all = Array.prototype.slice.call(
+          document.querySelectorAll("main *, section *, body > div *")
+        ) as HTMLElement[];
+        return all.find(
+          (e) =>
+            (e.textContent || "").trim().indexOf(글) === 0 &&
+            e.getBoundingClientRect().width > 2 &&
+            Array.prototype.slice
+              .call(e.childNodes)
+              .some((n: Node) => n.nodeType === 3 && (n.textContent || "").trim())
+        );
+      };
+      const 실제: Array<[string, string, number, number]> = [
+        // 이름, 첫 글자, 크롬 원본, 우리가 의도한 보정값
+        ["큰제목", "전문적인 이름 서비스", 32.45, 24.96],
+        ["통합솔루션", "진단부터 작명까지", 22.53, 17.33],
+        ["이름분석", "이름분석", 18.93, 14.56],
+        ["16가지운", "현재 이름에 들어", 16.22, 12.48],
+        ["진행과정", "진행과정 보기", 12.62, 9.71],
+      ];
+      실제.forEach(([이름, 글, 크롬, 의도]) => {
+        const e = 찾기(글);
+        if (!e) {
+          줄들.push(`[${이름}] 못찾음`);
+          return;
+        }
+        const r = document.createRange();
+        r.selectNodeContents(e);
+        줄들.push(
+          `[${이름}] 크롬${크롬} 의도${의도} 계산${parseFloat(
+            getComputedStyle(e).fontSize
+          ).toFixed(1)} 렌더높이${r.getBoundingClientRect().height.toFixed(1)}`
+        );
+        줄들.push(`  class=${(e.className || "").toString().slice(0, 60)}`);
+        추적(e).forEach((s) => 줄들.push("  " + s));
+      });
+      set규칙(줄들);
       setRows(out);
     };
 
@@ -173,9 +230,7 @@ export function RulerProbe() {
       }}
     >
       <div style={{ font: "10px/1.3 monospace", whiteSpace: "pre-wrap" }}>
-        {`[눈금 시험] A=보통 inline · B=inline !important\n${머리}\n규칙: ${규칙.join(
-          " | "
-        )}`}
+        {`[눈금 시험] A=보통 inline · B=inline !important\n${머리}\n${규칙.join("\n")}`}
       </div>
       {칸(160, 좁Ref, "좁")}
       {칸(320, 넓Ref, "넓")}
