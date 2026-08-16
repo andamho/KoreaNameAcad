@@ -179,11 +179,18 @@ export function RulerProbe() {
       </div>
       {칸(160, 좁Ref, "좁")}
       {칸(320, 넓Ref, "넓")}
-      <div style={{ font: "9px/1.25 monospace", whiteSpace: "pre-wrap" }}>
-        {rows
-          .map(
-            (r) =>
-              `${r.키} 지정${r.지정} inline${r.inline} 계산${r.computed} 줄높이${r.lh} 높이${r.높이}`
+      <div style={{ font: "10px/1.3 monospace", whiteSpace: "pre-wrap" }}>
+        {["좁", "넓"]
+          .map((폭) =>
+            눈금
+              .map((px) => {
+                const a = rows.find((r) => r.키 === `${폭}A${px}`);
+                const b = rows.find((r) => r.키 === `${폭}B${px}`);
+                if (!a || !b) return "";
+                return `${폭}${px} A${a.computed}/${a.높이} B${b.computed}/${b.높이} inline${a.inline}`;
+              })
+              .filter(Boolean)
+              .join("\n")
           )
           .join("\n")}
       </div>

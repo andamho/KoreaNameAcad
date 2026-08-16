@@ -24,6 +24,8 @@ export function CircleFrameProbe() {
 
   useEffect(() => {
     if (!/size/i.test(window.location.href)) return;
+    // 눈금 시험 화면(/sized)에서는 뜨지 않는다. RulerProbe 숫자를 가린다.
+    if (/sized/i.test(window.location.pathname)) return;
 
     const shortCls = (el: Element | null) => {
       const c = (el && (el.className as unknown)) || "";
