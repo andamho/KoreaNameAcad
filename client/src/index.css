@@ -2042,8 +2042,15 @@ html.ua-tiktok .identity-map-inner {
   html.ua-tiktok .text-base { font-size: 0.7692rem; }
   html.ua-instagram .text-lg,
   html.ua-tiktok .text-lg { font-size: 0.8654rem; }
+  /* text-sm 은 Tailwind 가 글자 크기와 줄 간격을 함께 준다(0.875rem / 1.25rem).
+     글자만 나누면 줄 간격이 rem 이라 따라 줄지 않아 인앱에서 1.3배로 남는다.
+     서비스 페이지 버튼 7개에서 크롬 18.03 / 인앱 23.5 로 확인돼 줄 간격도 함께 나눈다.
+     글자 크기 값은 그대로 둔다. */
   html.ua-instagram .text-sm,
-  html.ua-tiktok .text-sm { font-size: 0.6731rem; }
+  html.ua-tiktok .text-sm {
+    font-size: 0.6731rem;
+    line-height: 0.9615rem;   /* 1.25 ÷ 1.3 */
+  }
   html.ua-instagram .text-xl,
   html.ua-tiktok .text-xl { font-size: 0.9615rem; }
   html.ua-instagram .text-xs,
