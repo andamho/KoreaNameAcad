@@ -38,6 +38,7 @@ import { ValueSectionProbe } from "@/components/ValueSectionProbe";
 import { CircleFrameProbe } from "@/components/CircleFrameProbe";
 import { PageSizeProbe } from "@/components/PageSizeProbe";
 import { RulerProbe } from "@/components/RulerProbe";
+import { AuditProbe } from "@/components/AuditProbe";
 import { FlashProbe } from "@/components/FlashProbe";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
@@ -107,6 +108,10 @@ function Router() {
       <Route path="/services/sizec" component={Services}/>
       {/* [임시 시험 D] 폰이 글자를 키우는 법칙 자체를 재는 주소 */}
       <Route path="/services/sized" component={Services}/>
+      {/* [임시 감사] 전수 비교 + 주입 스타일 수명 확인용 주소 */}
+      <Route path="/services/sizee" component={Services}/>
+      <Route path="/pricing/sizee" component={Pricing}/>
+      <Route path="/reviews/sizee" component={Reviews}/>
       <Route path="/reviews" component={Reviews}/>
       <Route path="/reviews/:id">
         {(params) => <ContentDetail backPath="/reviews" backLabel="후기 목록" />}
@@ -307,6 +312,8 @@ function App() {
           <Toaster />
           {/* 임시 눈금 시험 — 페이지 맨 위에 실제로 보이게 둔다 */}
           <RulerProbe />
+          {/* 임시 감사기 — 전수 비교 + 주입 스타일 수명 */}
+          <AuditProbe />
           <Router />
           {/* 주소에 ?size=1 을 붙였을 때만 뜨는 크기 확인용 상자 */}
           <SizeProbe />
