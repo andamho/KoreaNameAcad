@@ -153,14 +153,15 @@ export function ValueSectionProbe() {
       setRows(out);
     };
 
-    // 글꼴 로딩과 전환이 끝난 뒤 재고, 스크롤로 늦게 나타나는 것도 다시 잰다.
+    // 원이 커지는 것은 스크롤이 멈춘 뒤에 일어나므로 스크롤 이벤트만으로는 놓친다.
+    // 계속 켜 두고 짧은 간격으로 재서 지나간 최대값을 확실히 잡는다.
     const t1 = setTimeout(measure, 1500);
-    const t2 = setTimeout(measure, 4000);
+    const id = setInterval(measure, 250);
     window.addEventListener("resize", measure);
     window.addEventListener("scroll", measure, { passive: true });
     return () => {
       clearTimeout(t1);
-      clearTimeout(t2);
+      clearInterval(id);
       window.removeEventListener("resize", measure);
       window.removeEventListener("scroll", measure);
     };
