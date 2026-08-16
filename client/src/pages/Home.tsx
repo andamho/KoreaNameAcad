@@ -35,6 +35,9 @@ export default function Home() {
   const [dialogType, setDialogType] = useState<"analysis" | "naming">("analysis");
   const [analysisDetailOpen, setAnalysisDetailOpen] = useState(false);
   const [showExpPopup, setShowExpPopup] = useState(() => {
+    // 크기 측정용 주소(/size)에서는 팝업을 띄우지 않는다. 측정 상자와 겹쳐
+    // 닫기 버튼이 가려지면 스크롤이 막힌다. 측정이 끝나면 이 줄도 함께 지운다.
+    if (/size/i.test(window.location.href)) return false;
     try {
       const hidden = localStorage.getItem('expZonePopupHidden');
       if (!hidden) return true;
