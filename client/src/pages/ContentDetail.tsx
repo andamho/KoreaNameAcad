@@ -83,9 +83,8 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
     
     if (isInstagram || isTikTok) {
       const className = isInstagram ? "ua-instagram" : "ua-tiktok";
-      document.documentElement.classList.add(className);
+      // 인앱 표시(ua-instagram / ua-tiktok)는 App 이 전역으로 관리한다. 여기서 붙이지 않는다.
       return () => {
-        document.documentElement.classList.remove(className);
       };
     }
   }, []);

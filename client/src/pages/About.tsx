@@ -17,7 +17,7 @@ export default function About() {
     
     if (isInstagram || isTikTok) {
       const className = isInstagram ? "ua-instagram" : "ua-tiktok";
-      document.documentElement.classList.add(className);
+      // 인앱 표시(ua-instagram / ua-tiktok)는 App 이 전역으로 관리한다. 여기서 붙이지 않는다.
 
       const styleId = `inapp-style-${className}`;
       if (!document.getElementById(styleId)) {
@@ -65,7 +65,6 @@ export default function About() {
       }
 
       return () => {
-        document.documentElement.classList.remove(className);
       };
     }
   }, []);

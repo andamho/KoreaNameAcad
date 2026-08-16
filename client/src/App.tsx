@@ -39,6 +39,7 @@ import { CircleFrameProbe } from "@/components/CircleFrameProbe";
 import { PageSizeProbe } from "@/components/PageSizeProbe";
 import { RulerProbe } from "@/components/RulerProbe";
 import { AuditProbe } from "@/components/AuditProbe";
+import { 인앱표시유지 } from "@/lib/inapp";
 import { FlashProbe } from "@/components/FlashProbe";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
@@ -151,24 +152,25 @@ function App() {
     const isInstagram = userAgent.includes('Instagram');
     const isTikTok = userAgent.includes('TikTok') || userAgent.includes('musical_ly');
     
-    // 클래스는 index.html 의 인라인 코드가 첫 화면 전에 이미 붙인다.
-    // 여기서는 혹시 그 코드가 못 돌았을 때를 대비한 보조 장치로만 둔다
-    // (이미 붙어 있으면 아무 일도 하지 않는다).
+    // 인앱 표시(ua-instagram / ua-tiktok)의 소유자는 index.html 과 여기 둘뿐이다.
+    // 페이지 컴포넌트는 이 표시를 붙이지도 떼지도 않는다.
+    // 아래 유지 장치가 route 이동·뒤로가기·앱 복귀·class 변경을 지켜보며
+    // 표시가 사라지면 즉시 되붙인다.
     const de = document.documentElement;
-    // [임시 시험] /services/sizeb 에서는 인앱 표시를 붙이지 않는다. index.html 과 같은 조건.
+    // [임시 시험] /services/sizeb 은 인앱 표시가 없는 상태를 보기 위한 주소다.
+    // 시험 주소에서만 동작하고 일반 페이지 상태에는 영향을 주지 않는다.
     const 시험중 = /sizeb/i.test(window.location.pathname);
     // [임시 시험 C] 인앱 표시는 그대로 두고 text-size-adjust 만 none 으로 바꾼다.
     if (/sizec/i.test(window.location.pathname)) {
       de.classList.add('probe-sizeadjust-none');
     }
+    let 유지해제: (() => void) | null = null;
     if (시험중) {
       de.classList.remove('ua-instagram');
       de.classList.remove('ua-tiktok');
       de.classList.add('probe-noadjust');
-    } else if (isInstagram && !de.classList.contains('ua-instagram')) {
-      de.classList.add('ua-instagram');
-    } else if (isTikTok && !de.classList.contains('ua-tiktok')) {
-      de.classList.add('ua-tiktok');
+    } else {
+      유지해제 = 인앱표시유지();
     }
 
     // 체험존 페이지 전용 인앱 브라우저 스타일 (82% 비율, 영구 주입)
@@ -191,6 +193,10 @@ function App() {
         document.head.appendChild(s);
       }
     }
+
+    return () => {
+      if (유지해제) 유지해제();
+    };
   }, []);
 
   // 팝업 이미지 최우선 로딩 + 캐릭터 이미지 미리 로딩 + 콘텐츠 이미지 프리로드
