@@ -15,13 +15,15 @@ import { useEffect, useState } from "react";
  * 확인이 끝나면 이 파일과 App.tsx 의 사용처를 지운다.
  */
 const 표본: Array<[string, string]> = [
+  ["큰제목", "전문적인 이름 서비스"],
   ["통합솔루션", "진단부터 작명까지"],
-  ["진행과정", "진행과정 보기"],
   ["이름분석", "이름분석"],
-  ["신청", "신청하기"],
-  ["자세히", "자세히 보기"],
   ["16가지운", "현재 이름에 들어"],
   ["적합도", "타 작명소에서"],
+  ["진행과정", "진행과정 보기"],
+  ["신청", "신청하기"],
+  ["자세히", "자세히 보기"],
+  ["작은본문", "이름이 맑아야"],
 ];
 
 export function PageSizeProbe() {
@@ -50,22 +52,48 @@ export function PageSizeProbe() {
         분포[k] = (분포[k] || 0) + 1;
       });
 
+      const de = document.documentElement;
+      const 모드 = de.classList.contains("probe-noadjust")
+        ? "B(자동확대끔·보정없음)"
+        : de.classList.contains("ua-instagram") || de.classList.contains("ua-tiktok")
+        ? "A(기본·인앱보정)"
+        : "A(기본·크롬)";
+
       const out: string[] = [
-        `폭 ${window.innerWidth} · 기준자 ${parseFloat(
-          getComputedStyle(document.documentElement).fontSize
+        `${모드} 폭${window.innerWidth} 기준자${parseFloat(
+          getComputedStyle(de).fontSize
         ).toFixed(2)}`,
       ];
 
       표본.forEach(([name, text]) => {
         const e = els.find((x) => (x.textContent || "").trim().indexOf(text) === 0);
         if (!e) return;
+        const cs = getComputedStyle(e);
         const b = e.getBoundingClientRect();
+        // 실제 글자 영역과 줄 수는 Range 로 잰다.
+        const r = document.createRange();
+        r.selectNodeContents(e);
+        const 줄 = r.getClientRects().length;
         out.push(
-          `${name} ${parseFloat(getComputedStyle(e).fontSize).toFixed(
-            1
-          )}px 상자${b.width.toFixed(0)}×${b.height.toFixed(0)}`
+          `${name} ${parseFloat(cs.fontSize).toFixed(1)}px 줄높이${parseFloat(
+            cs.lineHeight
+          ).toFixed(1)} 상자${b.width.toFixed(0)}×${b.height.toFixed(
+            0
+          )} 여백${parseFloat(cs.paddingTop).toFixed(0)}/${parseFloat(
+            cs.paddingLeft
+          ).toFixed(0)} ${줄}줄`
         );
       });
+
+      // 가로로 넘치는 요소가 있는지 (화면 밖으로 삐져나가는지)
+      let 넘침 = 0;
+      els.forEach((e) => {
+        const b = e.getBoundingClientRect();
+        if (b.right > window.innerWidth + 1 || b.left < -1) 넘침 += 1;
+      });
+      out.push(
+        `넘침 ${넘침}개 · 문서폭 ${document.documentElement.scrollWidth}`
+      );
 
       out.push(
         "분포 " +

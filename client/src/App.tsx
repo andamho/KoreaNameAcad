@@ -100,6 +100,8 @@ function Router() {
       <Route path="/services" component={Services}/>
       {/* 물음표 없는 크기 확인용 주소 — 인앱이 ?size 를 떼어내도 살아남는다 */}
       <Route path="/services/size" component={Services}/>
+      {/* [임시 시험] 자동확대를 끄고 ÷1.3 보정도 뗀 상태를 보는 주소 */}
+      <Route path="/services/sizeb" component={Services}/>
       <Route path="/reviews" component={Reviews}/>
       <Route path="/reviews/:id">
         {(params) => <ContentDetail backPath="/reviews" backLabel="후기 목록" />}
@@ -145,7 +147,13 @@ function App() {
     // 여기서는 혹시 그 코드가 못 돌았을 때를 대비한 보조 장치로만 둔다
     // (이미 붙어 있으면 아무 일도 하지 않는다).
     const de = document.documentElement;
-    if (isInstagram && !de.classList.contains('ua-instagram')) {
+    // [임시 시험] /services/sizeb 에서는 인앱 표시를 붙이지 않는다. index.html 과 같은 조건.
+    const 시험중 = /sizeb/i.test(window.location.pathname);
+    if (시험중) {
+      de.classList.remove('ua-instagram');
+      de.classList.remove('ua-tiktok');
+      de.classList.add('probe-noadjust');
+    } else if (isInstagram && !de.classList.contains('ua-instagram')) {
       de.classList.add('ua-instagram');
     } else if (isTikTok && !de.classList.contains('ua-tiktok')) {
       de.classList.add('ua-tiktok');

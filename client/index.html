@@ -44,7 +44,14 @@
         var path = window.location.pathname;
         var ua = navigator.userAgent || '';
         var de = document.documentElement;
-        if (path === '/ig' || path === '/ig/' || ua.indexOf('Instagram') !== -1) {
+        // [임시 시험] /services/sizeb 에서는 인앱 표시를 붙이지 않는다.
+  // 그래야 ÷1.3 글자 보정 34개가 통째로 빠진 상태를 볼 수 있다.
+  // 대신 probe-noadjust 를 붙여 글자 자동확대를 끈다. 시험이 끝나면 지운다.
+  if (/sizeb/i.test(path)) {
+    de.classList.add('probe-noadjust');
+    return;
+  }
+  if (path === '/ig' || path === '/ig/' || ua.indexOf('Instagram') !== -1) {
           de.classList.add('ua-instagram');
         } else if (path === '/tt' || path === '/tt/' ||
                    ua.indexOf('TikTok') !== -1 || ua.indexOf('musical_ly') !== -1) {
