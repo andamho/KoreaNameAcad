@@ -1485,17 +1485,20 @@ html.ua-tiktok .kna-video-inner,
    KnaValueSection - 모바일 원형 다이어그램
    주의: .kna-value-section > div 에 zoom: 0.82 이미 적용됨!
    ================================================ */
+/*
+ * 인앱(ua-instagram / ua-tiktok) 원 크기 강제값은 제거했다.
+ * 165px·195px 은 zoom: 0.82 로 줄어들 것을 예상해 미리 키워 둔 보정값인데,
+ * 인앱 일반 페이지에는 zoom 이 걸리지 않아(계통 전부 1) 키운 값이 그대로 나왔다.
+ * 크기는 컴포넌트의 w-32/w-40 에 맡긴다.
+ * 아래 .ig-shell(/ig·/tt) 은 zoom: 0.82 가 실제로 걸리는 곳이라 보정을 유지한다.
+ */
 /* MobileCircleItem 원: 128px → zoom 보정 165px (렌더링 ~135px) */
-.ig-shell .kna-value-section [class*="w-32"][class*="h-32"][class*="rounded-full"],
-html.ua-instagram .kna-value-section [class*="w-32"][class*="h-32"][class*="rounded-full"],
-html.ua-tiktok .kna-value-section [class*="w-32"][class*="h-32"][class*="rounded-full"] {
+.ig-shell .kna-value-section [class*="w-32"][class*="h-32"][class*="rounded-full"] {
   width: 165px !important;
   height: 165px !important;
 }
 /* MobileCenterLogo 원: 160px → zoom 보정하여 195px로 설정 (렌더링 ~160px) */
-.ig-shell .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"],
-html.ua-instagram .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"],
-html.ua-tiktok .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"] {
+.ig-shell .kna-value-section [class*="w-40"][class*="h-40"][class*="rounded-full"] {
   width: 195px !important;
   height: 195px !important;
 }
