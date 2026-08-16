@@ -369,6 +369,20 @@ html.probe-noadjust body {
   text-size-adjust: none !important;
 }
 
+/*
+ * [임시 시험 C] A 와 딱 한 가지만 다르게 한다.
+ * ua-instagram / ua-tiktok 표시도, 기존 인앱 보정 34개도 그대로 두고
+ * text-size-adjust 값만 none 으로 바꾼다.
+ * probe-sizeadjust-none 은 /services/sizec 에서만 붙는다. 시험이 끝나면 지운다.
+ */
+html.ua-instagram.probe-sizeadjust-none,
+html.ua-tiktok.probe-sizeadjust-none,
+html.ua-instagram.probe-sizeadjust-none body,
+html.ua-tiktok.probe-sizeadjust-none body {
+  -webkit-text-size-adjust: none !important;
+  text-size-adjust: none !important;
+}
+
 html,
 body {
   overflow-x: hidden;

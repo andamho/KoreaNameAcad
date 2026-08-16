@@ -53,16 +53,34 @@ export function PageSizeProbe() {
       });
 
       const de = document.documentElement;
+      const 인앱 =
+        de.classList.contains("ua-instagram") || de.classList.contains("ua-tiktok");
       const 모드 = de.classList.contains("probe-noadjust")
-        ? "B(자동확대끔·보정없음)"
-        : de.classList.contains("ua-instagram") || de.classList.contains("ua-tiktok")
-        ? "A(기본·인앱보정)"
-        : "A(기본·크롬)";
+        ? "B(표시없음·adjust none)"
+        : de.classList.contains("probe-sizeadjust-none")
+        ? 인앱
+          ? "C(인앱보정+adjust none)"
+          : "C(크롬)"
+        : 인앱
+        ? "A(인앱보정·기본)"
+        : "A(크롬)";
+
+      // text-size-adjust 실제 computed 값 — A 와 C 가 정말 다른지 눈으로 본다.
+      const rec = getComputedStyle(de) as unknown as Record<string, string>;
+      const bod = document.body
+        ? (getComputedStyle(document.body) as unknown as Record<string, string>)
+        : null;
+      const adj = (o: Record<string, string> | null) =>
+        o ? o["webkitTextSizeAdjust"] || o["textSizeAdjust"] || "-" : "-";
 
       const out: string[] = [
-        `${모드} 폭${window.innerWidth} 기준자${parseFloat(
-          getComputedStyle(de).fontSize
-        ).toFixed(2)}`,
+        `${모드} 폭${window.innerWidth}`,
+        `adjust html${adj(rec)} body${adj(bod)}`,
+        `html${parseFloat(getComputedStyle(de).fontSize).toFixed(2)} body${
+          document.body
+            ? parseFloat(getComputedStyle(document.body).fontSize).toFixed(2)
+            : "-"
+        }`,
       ];
 
       표본.forEach(([name, text]) => {

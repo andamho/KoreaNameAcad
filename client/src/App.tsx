@@ -100,8 +100,10 @@ function Router() {
       <Route path="/services" component={Services}/>
       {/* 물음표 없는 크기 확인용 주소 — 인앱이 ?size 를 떼어내도 살아남는다 */}
       <Route path="/services/size" component={Services}/>
-      {/* [임시 시험] 자동확대를 끄고 ÷1.3 보정도 뗀 상태를 보는 주소 */}
+      {/* [임시 시험 B] 자동확대를 끄고 ÷1.3 보정도 뗀 상태를 보는 주소 */}
       <Route path="/services/sizeb" component={Services}/>
+      {/* [임시 시험 C] A 와 같되 text-size-adjust 만 none 인 주소 */}
+      <Route path="/services/sizec" component={Services}/>
       <Route path="/reviews" component={Reviews}/>
       <Route path="/reviews/:id">
         {(params) => <ContentDetail backPath="/reviews" backLabel="후기 목록" />}
@@ -149,6 +151,10 @@ function App() {
     const de = document.documentElement;
     // [임시 시험] /services/sizeb 에서는 인앱 표시를 붙이지 않는다. index.html 과 같은 조건.
     const 시험중 = /sizeb/i.test(window.location.pathname);
+    // [임시 시험 C] 인앱 표시는 그대로 두고 text-size-adjust 만 none 으로 바꾼다.
+    if (/sizec/i.test(window.location.pathname)) {
+      de.classList.add('probe-sizeadjust-none');
+    }
     if (시험중) {
       de.classList.remove('ua-instagram');
       de.classList.remove('ua-tiktok');
