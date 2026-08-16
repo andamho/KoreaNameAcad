@@ -108,28 +108,49 @@ export function PageSizeProbe() {
       // 좁은 칸과 넓은 칸 두 곳에 같은 눈금을 넣어 담는 상자가 영향을 주는지도 본다.
       if (/sized/i.test(window.location.pathname)) {
         const 눈금 = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32];
-        const 만들기 = (폭: string) => {
+        // 기준자를 나눠 같은 실제 크기가 되는 rem 값을 만든다.
+        const 뿌리 = parseFloat(getComputedStyle(de).fontSize);
+
+        // 화면 밖에 두면 자동확대 판단이 달라질 수 있어 화면 안에 두되
+        // 보이지 않게(투명·높이0 겹침) 만들지 않는다 — 실제로 그려진 것을 재야 한다.
+        const 만들기 = (폭: string, 단위: "px" | "rem") => {
           const box = document.createElement("div");
-          box.style.cssText = `position:absolute;left:-9999px;top:0;width:${폭}`;
+          box.style.cssText = `position:fixed;left:0;bottom:0;width:${폭};opacity:0.01;pointer-events:none;z-index:1`;
           document.body.appendChild(box);
           const 값 = 눈금.map((px) => {
             const s = document.createElement("p");
-            s.style.fontSize = px + "px";
-            s.textContent = "한글 글자 크기 시험 문장입니다";
+            s.style.margin = "0";
+            s.style.fontSize = 단위 === "px" ? `${px}px` : `${px / 뿌리}rem`;
+            // 좁은 칸에서도 한 줄로 남도록 짧게 — 줄바꿈이 생기면 높이가 튄다.
+            s.textContent = "가나";
             box.appendChild(s);
-            return parseFloat(getComputedStyle(s).fontSize);
+            const r = document.createRange();
+            r.selectNodeContents(s);
+            return {
+              fs: parseFloat(getComputedStyle(s).fontSize),
+              h: r.getBoundingClientRect().height,
+            };
           });
           box.remove();
           return 값;
         };
-        const 좁 = 만들기("160px");
-        const 넓 = 만들기("320px");
-        out.push(
-          "눈금(좁) " + 눈금.map((v, i) => `${v}→${좁[i].toFixed(1)}`).join(" ")
-        );
-        out.push(
-          "눈금(넓) " + 눈금.map((v, i) => `${v}→${넓[i].toFixed(1)}`).join(" ")
-        );
+
+        const 그룹: Array<[string, "px" | "rem", string]> = [
+          ["①px좁", "px", "160px"],
+          ["②px넓", "px", "320px"],
+          ["③rem좁", "rem", "160px"],
+          ["④rem넓", "rem", "320px"],
+        ];
+        그룹.forEach(([이름, 단위, 폭]) => {
+          const v = 만들기(폭, 단위);
+          out.push(
+            `${이름} 크기 ` + 눈금.map((n, i) => `${n}→${v[i].fs.toFixed(1)}`).join(" ")
+          );
+          out.push(
+            `${이름} 글자높이 ` + 눈금.map((n, i) => `${n}→${v[i].h.toFixed(1)}`).join(" ")
+          );
+        });
+        out.push(`뿌리 ${뿌리.toFixed(3)}`);
       }
 
       // 가로로 넘치는 요소가 있는지 (화면 밖으로 삐져나가는지)
