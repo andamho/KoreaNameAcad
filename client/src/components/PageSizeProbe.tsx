@@ -78,11 +78,14 @@ export function PageSizeProbe() {
     };
 
     // 전환이 끝난 뒤에 재고, 스크롤로 늦게 나타나는 것도 다시 잰다.
+    // 늦게 뜬다는 말이 없도록 이른 시점에도 한 번 잰다.
+    const t0 = setTimeout(measure, 400);
     const t1 = setTimeout(measure, 1800);
     const t2 = setTimeout(measure, 4000);
     window.addEventListener("scroll", measure, { passive: true });
     window.addEventListener("resize", measure);
     return () => {
+      clearTimeout(t0);
       clearTimeout(t1);
       clearTimeout(t2);
       window.removeEventListener("scroll", measure);
@@ -98,11 +101,12 @@ export function PageSizeProbe() {
         position: "fixed",
         left: 4,
         right: 4,
-        bottom: 4,
+        // 아래쪽은 인앱 도구막대에 가려질 수 있어 위쪽에 붙인다.
+        top: 4,
         zIndex: 2147483647,
-        background: "rgba(20,0,60,0.93)",
+        background: "rgba(20,0,60,0.96)",
         color: "#fff",
-        font: "9px/1.3 monospace",
+        font: "10px/1.35 monospace",
         padding: "4px 6px",
         borderRadius: 6,
         pointerEvents: "none",

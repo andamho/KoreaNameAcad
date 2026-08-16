@@ -98,6 +98,8 @@ function Router() {
       <Route path="/admin" component={Admin}/>
       <Route path="/drafts" component={Drafts}/>
       <Route path="/services" component={Services}/>
+      {/* 물음표 없는 크기 확인용 주소 — 인앱이 ?size 를 떼어내도 살아남는다 */}
+      <Route path="/services/size" component={Services}/>
       <Route path="/reviews" component={Reviews}/>
       <Route path="/reviews/:id">
         {(params) => <ContentDetail backPath="/reviews" backLabel="후기 목록" />}
