@@ -83,7 +83,11 @@ export function PageSizeProbe() {
         }`,
       ];
 
+      // 눈금 시험 주소에서는 눈금만 보여준다. 표본·분포까지 찍으면 상자가 넘쳐 잘린다.
+      const 눈금만 = /sized/i.test(window.location.pathname);
+
       표본.forEach(([name, text]) => {
+        if (눈금만) return;
         const e = els.find((x) => (x.textContent || "").trim().indexOf(text) === 0);
         if (!e) return;
         const cs = getComputedStyle(e);
@@ -153,23 +157,27 @@ export function PageSizeProbe() {
         out.push(`뿌리 ${뿌리.toFixed(3)}`);
       }
 
-      // 가로로 넘치는 요소가 있는지 (화면 밖으로 삐져나가는지)
-      let 넘침 = 0;
-      els.forEach((e) => {
-        const b = e.getBoundingClientRect();
-        if (b.right > window.innerWidth + 1 || b.left < -1) 넘침 += 1;
-      });
-      out.push(
-        `넘침 ${넘침}개 · 문서폭 ${document.documentElement.scrollWidth}`
-      );
+      if (!눈금만) {
+        // 가로로 넘치는 요소가 있는지 (화면 밖으로 삐져나가는지)
+        let 넘침 = 0;
+        els.forEach((e) => {
+          const b = e.getBoundingClientRect();
+          if (b.right > window.innerWidth + 1 || b.left < -1) 넘침 += 1;
+        });
+        out.push(
+          `넘침 ${넘침}개 · 문서폭 ${document.documentElement.scrollWidth}`
+        );
+      }
 
-      out.push(
-        "분포 " +
-          Object.keys(분포)
-            .sort((a, b) => parseFloat(b) - parseFloat(a))
-            .map((k) => `${k}:${분포[k]}`)
-            .join(" ")
-      );
+      if (!눈금만) {
+        out.push(
+          "분포 " +
+            Object.keys(분포)
+              .sort((a, b) => parseFloat(b) - parseFloat(a))
+              .map((k) => `${k}:${분포[k]}`)
+              .join(" ")
+        );
+      }
       setLines(out);
     };
 
@@ -202,12 +210,12 @@ export function PageSizeProbe() {
         zIndex: 2147483647,
         background: "rgba(20,0,60,0.96)",
         color: "#fff",
-        font: "10px/1.35 monospace",
+        font: "9px/1.3 monospace",
         padding: "4px 6px",
         borderRadius: 6,
         pointerEvents: "none",
         whiteSpace: "pre-wrap",
-        maxHeight: "30vh",
+        maxHeight: "80vh",
         overflow: "hidden",
       }}
     >
