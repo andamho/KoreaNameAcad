@@ -2023,6 +2023,13 @@ html.ua-tiktok .identity-map-inner {
 
    여기서는 실제로 쓰이는 글자 크기 클래스만 묶어서 처리한다. 여백·위치·크기·
    그림은 건드리지 않는다. */
+
+/* 버튼 글자 감싸개. 크롬에서는 상자를 만들지 않아 배치가 그대로다.
+   인앱에서만 아래 규칙이 inline-block 으로 바꿔 시각 축소를 건다. */
+.kna-btn-fit {
+  display: contents;
+}
+
 @media (max-width: 767px) {
   /* 크기 클래스가 없어 물려받기만 하는 글자(예: '분석 시작' 버튼)용.
      body 에 주면 물려받는 글자만 바뀌고, rem 은 html 기준이라 여백·크기는
@@ -2051,6 +2058,31 @@ html.ua-tiktok .identity-map-inner {
     font-size: 0.6731rem;
     line-height: 0.9615rem;   /* 1.25 ÷ 1.3 */
   }
+
+  /* [시험] 인앱 버튼 상자가 좁아지는 문제를 구조로 푼다.
+     글자를 1/1.3 로 줄이면 화면 크기는 맞지만, 버튼의 auto width 는 줄어든
+     글자폭으로 계산돼 상자만 좁아진다(크롬 107.8 → 인앱 90.8).
+     그래서 버튼 자체는 크롬 원래 크기로 되돌려 상자 계산을 크롬과 맞추고,
+     안쪽 글자만 시각적으로 줄인다. 숫자를 새로 넣지 않고 1 ÷ 1.3 만 쓴다.
+
+     감싸개(.kna-btn-fit)는 크롬에서 display: contents 라 상자를 만들지 않는다.
+     버튼이 flex 라 감싸개가 상자를 만들면 글자와 화살표가 한 덩이로 묶여
+     gap 이 사라지고 크롬 폭이 107.8 → 105.4 로 줄었기 때문이다.
+     인앱에서만 inline-block 으로 바꿔 축소를 건다.
+
+     지금은 .kna-btn-fit 을 붙인 버튼 하나에만 걸린다. */
+  html.ua-instagram button:has(> .kna-btn-fit).text-sm,
+  html.ua-tiktok button:has(> .kna-btn-fit).text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  html.ua-instagram .kna-btn-fit,
+  html.ua-tiktok .kna-btn-fit {
+    display: inline-block;
+    transform: scale(0.7692);   /* 1 ÷ 1.3 */
+    transform-origin: center;
+  }
+
   html.ua-instagram .text-xl,
   html.ua-tiktok .text-xl { font-size: 0.9615rem; }
   html.ua-instagram .text-xs,

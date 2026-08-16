@@ -353,7 +353,13 @@ export default function Services() {
             className="mt-6 inline-flex items-center gap-1.5 px-4 py-1 rounded-full font-semibold text-sm bg-[#F1FAEE] text-[#0b7f82] shadow-sm transition-all duration-200 hover:bg-[#e5f4e0] hover:shadow-md active:scale-[0.98]"
             data-testid="button-view-process"
           >
-            진행과정 보기 <span className="text-base">›</span>
+            {/* [시험] 인앱에서 버튼 상자가 좁아지는 문제를 구조로 푸는 시도.
+                버튼 자체는 크롬 원래 크기로 두어 상자 폭이 크롬과 같게 계산되고,
+                안쪽 글자만 시각적으로 1/1.3 줄여 화면에 보이는 크기를 맞춘다.
+                지금은 이 버튼 하나에만 붙인다. 확인 뒤 나머지로 넓힌다. */}
+            <span className="kna-btn-fit">
+              진행과정 보기 <span className="text-base">›</span>
+            </span>
           </button>
         </div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
