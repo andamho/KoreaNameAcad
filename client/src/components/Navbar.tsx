@@ -400,24 +400,19 @@ export function Navbar() {
   };
 
   const goToHome = () => {
-    // 인앱 브라우저에서는 해당 경로로 이동
-    const isInstagram = document.documentElement.classList.contains('ua-instagram');
-    const isTikTok = document.documentElement.classList.contains('ua-tiktok');
-    
     // history state 초기화 (modal만 제거, popupShown은 유지)
     const currentState = window.history.state || {};
     window.history.replaceState({ popupShown: currentState.popupShown || true }, "", window.location.pathname);
-    
+
     // 모든 Dialog 닫기 이벤트 발생
     window.dispatchEvent(new CustomEvent('closeAllDialogs'));
-    
-    if (isInstagram) {
-      setLocation("/ig");
-    } else if (isTikTok) {
-      setLocation("/tt");
-    } else {
-      setLocation("/");
-    }
+
+    // 인앱(인스타·틱톡)에서도 일반 홈 하나만 쓴다.
+    // 예전에는 여기서 /ig · /tt 로 보냈는데, 그 페이지는 zoom: 0.82 로 통째
+    // 축소하는 옛 화면이라 내비바로 홈에 갈 때만 글자가 작아 보였다.
+    // 뒤로가기로 들어온 홈(/)과 크기가 달랐던 원인이 이것이다.
+    // /ig · /tt 페이지 자체는 기존 링크 호환용으로 그대로 둔다.
+    setLocation("/");
     setMenuOpen(false);
     
     // 페이지 최상단으로 스크롤
