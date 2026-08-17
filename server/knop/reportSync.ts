@@ -124,7 +124,29 @@ function linkCreatedAt(p: string): number | null {
 //  · 예전 것까지 한꺼번에 만들지는 않는다. 지금 폴더에 쌓인 100여 건은 그대로 둔다.
 //  · 삭제는 하지 않는다. 링크 파일 정리는 원장님이 직접 하신다.
 
-// 파일 하나에 대한 링크 파일 생성. 이미 있으면 그대로 둔다.
+// 링크 파일에 적힌 주소에서 슬러그만 떼어낸다.
+// 파일에는 "https://korea-name-acad.com/홍나영님새이름" 처럼 한글 그대로 들어 있다.
+function slugFromLinkFile(linkFile: string): string | null {
+  try {
+    const url = fs.readFileSync(linkFile, "utf-8").trim();
+    const last = url.split("/").filter(Boolean).pop() || "";
+    if (!last) return null;
+    try {
+      return decodeURIComponent(last);
+    } catch {
+      return last; // % 가 섞인 이상한 값이면 그대로 쓴다
+    }
+  } catch {
+    return null;
+  }
+}
+
+// 파일 하나에 대한 링크 파일 생성.
+//
+// 링크 파일이 이미 있으면(같은 이름으로 다시 만든 경우) 주소는 그대로 두고
+// 그 주소가 가리키는 이미지만 새것으로 바꾼다. 예전에는 여기서 그냥 돌아가서,
+// 잘못 만든 분석표를 고쳐 다시 넣어도 링크를 열면 옛 이미지가 계속 나왔다
+// (2026-08-17 홍나영님 새이름 건). 주소를 그대로 두므로 이미 보낸 링크도 그대로 열린다.
 export async function makeReportLink(fileName: string, renderedUrl: string): Promise<boolean> {
   if (!renderedUrl) return false;
   if (/상세/.test(fileName)) return false; // 상세설명본은 링크를 만들지 않는다
@@ -133,8 +155,25 @@ export async function makeReportLink(fileName: string, renderedUrl: string): Pro
   try {
     if (!fs.existsSync(LINK_DIR)) fs.mkdirSync(LINK_DIR, { recursive: true });
     const linkFile = path.join(LINK_DIR, `${slug}.txt`);
-    if (fs.existsSync(linkFile)) return false;
     const viewerTarget = `/img?src=${encodeURIComponent(renderedUrl)}`;
+
+    if (fs.existsSync(linkFile)) {
+      const 쓰던슬러그 = slugFromLinkFile(linkFile);
+      if (!쓰던슬러그) return false;
+      const pool = reportPool();
+      const cur = await pool.query("SELECT target FROM short_links WHERE slug=$1 LIMIT 1", [
+        쓰던슬러그,
+      ]);
+      if (!cur.rows[0]) return false; // 주소가 DB 에 없으면 손대지 않는다
+      if (cur.rows[0].target === viewerTarget) return false; // 이미 최신
+      await pool.query("UPDATE short_links SET target=$1 WHERE slug=$2", [
+        viewerTarget,
+        쓰던슬러그,
+      ]);
+      console.log(`[KOP] 이름분석 링크 이미지 갱신: ${쓰던슬러그}`);
+      return true;
+    }
+
     const usedSlug = await ensureReportLinkSlug(viewerTarget, fileName.replace(/\.[^.]+$/, ""), slug);
     if (!usedSlug) return false;
     // 텍스트 파일: 열어서 Ctrl+A→Ctrl+C 로 복사해 카톡/문자에 붙여넣기. 주소는 한글 그대로(가독).
