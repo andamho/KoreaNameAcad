@@ -841,7 +841,9 @@ export default function Reviews() {
           {/* CMS 후기 섹션 */}
           {cmsReviews && cmsReviews.length > 0 && (
             <div className="mt-16">
-              <h3 className="text-2xl font-bold text-center text-foreground mb-8">
+              {/* kna-latest-reviews-title: 이 제목 하나에만 붙는 표시.
+                  전역 .text-2xl 은 다른 페이지에서도 써서 줄 간격 보정을 여기로 좁힌다. */}
+              <h3 className="text-2xl font-bold text-center text-foreground mb-8 kna-latest-reviews-title">
                 최신 고객 후기
               </h3>
               <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
