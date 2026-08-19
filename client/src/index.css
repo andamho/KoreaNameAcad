@@ -2004,6 +2004,15 @@ html.ua-tiktok .identity-map-inner {
   font-family: 'Nanum Square', sans-serif !important;
 }
 
+/* 글 아래 자동으로 붙는 블록(.kna-promo)은 본문 편집기 안에 들어 있어서
+   위 규칙에 걸려 나눔스퀘어가 됐다. 크기는 푸터와 같은 값(1.5rem / 1.1875rem)인데
+   글꼴이 달라 같은 21.63px 도 글자 폭이 119.7 vs 113.1 로 6% 커 보였다.
+   푸터와 똑같이 보이게 이 블록만 사이트 기본 글꼴로 되돌린다. */
+.kna-nanum-editor .kna-promo,
+.kna-nanum-editor .kna-promo * {
+  font-family: 'Pretendard Variable', Pretendard, Inter, system-ui, -apple-system, sans-serif !important;
+}
+
 /* tiffany 색상 체계 */
 .text-tiffany { color: #14b8a6; }
 .text-tiffany-dark { color: #0f766e; }
