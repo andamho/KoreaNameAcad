@@ -301,7 +301,10 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
               </div>
             ) : null}
 
-            <div className="kna-nanum-editor prose max-w-none dark:prose-invert" style={{ fontFamily: "'Nanum Square', sans-serif" }}>
+            {/* kna-detail-body: 이 상세 화면 본문에만 붙는 표시.
+                kna-nanum-editor 는 후기 목록 카드·에디터와도 함께 쓰는 이름이라
+                인앱 보정을 그 이름에 걸면 다른 곳까지 번진다. */}
+            <div className="kna-nanum-editor kna-detail-body prose max-w-none dark:prose-invert" style={{ fontFamily: "'Nanum Square', sans-serif" }}>
               {(() => {
                 // 이미지 마커를 기준으로 분리 (줄 위치 상관없이 처리)
                 const parts = content.content.split(/(!\[[^\]]*\]\([^)]+\))/);
