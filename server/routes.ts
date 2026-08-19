@@ -1586,25 +1586,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerObjectStorageRoutes(app);
 
   // 이미지 뷰어 HTML (핀치줌 확대/축소). src 는 우리 오브젝트 경로만.
-  const imageViewerHtml = (src: string) => {
+  // title 은 카톡·문자 미리보기 카드에 뜨는 제목. 안 주면 기존대로 '이름분석표'
+  // (작명장 링크는 '운이 술술 풀리는 이름' 처럼 자기 제목을 넘긴다).
+  const DEFAULT_VIEWER_TITLE = "이름분석표";
+  const escHtml = (v: string) =>
+    v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const imageViewerHtml = (src: string, title?: string) => {
     const safe = src.replace(/"/g, "%22");
+    const t = escHtml((title || DEFAULT_VIEWER_TITLE).slice(0, 80));
     return `<!doctype html><html lang="ko"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=0.5, maximum-scale=6, user-scalable=yes">
-<title>이름분석표</title>
+<title>${t}</title>
+<meta property="og:type" content="website">
+<meta property="og:title" content="${t}">
+<meta property="og:description" content="여기를 눌러 확인하세요.">
+<meta property="og:image" content="${SITE_URL}${safe}">
 <style>
   html,body{margin:0;height:100%;background:#f1f3f5;-webkit-text-size-adjust:100%}
   #wrap{position:fixed;inset:0;overflow:auto;-webkit-overflow-scrolling:touch;text-align:center}
   #pic{display:inline-block;width:100%;max-width:900px;height:auto}
 </style></head><body>
-<div id="wrap"><img id="pic" src="${safe}" alt="이름분석표"></div>
+<div id="wrap"><img id="pic" src="${safe}" alt="${t}"></div>
 </body></html>`;
   };
-  const imgSrcOfTarget = (t: string): string | null => {
+  // 짧은링크 target 에서 이미지 경로와 제목(t)을 뽑는다. 제목은 없으면 기본값.
+  const imgViewOfTarget = (t: string): { src: string; title?: string } | null => {
     if (!/^\/img\?src=/.test(t)) return null;
     try {
-      const s = decodeURIComponent(t.replace(/^\/img\?src=/, ""));
-      return /^\/objects\/[A-Za-z0-9._/-]+$/.test(s) ? s : null;
+      const q = new URLSearchParams(t.replace(/^\/img\?/, ""));
+      const s = q.get("src") || "";
+      if (!/^\/objects\/[A-Za-z0-9._/-]+$/.test(s)) return null;
+      return { src: s, title: q.get("t") || undefined };
     } catch {
       return null;
     }
@@ -1613,15 +1626,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/img", (req, res) => {
     const src = String(req.query.src || "");
     if (!/^\/objects\/[A-Za-z0-9._/-]+$/.test(src)) return res.status(400).send("잘못된 이미지 주소");
-    res.type("html").send(imageViewerHtml(src));
+    res.type("html").send(imageViewerHtml(src, String(req.query.t || "") || undefined));
   });
 
   // 짧은링크 공통 처리: 이미지 뷰어 대상이면 '리다이렉트 없이 그 자리에서' 이미지 표시
   // → 주소창이 /홍길동님이름분석표 로 깔끔하게 유지됨. 그 외 대상은 302.
   const serveShortLink = (row: any, req: any, res: any) => {
     db!.update(shortLinks).set({ clicks: (row.clicks ?? 0) + 1 }).where(eq(shortLinks.id, row.id)).catch(() => {});
-    const imgSrc = imgSrcOfTarget(row.target);
-    if (imgSrc) return res.type("html").send(imageViewerHtml(imgSrc));
+    const view = imgViewOfTarget(row.target);
+    if (view) return res.type("html").send(imageViewerHtml(view.src, view.title));
     // req.protocol 은 프록시(Railway) 뒤에서 http 로 잡혀 https 사이트로 한 번 더 튕긴다 → SITE_URL 사용
     const target = row.target.startsWith("/") ? `${SITE_URL}${row.target}` : row.target;
     return res.redirect(302, target);

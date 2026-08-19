@@ -16,6 +16,9 @@ const PY = (process.env.KOP_WHISPER_PY || process.env.KNOP_WHISPER_PY)?.trim()
 const RENDER = fileURLToPath(new URL("./py/render_pdf_pages.py", import.meta.url));
 
 const PDF_DIR = (process.env.KOP_NAMING_PDF_DIR || "C:/Users/iimoo/Desktop/작명장/PDF").trim();
+// 한글에서 PDF 를 실제로 내보내는 폴더(보관용 173건). 여기에 새로 생긴 것만 위 PDF_DIR 로 복사해
+// 링크가 자동으로 만들어지게 한다. 보관본은 그대로 두므로 원장님 기존 습관은 그대로.
+const INTAKE_DIR = (process.env.KOP_NAMING_INTAKE_DIR || "C:/Users/iimoo/Desktop/작명장/PDF작명장").trim();
 const LINK_DIR = (process.env.KOP_NAMING_LINK_DIR || "C:/Users/iimoo/Desktop/작명장/링크").trim();
 const PUBLIC_BASE = (process.env.PUBLIC_BASE_URL || "https://korea-name-acad.com").replace(/\/$/, "");
 
@@ -37,6 +40,18 @@ function bracketSlugFromFile(fileName: string): string {
     .replace(/\s+/g, "")
     .replace(/[^0-9A-Za-z가-힣_\-[\]()]/g, "")
     .slice(0, 60);
+}
+
+// 카톡·문자 미리보기 카드에 뜨는 제목: 파일명에서 [이름] 부분을 뺀 것.
+// "운이 술술 풀리는 이름 [윤하라]" → "운이 술술 풀리는 이름"
+// (고객 이름이 미리보기 카드에 노출되지 않게 일부러 뺀다.)
+function displayTitleFromFile(fileName: string): string {
+  const t = fileName
+    .replace(/\.pdf$/i, "")
+    .replace(/[[(][^\])]*[\])]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return t.slice(0, 80);
 }
 
 // 실제로 보내는 주소용 슬러그 — 괄호를 뺀다.
@@ -160,7 +175,8 @@ async function processPdf(file: string, state: NamingState): Promise<"made" | "u
     const buf = await renderPng(abs);
     const key = `uploads/${crypto.randomUUID()}.png`;
     await store.putObject(key, buf, "image/png");
-    const target = `/img?src=${encodeURIComponent(`/objects/${key}`)}`;
+    const title = displayTitleFromFile(file);
+    const target = `/img?src=${encodeURIComponent(`/objects/${key}`)}&t=${encodeURIComponent(title)}`;
 
     let slug: string | null;
     let updated = false;
@@ -187,6 +203,87 @@ async function processPdf(file: string, state: NamingState): Promise<"made" | "u
   } catch (e: any) {
     console.error(`[작명장] 링크 생성 실패 ${file}: ${e?.message}`);
     return "failed";
+  }
+}
+
+// ── 반입(intake): PDF작명장 → PDF ────────────────────────────────────────────
+// 한글에서 내보낸 PDF 는 'PDF작명장'(보관용) 에 쌓인다. 원장님이 손으로 'PDF' 로 옮기던 것을 자동화한다.
+// 원본은 지우지 않고 복사만 한다(보관본 유지). 처음 켤 때 이미 있던 것들은 '기준선'으로 기록만 하고
+// 복사하지 않는다 — 안 그러면 옛날 173건이 한꺼번에 링크로 만들어진다.
+type IntakeState = { seen: string[] };
+const INTAKE_STATE_FILE = () => path.join(LINK_DIR, ".kop_naming_intake.json");
+function loadIntake(): IntakeState | null {
+  try {
+    const j = JSON.parse(fs.readFileSync(INTAKE_STATE_FILE(), "utf-8"));
+    return Array.isArray(j?.seen) ? { seen: j.seen } : null;
+  } catch {
+    return null;
+  }
+}
+function saveIntake(s: IntakeState) { try { fs.writeFileSync(INTAKE_STATE_FILE(), JSON.stringify(s)); } catch { /* noop */ } }
+
+export function intakeAvailable(): boolean {
+  try { return fs.existsSync(INTAKE_DIR) && fs.statSync(INTAKE_DIR).isDirectory(); } catch { return false; }
+}
+
+let _intaking = false;
+export async function syncNamingIntake(): Promise<{ copied: number }> {
+  const res = { copied: 0 };
+  if (!intakeAvailable() || !namingAvailable() || _intaking) return res;
+  _intaking = true;
+  try {
+    if (!fs.existsSync(LINK_DIR)) fs.mkdirSync(LINK_DIR, { recursive: true });
+    const files = fs.readdirSync(INTAKE_DIR).filter((f) => /\.pdf$/i.test(f));
+    let state = loadIntake();
+    if (!state) {
+      // 첫 실행: 지금 있는 건 전부 '이미 본 것'으로 기록만 하고 끝낸다.
+      saveIntake({ seen: files });
+      console.log(`[작명장] 반입 기준선 등록: ${files.length}건 (앞으로 새로 생기는 것만 PDF 폴더로 복사)`);
+      return res;
+    }
+    const seen = new Set(state.seen);
+    for (const f of files) {
+      if (seen.has(f)) continue;
+      const src = path.join(INTAKE_DIR, f);
+      const dest = path.join(PDF_DIR, f);
+      try {
+        if (fs.existsSync(dest)) {
+          seen.add(f); // 이미 손으로 옮겨둔 건 복사하지 않고 본 것으로만 표시
+          continue;
+        }
+        fs.copyFileSync(src, dest);
+        seen.add(f);
+        res.copied++;
+        console.log(`[작명장] 새 PDF 반입: ${f} → PDF 폴더`);
+      } catch (e: any) {
+        console.error(`[작명장] 반입 실패 ${f}: ${e?.message}`); // 다음 번에 다시 시도되도록 seen 에 넣지 않는다
+      }
+    }
+    saveIntake({ seen: Array.from(seen) });
+    return res;
+  } catch (e: any) {
+    console.error(`[작명장] 반입 오류: ${e?.message}`);
+    return res;
+  } finally {
+    _intaking = false;
+  }
+}
+
+let _intakeWatching = false;
+export function startNamingIntake() {
+  if (_intakeWatching || !intakeAvailable() || !namingAvailable()) return;
+  _intakeWatching = true;
+  try {
+    let timer: NodeJS.Timeout | null = null;
+    fs.watch(INTAKE_DIR, (_ev, file) => {
+      if (!file || !/\.pdf$/i.test(String(file))) return;
+      if (timer) clearTimeout(timer);
+      // 한글이 PDF 를 다 쓸 때까지 여유를 준다. 복사가 끝나면 PDF 폴더 감시가 이어받아 링크를 만든다.
+      timer = setTimeout(() => { syncNamingIntake().catch(() => {}); }, 8000);
+    });
+    console.log("[작명장] 새 PDF 반입 감시 시작:", INTAKE_DIR, "→", PDF_DIR);
+  } catch (e: any) {
+    console.error("[작명장] 반입 감시 실패:", e?.message);
   }
 }
 

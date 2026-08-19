@@ -4,7 +4,7 @@
 import "dotenv/config"; // DB·R2 환경변수 로드 (db import 전에)
 import { startReportSync, syncReports, syncReportLinks } from "./reportSync";
 import { reportsAvailable, reportsDir } from "./reports";
-import { startNamingSync, syncNamingLinks, namingAvailable } from "./namingSync";
+import { startNamingSync, syncNamingLinks, namingAvailable, startNamingIntake, syncNamingIntake, intakeAvailable } from "./namingSync";
 import { scheduleDaily } from "./dailyCheckpoint";
 
 async function main() {
@@ -39,8 +39,19 @@ async function main() {
 
   // 작명장 PDF → 이미지 링크 (PDF 1개 = 링크 1개). 폴더 없으면 조용히 건너뜀.
   if (namingAvailable()) {
+    // 한글이 내보낸 새 PDF 를 PDF작명장 → PDF 로 자동 반입(복사). 링크 생성보다 먼저.
+    if (intakeAvailable()) {
+      await syncNamingIntake().catch((e: any) => console.error("[작명장] 초기 반입 오류:", e?.message));
+      startNamingIntake();
+    } else {
+      console.log("[작명장] 반입 폴더(PDF작명장)가 없어 건너뜀");
+    }
     await syncNamingLinks().catch((e: any) => console.error("[작명장] 초기 링크 동기화 오류:", e?.message));
     startNamingSync();
+    // 렌더 실패 등으로 링크를 못 만든 PDF 재시도. 폴더 감시만 있으면 다음에 파일이 들어올 때까지
+    // 실패한 채로 방치된다 → 아침 점검 때 한 번 더 훑는다.
+    // (할 일이 없으면 DB 를 아예 건드리지 않으므로 Neon 컴퓨트 부담 없음)
+    scheduleDaily("작명장 링크 폴더 동기화", async () => { await syncNamingIntake(); await syncNamingLinks(); }, 0);
   } else {
     console.log("[작명장] PDF 폴더가 없어 건너뜀");
   }
