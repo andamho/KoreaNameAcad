@@ -989,6 +989,40 @@ html.ua-tiktok .kna-danger-section .text-sm { /* 0.875 ÷ 1.30 */
   }
 }
 
+/* 글 아래 자동문구의 강조 두 줄 — 기본색을 티파니 블루로.
+   모바일 .kna-shine 은 크림 배경을 전제로 거의 검정에 가까운 청록(#032420)에서
+   시작하는데, 이 블록은 흰 카드 위라 글자가 어둡게 묻혔다.
+   방패 로고와 같은 티파니(--tiffany #0994af) → 민트(--mint #24d7e5) 로 바꾼다.
+   흐르는 광택은 그대로 두고 색만 올린다. 푸터(.kna-footer)는 건드리지 않는다. */
+.kna-promo .kna-shine {
+  background: linear-gradient(90deg,
+    var(--tiffany) 0%,
+    var(--mint) 35%,
+    #7ff3ff 49%,
+    #7ff3ff 51%,
+    var(--mint) 65%,
+    var(--tiffany) 100%);
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@media (max-width: 767px) {
+  .kna-promo .kna-shine {
+    background: linear-gradient(90deg,
+      var(--tiffany) 0%,
+      var(--mint) 35%,
+      #7ff3ff 49%,
+      #7ff3ff 51%,
+      var(--mint) 65%,
+      var(--tiffany) 100%);
+    background-size: 240% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+}
+
 /* 데스크톱용 진한 청록색 하이라이트 */
 .kna-shine-dark {
   background: linear-gradient(90deg,
