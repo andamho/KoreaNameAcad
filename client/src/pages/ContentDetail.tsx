@@ -351,14 +351,14 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
               {backPath === "/reviews" && (
                 <div className="kna-promo mt-8 rounded-2xl py-10 px-6 text-center relative overflow-hidden bg-white border border-gray-100">
                   <div className="relative z-10">
-                    <div className="font-bold tracking-tight text-center" style={{ fontSize: '1.5rem', lineHeight: '1.35', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1em' }}>
+                    <div className="font-bold tracking-tight text-center kna-promo-head" style={{ fontSize: '1.5rem', lineHeight: '1.35', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1em' }}>
                       <span className="kna-highlight">
                         <span className="kna-shine">이름이 맑아야</span>
                       </span>
                       <span className="kna-highlight">
                         <span className="kna-shine">인생이 맑다</span>
                       </span>
-                      <span className="text-gray-900 font-normal relative" style={{ fontSize: '1.1875rem', marginTop: '0.75em' }}>
+                      <span className="text-gray-900 font-normal relative kna-promo-third" style={{ fontSize: '1.1875rem', marginTop: '0.75em' }}>
                         이름 안에 너 있다
                         <span className="kna-underline-plain" aria-hidden="true" />
                       </span>

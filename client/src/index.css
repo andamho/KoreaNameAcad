@@ -1934,12 +1934,15 @@ html.ua-tiktok .family-policy-sheet,
    따라오므로, 폰에서 확대될 때 크롬과 같은 줄 간격이 된다.
    여기서 1.7 을 강제하면 크롬(1.625)과 달라져 줄 간격만 어긋났다. */
 
-/* 자동문구 섹션 (프로모션) 82% */
-html.ua-instagram .kna-promo,
-html.ua-tiktok .kna-promo {
-  transform: scale(0.82);
-  transform-origin: top center;
-}
+/*
+ * 자동문구 블록의 82% 축소는 제거했다.
+ * 실기기에서 이 블록만 배율 0.820 이 걸려 있었다(푸터는 1.000).
+ * 그래서 보정이 걸린 글(안내문·버튼)은 0.82 배로 작아지고,
+ * 보정이 없는 글(이름이 맑아야 등)은 1.303 × 0.82 = 1.068 배로 되레 커,
+ * 한 블록 안에서 큰 글과 작은 글이 뒤섞였다.
+ * transform-origin 도 이 scale 을 위한 값이라 함께 지운다.
+ * 다른 .kna-promo 속성은 건드리지 않는다.
+ */
 
 /* IdentityMap 인앱 82% 스케일 */
 html.ua-instagram .identity-map-inner,
@@ -2008,6 +2011,21 @@ html.ua-tiktok .identity-map-inner {
    위 규칙에 걸려 나눔스퀘어가 됐다. 크기는 푸터와 같은 값(1.5rem / 1.1875rem)인데
    글꼴이 달라 같은 21.63px 도 글자 폭이 119.7 vs 113.1 로 6% 커 보였다.
    푸터와 똑같이 보이게 이 블록만 사이트 기본 글꼴로 되돌린다. */
+/* 자동문구 블록의 큰 글 세 줄.
+   크기를 inline style 의 rem 으로 주고 있어 공통 보정 34개(클래스만 잡음)에
+   걸리지 않았다. 실기기에서 21.63 → 28.19 로 정확히 1.303 배였다.
+   푸터가 쓰는 값과 같은 1/1.3 을 이 블록 안에서만 건다.
+   안내문·버튼(.text-sm 계열)은 이미 보정이 걸려 있어 손대지 않는다.
+   크기가 inline style 로 들어 있어 !important 가 없으면 규칙이 진다(푸터도 같다). */
+html.ua-instagram .kna-promo .kna-promo-head,
+html.ua-tiktok .kna-promo .kna-promo-head {
+  font-size: 1.1538rem !important;   /* 1.5 ÷ 1.3 — 푸터 h2 와 같은 값 */
+}
+html.ua-instagram .kna-promo .kna-promo-third,
+html.ua-tiktok .kna-promo .kna-promo-third {
+  font-size: 0.9135rem !important;   /* 1.1875 ÷ 1.3 — 푸터 셋째 줄과 같은 값 */
+}
+
 /* 후기·이름이야기 상세 화면의 본문 글.
    크기 클래스(text-sm 등)가 없는 순수 글이라 공통 보정 34개에 걸리지 않고
    물려받은 값이 그대로 인앱 확대(×1.30)를 타서 크롬보다 컸다.
