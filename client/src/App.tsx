@@ -43,6 +43,8 @@ import { 인앱표시유지 } from "@/lib/inapp";
 import { StyleWatchProbe } from "@/components/StyleWatchProbe";
 import { ButtonHeightProbe } from "@/components/ButtonHeightProbe";
 import { DetailAuditProbe } from "@/components/DetailAuditProbe";
+import { PromoChainProbe } from "@/components/PromoChainProbe";
+import { PromoMapProbe } from "@/components/PromoMapProbe";
 import { FlashProbe } from "@/components/FlashProbe";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
@@ -118,6 +120,14 @@ function Router() {
       <Route path="/services/sizeh" component={Services}/>
       <Route path="/reviews" component={Reviews}/>
       {/* [임시 진단] 상세 자동문구 전수 측정용 주소 */}
+      {/* [임시 진단] 자동문구 부모 계통 추적용 주소 */}
+      {/* [임시 진단] 자동문구 크기 지도용 주소 */}
+      <Route path="/reviews/:id/sizem">
+        {() => <ContentDetail backPath="/reviews" backLabel="후기 목록" />}
+      </Route>
+      <Route path="/reviews/:id/sizep">
+        {() => <ContentDetail backPath="/reviews" backLabel="후기 목록" />}
+      </Route>
       <Route path="/reviews/:id/sizez">
         {() => <ContentDetail backPath="/reviews" backLabel="후기 목록" />}
       </Route>
@@ -331,6 +341,10 @@ function App() {
           <ButtonHeightProbe />
           {/* 임시 진단기 — 상세 화면 자동문구 전수 */}
           <DetailAuditProbe />
+          {/* 임시 진단기 — 자동문구 부모 계통 */}
+          <PromoChainProbe />
+          {/* 임시 진단기 — 자동문구 크기 지도 */}
+          <PromoMapProbe />
           {/* 임시 감시기 — 글자가 작아지는 순간의 주입 스타일 기록 */}
           <StyleWatchProbe />
           <Router />
