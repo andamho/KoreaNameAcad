@@ -93,7 +93,7 @@ export function Footer() {
               크기를 rem 으로 잡아야 폰 폭에 따라 같이 커지고 작아진다 —
               전에는 px 라 작은 폰에서 이 문구만 더 커 보였다. */}
           <h2 className="font-bold tracking-tight flex flex-col items-center"
-              style={{ fontSize: '1.5rem', lineHeight: '1.2', gap: '0.15em' }}>
+              style={{ fontSize: '1.75rem', lineHeight: '1.2', gap: '0.15em' }}>
             <span className="kna-highlight kna-footer-highlight">
               <span className="kna-shine">이름이 맑아야</span>
             </span>

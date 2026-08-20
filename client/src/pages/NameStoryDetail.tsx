@@ -330,7 +330,7 @@ export default function NameStoryDetail() {
                 
                 <div className="kna-promo mt-8 rounded-2xl py-10 px-6 text-center relative overflow-hidden bg-white border border-gray-100">
                   <div className="relative z-10">
-                    <div className="font-bold tracking-tight text-center kna-promo-head" style={{ fontSize: '1.5rem', lineHeight: '1.35', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1em' }}>
+                    <div className="font-bold tracking-tight text-center kna-promo-head" style={{ fontSize: '1.75rem', lineHeight: '1.35', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1em' }}>
                       <span className="kna-highlight">
                         <span className="kna-shine">이름이 맑아야</span>
                       </span>
