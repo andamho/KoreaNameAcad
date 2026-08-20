@@ -22,7 +22,9 @@ export function FooterCtaProbe() {
   const [lines, setLines] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!/[?&]ftr/i.test(window.location.search)) return;
+    // 주소 어디에든 ftr 이 있으면 켜진다. 인앱이 물음표 뒤를 떼어내는 경우가
+    // 있어 #ftr 도 받는다. 예: /?ftr · /#ftr
+    if (!/ftr/i.test(window.location.href)) return;
 
     const n = (v: string) => parseFloat(v) || 0;
     const f2 = (v: number) => v.toFixed(2);
@@ -35,7 +37,14 @@ export function FooterCtaProbe() {
       const btn = document.querySelector(
         '[data-testid="button-footer-apply"]'
       ) as HTMLElement | null;
-      if (!footer || !btn) return ["푸터/버튼 아직 없음"];
+      if (!footer || !btn)
+        return [
+          "[푸터 측정기] 살아있음 — 아직 푸터를 못 찾음",
+          "페이지 맨 아래까지 한 번 내려 주십시오",
+          `폭${window.innerWidth} 기준자${f2(
+            n(getComputedStyle(document.documentElement).fontSize)
+          )}`,
+        ];
 
       // 전환·애니메이션을 잠깐 끈다.
       const kill = document.createElement("style");
@@ -88,12 +97,10 @@ export function FooterCtaProbe() {
     };
 
     // 푸터가 그려지고 글꼴이 자리잡은 뒤에 잰다.
-    const t1 = window.setTimeout(() => setLines(재기()), 2500);
-    const t2 = window.setTimeout(() => setLines(재기()), 5000);
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-    };
+    const ts = [300, 1200, 3000, 6000].map((ms) =>
+      window.setTimeout(() => setLines(재기()), ms)
+    );
+    return () => ts.forEach((t) => window.clearTimeout(t));
   }, []);
 
   if (!lines.length) return null;
@@ -104,7 +111,7 @@ export function FooterCtaProbe() {
         position: "fixed",
         left: 4,
         right: 4,
-        bottom: 4,
+        top: 4,
         zIndex: 2147483647,
         background: "rgba(10,60,20,0.94)",
         color: "#fff",
