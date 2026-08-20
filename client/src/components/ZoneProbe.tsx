@@ -73,9 +73,19 @@ export function ZoneProbe() {
       const 구역2 =
         (document.querySelector(".kna-experience-page section") as HTMLElement | null) ||
         document.body;
+      // 기준 하나를 정해 두고 변수를 한 번에 하나씩만 바꿜다.
+      // 태그·글꿴·굵기·display·글자 내용은 모두 같게 못박는다.
+      // 클래스를 쓰는 것들도 글꿴·굵기·display 는 같이 못박아서
+      // 클래스가 기여하는 것이 크기와 줄간격뿐이 되게 한다.
+      const 글 = "가나다라마바사아자차";
       const 변형 = (꺾: (d: HTMLDivElement) => void) => {
         const d = document.createElement("div");
-        d.textContent = "가나다라마바사아자차";
+        d.style.fontFamily = "sans-serif";
+        d.style.fontWeight = "400";
+        d.style.display = "block";
+        d.style.margin = "0";
+        d.style.padding = "0";
+        d.textContent = 글;
         꺾(d);
         구역2.appendChild(d);
         const v = parseFloat(getComputedStyle(d).fontSize);
@@ -83,62 +93,69 @@ export function ZoneProbe() {
         d.remove();
         return f2(v) + " w" + Math.round(w);
       };
-      out.push("[조건 별] 히어로 안, 32.5=1.30배 39=1.56배");
-      out.push(
-        " A 크기만 " +
-          변형((d) => {
-            d.style.fontSize = "25px";
-          })
-      );
-      out.push(
-        " B +줄간격 " +
-          변형((d) => {
-            d.style.fontSize = "25px";
-            d.style.lineHeight = "30px";
-          })
-      );
-      out.push(
-        " C +폭300 " +
-          변형((d) => {
-            d.style.fontSize = "25px";
-            d.style.lineHeight = "30px";
-            d.style.width = "300px";
-          })
-      );
-      out.push(
-        " D 폭만300 " +
-          변형((d) => {
-            d.style.fontSize = "25px";
-            d.style.width = "300px";
-          })
-      );
-      out.push(
-        " E 클래스 " +
-          변형((d) => {
-            d.className = "text-4xl";
-          })
-      );
-      out.push(
-        " F 클래스+폭 " +
-          변형((d) => {
-            d.className = "text-4xl";
-            d.style.width = "300px";
-          })
-      );
-      out.push(
-        " G 클래스+줄간 " +
-          변형((d) => {
-            d.className = "text-4xl";
-            d.style.lineHeight = "30px";
-          })
-      );
-      out.push(
-        " H 글자수적음 " +
-          변형((d) => {
-            d.className = "text-4xl";
-            d.textContent = "가";
-          })
-      );
+      const 재 = (이름: string, 꺾: (d: HTMLDivElement) => void) =>
+        out.push(` ${이름} ${변형(꺾)}`);
+
+      out.push("[조건별] 히어로 안 · 32.5=1.30배 39=1.56배");
+      // 기준: inline 크기만
+      재("A 기준25px", (d) => {
+        d.style.fontSize = "25px";
+      });
+      재("B +줄간30", (d) => {
+        d.style.fontSize = "25px";
+        d.style.lineHeight = "30px";
+      });
+      재("C +폭300", (d) => {
+        d.style.fontSize = "25px";
+        d.style.width = "300px";
+      });
+      재("D +줄간+폭", (d) => {
+        d.style.fontSize = "25px";
+        d.style.lineHeight = "30px";
+        d.style.width = "300px";
+      });
+      // 클래스 쪽 — 크기·줄간격만 클래스에서 온다
+      재("E 클래스", (d) => {
+        d.className = "text-4xl";
+      });
+      재("F 클+폭300", (d) => {
+        d.className = "text-4xl";
+        d.style.width = "300px";
+      });
+      재("G 클+줄간30", (d) => {
+        d.className = "text-4xl";
+        d.style.lineHeight = "30px";
+      });
+      재("H 한자만", (d) => {
+        d.style.fontSize = "25px";
+        d.textContent = "가";
+      });
+
+      // 여덟 개가 모두 같을 때를 대비해 다음 변수도 미리 찍는다.
+      out.push("[다음변수] 기준A 에서 하나씩");
+      재("I inline-block", (d) => {
+        d.style.fontSize = "25px";
+        d.style.display = "inline-block";
+      });
+      재("J nowrap", (d) => {
+        d.style.fontSize = "25px";
+        d.style.whiteSpace = "nowrap";
+      });
+      재("K break-all", (d) => {
+        d.style.fontSize = "25px";
+        d.style.wordBreak = "break-all";
+      });
+      재("L 자간1px", (d) => {
+        d.style.fontSize = "25px";
+        d.style.letterSpacing = "1px";
+      });
+      재("M span감쌀", (d) => {
+        d.style.fontSize = "25px";
+        d.textContent = "";
+        const sp = document.createElement("span");
+        sp.textContent = 글;
+        d.appendChild(sp);
+      });
 
       // main 과 그 부모의 computed 를 나란히.
       const 볼속성 = [
