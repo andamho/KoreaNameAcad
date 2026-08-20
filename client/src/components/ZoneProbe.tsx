@@ -72,8 +72,11 @@ export function ZoneProbe() {
           const r = list[k] as CSSStyleRule & { cssRules?: CSSRuleList };
           if (r.selectorText) {
             if (/ua-instagram\s+\.text-4xl/.test(r.selectorText)) {
-              규칙수++;
-              규칙값 = r.style.getPropertyValue("font-size");
+              const fz = r.style.getPropertyValue("font-size");
+              if (fz) {
+                규칙수++;
+                규칙값 = fz;
+              }
             }
           } else if (r.cssRules) {
             walk(r.cssRules);
