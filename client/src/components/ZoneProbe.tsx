@@ -65,8 +65,14 @@ export function ZoneProbe() {
 
       const out = [
         `[주입블록] ${주입 ? "있음 — 옛 파일" : "없음 — 새 파일"}`,
-        `[html] ${cls}`,
-        `[보정시험] .text-4xl=${f2(시험값)} (걸리면 25, 안걸리면 32.5)`,
+        `[html] ${
+          /ua-instagram/.test(cls)
+            ? "ua-instagram 있음"
+            : /ua-tiktok/.test(cls)
+              ? "ua-tiktok 있음"
+              : "인앱 표시 없음"
+        }`,
+        `[보정] ${f2(시험값)} → ${시험값 < 29 ? "걸림" : "안걸림"}`,
         `폭${window.innerWidth} 기준자${f2(
           parseFloat(getComputedStyle(document.documentElement).fontSize)
         )}`,
@@ -111,9 +117,10 @@ export function ZoneProbe() {
         padding: "6px 8px",
         borderRadius: 6,
         pointerEvents: "none",
-        whiteSpace: "pre",
-        overflow: "hidden",
-        maxHeight: "40vh",
+        whiteSpace: "pre-wrap",
+        wordBreak: "break-all",
+        overflowY: "auto",
+        maxHeight: "60vh",
       }}
     >
       {lines.join("\n")}
