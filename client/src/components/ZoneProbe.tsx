@@ -197,6 +197,28 @@ export function ZoneProbe() {
         ["none", 2],
         ["100%", 3],
       ];
+      // 히어로 구역의 overflow 를 잠긐 바꿔 보는 시험을 먼저 한다.
+      // SECTION 의 overflow:hidden 이 별도 덩어리를 만들어 배율이
+      // 달라지는지를 가린다. 푸터는 overflow 가 visible 라 바깥 덩어리에 속한다.
+      const 재기 = (부모: HTMLElement) => {
+        const d = document.createElement("div");
+        d.className = "text-4xl";
+        d.textContent = "가나다라마바사";
+        부모.appendChild(d);
+        const v = parseFloat(getComputedStyle(d).fontSize);
+        d.remove();
+        return v;
+      };
+      const 전ovx = 히어로.style.overflow;
+      out.push(` body에 ${f2(재기(document.body))}`);
+      히어로.style.overflow = "visible";
+      out.push(` ovx풀면 ${f2(재기(히어로))}`);
+      히어로.style.overflow = 전ovx;
+      const 전contain = 히어로.style.contain;
+      히어로.style.contain = "none";
+      out.push(` contain끔 ${f2(재기(히어로))}`);
+      히어로.style.contain = 전contain;
+
       시험들.forEach(([이름, mode]) => {
         const d = document.createElement("div");
         d.className = "text-4xl";
