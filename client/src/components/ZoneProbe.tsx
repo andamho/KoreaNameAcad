@@ -68,23 +68,35 @@ export function ZoneProbe() {
       const 히어로 =
         (document.querySelector(".kna-experience-page section") as HTMLElement | null) ||
         document.body;
-      const 시험들: Array<[string, Partial<CSSStyleDeclaration>]> = [
-        ["그대로", {}],
-        ["max-height", { maxHeight: "999999px" }],
-        ["adjust:none", { textSizeAdjust: "none" } as Partial<CSSStyleDeclaration>],
-        ["adjust:100%", { textSizeAdjust: "100%" } as Partial<CSSStyleDeclaration>],
-      ];
-      const 시험결과: string[] = [];
-      시험들.forEach(([이름, 스타일]) => {
+      // 조각 하나를 히어로 안에 넣고 재는 틀.
+      const 재기안 = () => {
         const d = document.createElement("div");
         d.className = "text-4xl";
         d.textContent = "가나다라마바사";
-        Object.assign(d.style, 스타일);
         히어로.appendChild(d);
         const v = parseFloat(getComputedStyle(d).fontSize);
         d.remove();
-        시험결과.push(`  ${이름} ${f2(v)}`);
-      });
+        return v;
+      };
+
+      const 시험결과: string[] = [];
+      시험결과.push(`  그대로 ${f2(재기안())}`);
+
+      // 구역의 overflow 를 잠긐 풀어 본다.
+      const 전 = 히어로.style.overflow;
+      히어로.style.overflow = "visible";
+      시험결과.push(`  overflow풀면 ${f2(재기안())}`);
+      히어로.style.overflow = 전;
+
+      // html 에 text-size-adjust 를 준 뒤.
+      const h = document.documentElement as HTMLElement;
+      const 전2 = h.style.getPropertyValue("-webkit-text-size-adjust");
+      h.style.setProperty("-webkit-text-size-adjust", "none");
+      시험결과.push(`  html adjust ${f2(재기안())}`);
+      h.style.setProperty("-webkit-text-size-adjust", 전2);
+
+      // 구역을 통째로 1/1.2 로 줄여 본다(마지막 수단 확인용).
+      시험결과.push(`  목표값 25.03`);
 
       // 보정 규칙이 불러온 CSS 안에 정말 있는지 세어 본다.
       // 없으면 CSS 가 예것이고, 있는데 안 먹으면 조건이 안 맞는 것이다.
