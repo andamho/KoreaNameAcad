@@ -118,7 +118,7 @@ export function Footer() {
         <div className="flex items-center justify-center gap-6 my-12">
           <button
             onClick={() => setLocation('/services')}
-            className="px-4 py-1.5 bg-white text-black font-semibold rounded-full text-sm hover:bg-gray-200 transition-colors flex items-center gap-1"
+            className="kna-footer-cta px-4 py-1.5 bg-white text-black font-semibold rounded-full text-sm hover:bg-gray-200 transition-colors flex items-center gap-1"
             data-testid="button-footer-apply"
           >
             지금 신청 <span className="ml-1">›</span>
