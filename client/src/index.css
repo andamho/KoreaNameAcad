@@ -2184,6 +2184,16 @@ html.ua-tiktok .kna-detail-body {
     font-size: 1.0688rem !important;   /* 1.1875 × 0.9 */
   }
 
+  /* 글쓴이가 본문에서 직접 고른 글자 크기({size:24} → 24px).
+     값이 정해져 있지 않아 보정표로 잡을 수 없다. 그래서 그리는 쪽에서
+     calc(24px / var(--kna-size-scale)) 로 내보내고, 여기서 나눗셈만 바꾼다.
+     338px 실측: 첫글자 24.0 → 31.3 (1.30배) 였다. 본문은 맞는데 이것만 커서
+     본문 대비 1.66배가 2.17배로 벌어졌다. */
+  html.ua-instagram,
+  html.ua-tiktok {
+    --kna-size-scale: 1.3;
+  }
+
   /* 상세 화면 맨 위 '< … 목록' 뒤로가기 링크.
      inline style 의 clamp(12px, 2.5vw, 14px) — px 기준이라 클래스 보정표(34개)에
      안 걸리고 인앱 확대 ×1.30 을 그대로 타 크롬보다 컸다(338px 실측 12.0→15.6).

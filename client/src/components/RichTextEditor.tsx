@@ -586,7 +586,12 @@ function parseFormatted(text: string, keyRef: { v: number }): JSX.Element[] {
       const inner = parseFormatted(text.slice(contentStart, closeIdx), keyRef);
       if (sizeNum >= 12) {
         parts.push(
-          <span key={keyRef.v++} style={{ fontSize: `${sizeNum}px` }}>
+          // 인앱(인스타·틱톡)은 글자를 ×1.3 로 부풀린다. index.css 의 보정표는
+          // Tailwind 클래스만 잡아서, 글쓴이가 골라 넣은 이 px 크기는 그대로 부풀었다.
+          // 크기 값이 정해져 있지 않아 표로는 못 잡으므로 나눗셈을 CSS 변수로 놓는다.
+          // 평소엔 1 이라 그대로이고, 인앱에서만 1.3 이 돼 같은 비율로 줄어든다.
+          // 편집기 쪽(markersToHtml)은 px 로 둔다 — domToMarkers 가 px 만 되읽기 때문이다.
+          <span key={keyRef.v++} style={{ fontSize: `calc(${sizeNum}px / var(--kna-size-scale, 1))` }}>
             {inner}
           </span>
         );
