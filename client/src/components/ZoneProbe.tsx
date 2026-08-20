@@ -93,29 +93,97 @@ export function ZoneProbe() {
         }
       }
 
-      const 넓은: Array<{ n: string; w: number; r: number }> = [];
+      // 넓은 요소를 세 부류로 가른다.
+      //  ① 문제 글자와 같은 레이아웃 나무 안 — 진짜 후보
+      //  ② 떠 있는 것(fixed) · 측정기 — 레이아웃을 안 밀므로 별도 표기
+      //  ③ 그 밖 페이지 요소
+      const 구역 = document.querySelector(
+        ".kna-experience-page section"
+      ) as HTMLElement | null;
+      type 넓 = { n: string; w: number; r: number; 갈: string };
+      const 넓은: 넓[] = [];
       Array.prototype.slice
         .call(document.querySelectorAll("body *"))
         .forEach((e: HTMLElement) => {
           const b = e.getBoundingClientRect();
-          if (b.width > 338 || b.right > 338) {
-            넓은.push({
-              n:
-                e.tagName +
-                (typeof e.className === "string" && e.className
-                  ? "." + e.className.split(/\s+/)[0]
-                  : ""),
-              w: b.width,
-              r: b.right,
-            });
-          }
+          if (b.width <= 338 && b.right <= 338) return;
+          const c = getComputedStyle(e);
+          let 갈 = "③그밖";
+          if (e.closest("[data-kna-probe]")) 갈 = "②측정기";
+          else if (c.position === "fixed") 갈 = "②fixed";
+          else if (문제 
+            ? e.contains(문제) || (구역 ? 구역.contains(e) : false)
+            : false)
+            갈 = "①히어로트리";
+          넓은.push({
+            n:
+              e.tagName +
+              (typeof e.className === "string" && e.className
+                ? "." + e.className.split(/\s+/)[0]
+                : ""),
+            w: b.width,
+            r: b.right,
+            갈,
+          });
         });
       넓은.sort((a, b) => b.w - a.w);
       out.push("");
-      out.push(`[넓은요소] ${넓은.length}개`);
-      넓은.slice(0, 20).forEach((o) => {
-        out.push(` ${o.n.slice(0, 24)} w${f0(o.w)} r${f0(o.r)}`);
-      });
+      const 후보 = 넓은.filter((o) => o.갈 === "①히어로트리");
+      const 밖 = 넓은.filter((o) => o.갈 === "③그밖");
+      const 떠있 = 넓은.filter((o) => o.갈.indexOf("②") === 0);
+      out.push(
+        `[넓은요소] 총${넓은.length} ①후보${후보.length} ②떠있${떠있.length} ③밖${밖.length}`
+      );
+      out.push(" ① 히어로 나무 안 (진짜 후보)");
+      if (!후보.length) out.push("   없음");
+      후보.slice(0, 10).forEach((o) =>
+        out.push(`   ${o.n.slice(0, 22)} w${f0(o.w)} r${f0(o.r)}`)
+      );
+      out.push(" ③ 그 밖");
+      밖.slice(0, 8).forEach((o) =>
+        out.push(`   ${o.n.slice(0, 22)} w${f0(o.w)} r${f0(o.r)}`)
+      );
+      out.push(" ② 떠있는 것(레이아웃 무관)");
+      떠있.slice(0, 5).forEach((o) =>
+        out.push(`   ${o.n.slice(0, 22)} w${f0(o.w)}`)
+      );
+
+      // 조상 중 rect 는 정상인데 scrollWidth 만 큰 곳을 찾아,
+      // 어떤 자식이 안에서 밀고 있는지 본다.
+      out.push("");
+      out.push("[안에서 미는 자식]");
+      let 범인찾음 = false;
+      if (문제) {
+        let p2: HTMLElement | null = 문제;
+        while (p2) {
+          const b2 = p2.getBoundingClientRect();
+          if (b2.width <= 400 && p2.scrollWidth >= 400) {
+            범인찾음 = true;
+            out.push(
+              ` ${p2.tagName}.${
+                typeof p2.className === "string"
+                  ? p2.className.split(/\s+/)[0]
+                  : ""
+              }`.slice(0, 30)
+            );
+            out.push(`  rect${f0(b2.width)} scr${f0(p2.scrollWidth)}`);
+            const 범 = Array.prototype.slice
+              .call(p2.querySelectorAll("*"))
+              .map((c2: HTMLElement) => ({
+                n: c2.tagName + "." + (typeof c2.className === "string" ? c2.className.split(/\s+/)[0] : ""),
+                w: c2.getBoundingClientRect().width,
+                r: c2.getBoundingClientRect().right,
+              }))
+              .filter((o: { w: number }) => o.w > b2.width + 1)
+              .sort((x: { w: number }, y: { w: number }) => y.w - x.w);
+            범.slice(0, 5).forEach((o: { n: string; w: number; r: number }) =>
+              out.push(`   → ${o.n.slice(0, 20)} w${f0(o.w)} r${f0(o.r)}`)
+            );
+          }
+          p2 = p2.parentElement;
+        }
+      }
+      if (!범인찾음) out.push(" rect 정상 + scr≥400 인 조상 없음");
 
       const 히어로 =
         (document.querySelector(
@@ -162,6 +230,7 @@ export function ZoneProbe() {
 
   return (
     <div
+      data-kna-probe="1"
       style={{
         position: "fixed",
         left: 2,
