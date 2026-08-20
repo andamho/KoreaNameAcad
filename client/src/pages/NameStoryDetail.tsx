@@ -230,7 +230,7 @@ export default function NameStoryDetail() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between mb-6">
             <Link href="/name-stories" data-testid="button-back">
-              <span className="text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>
+              <span className="text-muted-foreground hover:text-foreground transition-colors kna-back-link" style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>
                 &lt; 이름이야기 목록
               </span>
             </Link>
@@ -285,7 +285,7 @@ export default function NameStoryDetail() {
             )}
 
             <Card className="p-6 md:p-8">
-              <div className="kna-nanum-editor prose dark:prose-invert max-w-none">
+              <div className="kna-nanum-editor kna-detail-body prose dark:prose-invert max-w-none">
                 {(() => {
                   const parts = story.content.split(/(!\[[^\]]*\]\([^)]+\))/);
                   const result: JSX.Element[] = [];

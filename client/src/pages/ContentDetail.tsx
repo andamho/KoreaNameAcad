@@ -241,7 +241,7 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between mb-6">
             <Link href={backPath} data-testid="button-back">
-              <span className="text-muted-foreground hover:text-foreground transition-colors" style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>
+              <span className="text-muted-foreground hover:text-foreground transition-colors kna-back-link" style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>
                 &lt; {backLabel}
               </span>
             </Link>

@@ -401,48 +401,17 @@ export default function NameStories() {
       const className = isInstagram ? "ua-instagram" : "ua-tiktok";
       // 인앱 표시(ua-instagram / ua-tiktok)는 App 이 전역으로 관리한다. 여기서 붙이지 않는다.
       
-      const styleId = `inapp-style-${className}`;
-      if (!document.getElementById(styleId)) {
-        const style = document.createElement('style');
-        style.id = styleId;
-        style.textContent = `
-          html.${className} {
-            font-size: 14px !important;
-          }
-          html.${className} h1 {
-            font-size: clamp(18px, 4.5vw, 22px) !important;
-          }
-          html.${className} h2 {
-            font-size: clamp(16px, 4vw, 20px) !important;
-          }
-          html.${className} h3, html.${className} h4 {
-            font-size: clamp(15px, 3.8vw, 18px) !important;
-          }
-          html.${className} p, html.${className} li, html.${className} span {
-            font-size: 14px !important;
-          }
-          html.${className} .text-4xl {
-            font-size: 20px !important;
-          }
-          html.${className} .text-5xl {
-            font-size: 22px !important;
-          }
-          html.${className} .text-lg {
-            font-size: 14px !important;
-          }
-          html.${className} .text-2xl {
-            font-size: 16px !important;
-          }
-        `;
-        document.head.appendChild(style);
-      }
-      
-      return () => {
-        const styleElement = document.getElementById(styleId);
-        if (styleElement) {
-          styleElement.remove();
-        }
-      };
+      // 인앱 font-size 강제 주입은 없앱다.
+      //
+      // 예전에는 여기서 <style>(inapp-style-*)을 만들어 기준자(html)를 14px 로 못박고
+      // h1~h4 · p/li/span · .text-lg ~ .text-5xl 까지 px 로 고정했다. !important 라서
+      // index.css 의 공통 ÷1.3 보정(34개)을 전부 이겼다. 특히 html 을 14px 로
+      // 못박는 것이 문제라, 인앱 기준자(18.79px)가 무너져 rem 글자가 모두 어긋났다.
+      // 서비스(dd471750)·후기 페이지와 같은 정리다. 크기는 공통 보정 체계에 맡긴다.
+      //
+      // 빈 <style> 을 만들지도 않는다. id 를 여러 페이지가 함께 쓰기 때문에
+      // 빈 태그가 남으면 다른 페이지가 자기 스타일을 못 만든다.
+      console.log(`[NameStories] 인앱 브라우저 감지: ${className}, User Agent: ${userAgent}`);
     }
   }, []);
 

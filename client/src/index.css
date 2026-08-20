@@ -2099,12 +2099,23 @@ html.ua-tiktok .kna-detail-body {
   html.ua-tiktok .text-2xl { font-size: 1.1538rem; }
   html.ua-instagram .text-3xl,
   html.ua-tiktok .text-3xl { font-size: 1.4423rem; }
+  /* .text-4xl 도 글자(2.25rem)와 줄 간격(2.5rem)을 함께 준다.
+     이름이야기 목록 제목에서 글자는 맞는데 줄 간격만 36.1→47.0 으로 1.30배였다.
+     leading-* 를 직접 준 곳은 그 뜻을 살리도록 비켜 둔다. */
   html.ua-instagram .text-4xl,
   html.ua-tiktok .text-4xl { font-size: 1.7308rem; }
+  html.ua-instagram .text-4xl:not([class*="leading-"]),
+  html.ua-tiktok .text-4xl:not([class*="leading-"]) {
+    line-height: 1.9231rem;   /* 2.5 ÷ 1.3 */
+  }
   html.ua-instagram .text-5xl,
   html.ua-tiktok .text-5xl { font-size: 2.3077rem; }
   html.ua-instagram .text-base,
   html.ua-tiktok .text-base { font-size: 0.7692rem; }
+  html.ua-instagram .text-base:not([class*="leading-"]),
+  html.ua-tiktok .text-base:not([class*="leading-"]) {
+    line-height: 1.1538rem;   /* 1.5 ÷ 1.3 */
+  }
   html.ua-instagram .text-lg,
   html.ua-tiktok .text-lg { font-size: 0.8654rem; }
   /* text-sm 은 Tailwind 가 글자 크기와 줄 간격을 함께 준다(0.875rem / 1.25rem).
@@ -2117,21 +2128,14 @@ html.ua-tiktok .kna-detail-body {
     line-height: 0.9615rem;   /* 1.25 ÷ 1.3 */
   }
 
-  /* 서비스 버튼 안의 › 화살표.
-     .text-base 는 Tailwind 가 글자(1rem)와 줄 간격(1.5rem)을 함께 주는데,
-     인앱 보정이 글자만 나눠 줄 간격이 rem 인 채로 남았다. 그 줄 간격이
-     버튼 안에서 가장 높은 줄상자가 되어 버튼 높이를 혼자 정하고 있었다.
-     실기기 실측: 화살표 줄높이 28.2 (버튼 글자는 18.1), 감추면 높이 -10.1.
-     전역 .text-base 는 건드리지 않고, text-sm 버튼 안의 화살표로만 좁힌다.
-     글자 크기·여백·가로폭은 손대지 않는다. */
-  html.ua-instagram button.text-sm > .text-base,
-  html.ua-tiktok button.text-sm > .text-base {
-    line-height: 1.1538rem;   /* 1.5 ÷ 1.3 */
-  }
   html.ua-instagram .text-xl,
   html.ua-tiktok .text-xl { font-size: 0.9615rem; }
   html.ua-instagram .text-xs,
   html.ua-tiktok .text-xs { font-size: 0.5769rem; }
+  html.ua-instagram .text-xs:not([class*="leading-"]),
+  html.ua-tiktok .text-xs:not([class*="leading-"]) {
+    line-height: 0.7692rem;   /* 1 ÷ 1.3 */
+  }
   html.ua-instagram .text-\[0\.5625rem\],
   html.ua-tiktok .text-\[0\.5625rem\] { font-size: 0.4327rem; }
   html.ua-instagram .text-\[0\.625rem\],
@@ -2178,6 +2182,16 @@ html.ua-tiktok .kna-detail-body {
   .kna-footer h2 > span:last-child,
   .kna-promo .kna-promo-third {
     font-size: 1.0688rem !important;   /* 1.1875 × 0.9 */
+  }
+
+  /* 상세 화면 맨 위 '< … 목록' 뒤로가기 링크.
+     inline style 의 clamp(12px, 2.5vw, 14px) — px 기준이라 클래스 보정표(34개)에
+     안 걸리고 인앱 확대 ×1.30 을 그대로 타 크롬보다 컸다(338px 실측 12.0→15.6).
+     하한·vw·상한을 모두 1.3 으로 나눠 폰 폭에 따른 비율은 그대로 둔다.
+     후기·이름이야기 상세가 같은 코드라 둘 다 같이 걸린다. */
+  html.ua-instagram .kna-back-link,
+  html.ua-tiktok .kna-back-link {
+    font-size: clamp(9.21px, 1.919vw, 10.75px) !important;   /* 각각 ÷ 1.303 */
   }
 
   /* 인라인(style=) 으로 크기를 직접 준 곳 — 4 그룹뿐이라 여기서 함께 처리한다.
