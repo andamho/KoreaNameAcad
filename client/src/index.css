@@ -2194,24 +2194,6 @@ html.ua-tiktok .kna-detail-body {
     --kna-size-scale: 1.3;
   }
 
-  /* 푸터 '지금 신청' 버튼 하나만.
-     글자는 .text-sm 보정을 받아 맞는데 안쪽 여백은 rem 이라 보정 밖에 있었다.
-     338px 실측: 좌우 14.42→18.79, 위아래 5.41→7.05 로 둘 다 1.303배 —
-     상자가 87.2×28.8 에서 98.2×32.1 로 부풀었다.
-     글자와 같은 1/1.3 을 여백·틈에도 건다. rem 으로 두어야 폰 폭이 바뀌어도
-     같은 비율이 유지된다(px 로 못박으면 큰 폰에서 버튼만 안 커진다).
-     전역 .px-4 / .py-1.5 는 건드리지 않는다 — 이 버튼 하나만 잡는다.
-     크롬 디자인(px-4 py-1.5)은 그대로고, 글자 크기·줄 간격도 건드리지 않는다. */
-  html.ua-instagram .kna-footer-cta,
-  html.ua-tiktok .kna-footer-cta {
-    padding: 0.2885rem 0.7692rem;   /* 0.375 ÷ 1.3 , 1 ÷ 1.3 */
-    gap: 0.1923rem;                 /* gap-1 = 0.25 ÷ 1.3 */
-  }
-  html.ua-instagram .kna-footer-cta > span,
-  html.ua-tiktok .kna-footer-cta > span {
-    margin-left: 0.1923rem;         /* ml-1 = 0.25 ÷ 1.3 */
-  }
-
   /* 상세 화면 맨 위 '< … 목록' 뒤로가기 링크.
      inline style 의 clamp(12px, 2.5vw, 14px) — px 기준이라 클래스 보정표(34개)에
      안 걸리고 인앱 확대 ×1.30 을 그대로 타 크롬보다 컸다(338px 실측 12.0→15.6).
