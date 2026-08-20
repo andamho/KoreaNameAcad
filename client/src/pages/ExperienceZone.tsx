@@ -116,7 +116,12 @@ export default function ExperienceZone() {
               loading="eager"
               decoding="sync"
             />
-            <div className="text-center md:text-left">
+            {/* w-full: 모바일에서 이 글자 덩어리가 내용 너비(150px)로 줄어들어
+                있었다. 부모가 flex-col + items-center 라 자식이 늘어나지 않는다.
+                상자가 좋으면 인앱 브라우저가 그 덩어리만 더 크게 부품린다 —
+                실기기 338px 에서 다른 곳은 1.30배인데 여기만 1.56배였다.
+                글자는 가운데 정렬이라 폭을 늘려도 보이는 모양은 같다. */}
+            <div className="w-full md:w-auto text-center md:text-left">
               <p className="text-sm font-medium tracking-wide text-slate-600 mb-2">EXPERIENCE ZONE</p>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6"
                 style={{ color: '#1e2a4a' }}>

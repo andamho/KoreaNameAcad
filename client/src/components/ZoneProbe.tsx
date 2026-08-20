@@ -101,7 +101,7 @@ export function ZoneProbe() {
               ? "ua-tiktok 있음"
               : "인앱 표시 없음"
         }`,
-        `[보정] ${f2(시험값)} → ${시험값 < 29 ? "걸림" : "안걸림"}`,
+        `[기준부품] ${f2(시험값)} ÷ 25.03 = ${(시험값 / 25.03).toFixed(2)}배`,
         `[MQ767] ${
           window.matchMedia("(max-width: 767px)").matches ? "맞음" : "안맞음"
         }`,
@@ -121,7 +121,12 @@ export function ZoneProbe() {
                 (nd.textContent || "").trim().indexOf(t) === 0
             )
         );
-        out.push(`${t.slice(0, 10)} ${size(el || null)} (크롬 ${크롬})`);
+        const v = el ? parseFloat(getComputedStyle(el).fontSize) : 0;
+        out.push(
+          `${t.slice(0, 8)} ${size(el || null)} ÷${크롬} = ${
+            v ? (v / parseFloat(크롬)).toFixed(2) : "-"
+          }배`
+        );
       });
 
       kill.remove();
