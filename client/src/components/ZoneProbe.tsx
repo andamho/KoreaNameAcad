@@ -88,10 +88,17 @@ export function ZoneProbe() {
         d.textContent = 글;
         꺾(d);
         구역2.appendChild(d);
+        // 부품림은 글을 실제로 배치할 때만 걸린다. display:none 으로 먼저 읽으면
+        // 부품리기 전 CSS 계산값을 알 수 있다. 조각들이 정말 같은 크기인지
+        // 확인해야 비교가 유효하다.
+        const 전d = d.style.display;
+        d.style.display = "none";
+        const css = parseFloat(getComputedStyle(d).fontSize);
+        d.style.display = 전d;
         const v = parseFloat(getComputedStyle(d).fontSize);
         const w = d.getBoundingClientRect().width;
         d.remove();
-        return f2(v) + " w" + Math.round(w);
+        return f2(css) + "→" + f2(v) + " w" + Math.round(w);
       };
       const 재 = (이름: string, 꺾: (d: HTMLDivElement) => void) =>
         out.push(` ${이름} ${변형(꺾)}`);
@@ -165,6 +172,28 @@ export function ZoneProbe() {
         d.className = "text-4xl";
         d.style.fontSize = "1.7308rem";
       });
+      // 결정적 시험 — 같은 클래스를 푸터에 넣으면?
+      // 39 가 나오면 자리와 무관하게 '클래스가 같은 것끼리 묶여' 배율을
+      // 나눠 쓴다는 뜻이다. 32.5 면 자리도 같이 작용하는 것이다.
+      const 푸터자리 = document.querySelector("footer") as HTMLElement | null;
+      if (푸터자리) {
+        const d2 = document.createElement("div");
+        d2.style.fontFamily = "sans-serif";
+        d2.style.fontWeight = "400";
+        d2.style.display = "block";
+        d2.style.margin = "0";
+        d2.style.padding = "0";
+        d2.textContent = 글;
+        d2.className = "text-4xl";
+        d2.style.fontSize = "25px";
+        푸터자리.appendChild(d2);
+        d2.style.display = "none";
+        const css2 = parseFloat(getComputedStyle(d2).fontSize);
+        d2.style.display = "block";
+        const v2 = parseFloat(getComputedStyle(d2).fontSize);
+        d2.remove();
+        out.push(` T 클+px를푸터에 ${f2(css2)}→${f2(v2)}`);
+      }
       시트.remove();
 
       // main 과 그 부모의 computed 를 나란히.
