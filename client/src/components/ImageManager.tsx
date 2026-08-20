@@ -165,6 +165,7 @@ export function ImageManager({
               onDrop={(e) => handleDrop(e, idx)}
               onDragEnd={handleDragEnd}
               style={{ cursor: 'grab' }}
+              onClick={() => setAsThumbnail(img)}
               className={`relative aspect-square rounded overflow-hidden border-2 transition-all ${
                 thumbnail === img ? 'border-primary' : 'border-transparent'
               } ${dragOverIndex === idx ? 'ring-2 ring-blue-400 scale-105' : ''} ${
