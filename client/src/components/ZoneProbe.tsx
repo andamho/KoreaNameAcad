@@ -209,15 +209,19 @@ export function ZoneProbe() {
         d.remove();
         return v;
       };
-      const 전ovx = 히어로.style.overflow;
-      out.push(` body에 ${f2(재기(document.body))}`);
-      히어로.style.overflow = "visible";
-      out.push(` ovx풀면 ${f2(재기(히어로))}`);
-      히어로.style.overflow = 전ovx;
-      const 전contain = 히어로.style.contain;
-      히어로.style.contain = "none";
-      out.push(` contain끔 ${f2(재기(히어로))}`);
-      히어로.style.contain = 전contain;
+      // 카드들은 히어로 구역 밖인데도 같은 1.20 배였다.
+      // 그럼 덩어리 뿌리는 구역보다 위에 있다. 깊이별로 하나씩 넣어 본다.
+      const 자리들: Array<[string, HTMLElement | null]> = [
+        ["html에", document.documentElement],
+        ["body에", document.body],
+        ["page에", document.querySelector(".kna-experience-page")],
+        ["main에", document.querySelector("main")],
+        ["section에", 히어로],
+        ["footer에", document.querySelector("footer")],
+      ];
+      자리들.forEach(([이름, el]) => {
+        out.push(` ${이름} ${el ? f2(재기(el as HTMLElement)) : "없음"}`);
+      });
 
       시험들.forEach(([이름, mode]) => {
         const d = document.createElement("div");
