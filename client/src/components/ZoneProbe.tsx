@@ -1,18 +1,21 @@
 import { useEffect, useState } from "react";
 
 /**
- * 체험존 폭 조사용 임시 측정기. 주소 어디에든 zzz 가 있으면 켜진다.
- *   예: korea-name-acad.com/experience-zone?v=15#zzz
+ * 체험존 원인 추적용 임시 측정기. 주소 어디에든 zzz 가 있으면 켜진다.
+ *   예: korea-name-acad.com/experience-zone?v=18#zzz
  *
- * 지금까지 실기기에서 확정된 것
- *   - ua-instagram 표시 있음, 보정 규칙 있음(1.7308rem), 미디어쿼리 맞음
- *   - 히어로 구역 안이면 무엇이든 1.56 배, 바깥은 1.30 배
- *   - 조각 자신에게 max-height / text-size-adjust 를 줘도 안 막힘
- *   - 히어로 자식 폭을 150→309 로 늘려도 배율은 그대로
+ * 실기기에서 떨어진 후보 — 인앱 표시 없음 · 보정 규칙 없음 · 미디어쿼리 ·
+ * 글자 상자 폭 · 400px 넓은 요소 · text-size-adjust · overflow · contain.
+ * 남은 사실은 '어느 자리에 넣느냐' 로만 1.30 배와 1.56 배가 갈린다는 것뿐이다.
  *
- * 마지막 것으로 폐기된 것은 '그 자식의 폭' 하나뿐이다. 폭 원인 전체는 아직
- * 살아 있으므로 화면 폭·문서 폭·조상 사슬·넓은 요소를 한 번에 찍는다.
- * 시험 조각은 넣은 값이 아니라 실제 computed 값을 함께 찍는다.
+ * 그래서 세 가지를 한 번에 한다.
+ *  ① 완전히 같은 조각을 자리만 바꿔 넣어 경계를 찾는다.
+ *     태그·inline font-size·line-height·글꼴·굵기·폭을 모두 똑같이 맞춘다.
+ *     클래스를 쓰면 자리마다 다른 규칙이 걸릴 수 있어 inline 으로만 준다.
+ *  ② 경계로 지목된 곳과 그 부모의 computed 를 나란히 찍는다.
+ *  ③ 그 곳의 속성을 하나씩 지워 보며 배율이 돌아오는지 본다(A/B).
+ *
+ * 39 가 처음 나오는 자리를 원인으로 단정하지 않는다. 경계일 뿐이다.
  *
  * 확인이 끝나면 이 파일과 App.tsx 의 사용처를 지운다.
  */
@@ -22,232 +25,137 @@ export function ZoneProbe() {
   useEffect(() => {
     if (!/zzz/i.test(window.location.href)) return;
 
-    const f0 = (v: number) => String(Math.round(v));
     const f2 = (v: number) => v.toFixed(2);
 
-    const 재기 = () => {
+    // 여섯 자리에 똑같은 조각을 넣는다. 다른 것은 자리뿐이다.
+    const 조각만들기 = () => {
+      const d = document.createElement("div");
+      d.style.fontSize = "25px";
+      d.style.lineHeight = "30px";
+      d.style.fontFamily = "sans-serif";
+      d.style.fontWeight = "400";
+      d.style.width = "300px";
+      d.style.display = "block";
+      d.style.margin = "0";
+      d.style.padding = "0";
+      d.textContent = "가나다라마바사아자차";
+      return d;
+    };
+
+    const 재기 = (부모: HTMLElement | null) => {
+      if (!부모) return null;
+      const d = 조각만들기();
+      부모.appendChild(d);
+      const v = parseFloat(getComputedStyle(d).fontSize);
+      d.remove();
+      return v;
+    };
+
+    const 재기본 = () => {
       const kill = document.createElement("style");
       kill.textContent =
         "*,*::before,*::after{transition:none !important;animation:none !important}";
       document.head.appendChild(kill);
 
       const out: string[] = [];
-      const de = document.documentElement;
-      const vv = (window as unknown as { visualViewport?: { width: number } })
-        .visualViewport;
-
-      out.push("[폭]");
-      out.push(` inner${f0(window.innerWidth)} client${f0(de.clientWidth)}`);
-      out.push(
-        ` docScr${f0(de.scrollWidth)} bodyScr${f0(document.body.scrollWidth)}`
-      );
-      out.push(
-        ` visualVP${vv ? f0(vv.width) : "-"} 기준자${f2(
-          parseFloat(getComputedStyle(de).fontSize)
-        )}`
-      );
-
-      const 문제 = Array.prototype.slice
-        .call(document.querySelectorAll("h1,h2,p,span,div"))
-        .find((e: HTMLElement) =>
-          Array.prototype.slice
-            .call(e.childNodes)
-            .some(
-              (n: ChildNode) =>
-                n.nodeType === 3 &&
-                (n.textContent || "").trim().indexOf("체험 ZONE") === 0
-            )
-        ) as HTMLElement | undefined;
-
-      out.push("");
-      out.push("[조상] 체험ZONE→html");
-      if (!문제) {
-        out.push(" 못 찾음");
-      } else {
-        let p: HTMLElement | null = 문제;
-        let i = 0;
-        while (p && i < 12) {
-          const b = p.getBoundingClientRect();
-          const c = getComputedStyle(p);
-          const 이름 =
-            p.tagName +
-            (typeof p.className === "string" && p.className
-              ? "." + p.className.split(/\s+/).slice(0, 2).join(".")
-              : "");
-          out.push(` ${i} ${이름.slice(0, 28)}`);
-          out.push(
-            `  rect${f0(b.width)} cli${f0(p.clientWidth)} scr${f0(p.scrollWidth)}`
-          );
-          out.push(`  w=${c.width} max=${c.maxWidth} min=${c.minWidth}`);
-          out.push(`  ovx=${c.overflowX} pos=${c.position} d=${c.display}`);
-          const 특이 = [
-            c.transform !== "none" ? "tf=" + c.transform.slice(0, 16) : "",
-            c.zoom && c.zoom !== "1" ? "zoom=" + c.zoom : "",
-            c.contain && c.contain !== "none" ? "contain=" + c.contain : "",
-          ]
-            .filter(Boolean)
-            .join(" ");
-          if (특이) out.push("  " + 특이);
-          p = p.parentElement;
-          i++;
-        }
-      }
-
-      // 넓은 요소를 세 부류로 가른다.
-      //  ① 문제 글자와 같은 레이아웃 나무 안 — 진짜 후보
-      //  ② 떠 있는 것(fixed) · 측정기 — 레이아웃을 안 밀므로 별도 표기
-      //  ③ 그 밖 페이지 요소
-      const 구역 = document.querySelector(
+      const page = document.querySelector(
+        ".kna-experience-page"
+      ) as HTMLElement | null;
+      const main = document.querySelector("main") as HTMLElement | null;
+      const section = document.querySelector(
         ".kna-experience-page section"
       ) as HTMLElement | null;
-      type 넓 = { n: string; w: number; r: number; 갈: string };
-      const 넓은: 넓[] = [];
-      Array.prototype.slice
-        .call(document.querySelectorAll("body *"))
-        .forEach((e: HTMLElement) => {
-          const b = e.getBoundingClientRect();
-          if (b.width <= 338 && b.right <= 338) return;
-          const c = getComputedStyle(e);
-          let 갈 = "③그밖";
-          if (e.closest("[data-kna-probe]")) 갈 = "②측정기";
-          else if (c.position === "fixed") 갈 = "②fixed";
-          else if (문제 
-            ? e.contains(문제) || (구역 ? 구역.contains(e) : false)
-            : false)
-            갈 = "①히어로트리";
-          넓은.push({
-            n:
-              e.tagName +
-              (typeof e.className === "string" && e.className
-                ? "." + e.className.split(/\s+/)[0]
-                : ""),
-            w: b.width,
-            r: b.right,
-            갈,
-          });
-        });
-      넓은.sort((a, b) => b.w - a.w);
-      out.push("");
-      const 후보 = 넓은.filter((o) => o.갈 === "①히어로트리");
-      const 밖 = 넓은.filter((o) => o.갈 === "③그밖");
-      const 떠있 = 넓은.filter((o) => o.갈.indexOf("②") === 0);
-      out.push(
-        `[넓은요소] 총${넓은.length} ①후보${후보.length} ②떠있${떠있.length} ③밖${밖.length}`
-      );
-      out.push(" ① 히어로 나무 안 (진짜 후보)");
-      if (!후보.length) out.push("   없음");
-      후보.slice(0, 10).forEach((o) =>
-        out.push(`   ${o.n.slice(0, 22)} w${f0(o.w)} r${f0(o.r)}`)
-      );
-      out.push(" ③ 그 밖");
-      밖.slice(0, 8).forEach((o) =>
-        out.push(`   ${o.n.slice(0, 22)} w${f0(o.w)} r${f0(o.r)}`)
-      );
-      out.push(" ② 떠있는 것(레이아웃 무관)");
-      떠있.slice(0, 5).forEach((o) =>
-        out.push(`   ${o.n.slice(0, 22)} w${f0(o.w)}`)
-      );
+      const footer = document.querySelector("footer") as HTMLElement | null;
 
-      // 조상 중 rect 는 정상인데 scrollWidth 만 큰 곳을 찾아,
-      // 어떤 자식이 안에서 밀고 있는지 본다.
-      out.push("");
-      out.push("[안에서 미는 자식]");
-      let 범인찾음 = false;
-      if (문제) {
-        let p2: HTMLElement | null = 문제;
-        while (p2) {
-          const b2 = p2.getBoundingClientRect();
-          if (b2.width <= 400 && p2.scrollWidth >= 400) {
-            범인찾음 = true;
-            out.push(
-              ` ${p2.tagName}.${
-                typeof p2.className === "string"
-                  ? p2.className.split(/\s+/)[0]
-                  : ""
-              }`.slice(0, 30)
-            );
-            out.push(`  rect${f0(b2.width)} scr${f0(p2.scrollWidth)}`);
-            const 범 = Array.prototype.slice
-              .call(p2.querySelectorAll("*"))
-              .map((c2: HTMLElement) => ({
-                n: c2.tagName + "." + (typeof c2.className === "string" ? c2.className.split(/\s+/)[0] : ""),
-                w: c2.getBoundingClientRect().width,
-                r: c2.getBoundingClientRect().right,
-              }))
-              .filter((o: { w: number }) => o.w > b2.width + 1)
-              .sort((x: { w: number }, y: { w: number }) => y.w - x.w);
-            범.slice(0, 5).forEach((o: { n: string; w: number; r: number }) =>
-              out.push(`   → ${o.n.slice(0, 20)} w${f0(o.w)} r${f0(o.r)}`)
-            );
-          }
-          p2 = p2.parentElement;
-        }
-      }
-      if (!범인찾음) out.push(" rect 정상 + scr≥400 인 조상 없음");
-
-      const 히어로 =
-        (document.querySelector(
-          ".kna-experience-page section"
-        ) as HTMLElement | null) || document.body;
-      out.push("");
-      out.push("[시험조각] 목표25.03");
-      const 시험들: Array<[string, number]> = [
-        ["그대로", 0],
-        ["maxH", 1],
-        ["none", 2],
-        ["100%", 3],
-      ];
-      // 히어로 구역의 overflow 를 잠긐 바꿔 보는 시험을 먼저 한다.
-      // SECTION 의 overflow:hidden 이 별도 덩어리를 만들어 배율이
-      // 달라지는지를 가린다. 푸터는 overflow 가 visible 라 바깥 덩어리에 속한다.
-      const 재기 = (부모: HTMLElement) => {
-        const d = document.createElement("div");
-        d.className = "text-4xl";
-        d.textContent = "가나다라마바사";
-        부모.appendChild(d);
-        const v = parseFloat(getComputedStyle(d).fontSize);
-        d.remove();
-        return v;
-      };
-      // 카드들은 히어로 구역 밖인데도 같은 1.20 배였다.
-      // 그럼 덩어리 뿌리는 구역보다 위에 있다. 깊이별로 하나씩 넣어 본다.
+      out.push("[같은조각 자리별] 25px 넣음");
+      out.push(" 1.30배=32.5 / 1.56배=39");
       const 자리들: Array<[string, HTMLElement | null]> = [
-        ["html에", document.documentElement],
-        ["body에", document.body],
-        ["page에", document.querySelector(".kna-experience-page")],
-        ["main에", document.querySelector("main")],
-        ["section에", 히어로],
-        ["footer에", document.querySelector("footer")],
+        ["html", document.documentElement],
+        ["body", document.body],
+        ["page", page],
+        ["main", main],
+        ["section", section],
+        ["footer", footer],
       ];
       자리들.forEach(([이름, el]) => {
-        out.push(` ${이름} ${el ? f2(재기(el as HTMLElement)) : "없음"}`);
+        const v = 재기(el);
+        out.push(` ${이름} ${v === null ? "없음" : f2(v)}`);
       });
 
-      시험들.forEach(([이름, mode]) => {
-        const d = document.createElement("div");
-        d.className = "text-4xl";
-        d.textContent = "가나다라마바사";
-        if (mode === 1) d.style.maxHeight = "999999px";
-        if (mode === 2) d.style.setProperty("-webkit-text-size-adjust", "none");
-        if (mode === 3) d.style.setProperty("-webkit-text-size-adjust", "100%");
-        히어로.appendChild(d);
-        const cs = getComputedStyle(d);
-        const tsa =
-          cs.getPropertyValue("-webkit-text-size-adjust") ||
-          cs.getPropertyValue("text-size-adjust") ||
-          "(빈)";
-        const v = parseFloat(cs.fontSize);
-        const w = d.getBoundingClientRect().width;
-        d.remove();
-        out.push(` ${이름} ${f2(v)} w${f0(w)} tsa=${tsa}`);
-      });
+      // main 과 그 부모의 computed 를 나란히.
+      const 볼속성 = [
+        "display",
+        "flexGrow",
+        "flexBasis",
+        "flexDirection",
+        "width",
+        "maxWidth",
+        "minWidth",
+        "height",
+        "minHeight",
+        "fontSize",
+        "lineHeight",
+        "position",
+        "overflow",
+        "transform",
+        "zoom",
+        "contain",
+        "columnCount",
+        "columnWidth",
+      ];
+      out.push("");
+      out.push("[main vs 부모] 다른 것만");
+      if (main && main.parentElement) {
+        const a = getComputedStyle(main);
+        const b = getComputedStyle(main.parentElement);
+        볼속성.forEach((k) => {
+          const va = (a as unknown as Record<string, string>)[k];
+          const vb = (b as unknown as Record<string, string>)[k];
+          if (va !== vb) out.push(` ${k}: main=${va} 부모=${vb}`);
+        });
+        out.push(` 부모=${main.parentElement.tagName}.${
+          typeof main.parentElement.className === "string"
+            ? main.parentElement.className.split(/\s+/)[0]
+            : ""
+        }`.slice(0, 40));
+      } else {
+        out.push(" main 없음");
+      }
+
+      // main 의 속성을 하나씩 지워 보며 배율이 돌아오는지.
+      out.push("");
+      out.push("[main A/B] 32.5면 그게 원인");
+      if (main) {
+        const 끄기: Array<[string, string]> = [
+          ["display", "block"],
+          ["flex-grow", "0"],
+          ["flex-basis", "auto"],
+          ["width", "auto"],
+          ["max-width", "none"],
+          ["min-height", "0"],
+          ["height", "auto"],
+          ["position", "static"],
+          ["overflow", "visible"],
+          ["contain", "none"],
+          ["padding", "0"],
+        ];
+        끄기.forEach(([prop, val]) => {
+          const 전 = main.style.getPropertyValue(prop);
+          const 전우선 = main.style.getPropertyPriority(prop);
+          main.style.setProperty(prop, val, "important");
+          const v = 재기(main);
+          if (전) main.style.setProperty(prop, 전, 전우선);
+          else main.style.removeProperty(prop);
+          out.push(` ${prop}=${val} → ${v === null ? "-" : f2(v)}`);
+        });
+      }
 
       kill.remove();
       return out;
     };
 
-    const ts = [800, 2500, 5000].map((ms) =>
-      window.setTimeout(() => setLines(재기()), ms)
+    const ts = [900, 2600, 5200].map((ms) =>
+      window.setTimeout(() => setLines(재기본()), ms)
     );
     return () => ts.forEach((t) => window.clearTimeout(t));
   }, []);
@@ -265,7 +173,7 @@ export function ZoneProbe() {
         zIndex: 2147483647,
         background: "rgba(10,40,80,0.96)",
         color: "#fff",
-        font: "10px/1.35 monospace",
+        font: "11px/1.4 monospace",
         padding: "5px 6px",
         borderRadius: 6,
         whiteSpace: "pre-wrap",
