@@ -63,6 +63,32 @@ export function ZoneProbe() {
       const 시험값 = parseFloat(getComputedStyle(시험).fontSize);
       시험.remove();
 
+      // 보정 규칙이 불러온 CSS 안에 정말 있는지 세어 본다.
+      // 없으면 CSS 가 예것이고, 있는데 안 먹으면 조건이 안 맞는 것이다.
+      let 규칙수 = 0;
+      let 규칙값 = "";
+      const walk = (list: CSSRuleList) => {
+        for (let k = 0; k < list.length; k++) {
+          const r = list[k] as CSSStyleRule & { cssRules?: CSSRuleList };
+          if (r.selectorText) {
+            if (/ua-instagram\s+\.text-4xl/.test(r.selectorText)) {
+              규칙수++;
+              규칙값 = r.style.getPropertyValue("font-size");
+            }
+          } else if (r.cssRules) {
+            walk(r.cssRules);
+          }
+        }
+      };
+      for (let i = 0; i < document.styleSheets.length; i++) {
+        try {
+          const rs = document.styleSheets[i].cssRules;
+          if (rs) walk(rs);
+        } catch (e) {
+          /* 다른 출처 CSS 는 몸본다 */
+        }
+      }
+
       const out = [
         `[주입블록] ${주입 ? "있음 — 옛 파일" : "없음 — 새 파일"}`,
         `[html] ${
@@ -73,6 +99,10 @@ export function ZoneProbe() {
               : "인앱 표시 없음"
         }`,
         `[보정] ${f2(시험값)} → ${시험값 < 29 ? "걸림" : "안걸림"}`,
+        `[MQ767] ${
+          window.matchMedia("(max-width: 767px)").matches ? "맞음" : "안맞음"
+        }`,
+        `[규칙] ${규칙수}개 ${규칙값}`,
         `폭${window.innerWidth} 기준자${f2(
           parseFloat(getComputedStyle(document.documentElement).fontSize)
         )}`,
