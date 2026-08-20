@@ -47,8 +47,26 @@ export function ZoneProbe() {
         document.querySelectorAll("h1,h2,h3,p,span,div,a,button")
       ) as HTMLElement[];
 
+      // 인앱 표시가 실제로 붙어 있는지 — 이것이 붙어야 ÷1.3 보정이 걸린다.
+      // 숫자만 보면 '표시 없음 + 부풀림 1.2' 와 '표시 있음 + 부풀림 1.56' 이
+      // 똑같이 들어맞아 가릴 수 없다. 그래서 직접 찍는다.
+      const cls = document.documentElement.className || "(없음)";
+
+      // 보정이 정말 먹는지 새로 만든 .text-4xl 하나로 확인한다.
+      // 새로 만든 요소는 부풀림을 안 타므로 CSS 계산값이 그대로 나온다.
+      const 시험 = document.createElement("div");
+      시험.className = "text-4xl";
+      시험.textContent = "시험";
+      시험.style.position = "absolute";
+      시험.style.left = "-9999px";
+      document.body.appendChild(시험);
+      const 시험값 = parseFloat(getComputedStyle(시험).fontSize);
+      시험.remove();
+
       const out = [
         `[주입블록] ${주입 ? "있음 — 옛 파일" : "없음 — 새 파일"}`,
+        `[html] ${cls}`,
+        `[보정시험] .text-4xl=${f2(시험값)} (걸리면 25, 안걸리면 32.5)`,
         `폭${window.innerWidth} 기준자${f2(
           parseFloat(getComputedStyle(document.documentElement).fontSize)
         )}`,
