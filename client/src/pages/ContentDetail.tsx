@@ -259,7 +259,7 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
           </div>
 
           <article>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4" data-testid="text-content-title">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4 kna-detail-title" data-testid="text-content-title">
               {content.title}
             </h1>
             

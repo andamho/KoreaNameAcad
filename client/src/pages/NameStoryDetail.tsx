@@ -244,7 +244,7 @@ export default function NameStoryDetail() {
 
           <article>
             <header className="mb-8">
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4 kna-detail-title">
                 {story.title}
               </h1>
               <div className="flex items-center justify-between flex-wrap gap-4">
