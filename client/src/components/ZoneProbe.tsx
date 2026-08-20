@@ -132,30 +132,40 @@ export function ZoneProbe() {
       });
 
       // 여덟 개가 모두 같을 때를 대비해 다음 변수도 미리 찍는다.
-      out.push("[다음변수] 기준A 에서 하나씩");
-      재("I inline-block", (d) => {
-        d.style.fontSize = "25px";
-        d.style.display = "inline-block";
+      // A~M 에서 단일 변수 열 개가 모두 32.50 이고 클래스를 쓴 E/F/G 만 39 였다.
+      // G(클래스 + 줄간격 inline 덮어쓰기)가 39 이므로 줄간격은 아니고,
+      // F(클래스 + 폭)도 39 이므로 폭도 아니다.
+      // 남은 차이는 둘뿐이다 — 선언을 inline 로 하느냐 스타일시트로 하느냐,
+      // 그리고 단위가 px 이냐 rem 이냐. 두 축을 가른다.
+      const 시트 = document.createElement("style");
+      시트.textContent =
+        ".knaTestPx{font-size:25px}" +
+        ".knaTestRem{font-size:1.7308rem}" +
+        ".knaTestEm{font-size:1.7308em}";
+      document.head.appendChild(시트);
+
+      out.push("[축 가르기] 선언방식 · 단위");
+      재("N inline-rem", (d) => {
+        d.style.fontSize = "1.7308rem";
       });
-      재("J nowrap", (d) => {
-        d.style.fontSize = "25px";
-        d.style.whiteSpace = "nowrap";
+      재("O 시트-px", (d) => {
+        d.className = "knaTestPx";
       });
-      재("K break-all", (d) => {
-        d.style.fontSize = "25px";
-        d.style.wordBreak = "break-all";
+      재("P 시트-rem", (d) => {
+        d.className = "knaTestRem";
       });
-      재("L 자간1px", (d) => {
-        d.style.fontSize = "25px";
-        d.style.letterSpacing = "1px";
+      재("Q 시트-em", (d) => {
+        d.className = "knaTestEm";
       });
-      재("M span감쌀", (d) => {
+      재("R 클+inline px", (d) => {
+        d.className = "text-4xl";
         d.style.fontSize = "25px";
-        d.textContent = "";
-        const sp = document.createElement("span");
-        sp.textContent = 글;
-        d.appendChild(sp);
       });
+      재("S 클+inline rem", (d) => {
+        d.className = "text-4xl";
+        d.style.fontSize = "1.7308rem";
+      });
+      시트.remove();
 
       // main 과 그 부모의 computed 를 나란히.
       const 볼속성 = [
