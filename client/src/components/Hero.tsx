@@ -87,7 +87,7 @@ export function Hero() {
           alt=""
           aria-hidden="true"
           className="hidden md:block absolute select-none pointer-events-none
-            md:left-[10%] md:top-[19.91%] md:w-[12.86vw]"
+            md:left-[10%] md:top-[19.91%] md:w-[11vw]"
           style={{ filter: 'drop-shadow(0 3px 5px rgba(2, 90, 110, 0.35))' }}
           loading="eager"
           fetchPriority="high"
