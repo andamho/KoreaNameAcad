@@ -46,6 +46,7 @@ import { DetailAuditProbe } from "@/components/DetailAuditProbe";
 import { PromoChainProbe } from "@/components/PromoChainProbe";
 import { PromoMapProbe } from "@/components/PromoMapProbe";
 import { FlashProbe } from "@/components/FlashProbe";
+import { FooterCtaProbe } from "@/components/FooterCtaProbe";
 
 import servicesCharacterImage from "@assets/KakaoTalk_20251226_140639616_1766725668691.png";
 import reviewsCharacterImage from "@assets/KakaoTalk_20251226_140721227_1766725962281.png";
@@ -345,6 +346,8 @@ function App() {
           <PromoChainProbe />
           {/* 임시 진단기 — 자동문구 크기 지도 */}
           <PromoMapProbe />
+          {/* 푸터 지금신청 버튼 — 주소에 ?ftr 있을 때만 */}
+          <FooterCtaProbe />
           {/* 임시 감시기 — 글자가 작아지는 순간의 주입 스타일 기록 */}
           <StyleWatchProbe />
           <Router />
