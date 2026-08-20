@@ -63,6 +63,29 @@ export function ZoneProbe() {
       const 시험값 = parseFloat(getComputedStyle(시험).fontSize);
       시험.remove();
 
+      // 히어로 안에 시험 조각을 넣어 어떤 손질이 부품림을 막는지 본다.
+      // 이론을 더 세우지 말고 기기에게 직접 묻는다.
+      const 히어로 =
+        (document.querySelector(".kna-experience-page section") as HTMLElement | null) ||
+        document.body;
+      const 시험들: Array<[string, Partial<CSSStyleDeclaration>]> = [
+        ["그대로", {}],
+        ["max-height", { maxHeight: "999999px" }],
+        ["adjust:none", { textSizeAdjust: "none" } as Partial<CSSStyleDeclaration>],
+        ["adjust:100%", { textSizeAdjust: "100%" } as Partial<CSSStyleDeclaration>],
+      ];
+      const 시험결과: string[] = [];
+      시험들.forEach(([이름, 스타일]) => {
+        const d = document.createElement("div");
+        d.className = "text-4xl";
+        d.textContent = "가나다라마바사";
+        Object.assign(d.style, 스타일);
+        히어로.appendChild(d);
+        const v = parseFloat(getComputedStyle(d).fontSize);
+        d.remove();
+        시험결과.push(`  ${이름} ${f2(v)}`);
+      });
+
       // 보정 규칙이 불러온 CSS 안에 정말 있는지 세어 본다.
       // 없으면 CSS 가 예것이고, 있는데 안 먹으면 조건이 안 맞는 것이다.
       let 규칙수 = 0;
@@ -101,7 +124,9 @@ export function ZoneProbe() {
               ? "ua-tiktok 있음"
               : "인앱 표시 없음"
         }`,
-        `[기준부품] ${f2(시험값)} ÷ 25.03 = ${(시험값 / 25.03).toFixed(2)}배`,
+        `[바깥] ${f2(시험값)} = ${(시험값 / 25.03).toFixed(2)}배`,
+        `[히어로안 시험] 25.03이면 막힘`,
+        ...시험결과,
         `[MQ767] ${
           window.matchMedia("(max-width: 767px)").matches ? "맞음" : "안맞음"
         }`,
