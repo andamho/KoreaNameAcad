@@ -2063,7 +2063,7 @@ html.ua-tiktok .kna-latest-reviews-title {
    크기가 inline style 로 들어 있어 !important 가 없으면 규칙이 진다(푸터도 같다). */
 html.ua-instagram .kna-promo .kna-promo-head,
 html.ua-tiktok .kna-promo .kna-promo-head {
-  font-size: 1.8269rem !important;   /* 2.375 ÷ 1.3 — 푸터 h2 와 같은 값 */
+  font-size: 1.1538rem !important;   /* 1.5 ÷ 1.3 — 푸터 h2 와 같은 값 */
 }
 html.ua-instagram .kna-promo .kna-promo-third,
 html.ua-tiktok .kna-promo .kna-promo-third {
@@ -2195,7 +2195,7 @@ html.ua-tiktok .kna-detail-body {
      히어로 제목·안내문(clamp)과 푸터 제목·셋째 줄. 인라인이라 !important 필요. */
   html.ua-instagram .kna-footer h2,
   html.ua-tiktok .kna-footer h2 {
-    font-size: 1.8269rem !important;   /* 2.375 ÷ 1.3 */
+    font-size: 1.1538rem !important;   /* 1.5 ÷ 1.3 */
   }
   html.ua-instagram .kna-footer h2 > span:last-child,
   html.ua-tiktok .kna-footer h2 > span:last-child {

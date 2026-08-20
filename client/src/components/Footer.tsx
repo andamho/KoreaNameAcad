@@ -90,13 +90,10 @@ export function Footer() {
               그 아래 애니메이션 없는 얇은 가로줄. 줄 간격(0.15em)은 히어로와 같다.
               셋째 줄 1.1875rem(=19px) 은 바로 아래 안내문(14px)보다 커야 해서
               잡은 값이다 (히어로도 셋째 줄이 안내문의 1.37배).
-              위 두 줄 2.375rem 은 그 셋째 줄의 정확히 2배다 — 히어로가 40:20 으로
-              2:1 이라 그 비율을 그대로 옷겼다. 한 쪽을 고치면 다른 쪽도 같이 고쳐야
-              비율이 유지된다(자동문구 .kna-promo-head 도 같은 값을 쓴다).
               크기를 rem 으로 잡아야 폰 폭에 따라 같이 커지고 작아진다 —
               전에는 px 라 작은 폰에서 이 문구만 더 커 보였다. */}
           <h2 className="font-bold tracking-tight flex flex-col items-center"
-              style={{ fontSize: '2.375rem', lineHeight: '1.2', gap: '0.15em' }}>
+              style={{ fontSize: '1.5rem', lineHeight: '1.2', gap: '0.15em' }}>
             <span className="kna-highlight kna-footer-highlight">
               <span className="kna-shine">이름이 맑아야</span>
             </span>
