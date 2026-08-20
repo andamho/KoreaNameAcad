@@ -71,58 +71,21 @@ export default function ExperienceZone() {
       const className = isInstagram ? "ua-instagram" : "ua-tiktok";
       // 인앱 표시(ua-instagram / ua-tiktok)는 App 이 전역으로 관리한다. 여기서 붙이지 않는다.
 
-      const styleId = `inapp-style-${className}`;
-      if (!document.getElementById(styleId)) {
-        const style = document.createElement('style');
-        style.id = styleId;
-        style.textContent = `
-          html.${className} {
-            font-size: 14px !important;
-          }
-          html.${className} h1 {
-            font-size: clamp(18px, 4.5vw, 22px) !important;
-          }
-          html.${className} h2 {
-            font-size: clamp(16px, 4vw, 20px) !important;
-          }
-          html.${className} h3, html.${className} h4 {
-            font-size: clamp(15px, 3.8vw, 18px) !important;
-          }
-          html.${className} p, html.${className} li, html.${className} span {
-            font-size: 14px !important;
-          }
-          html.${className} .text-sm {
-            font-size: 13px !important;
-          }
-          html.${className} .text-base {
-            font-size: 14px !important;
-          }
-          html.${className} .text-lg {
-            font-size: 14px !important;
-          }
-          html.${className} .text-xl {
-            font-size: 15px !important;
-          }
-          html.${className} .text-2xl {
-            font-size: 16px !important;
-          }
-          html.${className} .text-3xl {
-            font-size: 18px !important;
-          }
-          html.${className} .text-4xl {
-            font-size: 20px !important;
-          }
-        `;
-        document.head.appendChild(style);
-      }
-
-      // 이 페이지를 떠날 때 자기가 만든 스타일만 거둔다.
-      // 거두지 않았더니 여기서 넣은 html { font-size: 14px !important } 가 그대로 남아
-      // 내비바로 홈에 갔을 때 기준자가 못박혀 화면 전체 글자가 작아졌다.
-      // ua-instagram / ua-tiktok 표시는 App 이 관리하므로 여기서 손대지 않는다.
-      return () => {
-        document.getElementById(styleId)?.remove();
-      };
+      // 인앱 font-size 강제 주입은 없앱다.
+      //
+      // 예전에는 여기서 <style>(inapp-style-*)을 만들어 기준자(html)를 14px 로 못박고
+      // h1~h4 · p/li/span · .text-sm ~ .text-4xl 까지 px 로 고정했다. !important 라서
+      // index.css 의 공통 ÷1.3 보정을 전부 이겼다.
+      //
+      // 더 나쁜 것은 이 규칙이 문서 전체에 걸려 이 화면의 푸터까지 망가뜨렸다는 점이다.
+      // 338px 실측(주입 켜고): 푸터 '이름이 맑아야' 25.2→18.2(0.72배),
+      // '[정확도 80% 이상]' 12.6→18.2(1.45배) 로 사방으로 어긋났다.
+      // 본문 41개 중 38개가 어긋났고, 그중 대부분이 푸터였다.
+      //
+      // 서비스·후기·이름이야기와 같은 정리다. 크기는 공통 보정 체계에 맡긴다.
+      // 빈 <style> 을 만들지도 않는다. id 를 여러 페이지가 함께 쓰기 때문에
+      // 빈 태그가 남으면 다른 페이지가 자기 스타일을 못 만든다.
+      console.log(`[ExperienceZone] 인앱 브라우저 감지: ${className}, User Agent: ${userAgent}`);
     }
   }, []);
 
