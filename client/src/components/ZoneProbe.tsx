@@ -67,20 +67,78 @@ export function ZoneProbe() {
       ) as HTMLElement | null;
       const footer = document.querySelector("footer") as HTMLElement | null;
 
-      out.push("[같은조각 자리별] 25px 넣음");
-      out.push(" 1.30배=32.5 / 1.56배=39");
-      const 자리들: Array<[string, HTMLElement | null]> = [
-        ["html", document.documentElement],
-        ["body", document.body],
-        ["page", page],
-        ["main", main],
-        ["section", section],
-        ["footer", footer],
-      ];
-      자리들.forEach(([이름, el]) => {
-        const v = 재기(el);
-        out.push(` ${이름} ${v === null ? "없음" : f2(v)}`);
-      });
+      // 자리는 원인이 아니었다 — 여섯 자리 모두 32.50 이었다.
+      // 예전 시험(class="text-4xl", 폭 auto)은 같은 구역에서 39.00 이었으므로
+      // 차이는 조각에 준 조건에 있다. 하나씩 벗겨가며 본다.
+      const 구역2 =
+        (document.querySelector(".kna-experience-page section") as HTMLElement | null) ||
+        document.body;
+      const 변형 = (꺾: (d: HTMLDivElement) => void) => {
+        const d = document.createElement("div");
+        d.textContent = "가나다라마바사아자차";
+        꺾(d);
+        구역2.appendChild(d);
+        const v = parseFloat(getComputedStyle(d).fontSize);
+        const w = d.getBoundingClientRect().width;
+        d.remove();
+        return f2(v) + " w" + Math.round(w);
+      };
+      out.push("[조건 별] 히어로 안, 32.5=1.30배 39=1.56배");
+      out.push(
+        " A 크기만 " +
+          변형((d) => {
+            d.style.fontSize = "25px";
+          })
+      );
+      out.push(
+        " B +줄간격 " +
+          변형((d) => {
+            d.style.fontSize = "25px";
+            d.style.lineHeight = "30px";
+          })
+      );
+      out.push(
+        " C +폭300 " +
+          변형((d) => {
+            d.style.fontSize = "25px";
+            d.style.lineHeight = "30px";
+            d.style.width = "300px";
+          })
+      );
+      out.push(
+        " D 폭만300 " +
+          변형((d) => {
+            d.style.fontSize = "25px";
+            d.style.width = "300px";
+          })
+      );
+      out.push(
+        " E 클래스 " +
+          변형((d) => {
+            d.className = "text-4xl";
+          })
+      );
+      out.push(
+        " F 클래스+폭 " +
+          변형((d) => {
+            d.className = "text-4xl";
+            d.style.width = "300px";
+          })
+      );
+      out.push(
+        " G 클래스+줄간 " +
+          변형((d) => {
+            d.className = "text-4xl";
+            d.style.lineHeight = "30px";
+          })
+      );
+      out.push(
+        " H 글자수적음 " +
+          변형((d) => {
+            d.className = "text-4xl";
+            d.textContent = "가";
+          })
+      );
 
       // main 과 그 부모의 computed 를 나란히.
       const 볼속성 = [
