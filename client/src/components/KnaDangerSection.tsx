@@ -17,8 +17,8 @@ export default function KnaDangerSection() {
         {/* Frame 1: 이름은 힘이 셉니다 */}
         <div className="frame bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl shadow-sm overflow-hidden mb-16">
           <div className="flex items-center gap-3 px-6 py-5 bg-white dark:bg-card border-b border-gray-200 dark:border-border">
-            <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
-              <Zap className="w-5 h-5 fill-orange-500 stroke-white" strokeWidth={2.5} />
+            <div className="w-8 h-8 rounded-lg bg-[#0994af] flex items-center justify-center flex-shrink-0">
+              <Zap className="w-5 h-5 fill-[#0994af] stroke-white" strokeWidth={2.5} />
             </div>
             <h3 className="text-[1.4375rem] md:text-[1.5rem] font-bold text-gray-900 dark:text-foreground tracking-tight">
               이름은 힘이 셉니다
@@ -27,20 +27,20 @@ export default function KnaDangerSection() {
           
           <div className="md:grid md:grid-cols-[1.2fr,0.8fr]">
             <div className="p-6 bg-white dark:bg-card">
-              <StackItem title="이름이 맑아야 인생이 맑다">
+              <StackItem title="이름이 맑아야 인생이 맑다" 막대="bg-[#0994af]">
                 운칠기삼(運七技三), 운이 70%입니다.<br/>
                 빌게이츠가 미국에 태어나지 않았다면 지금의 빌은 없습니다.<br/>
                 미국에 태어난 건 노력이 아니라 운입니다.<br/>
                 이름의 강력한 운을 모른 채,<br/>
-                <span className="text-orange-500 font-bold">30%의 노력만으로는 인생이 바뀌지 않습니다.</span>
+                <span className="text-[#0994af] font-bold">30%의 노력만으로는 인생이 바뀌지 않습니다.</span>
               </StackItem>
-              <StackItem title="안 좋은 이름에 바람 잘 날 없다">
+              <StackItem title="안 좋은 이름에 바람 잘 날 없다" 막대="bg-[#0994af]">
                 안좋은 이름은,<br/>
-                <span className="text-orange-500 font-bold">평생을 따라 다니며 괴롭힙니다.</span>
+                <span className="text-[#0994af] font-bold">평생을 따라 다니며 괴롭힙니다.</span>
               </StackItem>
-              <StackItem title="가족은 운명공동체" isLast>
-                이름은 자신뿐만 아니라,<br/>
-                <span className="text-orange-500 font-bold">가족 전체에 영향을 미칩니다.</span>
+              <StackItem title="이름은 힘이 셉니다" isLast 막대="bg-[#0994af]">
+                대표성을 가진 이름은<br/>
+                <span className="text-[#0994af] font-bold">타고난 운명을 바꿀 수 있는 힘이 있습니다.</span>
               </StackItem>
               
               {/* Mobile icon with ripple animation - equal spacing from text and card bottom */}
@@ -49,7 +49,7 @@ export default function KnaDangerSection() {
                   <span className="ripple r1" />
                   <span className="ripple r2" />
                   <span className="ripple r3" />
-                  <svg className="w-[45px] h-[45px] text-orange-500 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinejoin="round">
+                  <svg className="w-[45px] h-[45px] text-[#0994af] relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinejoin="round">
                     <path d="M13 2L3 14H11L9 22L21 10H13L13 2Z"/>
                   </svg>
                 </div>
@@ -62,7 +62,7 @@ export default function KnaDangerSection() {
                 <span className="ripple r1" />
                 <span className="ripple r2" />
                 <span className="ripple r3" />
-                <svg className="w-[72px] h-[72px] text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinejoin="round">
+                <svg className="w-[72px] h-[72px] text-[#0994af]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinejoin="round">
                   <path d="M13 2L3 14H11L9 22L21 10H13L13 2Z"/>
                 </svg>
               </div>
@@ -86,11 +86,6 @@ export default function KnaDangerSection() {
           
           <div className="md:grid md:grid-cols-[1.2fr,0.8fr]">
             <div className="p-6 bg-white dark:bg-card">
-              <StackItem title={`"비용을 먼저 물어보시나요?"`}>
-                이름은 생각보다 훨씬 막강합니다.<br/>
-                비용만 아끼려다,<br/>
-                <span className="text-orange-500 font-bold">더 비싼 대가를 치릅니다.</span>
-              </StackItem>
               <StackItem title={`"사주 기반 작명소를 찾으시나요?"`}>
                 그곳은 한글이름 작명이론이 없습니다.<br/>
                 한글 이름의 운이 무너지면,<br/>
@@ -136,14 +131,25 @@ export default function KnaDangerSection() {
   );
 }
 
-function StackItem({ title, children, isLast = false }: { title: string; children: React.ReactNode; isLast?: boolean }) {
+function StackItem({
+  title,
+  children,
+  isLast = false,
+  막대 = "bg-orange-500",
+}: {
+  title: string;
+  children: React.ReactNode;
+  isLast?: boolean;
+  // 왼쪽 세로 막대 색. 두 틀이 같은 StackItem 을 쓰므로 여기서 갈라 준다.
+  막대?: string;
+}) {
   return (
     <article className={`py-5 ${!isLast ? 'border-b border-gray-200 dark:border-border' : ''}`}>
       <h4 className="text-[1.3125rem] md:text-[1.375rem] font-semibold text-gray-900 dark:text-foreground mb-2 break-keep">
         {title}
       </h4>
       <p className="text-lg leading-relaxed text-gray-700 dark:text-muted-foreground relative pl-4 break-keep">
-        <span className="absolute left-0 top-[4px] w-[3px] h-[18px] bg-orange-500 rounded-sm" />
+        <span className={`absolute left-0 top-[4px] w-[3px] h-[18px] ${막대} rounded-sm`} />
         {children}
       </p>
     </article>

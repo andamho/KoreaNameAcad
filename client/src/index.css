@@ -1174,7 +1174,9 @@ html.ua-tiktok .kna-danger-section .text-sm { /* 0.875 ÷ 1.30 */
   width: 72px;
   height: 72px;
   border-radius: 29px;
-  background: rgba(249, 115, 22, 0.45);
+  /* '이름은 힘이 셉니다' 틀의 퍼지는 파도. 그 틀을 티파니로 바꾸면서 같이 맞춘다.
+     ‘이러시면 안됩니다’ 틀은 주황을 그대로 둔다(warnBgSwap · warnIconSwap). */
+  background: rgba(9, 148, 175, 0.45);
   animation: rippleAnim 3s infinite ease-out;
   z-index: -1;
 }
