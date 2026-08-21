@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Users,
   CalendarDays,
-  Sun,
   Search,
   Plus,
   Phone,
@@ -37,11 +36,12 @@ import { FbCalendarView } from "./FbCalendarView";
 import { NewCustomerDialog } from "./dialogs";
 import { StatusBadge, fmtDate, fmtTime, seqLabel } from "./lib";
 
-type View = "today" | "customers" | "inbox" | "sms-inbox" | "sms" | "notice" | "calendar" | "reports" | "corrections";
+type View = "customers" | "inbox" | "sms-inbox" | "sms" | "notice" | "calendar" | "reports" | "corrections";
 
 export function KnopApp() {
   const { isAdmin, isVerifying } = useAdmin();
-  const [view, setView] = useState<View>("today");
+  // 관리자 페이지를 열면 달력이 먼저 보인다.
+  const [view, setView] = useState<View>("calendar");
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
 
   // ── 휴대폰 뒤로가기 ──
@@ -62,7 +62,7 @@ export function KnopApp() {
     // 첫 화면도 기록에 심어둔다 → 뒤로가기로 여기까지 되돌아올 수 있다
     const st = window.history.state as any;
     if (!st?.knop) {
-      window.history.replaceState({ ...(st || {}), knop: { view: "today", customer: null } }, "");
+      window.history.replaceState({ ...(st || {}), knop: { view: "calendar", customer: null } }, "");
     }
     const onPop = (e: PopStateEvent) => {
       const s = (e.state as any)?.knop;
@@ -82,11 +82,10 @@ export function KnopApp() {
     );
   }
 
-  const tabs: { key: View; label: string; icon: typeof Sun }[] = [
-    { key: "today", label: "오늘", icon: Sun },
+  const tabs: { key: View; label: string; icon: typeof CalendarDays }[] = [
+    { key: "calendar", label: "달력", icon: CalendarDays },
     { key: "customers", label: "고객", icon: Users },
     { key: "notice", label: "개명후관리", icon: Bird },
-    { key: "calendar", label: "달력", icon: CalendarDays },
     { key: "sms", label: "안내문자", icon: MessageSquare },
     { key: "inbox", label: "입금", icon: Wallet },
     { key: "sms-inbox", label: "문자수신", icon: Inbox },
@@ -134,7 +133,6 @@ export function KnopApp() {
           />
         ) : (
           <>
-            {view === "today" && <TodayView onOpenCustomer={openCustomer} />}
             {view === "customers" && <CustomersView onOpenCustomer={openCustomer} />}
             {view === "inbox" && <InboxView onOpenCustomer={openCustomer} />}
             {view === "sms-inbox" && <SmsInboxView />}
@@ -147,96 +145,6 @@ export function KnopApp() {
         )}
       </div>
     </>
-  );
-}
-
-// ── 오늘 해야 할 일 ──
-function TodayView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void }) {
-  const qc = useQueryClient();
-  const { data, isLoading } = useQuery({
-    queryKey: ["knop-today"],
-    queryFn: () => knopApi.today(),
-  });
-  // 커서만 올려도 미리 받아둔다(클릭 시 즉시 표시)
-  const prefetchCustomer = (id?: string | null) => {
-    if (!id) return;
-    qc.prefetchQuery({ queryKey: ["knop-customer", id], queryFn: () => knopApi.getCustomer(id) });
-  };
-
-  const today = new Date();
-  const dateLabel = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, "0")}.${String(
-    today.getDate(),
-  ).padStart(2, "0")}`;
-
-  return (
-    <div className="space-y-5">
-      <div>
-        <h2 className="text-xl font-bold text-gray-900">오늘 · {dateLabel}</h2>
-        <p className="text-sm text-gray-400">오늘 처리할 상담 · 일정 · 후속관리</p>
-        {/* 임시 진단 — 어느 구간이 오래 걸리는지 보여 준다. 확인이 끝나면 지운다. */}
-        {(data as any)?._ms && (
-          <p className="mt-1 text-[11px] font-mono text-gray-400">
-            {Object.entries((data as any)._ms)
-              .map(([k, v]) => `${k} ${v}`)
-              .join(" · ")}
-          </p>
-        )}
-      </div>
-
-      {isLoading && <p className="text-sm text-gray-400">불러오는 중…</p>}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <Card className="p-5">
-          <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-            <CalendarDays className="w-4 h-4 text-[#56D5DB]" /> 오늘 일정 ({data?.events.length ?? 0})
-          </h3>
-          <div className="space-y-2">
-            {data && data.events.length === 0 && <p className="text-sm text-gray-400">오늘 일정이 없습니다.</p>}
-            {data?.events.map((ev) => (
-              <button
-                key={ev.id}
-                onMouseEnter={() => prefetchCustomer(ev.customerId)}
-                onClick={() => ev.customerId && onOpenCustomer(ev.customerId)}
-                className="w-full text-left flex items-center gap-3 rounded-lg border border-gray-100 px-3 py-2 hover:border-[#56D5DB]/50 hover:bg-[#56D5DB]/5 transition"
-              >
-                <span className="text-sm font-semibold text-gray-700 tabular-nums w-12">
-                  {fmtTime(ev.startAt)}
-                </span>
-                <Badge variant="outline" className="shrink-0">
-                  {ev.type}
-                </Badge>
-                <span className="text-sm text-gray-800 truncate">{ev.title}</span>
-              </button>
-            ))}
-          </div>
-        </Card>
-
-        <Card className="p-5">
-          <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-            <Phone className="w-4 h-4 text-amber-400" /> 오늘 후속관리 ({data?.actionProjects.length ?? 0})
-          </h3>
-          <div className="space-y-2">
-            {data && data.actionProjects.length === 0 && (
-              <p className="text-sm text-gray-400">예정된 후속관리가 없습니다.</p>
-            )}
-            {data?.actionProjects.map((p) => (
-              <button
-                key={p.id}
-                onMouseEnter={() => prefetchCustomer(p.customerId)}
-                onClick={() => onOpenCustomer(p.customerId)}
-                className="w-full text-left flex items-center justify-between gap-2 rounded-lg border border-gray-100 px-3 py-2 hover:border-[#56D5DB]/50 hover:bg-[#56D5DB]/5 transition"
-              >
-                <div className="min-w-0">
-                  <div className="text-xs text-gray-400">{p.type}</div>
-                  <div className="text-sm text-gray-800 truncate">{p.title}</div>
-                </div>
-                <StatusBadge status={p.status} />
-              </button>
-            ))}
-          </div>
-        </Card>
-      </div>
-    </div>
   );
 }
 

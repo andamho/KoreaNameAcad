@@ -1279,25 +1279,13 @@ export const knopStore = {
   },
 
   // 특정 날짜(YYYY-MM-DD)의 바른이름 달력(Firebase) 일정 → 오늘탭 형식(고객 매칭 포함)
-  async firebaseEventsForDate(dateStr: string, 재기?: Record<string, number>): Promise<any[]> {
+  async firebaseEventsForDate(dateStr: string): Promise<any[]> {
     const d = requireDb();
     try {
-      const t0 = Date.now();
       const events = await readEvents();
-      const t1 = Date.now();
-      if (재기) {
-        재기.달력읽기 = t1 - t0;
-        재기.달력건수 = events.length;
-      }
       const day = events.filter((e) => e.date === dateStr && e.title);
-      if (재기) 재기.오늘건수 = day.length;
       if (!day.length) return [];
-      const t2 = Date.now();
       const all = await d.select().from(customers);
-      if (재기) {
-        재기.고객읽기 = Date.now() - t2;
-        재기.고객수 = all.length;
-      }
       const bare = (s: string) =>
         (s || "").replace(/\(.*?\)/g, "").replace(/\s*가족\s*$/, "").replace(/^[^가-힣]+/, "").replace(/[^가-힣]+$/, "").trim();
       const byPhone = new Map<string, string>();
