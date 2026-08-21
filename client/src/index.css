@@ -2046,7 +2046,7 @@ html.ua-tiktok .kna-detail-title {
    크기가 inline style 로 들어 있어 !important 가 없으면 규칙이 진다(푸터도 같다). */
 html.ua-instagram .kna-promo .kna-promo-head,
 html.ua-tiktok .kna-promo .kna-promo-head {
-  font-size: 1.3462rem !important;   /* 1.75 ÷ 1.3 — 푸터 h2 와 같은 값 */
+  font-size: 1.0769rem !important;   /* 1.4 ÷ 1.3 — 푸터 h2 와 같은 값 */
 }
 html.ua-instagram .kna-promo .kna-promo-third,
 html.ua-tiktok .kna-promo .kna-promo-third {
@@ -2191,7 +2191,8 @@ html.ua-tiktok .kna-detail-body {
   /* 푸터 강조 한 줄(이름이 맑아야, 인생이 맑다) 을 모바일에서만 20% 줄인다.
      inline style 의 1.75rem 을 이겨야 해서 !important 가 필요하다.
      데스크톱은 1.75rem 그대로다. 자동문구(.kna-promo)는 건드리지 않는다. */
-  .kna-footer h2 {
+  .kna-footer h2,
+  .kna-promo .kna-promo-head {
     font-size: 1.4rem !important;   /* 1.75 × 0.8 */
   }
 

@@ -331,11 +331,10 @@ export default function NameStoryDetail() {
                 <div className="kna-promo mt-8 rounded-2xl py-10 px-6 text-center relative overflow-hidden bg-white border border-gray-100">
                   <div className="relative z-10">
                     <div className="font-bold tracking-tight text-center kna-promo-head" style={{ fontSize: '1.75rem', lineHeight: '1.35', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1em' }}>
-                      <span className="kna-highlight">
-                        <span className="kna-shine">이름이 맑아야</span>
-                      </span>
-                      <span className="kna-highlight">
-                        <span className="kna-shine">인생이 맑다</span>
+                      {/* 푸터와 맞춰 두 줄을 한 줄로 합치고 가운데 솉표를 넣었다.
+                          좁은 폰에서 줄바꿈되면 합친 뜻이 없어지므로 한 줄로 붙잡는다. */}
+                      <span className="kna-highlight" style={{ whiteSpace: 'nowrap' }}>
+                        <span className="kna-shine">이름이 맑아야, 인생이 맑다</span>
                       </span>
                       <span className="text-gray-900 font-normal relative kna-promo-third" style={{ fontSize: '1.1875rem', marginTop: '0.75em' }}>
                         이름 안에 너 있다
