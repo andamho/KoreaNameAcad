@@ -192,26 +192,20 @@ function App() {
       유지해제 = 인앱표시유지();
     }
 
-    // 체험존 페이지 전용 인앱 브라우저 스타일 (82% 비율, 영구 주입)
-    if (isInstagram || isTikTok) {
-      const cn = isInstagram ? 'ua-instagram' : 'ua-tiktok';
-      const styleId = 'inapp-experience-global';
-      if (!document.getElementById(styleId)) {
-        const s = document.createElement('style');
-        s.id = styleId;
-        s.textContent = `
-          html.${cn} .kna-experience-page .text-lg  { font-size: 15px !important; }
-          html.${cn} .kna-experience-page .text-xl  { font-size: 16px !important; }
-          html.${cn} .kna-experience-page .text-2xl { font-size: 20px !important; }
-          html.${cn} .kna-experience-page .text-3xl { font-size: 25px !important; }
-          html.${cn} .kna-experience-page .text-4xl { font-size: 30px !important; }
-          html.${cn} .kna-experience-page .text-5xl { font-size: 39px !important; }
-          html.${cn} .kna-experience-page .text-6xl { font-size: 49px !important; }
-          html.${cn} .kna-experience-page .text-7xl { font-size: 59px !important; }
-        `;
-        document.head.appendChild(s);
-      }
-    }
+    // 체험존 전용 font-size 강제 주입은 없앱다.
+    //
+    // 82% 축소 시절 잔재로, <style id="inapp-experience-global"> 을 만들어
+    // html.ua-* .kna-experience-page 의 .text-lg ~ .text-7xl 을 px + !important 로
+    // 못박았다. !important 라 index.css 의 공통 ÷1.3 보정을 이겼고,
+    // inline style 로 준 크기까지 이견다.
+    //
+    // 실기기(폭 338) 에서 숫자가 정확히 맞았다.
+    //   .text-4xl 30px × 1.303 = 39.09  → 실측 39.00 (크롬 32.4)
+    //   .text-lg  15px × 1.303 = 19.54  → 실측 19.50 (크롬 16.2)
+    // 부풀림 배율은 화면 어디서나 1.30 으로 균일했고, 이 블록만이 원인이었다.
+    //
+    // 지우면 공통 보정표(.text-4xl → 1.7308rem)가 그대로 이긴다.
+    // 새 보정값을 더하지 않는다. 블록에 font-size 말고는 아무것도 없었다.
 
     return () => {
       if (유지해제) 유지해제();
