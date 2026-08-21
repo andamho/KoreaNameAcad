@@ -94,11 +94,10 @@ export function Footer() {
               전에는 px 라 작은 폰에서 이 문구만 더 커 보였다. */}
           <h2 className="font-bold tracking-tight flex flex-col items-center"
               style={{ fontSize: '1.75rem', lineHeight: '1.2', gap: '0.15em' }}>
-            <span className="kna-highlight kna-footer-highlight">
-              <span className="kna-shine">이름이 맑아야</span>
-            </span>
-            <span className="kna-highlight kna-footer-highlight">
-              <span className="kna-shine">인생이 맑다</span>
+            {/* 두 줄을 한 줄로 합치고 가운데 솉표를 넣었다.
+                좀은 폰에서 줄바꿈되면 합친 뜻이 없어지므로 한 줄로 붙잡는다. */}
+            <span className="kna-highlight kna-footer-highlight" style={{ whiteSpace: 'nowrap' }}>
+              <span className="kna-shine">이름이 맑아야, 인생이 맑다</span>
             </span>
             <span className="text-white font-normal relative"
                   style={{ whiteSpace: 'nowrap', fontSize: '1.1875rem', marginTop: '1.3em' }}>
