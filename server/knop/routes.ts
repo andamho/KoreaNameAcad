@@ -850,16 +850,27 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
   // ── 오늘 해야 할 일 (대시보드) ──
   app.get(`${P}/today`, requireAdmin, async (req, res) => {
     try {
+      // 어느 구간이 오래 걸리는지 재서 응답에 실어 보낸다(_ms). 임시 진단용.
+      const 재기: Record<string, number> = {};
+      const 시작 = Date.now();
       const date = typeof req.query.date === "string" ? req.query.date : undefined;
       const { start, end } = dayRange(date);
+      const t0 = Date.now();
       const data = await knopStore.getToday(start, end);
+      재기.DB일정 = Date.now() - t0;
       // 바른이름 달력(Firebase) 일정도 합쳐서 보여줌 (KNOP DB 일정 + 달력 일정). 날짜는 KST 기준.
       const dayStr = (date || kstToday()).slice(0, 10);
-      const fb = calendarAvailable() ? await knopStore.firebaseEventsForDate(dayStr) : [];
+      const t1 = Date.now();
+      const fb = calendarAvailable()
+        ? await knopStore.firebaseEventsForDate(dayStr, 재기)
+        : [];
+      재기.달력전체 = Date.now() - t1;
       const events = [...(data.events || []), ...fb].sort(
         (a: any, b: any) => new Date(a.startAt || 0).getTime() - new Date(b.startAt || 0).getTime(),
       );
-      res.json({ ...data, events });
+      재기.합계 = Date.now() - 시작;
+      console.log(`[KOP] /today ${JSON.stringify(재기)}`);
+      res.json({ ...data, events, _ms: 재기 });
     } catch (e) {
       handle(res, "GET today", e);
     }

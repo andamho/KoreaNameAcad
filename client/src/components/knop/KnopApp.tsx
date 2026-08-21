@@ -173,6 +173,14 @@ function TodayView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void })
       <div>
         <h2 className="text-xl font-bold text-gray-900">오늘 · {dateLabel}</h2>
         <p className="text-sm text-gray-400">오늘 처리할 상담 · 일정 · 후속관리</p>
+        {/* 임시 진단 — 어느 구간이 오래 걸리는지 보여 준다. 확인이 끝나면 지운다. */}
+        {(data as any)?._ms && (
+          <p className="mt-1 text-[11px] font-mono text-gray-400">
+            {Object.entries((data as any)._ms)
+              .map(([k, v]) => `${k} ${v}`)
+              .join(" · ")}
+          </p>
+        )}
       </div>
 
       {isLoading && <p className="text-sm text-gray-400">불러오는 중…</p>}
