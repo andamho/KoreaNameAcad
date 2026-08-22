@@ -38,7 +38,7 @@ export default function KnaDangerSection() {
                 안좋은 이름은,<br/>
                 <span className="text-[#0994af] font-bold">평생을 따라 다니며 괴롭힙니다.</span>
               </StackItem>
-              <StackItem title="이름은 힘이 셉니다" isLast 막대="bg-[#0994af]">
+              <StackItem title="이름은 힘이 세다" isLast 막대="bg-[#0994af]">
                 대표성을 가진 이름은<br/>
                 <span className="text-[#0994af] font-bold">타고난 운명을 바꿀 수 있는 힘이 있습니다.</span>
               </StackItem>
