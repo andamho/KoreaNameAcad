@@ -325,6 +325,13 @@ export function startSmsScheduler() {
 }
 
 // 새 예약이 생기면 그 시각에 맞춰 타이머를 다시 잡는다(늦게 깨는 일 없게).
+//
+// 주의 — 이 함수는 createMessage 에서만 불린다. 즉 앱을 거치지 않고
+// scheduled_messages 를 DB 에서 직접 고치면(예약 시각을 앞당기는 등) 스케줄러는
+// 그걸 모른 채 예전에 계산해 둔 시각까지 계속 잔다. 바뀜 시각은 무시된다.
+// 2026-08-24 에 실제로 겪었다 — 16:34 로 앞당겼는데 스케줄러는 8/25 아침까지
+// 자고 있어 시도조차 안 했다. 급하면 서버를 다시 띄우면 된다 — 부팅 후
+// 5초 뒤 첫 점검에서 지난 예약을 발견해 보낸다.
 export function rescheduleSmsTimer() {
   if (!_timer) return;
   clearTimeout(_timer);
