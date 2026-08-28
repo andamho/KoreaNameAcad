@@ -71,6 +71,7 @@ const _bgPreloads = [
   '/about-character-opt.webp',
   '/alone-fate-hero.png',
   '/pagebg.webp',          // 서비스 페이지 모바일 히어로
+  '/family-consulting-rule.webp', // 등본상 가족 상담 원칙 팝업 — 누를 때 바로 뜨게 미리 받는다
 ].map(src => { const i = new Image(); i.src = src; return i; });
 
 const characterImages = [
