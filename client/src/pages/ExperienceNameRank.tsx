@@ -217,11 +217,9 @@ export default function ExperienceNameRank() {
                   </div>
                 )}
               </div>
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-                  <input type="checkbox" checked={isPrivate} onChange={e => setIsPrivate(e.target.checked)} className="rounded" />
-                  <Lock className="w-3 h-3" /> 이름의신만 보기 (비공개)
-                </label>
+              {/* 비공개 체크는 없앱다. 새 글은 모두 공개로 남는다.
+                  이미 비공개로 남긴 글은 그대로 보호된다 — 목록의 자물쇠 표시는 그대로다. */}
+              <div className="flex items-center justify-end">
                 <button onClick={submitComment} disabled={submitting}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white text-[#18a999] border border-[#18a999]/30 text-sm font-bold hover:bg-[#18a999]/5 disabled:opacity-50 transition flex-shrink-0 whitespace-nowrap">
                   <Send className="w-3.5 h-3.5" />
