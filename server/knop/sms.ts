@@ -17,6 +17,48 @@ import {
 
 const LIVE = (process.env.KOP_SMS_LIVE || process.env.KNOP_SMS_LIVE) === "1";
 
+// 개명후관리 문자가 나가면(또는 실패하면) 알림봇으로 한 줄 보낸다.
+// 세트 이름과 몇 회차인지를 같이 알려 준다.
+const SET_LABEL: Record<string, string> = {
+  gaemyeong_request: "미용감사",
+  gaemyeong_approved: "정화하기",
+};
+
+async function notifySend(msg: ScheduledMessage, failReason?: string): Promise<void> {
+  if (!msg.setKey || !msg.customerId || !db) return; // 개명후관리 문자만 알린다
+  try {
+    const siblings = await db
+      .select({ id: scheduledMessages.id })
+      .from(scheduledMessages)
+      .where(and(eq(scheduledMessages.customerId, msg.customerId), eq(scheduledMessages.setKey, msg.setKey)))
+      .orderBy(scheduledMessages.scheduledAt);
+    const nth = siblings.findIndex((r) => r.id === msg.id) + 1;
+
+    let name = "고객";
+    try {
+      const c = await knopStore.getCustomer(msg.customerId);
+      if (c?.name) name = c.name;
+    } catch {
+      // 이름을 못 가져와도 알림은 보낸다
+    }
+
+    const phone = (msg.phone || "").replace(/(\d{3})\d+(\d{4})/, "$1-****-$2");
+    const label = SET_LABEL[msg.setKey] || msg.setKey;
+    const head = failReason
+      ? "\u26A0\uFE0F <b>\uAC1C\uBA85\uAD00\uB9AC \uBB38\uC790 \uC2E4\uD328</b>"
+      : "\uD83D\uDCEE <b>\uAC1C\uBA85\uAD00\uB9AC \uBB38\uC790 \uBC1C\uC1A1</b>";
+    const count = nth > 0 ? `${nth}/${siblings.length}회차` : "";
+    const lines = [head, `${name} \u00B7 ${label} ${count}`.trim(), phone];
+    if (failReason) lines.push("", `사유: ${failReason.slice(0, 150)}`);
+    if (!LIVE && !failReason) lines.push("", "(실제 발송 꺼짐 \u2014 시뮬레이션)");
+
+    const { sendAlert } = await import("./alertBot");
+    await sendAlert(lines.join("\n"));
+  } catch (e: any) {
+    console.error(`[KNOP SMS] 발송 알림 실패: ${e?.message}`);
+  }
+}
+
 function requireDb() {
   if (!db) throw new DatabaseError("DB 사용 불가", "DATABASE_UNAVAILABLE");
   return db;
@@ -222,6 +264,7 @@ export const smsStore = {
           metadata: { messageId: msg.id, phone: msg.phone },
         });
       }
+      await notifySend(msg);
       return row;
     } catch (e: any) {
       // 발송 여부가 불확실하면 failed 로 단정하지 않는다(재발송 시 중복 위험) → 사람이 확인할 상태로 분리
@@ -232,6 +275,7 @@ export const smsStore = {
         .where(eq(scheduledMessages.id, msg.id))
         .catch(() => {});
       console.error(`[KNOP SMS] 발송 ${uncertain ? "불확실(확인 필요)" : "실패"} ${msg.id}: ${e?.message}`);
+      await notifySend(msg, e?.message || "알 수 없는 오류");
       return undefined;
     }
   },
