@@ -7,6 +7,9 @@
 const TOKEN = (process.env.KOP_ALERT_BOT_TOKEN || "").trim();
 const CHAT = (process.env.KOP_ALERT_CHAT_ID || "").trim();
 
+// 설정이 들어왔는지 부팅 때 한 줄 남긴다. 값은 찍지 않는다.
+console.log(`[알림봇] ${TOKEN && CHAT ? "설정됨" : "미설정 — 알림 안 나감"}`);
+
 export function alertAvailable(): boolean {
   return Boolean(TOKEN && CHAT);
 }
