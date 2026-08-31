@@ -42,7 +42,15 @@ async function notifySend(msg: ScheduledMessage, failReason?: string): Promise<v
       // 이름을 못 가져와도 알림은 보낸다
     }
 
-    const phone = (msg.phone || "").replace(/(\d{3})\d+(\d{4})/, "$1-****-$2");
+    // 번호는 가리지 않고 다 보여 준다 — 받자마자 전화나 문자를 보낼 수 있게.
+    // tel: 링크로 감싸면 텔레그램에서 눌렀을 때 바로 전화 화면으로 간다.
+    const digits = (msg.phone || "").replace(/[^0-9]/g, "");
+    const pretty = digits.length === 11
+      ? `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`
+      : digits.length === 10
+        ? `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`
+        : (msg.phone || "");
+    const phone = digits.length >= 10 ? `<a href="tel:${digits}">${pretty}</a>` : (msg.phone || "");
     const label = SET_LABEL[msg.setKey] || msg.setKey;
     const head = failReason
       ? "\u26A0\uFE0F <b>\uAC1C\uBA85\uAD00\uB9AC \uBB38\uC790 \uC2E4\uD328</b>"
