@@ -43,14 +43,14 @@ async function notifySend(msg: ScheduledMessage, failReason?: string): Promise<v
     }
 
     // 번호는 가리지 않고 다 보여 준다 — 받자마자 전화나 문자를 보낼 수 있게.
-    // tel: 링크로 감싸면 텔레그램에서 눌렀을 때 바로 전화 화면으로 간다.
+    //
+    // 텔레그램은 tel: 링크를 막는다(눌러도 아무 일이 없다). 대신 국가번호를
+    // 붙인 +8210... 형식은 전화번호로 알아보고 눌러서 걸 수 있게 해 준다.
+    // 실기기에서 네 가지를 보내 확인한 결과 이 형식만 동작했다.
+    //   010-7395-1369 → +821073951369
     const digits = (msg.phone || "").replace(/[^0-9]/g, "");
-    const pretty = digits.length === 11
-      ? `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`
-      : digits.length === 10
-        ? `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`
-        : (msg.phone || "");
-    const phone = digits.length >= 10 ? `<a href="tel:${digits}">${pretty}</a>` : (msg.phone || "");
+    const phone =
+      digits.startsWith("0") && digits.length >= 10 ? `+82${digits.slice(1)}` : msg.phone || "";
     const label = SET_LABEL[msg.setKey] || msg.setKey;
     const head = failReason
       ? "\u26A0\uFE0F <b>\uAC1C\uBA85\uAD00\uB9AC \uBB38\uC790 \uC2E4\uD328</b>"
