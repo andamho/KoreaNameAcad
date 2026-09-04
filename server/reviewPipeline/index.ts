@@ -296,12 +296,33 @@ export async function addManualMaskBand(draft: ReviewDraft, imageIndex: number, 
   return regenerateMask(updated, 0);
 }
 
+/**
+ * 원장님이 직접 첨부한 이미지를 이 후기의 썸네일 배경으로 지정한다.
+ * 스톡 후보 대신 쓰는 것이므로 후보 목록은 그대로 두고 선택만 바꾼다(합성본은 무효화).
+ */
+export async function setCustomThumbnail(draft: ReviewDraft, buffer: Buffer): Promise<ReviewDraft> {
+  // 방향 보정(EXIF) + JPEG 정규화 — 이후 합성 단계와 형식을 맞춘다
+  const normalized = await sharp(buffer, { failOn: "none" }).rotate().jpeg({ quality: 95 }).toBuffer();
+  const path = await uploadBuffer(normalized, "image/jpeg", "reviews/custom");
+  return (await storage.updateReviewDraft(draft.id, {
+    selectedThumbnailUrl: path,
+    composedThumbnailPath: null, // 배경이 바뀌었으니 합성본은 다시 만든다
+  }))!;
+}
+
+/** 썸네일 배경 바이트 가져오기 — 직접 첨부본(/objects/...)과 스톡 URL 모두 지원 */
+async function thumbnailSourceBuffer(chosenUrl: string): Promise<Buffer> {
+  if (chosenUrl.startsWith("/objects/")) return objectPathToBuffer(chosenUrl);
+  const { buffer } = await fetchImageBuffer(chosenUrl);
+  return buffer;
+}
+
 /** 선택된 썸네일 이미지 + 문구로 합성 썸네일 생성·업로드 */
 export async function composeSelectedThumbnail(draft: ReviewDraft): Promise<ReviewDraft> {
   const thumbs = j.parse<ThumbnailCandidate[]>(draft.thumbnailCandidates, []);
   const chosenUrl = draft.selectedThumbnailUrl || thumbs[0]?.url;
   if (!chosenUrl) throw new Error("선택된 썸네일이 없습니다.");
-  const { buffer } = await fetchImageBuffer(chosenUrl);
+  const buffer = await thumbnailSourceBuffer(chosenUrl);
   const composed = await composeThumbnail(buffer, draft.selectedThumbnailTitle || "", draft.thumbnailLabel || "");
   const composedThumbnailPath = await uploadBuffer(composed, "image/jpeg", "reviews/thumbnail");
   return (await storage.updateReviewDraft(draft.id, { composedThumbnailPath, selectedThumbnailUrl: chosenUrl }))!;

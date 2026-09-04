@@ -6,7 +6,7 @@
 import { storage } from "./storage";
 import {
   processNewReview, processNameStory, regenerateMask, composeSelectedThumbnail,
-  publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, moreThumbnailTitles, thumbnailsForText, titleWithLabel, formatParagraphs, addManualMaskBand, draftJson as j,
+  publishReview, buildNaverPackage, objectPathToBuffer, moreThumbnails, moreTitles, moreThumbnailTitles, thumbnailsForText, titleWithLabel, formatParagraphs, addManualMaskBand, setCustomThumbnail, draftJson as j,
 } from "./reviewPipeline";
 import { parseIntent, applyBodyEdit, type IntentAction, type DraftSummary } from "./reviewPipeline/intent";
 import { toEnglishKeywords } from "./reviewPipeline/vision";
@@ -108,9 +108,14 @@ function summaryText(d: ReviewDraft): string {
       : `• 분류 라벨: ${d.thumbnailLabel ? `<b>${escapeHtml(d.thumbnailLabel)}</b>` : "-"}`,
     `• 게시 제목: ${d.selectedTitle ? `<b>${escapeHtml(titleWithLabel(d.thumbnailLabel, d.selectedTitle))}</b>` : "미선택"}`,
     `• 썸네일 문구: ${d.selectedThumbnailTitle ? `<b>${escapeHtml(d.selectedThumbnailTitle)}</b>` : "미선택"}`,
-    `• 썸네일 이미지: ${d.selectedThumbnailUrl ? "선택됨 ✅" : "미선택"}`,
+    `• 썸네일 이미지: ${d.selectedThumbnailUrl ? (isCustomThumbnail(d) ? "직접 첨부한 이미지 📎" : "선택됨 ✅") : "미선택"}`,
     ...(searchTermsInline(d) ? [`• 이미지 검색어: ${searchTermsInline(d)}`] : []),
   ].join("\n");
+}
+
+/** 스톡 후보가 아니라 원장님이 직접 첨부한 이미지를 쓰고 있는지 */
+function isCustomThumbnail(d: ReviewDraft): boolean {
+  return !!d.selectedThumbnailUrl?.startsWith("/objects/");
 }
 
 function escapeHtml(s: string) {
@@ -129,6 +134,7 @@ function mainActionKeyboard(d: ReviewDraft) {
     { text: "🔁 문구", data: `RC|${d.id}` },
     { text: "🔁 이미지", data: `RM|${d.id}` },
   ]);
+  rows.push([{ text: "📎 썸네일 파일 첨부", data: `INI|${d.id}` }]);
   rows.push([{ text: "🖼 미리보기", data: `PV|${d.id}` }]);
   rows.push([{ text: "🏠 홈페이지 게시", data: `PUB|${d.id}` }, { text: "📋 네이버용 받기", data: `NV|${d.id}` }]);
   return ik(rows);
@@ -213,8 +219,11 @@ async function sendThumbTitleChoices(chatId: string, d: ReviewDraft) {
 async function sendThumbnailChoices(chatId: string, d: ReviewDraft) {
   const thumbs = j.parse<ThumbnailCandidate[]>(d.thumbnailCandidates, []);
   if (!thumbs.length) {
-    await sendMessage(chatId, "ℹ️ 스톡 썸네일을 가져오지 못했어요. 마스킹 이미지를 썸네일로 쓰거나, \"다른 썸네일 찾아줘\"라고 해보세요.",
-      ik([[{ text: "🔄 다른 썸네일 찾기", data: `MT|${d.id}` }]]));
+    await sendMessage(chatId, "ℹ️ 스톡 썸네일을 가져오지 못했어요. 직접 이미지를 첨부하거나, \"다른 썸네일 찾아줘\"라고 해보세요.",
+      ik([
+        [{ text: "🔄 다른 썸네일 찾기", data: `MT|${d.id}` }],
+        [{ text: "📎 내 이미지 파일 첨부", data: `INI|${d.id}` }],
+      ]));
     return;
   }
   // 각 사진 캡션에 "몇 번 / 어떤 관점의 어떤 검색어로 찾았는지" 표시
@@ -231,6 +240,7 @@ async function sendThumbnailChoices(chatId: string, d: ReviewDraft) {
       [{ text: "🔄 다른 썸네일 더 찾기", data: `MT|${d.id}` }],
       [{ text: "🔎 제목으로 다시 찾기", data: `MTT|${d.id}` }],
       [{ text: "✏️ 키워드 직접 입력하기", data: `INK|${d.id}` }],
+      [{ text: "📎 내 이미지 파일 첨부", data: `INI|${d.id}` }],
     ]));
 }
 
@@ -477,6 +487,7 @@ async function sendHelp(chatId: string) {
     `2. 제목·썸네일 문구·썸네일 이미지를 <b>버튼</b>으로 고르거나, <b>말로</b> 지시하세요.\n` +
     `   예: "2번 제목으로 하고 썸네일은 3번, 더 가려주고 게시해줘"\n` +
     `   • 고른 뒤에도 <b>🔁 제목 / 🔁 문구 / 🔁 이미지</b> 버튼으로 언제든 다시 고를 수 있어요("제목 다시 보여줘"라고 말해도 돼요). 현재 고른 항목엔 ✅가 붙습니다.\n` +
+    `   • <b>📎 썸네일 파일 첨부</b> 버튼을 누르면 원장님이 가진 이미지를 직접 올려 썸네일 배경으로 쓸 수 있어요(사진·파일 모두 가능, 파일로 보내면 원본 화질 그대로).\n` +
     `3. <b>본문 수정</b>은 새 내용/지시를 그냥 메시지로 보내면 됩니다.\n` +
     `4. "게시" → 홈페이지 등록, "네이버" → 블로그 복붙 패키지.\n\n` +
     `📌 <b>취향 기억</b>: "앞으로 항상 이모지 쓰지 마"처럼 말하면 저장돼 다음 후기부터 자동 적용돼요.\n` +
@@ -491,12 +502,19 @@ function authorized(chatId: string): boolean {
 }
 
 // 직접 입력 대기 상태 (버튼 → 다음 메시지를 그 값으로 받음)
-type PendingInput = { mode: "title" | "keywords" | "thumbTitle" | "nameStory"; draftId: string };
+type PendingInput = { mode: "title" | "keywords" | "thumbTitle" | "nameStory" | "thumbImage"; draftId: string };
 const pendingInput = new Map<string, PendingInput>();
 
 // ── 여러 장(앨범) 모아서 처리 ─────────────────────────────────
 type PendingGroup = { chatId: string; fileIds: string[]; timer: ReturnType<typeof setTimeout> | null; notified: boolean };
 const pendingGroups = new Map<string, PendingGroup>();
+
+// 썸네일 첨부로 이미 써버린 앨범 id — 같은 앨범의 나머지 장이 새 후기로 오해되지 않게 무시한다
+const consumedAlbums = new Set<string>();
+function consumeAlbum(groupId: string) {
+  consumedAlbums.add(groupId);
+  setTimeout(() => consumedAlbums.delete(groupId), 60_000);
+}
 
 /** fileId들의 이미지를 받아 한 후기로 처리 */
 async function handleReviewPhotos(chatId: string, fileIds: string[]) {
@@ -513,6 +531,25 @@ async function handleReviewPhotos(chatId: string, fileIds: string[]) {
   } catch (e: any) {
     console.error("[bot] 사진 처리 실패:", e);
     await sendMessage(chatId, "❌ 처리 중 오류: " + (e?.message || e));
+  }
+}
+
+/**
+ * 📎 버튼으로 첨부한 이미지를 이 후기의 썸네일 배경으로 적용하고 미리보기까지 보여준다.
+ * (사진으로 보내든 파일로 보내든 동일하게 처리)
+ */
+async function handleThumbnailUpload(chatId: string, draftId: string, fileId: string) {
+  const d = await storage.getReviewDraft(draftId);
+  if (!d) { await sendMessage(chatId, "❌ 초안을 찾을 수 없어요."); return; }
+  await sendMessage(chatId, "📎 첨부한 이미지를 썸네일로 적용하는 중…");
+  try {
+    const { buffer } = await getFileBuffer(fileId);
+    const updated = await setCustomThumbnail(d, buffer);
+    await sendMessage(chatId, "✅ 썸네일 이미지를 <b>첨부한 파일</b>로 바꿨어요. 고른 문구를 그대로 얹어 합성합니다.");
+    await sendPreview(chatId, updated);
+  } catch (e: any) {
+    console.error("[bot] 썸네일 첨부 실패:", e);
+    await sendMessage(chatId, "❌ 썸네일 적용 실패: " + (e?.message || e) + "\n다시 <b>📎 썸네일 파일 첨부</b> 버튼을 눌러 보내주세요.");
   }
 }
 
@@ -565,6 +602,15 @@ async function handleUpdate(update: any) {
       await sendMessage(chatId, "✏️ 썸네일 검색 <b>키워드</b>를 띄어쓰기로 보내주세요.\n예: <code>축소판 하늘 바다</code>");
       return;
     }
+    if (kind === "INI") { // 썸네일 이미지 직접 첨부
+      pendingInput.set(chatId, { mode: "thumbImage", draftId });
+      await sendMessage(chatId,
+        "📎 <b>썸네일로 쓸 이미지</b>를 이 채팅에 보내주세요.\n" +
+        "• 사진으로 보내도 되고, <b>파일(문서)로 첨부</b>하면 원본 화질 그대로 씁니다.\n" +
+        "• 정사각형(1:1) 가운데 기준으로 잘리고, 고른 <b>썸네일 문구</b>가 위에 얹힙니다.\n" +
+        "• 그만두려면 <code>취소</code>라고 보내세요.");
+      return;
+    }
     if (kind === "INC") { // 썸네일 문구 직접 입력
       pendingInput.set(chatId, { mode: "thumbTitle", draftId });
       await sendMessage(chatId, "✏️ 썸네일에 넣을 <b>문구</b>를 입력해서 보내주세요.");
@@ -606,11 +652,28 @@ async function handleUpdate(update: any) {
   }
 
   // 사진/이미지 문서 수신 → (앨범이면 모아서) 파이프라인
+  // 썸네일 첨부 대기 중에는 mime을 안 가린다(갤러리에서 "파일로 보내기" 하면 image/*가 아닌 경우가 있음)
+  const awaitingThumb = pendingInput.get(chatId)?.mode === "thumbImage";
   const fileId = msg.photo?.length ? msg.photo[msg.photo.length - 1].file_id
-    : (msg.document?.mime_type?.startsWith("image/") ? msg.document.file_id : null);
+    : (msg.document && (awaitingThumb || msg.document.mime_type?.startsWith("image/")) ? msg.document.file_id : null);
   if (fileId) {
-    if (msg.media_group_id) {
-      queueAlbumPhoto(chatId, String(msg.media_group_id), fileId);
+    const groupId = msg.media_group_id ? String(msg.media_group_id) : null;
+    if (groupId && consumedAlbums.has(groupId)) return; // 썸네일로 이미 쓴 앨범의 나머지 장
+
+    // 📎 썸네일 첨부 대기 중이면 이 이미지는 새 후기가 아니라 썸네일 배경
+    const waiting = pendingInput.get(chatId);
+    if (waiting?.mode === "thumbImage") {
+      pendingInput.delete(chatId);
+      if (groupId) {
+        consumeAlbum(groupId);
+        await sendMessage(chatId, "ℹ️ 여러 장을 보내셨네요. 썸네일은 <b>첫 장</b>만 사용했어요.");
+      }
+      await handleThumbnailUpload(chatId, waiting.draftId, fileId);
+      return;
+    }
+
+    if (groupId) {
+      queueAlbumPhoto(chatId, groupId, fileId);
     } else {
       await sendMessage(chatId, "⏳ 후기를 분석하는 중이에요… (10~20초)");
       await handleReviewPhotos(chatId, [fileId]);
@@ -640,7 +703,10 @@ async function handleUpdate(update: any) {
     if (pending) {
       pendingInput.delete(chatId);
       if (/^(취소|cancel)$/i.test(text)) { await sendMessage(chatId, "입력을 취소했어요."); return; }
-      if (pending.mode === "nameStory") {
+      if (pending.mode === "thumbImage") {
+        pendingInput.set(chatId, pending); // 이미지가 올 때까지 대기 유지
+        await sendMessage(chatId, "📎 지금은 <b>썸네일 이미지</b>를 기다리는 중이에요. 사진이나 파일로 보내주세요. (그만두려면 <code>취소</code>)");
+      } else if (pending.mode === "nameStory") {
         await handleNameStory(chatId, text);
       } else if (pending.mode === "title") {
         await runActions(chatId, pending.draftId, [{ type: "setTitle", text }]);
