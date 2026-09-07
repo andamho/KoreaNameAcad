@@ -98,10 +98,19 @@ export async function processFile(deps: ProcessorDeps, input: ProcessInput): Pro
   let previousMatchId: string | null = null;
   if (!row) {
     // 요건 4: 같은 파일명·다른 해시의 이전 건이 있으면 관계 기록(갱신)
-    const prior = (await db.query(
-      `SELECT id FROM report_matches WHERE file_name=$1 AND file_hash IS DISTINCT FROM $2 ORDER BY created_at DESC LIMIT 1`,
-      [input.file, hash],
-    )).rows[0];
+    // 같은 이름, 또는 뒤에 (1)/_1 만 붙은 판본까지 같은 파일의 새 판본으로 본다.
+    // (SQL 안에서 정규식을 쓰면 템플릿 문자열이 역슬래시를 먹으므로 걸러내기는 여기서 한다)
+    const 줄기 = (n: string) => n.replace(/\.pdf$/i, "").replace(/\s*(?:\(\d+\)|_\d+)\s*$/, "").trim();
+    const 이번줄기 = 줄기(input.file);
+    const 후보들 = (await db.query(
+      `SELECT id, file_name FROM report_matches
+         WHERE file_hash IS DISTINCT FROM $2
+           AND status NOT IN ('rejected','ignored')
+           AND file_name LIKE $1
+         ORDER BY created_at DESC`,
+      [`${이번줄기}%`, hash],
+    )).rows as any[];
+    const prior = 후보들.find((x) => 줄기(x.file_name) === 이번줄기);
     previousMatchId = prior?.id ?? null;
     const id = deps.uuid();
     await db.query(
