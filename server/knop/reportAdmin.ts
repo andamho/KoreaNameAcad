@@ -121,6 +121,7 @@ export async function assignReport(db: DbLike, matchId: string, customerId: stri
       const old = (await db.query(`SELECT file_name, matched_customer_id FROM report_matches WHERE id=$1`, [supersedeId])).rows[0] as any;
       if (old && old.matched_customer_id === customerId) {
         await db.query(`DELETE FROM crm_files WHERE customer_id=$1 AND memo=$2`, [customerId, `${REPORT_PREFIX}${old.file_name}`]);
+        // 첨부 이름만 남고 memo 가 다른 옛 기록(수기 첨부 등)은 건드리지 않는다.
         await db.query(`UPDATE report_matches SET status='rejected', updated_at=now() WHERE id=$1 AND status <> 'rejected'`, [supersedeId]);
       }
     }
@@ -146,8 +147,12 @@ export async function replaceReport(db: DbLike, matchId: string, actor: string, 
       [matchId, customerId, actor, audit],
     );
     if (!claim.rowCount) throw new Error("이미 처리된 건입니다(다른 창에서 처리했거나 상태가 변경됨).");
-    // 기존 첨부(같은 파일명 memo) 제거 후 새 이미지 첨부
-    await db.query(`DELETE FROM crm_files WHERE customer_id=$1 AND memo=$2`, [customerId, `${REPORT_PREFIX}${m.file_name}`]);
+    // 이전 판본의 첨부를 지운다. 파일명이 다를 수 있으므로(예: 김가연님 이름분석_1.pdf)
+    // 이전 건의 이름으로 지우고, 같은 이름으로 다시 눌러도 겹치지 않게 새 이름도 함께 지운다.
+    await db.query(
+      `DELETE FROM crm_files WHERE customer_id=$1 AND memo = ANY($2::text[])`,
+      [customerId, [`${REPORT_PREFIX}${prev.file_name}`, `${REPORT_PREFIX}${m.file_name}`]],
+    );
     await db.query(
       `INSERT INTO crm_files (customer_id, file_name, file_type, file_url, memo) VALUES ($1,$2,'image/png',$3,$4)`,
       [customerId, attachName(m.report_type), m.rendered_url, `${REPORT_PREFIX}${m.file_name}`],
