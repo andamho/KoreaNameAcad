@@ -25,7 +25,11 @@ export type PendingReport = {
   matchReason: string | null;
   renderedUrl: string | null;
   topScore: number | null; secondScore: number | null; scoreGap: number | null;
-  candidates: Array<{ customerId: string; customerName: string; score: number; passedGate: boolean; autoEligible: boolean; parts: string[] }>;
+  candidates: Array<{
+    customerId: string; customerName: string; score: number; passedGate: boolean; autoEligible: boolean; parts: string[];
+    // 이 고객이 이미 갖고 있는 같은 종류 분석표(있으면 좌우 비교용)
+    existing: { matchId: string; fileName: string; renderedUrl: string | null } | null;
+  }>;
   previous: { customerId: string; customerName: string | null; renderedUrl: string | null } | null;
   audit: Array<{ action: string; actor: string; at: string; reason?: string }>;
 };
@@ -298,8 +302,8 @@ export const knopApi = {
 
   // 이름분석표 갱신 대기 (동명이인 확인 / 내용 갱신)
   listPendingReports: () => req<PendingReport[]>("GET", "/api/kop/reports/pending"),
-  assignReport: (id: string, customerId: string, reason?: string) =>
-    req<{ ok: boolean }>("POST", `/api/kop/reports/${id}/assign`, { customerId, actor: "원장님", reason }),
+  assignReport: (id: string, customerId: string, reason?: string, supersedeId?: string | null) =>
+    req<{ ok: boolean }>("POST", `/api/kop/reports/${id}/assign`, { customerId, actor: "원장님", reason, supersedeId }),
   replaceReport: (id: string, reason?: string) =>
     req<{ ok: boolean }>("POST", `/api/kop/reports/${id}/replace`, { actor: "원장님", reason }),
   ignoreReport: (id: string, reason?: string) =>

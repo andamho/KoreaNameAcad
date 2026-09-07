@@ -401,9 +401,9 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
   });
   app.post(`${P}/reports/:id/assign`, requireAdmin, async (req, res) => {
     try {
-      const { customerId, actor, reason } = req.body || {};
+      const { customerId, actor, reason, supersedeId } = req.body || {};
       if (!customerId) return res.status(400).json({ error: "customerId_required" });
-      await assignReport(reportDb, req.params.id, String(customerId), String(actor || "admin"), reason ? String(reason) : undefined);
+      await assignReport(reportDb, req.params.id, String(customerId), String(actor || "admin"), reason ? String(reason) : undefined, supersedeId ? String(supersedeId) : null);
       res.json({ ok: true });
     } catch (e: any) { res.status(400).json({ error: e?.message || "assign_failed" }); }
   });

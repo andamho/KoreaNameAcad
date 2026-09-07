@@ -358,17 +358,8 @@ async function 확인필요알림(
     const { sendAlert, esc } = await import("./alertBot");
     const 기준 = (process.env.PUBLIC_BASE_URL?.trim() || "https://korea-name-acad.com").replace(/\/+$/, "");
     for (const it of 목록.slice(0, 5)) {
-      // 고객 id 를 찾아 링크를 만든다. 못 찾으면 링크 없이 보낸다.
-      let 링크 = `${기준}/admin`;
-      try {
-        const rows = (await db.query(
-          `SELECT id, name FROM customers WHERE deleted_at IS NULL AND name LIKE $1 LIMIT 2`,
-          [`%${it.name}%`],
-        )).rows as any[];
-        if (rows.length === 1) 링크 = `${기준}/admin?customer=${rows[0].id}`;
-      } catch {
-        // 조회 실패해도 알림은 보낸다
-      }
+      // 교체/유지 버튼은 '이름분석표' 탭에 있다. 고객 화면에는 없으므로 그 탭으로 보낸다.
+      const 링크 = `${기준}/admin?view=reports`;
       const 상담 = consultDates.get(it.name);
       const 상담줄 = 상담
         ? `상담 ${상담.toISOString().slice(5, 10).replace("-", "/")}`

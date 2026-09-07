@@ -40,6 +40,22 @@ export async function listPendingReports(db: DbLike): Promise<any[]> {
     const cs = (await db.query(`SELECT id, name FROM customers WHERE id = ANY($1::varchar[])`, [Array.from(custIds)])).rows;
     for (const c of cs as any[]) nameMap.set(c.id, c.name);
   }
+  // 후보 고객이 이미 갖고 있는 분석표(같은 종류) — 동명이인 확인 화면에서도
+  // 기존것을 왼쪽에 띄워 바로 비교할 수 있게 한다.
+  const 보유 = new Map<string, any>(); // `${고객}|${종류}` -> 기존 건
+  if (custIds.size) {
+    const mine = (await db.query(
+      `SELECT DISTINCT ON (matched_customer_id, report_type)
+              id, matched_customer_id, report_type, file_name, rendered_url
+         FROM report_matches
+        WHERE matched_customer_id = ANY($1::varchar[])
+          AND status IN ('auto_matched','manually_matched')
+        ORDER BY matched_customer_id, report_type, first_seen_at DESC`,
+      [Array.from(custIds)],
+    )).rows as any[];
+    for (const m of mine) 보유.set(`${m.matched_customer_id}|${m.report_type}`, m);
+  }
+
   // 갱신(supersedes_id)인 경우 이전 첨부(기존 이미지) 조회
   const superIds = rows.map((r: any) => r.supersedes_id).filter(Boolean);
   const prevMap = new Map<string, any>();
@@ -64,6 +80,11 @@ export async function listPendingReports(db: DbLike): Promise<any[]> {
       candidates: (snap.candidates || []).map((c: any) => ({
         customerId: c.customerId, customerName: nameMap.get(c.customerId) || "(삭제됨)",
         score: c.score, passedGate: c.passedGate, autoEligible: c.autoEligible, parts: c.parts,
+        // 이 고객이 이미 갖고 있는 같은 종류 분석표(있으면 왼쪽에 띄워 비교)
+        existing: (() => {
+          const e = 보유.get(`${c.customerId}|${r.report_type}`);
+          return e && e.id !== r.id ? { matchId: e.id, fileName: e.file_name, renderedUrl: e.rendered_url } : null;
+        })(),
       })),
       previous: prev ? { customerId: prev.matched_customer_id, customerName: nameMap.get(prev.matched_customer_id) || null, renderedUrl: prev.rendered_url } : null,
       audit: snap.audit || [],
@@ -78,7 +99,7 @@ async function loadMatch(db: DbLike, matchId: string) {
 }
 
 // 수동 지정: 관리자가 고객을 골라 연결. (동명이인/미등록 확인용)
-export async function assignReport(db: DbLike, matchId: string, customerId: string, actor: string, reason?: string): Promise<void> {
+export async function assignReport(db: DbLike, matchId: string, customerId: string, actor: string, reason?: string, supersedeId?: string | null): Promise<void> {
   const m = await loadMatch(db, matchId);
   if (!m.rendered_url) throw new Error("미리보기 이미지가 없어 연결할 수 없습니다(워커 재처리 필요).");
   const audit = withAudit(m.candidate_snapshot, { action: "assign", actor, at: new Date().toISOString(), fromStatus: m.status, toStatus: "manually_matched", customerId, reason });
@@ -95,6 +116,14 @@ export async function assignReport(db: DbLike, matchId: string, customerId: stri
       `INSERT INTO crm_files (customer_id, file_name, file_type, file_url, memo) VALUES ($1,$2,'image/png',$3,$4)`,
       [customerId, attachName(m.report_type), m.rendered_url, `${REPORT_PREFIX}${m.file_name}`],
     );
+    if (supersedeId) {
+      // 관리자가 '기존것 대신 넣기'를 골랐다. 그 고객의 예전 첨부만 지운다.
+      const old = (await db.query(`SELECT file_name, matched_customer_id FROM report_matches WHERE id=$1`, [supersedeId])).rows[0] as any;
+      if (old && old.matched_customer_id === customerId) {
+        await db.query(`DELETE FROM crm_files WHERE customer_id=$1 AND memo=$2`, [customerId, `${REPORT_PREFIX}${old.file_name}`]);
+        await db.query(`UPDATE report_matches SET status='rejected', updated_at=now() WHERE id=$1 AND status <> 'rejected'`, [supersedeId]);
+      }
+    }
     await db.query("COMMIT");
   } catch (e) { await db.query("ROLLBACK").catch(() => {}); throw e; }
 }

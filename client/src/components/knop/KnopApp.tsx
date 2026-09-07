@@ -64,13 +64,19 @@ export function KnopApp() {
     // 새로고침할 때마다 같은 고객이 다시 열리지 않게 한다.
     const 주소 = new URLSearchParams(window.location.search);
     const 열고객 = (주소.get("customer") || "").trim();
-    if (열고객) {
-      setSelectedCustomer(열고객);
-      setView("customers");
+    const 열탭 = (주소.get("view") || "").trim() as View | "";
+    const 아는탭 = ["customers", "inbox", "sms-inbox", "sms", "notice", "calendar", "reports", "corrections"];
+    if (열고객 || (열탭 && 아는탭.includes(열탭))) {
+      // view 가 있으면 그 탭으로, 없으면 고객 화면으로.
+      const 갈탭: View = 열탭 && 아는탭.includes(열탭) ? (열탭 as View) : "customers";
+      const 갈고객 = 갈탭 === "customers" ? 열고객 || null : null;
+      setSelectedCustomer(갈고객);
+      setView(갈탭);
       주소.delete("customer");
+      주소.delete("view");
       const 남은 = 주소.toString();
       window.history.replaceState(
-        { knop: { view: "customers", customer: 열고객 } },
+        { knop: { view: 갈탭, customer: 갈고객 } },
         "",
         window.location.pathname + (남은 ? `?${남은}` : ""),
       );

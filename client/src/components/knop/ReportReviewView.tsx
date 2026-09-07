@@ -57,7 +57,10 @@ export function ReportReviewView() {
   const run = (p: Promise<any>, ok: string) =>
     p.then(() => { refresh(); toast({ title: ok }); }).catch((e: any) => toast({ title: "실패", description: e?.message, variant: "destructive" }));
 
-  const assign = useMutation({ mutationFn: (v: { id: string; customerId: string }) => knopApi.assignReport(v.id, v.customerId) });
+  const assign = useMutation({
+    mutationFn: (v: { id: string; customerId: string; supersedeId?: string }) =>
+      knopApi.assignReport(v.id, v.customerId, undefined, v.supersedeId ?? null),
+  });
   const replace = useMutation({ mutationFn: (id: string) => knopApi.replaceReport(id) });
   const ignore = useMutation({ mutationFn: (id: string) => knopApi.ignoreReport(id) });
 
@@ -91,11 +94,17 @@ export function ReportReviewView() {
           </div>
           {it.matchReason && <p className="text-xs text-gray-500">{it.matchReason}</p>}
 
-          {/* 미리보기 */}
-          <div className={`grid gap-3 ${it.kind === "update" ? "grid-cols-2" : "grid-cols-1 max-w-sm"}`}>
-            {it.kind === "update" && <Preview url={it.previous?.renderedUrl ?? null} label={`기존${it.previous?.customerName ? ` · ${it.previous.customerName}` : ""}`} />}
-            <Preview url={it.renderedUrl} label={it.kind === "update" ? "새 분석표" : "분석표"} />
-          </div>
+          {/* 미리보기 — 갱신 건은 기존/새것을 나란히 */}
+          {it.kind === "update" && (
+            <div className="grid gap-3 grid-cols-2">
+              <Preview url={it.previous?.renderedUrl ?? null} label={`기존${it.previous?.customerName ? ` · ${it.previous.customerName}` : ""}`} />
+              <Preview url={it.renderedUrl} label="새 분석표" />
+            </div>
+          )}
+          {/* 동명이인 건에서 후보가 아무도 없으면 새것만 보여준다 */}
+          {it.kind !== "update" && it.candidates.length === 0 && (
+            <div className="max-w-sm"><Preview url={it.renderedUrl} label="새 분석표" /></div>
+          )}
 
           {/* 액션 */}
           {it.kind === "update" ? (
@@ -112,12 +121,31 @@ export function ReportReviewView() {
               <div className="space-y-1.5">
                 {it.candidates.length === 0 && <p className="text-xs text-gray-400">일치하는 고객이 없습니다. 아래에서 고객을 검색해 지정하거나 무시하세요.</p>}
                 {it.candidates.map((c) => (
-                  <div key={c.customerId} className="flex items-center justify-between gap-2 border border-gray-100 rounded-lg px-3 py-1.5">
-                    <div className="min-w-0">
+                  <div key={c.customerId} className="border border-gray-100 rounded-lg px-3 py-2.5 space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-sm">{c.customerName}</span>
-                      <span className="ml-2 text-xs text-gray-400">{c.score}점 {c.passedGate ? "" : "· 기간밖"} {c.autoEligible ? "" : "· 신청일 미확인"}</span>
+                      <span className="text-xs text-gray-400">{c.score}점 {c.passedGate ? "" : "· 기간밖"} {c.autoEligible ? "" : "· 신청일 미확인"}</span>
                     </div>
-                    <Button size="sm" variant="outline" onClick={() => run(assign.mutateAsync({ id: it.id, customerId: c.customerId }), `${c.customerName}에게 연결했습니다`)}>이 고객에게 연결</Button>
+                    {/* 이 고객이 이미 갖고 있으면 갱신 건과 같은 좌우 비교로 보여준다 */}
+                    <div className={`grid gap-3 ${c.existing ? "grid-cols-2" : "grid-cols-1 max-w-sm"}`}>
+                      {c.existing && <Preview url={c.existing.renderedUrl} label={`기존 · ${c.existing.fileName}`} />}
+                      <Preview url={it.renderedUrl} label="새 분석표" />
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {c.existing ? (
+                        <>
+                          <Button size="sm" className="bg-[#56D5DB] hover:bg-[#3fc4ca] text-white"
+                            onClick={() => run(assign.mutateAsync({ id: it.id, customerId: c.customerId, supersedeId: c.existing!.matchId }), `${c.customerName} · 새 분석표로 대체했습니다`)}>
+                            <ArrowLeftRight className="w-3.5 h-3.5 mr-1" /> 새것으로 대체
+                          </Button>
+                          <Button size="sm" variant="outline"
+                            onClick={() => run(assign.mutateAsync({ id: it.id, customerId: c.customerId }), `${c.customerName} · 둘 다 두었습니다`)}>둘 다 두기</Button>
+                        </>
+                      ) : (
+                        <Button size="sm" variant="outline"
+                          onClick={() => run(assign.mutateAsync({ id: it.id, customerId: c.customerId }), `${c.customerName}에게 연결했습니다`)}>이 고객에게 연결</Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
