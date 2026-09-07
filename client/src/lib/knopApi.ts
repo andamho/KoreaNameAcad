@@ -30,7 +30,7 @@ export type PendingReport = {
     // 이 고객이 이미 갖고 있는 같은 종류 분석표(있으면 좌우 비교용)
     existing: { matchId: string; fileName: string; renderedUrl: string | null } | null;
   }>;
-  previous: { customerId: string; customerName: string | null; renderedUrl: string | null } | null;
+  previous: { matchId: string; fileName: string; customerId: string; customerName: string | null; renderedUrl: string | null } | null;
   audit: Array<{ action: string; actor: string; at: string; reason?: string }>;
 };
 

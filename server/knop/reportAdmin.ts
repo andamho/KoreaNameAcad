@@ -17,6 +17,29 @@ function withAudit(snapshot: string | null, entry: AuditEntry): string {
   return JSON.stringify(snap);
 }
 
+// 파일명 줄기 — 뒤의 (1)/_1 과 확장자를 뗀다. 같은 분석표의 판본을 묶는 열쇠.
+export function 줄기(n: string): string {
+  return String(n || "").replace(/\.pdf$/i, "").replace(/\s*(?:\(\d+\)|_\d+)\s*$/, "").trim();
+}
+
+// 이전 판본 찾기: supersedes_id 가 있으면 그 기록, 없거나 사라졌으면
+// 줄기가 같은 최신 연결 건. 둘 다 없으면 null.
+async function 이전찾기(db: DbLike, m: any): Promise<any | null> {
+  if (m.supersedes_id) {
+    const p = (await db.query(`SELECT * FROM report_matches WHERE id=$1`, [m.supersedes_id])).rows[0];
+    if (p && p.matched_customer_id) return p;
+  }
+  const rows = (await db.query(
+    `SELECT * FROM report_matches
+       WHERE id <> $1 AND report_type = $2 AND matched_customer_id IS NOT NULL
+         AND status IN ('auto_matched','manually_matched','duplicate')
+       ORDER BY first_seen_at DESC`,
+    [m.id, m.report_type],
+  )).rows as any[];
+  const k = 줄기(m.file_name);
+  return rows.find((r) => 줄기(r.file_name) === k) || null;
+}
+
 const attachName = (reportType: string) => `이름분석표 (${reportType === "family" ? "가족 이름분석" : "이름분석"})`;
 
 // 확인 필요/실패 목록 (관리자 화면용). 후보 고객 이름까지 채워서 반환.
@@ -56,17 +79,23 @@ export async function listPendingReports(db: DbLike): Promise<any[]> {
     for (const m of mine) 보유.set(`${m.matched_customer_id}|${m.report_type}`, m);
   }
 
-  // 갱신(supersedes_id)인 경우 이전 첨부(기존 이미지) 조회
-  const superIds = rows.map((r: any) => r.supersedes_id).filter(Boolean);
+  // 이전 판본 찾기. supersedes_id 가 끊겼어도 줄기가 같은 연결 건으로 되짚는다.
   const prevMap = new Map<string, any>();
-  if (superIds.length) {
-    const prev = (await db.query(`SELECT id, matched_customer_id, rendered_url FROM report_matches WHERE id = ANY($1::varchar[])`, [superIds])).rows;
-    for (const p of prev as any[]) prevMap.set(p.id, p);
+  for (const { r } of parsed) {
+    const p = await 이전찾기(db, r);
+    if (p) {
+      prevMap.set(r.id, p);
+      if (p.matched_customer_id) custIds.add(p.matched_customer_id);
+    }
+  }
+  if (custIds.size) {
+    const cs = (await db.query(`SELECT id, name FROM customers WHERE id = ANY($1::varchar[])`, [Array.from(custIds)])).rows;
+    for (const c of cs as any[]) nameMap.set(c.id, c.name);
   }
 
   return parsed.map(({ r, snap }) => {
-    const isUpdate = !!r.supersedes_id; // 갱신 대기(같은 파일 내용변경) vs 동명이인 확인
-    const prev = r.supersedes_id ? prevMap.get(r.supersedes_id) : null;
+    const prev = prevMap.get(r.id) || null;
+    const isUpdate = !!prev; // 이전 판본이 있으면 갱신, 없으면 동명이인 확인
     return {
       id: r.id,
       kind: isUpdate ? "update" : "ambiguous", // 갱신 / 동명이인
@@ -86,7 +115,7 @@ export async function listPendingReports(db: DbLike): Promise<any[]> {
           return e && e.id !== r.id ? { matchId: e.id, fileName: e.file_name, renderedUrl: e.rendered_url } : null;
         })(),
       })),
-      previous: prev ? { customerId: prev.matched_customer_id, customerName: nameMap.get(prev.matched_customer_id) || null, renderedUrl: prev.rendered_url } : null,
+      previous: prev ? { matchId: prev.id, fileName: prev.file_name, customerId: prev.matched_customer_id, customerName: nameMap.get(prev.matched_customer_id) || null, renderedUrl: prev.rendered_url } : null,
       audit: snap.audit || [],
     };
   });
@@ -132,9 +161,9 @@ export async function assignReport(db: DbLike, matchId: string, customerId: stri
 // 대체(갱신): 이전 첨부를 지우고 새 이미지로 교체. 같은 고객 유지.
 export async function replaceReport(db: DbLike, matchId: string, actor: string, reason?: string): Promise<void> {
   const m = await loadMatch(db, matchId);
-  if (!m.supersedes_id) throw new Error("대체 대상(이전 건)이 없습니다.");
   if (!m.rendered_url) throw new Error("새 미리보기 이미지가 없습니다(워커 재처리 필요).");
-  const prev = (await db.query(`SELECT * FROM report_matches WHERE id=$1`, [m.supersedes_id])).rows[0];
+  // supersedes_id 가 끊긴 옛 기록도 있으므로 목록 화면과 같은 방식으로 되짚는다.
+  const prev = await 이전찾기(db, m);
   if (!prev || !prev.matched_customer_id) throw new Error("이전 연결 정보를 찾을 수 없습니다.");
   const customerId = prev.matched_customer_id;
   const audit = withAudit(m.candidate_snapshot, { action: "replace", actor, at: new Date().toISOString(), fromStatus: m.status, toStatus: "manually_matched", customerId, reason });
@@ -158,7 +187,7 @@ export async function replaceReport(db: DbLike, matchId: string, actor: string, 
       [customerId, attachName(m.report_type), m.rendered_url, `${REPORT_PREFIX}${m.file_name}`],
     );
     // 이전 건은 대체됨 표시(이미 rejected 면 무해)
-    await db.query(`UPDATE report_matches SET status='rejected', updated_at=now() WHERE id=$1 AND status <> 'rejected'`, [m.supersedes_id]);
+    await db.query(`UPDATE report_matches SET status='rejected', updated_at=now() WHERE id=$1 AND status <> 'rejected'`, [prev.id]);
     await db.query("COMMIT");
   } catch (e) { await db.query("ROLLBACK").catch(() => {}); throw e; }
 }
