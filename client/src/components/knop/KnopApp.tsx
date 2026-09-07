@@ -59,6 +59,23 @@ export function KnopApp() {
   const openCustomer = (id: string) => go({ customer: id });
 
   useEffect(() => {
+    // 주소로 특정 고객을 바로 열 수 있게 한다 — /admin?customer=<id>
+    // 텔레그램 알림에서 눌러 들어올 때 쓴다. 값을 읽은 뒤 주소에서 지워
+    // 새로고침할 때마다 같은 고객이 다시 열리지 않게 한다.
+    const 주소 = new URLSearchParams(window.location.search);
+    const 열고객 = (주소.get("customer") || "").trim();
+    if (열고객) {
+      setSelectedCustomer(열고객);
+      setView("customers");
+      주소.delete("customer");
+      const 남은 = 주소.toString();
+      window.history.replaceState(
+        { knop: { view: "customers", customer: 열고객 } },
+        "",
+        window.location.pathname + (남은 ? `?${남은}` : ""),
+      );
+    }
+
     // 첫 화면도 기록에 심어둔다 → 뒤로가기로 여기까지 되돌아올 수 있다
     const st = window.history.state as any;
     if (!st?.knop) {

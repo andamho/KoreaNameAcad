@@ -344,6 +344,53 @@ async function decideNewNameForFile(
   }
 }
 
+// 확인이 필요한 이름분석표를 알림봇으로 알린다.
+//
+// 수정본(같은 고객에 같은 유형이 이미 붙어 있는 경우)은 자동으로 덮지 않고
+// 사람이 정하도록 두는데, 그동안 아무도 그 사실을 몰랐다. 파일이 들어온 직후
+// 텔레그램으로 알리고, 그 고객 화면으로 바로 가는 링크를 같이 보낸다.
+async function 확인필요알림(
+  db: ProcessorDeps["db"],
+  목록: Array<{ file: string; name: string; note: string }>,
+  consultDates: Map<string, Date>,
+): Promise<void> {
+  try {
+    const { sendAlert } = await import("./alertBot");
+    const 기준 = (process.env.PUBLIC_BASE_URL?.trim() || "https://korea-name-acad.com").replace(/\/+$/, "");
+    for (const it of 목록.slice(0, 5)) {
+      // 고객 id 를 찾아 링크를 만든다. 못 찾으면 링크 없이 보낸다.
+      let 링크 = `${기준}/admin`;
+      try {
+        const rows = (await db.query(
+          `SELECT id, name FROM customers WHERE deleted_at IS NULL AND name LIKE $1 LIMIT 2`,
+          [`%${it.name}%`],
+        )).rows as any[];
+        if (rows.length === 1) 링크 = `${기준}/admin?customer=${rows[0].id}`;
+      } catch {
+        // 조회 실패해도 알림은 보낸다
+      }
+      const 상담 = consultDates.get(it.name);
+      const 상담줄 = 상담
+        ? `상담 ${상담.toISOString().slice(5, 10).replace("-", "/")}`
+        : "상담일 없음";
+      await sendAlert(
+        [
+          "\uD83D\uDCC4 <b>\uC774\uB984\uBD84\uC11D\uD45C \uD655\uC778 \uD544\uC694</b>",
+          `${it.name} \u00B7 ${상담줄}`,
+          it.file,
+          "",
+          it.note,
+          "",
+          `<a href="${링크}">\uAD00\uB9AC\uC790\uC5D0\uC11C \uC5F4\uAE30</a>`,
+        ].join("\n"),
+      );
+    }
+    if (목록.length > 5) await sendAlert(`\u2026 \uC678 ${목록.length - 5}\uAC74 \uB354 \uC788\uC2B5\uB2C8\uB2E4.`);
+  } catch (e: any) {
+    console.error(`[KOP] 확인필요 알림 실패: ${e?.message}`);
+  }
+}
+
 let _syncing = false;
 export async function syncReports(): Promise<SyncResult> {
   const empty: SyncResult = { auto_matched: 0, needs_review: 0, attachment_failed: 0, processing_failed: 0, skipped: 0, processed: 0, added: 0, created: 0 };
@@ -374,6 +421,8 @@ export async function syncReports(): Promise<SyncResult> {
     const reps = listReports().filter((r) => !/상세/.test(r.file));
     // 달력은 한 번만 읽어 모든 파일에 같은 지도를 쓴다.
     const consultDates = await consultDatesByName();
+    // 이번에 새로 '확인필요'가 된 것들 — 끝나고 한 번에 알린다.
+    const 확인필요목록: Array<{ file: string; name: string; note: string }> = [];
     for (const r of reps) {
       const abs = resolveReportPath(r.file);
       if (!abs) continue;
@@ -390,7 +439,13 @@ export async function syncReports(): Promise<SyncResult> {
         });
         res.processed++;
         if (out.status === "auto_matched") { res.auto_matched++; res.added++; }
-        else if (out.status === "needs_review") res.needs_review++;
+        else if (out.status === "needs_review") {
+          res.needs_review++;
+          // '사람 확인 대기 중'(이미 알린 건)은 빼고, 이번에 새로 잡힌 것만 모은다.
+          if (!/대기 중/.test(out.note || "")) {
+            확인필요목록.push({ file: r.file, name: extractedName, note: out.note || "" });
+          }
+        }
         else if (out.status === "attachment_failed") res.attachment_failed++;
         else if (out.status === "processing_failed") res.processing_failed++;
         else res.skipped++;
@@ -409,6 +464,7 @@ export async function syncReports(): Promise<SyncResult> {
       }
     }
     saveState(state);
+    if (확인필요목록.length) await 확인필요알림(deps.db, 확인필요목록, consultDates);
     if (res.auto_matched || res.needs_review || res.attachment_failed || res.processing_failed) {
       console.log(`[KOP] 이름분석표 동기화: 자동연결 ${res.auto_matched} · 확인필요 ${res.needs_review} · 첨부실패 ${res.attachment_failed} · 처리실패 ${res.processing_failed} (처리 ${res.processed})`);
     }
