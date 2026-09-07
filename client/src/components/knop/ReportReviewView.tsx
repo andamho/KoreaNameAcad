@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { knopApi, type PendingReport } from "@/lib/knopApi";
 import type { Customer } from "@shared/schema";
-import { RefreshCw, FileText, Users, ArrowLeftRight } from "lucide-react";
+import { RefreshCw, FileText, Users, ArrowLeftRight, Plus } from "lucide-react";
 
 function Preview({ url, label }: { url: string | null; label: string }) {
   if (!url) return <div className="text-xs text-gray-400 border border-dashed rounded-lg p-4 text-center">{label}: 미리보기 없음</div>;
@@ -114,6 +114,12 @@ export function ReportReviewView() {
                 <ArrowLeftRight className="w-3.5 h-3.5 mr-1" /> 새것으로 대체
               </Button>
               <Button size="sm" variant="outline" onClick={() => run(ignore.mutateAsync(it.id), "기존 유지(무시)")}>기존 유지(무시)</Button>
+              {it.previous?.customerId && (
+                <Button size="sm" variant="outline"
+                  onClick={() => run(assign.mutateAsync({ id: it.id, customerId: it.previous!.customerId }), "둘 다 두었습니다")}>
+                  <Plus className="w-3.5 h-3.5 mr-1" /> 둘 다 두기
+                </Button>
+              )}
             </div>
           ) : (
             <div className="space-y-2">
