@@ -355,7 +355,7 @@ async function 확인필요알림(
   consultDates: Map<string, Date>,
 ): Promise<void> {
   try {
-    const { sendAlert } = await import("./alertBot");
+    const { sendAlert, esc } = await import("./alertBot");
     const 기준 = (process.env.PUBLIC_BASE_URL?.trim() || "https://korea-name-acad.com").replace(/\/+$/, "");
     for (const it of 목록.slice(0, 5)) {
       // 고객 id 를 찾아 링크를 만든다. 못 찾으면 링크 없이 보낸다.
@@ -376,10 +376,10 @@ async function 확인필요알림(
       await sendAlert(
         [
           "\uD83D\uDCC4 <b>\uC774\uB984\uBD84\uC11D\uD45C \uD655\uC778 \uD544\uC694</b>",
-          `${it.name} \u00B7 ${상담줄}`,
-          it.file,
+          `${esc(it.name)} \u00B7 ${상담줄}`,
+          esc(it.file),
           "",
-          it.note,
+          esc(it.note),
           "",
           `<a href="${링크}">\uAD00\uB9AC\uC790\uC5D0\uC11C \uC5F4\uAE30</a>`,
         ].join("\n"),

@@ -51,16 +51,17 @@ async function notifySend(msg: ScheduledMessage, failReason?: string): Promise<v
     const digits = (msg.phone || "").replace(/[^0-9]/g, "");
     const phone =
       digits.startsWith("0") && digits.length >= 10 ? `+82${digits.slice(1)}` : msg.phone || "";
+    // 사람이 쓴 값(이름·사유)은 감싸서 넣는다 — < 가 들어가면 텔레그램이 태그로 읽는다.
+    const { sendAlert, esc } = await import("./alertBot");
     const label = SET_LABEL[msg.setKey] || msg.setKey;
     const head = failReason
       ? "\u26A0\uFE0F <b>\uAC1C\uBA85\uAD00\uB9AC \uBB38\uC790 \uC2E4\uD328</b>"
       : "\uD83D\uDCEE <b>\uAC1C\uBA85\uAD00\uB9AC \uBB38\uC790 \uBC1C\uC1A1</b>";
     const count = nth > 0 ? `${nth}/${siblings.length}회차` : "";
-    const lines = [head, `${name} \u00B7 ${label} ${count}`.trim(), phone];
-    if (failReason) lines.push("", `사유: ${failReason.slice(0, 150)}`);
+    const lines = [head, `${esc(name)} \u00B7 ${label} ${count}`.trim(), phone];
+    if (failReason) lines.push("", `사유: ${esc(failReason.slice(0, 150))}`);
     if (!LIVE && !failReason) lines.push("", "(실제 발송 꺼짐 \u2014 시뮬레이션)");
 
-    const { sendAlert } = await import("./alertBot");
     await sendAlert(lines.join("\n"));
   } catch (e: any) {
     console.error(`[KNOP SMS] 발송 알림 실패: ${e?.message}`);

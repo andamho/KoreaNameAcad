@@ -10,6 +10,16 @@ const CHAT = (process.env.KOP_ALERT_CHAT_ID || "").trim();
 // 설정이 들어왔는지 부팅 때 한 줄 남긴다. 값은 찍지 않는다.
 console.log(`[알림봇] ${TOKEN && CHAT ? "설정됨" : "미설정 — 알림 안 나감"}`);
 
+// 사람이 쓴 값(이름·파일명·사유)을 알림에 넣기 전에 감싼다.
+// 텔레그램 HTML 모드는 < 를 태그 시작으로 읽는다 — 사유에 "점수차 3 < 30" 같은
+// 문장이 들어가면 통째로 거부된다(400 can't parse entities).
+export function esc(v: unknown): string {
+  return String(v ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 export function alertAvailable(): boolean {
   return Boolean(TOKEN && CHAT);
 }
