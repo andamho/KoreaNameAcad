@@ -21,6 +21,7 @@ export type Candidate = {
   numPeople: number | null;            // 신청 인원
   consultStatus: string | null;        // 상담 상태(있으면)
   alreadyLinkedSameType: boolean;      // 같은 유형 분석표 이미 연결됨
+  consultDate: Date | null;            // 상담 예정일(바른이름 달력). 없으면 null
 };
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -29,11 +30,22 @@ const daysSigned = (later: Date, earlier: Date) => (later.getTime() - earlier.ge
 const isCancelled = (s: string | null) => !!s && /취소|중지|기각/.test(s);
 const isActiveStatus = (s: string | null) => !!s && /(완료|진행|접수|확인|예정)/.test(s);
 
-// 기간 게이트: 신청일 ∈ [T-90, T+3]. 신청일 없으면 불통과.
+// 기간 게이트: 신청일 ∈ [T-90, T+3] 이거나, 상담 예정일 ∈ [T-3, T+90].
+//
+// 분석표는 신청 직후 자동 생성되므로 보통 신청일 근처에 들어온다. 다만 원장님이
+// 내용을 고쳐 다시 뽑으면 그건 상담일 무렵에 들어온다 — 신청이 두 달 전이어도
+// 상담 열흘 전 수정본은 정상이다. 그래서 두 날짜 중 하나만 맞아도 통과시킨다.
 export function passesDateGate(r: ReportInfo, c: Candidate): boolean {
-  if (!c.applicationDate) return false;
-  const d = daysSigned(r.firstSeenAt, c.applicationDate); // T - 신청일 (양수=신청이 먼저)
-  return d >= -3 && d <= 90;
+  if (c.applicationDate) {
+    const d = daysSigned(r.firstSeenAt, c.applicationDate); // T - 신청일 (양수=신청이 먼저)
+    if (d >= -3 && d <= 90) return true;
+  }
+  if (c.consultDate) {
+    // 상담일 기준: 상담 90일 전 ~ 상담 3일 후까지 들어온 자료를 인정한다.
+    const d = daysSigned(c.consultDate, r.firstSeenAt); // 상담일 - T (양수=파일이 먼저)
+    if (d >= -3 && d <= 90) return true;
+  }
+  return false;
 }
 
 export type Scored = {
@@ -49,16 +61,25 @@ export function scoreCandidate(r: ReportInfo, c: Candidate): Scored {
   const passedGate = passesDateGate(r, c);
   let score = 0;
 
-  // 주 신호: 신청일 근접도
-  if (c.applicationDate) {
-    const d = Math.abs(daysSigned(r.firstSeenAt, c.applicationDate));
-    if (d <= 3) { score += 70; parts.push("신청일 ±3일 +70"); }
-    else if (d <= 7) { score += 55; parts.push("신청일 ±7일 +55"); }
-    else if (d <= 14) { score += 40; parts.push("신청일 ±14일 +40"); }
-    else if (d <= 30) { score += 20; parts.push("신청일 ±30일 +20"); }
-    else parts.push("신청일 31~90일 +0");
+  // 주 신호: 신청일 또는 상담 예정일 중 가까운 쪽과의 근접도.
+  // 첫 분석표는 신청일에, 수정본은 상담일에 가깝다. 둘 다 정상 경로다.
+  const dApp = c.applicationDate ? Math.abs(daysSigned(r.firstSeenAt, c.applicationDate)) : null;
+  const dCon = c.consultDate ? Math.abs(daysSigned(r.firstSeenAt, c.consultDate)) : null;
+  const near =
+    dApp !== null && dCon !== null ? Math.min(dApp, dCon) : dApp !== null ? dApp : dCon;
+  const label = near !== null && dCon !== null && near === dCon ? "상담일" : "신청일";
+  if (near === null) {
+    parts.push("신청일·상담일 없음");
+  } else if (near <= 3) {
+    score += 70; parts.push(`${label} ±3일 +70`);
+  } else if (near <= 7) {
+    score += 55; parts.push(`${label} ±7일 +55`);
+  } else if (near <= 14) {
+    score += 40; parts.push(`${label} ±14일 +40`);
+  } else if (near <= 30) {
+    score += 20; parts.push(`${label} ±30일 +20`);
   } else {
-    parts.push("신청일 없음");
+    parts.push(`${label} 31~90일 +0`);
   }
   // 보조
   if (r.reportType === "family" && (c.numPeople ?? 0) >= 2) { score += 10; parts.push("가족+인원2↑ +10"); }

@@ -182,6 +182,9 @@ export async function gatherCandidates(
   db: DbLike,
   extractedName: string,
   reportType: "family" | "individual",
+  // 상담 예정일 — 바른이름 달력에서 읽어 넘긴다(기준이름 → 날짜).
+  // 넘기지 않으면 상담일 없이 지금까지와 같게 동작한다.
+  consultDates?: Map<string, Date>,
 ): Promise<{ candidates: Candidate[]; failed: boolean }> {
   try {
     const custs = (await db.query(
@@ -239,6 +242,8 @@ export async function gatherCandidates(
         numPeople,
         consultStatus: null, // KOP DB에 신뢰 가능한 상담상태 없음 → null(보조점수 미적용)
         alreadyLinkedSameType: linkedSameType.has(c.id),
+        // 고객 이름(가족 꼬리 제거)으로 달력의 상담 일정을 찾는다.
+        consultDate: consultDates?.get(baseName(c.name)) ?? null,
       });
     }
     return { candidates, failed: false };

@@ -79,6 +79,30 @@ async function ensureReportLinkSlug(target: string, label: string, desiredSlug: 
 }
 
 // 달력에서 '오늘 이후 상담(cat=상담)' 일정이 잡힌 사람들의 기준이름 집합
+// 이름 → 상담 예정일. 이름분석표가 '언제 들어온 게 정상인지' 판단하는 두 번째 기준이다.
+//
+// 분석표는 상담신청 즉시 자동 생성되지만, 원장님이 내용을 고쳐 다시 뽑으면
+// 그건 상담일 무렵에 들어온다. 신청일만 보면 그 수정본이 '오래된 자료'로 밀린다.
+// 같은 이름의 상담이 여럿이면 가장 늦은(다가오는) 것을 쓴다.
+async function consultDatesByName(): Promise<Map<string, Date>> {
+  const out = new Map<string, Date>();
+  if (!calendarAvailable()) return out;
+  try {
+    for (const e of await readEvents()) {
+      if (!e.date || (e.cat || "") !== "상담") continue;
+      const nm = baseName(parseNameCount(e.title || "").name);
+      if (!nm) continue;
+      const d = new Date(`${e.date}T00:00:00+09:00`);
+      if (isNaN(d.getTime())) continue;
+      const prev = out.get(nm);
+      if (!prev || d > prev) out.set(nm, d);
+    }
+  } catch (e: any) {
+    console.error(`[KOP] 상담일 조회 실패: ${e?.message}`);
+  }
+  return out;
+}
+
 async function upcomingConsultNames(): Promise<Set<string> | null> {
   if (!calendarAvailable()) return null;
   try {
@@ -348,13 +372,15 @@ export async function syncReports(): Promise<SyncResult> {
   const res: SyncResult = { ...empty };
   try {
     const reps = listReports().filter((r) => !/상세/.test(r.file));
+    // 달력은 한 번만 읽어 모든 파일에 같은 지도를 쓴다.
+    const consultDates = await consultDatesByName();
     for (const r of reps) {
       const abs = resolveReportPath(r.file);
       if (!abs) continue;
       const extractedName = baseName(r.name);
       const reportType = r.family ? "family" : "individual";
       try {
-        const { candidates, failed } = await gatherCandidates(deps.db, extractedName, reportType);
+        const { candidates, failed } = await gatherCandidates(deps.db, extractedName, reportType, consultDates);
         // 새이름 파일은 판정 축이 다르다: 신청일이 아니라 '달력 작명완료 일정'으로 찾는다.
         const forced = /새이름/.test(r.file)
           ? await decideNewNameForFile(deps.db, extractedName, reportType, abs)
