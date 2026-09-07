@@ -30,6 +30,9 @@ interface ConsultationFormProps {
 
 export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: ConsultationFormProps) {
   const { toast } = useToast();
+  // 접수 완료를 구석 알림 대신 화면 가운데 확인창으로 알린다.
+  // 신청은 한 번 내고 끝나는 일이라, 놓치지 않도록 눌러서 닫게 한다.
+  const [submitted, setSubmitted] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [numPeople, setNumPeople] = useState<number>(1);
@@ -159,6 +162,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
       toast({
         title: "복사 완료",
         description: "계좌번호가 복사되었습니다.",
+        variant: "success",
       });
       setTimeout(() => setAccountCopied(false), 2000);
     } catch (err) {
@@ -204,13 +208,8 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
       return await response.json();
     },
     onSuccess: () => {
-      toast({
-        title: "신청이 접수되었습니다",
-        description: "곧 담당자가 연락드리겠습니다.",
-      });
-      if (onSuccess) {
-        setTimeout(() => onSuccess(), 500);
-      }
+      // 확인창을 닫을 때 onSuccess() 로 폼을 닫는다.
+      setSubmitted(true);
     },
     onError: (error: any) => {
       console.error("Submission error:", error);
@@ -1155,6 +1154,38 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
         </div>
       </div>
 
+      {/* 접수 완료 확인창 — 티파니 바탕에 흰 글씨 */}
+      {submitted && (
+        <div
+          className="absolute inset-0 z-[60] flex items-center justify-center bg-black/40 px-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="kna-submitted-title"
+        >
+          <div className="w-full max-w-[320px] rounded-2xl bg-[#077a91] px-7 py-8 text-center text-white shadow-2xl">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/15">
+              <Check className="h-7 w-7" strokeWidth={3} />
+            </div>
+            <h3 id="kna-submitted-title" className="text-xl font-bold tracking-tight">
+              신청이 접수되었습니다
+            </h3>
+            <p className="mt-3 text-[0.9375rem] leading-relaxed text-white/90">
+              곧 담당자가 연락드리겠습니다.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setSubmitted(false);
+                if (onSuccess) onSuccess();
+              }}
+              className="mt-6 w-full rounded-xl bg-white px-6 py-3 text-base font-bold text-[#077a91] transition active:scale-[0.98]"
+              data-testid="button-submitted-confirm"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -28,6 +28,10 @@ const toastVariants = cva(
     variants: {
       variant: {
         default: "border bg-background text-foreground",
+        // 성공 알림 — 티파니 바탕에 흰 글씨.
+        // 브랜드 티파니(#0994af)는 흰 글씨 대비가 3.58:1 로 부족해
+        // 같은 색상각에서 한 단계 진한 #077a91 을 쓴다(5.00:1).
+        success: "border-transparent bg-[#077a91] text-white shadow-lg",
         destructive:
           "destructive group border-destructive bg-destructive text-destructive-foreground",
       },
