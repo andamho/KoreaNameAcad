@@ -163,6 +163,58 @@ export async function scheduleNewNameNotices(): Promise<{ scheduled: NewNamePlan
   return { scheduled, skipped };
 }
 
+// ── 달력에서 빠진 일정의 예약 취소 ──
+// 작명완료 일정을 지우거나 날짜를 옮기면, 옛 날짜로 잡힌 안내 문자는 더 이상 맞지 않는다
+// (2026-09-19 고기원님: 달력엔 없는데 10/14 안내가 남아 있었음 — 원장님 지시로 자동 취소).
+// 날짜를 옮긴 경우는 새 날짜로 scheduleNewNameNotices 가 다시 잡는다.
+// 안전장치: 달력을 못 읽었거나 비어 있으면 아무것도 취소하지 않는다(일시 장애로 전부 날리는 사고 방지).
+export async function cancelOrphanNewNameNotices(): Promise<Array<{ id: string; setKey: string; phone: string; name: string | null }>> {
+  if (!db) throw new Error("DB 사용 불가");
+  if (!calendarAvailable()) return [];
+  const d = db;
+  const events = (await readEvents()) as CalEvent[];
+  if (!events.length) return [];
+
+  const custRows = await d.select().from(customers);
+  const byName = new Map<string, string>();
+  for (const c of custRows) if (c.name && c.phone && !byName.has(c.name)) byName.set(c.name, c.phone);
+  const nameById = new Map<string, string>();
+  for (const c of custRows) nameById.set(c.id, c.name);
+
+  // 달력에 살아 있는 작명완료: 날짜|번호, 날짜|이름 (번호 없는 일정 대비)
+  const alivePhone = new Set<string>();
+  const aliveName = new Set<string>();
+  for (const e of events) {
+    if (!e.cat || !e.cat.includes("완료")) continue;
+    const date = String(e.date || "");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+    const { name } = parseNameCount(e.title || "");
+    const raw = e.clientPhone || findPhone(name, events, byName) || null;
+    if (raw) alivePhone.add(`${date}|${normalizePhone(raw)}`);
+    if (name) aliveName.add(`${date}|${name}`);
+  }
+
+  const pending = await d
+    .select({ id: scheduledMessages.id, setKey: scheduledMessages.setKey, phone: scheduledMessages.phone, customerId: scheduledMessages.customerId })
+    .from(scheduledMessages)
+    .where(and(eq(scheduledMessages.status, "scheduled"), like(scheduledMessages.setKey, `${NEWNAME_SET_PREFIX}%`)));
+
+  const orphans = pending.filter((m) => {
+    const date = String(m.setKey || "").slice(NEWNAME_SET_PREFIX.length);
+    if (alivePhone.has(`${date}|${normalizePhone(m.phone)}`)) return false;
+    const nm = m.customerId ? nameById.get(m.customerId) : null;
+    if (nm && aliveName.has(`${date}|${nm.replace(/\s*가족\s*$/, "").trim()}`)) return false;
+    return true;
+  });
+  if (!orphans.length) return [];
+
+  await d
+    .update(scheduledMessages)
+    .set({ status: "canceled" })
+    .where(and(inArray(scheduledMessages.id, orphans.map((o) => o.id)), eq(scheduledMessages.status, "scheduled")));
+  return orphans.map((o) => ({ id: o.id, setKey: String(o.setKey), phone: o.phone, name: o.customerId ? nameById.get(o.customerId) ?? null : null }));
+}
+
 // ── 스케줄러: 달력을 읽어 새 작명완료 일정을 예약한다 ──
 // 발송은 작명완료 전날 09:00 이고, 예약만 미리 잡아두면 되므로 자주 볼 이유가 없다.
 // 예전에는 60분 간격(하루 24회)이라 Neon 컴퓨트가 계속 깨어 있었다
@@ -173,6 +225,9 @@ export function startNewNameNoticeScheduler() {
   _started = true;
   const run = async () => {
     try {
+      // 먼저 달력에서 빠진 일정의 예약을 취소하고, 그다음 새 일정을 예약한다.
+      const gone = await cancelOrphanNewNameNotices();
+      for (const g of gone) console.log(`[KOP] 새이름안내 취소(달력에서 빠짐): ${g.name ?? g.phone} ${g.setKey}`);
       const r = await scheduleNewNameNotices();
       if (r.scheduled.length) console.log(`[KOP] 새이름 상담 안내 ${r.scheduled.length}건 예약`);
       const real = r.skipped.filter((s) => s.skip && s.skip !== "이미 예약/발송됨");
