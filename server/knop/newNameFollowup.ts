@@ -6,6 +6,7 @@
 //     = 새 이름을 골라 법원에 냈다는 뜻이므로 더 물을 필요가 없다.
 //   · 작명완료 일정을 달력에서 지우면 자연히 멈춘다(달력이 기준).
 //   · 아가 이름(제목에 '아가')은 개명 허가 절차가 없으므로 대상이 아니다.
+//   · 고객정보 태그에 '새이름점검제외' 가 있으면 뺀다(원장님이 개별로 뺀 고객 — 강다희·김이나).
 //   · 개명 뒤 고객정보 이름을 새 이름으로 바꾸고 달력에 새 이름으로 개완CHK 를 잡는다
 //     (홍나영 → 홍수안). 고객정보의 이름 이력(name_history·rename_map)으로 옛 이름과
 //     새 이름을 같은 사람으로 묶어 비교한다.
@@ -52,6 +53,16 @@ function aliasesOf(c: any): string[] {
   return Array.from(out);
 }
 
+export const EXCLUDE_TAG = "새이름점검제외";
+function hasTag(tags: unknown, tag: string): boolean {
+  try {
+    const arr = Array.isArray(tags) ? tags : JSON.parse(String(tags || "[]"));
+    return Array.isArray(arr) && arr.includes(tag);
+  } catch {
+    return false;
+  }
+}
+
 function daysBetween(from: string, to: string): number {
   return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
 }
@@ -75,12 +86,14 @@ export async function planNewNameFollowups(today = todayKST()): Promise<{ due: F
   const idByName = new Map<string, string>();
   const idByPhone = new Map<string, string>();
   const phoneById = new Map<string, string>();
+  const excluded = new Set<string>(); // 태그 '새이름점검제외' 가 달린 고객 id
   if (db) {
     const rows = await db.select().from(customers);
     for (const c of rows) {
       if (c.deletedAt) continue;
       if (c.name && c.phone && !byName.has(c.name)) byName.set(c.name, c.phone);
       if (c.phone) phoneById.set(c.id, c.phone);
+      if (hasTag(c.tags, EXCLUDE_TAG)) excluded.add(c.id);
       if (c.normalizedPhone && !idByPhone.has(c.normalizedPhone)) idByPhone.set(c.normalizedPhone, c.id);
       for (const nm of aliasesOf(c)) if (!idByName.has(nm)) idByName.set(nm, c.id);
     }
@@ -111,6 +124,7 @@ export async function planNewNameFollowups(today = todayKST()): Promise<{ due: F
     const key = keyOf(name, raw ? normalizePhone(raw) : null);
     if (!raw && !key.startsWith("이름:")) raw = phoneById.get(key) || null; // 개명한 고객은 고객정보 번호로
     const phone = raw ? normalizePhone(raw) : null;
+    if (excluded.has(key)) continue;
     if (chkKeys.has(key)) {
       stopped.push(name);
       continue;
