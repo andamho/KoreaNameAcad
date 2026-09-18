@@ -790,7 +790,8 @@ export const knopStore = {
         if (advanceDue && !c.deletedAt) {
           const p = projByCust.get(c.id);
           if (p && knopStatusToMilestone(p.status) < 1) {
-            await knopStore.advanceStatus(p.id, KNOP_MILESTONE_ENTRY[1]); // 개명의뢰 접수 = 개명신청 (→ 미용감사 자동 시작)
+            // auto: 자동 점검이 잡은 건 — 미용감사 첫 문자를 가장 가까운 9~10시로 당긴다.
+            await knopStore.advanceStatus(p.id, KNOP_MILESTONE_ENTRY[1], { auto: true }); // 개명의뢰 접수 = 개명신청 (→ 미용감사 자동 시작)
             advanced++;
           }
         }
@@ -983,7 +984,7 @@ export const knopStore = {
   async advanceStatus(
     id: string,
     toStatus: string,
-    opts: { force?: boolean } = {}
+    opts: { force?: boolean; auto?: boolean } = {}
   ): Promise<
     | undefined
     | { ok: false; reason: string }
@@ -1021,7 +1022,7 @@ export const knopStore = {
         try {
           const gm = await import("./gaemyeong");
           if (fromM < 1 && toM >= 1) {
-            const r = await gm.startSequence(row.customerId, "gaemyeong_request");
+            const r = await gm.startSequence(row.customerId, "gaemyeong_request", { soonest: !!opts.auto });
             console.log(`[KOP] 개명신청 → 미용감사 ${r.ok ? `자동시작(${r.scheduled}건)` : `건너뜀:${r.reason}`} cust=${row.customerId}`);
           }
           if (fromM < 3 && toM >= 3) {

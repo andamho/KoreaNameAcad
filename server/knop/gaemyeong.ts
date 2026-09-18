@@ -405,12 +405,13 @@ export async function testSend(setKey: SetKey, step: number, phone: string, samp
 
 // 내부: 예약 생성(발송시각 9~10시 랜덤). 실제 발송은 KNOP_SMS_LIVE 게이트.
 // keep: 특정 단계만 예약할 때(예: 정화하기=step≥1, 개명허가확인=step0만).
-async function scheduleMessages(cust: Customer, setKey: SetKey, keep?: (step: number) => boolean): Promise<string[]> {
+// shift: 모든 단계를 같은 날수만큼 당기거나 민다(간격은 그대로).
+async function scheduleMessages(cust: Customer, setKey: SetKey, keep?: (step: number) => boolean, shift = 0): Promise<string[]> {
   const steps = (await getSteps(setKey)).filter((s) => !keep || keep(s.step));
   const assets = NOTICE_SETS[setKey].hasAssets ? await assetsForSet(setKey) : [];
   const dates: string[] = [];
   for (const s of steps) {
-    const when = randomMorningKST(s.offsetDays);
+    const when = randomMorningKST(s.offsetDays + shift);
     const content = await renderStep(setKey, s.body, s.step, cust.name, assets);
     await smsStore.createMessage({ customerId: cust.id, phone: cust.phone, content, scheduledAt: when.toISOString(), setKey });
     dates.push(when.toISOString());
@@ -521,14 +522,25 @@ export async function cancelPending(runId: string): Promise<boolean> {
 }
 
 // 수동 즉시 시작(버튼) — 확인 절차 없이 바로 예약. 개명허가 세트/직접 시작용.
-export async function startSequence(customerId: string, setKey: SetKey): Promise<{ ok: boolean; scheduled: number; reason?: string; dates: string[] }> {
+// soonest: 달력 자동 점검이 시작한 건. 원장님은 전날 작명완료를 입력했는데 점검은
+// 다음 날 08:40 에야 발견하므로, '다음 날부터'를 그대로 쓰면 하루가 밀린다
+// (2026-09-18 김가연님 건). 그래서 첫 문자를 '가장 가까운 9~10시'에 보낸다.
+// 08:40 점검이면 그날 아침, 배포 때 오후에 잡혔으면 다음 날 아침.
+function soonestShift(): number {
+  const k = new Date(Date.now() + 9 * 3600 * 1000); // UTC 필드를 KST 처럼
+  const 분 = k.getUTCHours() * 60 + k.getUTCMinutes();
+  return 분 < 8 * 60 + 50 ? -1 : 0; // 08:50 전이면 오늘 9~10시에 보낼 수 있다
+}
+
+export async function startSequence(customerId: string, setKey: SetKey, opts: { soonest?: boolean } = {}): Promise<{ ok: boolean; scheduled: number; reason?: string; dates: string[] }> {
   const d = requireDb();
   const cust = await knopStore.getCustomer(customerId);
   if (!cust) return { ok: false, scheduled: 0, reason: "고객 없음", dates: [] };
   if (!cust.phone) return { ok: false, scheduled: 0, reason: "고객 전화번호 없음", dates: [] };
   const existing = await findRun(customerId, setKey);
   if (existing?.status === "active") return { ok: false, scheduled: 0, reason: "이미 발송 시작됨", dates: [] };
-  const dates = await scheduleMessages(cust, setKey, sequenceStepFilter(setKey)); // 정화하기는 step0(개명허가확인) 제외
+  const shift = opts.soonest ? soonestShift() : 0;
+  const dates = await scheduleMessages(cust, setKey, sequenceStepFilter(setKey), shift); // 정화하기는 step0(개명허가확인) 제외
   if (existing) {
     await d.update(noticeRuns).set({ status: "active", startedAt: new Date() }).where(eq(noticeRuns.id, existing.id));
   } else {
