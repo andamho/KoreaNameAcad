@@ -522,24 +522,17 @@ export async function cancelPending(runId: string): Promise<boolean> {
 }
 
 // 수동 즉시 시작(버튼) — 확인 절차 없이 바로 예약. 개명허가 세트/직접 시작용.
-// soonest: 달력 자동 점검이 시작한 건. 원장님은 전날 작명완료를 입력했는데 점검은
-// 다음 날 08:40 에야 발견하므로, '다음 날부터'를 그대로 쓰면 하루가 밀린다
-// (2026-09-18 김가연님 건). 그래서 첫 문자를 '가장 가까운 9~10시'에 보낸다.
-// 08:40 점검이면 그날 아침, 배포 때 오후에 잡혔으면 다음 날 아침.
-function soonestShift(): number {
-  const k = new Date(Date.now() + 9 * 3600 * 1000); // UTC 필드를 KST 처럼
-  const 분 = k.getUTCHours() * 60 + k.getUTCMinutes();
-  return 분 < 8 * 60 + 50 ? -1 : 0; // 08:50 전이면 오늘 9~10시에 보낼 수 있다
-}
-
-export async function startSequence(customerId: string, setKey: SetKey, opts: { soonest?: boolean } = {}): Promise<{ ok: boolean; scheduled: number; reason?: string; dates: string[] }> {
+// sameDay: 08:40 아침 점검이 시작한 건. 원장님은 전날 작명완료를 입력했는데 점검은
+// 다음 날 08:40 에야 발견하므로, '다음 날부터'를 쓰면 하루가 밀린다(2026-09-18 김가연님 건).
+// 원장님 확정: 점검에서 발견하면 당일 9~10시에 첫 문자. (간격 1주는 그대로)
+export async function startSequence(customerId: string, setKey: SetKey, opts: { sameDay?: boolean } = {}): Promise<{ ok: boolean; scheduled: number; reason?: string; dates: string[] }> {
   const d = requireDb();
   const cust = await knopStore.getCustomer(customerId);
   if (!cust) return { ok: false, scheduled: 0, reason: "고객 없음", dates: [] };
   if (!cust.phone) return { ok: false, scheduled: 0, reason: "고객 전화번호 없음", dates: [] };
   const existing = await findRun(customerId, setKey);
   if (existing?.status === "active") return { ok: false, scheduled: 0, reason: "이미 발송 시작됨", dates: [] };
-  const shift = opts.soonest ? soonestShift() : 0;
+  const shift = opts.sameDay ? -1 : 0;
   const dates = await scheduleMessages(cust, setKey, sequenceStepFilter(setKey), shift); // 정화하기는 step0(개명허가확인) 제외
   if (existing) {
     await d.update(noticeRuns).set({ status: "active", startedAt: new Date() }).where(eq(noticeRuns.id, existing.id));

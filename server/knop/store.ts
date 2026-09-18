@@ -787,7 +787,10 @@ export const knopStore = {
         }
         // 기준일 이후 작명완료 일정이 있으면 프로젝트를 '개명신청'까지 자동 전진(지나간 건 제외, 뒤로 안 감).
         const advanceDue = (c.normalizedPhone && advPhones.has(c.normalizedPhone)) || advNames.has(cn);
-        if (advanceDue && !c.deletedAt) {
+        // 자동 전진(→ 미용감사 시작)은 아침 점검에서만 한다. 배포·재시작 때 도는 점검이
+        // 오후에 잡으면 '당일 9~10시'가 이미 지나 밤에 문자가 나가기 때문이다.
+        // 그런 건은 다음 날 08:40 점검이 잡아 그날 아침에 보낸다.
+        if (advanceDue && !c.deletedAt && 아침점검시간()) {
           const p = projByCust.get(c.id);
           if (p && knopStatusToMilestone(p.status) < 1) {
             // auto: 자동 점검이 잡은 건 — 미용감사 첫 문자를 가장 가까운 9~10시로 당긴다.
@@ -1022,7 +1025,7 @@ export const knopStore = {
         try {
           const gm = await import("./gaemyeong");
           if (fromM < 1 && toM >= 1) {
-            const r = await gm.startSequence(row.customerId, "gaemyeong_request", { soonest: !!opts.auto });
+            const r = await gm.startSequence(row.customerId, "gaemyeong_request", { sameDay: !!opts.auto });
             console.log(`[KOP] 개명신청 → 미용감사 ${r.ok ? `자동시작(${r.scheduled}건)` : `건너뜀:${r.reason}`} cust=${row.customerId}`);
           }
           if (fromM < 3 && toM >= 3) {
@@ -1729,6 +1732,12 @@ export const knopStore = {
 // 이전에는 관리자가 sync-kinds 를 직접 호출할 때만 돌아서(화면 버튼도 없었음)
 // 달력에 작명완료가 있어도 개명 카테고리로 안 들어가는 문제가 있었다 → 주기 실행으로 해결.
 let _kindTimer: boolean = false;
+// 지금이 아침 점검 시간대(KST 08:50 전)인가. 08:40 정시 점검과 새벽 재시작만 해당.
+function 아침점검시간(): boolean {
+  const k = new Date(Date.now() + 9 * 3600 * 1000); // UTC 필드를 KST 처럼
+  return k.getUTCHours() * 60 + k.getUTCMinutes() < 8 * 60 + 50;
+}
+
 export function startKindSyncScheduler() {
   if (_kindTimer) return;
   const run = async () => {
