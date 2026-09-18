@@ -39,6 +39,10 @@ function aliasesOf(c: any): string[] {
     if (v) out.add(v);
   };
   add(c.name);
+  // '새 이름(옛 이름)' 표기: 괄호 안이 이름만이면 성을 붙여 옛 이름으로 본다.
+  // 홍수안(나영) → 홍나영, 윤하라(미옥가족) → 윤미옥. 이름 이력이 없어도 이어진다.
+  const m = /^\s*([가-힣])[가-힣]*\s*[(（]\s*([가-힣]{1,3})(?:\s*가족)?\s*[)）]/.exec(String(c.name || ""));
+  if (m) add(m[1] + m[2]);
   const parse = (v: unknown): any[] => {
     if (Array.isArray(v)) return v;
     try { const j = JSON.parse(String(v || "[]")); return Array.isArray(j) ? j : []; } catch { return []; }

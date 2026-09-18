@@ -126,7 +126,8 @@ export async function ensureShortLink(target: string, label: string, kind: strin
 
 // {이름} 등 치환 (이름은 "가족" 접미 제거)
 function applyVars(text: string, name: string): string {
-  const base = (name || "").replace(/\s*가족\s*$/, "").trim() || name;
+  // 괄호는 원장님 기억용 옛 이름(홍수안(나영)) — 고객에게 가는 문자에는 넣지 않는다.
+  const base = (name || "").replace(/\s*[(（][^)）]*[)）]\s*/g, "").replace(/\s*가족\s*$/, "").trim() || name;
   return (text || "").replace(/\{이름\}/g, base).replace(/\{name\}/g, base);
 }
 

@@ -28,9 +28,16 @@ export function isImageReport(file: string): boolean {
   return /\.(png|jpe?g|webp)$/i.test(file);
 }
 
-// 고객명에서 "가족" 꼬리 제거 → 기준 이름 (강보경가족 → 강보경). PDF/녹음 매칭용.
+// 고객명 → 기준 이름. PDF/녹음/달력 매칭용.
+//  · "가족" 꼬리 제거 (강보경가족 → 강보경)
+//  · 괄호 메모 제거 (홍수안(나영) → 홍수안, 유이나(현수) 가족 → 유이나)
+//    원장님이 개명 고객을 '새 이름(옛 이름)' 으로 적어 두신다. 괄호는 기억용일 뿐 이름이 아니다.
 export function baseName(n: string): string {
-  return (n || "").replace(/\s*가족\s*$/, "").replace(/[.\s]+$/, "");
+  return (n || "")
+    .replace(/\s*[(（][^)）]*[)）]\s*/g, "")
+    .replace(/\s*가족\s*$/, "")
+    .replace(/[.\s]+$/, "")
+    .trim();
 }
 
 function parseReport(file: string): Report | null {

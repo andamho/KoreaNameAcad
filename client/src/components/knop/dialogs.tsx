@@ -337,7 +337,8 @@ function durationForPeople(n: number): number {
 export function renderSmsTemplate(content: string, opts: { name?: string; people: number }): string {
   const fam = opts.people >= 2 ? "가족분들의 " : "";
   return content
-    .replace(/\{이름\}/g, opts.name || "")
+    // 괄호는 원장님 기억용 옛 이름(홍수안(나영)) — 고객에게 보내는 문구에는 넣지 않는다.
+    .replace(/\{이름\}/g, (opts.name || "").replace(/\s*[(（][^)）]*[)）]\s*/g, "").trim())
     .replace(/\{가족\}/g, fam)
     .replace(/\{시간\}/g, String(durationForPeople(opts.people)));
 }
