@@ -7,6 +7,7 @@
 //   · 작명완료 일정을 달력에서 지우면 자연히 멈춘다(달력이 기준).
 //   · 아가 이름(제목에 '아가')은 개명 허가 절차가 없으므로 대상이 아니다.
 //   · 고객정보 태그에 '새이름점검제외' 가 있으면 뺀다(원장님이 개별로 뺀 고객 — 강다희·김이나).
+//   · 태그 '새이름점검포함' 이 있으면 기준일(7/24) 전 작명완료라도 넣는다(정연희님).
 //   · 고객정보 이름을 새 이름으로 바꿨으면 멈춘다(원장님 확정) — 이름을 바꿨다는 것 자체가
 //     새 이름을 골랐다는 뜻이다. 판정: 지금 이름이 달력의 옛 이름과 다르거나,
 //     '새 이름(옛 이름)' 괄호 표기이거나, 개명 전후 기록(rename_map)이 있다.
@@ -57,6 +58,7 @@ export function aliasesOf(c: any): string[] {
 }
 
 export const EXCLUDE_TAG = "새이름점검제외";
+export const INCLUDE_TAG = "새이름점검포함";
 
 // 고객정보 이름이 새 이름으로 바뀌었나(달력 작명완료의 이름 = 옛 이름 기준).
 function isRenamed(c: any, calendarName: string): boolean {
@@ -103,6 +105,7 @@ export async function planNewNameFollowups(today = todayKST()): Promise<{ due: F
   const idByPhone = new Map<string, string>();
   const phoneById = new Map<string, string>();
   const excluded = new Set<string>(); // 태그 '새이름점검제외' 가 달린 고객 id
+  const included = new Set<string>(); // 태그 '새이름점검포함' 이 달린 고객 id
   const custById = new Map<string, any>();
   if (db) {
     const rows = await db.select().from(customers);
@@ -111,6 +114,7 @@ export async function planNewNameFollowups(today = todayKST()): Promise<{ due: F
       if (c.name && c.phone && !byName.has(c.name)) byName.set(c.name, c.phone);
       if (c.phone) phoneById.set(c.id, c.phone);
       if (hasTag(c.tags, EXCLUDE_TAG)) excluded.add(c.id);
+      if (hasTag(c.tags, INCLUDE_TAG)) included.add(c.id);
       custById.set(c.id, c);
       if (c.normalizedPhone && !idByPhone.has(c.normalizedPhone)) idByPhone.set(c.normalizedPhone, c.id);
       for (const nm of aliasesOf(c)) if (!idByName.has(nm)) idByName.set(nm, c.id);
@@ -134,12 +138,13 @@ export async function planNewNameFollowups(today = todayKST()): Promise<{ due: F
   for (const e of events) {
     if (!e.cat || !e.cat.includes("작명완료")) continue;
     const date = String(e.date || "");
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < FOLLOWUP_FROM) continue;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
     if (/아가/.test(e.title || "")) continue; // 아가 이름은 개명 허가 절차가 없다
     const name = followupName(e.title || "");
     if (!name) continue;
     let raw = e.clientPhone || findPhone(name, events, byName) || byName.get(name) || null;
     const key = keyOf(name, raw ? normalizePhone(raw) : null);
+    if (date < FOLLOWUP_FROM && !included.has(key)) continue;
     if (!raw && !key.startsWith("이름:")) raw = phoneById.get(key) || null; // 개명한 고객은 고객정보 번호로
     const phone = raw ? normalizePhone(raw) : null;
     if (excluded.has(key)) continue;
