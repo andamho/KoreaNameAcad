@@ -102,16 +102,26 @@ async function nextCode(d: any, date: Date = new Date()): Promise<string> {
 
 // 프로젝트가 개명 트랙 단계로 넘어가면 그 고객을 '개명' 구분으로 즉시 승격.
 // (되돌리지는 않음 — 상담으로 강등은 수동 판단 영역)
+// 진행단계를 바꾸면 구분(개명/상담)도 따라간다.
+//  · 개명 트랙 단계로 가면 → 개명
+//  · 상담 단계로 되돌리면 → 상담 (그 고객의 다른 케이스가 개명 트랙이면 그대로 개명)
+// 예전에는 올리기만 해서, 단계를 상담으로 되돌려도 개명 목록에 남았다(2026-09-19 고기원님).
+// 달력에 작명완료 일정이 남아 있으면 아침 점검이 다시 개명으로 올린다 — 달력이 기준이다.
 async function promoteKindIfGaemyeong(customerId: string, status?: string | null): Promise<void> {
-  if (!isGaemyeongStatus(status)) return;
   try {
     const d = requireDb();
     const [c] = await d.select().from(customers).where(eq(customers.id, customerId));
-    if (c && c.kind !== "개명") {
-      await d.update(customers).set({ kind: "개명" }).where(eq(customers.id, customerId));
+    if (!c) return;
+    if (isGaemyeongStatus(status)) {
+      if (c.kind !== "개명") await d.update(customers).set({ kind: "개명" }).where(eq(customers.id, customerId));
+      return;
     }
+    if (c.kind !== "개명") return;
+    const ps = await d.select().from(projects).where(eq(projects.customerId, customerId));
+    if (ps.some((p) => isGaemyeongStatus(p.status))) return;
+    await d.update(customers).set({ kind: "상담" }).where(eq(customers.id, customerId));
   } catch {
-    /* 구분 승격 실패는 본 작업을 막지 않는다 */
+    /* 구분 조정 실패는 본 작업을 막지 않는다 */
   }
 }
 
