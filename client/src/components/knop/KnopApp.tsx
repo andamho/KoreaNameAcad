@@ -289,6 +289,22 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
   });
   if (sort === "name") rows = [...rows].sort((a, b) => cleanName(a.name).localeCompare(cleanName(b.name), "ko"));
   else if (sort === "old") rows = [...rows].reverse();
+  else if (kind === "개명") {
+    // 개명 목록 기본순 = 상담순(원장님 요청). 다가오는 상담(가까운 날부터) → 지난 상담(최근부터)
+    // → 달력에 상담이 없는 고객(기존 순서 유지).
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(new Date());
+    const rank = (c: { consultDate?: string | null }) => (!c.consultDate ? 2 : c.consultDate >= today ? 0 : 1);
+    rows = rows
+      .map((c, i) => ({ c, i }))
+      .sort((x, y) => {
+        const rx = rank(x.c), ry = rank(y.c);
+        if (rx !== ry) return rx - ry;
+        if (rx === 0) return x.c.consultDate!.localeCompare(y.c.consultDate!);
+        if (rx === 1) return y.c.consultDate!.localeCompare(x.c.consultDate!);
+        return x.i - y.i;
+      })
+      .map((x) => x.c);
+  }
 
   const selCls = "px-3 py-1 text-sm rounded-full transition";
   return (

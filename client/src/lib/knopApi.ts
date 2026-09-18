@@ -98,6 +98,7 @@ export type BoardCustomer = Customer & {
   projectId: string | null;
   status: string | null;
   milestone: number;
+  consultDate?: string | null; // 달력 상담일(다가오는 것 우선) — 개명 목록 정렬용
 };
 
 const ADMIN_TOKEN_KEY = "kna_admin_token";

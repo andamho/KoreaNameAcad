@@ -125,6 +125,42 @@ async function promoteKindIfGaemyeong(customerId: string, status?: string | null
   }
 }
 
+// 고객별 상담일(달력 '상담' 일정) — 개명 목록 상담순 정렬용.
+// 다가오는 상담이 있으면 그중 가장 가까운 날, 없으면 가장 최근 지난 날.
+// 달력(Firestore)을 목록 열 때마다 읽지 않도록 1분 캐시. 못 읽으면 빈 지도(정렬만 기본순).
+let _consultCache: { at: number; events: any[] } | null = null;
+async function consultDatesForBoard(custs: Customer[]): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  try {
+    if (!_consultCache || Date.now() - _consultCache.at > 60_000) {
+      _consultCache = { at: Date.now(), events: await readEvents() };
+    }
+    const { aliasesOf, followupName } = await import("./newNameFollowup");
+    const idByPhone = new Map<string, string>();
+    const idByName = new Map<string, string>();
+    for (const c of custs) {
+      if (c.normalizedPhone && !idByPhone.has(c.normalizedPhone)) idByPhone.set(c.normalizedPhone, c.id);
+      for (const nm of aliasesOf(c)) if (!idByName.has(nm)) idByName.set(nm, c.id);
+    }
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(new Date());
+    const dates = new Map<string, string[]>();
+    for (const e of _consultCache.events) {
+      if (e.cat !== "상담" || !/^\d{4}-\d{2}-\d{2}$/.test(String(e.date || ""))) continue;
+      const ph = e.clientPhone ? normalizePhone(e.clientPhone) : "";
+      const id = (ph && idByPhone.get(ph)) || idByName.get(followupName(e.title || ""));
+      if (!id) continue;
+      (dates.get(id) || dates.set(id, []).get(id)!).push(e.date);
+    }
+    for (const [id, ds] of Array.from(dates)) {
+      const up = ds.filter((x) => x >= today).sort();
+      out.set(id, up.length ? up[0] : ds.sort()[ds.length - 1]);
+    }
+  } catch {
+    /* 달력을 못 읽어도 목록은 보여 준다 */
+  }
+  return out;
+}
+
 // ── Customers ──
 export const knopStore = {
   async listCustomers(query?: string): Promise<Customer[]> {
@@ -702,7 +738,7 @@ export const knopStore = {
   },
 
   // 파이프라인 보드: 고객 + 대표 케이스 상태 + 마일스톤 인덱스
-  async customerBoard(): Promise<Array<Customer & { projectId: string | null; status: string | null; milestone: number }>> {
+  async customerBoard(): Promise<Array<Customer & { projectId: string | null; status: string | null; milestone: number; consultDate: string | null }>> {
     const d = requireDb();
     try {
       const allC = await d.select().from(customers).orderBy(desc(customers.createdAt));
@@ -710,6 +746,7 @@ export const knopStore = {
       const projs = await d.select().from(projects).orderBy(desc(projects.updatedAt));
       const byCust = new Map<string, (typeof projs)[number]>();
       for (const p of projs) if (!byCust.has(p.customerId)) byCust.set(p.customerId, p);
+      const consult = await consultDatesForBoard(custs);
       return custs.map((c) => {
         const p = byCust.get(c.id);
         return {
@@ -717,6 +754,7 @@ export const knopStore = {
           projectId: p?.id ?? null,
           status: p?.status ?? null,
           milestone: p ? statusToMilestone(p.status) : 0,
+          consultDate: consult.get(c.id) ?? null,
         };
       });
     } catch (e) {
