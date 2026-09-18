@@ -477,6 +477,20 @@ export const KNOP_GAEMYEONG_STATUSES = [
   "변화 확인",
 ] as const;
 
+// 고객에게 보내는 문자에서 부르는 이름: 성을 뺀 이름(원장님 확정, 2026-09-19).
+//   홍수안 → 수안, 남궁민수 → 민수(두 글자 성), 윤하라(미옥가족) → 하라
+//   두 글자 이름(이안)은 성을 빼면 한 글자만 남아 어색하므로 그대로 둔다.
+const COMPOUND_SURNAMES = ["남궁", "황보", "제갈", "선우", "독고", "사공", "서문", "동방", "망절", "어금"];
+export function callName(full: string): string {
+  const n = (full || "")
+    .replace(/\s*[(（][^)）]*[)）]\s*/g, "") // 괄호 메모(옛 이름)
+    .replace(/\s*가족\s*$/, "")
+    .trim();
+  if (!/^[가-힣]+$/.test(n) || n.length <= 2) return n;
+  if (n.length >= 4 && COMPOUND_SURNAMES.includes(n.slice(0, 2))) return n.slice(2);
+  return n.slice(1);
+}
+
 export function isGaemyeongStatus(s?: string | null): boolean {
   return !!s && (KNOP_GAEMYEONG_STATUSES as readonly string[]).includes(s);
 }

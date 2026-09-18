@@ -13,7 +13,7 @@
 //   {이름} = 이름
 import { db } from "../db";
 import { and, eq, inArray, isNotNull, like } from "drizzle-orm";
-import { customers, normalizePhone, scheduledMessages, smsTemplates } from "@shared/schema";
+import { customers, normalizePhone, scheduledMessages, smsTemplates, callName } from "@shared/schema";
 import { findPhone, parseNameCount, readEvents, calendarAvailable, type CalEvent } from "./calendar";
 import { smsStore } from "./sms";
 import { scheduleDaily } from "./dailyCheckpoint";
@@ -26,10 +26,12 @@ export const NEWNAME_SET_LABEL = "새 이름 상담 안내";
 export function newNameMinutes(people: number): number {
   return Math.max(1, people) * 10; // 명당 10분
 }
+// 고객에게는 성을 뺀 이름으로 부른다(김가연 → 가연님).
 export function renderNewNameNotice(content: string, name: string, people: number): string {
-  const fam = people >= 2 ? "가족분들의 " : `${name}님 `;
+  const call = callName(name) || name;
+  const fam = people >= 2 ? "가족분들의 " : `${call}님 `;
   return content
-    .replace(/\{이름\}/g, name)
+    .replace(/\{이름\}/g, call)
     .replace(/\{가족\}/g, fam)
     .replace(/\{시간\}/g, String(newNameMinutes(people)));
 }

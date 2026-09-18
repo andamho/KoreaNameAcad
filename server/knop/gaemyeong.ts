@@ -13,6 +13,7 @@ import {
   scheduledMessages,
   customers,
   type Customer,
+  callName,
 } from "@shared/schema";
 import { ObjectStorageService } from "../object_storage/objectStorage";
 import { smsStore } from "./sms";
@@ -126,8 +127,8 @@ export async function ensureShortLink(target: string, label: string, kind: strin
 
 // {이름} 등 치환 (이름은 "가족" 접미 제거)
 function applyVars(text: string, name: string): string {
-  // 괄호는 원장님 기억용 옛 이름(홍수안(나영)) — 고객에게 가는 문자에는 넣지 않는다.
-  const base = (name || "").replace(/\s*[(（][^)）]*[)）]\s*/g, "").replace(/\s*가족\s*$/, "").trim() || name;
+  // 고객에게는 성을 뺀 이름으로 부른다(홍수안(나영) → 수안). 괄호·가족 꼬리도 뗀다.
+  const base = callName(name) || name;
   return (text || "").replace(/\{이름\}/g, base).replace(/\{name\}/g, base);
 }
 

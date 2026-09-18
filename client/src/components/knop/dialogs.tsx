@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { knopApi, DuplicatePhoneError, type SmsTemplate } from "@/lib/knopApi";
 import type { Customer } from "@shared/schema";
+import { callName } from "@shared/schema";
 import {
   PROJECT_TYPES,
   STATUSES,
@@ -338,8 +339,8 @@ export function renderSmsTemplate(content: string, opts: { name?: string; people
   const fam = opts.people >= 2 ? "가족분들의 " : "";
   return content
     // 괄호는 원장님 기억용 옛 이름(홍수안(나영)) — 고객에게 보내는 문구에는 넣지 않는다.
-    // '가족' 꼬리도 뗀다(유이나(현수) 가족 → 유이나). 자동 문자(applyVars)와 같은 규칙.
-    .replace(/\{이름\}/g, (opts.name || "").replace(/\s*[(（][^)）]*[)）]\s*/g, "").replace(/\s*가족\s*$/, "").trim())
+    // 성을 뺀 이름으로 부른다(유이나(현수) 가족 → 이나). 자동 문자(applyVars)와 같은 규칙.
+    .replace(/\{이름\}/g, callName(opts.name || ""))
     .replace(/\{가족\}/g, fam)
     .replace(/\{시간\}/g, String(durationForPeople(opts.people)));
 }
