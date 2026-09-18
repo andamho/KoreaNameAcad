@@ -5,6 +5,10 @@
 //   · 그 고객의 '개완CHK'(법적 개명허가 점검) 일정이 달력에 잡히면 알림을 멈춘다.
 //     = 새 이름을 골라 법원에 냈다는 뜻이므로 더 물을 필요가 없다.
 //   · 작명완료 일정을 달력에서 지우면 자연히 멈춘다(달력이 기준).
+//   · 아가 이름(제목에 '아가')은 개명 허가 절차가 없으므로 대상이 아니다.
+//   · 개명 뒤 고객정보 이름을 새 이름으로 바꾸고 달력에 새 이름으로 개완CHK 를 잡는다
+//     (홍나영 → 홍수안). 고객정보의 이름 이력(name_history·rename_map)으로 옛 이름과
+//     새 이름을 같은 사람으로 묶어 비교한다.
 //
 // 상태를 DB 에 저장하지 않는다. 매일 달력만 보고 '오늘이 7·14·21…일째인가'를 계산하므로
 // 일정을 옮기거나 지우면 그대로 따라간다.
@@ -27,6 +31,23 @@ export function followupName(title: string): string {
   return parseNameCount(t).name.replace(/님.*$/, "").replace(/\s*가족\s*$/, "").trim();
 }
 
+// 고객의 모든 이름: 지금 이름 + 이름 이력 + 개명 전후(가족 개명 포함).
+function aliasesOf(c: any): string[] {
+  const out = new Set<string>();
+  const add = (n: unknown) => {
+    const v = followupName(String(n || ""));
+    if (v) out.add(v);
+  };
+  add(c.name);
+  const parse = (v: unknown): any[] => {
+    if (Array.isArray(v)) return v;
+    try { const j = JSON.parse(String(v || "[]")); return Array.isArray(j) ? j : []; } catch { return []; }
+  };
+  for (const h of parse(c.nameHistory)) add(h?.name);
+  for (const m of parse(c.renameMap)) { add(m?.before); add(m?.after); }
+  return Array.from(out);
+}
+
 function daysBetween(from: string, to: string): number {
   return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
 }
@@ -46,15 +67,32 @@ export async function planNewNameFollowups(today = todayKST()): Promise<{ due: F
   if (!events.length) return { due: [], stopped: [] };
 
   const byName = new Map<string, string>();
+  // 이름(옛 이름 포함) → 고객 id. 개명한 고객은 옛 이름·새 이름이 모두 같은 id 를 가리킨다.
+  const idByName = new Map<string, string>();
+  const idByPhone = new Map<string, string>();
+  const phoneById = new Map<string, string>();
   if (db) {
-    const rows = await db.select({ name: customers.name, phone: customers.phone }).from(customers);
-    for (const c of rows) if (c.name && c.phone && !byName.has(c.name)) byName.set(c.name, c.phone);
+    const rows = await db.select().from(customers);
+    for (const c of rows) {
+      if (c.deletedAt) continue;
+      if (c.name && c.phone && !byName.has(c.name)) byName.set(c.name, c.phone);
+      if (c.phone) phoneById.set(c.id, c.phone);
+      if (c.normalizedPhone && !idByPhone.has(c.normalizedPhone)) idByPhone.set(c.normalizedPhone, c.id);
+      for (const nm of aliasesOf(c)) if (!idByName.has(nm)) idByName.set(nm, c.id);
+    }
   }
+  // 사람 열쇠: 고객이면 고객 id, 아니면 이름 그대로.
+  const keyOf = (name: string, phone: string | null) =>
+    (phone && idByPhone.get(phone)) || idByName.get(name) || `이름:${name}`;
 
-  // 개완CHK 일정: 이름·번호
-  const chk = events.filter((e) => (e.cat || "").includes("개완"));
-  const chkNames = new Set(chk.map((e) => followupName(e.title || "")).filter(Boolean));
-  const chkPhones = new Set(chk.map((e) => (e.clientPhone ? normalizePhone(e.clientPhone) : "")).filter(Boolean));
+  // 개완CHK 일정: 사람 열쇠
+  const chkKeys = new Set<string>();
+  for (const e of events) {
+    if (!(e.cat || "").includes("개완")) continue;
+    const nm = followupName(e.title || "");
+    const ph = e.clientPhone ? normalizePhone(e.clientPhone) : null;
+    if (nm || ph) chkKeys.add(keyOf(nm, ph));
+  }
 
   const due: FollowupItem[] = [];
   const stopped: string[] = [];
@@ -62,11 +100,14 @@ export async function planNewNameFollowups(today = todayKST()): Promise<{ due: F
     if (!e.cat || !e.cat.includes("작명완료")) continue;
     const date = String(e.date || "");
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < FOLLOWUP_FROM) continue;
+    if (/아가/.test(e.title || "")) continue; // 아가 이름은 개명 허가 절차가 없다
     const name = followupName(e.title || "");
     if (!name) continue;
-    const raw = e.clientPhone || findPhone(name, events, byName) || byName.get(name) || null;
+    let raw = e.clientPhone || findPhone(name, events, byName) || byName.get(name) || null;
+    const key = keyOf(name, raw ? normalizePhone(raw) : null);
+    if (!raw && !key.startsWith("이름:")) raw = phoneById.get(key) || null; // 개명한 고객은 고객정보 번호로
     const phone = raw ? normalizePhone(raw) : null;
-    if (chkNames.has(name) || (phone && chkPhones.has(phone))) {
+    if (chkKeys.has(key)) {
       stopped.push(name);
       continue;
     }
