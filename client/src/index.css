@@ -390,6 +390,13 @@ body {
   max-width: 100vw;
 }
 
+/* 관리자 화면: hidden 대신 clip — 가로 넘침은 똑같이 잘리지만 스크롤 상자를 만들지 않아
+   position: sticky 가 동작한다(고객 목록 탭·단계 제목 고정). 공개 화면은 그대로 둔다. */
+html.kna-admin,
+html.kna-admin body {
+  overflow-x: clip;
+}
+
 /* 모든 요소에 box-sizing */
 * {
   box-sizing: border-box;

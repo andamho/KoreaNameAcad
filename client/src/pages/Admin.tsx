@@ -62,6 +62,13 @@ const categoryOptions = [
 
 export default function Admin() {
   const { toast } = useToast();
+  // 관리자 화면에서만 가로 넘침을 'clip' 으로 막는다(index.css html.kna-admin).
+  // 사이트 공통 'overflow-x: hidden' 은 body 를 스크롤 상자로 만들어 sticky 가 동작하지 않는다
+  // → 고객 목록의 탭·단계 제목을 위에 붙여 둘 수 없었다.
+  useEffect(() => {
+    document.documentElement.classList.add("kna-admin");
+    return () => document.documentElement.classList.remove("kna-admin");
+  }, []);
   // 알림 메일에서 바로 오기: /admin?tab=inquiries&id=123 → 그 탭을 열고 해당 문의로 스크롤.
   // 예전에는 /admin 만 가리켜서 목록 첫 화면에서 직접 찾아야 했다.
   const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");

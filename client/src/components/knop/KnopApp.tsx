@@ -331,7 +331,9 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
         </Button>
       </div>
 
-      {/* 개명/상담 탭 */}
+      {/* 개명/상담 탭 + 단계 제목 — 스크롤해도 위에 붙어 있게(원장님 요청).
+          사이트 상단 메뉴(80px, 고정) 바로 아래에 붙인다. */}
+      <div className="sticky top-20 z-30 bg-background -mx-2 px-2 pt-2 space-y-3">
       <div className="flex items-center gap-1">
         {(["개명", "상담", "all"] as const).map((k) => (
           <button
@@ -349,6 +351,19 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
         >
           <Trash2 className="w-3.5 h-3.5" /> 휴지통
         </button>
+      </div>
+      {/* 마일스톤 헤더 (데스크톱) — 모바일은 아래 카드 목록 사용 */}
+      {!showTrash && (
+      <div className="hidden sm:grid items-center px-2 pb-2 border-b border-gray-200 text-[11px] text-gray-400" style={GRID}>
+        <span>고객</span>
+        {MILESTONES.map((m, i) => (
+          <span key={m} className="text-center leading-tight">
+            {m}
+            {i === PHONE_MILESTONE && <span className="block text-[10px] text-gray-300">☎전번</span>}
+          </span>
+        ))}
+      </div>
+      )}
       </div>
 
       {/* 휴지통 뷰 */}
@@ -376,16 +391,6 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
         </div>
       ) : (
         <>
-      {/* 마일스톤 헤더 (데스크톱) — 모바일은 아래 카드 목록 사용 */}
-      <div className="hidden sm:grid items-center px-2 pb-2 border-b border-gray-200 text-[11px] text-gray-400" style={GRID}>
-        <span>고객</span>
-        {MILESTONES.map((m, i) => (
-          <span key={m} className="text-center leading-tight">
-            {m}
-            {i === PHONE_MILESTONE && <span className="block text-[10px] text-gray-300">☎전번</span>}
-          </span>
-        ))}
-      </div>
 
       {isLoading && <p className="text-sm text-gray-400 py-6 text-center">불러오는 중…</p>}
       {board && rows.length === 0 && <p className="text-sm text-gray-400 py-8 text-center">해당하는 고객이 없습니다.</p>}
