@@ -203,7 +203,7 @@ export async function cancelOrphanNewNameNotices(): Promise<Array<{ id: string; 
     const date = String(m.setKey || "").slice(NEWNAME_SET_PREFIX.length);
     if (alivePhone.has(`${date}|${normalizePhone(m.phone)}`)) return false;
     const nm = m.customerId ? nameById.get(m.customerId) : null;
-    if (nm && aliveName.has(`${date}|${nm.replace(/\s*가족\s*$/, "").trim()}`)) return false;
+    if (nm && aliveName.has(`${date}|${nm.replace(/\s*[(（][^)）]*[)）]\s*/g, "").replace(/\s*가족\s*$/, "").trim()}`)) return false;
     return true;
   });
   if (!orphans.length) return [];
