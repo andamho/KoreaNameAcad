@@ -36,6 +36,7 @@ import {
   startNewNameNoticeScheduler,
 } from "./newNameNotice";
 import { startNewNameFollowupScheduler } from "./newNameFollowup";
+import { startCourtCheckScheduler } from "./courtCheck";
 import { parseContact, analyzeThread, buildConsultEventDraft } from "./smsIntake";
 import { sendCalendarCheckNotification } from "../email";
 import { intakeStore } from "./intakeStore";
@@ -103,6 +104,7 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
   startKindSyncScheduler(); // 개명/상담 구분 자동판정 (달력 작명완료·개명 트랙 단계 반영)
   startNewNameNoticeScheduler(); // 새 이름 상담 안내: 달력 작명완료 전날 09:00 예약(고객 단계와 무관)
   startNewNameFollowupScheduler(); // 새 이름 선택 점검: 작명완료 1주 뒤부터 매주 원장님께 텔레그램(개완CHK 잡히면 멈춤)
+  startCourtCheckScheduler(); // 달력 개완CHK → 법원접수 단계 + 그 날짜 아침에 개명허가 확인 문자
   startSmsHealthCheck(); // 문자 수집이 끊겼는지 아침 점검(2026-07-25 끊긴 걸 10일 뒤에 발견한 뒤 추가)
   startReportSync(); // 이름분석 폴더 자동 동기화 (로컬만; 배포는 no-op)
 

@@ -997,7 +997,7 @@ export const knopStore = {
   async advanceStatus(
     id: string,
     toStatus: string,
-    opts: { force?: boolean; auto?: boolean } = {}
+    opts: { force?: boolean; auto?: boolean; fromCheck?: boolean } = {}
   ): Promise<
     | undefined
     | { ok: false; reason: string }
@@ -1034,11 +1034,13 @@ export const knopStore = {
         const toM = knopStatusToMilestone(row.status);
         try {
           const gm = await import("./gaemyeong");
-          if (fromM < 1 && toM >= 1) {
+          // fromCheck: 달력 개완CHK 로 법원접수까지 건너뛴 경우. 이미 지나간 단계의 자동화
+          // (미용감사)는 시작하지 않고, 개명허가 확인은 개완CHK 날짜로 따로 잡는다(courtCheck.ts).
+          if (fromM < 1 && toM >= 1 && !opts.fromCheck) {
             const r = await gm.startSequence(row.customerId, "gaemyeong_request", { sameDay: !!opts.auto });
             console.log(`[KOP] 개명신청 → 미용감사 ${r.ok ? `자동시작(${r.scheduled}건)` : `건너뜀:${r.reason}`} cust=${row.customerId}`);
           }
-          if (fromM < 3 && toM >= 3) {
+          if (fromM < 3 && toM >= 3 && !opts.fromCheck) {
             const r = await gm.scheduleApprovalCheck(row.customerId);
             console.log(`[KOP] 법원접수 → 개명허가확인 ${r.ok ? `2개월 뒤 예약(${r.date})` : `건너뜀:${r.reason}`} cust=${row.customerId}`);
           }

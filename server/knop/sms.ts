@@ -53,7 +53,7 @@ async function notifySend(msg: ScheduledMessage, failReason?: string): Promise<v
       digits.startsWith("0") && digits.length >= 10 ? `+82${digits.slice(1)}` : msg.phone || "";
     // 사람이 쓴 값(이름·사유)은 감싸서 넣는다 — < 가 들어가면 텔레그램이 태그로 읽는다.
     const { sendAlert, esc } = await import("./alertBot");
-    const label = SET_LABEL[msg.setKey] || msg.setKey;
+    const label = SET_LABEL[msg.setKey] || (msg.setKey.startsWith("gaemyeong_check") ? "개명허가 확인" : msg.setKey);
     const head = failReason
       ? "\u26A0\uFE0F <b>\uAC1C\uBA85\uAD00\uB9AC \uBB38\uC790 \uC2E4\uD328</b>"
       : "\uD83D\uDCEE <b>\uAC1C\uBA85\uAD00\uB9AC \uBB38\uC790 \uBC1C\uC1A1</b>";

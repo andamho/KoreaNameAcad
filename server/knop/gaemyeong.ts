@@ -426,7 +426,13 @@ function sequenceStepFilter(setKey: SetKey): ((step: number) => boolean) | undef
   return setKey === "gaemyeong_approved" ? (n) => n >= 1 : undefined;
 }
 
-// 법원접수 시 호출: '개명허가 확인'(step0) 1건을 2개월(offset) 뒤로 예약. 이미 예약돼 있으면 건너뜀.
+// 개명허가 확인 문자는 정화하기(gaemyeong_approved)와 따로 묶는다.
+// 같은 묶음이면 발송 알림의 회차가 정화하기와 섞여 세어진다.
+//   gaemyeong_check           = 법원접수 단계로 옮길 때 60일 뒤로 잡은 것
+//   gaemyeong_check:YYYY-MM-DD = 달력 개완CHK 일정 날짜로 잡은 것(달력이 바뀌면 따라 움직임)
+export const CHECK_SET = "gaemyeong_check";
+
+// 법원접수 시 호출: '개명허가 확인'(step0) 1건을 2개월(offset) 뒤로 예약.
 export async function scheduleApprovalCheck(customerId: string): Promise<{ ok: boolean; reason?: string; date?: string }> {
   const cust = await knopStore.getCustomer(customerId);
   if (!cust?.phone) return { ok: false, reason: "전화번호 없음" };
@@ -435,7 +441,25 @@ export async function scheduleApprovalCheck(customerId: string): Promise<{ ok: b
   if (!s0) return { ok: false, reason: "개명허가 확인 문구 없음" };
   const content = await renderStep("gaemyeong_approved", s0.body, 0, cust.name, []);
   const when = randomMorningKST(s0.offsetDays);
-  await smsStore.createMessage({ customerId: cust.id, phone: cust.phone, content, scheduledAt: when.toISOString(), setKey: "gaemyeong_approved" });
+  await smsStore.createMessage({ customerId: cust.id, phone: cust.phone, content, scheduledAt: when.toISOString(), setKey: CHECK_SET });
+  return { ok: true, date: when.toISOString() };
+}
+
+// 달력 개완CHK 날짜(KST YYYY-MM-DD) 아침 9~10시에 개명허가 확인 문자 1건 예약.
+// 그 시각이 이미 지났으면 잡지 않는다(늦게 보내지 않음).
+export async function scheduleApprovalCheckOn(customerId: string, date: string): Promise<{ ok: boolean; reason?: string; date?: string }> {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (!m) return { ok: false, reason: "날짜 형식 오류" };
+  const cust = await knopStore.getCustomer(customerId);
+  if (!cust?.phone) return { ok: false, reason: "전화번호 없음" };
+  const steps = await getSteps("gaemyeong_approved");
+  const s0 = steps.find((x) => x.step === 0);
+  if (!s0) return { ok: false, reason: "개명허가 확인 문구 없음" };
+  // KST 09:mm:ss = UTC 00:mm:ss 같은 날
+  const when = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 0, Math.floor(Math.random() * 60), Math.floor(Math.random() * 60)));
+  if (when.getTime() < Date.now() + 2 * 60_000) return { ok: false, reason: "보낼 시각이 이미 지남" };
+  const content = await renderStep("gaemyeong_approved", s0.body, 0, cust.name, []);
+  await smsStore.createMessage({ customerId: cust.id, phone: cust.phone, content, scheduledAt: when.toISOString(), setKey: `${CHECK_SET}:${date}` });
   return { ok: true, date: when.toISOString() };
 }
 

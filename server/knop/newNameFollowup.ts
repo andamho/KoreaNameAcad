@@ -33,7 +33,7 @@ export function followupName(title: string): string {
 }
 
 // 고객의 모든 이름: 지금 이름 + 이름 이력 + 개명 전후(가족 개명 포함).
-function aliasesOf(c: any): string[] {
+export function aliasesOf(c: any): string[] {
   const out = new Set<string>();
   const add = (n: unknown) => {
     const v = followupName(String(n || ""));
