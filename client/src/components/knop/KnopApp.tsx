@@ -332,8 +332,10 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
       </div>
 
       {/* 개명/상담 탭 + 단계 제목 — 스크롤해도 위에 붙어 있게(원장님 요청).
-          사이트 상단 메뉴(80px, 고정) 바로 아래에 붙인다. */}
-      <div className="sticky top-20 z-30 bg-background -mx-2 px-2 pt-2 space-y-3">
+          사이트 상단 메뉴(80px, 고정) 바로 아래에 붙인다. rem 이 아니라 px —
+          이 사이트는 화면 폭에 따라 기본 글자 크기가 바뀌어(683px 폭에서 29px)
+          top-20(5rem)이 146px 이 됐다. 상단 메뉴는 폭과 무관하게 80px. */}
+      <div className="sticky top-[80px] z-30 bg-background -mx-2 px-2 pt-2 space-y-3">
       <div className="flex items-center gap-1">
         {(["개명", "상담", "all"] as const).map((k) => (
           <button
