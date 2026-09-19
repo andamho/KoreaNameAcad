@@ -481,6 +481,16 @@ export const KNOP_GAEMYEONG_STATUSES = [
 //   홍수안 → 수안, 남궁민수 → 민수(두 글자 성), 윤하라(미옥가족) → 하라
 //   두 글자 이름(이안)은 성을 빼면 한 글자만 남아 어색하므로 그대로 둔다.
 const COMPOUND_SURNAMES = ["남궁", "황보", "제갈", "선우", "독고", "사공", "서문", "동방", "망절", "어금"];
+// 성(두 글자 성 포함)과 성을 뺀 이름. 괄호·가족 꼬리는 미리 떼어 넘길 것.
+export function baseSurname(n: string): string {
+  const s = (n || "").trim();
+  return s.length >= 3 && COMPOUND_SURNAMES.includes(s.slice(0, 2)) ? s.slice(0, 2) : s.slice(0, 1);
+}
+export function givenName(n: string): string {
+  const s = (n || "").trim();
+  return s.slice(baseSurname(s).length);
+}
+
 export function callName(full: string): string {
   const n = (full || "")
     .replace(/\s*[(（][^)）]*[)）]\s*/g, "") // 괄호 메모(옛 이름)

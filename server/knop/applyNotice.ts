@@ -270,6 +270,8 @@ export function startApplyNoticeScheduler() {
   if (_started) return;
   _started = true;
   scheduleDaily("개명 신청 안내·확인 예약(작명장 링크 발송 다음 날 / 안내 15일 뒤)", async () => {
+    // 놓친 작명장 링크가 있으면 고객정보 이름부터 맞춘다(문제 알림은 안 보냄 — 들어올 때 이미 알렸다)
+    await (await import("./namingRename")).autoRenameFromNamingLinks({ alert: false }).catch(() => []);
     await judgeApplyReplies(); // 먼저 취소할 것 정리
     await scheduleApplyNotices();
     await scheduleApplyChecks();
