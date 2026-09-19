@@ -247,7 +247,17 @@ export async function judgeApplyReplies(onlyPhone?: string): Promise<Array<{ pho
       const { sendAlert, esc } = await import("./alertBot");
       const name = m.customerId ? (await d.select().from(customers).where(eq(customers.id, m.customerId)))[0]?.name : null;
       const tel = phone.startsWith("0") ? `+82${phone.slice(1)}` : phone;
-      await sendAlert(["\u2705 <b>개명 신청 확인 문자 취소</b>", `${esc(name || "고객정보 없는 번호")} \u00B7 ${tel}`, "", esc(reason)].join("\n"));
+      // 원장님 지정 문구: 신청 완료를 확인했으므로 확인 문자를 보내지 않는다.
+      await sendAlert(
+        [
+          "\u2705 <b>개명 신청 완료 확인</b>",
+          `${esc(name || "고객정보 없는 번호")} \u00B7 ${tel}`,
+          "",
+          "개명 신청을 완료한 것을 확인했기에 개명 신청 확인 문자를 보내지 않습니다.",
+          "",
+          `근거: ${esc(reason)}`,
+        ].join("\n"),
+      );
     } catch {
       /* 알림 실패는 무시 */
     }
