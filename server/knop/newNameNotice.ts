@@ -27,9 +27,10 @@ export function newNameMinutes(people: number): number {
   return Math.max(1, people) * 10; // 명당 10분
 }
 // 고객에게는 성을 뺀 이름으로 부른다(김가연 → 가연님).
-export function renderNewNameNotice(content: string, name: string, people: number): string {
+export function renderNewNameNotice(content: string, name: string, people: number, opts: { baby?: boolean } = {}): string {
   const call = callName(name) || name;
-  const fam = people >= 2 ? "가족분들의 " : `${call}님 `;
+  // 아가 이름(달력 제목에 "아가")은 "아가 새 이름이…" (원장님 지시 2026-09-19)
+  const fam = opts.baby ? "아가 " : people >= 2 ? "가족분들의 " : `${call}님 `;
   return content
     .replace(/\{이름\}/g, call)
     .replace(/\{가족\}/g, fam)
@@ -122,7 +123,7 @@ export async function planNewNameNotices(): Promise<NewNamePlan[]> {
       minutes: newNameMinutes(people),
       sendAt: base ? sendAt.toISOString() : null,
       setKey,
-      content: tpl && name ? renderNewNameNotice(tpl.content, name, people) : null,
+      content: tpl && name ? renderNewNameNotice(tpl.content, name, people, { baby: /아가/.test(e.title || "") }) : null,
       skip,
     });
   }
