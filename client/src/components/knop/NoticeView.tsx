@@ -269,9 +269,12 @@ function SetEditor({ setKey }: { setKey: string }) {
 
       {/* 4단계 문구 */}
       <div className="space-y-3">
-        {cfg.steps.map((s) => (
-          <StepEditor key={s.id} step={s} onSaved={refresh} />
-        ))}
+        {/* 정화하기 세트의 step0(개명허가 확인)은 안내문자 탭 '법원 허가 확인'으로 옮겼다 — 여기서는 숨긴다 */}
+        {cfg.steps
+          .filter((s) => !(setKey === "gaemyeong_approved" && s.step === 0))
+          .map((s) => (
+            <StepEditor key={s.id} step={s} onSaved={refresh} />
+          ))}
       </div>
 
       {/* 미리보기 + 테스트 */}

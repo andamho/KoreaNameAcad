@@ -14,6 +14,7 @@ import {
   customers,
   type Customer,
   callName,
+  smsTemplates,
 } from "@shared/schema";
 import { ObjectStorageService } from "../object_storage/objectStorage";
 import { smsStore } from "./sms";
@@ -382,7 +383,8 @@ function randomMorningKST(days: number): Date {
 
 // 미리보기: 4단계 렌더 결과(발송 안 함)
 export async function preview(setKey: SetKey, sampleName = "홍길동"): Promise<Array<{ step: number; name: string; offsetDays: number; content: string }>> {
-  const steps = await getSteps(setKey);
+  // 정화하기 step0(개명허가 확인)은 안내문자 탭으로 옮겼으므로 미리보기에서 뺀다.
+  const steps = (await getSteps(setKey)).filter((x) => !(setKey === "gaemyeong_approved" && x.step === 0));
   const assets = NOTICE_SETS[setKey].hasAssets ? await assetsForSet(setKey) : [];
   return Promise.all(
     steps.map(async (s) => ({
@@ -433,15 +435,22 @@ function sequenceStepFilter(setKey: SetKey): ((step: number) => boolean) | undef
 //   gaemyeong_check:YYYY-MM-DD = 달력 개완CHK 일정 날짜로 잡은 것(달력이 바뀌면 따라 움직임)
 export const CHECK_SET = "gaemyeong_check";
 
-// 법원접수 시 호출: '개명허가 확인'(step0) 1건을 2개월(offset) 뒤로 예약.
+// 개명허가 확인 문구는 안내문자 탭의 '법원 허가 확인' 템플릿에서 읽는다(원장님 지시 2026-09-19).
+// 예전에는 개명후관리 정화하기 세트의 step0 에 있었다 — 그 칸은 이제 쓰지 않고 화면에서도 숨긴다.
+const APPROVAL_TEMPLATE = "법원 허가 확인";
+const APPROVAL_AFTER_DAYS = 60; // 법원접수 후(개완CHK 가 없을 때만 쓰는 기본값)
+async function approvalCheckContent(name: string): Promise<string | null> {
+  const [tpl] = await requireDb().select().from(smsTemplates).where(eq(smsTemplates.name, APPROVAL_TEMPLATE));
+  return tpl ? applyVars(tpl.content, name).trim() : null;
+}
+
+// 법원접수 시 호출: '개명허가 확인' 1건을 2개월 뒤로 예약.
 export async function scheduleApprovalCheck(customerId: string): Promise<{ ok: boolean; reason?: string; date?: string }> {
   const cust = await knopStore.getCustomer(customerId);
   if (!cust?.phone) return { ok: false, reason: "전화번호 없음" };
-  const steps = await getSteps("gaemyeong_approved");
-  const s0 = steps.find((x) => x.step === 0);
-  if (!s0) return { ok: false, reason: "개명허가 확인 문구 없음" };
-  const content = await renderStep("gaemyeong_approved", s0.body, 0, cust.name, []);
-  const when = randomMorningKST(s0.offsetDays);
+  const content = await approvalCheckContent(cust.name);
+  if (!content) return { ok: false, reason: `안내문자 '${APPROVAL_TEMPLATE}' 템플릿 없음` };
+  const when = randomMorningKST(APPROVAL_AFTER_DAYS);
   await smsStore.createMessage({ customerId: cust.id, phone: cust.phone, content, scheduledAt: when.toISOString(), setKey: CHECK_SET });
   return { ok: true, date: when.toISOString() };
 }
@@ -453,13 +462,11 @@ export async function scheduleApprovalCheckOn(customerId: string, date: string):
   if (!m) return { ok: false, reason: "날짜 형식 오류" };
   const cust = await knopStore.getCustomer(customerId);
   if (!cust?.phone) return { ok: false, reason: "전화번호 없음" };
-  const steps = await getSteps("gaemyeong_approved");
-  const s0 = steps.find((x) => x.step === 0);
-  if (!s0) return { ok: false, reason: "개명허가 확인 문구 없음" };
+  const content = await approvalCheckContent(cust.name);
+  if (!content) return { ok: false, reason: `안내문자 '${APPROVAL_TEMPLATE}' 템플릿 없음` };
   // KST 09:mm:ss = UTC 00:mm:ss 같은 날
   const when = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 0, Math.floor(Math.random() * 60), Math.floor(Math.random() * 60)));
   if (when.getTime() < Date.now() + 2 * 60_000) return { ok: false, reason: "보낼 시각이 이미 지남" };
-  const content = await renderStep("gaemyeong_approved", s0.body, 0, cust.name, []);
   await smsStore.createMessage({ customerId: cust.id, phone: cust.phone, content, scheduledAt: when.toISOString(), setKey: `${CHECK_SET}:${date}` });
   return { ok: true, date: when.toISOString() };
 }
