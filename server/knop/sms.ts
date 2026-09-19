@@ -26,19 +26,28 @@ const SET_LABEL: Record<string, string> = {
 };
 
 async function notifySend(msg: ScheduledMessage, failReason?: string): Promise<void> {
-  if (!msg.setKey || !msg.customerId || !db) return; // 개명후관리 문자만 알린다
+  // 자동 문자(set_key 있는 것)는 모두 알린다. 고객정보에 없는 번호로 나간 것도 알린다
+  // (원장님 요청 — 개명 신청 확인은 연락처에만 있는 번호로도 나간다).
+  if (!msg.setKey || !db) return;
   try {
     const siblings = await db
       .select({ id: scheduledMessages.id })
       .from(scheduledMessages)
-      .where(and(eq(scheduledMessages.customerId, msg.customerId), eq(scheduledMessages.setKey, msg.setKey)))
+      .where(
+        and(
+          msg.customerId ? eq(scheduledMessages.customerId, msg.customerId) : eq(scheduledMessages.phone, msg.phone),
+          eq(scheduledMessages.setKey, msg.setKey),
+        ),
+      )
       .orderBy(scheduledMessages.scheduledAt);
     const nth = siblings.findIndex((r) => r.id === msg.id) + 1;
 
-    let name = "고객";
+    let name = "고객정보 없는 번호";
     try {
-      const c = await knopStore.getCustomer(msg.customerId);
-      if (c?.name) name = c.name;
+      if (msg.customerId) {
+        const c = await knopStore.getCustomer(msg.customerId);
+        if (c?.name) name = c.name;
+      }
     } catch {
       // 이름을 못 가져와도 알림은 보낸다
     }
@@ -54,11 +63,18 @@ async function notifySend(msg: ScheduledMessage, failReason?: string): Promise<v
       digits.startsWith("0") && digits.length >= 10 ? `+82${digits.slice(1)}` : msg.phone || "";
     // 사람이 쓴 값(이름·사유)은 감싸서 넣는다 — < 가 들어가면 텔레그램이 태그로 읽는다.
     const { sendAlert, esc } = await import("./alertBot");
-    const label = SET_LABEL[msg.setKey] || (msg.setKey.startsWith("gaemyeong_check") ? "개명허가 확인" : msg.setKey);
+    const label =
+      SET_LABEL[msg.setKey] ||
+      (msg.setKey.startsWith("gaemyeong_check")
+        ? "개명허가 확인"
+        : msg.setKey.startsWith("newname:")
+          ? "새 이름 상담 안내"
+          : msg.setKey);
     const head = failReason
       ? "\u26A0\uFE0F <b>\uAC1C\uBA85\uAD00\uB9AC \uBB38\uC790 \uC2E4\uD328</b>"
       : "\uD83D\uDCEE <b>\uAC1C\uBA85\uAD00\uB9AC \uBB38\uC790 \uBC1C\uC1A1</b>";
-    const count = nth > 0 ? `${nth}/${siblings.length}회차` : "";
+    // 한 번만 나가는 문자(개명 신청 확인·개명허가 확인·새 이름 안내)는 회차를 붙이지 않는다.
+    const count = nth > 0 && siblings.length > 1 ? `${nth}/${siblings.length}회차` : "";
     const lines = [head, `${esc(name)} \u00B7 ${label} ${count}`.trim(), phone];
     if (failReason) lines.push("", `사유: ${esc(failReason.slice(0, 150))}`);
     if (!LIVE && !failReason) lines.push("", "(실제 발송 꺼짐 \u2014 시뮬레이션)");
