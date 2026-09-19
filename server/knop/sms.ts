@@ -22,6 +22,7 @@ const LIVE = (process.env.KOP_SMS_LIVE || process.env.KNOP_SMS_LIVE) === "1";
 const SET_LABEL: Record<string, string> = {
   gaemyeong_request: "미용감사",
   gaemyeong_approved: "정화하기",
+  gaemyeong_apply: "개명 신청 확인",
 };
 
 async function notifySend(msg: ScheduledMessage, failReason?: string): Promise<void> {
