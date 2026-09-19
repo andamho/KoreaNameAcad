@@ -1,7 +1,10 @@
 // 새 이름 선택 점검 — 원장님께 텔레그램으로 알린다(고객에게 가는 문자 아님).
 //
 // 규칙(원장님 확정, 2026-09-19):
-//   · 새 이름을 안내한 날(달력 '작명완료' 날짜) 1주 뒤부터 매주, 같은 요일 아침 점검(08:40) 때 알린다.
+//   · 새 이름을 안내한 날(달력 '작명완료' 날짜) 15일 뒤부터 15일마다 아침 점검(08:40) 때 알린다.
+//     (원장님 변경 2026-09-19: 매주 → 15일 간격)
+//   · 작명장 링크(/s/운이술술풀리는이름…)가 든 문자를 그 고객에게 보냈으면 멈춘다
+//     = 새 이름을 최종 선택했다는 뜻(원장님 확정). 개명 신청 안내 문자와 같은 기준.
 //   · 그 고객의 '개완CHK'(법적 개명허가 점검) 일정이 달력에 잡히면 알림을 멈춘다.
 //     = 새 이름을 골라 법원에 냈다는 뜻이므로 더 물을 필요가 없다.
 //   · 작명완료 일정을 달력에서 지우면 자연히 멈춘다(달력이 기준).
@@ -15,10 +18,11 @@
 //     (홍나영 → 홍수안). 고객정보의 이름 이력(name_history·rename_map)으로 옛 이름과
 //     새 이름을 같은 사람으로 묶어 비교한다.
 //
-// 상태를 DB 에 저장하지 않는다. 매일 달력만 보고 '오늘이 7·14·21…일째인가'를 계산하므로
+// 상태를 DB 에 저장하지 않는다. 매일 달력만 보고 '오늘이 15·30·45…일째인가'를 계산하므로
 // 일정을 옮기거나 지우면 그대로 따라간다.
 import { db } from "../db";
-import { customers, normalizePhone } from "@shared/schema";
+import { customers, incomingSms, normalizePhone } from "@shared/schema";
+import { and, eq, like } from "drizzle-orm";
 import { findPhone, parseNameCount, readEvents, calendarAvailable, type CalEvent } from "./calendar";
 import { scheduleDaily } from "./dailyCheckpoint";
 import { todayKST } from "./newNameNotice";
@@ -91,6 +95,10 @@ function telFormat(p: string | null): string {
   return d.startsWith("0") && d.length >= 10 ? `+82${d.slice(1)}` : p || "번호 없음";
 }
 
+// 알림 간격(일)과 작명장 링크 표시
+const INTERVAL_DAYS = 15;
+const NAMING_LINK_MARK = "/s/운이술술풀리는이름";
+
 export type FollowupItem = { name: string; namingDate: string; days: number; week: number; phone: string | null };
 
 // 오늘 알릴 대상 계산(발송 없음).
@@ -123,6 +131,23 @@ export async function planNewNameFollowups(today = todayKST()): Promise<{ due: F
   // 사람 열쇠: 고객이면 고객 id, 아니면 이름 그대로.
   const keyOf = (name: string, phone: string | null) =>
     (phone && idByPhone.get(phone)) || idByName.get(name) || `이름:${name}`;
+
+  // 작명장 링크를 보낸 번호 → 사람 열쇠. 번호가 고객정보에 없으면 번호 그대로.
+  const namingSentPhones = new Set<string>();
+  const namingSentKeys = new Set<string>();
+  if (db) {
+    const rows = await db
+      .select({ phone: incomingSms.phone })
+      .from(incomingSms)
+      .where(and(eq(incomingSms.direction, "발신"), like(incomingSms.body, `%${NAMING_LINK_MARK}%`)));
+    for (const r of rows) {
+      const ph = normalizePhone(r.phone || "");
+      if (!ph) continue;
+      namingSentPhones.add(ph);
+      const id = idByPhone.get(ph);
+      if (id) namingSentKeys.add(id);
+    }
+  }
 
   // 개완CHK 일정: 사람 열쇠
   const chkKeys = new Set<string>();
@@ -157,8 +182,12 @@ export async function planNewNameFollowups(today = todayKST()): Promise<{ due: F
       stopped.push(name);
       continue;
     }
+    if (namingSentKeys.has(key) || (phone && namingSentPhones.has(phone))) {
+      stopped.push(name); // 작명장이 나갔다 = 새 이름 최종 선택
+      continue;
+    }
     const days = daysBetween(date, today);
-    if (days >= 7 && days % 7 === 0) due.push({ name, namingDate: date, days, week: days / 7, phone });
+    if (days >= INTERVAL_DAYS && days % INTERVAL_DAYS === 0) due.push({ name, namingDate: date, days, week: days / INTERVAL_DAYS, phone });
   }
   due.sort((a, b) => a.namingDate.localeCompare(b.namingDate));
   return { due, stopped };
@@ -168,7 +197,7 @@ export function renderFollowup(items: FollowupItem[], esc: (v: unknown) => strin
   const lines = ["🔔 <b>새 이름 선택 점검</b>", ""];
   for (const it of items) {
     const md = it.namingDate.slice(5).replace("-", "/");
-    lines.push(`${esc(it.name)}님 · 안내 ${md} · ${it.week}주차`);
+    lines.push(`${esc(it.name)}님 · 안내 ${md} · ${it.days}일째(${it.week}회차)`);
     lines.push(telFormat(it.phone));
     lines.push("");
   }
@@ -194,7 +223,7 @@ export async function sendNewNameFollowups(opts: { force?: boolean } = {}): Prom
   if (!alertAvailable()) return [];
   await sendAlert(renderFollowup(due, esc));
   _lastSentDay = today;
-  console.log(`[KOP] 새 이름 선택 점검 알림: ${due.map((d) => `${d.name}(${d.week}주)`).join(", ")}`);
+  console.log(`[KOP] 새 이름 선택 점검 알림: ${due.map((d) => `${d.name}(${d.days}일째)`).join(", ")}`);
   return due;
 }
 
@@ -202,7 +231,7 @@ let _started = false;
 export function startNewNameFollowupScheduler() {
   if (_started) return;
   _started = true;
-  scheduleDaily("새 이름 선택 점검 알림(작명완료 1주 뒤부터 매주)", async () => {
+  scheduleDaily("새 이름 선택 점검 알림(작명완료 15일 뒤부터 15일마다)", async () => {
     await sendNewNameFollowups();
   }, 40_000);
 }
