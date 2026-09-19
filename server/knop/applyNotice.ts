@@ -1,11 +1,12 @@
-// 개명 신청 확인 문자 — 새 이름을 최종 선택한 고객에게 다음 날 보낸다.
+// 개명 신청 안내 문자 — 새 이름을 최종 선택한 고객에게 다음 날 보낸다.
+// (원장님: 제목은 '개명 신청 안내'. 기존 '개명 신청 확인' 템플릿은 따로 그대로 둔다.)
 //
 // 기준(원장님 확정, 2026-09-19): 원장님 폰에서 작명장 링크
 //   https://korea-name-acad.com/s/운이술술풀리는이름강다희
 // 가 든 문자가 '발신'으로 잡히면 = 새 이름을 최종 선택했다는 뜻.
-// 그 다음 날 아침 9~10시에 '개명 신청 확인' 문자를 보낸다.
+// 그 다음 날 아침 9~10시에 '개명 신청 안내' 문자를 보낸다.
 //
-// 문구는 코드에 박지 않는다. 안내문자 탭의 DB 템플릿 '개명 신청 확인' 을 읽고,
+// 문구는 코드에 박지 않는다. 안내문자 탭의 DB 템플릿 '개명 신청 안내' 를 읽고,
 // {이름} 은 성을 뺀 이름(강다희 → 다희)으로 바꾼다. 원장님이 탭에서 고치면 다음 예약부터 반영된다.
 //
 // 아침 점검(08:40) 때 하루 한 번 훑는다. 한 번호에는 한 번만 보낸다(set_key 로 멈춤).
@@ -17,7 +18,7 @@ import { smsStore } from "./sms";
 import { scheduleDaily } from "./dailyCheckpoint";
 import { todayKST } from "./newNameNotice";
 
-const TEMPLATE_NAME = "개명 신청 확인";
+const TEMPLATE_NAME = "개명 신청 안내";
 export const APPLY_SET = "gaemyeong_apply";
 const LINK_MARK = "/s/운이술술풀리는이름";
 // 이 날짜(KST) 이후에 보낸 링크만 본다.
@@ -101,7 +102,7 @@ export async function scheduleApplyNotices(opts: { dryRun?: boolean } = {}): Pro
       setKey: APPLY_SET,
     });
     done.add(phone);
-    console.log(`[KOP] 개명 신청 확인 예약: ${name}님 ${phone} → ${sendDate} (링크 발송 ${linkDay})`);
+    console.log(`[KOP] 개명 신청 안내 예약: ${name}님 ${phone} → ${sendDate} (링크 발송 ${linkDay})`);
   }
   return plans;
 }
@@ -110,7 +111,7 @@ let _started = false;
 export function startApplyNoticeScheduler() {
   if (_started) return;
   _started = true;
-  scheduleDaily("개명 신청 확인 예약(작명장 링크 발송 다음 날)", async () => {
+  scheduleDaily("개명 신청 안내 예약(작명장 링크 발송 다음 날)", async () => {
     await scheduleApplyNotices();
   }, 60_000);
 }
