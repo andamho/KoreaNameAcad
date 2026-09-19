@@ -2,7 +2,7 @@
 // Drizzle 직접 사용. DB 미가용 시 DatabaseError 를 던져 라우트에서 503 처리.
 import { db } from "../db";
 import { DatabaseError } from "../storage";
-import { and, desc, eq, gte, lte, like } from "drizzle-orm";
+import { and, desc, eq, gte, lte, like, isNull, or, inArray } from "drizzle-orm";
 import { formatCode, monthPrefix, parseCode } from "./customerCode";
 import { parseContact } from "./smsIntake";
 import { statusRank, stageOf, statusToMilestone } from "./stateMachine";
@@ -159,6 +159,51 @@ async function consultDatesForBoard(custs: Customer[]): Promise<Map<string, stri
     /* 달력을 못 읽어도 목록은 보여 준다 */
   }
   return out;
+}
+
+// 고객 번호를 바꾸면 아직 안 나간 예약 문자를 모두 새 번호로 옮긴다(원장님 확정 2026-09-19).
+// 예약 문자는 만들 때의 번호를 들고 있어서, 옮기지 않으면 옛 번호로 나간다.
+// 대상: 이 고객의 예약 + 고객 연결 없이 옛 번호로만 잡힌 예약. 옮기고 텔레그램으로 알린다.
+async function movePendingMessagesToNewPhone(
+  row: Customer,
+  before: Customer,
+  moved: { from: string; to: string },
+): Promise<void> {
+  try {
+    const d = requireDb();
+    const newNorm = normalizePhone(moved.to);
+    if (!newNorm) return; // 새 번호가 비었으면 옮기지 않는다
+    const oldNorm = before.normalizedPhone || "";
+    const conds = [eq(scheduledMessages.customerId, row.id)];
+    if (oldNorm) conds.push(and(isNull(scheduledMessages.customerId), eq(scheduledMessages.phone, oldNorm))!);
+    const pending = await d
+      .select({ id: scheduledMessages.id })
+      .from(scheduledMessages)
+      .where(and(eq(scheduledMessages.status, "scheduled"), or(...conds)));
+    if (pending.length) {
+      await d
+        .update(scheduledMessages)
+        .set({ phone: newNorm })
+        .where(and(inArray(scheduledMessages.id, pending.map((p) => p.id)), eq(scheduledMessages.status, "scheduled")));
+    }
+    console.log(`[KOP] 번호 변경 ${row.name}: ${moved.from} → ${moved.to} · 예약 ${pending.length}건 옮김`);
+    const { sendAlert, esc } = await import("./alertBot");
+    const tel = (p: string) => {
+      const n = normalizePhone(p);
+      return n && n.startsWith("0") ? `+82${n.slice(1)}` : p || "없음";
+    };
+    await sendAlert(
+      [
+        "\uD83D\uDCF1 <b>고객 번호 변경</b>",
+        `${esc(row.name)}`,
+        `${esc(moved.from || "없음")} \u2192 ${tel(moved.to)}`,
+        "",
+        pending.length ? `아직 안 나간 예약 문자 ${pending.length}건을 새 번호로 옮겼습니다.` : "옮길 예약 문자는 없습니다.",
+      ].join("\n"),
+    );
+  } catch (e: any) {
+    console.error(`[KOP] 번호 변경 후 예약 옮기기 실패: ${e?.message}`);
+  }
 }
 
 // ── Customers ──
@@ -649,7 +694,9 @@ export const knopStore = {
       }
 
       // 번호 변경 → 옛 번호 이력 보관(번호변경 추적, 별칭 매칭용)
+      let phoneMoved: { from: string; to: string } | null = null;
       if (input.phone !== undefined && normalizePhone(input.phone) !== cur.normalizedPhone) {
+        phoneMoved = { from: cur.phone || "", to: input.phone };
         const h = safeJsonArr(cur.phoneHistory);
         h.push({ phone: cur.phone, normalized: cur.normalizedPhone, changedAt: now });
         patch.phone = input.phone;
@@ -674,6 +721,7 @@ export const knopStore = {
       if (input.renameMap !== undefined) patch.renameMap = input.renameMap ?? null;
       if (input.tags !== undefined) patch.tags = input.tags ? JSON.stringify(input.tags) : null;
       const [row] = await d.update(customers).set(patch).where(eq(customers.id, id)).returning();
+      if (phoneMoved) await movePendingMessagesToNewPhone(row, cur, phoneMoved);
       return row;
     } catch (e) {
       fail("고객 수정", e);
