@@ -12,7 +12,7 @@
 // 아침 점검(08:40) 때 하루 한 번 훑는다. 한 번호에는 한 번만 보낸다(set_key 로 멈춤).
 // 이 기능을 만든 날 이전에 보낸 링크(노이산·김해윤·홍수안·강다희)에는 보내지 않는다.
 //
-// ② 개명 신청 확인(원장님 확정, 2026-09-19): 안내 문자가 나간 뒤 10일째 아침에
+// ② 개명 신청 확인(원장님 확정, 2026-09-19): 안내 문자가 나간 뒤 15일째 아침에
 //    '개명 신청 확인' 템플릿을 보낸다. 그 사이 고객이 '개명 신청했다'는 문자를 보내오면
 //    취소한다. 판독은 AI(Gemini)가 문맥으로 한다 — '상담 신청서 작성', '내일 신청하려고요'
 //    처럼 단어만 보면 틀리는 문자가 실제로 섞여 있기 때문이다. 진행단계가 법원접수 이상이어도 취소.
@@ -115,9 +115,9 @@ export async function scheduleApplyNotices(opts: { dryRun?: boolean } = {}): Pro
 // ── ② 개명 신청 확인 ──
 const CHECK_TEMPLATE = "개명 신청 확인";
 export const APPLY_CHECK_SET = "gaemyeong_apply_check";
-const CHECK_AFTER_DAYS = 10;
+const CHECK_AFTER_DAYS = 15; // 원장님 변경(2026-09-19): 10일 → 15일
 
-// 안내가 나간 번호마다 10일째 아침에 확인 문자 1건 예약.
+// 안내가 나간 번호마다 15일째 아침에 확인 문자 1건 예약.
 export async function scheduleApplyChecks(opts: { dryRun?: boolean } = {}): Promise<string[]> {
   if (!db) return [];
   const d = db;
@@ -269,7 +269,7 @@ let _started = false;
 export function startApplyNoticeScheduler() {
   if (_started) return;
   _started = true;
-  scheduleDaily("개명 신청 안내·확인 예약(작명장 링크 발송 다음 날 / 안내 10일 뒤)", async () => {
+  scheduleDaily("개명 신청 안내·확인 예약(작명장 링크 발송 다음 날 / 안내 15일 뒤)", async () => {
     await judgeApplyReplies(); // 먼저 취소할 것 정리
     await scheduleApplyNotices();
     await scheduleApplyChecks();
