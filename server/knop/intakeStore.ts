@@ -59,6 +59,12 @@ export const intakeStore = {
           receivedAt: at,
         })
         .returning();
+      // 고객이 보낸 문자면: 대기 중인 '개명 신청 확인'을 취소할지 바로 판독(그 번호에 대기 건이 있을 때만 AI 호출)
+      if (direction !== "발신") {
+        import("./applyNotice")
+          .then((m) => m.judgeApplyReplies(phone))
+          .catch((e) => console.error(`[KOP] 개명 신청 답장 판독 오류: ${e?.message}`));
+      }
       return row;
     } catch (e) {
       fail("문자 저장", e);
