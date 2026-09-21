@@ -206,7 +206,7 @@ function FlowNoteButton({ label = "관리", align = "center" }: { label?: string
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="px-1.5 py-0.5 rounded border border-gray-200 text-[10px] text-gray-500 hover:border-[#56D5DB] hover:text-[#2ba0a6] bg-white"
+        className="px-1.5 py-0.5 rounded border border-gray-200 text-[10px] text-gray-500 hover:border-[#56D5DB] hover:text-[#2ba0a6] bg-white whitespace-nowrap"
         data-testid="button-naming-flow-note"
       >
         {label}
@@ -419,7 +419,7 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
         ))}
         <span className="ml-auto text-xs text-gray-400">총 {rows.length}명</span>
         {/* 휴대폰: 단계 제목 줄이 숨겨지므로 여기서 연다 */}
-        <span className="sm:hidden ml-1"><FlowNoteButton label="새이름 관리" align="right" /></span>
+        <span className="sm:hidden ml-1 shrink-0"><FlowNoteButton label="관리" align="right" /></span>
         <button
           onClick={() => setShowTrash((v) => !v)}
           className={`${selCls} ml-1 flex items-center gap-1 ${showTrash ? "bg-gray-200 text-gray-700" : "text-gray-400 hover:text-gray-600"}`}
