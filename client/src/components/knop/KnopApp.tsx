@@ -182,6 +182,9 @@ const TEAL = "#1D9E75";
 const AMBER = "#F59E0B"; // 새이름 단계 랜드마크 색(스크롤 중 위치 파악용)
 // 모바일 카드: 개명승인 단계는 티파니 블루(원장님 요청 2026-09-21, 사이트 티파니 #0994af)
 const TIFFANY = "#0994af";
+// 티파니만으로는 초록과 잘 구별되지 않아(원장님) 가운데에 흰 사선 5개를 '/' 방향으로 얹는다.
+// 한 칸 6px(투명 4 + 흰색 2) × 5 = 30px 폭을 가운데에만 그린다.
+const APPROVED_BAR = `repeating-linear-gradient(135deg, transparent 0 4px, #fff 4px 6px) center / 30px 100% no-repeat, ${TIFFANY}`;
 const AMBER_MILESTONE = KNOP_MILESTONES.indexOf("새이름"); // 노란색으로 표시할 단계
 const APPROVED_MILESTONE = KNOP_MILESTONES.indexOf("개명승인"); // 점 대신 마스코트로 표시할 단계
 // 고객 목록 '새이름' 옆 [관리] — 새 이름 이후 자동 문자 흐름을 작은 창으로 보여 준다.
@@ -667,7 +670,16 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                     <button key={i} type="button" onClick={onTap} className="flex flex-col items-center gap-1 py-0.5">
                       <span
                         className="w-full h-1.5 rounded-full"
-                        style={{ background: done || cur ? (i === AMBER_MILESTONE ? AMBER : i === APPROVED_MILESTONE ? TIFFANY : TEAL) : "#e5e7eb" }}
+                        style={{
+                          background:
+                            done || cur
+                              ? i === AMBER_MILESTONE
+                                ? AMBER
+                                : i === APPROVED_MILESTONE
+                                  ? APPROVED_BAR // 티파니 + 가운데 흰 사선 5개(초록과 구별)
+                                  : TEAL
+                              : "#e5e7eb",
+                        }}
                       />
                       <span
                         className={`text-[9px] leading-tight text-center ${
