@@ -666,7 +666,7 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                   return (
                     <button key={i} type="button" onClick={onTap} className="flex flex-col items-center gap-1 py-0.5">
                       <span
-                        className="w-full h-1.5 rounded-full flex items-center justify-center gap-[3px] overflow-hidden"
+                        className="relative w-full h-1.5 rounded-full"
                         style={{
                           background:
                             done || cur
@@ -678,12 +678,24 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                               : "#e5e7eb",
                         }}
                       >
-                        {/* 개명승인: 가운데 흰 사선 5개('/'), 초록과 구별(원장님). 무늬(gradient)로 그리면
-                            양 끝 사선이 반쯤 잘려 4개처럼 보여서 하나씩 따로 그린다. */}
-                        {i === APPROVED_MILESTONE && (done || cur) &&
-                          [0, 1, 2, 3, 4].map((k) => (
-                            <span key={k} className="h-full shrink-0" style={{ width: 2, background: "#fff", transform: "skewX(-35deg)" }} />
-                          ))}
+                        {/* 개명승인: PC 처럼 바 가운데에 로고(원장님 요청 2026-09-21). 도달 전 흐린 회색, 도달하면 컬러.
+                            로고(18px)는 바 위로 솟게 놓아 아래 단계 이름을 가리지 않는다. */}
+                        {i === APPROVED_MILESTONE && (
+                          <img
+                            src="/mascot-approved.png"
+                            alt=""
+                            aria-hidden
+                            className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+                            style={{
+                              width: 18,
+                              height: 18,
+                              top: -12,
+                              objectFit: "contain",
+                              filter: done || cur ? "none" : "grayscale(1)",
+                              opacity: done || cur ? 1 : 0.35,
+                            }}
+                          />
+                        )}
                       </span>
                       <span
                         className={`text-[9px] leading-tight text-center ${
