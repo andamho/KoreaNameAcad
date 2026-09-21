@@ -554,13 +554,15 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                 <div className="absolute right-0" style={{ width: "50%", height: 2, background: rightLine }} />
                 {i === APPROVED_MILESTONE ? (
                   // 개명승인 = 점 대신 마스코트. 도달 전엔 흐리게(회색), 도달하면 컬러.
+                  // 흰 네모 바탕을 투명하게 뺀 작은 그림(mascot-approved.png, 여백도 잘라냄).
+                  // 원장님 요청: 보이는 로고를 1.5배 — 예전 26px 칸 속 로고(약 22px) × 1.5 ≈ 34px.
                   <img
-                    src="/mascot.png"
+                    src="/mascot-approved.png"
                     alt="개명승인"
                     className="relative"
                     style={{
-                      width: 26,
-                      height: 26,
+                      width: 34,
+                      height: 34,
                       objectFit: "contain",
                       filter: done || cur ? "none" : "grayscale(1)",
                       opacity: done || cur ? 1 : 0.3,
