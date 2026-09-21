@@ -180,6 +180,8 @@ const MILESTONE_ENTRY = KNOP_MILESTONE_ENTRY as readonly string[];
 const PHONE_MILESTONE = KNOP_PHONE_MILESTONE; // shared 와 동일(고객상세와 어긋나지 않게)
 const TEAL = "#1D9E75";
 const AMBER = "#F59E0B"; // 새이름 단계 랜드마크 색(스크롤 중 위치 파악용)
+// 모바일 카드: 개명승인 단계는 티파니 블루(원장님 요청 2026-09-21, 사이트 티파니 #0994af)
+const TIFFANY = "#0994af";
 const AMBER_MILESTONE = KNOP_MILESTONES.indexOf("새이름"); // 노란색으로 표시할 단계
 const APPROVED_MILESTONE = KNOP_MILESTONES.indexOf("개명승인"); // 점 대신 마스코트로 표시할 단계
 // 고객 목록 '새이름' 옆 [관리] — 새 이름 이후 자동 문자 흐름을 작은 창으로 보여 준다.
@@ -663,13 +665,15 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
                     <button key={i} type="button" onClick={onTap} className="flex flex-col items-center gap-1 py-0.5">
                       <span
                         className="w-full h-1.5 rounded-full"
-                        style={{ background: done || cur ? (i === AMBER_MILESTONE ? AMBER : TEAL) : "#e5e7eb" }}
+                        style={{ background: done || cur ? (i === AMBER_MILESTONE ? AMBER : i === APPROVED_MILESTONE ? TIFFANY : TEAL) : "#e5e7eb" }}
                       />
                       <span
                         className={`text-[9px] leading-tight text-center ${
                           i === AMBER_MILESTONE && (cur || done)
                             ? "text-[#B45309] font-semibold"
-                            : cur
+                            : i === APPROVED_MILESTONE && (cur || done)
+                              ? "text-[#0994af] font-semibold"
+                              : cur
                               ? "text-[#1D9E75] font-semibold"
                               : done
                                 ? "text-gray-500"
