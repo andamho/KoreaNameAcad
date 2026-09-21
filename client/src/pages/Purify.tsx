@@ -49,11 +49,18 @@ export default function Purify() {
   useEffect(() => {
     const prevTitle = document.title;
     document.title = "과거 이름 정화하기 | 한국이름학교";
-    // 검색엔진에 나오지 않게(주소를 아는 사람만 보는 안내 페이지)
-    const robots = document.createElement("meta");
-    robots.name = "robots";
+    // 검색엔진에 나오지 않게(주소를 아는 사람만 보는 안내 페이지).
+    // 사이트 공통 <meta name="robots" content="index, follow"> 가 이미 있어서 새로 붙이면 그게 먼저 읽힌다
+    // → 기존 것의 값을 바꾸고, 나갈 때 되돌린다.
+    let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    const created = !robots;
+    if (!robots) {
+      robots = document.createElement("meta");
+      robots.name = "robots";
+      document.head.appendChild(robots);
+    }
+    const prevRobots = robots.content;
     robots.content = "noindex, nofollow";
-    document.head.appendChild(robots);
     // 제목용 명조 글꼴
     const font = document.createElement("link");
     font.rel = "stylesheet";
@@ -62,7 +69,8 @@ export default function Purify() {
     window.scrollTo(0, 0);
     return () => {
       document.title = prevTitle;
-      robots.remove();
+      if (created) robots!.remove();
+      else robots!.content = prevRobots;
       font.remove();
     };
   }, []);
