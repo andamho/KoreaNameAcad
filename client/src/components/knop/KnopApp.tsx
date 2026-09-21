@@ -40,11 +40,34 @@ import { StatusBadge, fmtDate, fmtTime, seqLabel } from "./lib";
 
 type View = "customers" | "inbox" | "sms-inbox" | "sms" | "notice" | "calendar" | "reports" | "corrections";
 
+const LAST_VIEW_KEY = "knop:last-view";
+
 export function KnopApp() {
   const { isAdmin, isVerifying } = useAdmin();
-  // 관리자 페이지를 열면 달력이 먼저 보인다.
-  const [view, setView] = useState<View>("calendar");
-  const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
+  // 관리자 페이지를 처음 열면 달력이 먼저 보인다.
+  // 새로고침하면 보던 화면(탭·고객)으로 돌아간다(원장님 요청 2026-09-21).
+  //   1) 브라우저가 새로고침 뒤에도 들고 있는 기록(history.state.knop)
+  //   2) 그게 없으면 이 탭에서 마지막으로 본 화면(sessionStorage)
+  const 기억 = (() => {
+    const s = (typeof window !== "undefined" ? (window.history.state as any)?.knop : null) || null;
+    if (s?.view) return s as { view: View; customer: string | null };
+    try {
+      const j = JSON.parse(sessionStorage.getItem(LAST_VIEW_KEY) || "null");
+      if (j?.view) return j as { view: View; customer: string | null };
+    } catch {
+      /* 저장소를 못 쓰면 달력으로 */
+    }
+    return null;
+  })();
+  const [view, setView] = useState<View>(기억?.view ?? "calendar");
+  const [selectedCustomer, setSelectedCustomer] = useState<string | null>(기억?.customer ?? null);
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(LAST_VIEW_KEY, JSON.stringify({ view, customer: selectedCustomer }));
+    } catch {
+      /* 무시 */
+    }
+  }, [view, selectedCustomer]);
 
   // ── 휴대폰 뒤로가기 ──
   // 탭 전환·고객 상세 열기는 React 상태만 바꿔서 브라우저 기록이 남지 않았다.
@@ -85,9 +108,10 @@ export function KnopApp() {
     }
 
     // 첫 화면도 기록에 심어둔다 → 뒤로가기로 여기까지 되돌아올 수 있다
+    // (새로고침으로 되살린 화면이면 그 화면을 심는다 — 달력으로 덮어쓰지 않는다)
     const st = window.history.state as any;
     if (!st?.knop) {
-      window.history.replaceState({ ...(st || {}), knop: { view: "calendar", customer: null } }, "");
+      window.history.replaceState({ ...(st || {}), knop: { view: 기억?.view ?? "calendar", customer: 기억?.customer ?? null } }, "");
     }
     const onPop = (e: PopStateEvent) => {
       const s = (e.state as any)?.knop;

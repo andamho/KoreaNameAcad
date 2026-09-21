@@ -72,7 +72,16 @@ export default function Admin() {
   // 알림 메일에서 바로 오기: /admin?tab=inquiries&id=123 → 그 탭을 열고 해당 문의로 스크롤.
   // 예전에는 /admin 만 가리켜서 목록 첫 화면에서 직접 찾아야 했다.
   const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
-  const initialTab = params.get("tab") || "knop";
+  // 위쪽 큰 탭(운영/문의/신청서…)도 새로고침하면 보던 탭으로(원장님 요청 2026-09-21).
+  const initialTab = (() => {
+    const q = params.get("tab");
+    if (q) return q;
+    try {
+      return sessionStorage.getItem("admin:last-tab") || "knop";
+    } catch {
+      return "knop";
+    }
+  })();
   const focusInquiryId = params.get("id") || "";
   const [contentDialogOpen, setContentDialogOpen] = useState(false);
   const [editingContent, setEditingContent] = useState<Content | null>(null);
@@ -360,7 +369,17 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <h1 className="text-3xl font-bold text-foreground mb-8">관리자 페이지</h1>
 
-        <Tabs defaultValue={initialTab} className="space-y-6">
+        <Tabs
+          defaultValue={initialTab}
+          onValueChange={(v) => {
+            try {
+              sessionStorage.setItem("admin:last-tab", v);
+            } catch {
+              /* 무시 */
+            }
+          }}
+          className="space-y-6"
+        >
           <TabsList>
             <TabsTrigger value="knop" data-testid="tab-knop">
               <LayoutDashboard className="w-3.5 h-3.5 mr-1.5" />
