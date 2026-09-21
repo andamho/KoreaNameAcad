@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+# 정화하기 안내 페이지(문자로만 보냄) — 검색 제외
+Disallow: /purify
 
 Sitemap: https://korea-name-acad.com/sitemap.xml
