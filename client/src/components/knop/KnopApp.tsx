@@ -213,7 +213,8 @@ function FlowNoteButton({ label = "관리", align = "center" }: { label?: string
       </button>
       {open && (
         <div
-          className={`absolute ${align === "right" ? "right-0" : "left-1/2 -translate-x-1/2"} top-full mt-2 z-40 w-72 rounded-xl border border-gray-200 bg-white shadow-xl text-left`}
+          // 휴대폰(align=right): 버튼 기준으로 띄우면 화면 밖으로 잘려서 화면 가운데에 고정해 띄운다
+          className={`${align === "right" ? "fixed left-1/2 -translate-x-1/2 top-[140px] w-[calc(100vw-2rem)] max-w-xs" : "absolute left-1/2 -translate-x-1/2 top-full mt-2 w-72"} z-50 rounded-xl border border-gray-200 bg-white shadow-xl text-left`}
           role="dialog"
         >
           <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
