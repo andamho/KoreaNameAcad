@@ -635,6 +635,23 @@ export async function listActiveSequences(): Promise<ActiveSequence[]> {
 }
 
 // 진행중 세트 취소: 아직 안 보낸 예약을 모두 취소하고 run 을 취소 표시(재시작 가능).
+// 개명허가 확인 문자(60일 규칙 · 개완CHK 날짜 모두) 중 아직 안 나간 것을 취소.
+export async function cancelApprovalChecks(customerId: string): Promise<number> {
+  const d = requireDb();
+  const res = await d
+    .update(scheduledMessages)
+    .set({ status: "canceled" })
+    .where(
+      and(
+        eq(scheduledMessages.customerId, customerId),
+        sql`${scheduledMessages.setKey} LIKE ${CHECK_SET + "%"}`,
+        eq(scheduledMessages.status, "scheduled"),
+      ),
+    )
+    .returning();
+  return res.length;
+}
+
 export async function cancelSequence(customerId: string, setKey: SetKey): Promise<{ ok: boolean; canceled: number }> {
   const d = requireDb();
   const res = await d

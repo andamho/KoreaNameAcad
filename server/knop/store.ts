@@ -1134,6 +1134,42 @@ export const knopStore = {
             const r = await gm.startSequence(row.customerId, "gaemyeong_approved");
             console.log(`[KOP] 개명승인 → 정화하기 ${r.ok ? `자동시작(${r.scheduled}건)` : `건너뜀:${r.reason}`} cust=${row.customerId}`);
           }
+
+          // 단계를 뒤로 되돌리면 그 뒤 단계에서 잡힌, 아직 안 나간 문자를 취소한다(원장님 2026-09-21).
+          // 예) 개명승인 → 법원접수로 되돌림: 정화하기 취소(개명허가 확인은 법원접수 단계 것이라 유지).
+          // 시퀀스 기록도 '취소'로 돌려 두어, 다시 앞으로 옮기면 새로 예약된다.
+          if (toM < fromM) {
+            const 취소: string[] = [];
+            if (fromM >= 4 && toM < 4) {
+              const r = await gm.cancelSequence(row.customerId, "gaemyeong_approved");
+              if (r.canceled) 취소.push(`정화하기 ${r.canceled}건`);
+            }
+            if (fromM >= 3 && toM < 3) {
+              const n = await gm.cancelApprovalChecks(row.customerId);
+              if (n) 취소.push(`개명허가 확인 ${n}건`);
+            }
+            if (fromM >= 1 && toM < 1) {
+              const r = await gm.cancelSequence(row.customerId, "gaemyeong_request");
+              if (r.canceled) 취소.push(`미용감사 ${r.canceled}건`);
+            }
+            if (취소.length) {
+              console.log(`[KOP] 단계 되돌림 ${before.status} → ${row.status}: ${취소.join(", ")} 취소 cust=${row.customerId}`);
+              try {
+                const [cu] = await d.select().from(customers).where(eq(customers.id, row.customerId));
+                const { sendAlert, esc } = await import("./alertBot");
+                await sendAlert(
+                  [
+                    "\u21A9\uFE0F <b>단계 되돌림 · 예약 문자 취소</b>",
+                    `${esc(cu?.name || "고객")} \u00B7 ${esc(before.status)} \u2192 ${esc(row.status)}`,
+                    "",
+                    `취소: ${esc(취소.join(", "))}`,
+                  ].join("\n"),
+                );
+              } catch {
+                /* 알림 실패는 무시 */
+              }
+            }
+          }
         } catch (e: any) {
           console.error(`[KOP] 단계 자동화 오류: ${e?.message}`);
         }
