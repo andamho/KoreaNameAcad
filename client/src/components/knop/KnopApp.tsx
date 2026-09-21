@@ -184,17 +184,22 @@ const AMBER_MILESTONE = KNOP_MILESTONES.indexOf("새이름"); // 노란색으로
 const APPROVED_MILESTONE = KNOP_MILESTONES.indexOf("개명승인"); // 점 대신 마스코트로 표시할 단계
 // 고객 목록 '새이름' 옆 [관리] — 새 이름 이후 자동 문자 흐름을 작은 창으로 보여 준다.
 // 오른쪽 위 연필 = 고치기, X = 닫기. 글은 서버에 저장(관리자 메모 'naming-flow').
-function FlowNoteButton({ label = "관리", align = "center" }: { label?: string; align?: "center" | "right" }) {
+// noteKey 별 창 제목(서버 notes.ts 의 키와 같아야 함)
+const NOTE_TITLES: Record<string, string> = {
+  "naming-flow": "새 이름 이후 자동 문자",
+  "court-flow": "법원 접수 후 관리",
+};
+function FlowNoteButton({ noteKey = "naming-flow", label = "관리", align = "center" }: { noteKey?: string; label?: string; align?: "center" | "right" }) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const qc = useQueryClient();
   const { toast } = useToast();
-  const { data } = useQuery({ queryKey: ["knop-note", "naming-flow"], queryFn: () => knopApi.getNote("naming-flow"), enabled: open });
+  const { data } = useQuery({ queryKey: ["knop-note", noteKey], queryFn: () => knopApi.getNote(noteKey), enabled: open });
   const save = useMutation({
-    mutationFn: (body: string) => knopApi.saveNote("naming-flow", body),
+    mutationFn: (body: string) => knopApi.saveNote(noteKey, body),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["knop-note", "naming-flow"] });
+      qc.invalidateQueries({ queryKey: ["knop-note", noteKey] });
       setEditing(false);
       toast({ title: "저장했습니다" });
     },
@@ -207,7 +212,7 @@ function FlowNoteButton({ label = "관리", align = "center" }: { label?: string
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="px-1.5 py-0.5 rounded border border-gray-200 text-[10px] text-gray-500 hover:border-[#56D5DB] hover:text-[#2ba0a6] bg-white whitespace-nowrap"
-        data-testid="button-naming-flow-note"
+        data-testid={`button-note-${noteKey}`}
       >
         {label}
       </button>
@@ -218,15 +223,15 @@ function FlowNoteButton({ label = "관리", align = "center" }: { label?: string
           role="dialog"
         >
           <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
-            <span className="text-xs font-semibold text-gray-700">새 이름 이후 자동 문자</span>
+            <span className="text-xs font-semibold text-gray-700">{NOTE_TITLES[noteKey] || "관리"}</span>
             <span className="flex items-center gap-1">
               {!editing && (
                 <button type="button" title="고치기" onClick={() => { setDraft(data?.body ?? ""); setEditing(true); }}
-                  className="p-1 rounded hover:bg-gray-100 text-gray-500" data-testid="button-naming-flow-edit">
+                  className="p-1 rounded hover:bg-gray-100 text-gray-500" data-testid={`button-note-${noteKey}-edit`}>
                   <Pencil className="w-3.5 h-3.5" />
                 </button>
               )}
-              <button type="button" title="닫기" onClick={close} className="p-1 rounded hover:bg-gray-100 text-gray-500" data-testid="button-naming-flow-close">
+              <button type="button" title="닫기" onClick={close} className="p-1 rounded hover:bg-gray-100 text-gray-500" data-testid={`button-note-${noteKey}-close`}>
                 <X className="w-3.5 h-3.5" />
               </button>
             </span>
@@ -418,8 +423,7 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
           </button>
         ))}
         <span className="ml-auto text-xs text-gray-400">총 {rows.length}명</span>
-        {/* 휴대폰: 단계 제목 줄이 숨겨지므로 여기서 연다 */}
-        <span className="sm:hidden ml-1 shrink-0"><FlowNoteButton label="관리" align="right" /></span>
+
         <button
           onClick={() => setShowTrash((v) => !v)}
           className={`${selCls} ml-1 flex items-center gap-1 ${showTrash ? "bg-gray-200 text-gray-700" : "text-gray-400 hover:text-gray-600"}`}
@@ -427,6 +431,14 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
           <Trash2 className="w-3.5 h-3.5" /> 휴지통
         </button>
       </div>
+      {/* 휴대폰: 단계 제목 줄이 숨겨지므로 관리 메모 버튼을 따로 한 줄에 둔다(탭 줄이 좁아지지 않게) */}
+      {!showTrash && (
+        <div className="sm:hidden flex items-center gap-1.5 text-[11px] text-gray-400">
+          관리
+          <FlowNoteButton noteKey="naming-flow" label="새이름" align="right" />
+          <FlowNoteButton noteKey="court-flow" label="법원접수" align="right" />
+        </div>
+      )}
       {/* 마일스톤 헤더 (데스크톱) — 모바일은 아래 카드 목록 사용 */}
       {!showTrash && (
       <div className="hidden sm:grid items-center px-2 pb-2 border-b border-gray-200 text-[11px] text-gray-400" style={GRID}>
@@ -435,7 +447,8 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
           <span key={m} className="text-center leading-tight">
             {m}
             {/* 새이름 옆 [관리]: 새 이름 이후 자동 문자 흐름 메모(원장님이 보고 고침) */}
-            {m === "새이름" && <FlowNoteButton />}
+            {m === "새이름" && <FlowNoteButton noteKey="naming-flow" />}
+            {m === "법원접수" && <FlowNoteButton noteKey="court-flow" />}
             {i === PHONE_MILESTONE && <span className="block text-[10px] text-gray-300">☎전번</span>}
           </span>
         ))}

@@ -16,6 +16,13 @@ export const NOTE_DEFAULTS: Record<string, string> = {
     "③ 15일 뒤 아침: 개명 신청 확인",
     "   고객이 신청했다고 답하면 ③은 보내지 않음",
   ].join("\n"),
+  "court-flow": [
+    "① 달력에 개완CHK 등록 → 다음 날 아침 법원접수로 자동 변경",
+    "② 개완CHK 날 아침: 개명허가 확인 문자",
+    "   (개완CHK 없으면 법원접수 60일 뒤)",
+    "③ 허가 나면 개명승인 누르기 → 정화하기 문자 4건",
+    "   (다음 날 · 8일 · 15일 · 22일째)",
+  ].join("\n"),
 };
 
 export function isNoteKey(k: string): boolean {
