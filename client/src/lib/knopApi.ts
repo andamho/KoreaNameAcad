@@ -303,6 +303,8 @@ export const knopApi = {
 
   // 이름분석표 갱신 대기 (동명이인 확인 / 내용 갱신)
   listPendingReports: () => req<PendingReport[]>("GET", "/api/kop/reports/pending"),
+  getNote: (key: string) => req<{ key: string; body: string }>("GET", `/api/kop/notes/${key}`),
+  saveNote: (key: string, body: string) => req<{ key: string; body: string }>("PUT", `/api/kop/notes/${key}`, { body }),
   assignReport: (id: string, customerId: string, reason?: string, supersedeId?: string | null) =>
     req<{ ok: boolean }>("POST", `/api/kop/reports/${id}/assign`, { customerId, actor: "원장님", reason, supersedeId }),
   replaceReport: (id: string, reason?: string) =>

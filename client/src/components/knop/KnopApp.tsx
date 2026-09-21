@@ -18,6 +18,8 @@ import {
   Trash2,
   Bird,
   FileText,
+  Pencil,
+  X,
 } from "lucide-react";
 import { knopApi } from "@/lib/knopApi";
 import { useToast } from "@/hooks/use-toast";
@@ -180,6 +182,74 @@ const TEAL = "#1D9E75";
 const AMBER = "#F59E0B"; // 새이름 단계 랜드마크 색(스크롤 중 위치 파악용)
 const AMBER_MILESTONE = KNOP_MILESTONES.indexOf("새이름"); // 노란색으로 표시할 단계
 const APPROVED_MILESTONE = KNOP_MILESTONES.indexOf("개명승인"); // 점 대신 마스코트로 표시할 단계
+// 고객 목록 '새이름' 옆 [관리] — 새 이름 이후 자동 문자 흐름을 작은 창으로 보여 준다.
+// 오른쪽 위 연필 = 고치기, X = 닫기. 글은 서버에 저장(관리자 메모 'naming-flow').
+function FlowNoteButton() {
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const { data } = useQuery({ queryKey: ["knop-note", "naming-flow"], queryFn: () => knopApi.getNote("naming-flow"), enabled: open });
+  const save = useMutation({
+    mutationFn: (body: string) => knopApi.saveNote("naming-flow", body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["knop-note", "naming-flow"] });
+      setEditing(false);
+      toast({ title: "저장했습니다" });
+    },
+    onError: (e: any) => toast({ title: "저장 실패", description: e?.message, variant: "destructive" }),
+  });
+  const close = () => { setOpen(false); setEditing(false); };
+  return (
+    <span className="relative inline-block ml-1 align-middle">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="px-1.5 py-0.5 rounded border border-gray-200 text-[10px] text-gray-500 hover:border-[#56D5DB] hover:text-[#2ba0a6] bg-white"
+        data-testid="button-naming-flow-note"
+      >
+        관리
+      </button>
+      {open && (
+        <div
+          className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-40 w-72 rounded-xl border border-gray-200 bg-white shadow-xl text-left"
+          role="dialog"
+        >
+          <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
+            <span className="text-xs font-semibold text-gray-700">새 이름 이후 자동 문자</span>
+            <span className="flex items-center gap-1">
+              {!editing && (
+                <button type="button" title="고치기" onClick={() => { setDraft(data?.body ?? ""); setEditing(true); }}
+                  className="p-1 rounded hover:bg-gray-100 text-gray-500" data-testid="button-naming-flow-edit">
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+              )}
+              <button type="button" title="닫기" onClick={close} className="p-1 rounded hover:bg-gray-100 text-gray-500" data-testid="button-naming-flow-close">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </span>
+          </div>
+          <div className="p-3">
+            {editing ? (
+              <div className="space-y-2">
+                <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={7}
+                  className="w-full text-xs leading-relaxed text-gray-700 border border-gray-200 rounded-md p-2 focus:outline-none focus:border-[#56D5DB]" />
+                <div className="flex justify-end gap-1.5">
+                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setEditing(false)}>취소</Button>
+                  <Button size="sm" className="h-7 text-xs bg-[#56D5DB] hover:bg-[#3fc4ca] text-white" disabled={save.isPending} onClick={() => save.mutate(draft)}>저장</Button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs leading-relaxed text-gray-700 whitespace-pre-wrap">{data?.body ?? "불러오는 중…"}</p>
+            )}
+          </div>
+        </div>
+      )}
+    </span>
+  );
+}
+
 const GRID = { gridTemplateColumns: `160px repeat(${MILESTONES.length}, 1fr)` } as const;
 function codeMonth(code: string | null): string {
   const m = (code || "").match(/K(\d{2})-(\d{2})/);
@@ -361,6 +431,8 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
         {MILESTONES.map((m, i) => (
           <span key={m} className="text-center leading-tight">
             {m}
+            {/* 새이름 옆 [관리]: 새 이름 이후 자동 문자 흐름 메모(원장님이 보고 고침) */}
+            {m === "새이름" && <FlowNoteButton />}
             {i === PHONE_MILESTONE && <span className="block text-[10px] text-gray-300">☎전번</span>}
           </span>
         ))}

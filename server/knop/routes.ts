@@ -38,6 +38,7 @@ import {
 import { startNewNameFollowupScheduler } from "./newNameFollowup";
 import { startCourtCheckScheduler } from "./courtCheck";
 import { startApplyNoticeScheduler } from "./applyNotice";
+import { getNote, saveNote, isNoteKey } from "./notes";
 import { parseContact, analyzeThread, buildConsultEventDraft } from "./smsIntake";
 import { sendCalendarCheckNotification } from "../email";
 import { intakeStore } from "./intakeStore";
@@ -400,6 +401,20 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
 
   // ── 이름분석표 갱신 대기(동명이인 확인/내용 갱신) 관리 ──
   const reportDb: DbLike = { query: (sql, params) => reportPool().query(sql, params as any[]) as any };
+  // ── 관리자 메모(고객 목록 '새이름' 옆 [관리] 팝업 등) ──
+  app.get(`${P}/notes/:key`, requireAdmin, async (req, res) => {
+    try {
+      if (!isNoteKey(req.params.key)) return res.status(404).json({ error: "unknown_note" });
+      res.json({ key: req.params.key, body: await getNote(req.params.key) });
+    } catch (e: any) { res.status(500).json({ error: e?.message || "note_failed" }); }
+  });
+  app.put(`${P}/notes/:key`, requireAdmin, async (req, res) => {
+    try {
+      if (!isNoteKey(req.params.key)) return res.status(404).json({ error: "unknown_note" });
+      res.json({ key: req.params.key, body: await saveNote(req.params.key, String(req.body?.body ?? "")) });
+    } catch (e: any) { res.status(500).json({ error: e?.message || "note_failed" }); }
+  });
+
   app.get(`${P}/reports/pending`, requireAdmin, async (_req, res) => {
     try {
       res.json(await listPendingReports(reportDb));
