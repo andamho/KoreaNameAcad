@@ -184,7 +184,7 @@ const AMBER_MILESTONE = KNOP_MILESTONES.indexOf("새이름"); // 노란색으로
 const APPROVED_MILESTONE = KNOP_MILESTONES.indexOf("개명승인"); // 점 대신 마스코트로 표시할 단계
 // 고객 목록 '새이름' 옆 [관리] — 새 이름 이후 자동 문자 흐름을 작은 창으로 보여 준다.
 // 오른쪽 위 연필 = 고치기, X = 닫기. 글은 서버에 저장(관리자 메모 'naming-flow').
-function FlowNoteButton() {
+function FlowNoteButton({ label = "관리", align = "center" }: { label?: string; align?: "center" | "right" }) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -209,11 +209,11 @@ function FlowNoteButton() {
         className="px-1.5 py-0.5 rounded border border-gray-200 text-[10px] text-gray-500 hover:border-[#56D5DB] hover:text-[#2ba0a6] bg-white"
         data-testid="button-naming-flow-note"
       >
-        관리
+        {label}
       </button>
       {open && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-40 w-72 rounded-xl border border-gray-200 bg-white shadow-xl text-left"
+          className={`absolute ${align === "right" ? "right-0" : "left-1/2 -translate-x-1/2"} top-full mt-2 z-40 w-72 rounded-xl border border-gray-200 bg-white shadow-xl text-left`}
           role="dialog"
         >
           <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
@@ -417,6 +417,8 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
           </button>
         ))}
         <span className="ml-auto text-xs text-gray-400">총 {rows.length}명</span>
+        {/* 휴대폰: 단계 제목 줄이 숨겨지므로 여기서 연다 */}
+        <span className="sm:hidden ml-1"><FlowNoteButton label="새이름 관리" align="right" /></span>
         <button
           onClick={() => setShowTrash((v) => !v)}
           className={`${selCls} ml-1 flex items-center gap-1 ${showTrash ? "bg-gray-200 text-gray-700" : "text-gray-400 hover:text-gray-600"}`}
