@@ -4,7 +4,8 @@ import { storage } from "../storage";
 import { ObjectStorageService } from "../object_storage/objectStorage";
 import { analyzeReviewImages, analyzeNameStoryText, labelForReviewType, generateMoreTitles, generateMoreThumbnailTitles, keywordsFromTitle } from "./vision";
 import type { ContentCategory } from "@shared/schema";
-import { detectPIIBoxes, visionAvailable } from "./ocr";
+import { visionAvailable } from "./ocr";
+import { buildMaskBoxes } from "./maskBoxes";
 import { maskImage, composeThumbnail, cropTopBottom } from "./imaging";
 import { searchThumbnails, fetchImageBuffer, parseTerms } from "./thumbnails";
 import type { ReviewDraft, RedactionBox, ThumbnailCandidate, InsertContent, SearchTerm } from "@shared/schema";
@@ -78,19 +79,10 @@ export async function processNewReview(
   const originalPaths: string[] = [];
   for (const buf of croppedBuffers) originalPaths.push(await uploadBuffer(buf, "image/jpeg", "reviews/original"));
 
-  // 3) 개인정보 박스 계산: Google Vision OCR(잘린 이미지 기준 정확한 위치) 우선
-  const pii = vision.detectedPersonalInfo || [];
-  const useOcr = visionAvailable();
-  const boxesByInput: RedactionBox[] = [];
-  for (let i = 0; i < n; i++) {
-    let boxes: RedactionBox[] = [];
-    if (useOcr) {
-      try { boxes = await detectPIIBoxes(croppedBuffers[i], pii, i); }
-      catch (e: any) { console.error(`[ocr] 이미지 ${i} 실패:`, e?.message); }
-    }
-    if (!boxes.length && !crops.find((c) => c.image === i)) boxes = vision.redactionBoxes.filter((b) => (b.image ?? 0) === i); // 자르기 없을 때만 Gemini 박스 대체
-    boxesByInput.push(...boxes);
-  }
+  // 3) 개인정보 박스 계산: OCR 정밀 박스(헤더 줄 전체/본문 단어) + Gemini 박스 안전망
+  const boxesByInput: RedactionBox[] = await buildMaskBoxes(
+    croppedBuffers, vision.detectedPersonalInfo || [], vision.redactionBoxes, crops, visionAvailable(),
+  );
 
   // 각 이미지 마스킹 (잘린 원본 기준)
   const maskedPaths: string[] = [];

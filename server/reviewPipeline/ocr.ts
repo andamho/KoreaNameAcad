@@ -50,6 +50,43 @@ export function visionAvailable(): boolean {
 const norm = (s: string) => (s || "").replace(/[\s\-.·,()/[\]]/g, "").toLowerCase();
 
 /**
+ * 헤더 구간(잘라낸 이미지 맨 위). 자르기 규칙이 "대화 상대 이름 헤더 바로 위"라
+ * 헤더는 항상 여기 온다. 이 구간에서 개인정보가 걸리면 그 줄 전체를 가린다
+ * (헤더 줄에는 이름·번호·날짜뿐이라 가려도 후기 내용 손실이 없다).
+ */
+export const HEADER_Y = 0.07;
+
+function editDistance(a: string, b: string): number {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
+  for (let j = 1; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+  }
+  return dp[m][n];
+}
+
+/**
+ * OCR 단어(wn)가 개인정보 문자열(p)에 해당하는가.
+ * - 정확 포함(기존): "주희가" ⊃ "주희", "최주희" ⊃ "주희"
+ * - 3글자 이상은 1글자 오독 허용: OCR이 "최주희"를 "최수희"로 읽어도 가린다.
+ *   (2글자는 오독 허용 시 일반 단어까지 가려지므로 정확 일치만)
+ */
+export function matchesPII(wn: string, p: string): boolean {
+  if (p.includes(wn) || wn.includes(p)) return true;
+  if (p.length < 3) return false;
+  // 단어 안에서 p와 같은 길이(글자 바뀜)·한 글자 긴(글자 끼어듦) 구간을 훑는다
+  for (const len of [p.length, p.length + 1]) {
+    for (let s = 0; s + len <= wn.length; s++) {
+      if (editDistance(wn.slice(s, s + len), p) <= 1) return true;
+    }
+  }
+  return false;
+}
+
+/**
  * 이미지에서 개인정보(piiStrings)에 해당하는 단어들의 정확한 박스를 반환.
  * @param imageIndex 결과 박스에 넣을 image 인덱스
  */
@@ -77,7 +114,7 @@ export async function detectPIIBoxes(imageBuffer: Buffer, piiStrings: string[], 
           const text = (word.symbols || []).map((s: any) => s.text || "").join("");
           const wn = norm(text);
           if (wn.length < 2) continue;
-          const matched = piiNorm.some((p) => p.includes(wn) || wn.includes(p));
+          const matched = piiNorm.some((p) => matchesPII(wn, p));
           if (!matched) continue;
           const verts = word.boundingBox?.vertices || [];
           if (verts.length < 4) continue;
@@ -88,7 +125,13 @@ export async function detectPIIBoxes(imageBuffer: Buffer, piiStrings: string[], 
           const bw = (maxX - minX) / W;
           const bh = (maxY - minY) / H;
           if (bw <= 0 || bh <= 0) continue;
-          boxes.push({ x: minX / W, y: minY / H, w: bw, h: bh, reason: `OCR:${text}`, image: imageIndex });
+          if ((minY + maxY) / 2 / H < HEADER_Y) {
+            // 헤더 줄: 옆 단어(이름 등)를 OCR이 잘못 읽었어도 같이 가려지도록 줄 전체
+            boxes.push({ x: 0, y: minY / H, w: 1, h: bh, reason: `OCR헤더줄:${text}`, image: imageIndex });
+          } else {
+            // 본문: 그 단어만 가린다(문장 나머지는 그대로 읽히게)
+            boxes.push({ x: minX / W, y: minY / H, w: bw, h: bh, reason: `OCR:${text}`, image: imageIndex });
+          }
         }
       }
     }
