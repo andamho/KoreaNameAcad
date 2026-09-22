@@ -352,7 +352,7 @@ function StepEditor({ step, onSaved }: { step: NoticeStep; onSaved: () => void }
             className="text-xs px-2 py-0.5 rounded-full border border-[#56D5DB] text-[#2ba0a6] hover:bg-[#56D5DB]/10 whitespace-nowrap"
             data-testid="link-purify-page"
           >
-            정화하기 페이지 보기 ↗
+            정화하기 페이지 보기 &gt;
           </a>
         )}
         <div className="flex items-center gap-1 ml-auto text-xs text-gray-500">
