@@ -335,8 +335,26 @@ function StepEditor({ step, onSaved }: { step: NoticeStep; onSaved: () => void }
   return (
     <Card className="p-3">
       <div className="flex items-center gap-2 mb-2">
-        <Badge variant="secondary" className="text-xs">{step.step === 0 ? "안내" : `${step.step}주 점검`}</Badge>
+        {/* 정화하기 세트는 step0(개명허가 확인)을 안내문자로 옮겨 step1 이 '안내'다 → 표시를 한 칸 당긴다 */}
+        <Badge variant="secondary" className="text-xs">
+          {(() => {
+            const n = step.setKey === "gaemyeong_approved" ? step.step - 1 : step.step;
+            return n <= 0 ? "안내" : `${n}주 점검`;
+          })()}
+        </Badge>
         <span className="text-sm font-medium text-gray-800">{step.name}</span>
+        {/* 정화하기 안내: 문자에 넣는 '과거 이름 정화하기' 페이지를 바로 열어 보기(원장님 요청) */}
+        {step.setKey === "gaemyeong_approved" && step.step === 1 && (
+          <a
+            href="/purify"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs px-2 py-0.5 rounded-full border border-[#56D5DB] text-[#2ba0a6] hover:bg-[#56D5DB]/10 whitespace-nowrap"
+            data-testid="link-purify-page"
+          >
+            정화하기 페이지 보기 ↗
+          </a>
+        )}
         <div className="flex items-center gap-1 ml-auto text-xs text-gray-500">
           발송 D+
           <Input
