@@ -13,7 +13,7 @@ import { findWishCandidates } from "./wish";
 import { db } from "../db";
 import { sql } from "drizzle-orm";
 import { startSmsHealthCheck } from "./smsHealth";
-// (보류) import { processBackfill, backfillEnabled } from "./smsBackfill";
+import { processBackfill, backfillEnabled } from "./smsBackfill";
 import { smsStore, startSmsScheduler } from "./sms";
 import {
   calendarAvailable,
@@ -316,8 +316,45 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     }
   });
 
-  // (보류) SMS backfill 엔드포인트: 원장 지시로 작업 중단·미배포 상태.
-  // 코드는 server/knop/smsBackfill.ts + sql/sms_backfill.sql 에 보관(격리 검증 완료, 운영 미반영).
+  // ── SMS backfill: 폰(Automate)이 문자함을 훑어 서버에 없는 문자를 올린다 ──
+  // 2026-09-24 재개: 채팅(RCS)도 사진(MMS)도 아닌 일반 문자가 실제로 빠졌다(9/24 09:55 발신).
+  // 실시간 웹훅과 같은 비밀값으로 인증한다. 본문·번호는 응답에 남기지 않는다.
+  app.post(`${P}/sms-backfill`, async (req, res) => {
+    try {
+      const secret = (process.env.KOP_SMS_WEBHOOK_SECRET || process.env.KNOP_SMS_WEBHOOK_SECRET) || "";
+      const given = String(req.headers["x-knop-secret"] || req.query.secret || "");
+      if (!secret || given !== secret) return res.status(401).json({ error: "unauthorized" });
+      if (!backfillEnabled()) return res.status(503).json({ error: "feature_off" });
+      const body = req.body || {};
+      const messages = Array.isArray(body.messages) ? body.messages : [];
+      if (messages.length > 500) return res.status(400).json({ error: "too_many", max: 500 });
+      const out = await processBackfill({
+        deviceId: String(body.deviceId || ""),
+        dryRun: body.dryRun === true, // 기본은 실제 반영
+        rangeFrom: body.rangeFrom ?? null,
+        rangeTo: body.rangeTo ?? null,
+        messages,
+      });
+      // 실시간 수집이 놓친 문자가 있으면 원장님께 알린다(새로 들어온 것만).
+      if (!body.dryRun && out.counts.new > 0) {
+        try {
+          const { sendAlert } = await import("./alertBot");
+          await sendAlert(
+            [
+              "\uD83D\uDCE5 <b>빠진 문자 복구</b>",
+              `문자함 훑기에서 ${out.counts.new}건이 새로 들어왔습니다.`,
+              "실시간 수집이 놓친 문자입니다.",
+            ].join("\n"),
+          );
+        } catch {
+          /* 알림 실패는 무시 */
+        }
+      }
+      res.json({ ok: true, runId: out.runId, counts: out.counts });
+    } catch (e: any) {
+      res.status(400).json({ error: e?.message || "backfill_failed" });
+    }
+  });
 
   // 스레드(전화번호별) 목록 / 상세 / 처리
   app.get(`${P}/sms-threads`, requireAdmin, async (_req, res) => {
