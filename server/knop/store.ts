@@ -269,13 +269,22 @@ export const knopStore = {
           .trim();
       const nm = bare(name || "");
       if (nm && nm.length >= 2) {
-        const all = await d.select().from(customers);
+        const all = (await d.select().from(customers)).filter((c) => !c.deletedAt);
+        // 개명한 고객은 달력에 옛 이름으로 적혀 있다(홍나영 ↔ 홍수안(나영)).
+        // 지금 이름만 보면 못 찾으므로 이름 이력·개명 기록·괄호 속 옛 이름까지 함께 본다.
+        const { aliasesOf } = await import("./newNameFollowup");
+        const namesOf = (c: any) => {
+          const list = aliasesOf(c).map(bare).filter((x) => x.length >= 2);
+          const b = bare(c.name);
+          if (b.length >= 2 && !list.includes(b)) list.push(b);
+          return list;
+        };
         const key3 = (s: string) => bare(s).slice(0, 3); // 앞 세글자(한국 이름)
         const tk = nm.slice(0, 3);
         const hit =
-          all.find((c) => bare(c.name) === nm) || // 정확 일치
-          all.find((c) => bare(c.name).length >= 2 && nm.startsWith(bare(c.name))) || // 고객명이 제목 앞부분
-          (tk.length >= 2 ? all.find((c) => key3(c.name) === tk) : undefined); // 앞 세글자 일치
+          all.find((c) => namesOf(c).includes(nm)) || // 정확 일치(옛 이름 포함)
+          all.find((c) => namesOf(c).some((x) => nm.startsWith(x))) || // 고객명이 제목 앞부분
+          (tk.length >= 2 ? all.find((c) => namesOf(c).some((x) => x.slice(0, 3) === tk)) : undefined); // 앞 세글자 일치
         if (hit) return hit.id;
       }
       return null;
