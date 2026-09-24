@@ -332,9 +332,8 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       //     type 1=수신, 2=발신 (안드로이드 SMS 규약)
       const fromRows = (rows: any[]): any[] =>
         rows
-          .map((r) => (Array.isArray(r) ? r : null))
-          .filter(Boolean)
-          .map((r: any[]) => ({
+          .filter((r): r is any[] => Array.isArray(r))
+          .map((r) => ({
             providerType: "sms",
             providerId: String(r[0] ?? ""),
             phone: String(r[1] ?? ""),
