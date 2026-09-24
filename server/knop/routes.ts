@@ -326,7 +326,27 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       if (!secret || given !== secret) return res.status(401).json({ error: "unauthorized" });
       if (!backfillEnabled()) return res.status(503).json({ error: "feature_off" });
       const body = req.body || {};
-      const messages = Array.isArray(body.messages) ? body.messages : [];
+      // 폰(Automate)이 보내기 쉬운 두 가지 모양을 모두 받는다.
+      //  ① messages: [{providerId, direction, date, phone, body}, ...]
+      //  ② rows: [[_id, address, body, date, type], ...]  ← content://sms 조회 결과 그대로
+      //     type 1=수신, 2=발신 (안드로이드 SMS 규약)
+      const fromRows = (rows: any[]): any[] =>
+        rows
+          .map((r) => (Array.isArray(r) ? r : null))
+          .filter(Boolean)
+          .map((r: any[]) => ({
+            providerType: "sms",
+            providerId: String(r[0] ?? ""),
+            phone: String(r[1] ?? ""),
+            body: String(r[2] ?? ""),
+            date: Number(r[3] ?? 0),
+            direction: String(r[4]) === "2" ? "발신" : "수신",
+          }));
+      const messages = Array.isArray(body.messages)
+        ? body.messages
+        : Array.isArray(body.rows)
+          ? fromRows(body.rows)
+          : [];
       if (messages.length > 500) return res.status(400).json({ error: "too_many", max: 500 });
       const out = await processBackfill({
         deviceId: String(body.deviceId || ""),
