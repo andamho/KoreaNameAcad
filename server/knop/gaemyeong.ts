@@ -163,14 +163,10 @@ export async function getSetPageUrl(setKey: SetKey): Promise<string> {
   return shortUrl(link.slug);
 }
 
-// 안내(step 0)에만 첨부를 붙임. 문구 뒤 맨 마지막에 모아보기 링크 1개(저장방법은 페이지 안에 있음).
+// 문구 그대로 보낸다. 예전에는 안내(step 0)에 모아보기 링크를 자동으로 붙였는데,
+// 원장님이 문구 안에 직접 넣기로 해(2026-09-28) 자동 붙이기를 끊었다.
 async function renderStep(setKey: SetKey, stepBody: string, step: number, name: string, assets: AssetView[]): Promise<string> {
-  let out = applyVars(stepBody, name).trim();
-  if (step === 0 && assets.length) {
-    const pageUrl = await getSetPageUrl(setKey);
-    out += `\n\n${pageUrl}`;
-  }
-  return out.trim();
+  return applyVars(stepBody, name).trim();
 }
 
 const esc = (s: string) =>
