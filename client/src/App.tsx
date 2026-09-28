@@ -32,6 +32,7 @@ import ExperienceChildrenLuck from "@/pages/ExperienceChildrenLuck";
 import ExperienceNameRank from "@/pages/ExperienceNameRank";
 import Inquiry from "@/pages/Inquiry";
 import Purify from "@/pages/Purify";
+import Gratitude from "@/pages/Gratitude";
 import InquiryThread from "@/pages/InquiryThread";
 import NotFound from "@/pages/not-found";
 import { SizeProbe } from "@/components/SizeProbe";
@@ -163,6 +164,8 @@ function Router() {
       <Route path="/inquiry/thread/:token" component={InquiryThread}/>
       {/* 과거 이름 정화하기 — 정화하기 안내 문자로만 보내는 페이지(메뉴 링크 없음, 검색 제외) */}
       <Route path="/purify" component={Purify}/>
+      {/* 미용감사 안내 — 미용감사 안내 문자로만 보내는 페이지(메뉴 링크 없음, 검색 제외) */}
+      <Route path="/gratitude" component={Gratitude}/>
       <Route component={NotFound} />
     </Switch>
   );
