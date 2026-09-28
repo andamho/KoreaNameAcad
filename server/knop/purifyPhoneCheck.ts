@@ -1,18 +1,22 @@
-// 정화하기 첫 문자 전날 오전 10시 — 전화번호 확인 알림(원장님께 텔레그램).
+// 번호 확인 알림 — 첫 자동 문자가 나가기 전날 오전 10시에 원장님께 텔레그램.
 //
-// 원장님 지시(2026-09-24): 개명 후 정화하기 문자가 처음 나가기 전날 오전 10시에
-// "이 번호가 맞는지" 확인 알림을 받고 싶다. 번호가 바뀌었으면 고객정보에서 고치면
-// 아직 안 나간 예약 문자가 모두 새 번호로 옮겨진다(store.movePendingMessagesToNewPhone).
+// 원장님 확정(2026-09-24 → 2026-09-28 좁힘):
+//   · 대상은 전화번호까지 새로 받은 고객뿐이다. 달력 새이름 일정의 전화번호 체크가
+//     아침 점검에서 고객정보 ☎전번(phoneNaming) 으로 들어온다.
+//   · 그 고객에게 앞으로 나갈 '다음' 자동 문자 전날 10:00 에 한 번만 알린다(고객당 1회).
+//     (2026-09-28: '첫 문자' 기준이면 이미 문자가 시작된 고객은 영영 확인을 못 해 바꿈)
+//   · 고객정보에서 번호를 바꾼 뒤에는 알리지 않는다(이미 새 번호로 고쳤다는 뜻).
+//     번호를 바꾸면 아직 안 나간 예약 문자도 함께 새 번호로 옮겨진다(store).
 //
-// 깨우는 방식: 따로 폴링하지 않는다(Neon 요금). 아침 점검(08:40)에서 '내일 첫 정화하기'가
-// 있는지 한 번 보고, 있을 때만 그날 10:00 으로 타이머를 건다. 서버가 다시 뜨면 점검이
-// 다시 돌면서 타이머를 새로 건다. 10시가 이미 지났으면 정오 전까지만 바로 보낸다.
+// 깨우는 방식: 따로 폴링하지 않는다(Neon 요금). 아침 점검(08:40)에서 '내일 보낼 대상'이
+// 있을 때만 그날 10:00 으로 타이머를 건다. 서버가 다시 뜨면 점검이 다시 돌며 타이머를 새로 건다.
 import { db } from "../db";
-import { and, eq, ne } from "drizzle-orm";
+import { eq, ne } from "drizzle-orm";
 import { customers, scheduledMessages } from "@shared/schema";
 import { scheduleDaily } from "./dailyCheckpoint";
 
-const SET = "gaemyeong_approved";
+// 한 번만 알리기 위한 표시(고객정보 태그)
+export const DONE_TAG = "번호확인알림함";
 const 알림시각 = { 시: 10, 분: 0 };
 
 // UTC 순간 → KST 날짜(YYYY-MM-DD)
@@ -30,71 +34,89 @@ function 오늘10시(): number {
   const [y, m, d] = 오늘KST().split("-").map(Number);
   return Date.UTC(y, m - 1, d, 알림시각.시 - 9, 알림시각.분, 0);
 }
+function 태그목록(tags: unknown): string[] {
+  try {
+    const a = Array.isArray(tags) ? tags : JSON.parse(String(tags || "[]"));
+    return Array.isArray(a) ? a.map(String) : [];
+  } catch {
+    return [];
+  }
+}
+// 고객정보에서 번호를 실제로 바꾼 적이 있나('미입력' → 번호 입력은 변경으로 보지 않는다)
+function 번호바꾼적있나(c: any): boolean {
+  try {
+    const h = Array.isArray(c.phoneHistory) ? c.phoneHistory : JSON.parse(String(c.phoneHistory || "[]"));
+    return Array.isArray(h) && h.some((x: any) => x?.normalized);
+  } catch {
+    return false;
+  }
+}
 
-export type 확인대상 = { customerId: string | null; name: string; phone: string; sendAt: string };
+export type 확인대상 = { customerId: string; name: string; phone: string; sendAt: string };
 
-// 내일 첫 정화하기 문자가 나가는 고객들(고객마다 가장 이른 예약 1건)
-export async function 내일첫정화하기(): Promise<확인대상[]> {
+// 내일 자동 문자가 나가는 ☎전번 고객들(아직 번호를 안 바꿨고, 알린 적 없는 분)
+export async function 내일첫문자대상(): Promise<확인대상[]> {
   if (!db) return [];
-  // 이미 나간 문자까지 함께 본다. 예전에는 '대기 중인 것 중 가장 이른 것'을 첫 문자로 봐서,
-  // 첫 문자가 이미 나간 고객의 두 번째 문자에도 알림이 갔다(2026-09-28 유이나님).
-  const rows = await db
-    .select({ id: scheduledMessages.id, customerId: scheduledMessages.customerId, phone: scheduledMessages.phone, scheduledAt: scheduledMessages.scheduledAt, status: scheduledMessages.status })
+  const d = db;
+  const rows = await d
+    .select({ customerId: scheduledMessages.customerId, phone: scheduledMessages.phone, scheduledAt: scheduledMessages.scheduledAt, status: scheduledMessages.status })
     .from(scheduledMessages)
-    .where(and(eq(scheduledMessages.setKey, SET), ne(scheduledMessages.status, "canceled")));
+    .where(eq(scheduledMessages.status, "scheduled"));
   const 내일 = 내일KST();
-  const 첫건 = new Map<string, { phone: string; at: Date; status: string }>();
+  // 고객별로 앞으로 나갈 가장 이른 자동 문자
+  const 다음건 = new Map<string, { phone: string; at: Date }>();
   for (const r of rows) {
-    const key = r.customerId || r.phone;
+    if (!r.customerId) continue;
     const at = new Date(r.scheduledAt);
-    const cur = 첫건.get(key);
-    if (!cur || at < cur.at) 첫건.set(key, { phone: r.phone, at, status: r.status });
+    const cur = 다음건.get(r.customerId);
+    if (!cur || at < cur.at) 다음건.set(r.customerId, { phone: r.phone, at });
   }
   const out: 확인대상[] = [];
-  for (const [key, v] of Array.from(첫건)) {
-    if (v.status !== "scheduled") continue; // 첫 문자가 이미 나갔으면 알리지 않는다
-    if (kstDate(v.at) !== 내일) continue; // 첫 문자가 내일인 고객만
-    let name = "고객정보 없는 번호";
-    let customerId: string | null = null;
-    if (db && key !== v.phone) {
-      const [c] = await db.select().from(customers).where(eq(customers.id, key));
-      if (c) {
-        name = c.name;
-        customerId = c.id;
-      }
-    }
-    out.push({ customerId, name, phone: v.phone, sendAt: v.at.toISOString() });
+  for (const [cid, v] of Array.from(다음건)) {
+    if (kstDate(v.at) !== 내일) continue;
+    const [c] = await d.select().from(customers).where(eq(customers.id, cid));
+    if (!c || c.deletedAt) continue;
+    if (!c.phoneNaming) continue; // 전화번호까지 받은 고객만
+    if (번호바꾼적있나(c)) continue; // 이미 새 번호로 고쳤으면 물을 필요 없다
+    if (태그목록(c.tags).includes(DONE_TAG)) continue; // 고객당 한 번만
+    out.push({ customerId: c.id, name: c.name, phone: v.phone, sendAt: v.at.toISOString() });
   }
   return out;
 }
 
-const 보냄 = new Set<string>(); // `${날짜}|${고객}` — 서버가 살아 있는 동안 중복 방지
-
-export async function 전화번호확인알림(): Promise<확인대상[]> {
-  const 대상 = await 내일첫정화하기();
-  const 오늘 = 오늘KST();
-  const 보낼것 = 대상.filter((t) => !보냄.has(`${오늘}|${t.customerId || t.phone}`));
-  if (!보낼것.length) return [];
+export async function 번호확인알림(): Promise<확인대상[]> {
+  if (!db) return [];
+  const d = db;
+  const 대상 = await 내일첫문자대상();
+  if (!대상.length) return [];
   const { sendAlert, esc, alertAvailable } = await import("./alertBot");
   if (!alertAvailable()) return [];
-  for (const t of 보낼것) {
-    const d = t.phone.replace(/\D/g, "");
-    const tel = d.startsWith("0") && d.length >= 10 ? `+82${d.slice(1)}` : t.phone || "번호 없음";
+  const 보낸것: 확인대상[] = [];
+  for (const t of 대상) {
+    const digits = t.phone.replace(/\D/g, "");
+    const tel = digits.startsWith("0") && digits.length >= 10 ? `+82${digits.slice(1)}` : t.phone || "번호 없음";
     const 시각 = new Date(new Date(t.sendAt).getTime() + 9 * 3600_000).toISOString().slice(5, 16).replace("T", " ");
     await sendAlert(
       [
-        "📱 <b>전화번호 확인</b>",
+        "📱 <b>번호 확인</b>",
         `${esc(t.name)} · ${tel}`,
         "",
-        `내일 ${시각} 에 정화하기 첫 문자가 나갑니다.`,
-        "번호가 맞는지 확인해 주세요.",
-        "바뀌었으면 고객정보에서 번호를 고치면 예약 문자도 함께 옮겨집니다.",
+        `내일 ${시각} 에 자동 문자가 나갑니다.`,
+        "새 전화번호로 바꾸셨다면 고객정보에서 번호를 고쳐 주세요.",
+        "고치면 아직 안 나간 예약 문자도 함께 새 번호로 옮겨집니다.",
       ].join("\n"),
     );
-    보냄.add(`${오늘}|${t.customerId || t.phone}`);
-    console.log(`[KOP] 정화하기 전 전화번호 확인 알림: ${t.name} ${t.phone}`);
+    // 한 번만 보내도록 표시를 남긴다(서버가 다시 떠도 유지)
+    const [c] = await d.select().from(customers).where(eq(customers.id, t.customerId));
+    const tags = 태그목록(c?.tags);
+    if (!tags.includes(DONE_TAG)) {
+      tags.push(DONE_TAG);
+      await d.update(customers).set({ tags: JSON.stringify(tags) }).where(eq(customers.id, t.customerId));
+    }
+    보낸것.push(t);
+    console.log(`[KOP] 번호 확인 알림: ${t.name} ${t.phone}`);
   }
-  return 보낼것;
+  return 보낸것;
 }
 
 let _timer: ReturnType<typeof setTimeout> | null = null;
@@ -102,19 +124,18 @@ let _started = false;
 export function startPurifyPhoneCheckScheduler() {
   if (_started) return;
   _started = true;
-  scheduleDaily("정화하기 전날 전화번호 확인 알림(10:00 KST)", async () => {
-    const 대상 = await 내일첫정화하기();
-    if (!대상.length) return; // 내일 첫 문자가 없으면 타이머도 걸지 않는다
+  scheduleDaily("자동 문자 전날 번호 확인 알림(10:00 KST · ☎전번 고객 1회)", async () => {
+    const 대상 = await 내일첫문자대상();
+    if (!대상.length) return; // 대상이 없으면 타이머도 걸지 않는다
     const 남은 = 오늘10시() - Date.now();
     if (_timer) clearTimeout(_timer);
     if (남은 > 0) {
       _timer = setTimeout(() => {
-        전화번호확인알림().catch((e) => console.error(`[KOP] 전화번호 확인 알림 실패: ${e?.message}`));
+        번호확인알림().catch((e) => console.error(`[KOP] 번호 확인 알림 실패: ${e?.message}`));
       }, 남은);
-      console.log(`[KOP] 정화하기 전 전화번호 확인 알림 예약: ${대상.map((t) => t.name).join(", ")} (오늘 10:00)`);
+      console.log(`[KOP] 번호 확인 알림 예약: ${대상.map((t) => t.name).join(", ")} (오늘 10:00)`);
     } else if (남은 > -2 * 3600_000) {
-      // 10시가 막 지난 뒤 서버가 떴다면(정오 전까지) 바로 보낸다
-      await 전화번호확인알림();
+      await 번호확인알림(); // 10시 직후 서버가 떴다면 바로
     }
   });
 }
