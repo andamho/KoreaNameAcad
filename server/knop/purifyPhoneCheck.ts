@@ -8,7 +8,7 @@
 // 있는지 한 번 보고, 있을 때만 그날 10:00 으로 타이머를 건다. 서버가 다시 뜨면 점검이
 // 다시 돌면서 타이머를 새로 건다. 10시가 이미 지났으면 정오 전까지만 바로 보낸다.
 import { db } from "../db";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { customers, scheduledMessages } from "@shared/schema";
 import { scheduleDaily } from "./dailyCheckpoint";
 
@@ -36,20 +36,23 @@ export type 확인대상 = { customerId: string | null; name: string; phone: str
 // 내일 첫 정화하기 문자가 나가는 고객들(고객마다 가장 이른 예약 1건)
 export async function 내일첫정화하기(): Promise<확인대상[]> {
   if (!db) return [];
+  // 이미 나간 문자까지 함께 본다. 예전에는 '대기 중인 것 중 가장 이른 것'을 첫 문자로 봐서,
+  // 첫 문자가 이미 나간 고객의 두 번째 문자에도 알림이 갔다(2026-09-28 유이나님).
   const rows = await db
-    .select({ id: scheduledMessages.id, customerId: scheduledMessages.customerId, phone: scheduledMessages.phone, scheduledAt: scheduledMessages.scheduledAt })
+    .select({ id: scheduledMessages.id, customerId: scheduledMessages.customerId, phone: scheduledMessages.phone, scheduledAt: scheduledMessages.scheduledAt, status: scheduledMessages.status })
     .from(scheduledMessages)
-    .where(and(eq(scheduledMessages.setKey, SET), eq(scheduledMessages.status, "scheduled")));
+    .where(and(eq(scheduledMessages.setKey, SET), ne(scheduledMessages.status, "canceled")));
   const 내일 = 내일KST();
-  const 첫건 = new Map<string, { phone: string; at: Date }>();
+  const 첫건 = new Map<string, { phone: string; at: Date; status: string }>();
   for (const r of rows) {
     const key = r.customerId || r.phone;
     const at = new Date(r.scheduledAt);
     const cur = 첫건.get(key);
-    if (!cur || at < cur.at) 첫건.set(key, { phone: r.phone, at });
+    if (!cur || at < cur.at) 첫건.set(key, { phone: r.phone, at, status: r.status });
   }
   const out: 확인대상[] = [];
   for (const [key, v] of Array.from(첫건)) {
+    if (v.status !== "scheduled") continue; // 첫 문자가 이미 나갔으면 알리지 않는다
     if (kstDate(v.at) !== 내일) continue; // 첫 문자가 내일인 고객만
     let name = "고객정보 없는 번호";
     let customerId: string | null = null;
