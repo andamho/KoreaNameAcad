@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useAdmin } from "@/contexts/AdminContext";
-import { youtubeThumb, nextYoutubeThumb } from "@/lib/youtubeThumb";
+import { youtubeThumb, nextYoutubeThumb, isYoutubeThumb } from "@/lib/youtubeThumb";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
@@ -193,6 +193,12 @@ function StoryCard({ story, index = 0 }: { story: Content; index?: number }) {
     });
   };
 
+  // 썸네일이 없는 글은 영상 썸네일을 쓴다. 못 받으면 다음 크기로 내려가므로 상태로 들고 있는다
+  // (배경으로 깔린 흐린 사진도 같이 바뀌게 하려고).
+  const [thumbSrc, setThumbSrc] = useState(story.thumbnail || youtubeThumb(story.videoUrl) || PLACEHOLDER);
+  // 유튜브 세로 썸네일만 통째로 넣는다(직접 올린 정사각 썸네일은 지금처럼 꽉 채움).
+  const fitWhole = isYoutubeThumb(thumbSrc);
+
   return (
     <>
     <Link href={`/name-stories/${story.id}`} onClick={() => saveScrollPosition("/name-stories")}>
@@ -228,21 +234,28 @@ function StoryCard({ story, index = 0 }: { story: Content; index?: number }) {
         )}
         
         <div className="relative aspect-square overflow-hidden">
+          {/* 유튜브 세로 영상 썸네일은 정사각 카드에 다 안 들어간다. 잘라내면 제목이 날아가거나
+              얼굴이 반쯤 잘리므로, 사진은 통째로 넣고 남는 자리는 같은 사진을 흐리게 깔아 채운다
+              (2026-09-28 원장님: 꽉 채우되 제목 온전히, 얼굴 이상하게 자르지 말 것). */}
+          {fitWhole && (
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-cover bg-center blur-xl scale-110 brightness-95"
+              style={{ backgroundImage: `url("${thumbSrc}")` }}
+            />
+          )}
           <img
-            src={story.thumbnail || youtubeThumb(story.videoUrl) || PLACEHOLDER}
+            src={thumbSrc}
             alt={story.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className={`relative w-full h-full transition-transform duration-300 group-hover:scale-105 ${fitWhole ? "object-contain" : "object-cover"}`}
             loading={index < 6 ? "eager" : "lazy"}
             fetchPriority={index < 4 ? "high" : "auto"}
             decoding="async"
             width={400}
             height={400}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              const next = nextYoutubeThumb(target.src);
-              if (next) { target.src = next; return; } // 큰 썸네일이 없는 영상이면 작은 것으로
-              target.onerror = null;
-              target.src = PLACEHOLDER
+            onError={() => {
+              const next = nextYoutubeThumb(thumbSrc); // 그 크기가 없는 영상이면 다음 크기로
+              setThumbSrc(next || PLACEHOLDER);
             }}
           />
           {story.isVideo && !story.isDraft && (
