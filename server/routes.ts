@@ -40,6 +40,7 @@ const otpVerifyLimiter = rateLimit({
 import { tiktokConfigured, getTiktokAuthUrl, handleTiktokCallback, getTiktokStatus, publishTiktokVideo } from "./tiktok";
 import { extractFrameJpeg, transcodeR2VideoToH264 } from "./videoTools";
 import { ObjectStorageService, validateR2VideoKey } from "./object_storage/objectStorage";
+import { registerPagePreview } from "./pagePreview";
 import { db } from "./db";
 import { videoJobs, reviewDrafts, contents, transcodeDiagnostics, shortLinks } from "@shared/schema";
 
@@ -1584,6 +1585,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register object storage routes for file uploads
   registerObjectStorageRoutes(app);
+
+  // 문자·카톡 링크 미리보기: 페이지마다 대표 이미지·제목을 따로 내려준다
+  registerPagePreview(app, SITE_URL);
 
   // 이미지 뷰어 HTML (핀치줌 확대/축소). src 는 우리 오브젝트 경로만.
   // title 은 카톡·문자 미리보기 카드에 뜨는 제목. 안 주면 기존대로 '이름분석표'
