@@ -7,6 +7,9 @@
 import fs from "fs";
 import path from "path";
 import type { Express } from "express";
+import { db } from "./db";
+import { contents } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 // preload: 리액트가 뜨기 전에 브라우저가 먼저 받아두게 할 첫 화면 사진.
 // 없으면 JS 가 다 돌고 화면이 그려진 뒤에야 사진을 받기 시작해 한참 비어 있다.
@@ -36,7 +39,7 @@ function setMeta(html: string, attr: "property" | "name", key: string, value: st
   return html.replace(re, `$1${esc(value)}$2`);
 }
 
-export function applyPreview(html: string, url: string, page: Preview, siteUrl: string): string {
+export function applyPreview(html: string, url: string, page: Preview, siteUrl: string, opts: { keepRobots?: boolean } = {}): string {
   const img = /^https?:\/\//.test(page.image) ? page.image : `${siteUrl}${page.image}`;
   let out = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${esc(page.title)}</title>`);
   out = setMeta(out, "property", "og:title", page.title);
@@ -49,7 +52,7 @@ export function applyPreview(html: string, url: string, page: Preview, siteUrl: 
   // 대표 사진이 정사각이라 큰 가로 카드가 아니라 작은 썸네일 카드로 뜨게 한다(원장님 확정).
   out = setMeta(out, "name", "twitter:card", "summary");
   // 주소를 아는 사람만 보는 페이지라 검색엔진에서 뺀다(화면 쪽에서도 같은 값을 넣는다).
-  out = setMeta(out, "name", "robots", "noindex, nofollow");
+  if (!opts.keepRobots) out = setMeta(out, "name", "robots", "noindex, nofollow");
   // index.html 은 홈 화면 사진 몇 장을 미리 받게 해 둔다. 이 페이지에선 쓰지 않으면서
   // 대역폭만 먼저 차지해 정작 볼 사진이 늦게 뜨므로 뺀다.
   out = out.split("\n").filter((l) => !/<link rel="preload" as="image"/i.test(l)).join("\n");
@@ -61,9 +64,35 @@ export function applyPreview(html: string, url: string, page: Preview, siteUrl: 
   return out;
 }
 
+// 유튜브 주소에서 썸네일 주소를 뽑는다(화면 쪽 client/src/lib/youtubeThumb.ts 와 같은 규칙).
+function youtubeThumb(url?: string | null): string | null {
+  if (!url) return null;
+  const m = String(url).match(/(?:youtu[.]be[/]|[/]v[/]|[/]embed[/]|watch[?]v=|&v=|[/]shorts[/])([^#&?\s/]+)/);
+  return m?.[1] ? `https://img.youtube.com/vi/${m[1]}/maxresdefault.jpg` : null;
+}
+
 export function registerPagePreview(app: Express, siteUrl: string) {
   if (process.env.NODE_ENV === "development") return;
   const indexPath = path.resolve(import.meta.dirname, "public", "index.html");
+
+  // 이름이야기 글: 글마다 제목과 대표 사진을 따로 내려준다.
+  // 썸네일을 안 올린 글은 영상 썸네일을 쓴다(2026-09-28 원장님 지적).
+  app.get("/name-stories/:id", async (req, res, next) => {
+    try {
+      if (!db) return next();
+      const [row] = await db.select().from(contents).where(eq(contents.id, String(req.params.id)));
+      if (!row) return next();
+      const image = row.thumbnail || youtubeThumb(row.videoUrl);
+      if (!image) return next(); // 쓸 사진이 없으면 평소대로(홈 대표 이미지)
+      const html = fs.readFileSync(indexPath, "utf-8");
+      const desc = String(row.content || "").replace(/!\[[^\]]*\]\([^)]+\)/g, " ").replace(/[#*_>`]/g, " ").replace(/\s+/g, " ").trim().slice(0, 100);
+      const page: Preview = { title: row.title, description: desc || "흥미진진 이름이야기", image };
+      // 이름이야기는 검색에 나와야 하므로 robots 는 건드리지 않는다.
+      res.type("html").send(applyPreview(html, `/name-stories/${row.id}`, page, siteUrl, { keepRobots: true }));
+    } catch {
+      next();
+    }
+  });
   for (const url of Object.keys(PAGES)) {
     app.get(url, (_req, res, next) => {
       try {

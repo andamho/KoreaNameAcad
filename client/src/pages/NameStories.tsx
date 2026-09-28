@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useAdmin } from "@/contexts/AdminContext";
+import { youtubeThumb, nextYoutubeThumb } from "@/lib/youtubeThumb";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
@@ -24,6 +25,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useScrollRestore, saveScrollPosition } from "@/hooks/use-scroll-restore";
+
+
+// 썸네일도 영상도 없을 때 보여줄 회색 자리표
+const PLACEHOLDER =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23e5e7eb' width='400' height='400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='48' fill='%239ca3af'%3E이미지%3C/text%3E%3C/svg%3E";
+
 
 const categoryOptions = [
   { value: "review", label: "후기" },
@@ -222,7 +229,7 @@ function StoryCard({ story, index = 0 }: { story: Content; index?: number }) {
         
         <div className="relative aspect-square overflow-hidden">
           <img
-            src={story.thumbnail || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23e5e7eb' width='400' height='400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='48' fill='%239ca3af'%3E이미지%3C/text%3E%3C/svg%3E"}
+            src={story.thumbnail || youtubeThumb(story.videoUrl) || PLACEHOLDER}
             alt={story.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             loading={index < 6 ? "eager" : "lazy"}
@@ -232,8 +239,10 @@ function StoryCard({ story, index = 0 }: { story: Content; index?: number }) {
             height={400}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
+              const next = nextYoutubeThumb(target.src);
+              if (next) { target.src = next; return; } // 큰 썸네일이 없는 영상이면 작은 것으로
               target.onerror = null;
-              target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23e5e7eb' width='400' height='400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='48' fill='%239ca3af'%3E이미지%3C/text%3E%3C/svg%3E";
+              target.src = PLACEHOLDER
             }}
           />
           {story.isVideo && !story.isDraft && (
