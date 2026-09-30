@@ -1268,8 +1268,8 @@ function MessagesCard({ customerId }: { customerId: string }) {
   const { data: msgs, isLoading } = useQuery({
     queryKey: ["knop-customer-messages", customerId],
     queryFn: () => knopApi.customerMessages(customerId),
-    // 화면을 열어둔 채 두면 계속 DB를 깨우므로 간격을 넉넉히. 창으로 돌아오면 즉시 새로 받는다.
-    refetchInterval: 5 * 60 * 1000,
+    // 주기 조회는 하지 않는다 — 화면을 띄워 두기만 해도 Neon 이 계속 깨어 과금됐다(2026-09-30).
+    // 창으로 돌아오는 순간 새로 받아오므로 충분하다.
     refetchOnWindowFocus: true,
   });
 

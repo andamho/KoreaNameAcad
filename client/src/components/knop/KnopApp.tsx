@@ -331,8 +331,7 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
   const { data: activeSeqs } = useQuery({
     queryKey: ["knop-notice-active"],
     queryFn: () => knopApi.listActiveSequences(),
-    // 관리문자 진행도는 급히 바뀌지 않는다 — 화면 방치 시 DB를 계속 깨우지 않도록 간격을 늘림
-    refetchInterval: 10 * 60 * 1000,
+    // 주기 조회 없음 — 화면 방치만으로 Neon 이 깨어 과금되지 않게(2026-09-30). 창으로 돌아오면 갱신.
     refetchOnWindowFocus: true,
   });
   const seqByCust = new Map((activeSeqs || []).map((s) => [s.customerId, s]));
