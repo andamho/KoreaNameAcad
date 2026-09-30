@@ -488,4 +488,31 @@ export function startReportSync() {
   } catch (e: any) {
     console.error("[KNOP] 폴더 감시 실패:", e?.message);
   }
+
+  // 안전망: 폴더 감시(fs.watch) 가 이벤트를 놓치는 일이 있다(2026-09-30 '진유정님 가족 새이름.pdf'
+  // 가 13:47 에 저장됐는데 워커가 못 보고 지나감 → 워커 재시작 전까지 링크가 안 생겼다).
+  // 1분마다 폴더의 파일 목록·수정시각만 비교해서, 달라졌을 때만 동기화한다.
+  // 폴더만 보고 DB 는 건드리지 않으므로 Neon 을 깨우지 않는다(요금 정책과 무관).
+  const 폴더모양 = (): string => {
+    try {
+      return fs
+        .readdirSync(reportsDir())
+        .filter((f) => REPORT_EXT.test(f))
+        .map((f) => {
+          try { return `${f}:${fs.statSync(path.join(reportsDir(), f)).mtimeMs}`; } catch { return f; }
+        })
+        .sort()
+        .join("|");
+    } catch {
+      return "";
+    }
+  };
+  let 지난모양 = 폴더모양();
+  setInterval(() => {
+    if (_syncing) return; // 이미 도는 중이면 다음 분에 다시 본다(건너뛴 변화를 잃지 않게)
+    const 지금 = 폴더모양();
+    if (!지금 || 지금 === 지난모양) return;
+    지난모양 = 지금;
+    syncReports().catch(() => {});
+  }, 60_000);
 }
