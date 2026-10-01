@@ -20,6 +20,16 @@ function 오늘KST(): string {
   return new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
 }
 
+// 달력 전화번호는 "+82 10-…" 국제형식으로 적힌 것도 있다. 그대로 숫자만 남기면 "8210…" 이 되어
+// 문자 발송·번호로 고객 찾기가 어긋난다(2026-10-01 정다인). 국내형식 010-0000-0000 으로 맞춘다.
+export function 국내번호(p?: string | null): string | null {
+  let d = (p || "").replace(/\D/g, "");
+  if (!d) return null;
+  if (d.startsWith("82") && (d.length === 11 || d.length === 12)) d = "0" + d.slice(2);
+  if (/^01\d{8,9}$/.test(d)) return d.length === 11 ? `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}` : `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`;
+  return p!.trim();
+}
+
 export type 등록후보 = { date: string; title: string; name: string; people: number; phone: string | null };
 
 // 오늘 이후 상담 일정 → 등록 후보(이름이 한글 2자 이상인 것만)
@@ -31,7 +41,7 @@ export function 상담후보(events: CalEvent[]): 등록후보[] {
     const { name, people } = parseNameCount(e.title || "");
     const nm = baseName(name);
     if (!/^[가-힣]{2,}$/.test(nm)) continue;
-    const phone = (e.clientPhone || "").trim() || null;
+    const phone = 국내번호(e.clientPhone);
     out.push({ date: e.date, title: e.title || "", name: nm, people, phone });
   }
   return out;
