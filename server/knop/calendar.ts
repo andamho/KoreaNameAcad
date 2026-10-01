@@ -61,6 +61,25 @@ export async function readEvents(): Promise<CalEvent[]> {
   return out;
 }
 
+// 달력이 바뀔 때마다 알려 준다(Firestore 실시간 구독). 주기 조회가 아니므로 Neon 을 깨우지 않는다.
+// 처음 구독할 때 한 번, 그 뒤로는 달력이 저장될 때마다 onChange(전체 일정) 가 불린다.
+export function watchEvents(onChange: (events: CalEvent[]) => void, onError?: (e: Error) => void): () => void {
+  return db()
+    .collectionGroup("calendar")
+    .onSnapshot(
+      (snap) => {
+        const out: CalEvent[] = [];
+        for (const doc of snap.docs) {
+          if (doc.id !== "data") continue;
+          const { events = [] } = doc.data() as { events?: CalEvent[] };
+          out.push(...events);
+        }
+        onChange(out);
+      },
+      (e) => onError?.(e),
+    );
+}
+
 // calendar/data 도큐먼트 참조 (쓰기용). 여러 유저면 첫 번째(원장님 계정) 사용
 async function getDataRef(): Promise<FirebaseFirestore.DocumentReference> {
   const snap = await db().collectionGroup("calendar").get();

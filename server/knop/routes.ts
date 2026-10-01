@@ -39,6 +39,7 @@ import { startNewNameFollowupScheduler } from "./newNameFollowup";
 import { startCourtCheckScheduler } from "./courtCheck";
 import { startApplyNoticeScheduler } from "./applyNotice";
 import { startPurifyPhoneCheckScheduler } from "./purifyPhoneCheck";
+import { startCalendarCustomerWatch } from "./calendarCustomers";
 import { getNote, saveNote, isNoteKey } from "./notes";
 import { parseContact, analyzeThread, buildConsultEventDraft } from "./smsIntake";
 import { sendCalendarCheckNotification } from "../email";
@@ -110,6 +111,7 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
   startCourtCheckScheduler(); // 달력 개완CHK → 법원접수 단계 + 그 날짜 아침에 개명허가 확인 문자
   startApplyNoticeScheduler(); // 작명장 링크 문자 발송 다음 날 아침 → 개명 신청 안내 문자
   startPurifyPhoneCheckScheduler(); // 정화하기 첫 문자 전날 10:00 → 전화번호 확인 알림(원장님)
+  startCalendarCustomerWatch(); // 달력에 상담 일정이 잡히면 고객정보 자동 등록(달력 저장 시에만, 운영 서버만)
   startSmsHealthCheck(); // 문자 수집이 끊겼는지 아침 점검(2026-07-25 끊긴 걸 10일 뒤에 발견한 뒤 추가)
   startReportSync(); // 이름분석 폴더 자동 동기화 (로컬만; 배포는 no-op)
 
@@ -1019,11 +1021,11 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
     }
   });
 
-  // 홍익 체크된 고객 ID 목록(이름 옆 "홍" 배지용). 60초 캐시(Firestore 읽기 절약)
+  // 홍익 체크된 고객 ID 목록(이름 옆 "홍" 배지용). 10초 캐시 — 달력에서 체크하고 돌아오면 바로 보이게
   let hongikCache: { at: number; ids: string[] } | null = null;
   app.get(`${P}/customers-hongik`, requireAdmin, async (_req, res) => {
     try {
-      if (!hongikCache || Date.now() - hongikCache.at > 60000) {
+      if (!hongikCache || Date.now() - hongikCache.at > 10000) {
         hongikCache = { at: Date.now(), ids: calendarAvailable() ? await knopStore.hongikCustomerIds() : [] };
       }
       res.json(hongikCache.ids);

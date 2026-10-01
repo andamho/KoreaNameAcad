@@ -252,7 +252,9 @@ export const knopStore = {
   },
 
   // 달력 일정 → 고객 매칭(전화 우선, 없으면 이름). 클릭 이동용.
-  async resolveCustomerId(phone?: string | null, name?: string | null): Promise<string | null> {
+  // strict: 전화번호 또는 이름 전체(옛 이름 포함)가 같을 때만. 고객을 새로 만들지 판단할 때 쓴다 —
+  // 느슨한 규칙(앞부분·앞 세 글자)은 '정민주' 를 '정민가족' 으로 잘못 맞물렸다(2026-10-01).
+  async resolveCustomerId(phone?: string | null, name?: string | null, opts: { strict?: boolean } = {}): Promise<string | null> {
     const d = requireDb();
     try {
       if (phone) {
@@ -283,8 +285,8 @@ export const knopStore = {
         const tk = nm.slice(0, 3);
         const hit =
           all.find((c) => namesOf(c).includes(nm)) || // 정확 일치(옛 이름 포함)
-          all.find((c) => namesOf(c).some((x) => nm.startsWith(x))) || // 고객명이 제목 앞부분
-          (tk.length >= 2 ? all.find((c) => namesOf(c).some((x) => x.slice(0, 3) === tk)) : undefined); // 앞 세글자 일치
+          (opts.strict ? undefined : all.find((c) => namesOf(c).some((x) => nm.startsWith(x)))) || // 고객명이 제목 앞부분
+          (!opts.strict && tk.length >= 2 ? all.find((c) => namesOf(c).some((x) => x.slice(0, 3) === tk)) : undefined); // 앞 세글자 일치
         if (hit) return hit.id;
       }
       return null;
@@ -354,7 +356,8 @@ export const knopStore = {
     }
   },
 
-  async createCustomer(input: InsertCustomer): Promise<Customer> {
+  // via: 등록 경로 표시(타임라인 제목 "고객 등록 (via)"). 없으면 직접 등록.
+  async createCustomer(input: InsertCustomer, via?: string): Promise<Customer> {
     const d = requireDb();
     try {
       const code = await nextCode(d);
@@ -374,7 +377,7 @@ export const knopStore = {
       await logTimeline({
         customerId: row.id,
         type: "customer_created",
-        title: "고객 등록",
+        title: via ? `고객 등록 (${via})` : "고객 등록",
         content: `${row.customerCode} · ${row.name} (${row.phone})`,
       });
       return row;

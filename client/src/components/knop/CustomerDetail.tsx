@@ -97,7 +97,14 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
     },
   });
   const { data: journey } = useQuery({ queryKey: ["knop-journey"], queryFn: () => knopApi.listJourney() });
-  const { data: hongikIds } = useQuery({ queryKey: ["knop-hongik"], queryFn: () => knopApi.hongikCustomerIds() });
+  // 홍익 체크는 달력(다른 창)에서 한다. 처음 한 번만 받으면 새로고침 전까지 '홍' 이 안 붙었다
+  // (2026-10-01 권혜연·안은주). 창으로 돌아올 때마다 다시 받는다.
+  const { data: hongikIds } = useQuery({
+    queryKey: ["knop-hongik"],
+    queryFn: () => knopApi.hongikCustomerIds(),
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+  });
   const isHongik = (hongikIds || []).includes(customerId);
   // 이름은 목록 캐시 우선 → 상세 응답을 기다리는 워터폴 제거(체감 로딩 단축)
   const reportName = data?.customer.name || cachedName;
