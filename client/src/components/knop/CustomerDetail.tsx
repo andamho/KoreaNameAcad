@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
+import { isPdf, pdfToPng } from "@/lib/pdfToImage";
 import { knopApi, type CustomerDetail as CustomerDetailData } from "@/lib/knopApi";
 import { KNOP_MILESTONES, KNOP_MILESTONE_ENTRY, KNOP_PHONE_MILESTONE, knopStatusToMilestone } from "@shared/schema";
 
@@ -148,6 +149,7 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
     qc.invalidateQueries({ queryKey: ["knop-today"] });
   };
 
+  const [converting, setConverting] = useState<string | null>(null); // PDF→이미지 변환 중인 파일명
   const { uploadFile, isUploading } = useUpload({
     onError: () => toast({ title: "업로드 실패", variant: "destructive" }),
   });
@@ -427,7 +429,24 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    for (const file of Array.from(files)) {
+    let 변환 = 0;
+    let 변환실패 = 0;
+    for (const original of Array.from(files)) {
+      // PDF 는 열지 않고 바로 보이도록 이미지로 바꿔 올린다(원장님 요청 2026-10-01).
+      // 바꾸다 실패하면 PDF 그대로 올린다 — 첨부 자체가 빠지면 안 되므로.
+      let file = original;
+      if (isPdf(original)) {
+        try {
+          setConverting(original.name);
+          file = await pdfToPng(original);
+          변환++;
+        } catch (e) {
+          console.error("PDF→이미지 변환 실패", e);
+          변환실패++;
+        } finally {
+          setConverting(null);
+        }
+      }
       const res = await uploadFile(file);
       if (res?.objectPath) {
         await knopApi.addFile({
@@ -440,7 +459,14 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
     refresh();
-    toast({ title: "파일이 첨부되었습니다." });
+    toast({
+      title: "파일이 첨부되었습니다.",
+      description: 변환실패
+        ? `PDF ${변환실패}개는 이미지로 바꾸지 못해 PDF 그대로 올렸습니다.`
+        : 변환
+          ? `PDF ${변환}개를 이미지로 바꿔 올렸습니다.`
+          : undefined,
+    });
   };
 
   if (isLoading || !data) {
@@ -874,9 +900,9 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
                 variant="outline"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
+                disabled={isUploading || !!converting}
               >
-                <Paperclip className="w-4 h-4 mr-1" /> {isUploading ? "업로드중…" : "첨부"}
+                <Paperclip className="w-4 h-4 mr-1" /> {converting ? "이미지로 바꾸는 중…" : isUploading ? "업로드중…" : "첨부"}
               </Button>
               <input
                 ref={fileInputRef}
