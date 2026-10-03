@@ -210,7 +210,7 @@ export const knopApi = {
     fileType?: string | null;
     fileUrl: string;
     memo?: string | null;
-  }) => req<CrmFile>("POST", "/api/kop/files", data),
+  }) => req<CrmFile & { reportLink?: string | null }>("POST", "/api/kop/files", data),
   deleteFile: (id: string) => req<{ ok: boolean }>("DELETE", `/api/kop/files/${id}`),
   ocrFile: (id: string) => req<{ ok: boolean; status: string; text?: string }>("POST", `/api/kop/files/${id}/ocr`),
   // 이름분석표에서 개명 전 이름 뽑기(가족이면 전원)

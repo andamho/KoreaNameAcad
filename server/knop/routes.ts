@@ -48,7 +48,7 @@ import { processThread } from "./intakeProcess";
 import { JOURNEY, nextStage } from "./stateMachine";
 import { previewBackfill, applyBackfill } from "./phoneBackfill";
 import { reportsAvailable, reportsForName, resolveReportPath } from "./reports";
-import { syncReports, startReportSync, reportPool } from "./reportSync";
+import { syncReports, startReportSync, reportPool, createReportLinkForAttachment } from "./reportSync";
 import { listPendingReports, assignReport, replaceReport, ignoreReport } from "./reportAdmin";
 import type { DbLike } from "./reportProcessor";
 import { recordingsAvailable, recordingsForCustomer, resolveRecordingPath } from "./recordings";
@@ -847,7 +847,14 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
       const input = insertCrmFileSchema.parse(req.body);
       const row = await knopStore.addFile(input);
       kickOcr(row.id, row.fileType); // 이미지면 백그라운드로 글자 인식(응답 지연 없음)
-      res.json(row);
+      // 이름분석표를 손으로 붙인 경우 바로 링크를 만든다. 실패해도 첨부는 성공으로 둔다.
+      const reportLink = await createReportLinkForAttachment(row.fileName, row.fileUrl, row.fileType).catch(
+        (e: any) => {
+          console.error(`[KOP] 첨부 링크 생성 실패 ${row.fileName}: ${e?.message}`);
+          return null;
+        },
+      );
+      res.json({ ...row, reportLink });
     } catch (e) {
       handle(res, "POST file", e);
     }

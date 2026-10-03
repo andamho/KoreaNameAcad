@@ -438,6 +438,7 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
     if (!files || files.length === 0) return;
     let 변환 = 0;
     let 변환실패 = 0;
+    const 링크들: string[] = [];
     for (const original of Array.from(files)) {
       // PDF 는 열지 않고 바로 보이도록 이미지로 바꿔 올린다(원장님 요청 2026-10-01).
       // 바꾸다 실패하면 PDF 그대로 올린다 — 첨부 자체가 빠지면 안 되므로.
@@ -456,16 +457,27 @@ export function CustomerDetailView({ customerId, onBack }: { customerId: string;
       }
       const res = await uploadFile(file);
       if (res?.objectPath) {
-        await knopApi.addFile({
+        const saved = await knopApi.addFile({
           customerId,
           fileName: file.name,
           fileType: file.type || null,
           fileUrl: res.objectPath,
         });
+        if (saved?.reportLink) 링크들.push(saved.reportLink);
       }
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
     refresh();
+    if (링크들.length) {
+      // 이름분석표를 붙이면 링크가 만들어진다 — 바로 붙여넣어 보낼 수 있게 복사해 둔다.
+      const 복사됨 = await navigator.clipboard.writeText(링크들.join("\n")).then(() => true, () => false);
+      toast({
+        title: 복사됨 ? "이름분석표 링크를 만들고 복사했습니다." : "이름분석표 링크를 만들었습니다.",
+        description: 링크들.join("\n") + (복사됨 ? "\n카톡·문자에 바로 붙여넣으세요." : ""),
+        duration: 20000,
+      });
+      return;
+    }
     toast({
       title: "파일이 첨부되었습니다.",
       description: 변환실패

@@ -210,6 +210,30 @@ export async function makeReportLink(fileName: string, renderedUrl: string): Pro
   }
 }
 
+// 관리자가 고객정보에 이름분석표를 직접 첨부했을 때 링크를 바로 만든다(원장님 요청 2026-10-03).
+//
+// 고객정보가 없을 때 들어온 분석표는 워커가 고객을 못 찾아 이미지도 링크도 만들지 않는다.
+// 이후 원장님이 고객을 등록하고 PDF 를 손으로 붙이면, 그 첨부 이미지로 링크를 만든다.
+// 배포 서버에서도 돈다(DB 만 쓴다). 바탕화면 txt 파일은 PC 워커가 다음 동기화 때 쓴다.
+export function isReportAttachment(fileName: string, fileType?: string | null): boolean {
+  if (fileType && !/^image\//i.test(fileType)) return false; // PDF 그대로 올라간 건 이미지가 아니라 제외
+  if (/상세/.test(fileName)) return false; // 상세설명본은 링크를 만들지 않는다
+  return /님/.test(fileName) && /(이름분석|새이름)/.test(fileName);
+}
+
+export async function createReportLinkForAttachment(
+  fileName: string,
+  fileUrl: string,
+  fileType?: string | null,
+): Promise<string | null> {
+  if (!fileUrl || !isReportAttachment(fileName, fileType)) return null;
+  const slug = reportSlugFromFile(fileName);
+  if (!slug) return null;
+  const viewerTarget = `/img?src=${encodeURIComponent(fileUrl)}`;
+  const usedSlug = await ensureReportLinkSlug(viewerTarget, fileName.replace(/\.[^.]+$/, ""), slug);
+  return usedSlug ? `${PUBLIC_BASE}/${usedSlug}` : null;
+}
+
 // 안전망: 처리 직후 링크를 못 만든 건이 있으면 최근 3일 안의 것만 채운다.
 // (예전 것까지 되살아나지 않도록 창을 좁게 둔다.)
 export async function syncReportLinks(): Promise<void> {
@@ -222,6 +246,19 @@ export async function syncReportLinks(): Promise<void> {
        WHERE rendered_url IS NOT NULL AND first_seen_at > now() - interval '3 days'
        ORDER BY file_name, first_seen_at DESC`,
     )).rows;
+    // 관리자가 고객정보에 직접 붙인 이름분석표 이미지(최근 3일)도 txt 를 써 준다.
+    const 수동첨부 = (await pool.query(
+      `SELECT DISTINCT ON (file_name) file_name, file_url AS rendered_url
+       FROM crm_files
+       WHERE uploaded_at > now() - interval '3 days' AND file_type LIKE 'image/%'
+         AND file_name LIKE '%님%' AND (file_name LIKE '%이름분석%' OR file_name LIKE '%새이름%')
+         AND file_name NOT LIKE '%상세%'
+       ORDER BY file_name, uploaded_at DESC`,
+    )).rows;
+    const 이미 = new Set(rows.map((r: any) => String(r.file_name).replace(/\.[^.]+$/, "")));
+    for (const r of 수동첨부) {
+      if (!이미.has(String(r.file_name).replace(/\.[^.]+$/, ""))) rows.push(r);
+    }
     let made = 0;
     for (const r of rows) {
       if (await makeReportLink(String(r.file_name), String(r.rendered_url))) made++;
@@ -351,7 +388,7 @@ async function decideNewNameForFile(
 // 텔레그램으로 알리고, 그 고객 화면으로 바로 가는 링크를 같이 보낸다.
 async function 확인필요알림(
   db: ProcessorDeps["db"],
-  목록: Array<{ file: string; name: string; note: string }>,
+  목록: Array<{ file: string; name: string; note: string; noCustomer?: boolean }>,
   consultDates: Map<string, Date>,
 ): Promise<void> {
   try {
@@ -364,6 +401,22 @@ async function 확인필요알림(
       const 상담줄 = 상담
         ? `상담 ${상담.toISOString().slice(5, 10).replace("-", "/")}`
         : "상담일 없음";
+      if (it.noCustomer) {
+        // 같은 이름의 고객이 아예 없다 → 고객정보부터 넣어야 연결·링크가 가능하다(원장님 요청 2026-10-03).
+        await sendAlert(
+          [
+            "\uD83D\uDE4B <b>고객정보 없음 — 등록해 주세요</b>",
+            `${esc(it.name)} \u00B7 ${상담줄}`,
+            esc(it.file),
+            "",
+            "이 이름의 고객정보가 없어 분석표를 연결하지 못했습니다.",
+            "고객정보를 입력한 뒤, 이 PDF 를 고객정보에 직접 첨부하면 링크가 만들어집니다.",
+            "",
+            `<a href="${기준}/admin?view=customers">관리자에서 고객 등록</a>`,
+          ].join("\n"),
+        );
+        continue;
+      }
       await sendAlert(
         [
           "\uD83D\uDCC4 <b>\uC774\uB984\uBD84\uC11D\uD45C \uD655\uC778 \uD544\uC694</b>",
@@ -413,7 +466,7 @@ export async function syncReports(): Promise<SyncResult> {
     // 달력은 한 번만 읽어 모든 파일에 같은 지도를 쓴다.
     const consultDates = await consultDatesByName();
     // 이번에 새로 '확인필요'가 된 것들 — 끝나고 한 번에 알린다.
-    const 확인필요목록: Array<{ file: string; name: string; note: string }> = [];
+    const 확인필요목록: Array<{ file: string; name: string; note: string; noCustomer?: boolean }> = [];
     for (const r of reps) {
       const abs = resolveReportPath(r.file);
       if (!abs) continue;
@@ -434,7 +487,10 @@ export async function syncReports(): Promise<SyncResult> {
           res.needs_review++;
           // '사람 확인 대기 중'(이미 알린 건)은 빼고, 이번에 새로 잡힌 것만 모은다.
           if (!/대기 중/.test(out.note || "")) {
-            확인필요목록.push({ file: r.file, name: extractedName, note: out.note || "" });
+            확인필요목록.push({
+              file: r.file, name: extractedName, note: out.note || "",
+              noCustomer: !failed && candidates.length === 0, // 같은 이름 고객이 아예 없음
+            });
           }
         }
         else if (out.status === "attachment_failed") res.attachment_failed++;
