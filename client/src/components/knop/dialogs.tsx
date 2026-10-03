@@ -24,13 +24,18 @@ export function NewCustomerDialog({
   open,
   onOpenChange,
   onCreated,
+  initialName,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onCreated: (c: Customer) => void;
+  initialName?: string | null; // 텔레그램 '고객정보 없음' 알림에서 들어오면 분석표 이름을 미리 채운다
 }) {
   const { toast } = useToast();
   const [name, setName] = useState("");
+  useEffect(() => {
+    if (open && initialName) setName(initialName);
+  }, [open, initialName]);
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [memo, setMemo] = useState("");

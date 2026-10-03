@@ -412,7 +412,7 @@ async function 확인필요알림(
             "이 이름의 고객정보가 없어 분석표를 연결하지 못했습니다.",
             "고객정보를 입력한 뒤, 이 PDF 를 고객정보에 직접 첨부하면 링크가 만들어집니다.",
             "",
-            `<a href="${기준}/admin?view=customers">관리자에서 고객 등록</a>`,
+            `<a href="${기준}/admin?view=customers&newCustomer=${encodeURIComponent(it.name)}">${esc(it.name)} 고객 등록하기</a>`,
           ].join("\n"),
         );
         continue;

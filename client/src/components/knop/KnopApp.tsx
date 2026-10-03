@@ -40,6 +40,27 @@ import { StatusBadge, fmtDate, fmtTime, seqLabel } from "./lib";
 
 type View = "customers" | "inbox" | "sms-inbox" | "sms" | "notice" | "calendar" | "reports" | "corrections";
 
+// 텔레그램 '고객정보 없음' 알림 링크(?newCustomer=이름).
+// 휴대폰에서 누르면 로그아웃 상태일 때가 많은데, 로그인하는 사이 주소의 이름이 사라질 수 있다.
+// 그래서 화면이 그려지기 전(이 파일을 불러오는 순간)에 이름을 탭 보관함에 넣어 두고,
+// 고객 화면이 실제로 열릴 때 꺼내 쓴다. 꺼내면 지운다.
+const NEW_CUSTOMER_KEY = "knop:newCustomer";
+try {
+  const v = new URLSearchParams(window.location.search).get("newCustomer")?.trim();
+  if (v) sessionStorage.setItem(NEW_CUSTOMER_KEY, v);
+} catch {
+  /* 보관함을 못 쓰면 주소만으로 처리한다 */
+}
+function takePendingNewCustomer(): string | null {
+  try {
+    const v = sessionStorage.getItem(NEW_CUSTOMER_KEY);
+    if (v) sessionStorage.removeItem(NEW_CUSTOMER_KEY);
+    return v;
+  } catch {
+    return null;
+  }
+}
+
 const LAST_VIEW_KEY = "knop:last-view";
 
 export function KnopApp() {
@@ -61,6 +82,8 @@ export function KnopApp() {
   })();
   const [view, setView] = useState<View>(기억?.view ?? "calendar");
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(기억?.customer ?? null);
+  // 텔레그램 '고객정보 없음' 알림 링크(?newCustomer=이름)로 들어오면 새 고객 창을 이름 채워서 연다
+  const [newCustomerName, setNewCustomerName] = useState<string | null>(null);
   useEffect(() => {
     try {
       sessionStorage.setItem(LAST_VIEW_KEY, JSON.stringify({ view, customer: selectedCustomer }));
@@ -89,6 +112,20 @@ export function KnopApp() {
     // 새로고침할 때마다 같은 고객이 다시 열리지 않게 한다.
     const 주소 = new URLSearchParams(window.location.search);
     const 열고객 = (주소.get("customer") || "").trim();
+    const 새고객 = (주소.get("newCustomer") || "").trim();
+    if (새고객) {
+      setNewCustomerName(새고객);
+      setSelectedCustomer(null);
+      setView("customers");
+      주소.delete("newCustomer");
+      주소.delete("view");
+      const 남은새 = 주소.toString();
+      window.history.replaceState(
+        { knop: { view: "customers", customer: null } },
+        "",
+        window.location.pathname + (남은새 ? `?${남은새}` : ""),
+      );
+    }
     const 열탭 = (주소.get("view") || "").trim() as View | "";
     const 아는탭 = ["customers", "inbox", "sms-inbox", "sms", "notice", "calendar", "reports", "corrections"];
     if (열고객 || (열탭 && 아는탭.includes(열탭))) {
@@ -182,7 +219,14 @@ export function KnopApp() {
           />
         ) : (
           <>
-            {view === "customers" && <CustomersView onOpenCustomer={openCustomer} />}
+            {view === "customers" && (
+              <CustomersView
+                onOpenCustomer={openCustomer}
+                newCustomerName={newCustomerName}
+                onNewCustomerHandled={() => setNewCustomerName(null)}
+                ready={isAdmin}
+              />
+            )}
             {view === "inbox" && <InboxView onOpenCustomer={openCustomer} />}
             {view === "sms-inbox" && <SmsInboxView />}
             {view === "sms" && <SmsView />}
@@ -317,7 +361,17 @@ function ProgressChips({ milestone, seq }: { milestone: number; seq?: { setKey: 
   );
 }
 
-function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => void }) {
+function CustomersView({
+  onOpenCustomer,
+  newCustomerName,
+  onNewCustomerHandled,
+  ready,
+}: {
+  onOpenCustomer: (id: string) => void;
+  newCustomerName?: string | null;
+  onNewCustomerHandled?: () => void;
+  ready?: boolean; // 로그인 확인이 끝났는가 — 확인 중에 잠깐 그려질 때 이름을 써버리지 않게
+}) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [q, setQ] = useState("");
@@ -325,6 +379,16 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
   const [month, setMonth] = useState("all");
   const [kind, setKind] = useState<"all" | "개명" | "상담">("개명"); // 처음엔 개명 목록부터
   const [newOpen, setNewOpen] = useState(false);
+  const [newPrefill, setNewPrefill] = useState<string | null>(null);
+  useEffect(() => {
+    if (!ready) return;
+    const 이름 = newCustomerName || takePendingNewCustomer();
+    if (!이름) return;
+    takePendingNewCustomer(); // 주소로 받은 경우에도 보관함 쪽을 비운다(새로고침 때 다시 안 열리게)
+    setNewPrefill(이름);
+    setNewOpen(true);
+    onNewCustomerHandled?.();
+  }, [newCustomerName, ready]);
 
   const { data: board, isLoading } = useQuery({ queryKey: ["knop-board"], queryFn: () => knopApi.customerBoard() });
   // 진행중 관리문자(미용감사/정화하기) — 명단에서 개명 옆에 표시
@@ -760,7 +824,15 @@ function CustomersView({ onOpenCustomer }: { onOpenCustomer: (id: string) => voi
         </>
       )}
 
-      <NewCustomerDialog open={newOpen} onOpenChange={setNewOpen} onCreated={(c) => onOpenCustomer(c.id)} />
+      <NewCustomerDialog
+        open={newOpen}
+        onOpenChange={(v) => {
+          setNewOpen(v);
+          if (!v) setNewPrefill(null);
+        }}
+        onCreated={(c) => onOpenCustomer(c.id)}
+        initialName={newPrefill}
+      />
     </div>
   );
 }
