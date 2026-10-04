@@ -1134,12 +1134,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 🌸이름 안에 너 있다
 
 🔮 이름상담 및 작명 신청
-영상 오른쪽 중간의 동그란 프로필 사진 클릭 → 상담 신청 링크
-순서대로 들어오시면 됩니다.
-
-@whats_ur_name.777
-@whats_ur_name.777
-@whats_ur_name.777
+영상 오른쪽 중간의 동그란 프로필 사진 클릭
+→ 영어 링크 클릭
 
 📊 18년간 45만명 임상`;
 
