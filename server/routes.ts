@@ -1113,9 +1113,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 🌸이름 안에 너 있다
 
-🔮이름상담 및 작명 [신청방법]
-프로필 링크통해
-진행해주시면 됩니다~
+🔮 이름상담 및 작명 [신청방법]
+@whats_ur_name.777
+⬆️ 이걸 누르면 프로필로 바로 이동합니다.
+프로필에 있는 영어로 된 링크를 눌러 진행해 주세요.
+
+📊 18년간 45만명 임상`;
+
+  // 인스타 캡션 맨 아래 고정 해시태그
+  const INSTAGRAM_HASHTAGS = "#한국이름학교 #와츠유어네임이름연구협회 #이름분석 #작명 #개명";
+
+  // 틱톡 수동 업로드 본문의 고정 문구(2026-10-04 안대장님 확정). 인스타와 같고 신청 안내만 틱톡용.
+  // 인스타 문구가 바뀌어도 틱톡은 따로 정한 이 문구를 쓴다.
+  const TIKTOK_MANUAL_FOOTER = `✨이름이 맑아야
+인생이 맑다!
+
+🔍한글.한자이름만으로 운명상담
+[정확도 80%👆]
+
+🌸이름 안에 너 있다
+
+🔮 이름상담 및 작명 신청
+영상 오른쪽 중간의 동그란 프로필 사진 클릭 → 상담 신청 링크
+순서대로 들어오시면 됩니다.
 
 @whats_ur_name.777
 @whats_ur_name.777
@@ -1123,11 +1143,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 📊 18년간 45만명 임상`;
 
-  // 인스타 캡션 맨 아래 고정 해시태그
-  const INSTAGRAM_HASHTAGS = "#한국이름학교 #와츠유어네임이름연구협회 #이름분석 #작명 #개명";
-
-  // 틱톡 캡션 footer = 인스타 footer에서 @whats_ur_name.777 3줄만 제거(요청사항). 해시태그는 인스타와 동일.
-  const TIKTOK_CAPTION_FOOTER = INSTAGRAM_CAPTION_FOOTER
+  // 틱톡 자동 게시용 footer(현재 자동 게시는 막혀 숨김) = 틱톡 문구에서 @whats_ur_name.777 3줄 제거. 해시태그는 인스타와 동일.
+  const TIKTOK_CAPTION_FOOTER = TIKTOK_MANUAL_FOOTER
     .split("\n")
     .filter((ln) => ln.trim() !== "@whats_ur_name.777")
     .join("\n")
@@ -1611,15 +1628,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 틱톡 수동 업로드 준비: 자동 게시가 막혀 있어(개발자 앱 심사 반려) 영상 파일과 본문만 준비한다.
-  // 본문 = 인스타 캡션과 같은 조립(대본 + 고정 홍보문구 + 인스타 해시태그), 신청 안내 3줄만 틱톡용으로 교체.
-  // 틱톡은 프로필 링크 위치가 달라 신청 안내 3줄만 바꾼다(안대장님 지정). 나머지는 인스타 캡션 그대로.
-  const IG_APPLY_BLOCK = "🔮이름상담 및 작명 [신청방법]\n프로필 링크통해\n진행해주시면 됩니다~";
-  const TIKTOK_APPLY_BLOCK = "🔮 이름상담 및 작명 신청\n영상 오른쪽 중간의 동그란 프로필 사진 클릭 → 상담 신청 링크\n순서대로 들어오시면 됩니다.";
-  if (!INSTAGRAM_CAPTION_FOOTER.includes(IG_APPLY_BLOCK)) {
-    console.warn("[TIKTOK MANUAL] 인스타 고정 문구에서 신청 안내 3줄을 못 찾음 — 틱톡 본문은 인스타 문구 그대로 나감");
-  }
-  const TIKTOK_MANUAL_FOOTER = INSTAGRAM_CAPTION_FOOTER.replace(IG_APPLY_BLOCK, TIKTOK_APPLY_BLOCK);
-
+  // 본문 = 대본 + 틱톡용 고정 문구(TIKTOK_MANUAL_FOOTER) + 인스타 해시태그.
   app.get("/api/admin/video/jobs/:id/tiktok-manual", requireAdmin, async (req, res) => {
     try {
       if (!db) return res.status(503).json({ error: "DB 없음" });
