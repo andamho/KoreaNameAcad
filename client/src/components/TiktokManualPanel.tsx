@@ -14,6 +14,12 @@ const cleanTitle = (t: string) => (t.endsWith(FIXED_HASHTAGS) ? t.slice(0, -FIXE
 const TIKTOK_UPLOAD_URL = "https://www.tiktok.com/tiktokstudio/upload";
 // 목록은 최근 배포분부터(네이버 클립 준비와 같은 기준)
 const LIST_FROM = Date.parse("2026-09-24T00:00:00+09:00");
+// 이 기능 이전에 이미 틱톡에 올린 영상(2026-10-04 안대장님 확인): 물거품 · 16개의 운 · 좋은 뜻의 한자
+const ALREADY_UPLOADED = new Set([
+  "781893ba-5673-43cb-9b2d-2cdc937b3a58",
+  "fdaba429-6f10-4725-9a04-60ca88681114",
+  "3465d07c-9c9b-4c6a-9198-c76c3246aa8f",
+]);
 // "올림 완료"로 숨긴 영상(이 브라우저에만 기억, 네이버 클립과 따로)
 const DONE_KEY = "tiktokManualUploadedJobIds";
 const readDone = (): string[] => {
@@ -51,8 +57,9 @@ export function TiktokManualPanel({ refreshKey }: { refreshKey?: unknown }) {
     })();
   }, [refreshKey]);
 
-  const visible = jobs.filter((j) => !done.includes(j.id)).slice(0, 5);
-  const hidden = jobs.filter((j) => done.includes(j.id));
+  const isHidden = (id: string) => ALREADY_UPLOADED.has(id) || done.includes(id);
+  const visible = jobs.filter((j) => !isHidden(j.id)).slice(0, 5);
+  const hidden = jobs.filter((j) => isHidden(j.id));
 
   // 서명된 영상 주소는 15분짜리라, 받을 때마다 새로 받는다
   const load = async (id: string): Promise<Prep | null> => {
@@ -187,7 +194,11 @@ export function TiktokManualPanel({ refreshKey }: { refreshKey?: unknown }) {
               {hidden.map((j) => (
                 <div key={j.id} className="flex items-center justify-between gap-2 text-xs text-muted-foreground border rounded px-2 py-1">
                   <span className="truncate">✓ {cleanTitle(j.title)}</span>
-                  <button type="button" className="shrink-0 underline" onClick={() => unhide(j.id)}>다시 보이기</button>
+                  {ALREADY_UPLOADED.has(j.id) ? (
+                    <span className="shrink-0">올림 완료</span>
+                  ) : (
+                    <button type="button" className="shrink-0 underline" onClick={() => unhide(j.id)}>다시 보이기</button>
+                  )}
                 </div>
               ))}
             </div>
