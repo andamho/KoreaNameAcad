@@ -13,6 +13,7 @@ interface Prep { id: string; title: string; hasScript: boolean; fileName: string
 const FIXED_HASHTAGS = "#한국이름학교 #와츠유어네임이름연구협회 #작명 #개명 #이름분석 #이름풀이";
 const cleanTitle = (t: string) => (t.endsWith(FIXED_HASHTAGS) ? t.slice(0, -FIXED_HASHTAGS.length).trim() : t);
 const CLIP_UPLOAD_URL = "https://clipcreators.naver.com";
+const MAX_CHARS = 300; // 클립 설명란 글자 수 제한(설명 + 해시태그)
 
 export function NaverClipPanel({ refreshKey }: { refreshKey?: unknown }) {
   const { toast } = useToast();
@@ -154,8 +155,16 @@ export function NaverClipPanel({ refreshKey }: { refreshKey?: unknown }) {
                       onChange={(e) => setDesc(e.target.value)}
                     />
                   )}
+                  {desc && (() => {
+                    const n = Array.from(desc).length;
+                    return (
+                      <div className={`text-xs text-right ${n > MAX_CHARS ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
+                        {n} / {MAX_CHARS}자{n > MAX_CHARS ? " — 넘었습니다. 줄여서 복사하세요" : ""}
+                      </div>
+                    );
+                  })()}
                   <div className="text-xs text-muted-foreground">
-                    설명은 고쳐서 복사해도 됩니다. 끝의 <b>#한국이름학교 #와츠유어네임이름연구협회</b> 는 항상 붙습니다.
+                    설명은 고쳐서 복사해도 됩니다(설명란 전체 300자 이하로 맞춰 둠). 해시태그는 <b>#한국이름학교 #와츠유어네임이름연구협회</b> 가 항상 맨 앞, 그 뒤에 영상 내용 해시태그.
                     {prep && <> · 파일: {prep.fileName} (원본 화질)</>}
                   </div>
                 </div>
