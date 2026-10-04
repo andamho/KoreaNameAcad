@@ -19,7 +19,7 @@ import {
 } from "@/lib/knopApi";
 
 const SETS = [
-  { key: "gaemyeong_request", label: "개명의뢰 · 미용감사", hint: "개명비 입금 다음날부터 · 이미지2+영상1" },
+  { key: "gaemyeong_request", label: "개명의뢰 · 미용감사", hint: "개명비 입금 다음날부터 · 문구만" },
   { key: "gaemyeong_approved", label: "개명허가 · 정화하기", hint: "개명허가 확인 다음날부터 · 문구만" },
 ];
 
@@ -262,8 +262,8 @@ function SetEditor({ setKey }: { setKey: string }) {
 
   return (
     <div className="space-y-4">
-      {/* 첨부(개명의뢰만) */}
-      {cfg.hasAssets && <AssetEditor cfg={cfg} onChange={refresh} />}
+      {/* 예전의 첨부(안내 이미지·영상 → 모아보기 링크)는 2026-10-05 뺐다. 미용감사 안내는 이제
+          /gratitude 페이지 하나로 하고, 그 링크는 문구에 직접 들어 있다(안내 칸 '미용감사 페이지 보기'). */}
 
       {/* 4단계 문구 */}
       <div className="space-y-3">
@@ -341,6 +341,18 @@ function StepEditor({ step, onSaved }: { step: NoticeStep; onSaved: () => void }
           })()}
         </Badge>
         <span className="text-sm font-medium text-gray-800">{step.name}</span>
+        {/* 미용감사 안내: 문자에 넣는 미용감사 페이지(/gratitude)를 바로 열어 보기(원장님 요청 2026-10-05) */}
+        {step.setKey === "gaemyeong_request" && step.step === 0 && (
+          <a
+            href="/gratitude"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs px-2 py-0.5 rounded-full border border-[#56D5DB] text-[#2ba0a6] hover:bg-[#56D5DB]/10 whitespace-nowrap"
+            data-testid="link-gratitude-page"
+          >
+            미용감사 페이지 보기 &gt;
+          </a>
+        )}
         {/* 정화하기 안내: 문자에 넣는 '과거 이름 정화하기' 페이지를 바로 열어 보기(원장님 요청) */}
         {step.setKey === "gaemyeong_approved" && step.step === 1 && (
           <a
