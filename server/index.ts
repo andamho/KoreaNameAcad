@@ -6,6 +6,8 @@ import { setupVite, serveStatic, log } from "./vite";
 import { startTelegramBot } from "./telegramBot";
 import { startInstagramPublishRecovery } from "./instagram/reconcile";
 import { validateOtpConfig } from "./otpStore";
+import { startYtFrameService } from "./ytFrame";
+import { scheduleDaily } from "./knop/dailyCheckpoint";
 
 validateOtpConfig(); // OTP_HMAC_SECRET 누락 시 즉시 종료
 
@@ -107,6 +109,8 @@ app.use((req, res, next) => {
     // 인스타 게시 미완료 복구 (부팅 1회 + 매일 08:40. 새 상시 폴링 없음)
     // registerInstagramRoutes 가 아니라 여기서 부른다 — 테스트가 import 하는 경로를 오염시키지 않기 위해.
     startInstagramPublishRecovery();
+    // 쇼츠 썸네일 장면 선택 작업: 부팅 1회 대기작업 복원 + 매일 08:40 점검(YT_FRAME_WORKER_TOKEN 있을 때만)
+    void startYtFrameService(scheduleDaily);
   });
 })().catch((err) => {
   console.error("Failed to start server:", err);

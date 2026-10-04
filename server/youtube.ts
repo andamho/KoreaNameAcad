@@ -10,6 +10,7 @@ import {
   parseYoutubeErrorReason,
   type YoutubeVideoState,
 } from "./youtubeThumbnailPolicy";
+import type { ProcessingCheck } from "./ytFrame/processing";
 
 const PROVIDER = "youtube";
 const SCOPES = [
@@ -250,4 +251,43 @@ export async function getYoutubeVideoState(videoId: string): Promise<YoutubeVide
   } catch {
     return null;
   }
+}
+
+/**
+ * 처리 상태 + 공개범위·제목 조회. "조회 실패"와 "영상 없음"을 구분해서 돌려준다
+ * (getYoutubeVideoState 는 실패를 전부 null 로 뭉갠다). 쇼츠 장면 선택 작업의 출고 판정용.
+ */
+export async function checkYoutubeProcessing(videoId: string): Promise<ProcessingCheck> {
+  let accessToken: string;
+  try {
+    accessToken = await getAccessToken();
+  } catch (e: any) {
+    return { kind: "lookup_error", error: `토큰 획득 실패: ${e?.message ?? e}` };
+  }
+  let r: Response;
+  try {
+    r = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=snippet,status,processingDetails&id=${encodeURIComponent(videoId)}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+  } catch (e: any) {
+    return { kind: "lookup_error", error: `네트워크 실패: ${e?.message ?? e}` };
+  }
+  if (!r.ok) {
+    const body = await r.text().catch(() => "");
+    return { kind: "lookup_error", error: `HTTP ${r.status}: ${body.slice(0, 200)}` };
+  }
+  const j: any = await r.json().catch(() => null);
+  const it = j?.items?.[0];
+  if (!it) return { kind: "not_found" };
+  return {
+    kind: "ok",
+    state: {
+      uploadStatus: it.status?.uploadStatus ?? null,
+      processingStatus: it.processingDetails?.processingStatus ?? null,
+      processingFailureReason: it.processingDetails?.processingFailureReason ?? null,
+      privacyStatus: it.status?.privacyStatus ?? null,
+      title: it.snippet?.title ?? null,
+    },
+  };
 }

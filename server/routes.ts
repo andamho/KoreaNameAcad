@@ -18,6 +18,7 @@ import {
   recoverPendingPublications,
 } from "./instagram/reconcile";
 import { registerInstagramRoutes } from "./instagram/routes";
+import { registerYtFrameRoutes, enqueueShortsFrameTask } from "./ytFrame";
 import { sendAdminOtp } from "./telegramBot";
 import { otpStore, generateOtp, computeOtpHash, verifyOtpCode, OTP_TTL_MS } from "./otpStore";
 import rateLimit from "express-rate-limit";
@@ -1249,6 +1250,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const thumbnailSet = yt.thumbnailSet;
       if (yt.errors.youtube) errors.youtube = yt.errors.youtube;
       if (yt.errors.thumbnail) errors.thumbnail = yt.errors.thumbnail;
+      // 쇼츠는 API 썸네일이 표시되지 않으므로, 이 PC 의 워커가 앱에서 첫 장면을 고르도록 작업을 남긴다.
+      // 등록만 하고 기다리지 않는다(처리 완료 확인·장면 선택은 워커 쪽에서 비동기로).
+      if (ytVideoId) {
+        await enqueueShortsFrameTask({ videoJobId: job.id, videoId: ytVideoId, title: ytTitle, r2Key,
+          privacyStatus: ["public", "private", "unlisted"].includes(privacyStatus) ? privacyStatus : "public" });
+      }
 
       // 2) 선택한 기존 글에 유튜브 링크 삽입 (Buffer 미사용 — videoUrl만 채움)
       if (willInsertHomepage) {
@@ -1582,6 +1589,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // 인스타 자동화: 웹훅 수신(공개) + 연결/진단(관리자)
   registerInstagramRoutes(app, requireAdmin);
+
+  // 쇼츠 썸네일 장면 선택: PC 워커 전용 API(YT_FRAME_WORKER_TOKEN 없으면 꺼짐)
+  registerYtFrameRoutes(app);
 
   // Register object storage routes for file uploads
   registerObjectStorageRoutes(app);

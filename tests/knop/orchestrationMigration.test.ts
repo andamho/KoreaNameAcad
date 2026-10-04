@@ -342,8 +342,14 @@ describe("0004 cross-agent orchestration migration", () => {
 
   // 레지스트리 무결성: 등록 순서·체크섬.
   test("registry: 0004 등록·순서·체크섬 일치", () => {
-    assert.equal(MIGRATIONS.length, 4, "MIGRATIONS 4");
-    assert.equal(MIGRATIONS[3].id, "0004_cross_agent_orchestration", "마지막이 0004");
+    // 0004 는 네 번째 자리. 뒤에 0005·0006 이 이어 붙는다(앞 순서는 바뀌면 안 됨)
+    assert.equal(MIGRATIONS[3].id, "0004_cross_agent_orchestration", "0004 는 네 번째");
+    assert.deepEqual(MIGRATIONS.slice(0, 4).map((m) => m.id), [
+      "0001_add_report_matches",
+      "0002_create_persistent_job_queue",
+      "0003_create_job_shadow_previews",
+      "0004_cross_agent_orchestration",
+    ], "0001~0004 순서 불변");
     assert.equal(fileSha256Normalized(path.join(root, "migrations", DEF["0004"].sqlFile)), DEF["0004"].expectedSqlSha256, "SQL sha256 일치");
     assert.equal(fileSha256Normalized(path.join(root, DEF["0004"].fingerprintFixture!)), DEF["0004"].expectedFixtureSha256, "fixture sha256 일치");
   });

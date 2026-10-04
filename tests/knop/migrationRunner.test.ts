@@ -104,7 +104,15 @@ describe("범용 마이그레이션 러너", () => {
     assert.deepEqual(scanSql(SQL_0002, DEF_0002.expectedNewTables), { safe: true });
     // 경로 형식으로도 조회되어야(기존 CLI 하위호환)
     assert.equal(findMigration("migrations/0001_add_report_matches.sql")?.id, "0001_add_report_matches");
-    assert.equal(MIGRATIONS.length, 4);
+    // 등록 목록·순서 그대로(새 마이그레이션을 추가하면 여기도 같이 갱신 — 개수만 세면 의도가 안 드러난다)
+    assert.deepEqual(MIGRATIONS.map((m) => m.id), [
+      "0001_add_report_matches",
+      "0002_create_persistent_job_queue",
+      "0003_create_job_shadow_previews",
+      "0004_cross_agent_orchestration",
+      "0005_instagram_publish_reconciliation",
+      "0006_yt_frame_tasks",
+    ]);
   });
 
   // 5

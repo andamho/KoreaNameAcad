@@ -70,6 +70,14 @@ export const MIGRATIONS: MigrationDef[] = [
     expectedSqlSha256: "dc061858f4363dfa7592fe2f77566729dae630d24f7721c2a5cdfe21388a9102",
     expectedFixtureSha256: "3b0db05dd1ab121d7c166a9150eb0640764beb5dea9695288e3839b683180d84",
   },
+  {
+    // 쇼츠 썸네일 장면 선택 작업 큐 1테이블(additive). 기존 테이블 무변경.
+    // fixture 는 운영 dry-run(승인 후) 카탈로그로 만든다 — 그 전까지는 구조 대조 없이 경고만.
+    id: "0006_yt_frame_tasks",
+    sqlFile: "0006_yt_frame_tasks.sql",
+    expectedNewTables: ["yt_frame_tasks"],
+    expectedSqlSha256: "e9386ef4d89b4481a9e9d8776d4dc66a8e6e8a79fc146dcf44276673e5cbac77",
+  },
 ];
 
 // id 또는 경로("migrations/0001_add_report_matches.sql")로 조회 → 기존 CLI 호출 형식과 하위호환.
