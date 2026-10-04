@@ -131,6 +131,25 @@ export class ObjectStorageService {
     return signedUrl;
   }
 
+  /**
+   * 관리자 내려받기용 짧은 수명(기본 15분) 서명 주소. 브라우저가 R2 에서 바로 받는다(서버 메모리·대역폭 사용 없음).
+   * 받는 파일 이름을 지정한다(한글 가능, RFC 5987).
+   */
+  async getObjectContentType(key: string): Promise<string | null> {
+    const h = await r2Client.send(new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
+    return h.ContentType ?? null;
+  }
+
+  async getObjectDownloadURL(key: string, fileName: string, expiresIn = 900): Promise<string> {
+    const ascii = fileName.replace(/[^\x20-\x7E]/g, "_").replace(/["\\]/g, "_");
+    const command = new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+      ResponseContentDisposition: `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(fileName)}`,
+    });
+    return getSignedUrl(r2Client, command, { expiresIn });
+  }
+
   normalizeObjectEntityPath(rawPath: string): string {
     try {
       const url = new URL(rawPath);

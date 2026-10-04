@@ -21,6 +21,7 @@ import { useUpload } from "@/hooks/use-upload";
 import { ImageManager } from "@/components/ImageManager";
 import { KnopApp } from "@/components/knop/KnopApp";
 import { InstagramPanel } from "@/components/instagram/InstagramPanel";
+import { NaverClipPanel } from "@/components/NaverClipPanel";
 import { knopApi } from "@/lib/knopApi";
 import { LayoutDashboard, UserPlus, Instagram } from "lucide-react";
 import type { Consultation, Content, InsertContent } from "@shared/schema";
@@ -1361,6 +1362,9 @@ function VideoDeployPanel() {
           </div>
         )}
       </Card>
+
+      {/* 네이버 클립: API 가 없어 반자동(영상·본문 준비 → 업로드는 직접) */}
+      <NaverClipPanel refreshKey={result} />
     </div>
   );
 }

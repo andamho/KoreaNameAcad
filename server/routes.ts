@@ -1584,6 +1584,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 네이버 클립 업로드 준비(반자동): 네이버 클립은 공개 업로드 API 가 없어, 영상 파일과 본문만 준비해 주고
+  // 업로드는 사람이 클립 크리에이터(앱/PC)에서 한다. 본문 = 대본 + 고정 홍보문구(인스타 @계정 줄 제외) + 해시태그.
+  app.get("/api/admin/video/jobs/:id/naver-clip", requireAdmin, async (req, res) => {
+    try {
+      if (!db) return res.status(503).json({ error: "DB 없음" });
+      const [job] = await db.select().from(videoJobs).where(eq(videoJobs.id, String(req.params.id))).limit(1);
+      if (!job) return res.status(404).json({ error: "배포 기록 없음" });
+      const title = job.title.endsWith(FIXED_HASHTAGS) ? job.title.slice(0, -FIXED_HASHTAGS.length).trim() : job.title;
+      const script = String(job.caption || "").trim();
+      const caption = [script, TIKTOK_CAPTION_FOOTER, INSTAGRAM_HASHTAGS].filter(Boolean).join("\n\n");
+      // 원본 그대로(가장 좋은 화질). 파일 이름 = 네이버클립_날짜_제목.mp4
+      const ymd = new Date(job.createdAt).toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" }).replace(/-/g, "");
+      const safeTitle = title.replace(/[\\/:*?"<>|#]/g, "").replace(/\s+/g, " ").trim().slice(0, 40) || "영상";
+      const storage = new ObjectStorageService();
+      const ctype = (await storage.getObjectContentType(job.videoR2Key).catch(() => null)) || "video/mp4";
+      const ext = /quicktime/i.test(ctype) ? "mov" : /webm/i.test(ctype) ? "webm" : "mp4";
+      const fileName = `네이버클립_${ymd}_${safeTitle}.${ext}`;
+      const videoUrl = await storage.getObjectDownloadURL(job.videoR2Key, fileName);
+      // 서명 주소는 응답 맨 뒤에 둔다(요청 로그는 앞 80자만 남김)
+      res.json({ id: job.id, title, hasScript: !!script, caption, fileName, videoUrl });
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "naver clip prep error" });
+    }
+  });
+
   // KNOP 운영 플랫폼 라우트 (관리자 전용)
   registerKnopRoutes(app, requireAdmin);
 
