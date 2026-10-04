@@ -19,6 +19,7 @@ import {
 } from "./instagram/reconcile";
 import { registerInstagramRoutes } from "./instagram/routes";
 import { registerYtFrameRoutes, enqueueShortsFrameTask } from "./ytFrame";
+import { buildNaverClipDescription } from "./naverClip";
 import { sendAdminOtp } from "./telegramBot";
 import { otpStore, generateOtp, computeOtpHash, verifyOtpCode, OTP_TTL_MS } from "./otpStore";
 import rateLimit from "express-rate-limit";
@@ -1606,6 +1607,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ id: job.id, title, hasScript: !!script, caption, fileName, videoUrl });
     } catch (error: any) {
       res.status(500).json({ error: error?.message || "naver clip prep error" });
+    }
+  });
+
+  // 네이버 클립 설명란 글: 대본을 읽고 시청자에게 설명하는 글(Gemini) + 필수 해시태그(코드가 붙임)
+  app.post("/api/admin/video/jobs/:id/naver-clip/description", requireAdmin, async (req, res) => {
+    try {
+      if (!db) return res.status(503).json({ error: "DB 없음" });
+      const [job] = await db.select().from(videoJobs).where(eq(videoJobs.id, String(req.params.id))).limit(1);
+      if (!job) return res.status(404).json({ error: "배포 기록 없음" });
+      const title = job.title.endsWith(FIXED_HASHTAGS) ? job.title.slice(0, -FIXED_HASHTAGS.length).trim() : job.title;
+      const text = await buildNaverClipDescription(title, String(job.caption || ""), { regenerate: req.body?.regenerate === true });
+      res.json({ text });
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "설명 만들기 실패" });
     }
   });
 
