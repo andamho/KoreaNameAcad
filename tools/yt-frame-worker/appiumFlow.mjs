@@ -25,8 +25,9 @@ export function extractVideoId(clip) {
   return m ? m[1] : null;
 }
 
-const parseSec = (desc) => {
-  const m = String(desc ?? "").match(/at (\d+) minutes (\d+) seconds out of (\d+) minutes (\d+) seconds/);
+// 예: "Playhead selected at 0 minutes 0 seconds out of 1 minute 18 seconds" — 1분·1초는 단수(minute/second)로 나온다
+export const parseSec = (desc) => {
+  const m = String(desc ?? "").match(/at (\d+) minutes? (\d+) seconds? out of (\d+) minutes? (\d+) seconds?/);
   return m ? { at: +m[1] * 60 + +m[2], total: +m[3] * 60 + +m[4] } : null;
 };
 

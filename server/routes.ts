@@ -44,7 +44,7 @@ import { extractFrameJpeg, transcodeR2VideoToH264 } from "./videoTools";
 import { ObjectStorageService, validateR2VideoKey } from "./object_storage/objectStorage";
 import { registerPagePreview } from "./pagePreview";
 import { db } from "./db";
-import { videoJobs, reviewDrafts, contents, transcodeDiagnostics, shortLinks } from "@shared/schema";
+import { videoJobs, contents, transcodeDiagnostics, shortLinks } from "@shared/schema";
 
 import { desc as drizzleDesc, eq, and, or, isNull, lt, gt, sql as dsql } from "drizzle-orm";
 
@@ -1196,18 +1196,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const r2Key = objectPath.replace("/objects/", "");
 
-      // 제목 결정: 선택한 글의 '썸네일 제목'(review_drafts.selectedThumbnailTitle) 우선, 없으면 글 제목
+      // 제목 결정: 선택한 글의 '글 제목'(= 영상 속 제목 화면 문구). 2026-10-05 변경.
+      // 예전에는 후기 자동화가 고른 홈페이지 대표 이미지 문구(review_drafts.selectedThumbnailTitle)를 썼는데,
+      // 그 문구가 영상 속 제목과 달라 엉뚱한 유튜브 제목이 붙었다(28dM8lyflZM). 직접 입력(titleOverride)이 있으면 그것 우선.
       let content: any = null;
       let thumbnailTitle = "";
       if (contentId) {
         content = await storage.getContent(contentId);
         if (!content) return res.status(404).json({ error: "선택한 글을 찾을 수 없습니다." });
-        const drafts = await db
-          .select()
-          .from(reviewDrafts)
-          .where(eq(reviewDrafts.publishedContentId, contentId))
-          .limit(1);
-        thumbnailTitle = drafts[0]?.selectedThumbnailTitle || content.title;
+        thumbnailTitle = String(titleOverride || "").trim() || content.title;
       } else {
         thumbnailTitle = String(titleOverride || "").trim();
       }

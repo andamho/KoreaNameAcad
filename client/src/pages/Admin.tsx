@@ -1249,9 +1249,20 @@ function VideoDeployPanel() {
               )}
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">
-            유튜브 제목 = 이 글의 <b>썸네일 제목</b> + 고정 해시태그로 자동 생성됩니다.
-          </p>
+          {(() => {
+            const sel = candidates.find((c) => c.id === selectedContentId);
+            return sel ? (
+              <div className="text-xs rounded-md border bg-muted/30 p-2">
+                <div className="text-muted-foreground">이 제목으로 유튜브에 올라갑니다:</div>
+                <div className="font-medium mt-0.5">{sel.title} #한국이름학교 #와츠유어네임이름연구협회 #작명 #개명 #이름분석 #이름풀이</div>
+                <div className="text-muted-foreground mt-0.5">영상 속 제목 화면과 같은지 확인하세요.</div>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                유튜브 제목 = 이 글의 <b>글 제목</b>(영상 속 제목 화면과 같은 문구) + 고정 해시태그로 자동 생성됩니다.
+              </p>
+            );
+          })()}
         </div>
 
         <div className="space-y-2">

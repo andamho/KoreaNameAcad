@@ -4,7 +4,14 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 
 // @ts-ignore — .mjs 도구 모듈
-const { extractVideoId, normTitle } = await import("../../tools/yt-frame-worker/appiumFlow.mjs");
+const { extractVideoId, normTitle, parseSec } = await import("../../tools/yt-frame-worker/appiumFlow.mjs");
+
+test("재생 위치 라벨: 1분·1초 단수 표기도 읽는다(78초 영상에서 실패했던 사례)", () => {
+  assert.deepEqual(parseSec("Playhead selected at 0 minutes 0 seconds out of 1 minute 18 seconds"), { at: 0, total: 78 });
+  assert.deepEqual(parseSec("Playhead selected at 0 minutes 0 seconds out of 0 minutes 20 seconds"), { at: 0, total: 20 });
+  assert.deepEqual(parseSec("Playhead selected at 1 minute 1 second out of 2 minutes 5 seconds"), { at: 61, total: 125 });
+  assert.equal(parseSec("something else"), null);
+});
 // @ts-ignore
 const { decideThumb, measure, jpegSize, T } = await import("../../tools/yt-frame-worker/thumbCompare.mjs");
 
