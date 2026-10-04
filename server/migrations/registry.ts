@@ -78,6 +78,13 @@ export const MIGRATIONS: MigrationDef[] = [
     expectedNewTables: ["yt_frame_tasks"],
     expectedSqlSha256: "e9386ef4d89b4481a9e9d8776d4dc66a8e6e8a79fc146dcf44276673e5cbac77",
   },
+  {
+    // 틱톡·네이버 클립 자동 업로드 작업 큐 1테이블(additive). 기존 테이블 무변경.
+    id: "0007_social_upload_tasks",
+    sqlFile: "0007_social_upload_tasks.sql",
+    expectedNewTables: ["social_upload_tasks"],
+    expectedSqlSha256: "ce4fdeeb5e316875b8df63d0ad3368bcbf007c92e03f568734bb17fc116383f7",
+  },
 ];
 
 // id 또는 경로("migrations/0001_add_report_matches.sql")로 조회 → 기존 CLI 호출 형식과 하위호환.

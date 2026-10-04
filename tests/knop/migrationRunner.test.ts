@@ -112,6 +112,7 @@ describe("범용 마이그레이션 러너", () => {
       "0004_cross_agent_orchestration",
       "0005_instagram_publish_reconciliation",
       "0006_yt_frame_tasks",
+      "0007_social_upload_tasks",
     ]);
   });
 

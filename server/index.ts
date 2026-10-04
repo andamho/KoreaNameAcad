@@ -7,6 +7,7 @@ import { startTelegramBot } from "./telegramBot";
 import { startInstagramPublishRecovery } from "./instagram/reconcile";
 import { validateOtpConfig } from "./otpStore";
 import { startYtFrameService } from "./ytFrame";
+import { startSocialUpload } from "./socialUpload";
 import { scheduleDaily } from "./knop/dailyCheckpoint";
 
 validateOtpConfig(); // OTP_HMAC_SECRET 누락 시 즉시 종료
@@ -111,6 +112,8 @@ app.use((req, res, next) => {
     startInstagramPublishRecovery();
     // 쇼츠 썸네일 장면 선택 작업: 부팅 1회 대기작업 복원 + 매일 08:40 점검(YT_FRAME_WORKER_TOKEN 있을 때만)
     void startYtFrameService(scheduleDaily);
+    // 틱톡·네이버 클립 자동 업로드 작업: 부팅 1회 복원 + 매일 점검(워커 토큰 있을 때만)
+    void startSocialUpload(scheduleDaily);
   });
 })().catch((err) => {
   console.error("Failed to start server:", err);

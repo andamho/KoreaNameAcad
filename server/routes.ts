@@ -20,6 +20,7 @@ import {
 import { registerInstagramRoutes } from "./instagram/routes";
 import { registerYtFrameRoutes, enqueueShortsFrameTask } from "./ytFrame";
 import { buildNaverClipDescription } from "./naverClip";
+import { registerSocialUploadRoutes, enqueueSocialUploads } from "./socialUpload";
 import { sendAdminOtp } from "./telegramBot";
 import { otpStore, generateOtp, computeOtpHash, verifyOtpCode, OTP_TTL_MS } from "./otpStore";
 import rateLimit from "express-rate-limit";
@@ -1267,6 +1268,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await enqueueShortsFrameTask({ videoJobId: job.id, videoId: ytVideoId, title: ytTitle, r2Key,
           privacyStatus: ["public", "private", "unlisted"].includes(privacyStatus) ? privacyStatus : "public" });
       }
+      // 틱톡·네이버 클립은 서버가 직접 못 올린다 → 이 PC 업로드 워커가 받아 올리도록 작업만 남긴다(기다리지 않음)
+      await enqueueSocialUploads(job.id);
 
       // 2) 선택한 기존 글에 유튜브 링크 삽입 (Buffer 미사용 — videoUrl만 채움)
       if (willInsertHomepage) {
@@ -1669,6 +1672,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // 쇼츠 썸네일 장면 선택: PC 워커 전용 API(YT_FRAME_WORKER_TOKEN 없으면 꺼짐)
   registerYtFrameRoutes(app);
+
+  // 틱톡·네이버 클립 자동 업로드: PC 워커 API. 자료 = 원본 영상(1시간 서명 주소) + 틱톡 본문(인스타와 같은 조립, 틱톡용 신청 안내)
+  // + 네이버 설명(대본 기반 AI 설명 + 필수 해시태그, 300자 이하)
+  registerSocialUploadRoutes(app, async (videoJobId) => {
+    if (!db) throw new Error("DB 없음");
+    const [job] = await db.select().from(videoJobs).where(eq(videoJobs.id, videoJobId)).limit(1);
+    if (!job) throw new Error("배포 기록 없음");
+    const title = job.title.endsWith(FIXED_HASHTAGS) ? job.title.slice(0, -FIXED_HASHTAGS.length).trim() : job.title;
+    const script = String(job.caption || "").trim();
+    const tiktokCaption = [script, TIKTOK_MANUAL_FOOTER, INSTAGRAM_HASHTAGS].filter(Boolean).join("\n\n");
+    let naverDescription: string;
+    try {
+      naverDescription = await buildNaverClipDescription(title, script);
+    } catch {
+      // 대본이 없으면 지어내지 않는다: 제목 + 필수 해시태그만
+      naverDescription = `${title}\n\n#한국이름학교 #와츠유어네임이름연구협회`;
+    }
+    const storage = new ObjectStorageService();
+    const ctype = (await storage.getObjectContentType(job.videoR2Key).catch(() => null)) || "video/mp4";
+    const ext = /quicktime/i.test(ctype) ? "mov" : /webm/i.test(ctype) ? "webm" : "mp4";
+    const fileName = `${job.id.slice(0, 8)}.${ext}`;
+    const videoUrl = await storage.getObjectDownloadURL(job.videoR2Key, fileName, 3600);
+    return { title, fileName, tiktokCaption, naverDescription, coverSec: 0.15, videoUrl };
+  });
 
   // Register object storage routes for file uploads
   registerObjectStorageRoutes(app);
