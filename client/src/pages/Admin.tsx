@@ -969,6 +969,9 @@ interface YtStatus { configured: boolean; connected: boolean; channelTitle?: str
 
 interface IgStatus { configured: boolean; connected: boolean; username?: string }
 interface TtStatus { configured: boolean; connected: boolean; displayName?: string }
+// 틱톡: 개발자 앱 심사 반려로 자동 게시가 구조적으로 막혀 있어(2026-08 확인) 배포 화면에서 숨긴다.
+// 다시 쓰려면 true 로. 숨긴 동안에는 배포 요청에 틱톡 대상을 보내지 않는다.
+const TIKTOK_UI_ENABLED = false;
 
 function VideoDeployPanel() {
   const [yt, setYt] = useState<YtStatus | null>(null);
@@ -992,11 +995,13 @@ function VideoDeployPanel() {
     } catch {
       setIg(null);
     }
-    try {
-      const ttRes = await fetch("/api/admin/tiktok/status", { headers });
-      setTt(ttRes.ok ? await ttRes.json() : null);
-    } catch {
-      setTt(null);
+    if (TIKTOK_UI_ENABLED) {
+      try {
+        const ttRes = await fetch("/api/admin/tiktok/status", { headers });
+        setTt(ttRes.ok ? await ttRes.json() : null);
+      } catch {
+        setTt(null);
+      }
     }
     setLoading(false);
   };
@@ -1070,7 +1075,7 @@ function VideoDeployPanel() {
           privacyStatus: vPrivacy,
           targetInstagram: !!ig?.connected,
           instagramCaption: igCaptionText,
-          targetTiktok: !!tt?.connected,
+          targetTiktok: TIKTOK_UI_ENABLED && !!tt?.connected,
         }),
       });
       const data = await dep.json();
@@ -1184,6 +1189,7 @@ function VideoDeployPanel() {
         </div>
 
         {/* TikTok */}
+        {TIKTOK_UI_ENABLED && (
         <div className="flex items-center justify-between border rounded-lg p-4 mt-3">
           <div className="flex items-center gap-3">
             <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: "#0E9BAE" }} />
@@ -1210,6 +1216,7 @@ function VideoDeployPanel() {
             )}
           </div>
         </div>
+        )}
       </Card>
 
       <Card className="p-6 space-y-4">
@@ -1268,7 +1275,7 @@ function VideoDeployPanel() {
           </Select>
         </div>
 
-        {/* 본문 (영상 대본) — 인스타/틱톡 캡션 공통 */}
+        {/* 본문 (영상 대본) — 인스타 캡션(·네이버 클립 본문) */}
         <div className="space-y-2">
           <Label>본문 (영상 대본)</Label>
           <textarea
@@ -1291,10 +1298,12 @@ function VideoDeployPanel() {
             <span className="inline-block w-2 h-2 rounded-full" style={{ background: "#B33089" }} />
             Instagram — {ig?.connected ? "자동 배포됨" : <span className="text-amber-600">미연결</span>}
           </div>
+          {TIKTOK_UI_ENABLED && (
           <div className="flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full" style={{ background: "#0E9BAE" }} />
             TikTok — {tt?.connected ? "자동 배포됨(초안)" : <span className="text-muted-foreground">심사 통과 후 자동 합류</span>}
           </div>
+          )}
           <div className="text-muted-foreground pt-1">유튜브 제목 해시태그: #한국이름학교 #와츠유어네임이름연구협회 #작명 #개명 #이름분석 #이름풀이</div>
         </div>
 
@@ -1303,17 +1312,19 @@ function VideoDeployPanel() {
         </Button>
 
         {/* 틱톡 단독 게시 — 유튜브/인스타/홈페이지 안 건드림. 테스트·데모 녹화용 */}
+        {TIKTOK_UI_ENABLED && (<>
         <Button variant="outline" className="w-full" onClick={tiktokOnly} disabled={deploying || !tt?.connected}>
           {deploying ? "처리 중…" : "틱톡만 게시 (유튜브·인스타 제외)"}
         </Button>
         <div className="text-xs text-muted-foreground -mt-2">
           틱톡만 단독 게시합니다. 심사 통과 전에는 틱톡 정책상 <b>비공개(나만 보기)</b>로 올라갑니다.
         </div>
+        </>)}
 
         {result && (
           <div className="text-sm border rounded-lg p-4 space-y-1">
             {result.error && <div className="text-red-600">오류: {result.error}</div>}
-            {result.tiktokOnly && (
+            {TIKTOK_UI_ENABLED && result.tiktokOnly && (
               <div>
                 TikTok 단독 게시: <span className="text-emerald-600">성공</span>
                 {" · "}공개범위 <b>{result.tiktokOnly.privacy}</b>
@@ -1345,7 +1356,7 @@ function VideoDeployPanel() {
                   : <span className="text-red-600">실패 — {result.instagram.error}</span>}
               </div>
             )}
-            {result.tiktok && (
+            {TIKTOK_UI_ENABLED && result.tiktok && (
               <div>
                 TikTok: {result.tiktok.ok
                   ? <span className="text-emerald-600">초안 전송 완료 (틱톡 앱에서 게시)</span>
