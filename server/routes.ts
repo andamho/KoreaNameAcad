@@ -1116,7 +1116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 🔮 이름상담 및 작명 [신청방법]
 @whats_ur_name.777
 ⬆️ 이걸 누르면 프로필로 바로 이동합니다.
-프로필에 있는 영어로 된 링크를 눌러 진행해 주세요.
+영어로 된 링크를 눌러 진행해 주세요.
 
 📊 18년간 45만명 임상`;
 
