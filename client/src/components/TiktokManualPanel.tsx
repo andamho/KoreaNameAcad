@@ -174,7 +174,7 @@ export function TiktokManualPanel({ refreshKey }: { refreshKey?: unknown }) {
                     />
                   )}
                   <div className="text-xs text-muted-foreground">
-                    본문은 인스타 캡션과 같습니다(대본 + 고정 홍보문구 + 해시태그). 고쳐서 복사해도 됩니다.
+                    본문은 인스타 캡션과 같고, 상담 신청 안내만 틱톡용(프로필 사진 클릭)으로 바뀝니다. 고쳐서 복사해도 됩니다.
                     {prep && <> · 파일: {prep.fileName} (원본 화질)</>}
                   </div>
                 </div>

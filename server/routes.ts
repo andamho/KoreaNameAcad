@@ -1611,14 +1611,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 틱톡 수동 업로드 준비: 자동 게시가 막혀 있어(개발자 앱 심사 반려) 영상 파일과 본문만 준비한다.
-  // 본문 = 인스타 캡션과 똑같이(대본 + 고정 홍보문구(@계정 포함) + 인스타 해시태그) — 배포 핸들러의 igCaption 과 같은 조립.
+  // 본문 = 인스타 캡션과 같은 조립(대본 + 고정 홍보문구 + 인스타 해시태그), 신청 안내 3줄만 틱톡용으로 교체.
+  // 틱톡은 프로필 링크 위치가 달라 신청 안내 3줄만 바꾼다(안대장님 지정). 나머지는 인스타 캡션 그대로.
+  const IG_APPLY_BLOCK = "🔮이름상담 및 작명 [신청방법]\n프로필 링크통해\n진행해주시면 됩니다~";
+  const TIKTOK_APPLY_BLOCK = "🔮 이름상담 및 작명 신청\n영상 오른쪽 중간의 동그란 프로필 사진 클릭 → 상담 신청 링크\n순서대로 들어오시면 됩니다.";
+  if (!INSTAGRAM_CAPTION_FOOTER.includes(IG_APPLY_BLOCK)) {
+    console.warn("[TIKTOK MANUAL] 인스타 고정 문구에서 신청 안내 3줄을 못 찾음 — 틱톡 본문은 인스타 문구 그대로 나감");
+  }
+  const TIKTOK_MANUAL_FOOTER = INSTAGRAM_CAPTION_FOOTER.replace(IG_APPLY_BLOCK, TIKTOK_APPLY_BLOCK);
+
   app.get("/api/admin/video/jobs/:id/tiktok-manual", requireAdmin, async (req, res) => {
     try {
       if (!db) return res.status(503).json({ error: "DB 없음" });
       const [job] = await db.select().from(videoJobs).where(eq(videoJobs.id, String(req.params.id))).limit(1);
       if (!job) return res.status(404).json({ error: "배포 기록 없음" });
       const title = job.title.endsWith(FIXED_HASHTAGS) ? job.title.slice(0, -FIXED_HASHTAGS.length).trim() : job.title;
-      const caption = [String(job.caption || "").trim(), INSTAGRAM_CAPTION_FOOTER, INSTAGRAM_HASHTAGS].filter(Boolean).join("\n\n");
+      const caption = [String(job.caption || "").trim(), TIKTOK_MANUAL_FOOTER, INSTAGRAM_HASHTAGS].filter(Boolean).join("\n\n");
       const ymd = new Date(job.createdAt).toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" }).replace(/-/g, "");
       const safeTitle = title.replace(/[\\/:*?"<>|#]/g, "").replace(/\s+/g, " ").trim().slice(0, 40) || "영상";
       const storage = new ObjectStorageService();
