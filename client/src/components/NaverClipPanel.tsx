@@ -24,6 +24,7 @@ export function NaverClipPanel({ refreshKey }: { refreshKey?: unknown }) {
   const [descState, setDescState] = useState<"idle" | "writing" | "error">("idle");
   const [descError, setDescError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [direction, setDirection] = useState(""); // 수정 방향(예: 더 짧게, 질문으로 시작)
   const auth = () => ({ Authorization: `Bearer ${localStorage.getItem("kna_admin_token")}` });
 
   useEffect(() => {
@@ -47,14 +48,15 @@ export function NaverClipPanel({ refreshKey }: { refreshKey?: unknown }) {
     return d;
   };
 
-  const writeDescription = async (id: string, regenerate = false) => {
+  // instruction 이 있으면 지금 설명글(previous)을 그 방향으로 고쳐 쓴다
+  const writeDescription = async (id: string, regenerate = false, instruction = "") => {
     setDescState("writing");
     setDescError("");
     try {
       const r = await fetch(`/api/admin/video/jobs/${id}/naver-clip/description`, {
         method: "POST",
         headers: { ...auth(), "Content-Type": "application/json" },
-        body: JSON.stringify({ regenerate }),
+        body: JSON.stringify({ regenerate, instruction, previous: instruction ? desc : "" }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.error || "설명 만들기 실패");
@@ -71,6 +73,7 @@ export function NaverClipPanel({ refreshKey }: { refreshKey?: unknown }) {
     setOpenId(id);
     setPrep(null);
     setDesc("");
+    setDirection("");
     setBusy(true);
     try {
       await Promise.all([load(id), writeDescription(id)]);
@@ -163,6 +166,28 @@ export function NaverClipPanel({ refreshKey }: { refreshKey?: unknown }) {
                       </div>
                     );
                   })()}
+                  {desc && (
+                    <div className="space-y-1.5">
+                      <div className="text-xs font-medium">수정 방향 <span className="text-muted-foreground font-normal">(이렇게 고쳐 줬으면 하는 점)</span></div>
+                      <textarea
+                        className="w-full min-h-16 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        maxLength={300}
+                        value={direction}
+                        onChange={(e) => setDirection(e.target.value)}
+                        placeholder="예: 더 짧게 / 질문으로 시작해줘 / 제주 이야기는 빼고 수리운 설명을 더 / 좀 더 친근한 말투로"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => writeDescription(j.id, true, direction.trim())}
+                        disabled={!direction.trim() || descState === "writing"}
+                      >
+                        이 방향으로 다시 쓰기
+                      </Button>
+                      <div className="text-xs text-muted-foreground">
+                        지금 설명글을 보고 적어 주신 방향으로 고쳐 씁니다. 300자 제한·기본 해시태그·대본에 없는 내용 금지는 그대로 지킵니다.
+                      </div>
+                    </div>
+                  )}
                   <div className="text-xs text-muted-foreground">
                     설명은 고쳐서 복사해도 됩니다(설명란 전체 300자 이하로 맞춰 둠). 해시태그는 <b>#한국이름학교 #와츠유어네임이름연구협회</b> 가 항상 맨 앞, 그 뒤에 영상 내용 해시태그.
                     {prep && <> · 파일: {prep.fileName} (원본 화질)</>}

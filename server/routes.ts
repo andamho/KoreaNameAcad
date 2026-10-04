@@ -1617,7 +1617,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const [job] = await db.select().from(videoJobs).where(eq(videoJobs.id, String(req.params.id))).limit(1);
       if (!job) return res.status(404).json({ error: "배포 기록 없음" });
       const title = job.title.endsWith(FIXED_HASHTAGS) ? job.title.slice(0, -FIXED_HASHTAGS.length).trim() : job.title;
-      const text = await buildNaverClipDescription(title, String(job.caption || ""), { regenerate: req.body?.regenerate === true });
+      const text = await buildNaverClipDescription(title, String(job.caption || ""), {
+        regenerate: req.body?.regenerate === true,
+        instruction: typeof req.body?.instruction === "string" ? req.body.instruction : "",
+        previous: typeof req.body?.previous === "string" ? req.body.previous : "",
+      });
       res.json({ text });
     } catch (error: any) {
       res.status(500).json({ error: error?.message || "설명 만들기 실패" });

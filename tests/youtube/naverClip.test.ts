@@ -50,6 +50,21 @@ test("300자 제한: 해시태그부터 줄이고, 그래도 넘치면 설명을
   assert.ok(blob.split("\n\n")[0].endsWith("…"));
 });
 
+test("수정 방향: 이전 글·요청을 함께 넘기고 규칙 우선 문구 포함, 캐시는 건너뛴다", async () => {
+  const prompts: string[] = [];
+  const generate = async (_s: string, p: string) => { prompts.push(p); return { description: "고친 설명", hashtags: [] }; };
+  await buildNaverClipDescription("제목A", "대본A", { generate }); // 캐시 생성
+  const out = await buildNaverClipDescription("제목A", "대본A", { generate, instruction: "더 짧게, 질문으로 시작", previous: "이전 설명글" });
+  assert.equal(prompts.length, 2, "수정 요청은 캐시를 쓰지 않음");
+  assert.match(prompts[1], /지금 설명글\(이전 버전\):\n이전 설명글/);
+  assert.match(prompts[1], /수정 요청: 더 짧게, 질문으로 시작/);
+  assert.match(prompts[1], /요청이 규칙과 충돌하면 규칙을 따른다/);
+  assert.ok(out.endsWith(NAVER_CLIP_HASHTAGS));
+  // 요청은 300자까지만
+  await buildNaverClipDescription("제목A", "대본A", { generate, instruction: "가".repeat(500) });
+  assert.ok(!prompts[2].includes("가".repeat(301)));
+});
+
 test("대본 없으면 지어내지 않고 거절", async () => {
   await assert.rejects(buildNaverClipDescription("제목", "  "), /대본이 없어/);
 });

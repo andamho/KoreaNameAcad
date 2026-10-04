@@ -106,15 +106,33 @@ const cache = new Map<string, string>();
 
 type Gen = (system: string, prompt: string) => Promise<{ description: string; hashtags: string[] }>;
 
+/** 수정 방향 요청 최대 길이 */
+export const MAX_INSTRUCTION_CHARS = 300;
+
+/**
+ * @param opts.instruction  안대장님이 적은 수정 방향(예: "더 짧게", "질문으로 시작"). 있으면 이전 글을 이 방향으로 고쳐 쓴다.
+ * @param opts.previous     지금 화면의 설명글(수정 방향과 함께 넘김)
+ * 요청이 있어도 규칙(대본에 없는 사실 금지·보장 표현 금지·300자·필수 해시태그)은 그대로다 — 충돌하면 규칙 우선.
+ */
 export async function buildNaverClipDescription(
-  title: string, script: string, opts: { regenerate?: boolean; generate?: Gen } = {},
+  title: string, script: string,
+  opts: { regenerate?: boolean; instruction?: string; previous?: string; generate?: Gen } = {},
 ): Promise<string> {
   const s = String(script ?? "").trim();
   if (!s) throw new Error("이 배포에는 대본이 없어 영상 설명을 쓸 수 없습니다.");
+  const instruction = Array.from(String(opts.instruction ?? "").trim()).slice(0, MAX_INSTRUCTION_CHARS).join("");
+  const previous = Array.from(String(opts.previous ?? "").trim()).slice(0, 1000).join("");
   const key = crypto.createHash("sha256").update(`v3\n${title}\n${s}`).digest("hex");
-  if (!opts.regenerate && cache.has(key)) return cache.get(key)!;
+  if (!opts.regenerate && !instruction && cache.has(key)) return cache.get(key)!;
   const gen: Gen = opts.generate ?? ((sys, p) => geminiJson(sys, [{ text: p }], SCHEMA, 1500, 0.5));
-  const prompt = `영상 제목: ${title}\n\n영상 대본:\n${s.slice(0, 6000)}`;
+  let prompt = `영상 제목: ${title}\n\n영상 대본:\n${s.slice(0, 6000)}`;
+  if (instruction) {
+    prompt +=
+      (previous ? `\n\n지금 설명글(이전 버전):\n${previous}` : "") +
+      `\n\n수정 요청: ${instruction}\n` +
+      `위 요청을 반영해 설명글과 해시태그를 다시 쓴다. 단, 시스템 규칙(대본에 없는 사실 금지, 보장·과장 표현 금지, 200자 이내, ` +
+      `해시태그 규칙)은 그대로 지킨다. 요청이 규칙과 충돌하면 규칙을 따른다.`;
+  }
   const r = await gen(SYSTEM, prompt);
   const text = finalizeClipDescription(r?.description ?? "", r?.hashtags ?? []);
   cache.set(key, text);
