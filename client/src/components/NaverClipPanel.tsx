@@ -15,6 +15,24 @@ const cleanTitle = (t: string) => (t.endsWith(FIXED_HASHTAGS) ? t.slice(0, -FIXE
 const CLIP_UPLOAD_URL = "https://clipcreators.naver.com";
 const MAX_CHARS = 300; // 클립 설명란 글자 수 제한(설명 + 해시태그)
 
+// 목록은 네이버 클립 업로드를 시작한 영상(2026-09-24 '이름이 인생을 바꾸는구나')부터만 보여 준다
+const LIST_FROM = Date.parse("2026-09-24T00:00:00+09:00");
+// 이 기능 이전에 이미 네이버 클립에 올린 영상(2026-10-04 안대장님 확인):
+// 물거품 · 16개의 운 · 좋은 뜻의 한자 · 이름이 인생을 바꾸는구나(2번 배포됨)
+const ALREADY_UPLOADED = new Set([
+  "781893ba-5673-43cb-9b2d-2cdc937b3a58",
+  "fdaba429-6f10-4725-9a04-60ca88681114",
+  "3465d07c-9c9b-4c6a-9198-c76c3246aa8f",
+  "79207d0a-e133-4be8-a436-80e51dcc9fbb",
+  "b398f7a9-0697-4604-ae1a-b5d2f0bc8f5f",
+]);
+// "올림 완료"로 숨긴 영상(이 브라우저에만 기억)
+const DONE_KEY = "naverClipUploadedJobIds";
+const readDone = (): string[] => {
+  try { const v = JSON.parse(localStorage.getItem(DONE_KEY) || "[]"); return Array.isArray(v) ? v : []; } catch { return []; }
+};
+const writeDone = (ids: string[]) => { try { localStorage.setItem(DONE_KEY, JSON.stringify(ids)); } catch {} };
+
 export function NaverClipPanel({ refreshKey }: { refreshKey?: unknown }) {
   const { toast } = useToast();
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -25,6 +43,8 @@ export function NaverClipPanel({ refreshKey }: { refreshKey?: unknown }) {
   const [descError, setDescError] = useState("");
   const [busy, setBusy] = useState(false);
   const [direction, setDirection] = useState(""); // 수정 방향(예: 더 짧게, 질문으로 시작)
+  const [done, setDone] = useState<string[]>(readDone);
+  const [showHidden, setShowHidden] = useState(false);
   const auth = () => ({ Authorization: `Bearer ${localStorage.getItem("kna_admin_token")}` });
 
   useEffect(() => {
@@ -32,12 +52,37 @@ export function NaverClipPanel({ refreshKey }: { refreshKey?: unknown }) {
       try {
         const r = await fetch("/api/admin/video/jobs", { headers: auth() });
         const rows: Job[] = r.ok ? await r.json() : [];
-        setJobs(rows.filter((j) => j.ytStatus === "published").slice(0, 5));
+        // 유튜브까지 배포된 것, 시작일 이후, 같은 제목은 최신 1개만(목록은 최신순)
+        const seen = new Set<string>();
+        setJobs(rows.filter((j) => {
+          if (j.ytStatus !== "published" || Date.parse(j.createdAt) < LIST_FROM) return false;
+          const t = cleanTitle(j.title);
+          if (seen.has(t)) return false;
+          seen.add(t);
+          return true;
+        }));
       } catch {
         setJobs([]);
       }
     })();
   }, [refreshKey]);
+
+  const isHidden = (id: string) => ALREADY_UPLOADED.has(id) || done.includes(id);
+  const visible = jobs.filter((j) => !isHidden(j.id)).slice(0, 5);
+  const hidden = jobs.filter((j) => isHidden(j.id));
+
+  const markDone = (id: string) => {
+    const next = Array.from(new Set([...done, id]));
+    setDone(next);
+    writeDone(next);
+    if (openId === id) setOpenId(null);
+    toast({ title: "올림 완료로 숨겼습니다", description: "아래 '숨긴 영상 보기'에서 다시 보이게 할 수 있습니다." });
+  };
+  const unhide = (id: string) => {
+    const next = done.filter((x) => x !== id);
+    setDone(next);
+    writeDone(next);
+  };
 
   // 서명된 영상 주소는 15분짜리라, 버튼을 누를 때마다 새로 받는다
   const load = async (id: string): Promise<Prep | null> => {
@@ -125,11 +170,11 @@ export function NaverClipPanel({ refreshKey }: { refreshKey?: unknown }) {
         </ol>
       </div>
 
-      {jobs.length === 0 ? (
-        <div className="text-sm text-muted-foreground">유튜브까지 배포된 최근 영상이 없습니다.</div>
+      {visible.length === 0 ? (
+        <div className="text-sm text-muted-foreground">네이버 클립에 올릴 영상이 없습니다(모두 올림 완료).</div>
       ) : (
         <div className="space-y-2">
-          {jobs.map((j) => (
+          {visible.map((j) => (
             <div key={j.id} className="border rounded-lg">
               <button type="button" className="w-full text-left px-3 py-2 flex items-center justify-between gap-2" onClick={() => open(j.id)}>
                 <span className="text-sm truncate">{cleanTitle(j.title)}</span>
@@ -147,6 +192,9 @@ export function NaverClipPanel({ refreshKey }: { refreshKey?: unknown }) {
                     <Button size="sm" variant="outline" onClick={copy} disabled={!desc || descState === "writing"}>③ 설명 복사</Button>
                     <Button size="sm" variant="ghost" onClick={() => writeDescription(j.id, true)} disabled={descState === "writing"}>
                       다시 쓰기
+                    </Button>
+                    <Button size="sm" variant="secondary" className="ml-auto" onClick={() => markDone(j.id)}>
+                      ✓ 올림 완료
                     </Button>
                   </div>
                   {descState === "writing" && <div className="text-xs text-muted-foreground">영상 대본을 읽고 설명을 쓰는 중… (몇 초 걸립니다)</div>}
@@ -196,6 +244,28 @@ export function NaverClipPanel({ refreshKey }: { refreshKey?: unknown }) {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {hidden.length > 0 && (
+        <div className="pt-1">
+          <button type="button" className="text-xs text-muted-foreground underline" onClick={() => setShowHidden((v) => !v)}>
+            올림 완료로 숨긴 영상 {hidden.length}개 {showHidden ? "접기" : "보기"}
+          </button>
+          {showHidden && (
+            <div className="mt-2 space-y-1">
+              {hidden.map((j) => (
+                <div key={j.id} className="flex items-center justify-between gap-2 text-xs text-muted-foreground border rounded px-2 py-1">
+                  <span className="truncate">✓ {cleanTitle(j.title)}</span>
+                  {ALREADY_UPLOADED.has(j.id) ? (
+                    <span className="shrink-0">올림 완료</span>
+                  ) : (
+                    <button type="button" className="shrink-0 underline" onClick={() => unhide(j.id)}>다시 보이기</button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </Card>
