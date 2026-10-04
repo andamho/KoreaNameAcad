@@ -74,20 +74,30 @@ export async function selectFrameById(driver, task, { log = console.log, shot = 
         if (!playerShown) { await shot(`no-player-${open}-${link}`); log("쇼츠 화면이 안 열림 → 딥링크 다시", { link }); }
       }
       if (!playerShown) throw new StageError("navigate", "딥링크 3번에도 쇼츠 화면이 열리지 않음", true);
-      await sleep(1500);
+      // 화면이 자리 잡을 때까지 기다린다. 일시정지 키는 보내지 않는다 — 공개 영상에서 일시정지 뒤 공유 시트가 안 열렸다(2026-10-05)
+      await sleep(4000);
       const pkg = await driver.getCurrentPackage();
       if (pkg !== YT) throw new StageError("navigate", `유튜브 앱이 앞에 있지 않음(${pkg})`, true);
-      await driver.execute("mobile: shell", { command: "input", args: ["keyevent", "KEYCODE_MEDIA_PAUSE"] }).catch(() => {});
       log("딥링크로 열림", { id, open });
       await shot(open === 1 ? "1-player" : "1-player-reopen");
 
       // ── ② 공유 → 링크 복사 → 클립보드 ID 대조 ──
       await driver.setClipboard(Buffer.from("EMPTY").toString("base64"), "plaintext");
-      await (await waitFor(await $desc("Share this video"), 10000, "identity", "공유 버튼")).click();
-      const copy = await waitFor(await $desc("Copy link"), 8000, "identity", "링크 복사 항목");
+      await dismissSheets(driver, log);
+      // 공유 시트가 한 번에 안 열리는 경우가 있었다(공개 영상) → 2번까지 누른다
+      let copy = null;
+      for (let s = 1; s <= 2 && !copy; s++) {
+        await (await waitFor(await $desc("Share this video"), 10000, "identity", "공유 버튼")).click();
+        const c = await $desc("Copy link");
+        if (await c.waitForDisplayed({ timeout: 8000 }).then(() => true, () => false)) copy = c;
+        else { log("공유 시트가 안 열림 → 다시", { s }); await dismissSheets(driver, log); }
+      }
+      if (!copy) throw new StageError("identity", "링크 복사 항목이 나타나지 않음(공유 2번)", true);
       await copy.click();
       await sleep(1500);
       if (await (await $desc("Copy link")).isExisting().catch(() => false)) { await driver.back(); await sleep(800); }
+      // 공개 영상은 링크 복사 뒤 "Promote video" 시트가 떠서 조작 버튼을 가린다 → 닫는다
+      await dismissSheets(driver, log);
       const clip = Buffer.from(await driver.getClipboard("plaintext"), "base64").toString("utf8");
       const gotId = extractVideoId(clip);
       log("링크 복사 ID", { gotId, match: gotId === id });
@@ -174,6 +184,22 @@ export async function selectFrameById(driver, task, { log = console.log, shot = 
     if (entered) await safeExit(driver, log);
     if (e instanceof StageError) throw e;
     throw new StageError("navigate", String(e?.message ?? e).slice(0, 300), true);
+  }
+}
+
+/**
+ * 플레이어 위에 뜬 알려진 시트를 닫는다(공개 영상의 "Promote video" 등). 편집 진입 전이라 안전.
+ * 닫기 버튼(desc "Close")이 있으면 누르고, 없으면 뒤로 가기 1번.
+ */
+export async function dismissSheets(driver, log = console.log) {
+  for (let i = 0; i < 2; i++) {
+    const promo = await driver.$(`android=new UiSelector().text("Promote video")`);
+    if (!(await promo.isExisting().catch(() => false))) return;
+    const close = await driver.$(`android=new UiSelector().description("Close")`);
+    if (await close.isExisting().catch(() => false)) await close.click();
+    else await driver.back();
+    log("Promote video 시트 닫음", { try: i + 1 });
+    await sleep(1200);
   }
 }
 
