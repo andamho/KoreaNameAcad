@@ -22,6 +22,7 @@ import { ImageManager } from "@/components/ImageManager";
 import { KnopApp } from "@/components/knop/KnopApp";
 import { InstagramPanel } from "@/components/instagram/InstagramPanel";
 import { NaverClipPanel } from "@/components/NaverClipPanel";
+import { TiktokManualPanel } from "@/components/TiktokManualPanel";
 import { knopApi } from "@/lib/knopApi";
 import { LayoutDashboard, UserPlus, Instagram } from "lucide-react";
 import type { Consultation, Content, InsertContent } from "@shared/schema";
@@ -1376,6 +1377,9 @@ function VideoDeployPanel() {
 
       {/* 네이버 클립: API 가 없어 반자동(영상·본문 준비 → 업로드는 직접) */}
       <NaverClipPanel refreshKey={result} />
+
+      {/* 틱톡: 자동 게시가 막혀 있어 반자동(영상·본문(인스타와 동일) 준비 → 업로드는 직접) */}
+      <TiktokManualPanel refreshKey={result} />
     </div>
   );
 }

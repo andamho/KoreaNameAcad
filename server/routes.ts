@@ -1610,6 +1610,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 틱톡 수동 업로드 준비: 자동 게시가 막혀 있어(개발자 앱 심사 반려) 영상 파일과 본문만 준비한다.
+  // 본문 = 인스타 캡션과 똑같이(대본 + 고정 홍보문구(@계정 포함) + 인스타 해시태그) — 배포 핸들러의 igCaption 과 같은 조립.
+  app.get("/api/admin/video/jobs/:id/tiktok-manual", requireAdmin, async (req, res) => {
+    try {
+      if (!db) return res.status(503).json({ error: "DB 없음" });
+      const [job] = await db.select().from(videoJobs).where(eq(videoJobs.id, String(req.params.id))).limit(1);
+      if (!job) return res.status(404).json({ error: "배포 기록 없음" });
+      const title = job.title.endsWith(FIXED_HASHTAGS) ? job.title.slice(0, -FIXED_HASHTAGS.length).trim() : job.title;
+      const caption = [String(job.caption || "").trim(), INSTAGRAM_CAPTION_FOOTER, INSTAGRAM_HASHTAGS].filter(Boolean).join("\n\n");
+      const ymd = new Date(job.createdAt).toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" }).replace(/-/g, "");
+      const safeTitle = title.replace(/[\\/:*?"<>|#]/g, "").replace(/\s+/g, " ").trim().slice(0, 40) || "영상";
+      const storage = new ObjectStorageService();
+      const ctype = (await storage.getObjectContentType(job.videoR2Key).catch(() => null)) || "video/mp4";
+      const ext = /quicktime/i.test(ctype) ? "mov" : /webm/i.test(ctype) ? "webm" : "mp4";
+      const fileName = `틱톡_${ymd}_${safeTitle}.${ext}`;
+      const videoUrl = await storage.getObjectDownloadURL(job.videoR2Key, fileName);
+      // 서명 주소는 응답 맨 뒤(요청 로그는 앞 80자만 남김)
+      res.json({ id: job.id, title, hasScript: !!String(job.caption || "").trim(), caption, fileName, videoUrl });
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "tiktok manual prep error" });
+    }
+  });
+
   // 네이버 클립 설명란 글: 대본을 읽고 시청자에게 설명하는 글(Gemini) + 필수 해시태그(코드가 붙임)
   app.post("/api/admin/video/jobs/:id/naver-clip/description", requireAdmin, async (req, res) => {
     try {
