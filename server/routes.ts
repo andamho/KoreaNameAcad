@@ -1643,6 +1643,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 틱톡 웹 업로드용 영상 읽기(읽기 전용, 2026-10-05): 틱톡 스튜디오 페이지 안에서 배포 영상을 받아 업로드 칸에 넣기 위해
+  // CORS 를 틱톡 출처(https://www.tiktok.com)에만 허용한다. 대상은 배포 기록(video_jobs)의 원본 영상뿐이고
+  // 배포 기록 ID(UUID)로만 찾는다. 같은 파일은 원래도 /objects/... 공개 주소로 받을 수 있다(인스타 게시용) — 바뀌는 건 CORS 뿐.
+  const TIKTOK_ORIGIN = "https://www.tiktok.com";
+  app.options("/api/media/video-jobs/:id/file", (req, res) => {
+    if (req.headers.origin === TIKTOK_ORIGIN) {
+      res.setHeader("Access-Control-Allow-Origin", TIKTOK_ORIGIN);
+      res.setHeader("Access-Control-Allow-Headers", "Range");
+      res.setHeader("Access-Control-Allow-Methods", "GET");
+      res.setHeader("Vary", "Origin");
+    }
+    res.status(204).end();
+  });
+  app.get("/api/media/video-jobs/:id/file", async (req, res) => {
+    try {
+      const id = String(req.params.id);
+      if (!/^[0-9a-f-]{36}$/i.test(id) || !db) return res.status(404).end();
+      const [job] = await db.select({ key: videoJobs.videoR2Key }).from(videoJobs).where(eq(videoJobs.id, id)).limit(1);
+      if (!job?.key) return res.status(404).end();
+      const key = validateR2VideoKey(job.key);
+      if (req.headers.origin === TIKTOK_ORIGIN) {
+        res.setHeader("Access-Control-Allow-Origin", TIKTOK_ORIGIN);
+        res.setHeader("Access-Control-Expose-Headers", "Content-Length, Content-Range, Content-Type");
+      }
+      res.setHeader("Vary", "Origin");
+      await new ObjectStorageService().downloadObject(key, res, req);
+    } catch (e: any) {
+      if (!res.headersSent) res.status(500).end();
+    }
+  });
+
   // 네이버 클립 설명란 글: 대본을 읽고 시청자에게 설명하는 글(Gemini) + 필수 해시태그(코드가 붙임)
   app.post("/api/admin/video/jobs/:id/naver-clip/description", requireAdmin, async (req, res) => {
     try {
