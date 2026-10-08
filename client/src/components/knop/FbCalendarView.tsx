@@ -166,6 +166,29 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
   ];
   while (cells.length % 7 !== 0) cells.push(null);
 
+  // 달력 아래를 화면 끝까지 채운다: 그리드 위치를 실제로 재서 남은 높이를 주 수로 나눈다.
+  // (예전엔 "화면÷6" 고정이라 5주 달은 한 주만큼 아래가 비었다.)
+  // 아래 여백 = 연회색 판 하단 패딩 16px + 화면 끝 여유 8px.
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const [rowMin, setRowMin] = useState<number | null>(null);
+  const rowCount = cells.length / 7;
+  useEffect(() => {
+    const fit = () => {
+      const el = gridRef.current;
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      const avail = window.innerHeight - top - 24;
+      setRowMin(Math.max(isMobile ? 80 : 92, Math.floor(avail / rowCount)));
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    window.addEventListener("orientationchange", fit);
+    return () => {
+      window.removeEventListener("resize", fit);
+      window.removeEventListener("orientationchange", fit);
+    };
+  }, [rowCount, isMobile, isLoading, isError]);
+
   // 달을 넘기면 아래 목록도 그 달로 따라간다(지난 달 날짜에 머물면 "0건"만 보인다).
   const move = (delta: number) => {
     let y = year;
@@ -382,10 +405,11 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
           {/* 구분선 없이 전부 흰 바탕. 아래 목록을 없앤 대신 달력이 화면 높이를 채운다
               (달력 앱 .calendar-grid 의 grid-auto-rows: 1fr 과 같은 방식 — 주마다 같은 높이) */}
           <div
+            ref={gridRef}
             className="grid grid-cols-7 bg-white"
-            // 한 줄의 최소 높이는 화면을 6줄로 나눈 값(= 화면을 꽉 채움)이고,
-            // 일정이 많은 주는 auto 로 그만큼 늘어난다(잘리지 않게).
-            style={{ gridAutoRows: `minmax(max(${isMobile ? 80 : 92}px, calc((100dvh - ${isMobile ? 230 : 260}px) / 6)), auto)` }}
+            // 한 줄의 최소 높이 = (화면 아래까지 남은 높이) ÷ (그 달의 주 수).
+            // 5주 달에도 6주 달에도 달력 아래가 화면 끝까지 차고, 일정이 많은 주는 auto 로 늘어난다.
+            style={{ gridAutoRows: `minmax(${rowMin ?? (isMobile ? 80 : 92)}px, auto)` }}
           >
             {cells.map((d, i) => {
               const key = d ? dateKey(year, month, d) : `empty-${i}`;
