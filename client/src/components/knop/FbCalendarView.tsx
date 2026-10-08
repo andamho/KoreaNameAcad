@@ -167,24 +167,38 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
   while (cells.length % 7 !== 0) cells.push(null);
 
   // 달력 아래를 화면 끝까지 채운다: 그리드 위치를 실제로 재서 남은 높이를 주 수로 나눈다.
-  // (예전엔 "화면÷6" 고정이라 5주 달은 한 주만큼 아래가 비었다.)
-  // 아래 여백 = 연회색 판 하단 패딩 16px + 화면 끝 여유 8px.
+  // 모바일에서는 관리자 페이지 바깥 컨테이너의 아래 여백(py-12 = 48px)을 달력 판이 마이너스 마진으로
+  // 되돌려 쓴다(아래 판의 style 참고). 그래서 연회색 판이 화면 맨 아래에 닿고, 흰 달력은
+  // 판의 아래 패딩 16px(달력 앱과 같은 값)만 남기고 그 위까지 찬다.
+  // 이 48px 은 Admin.tsx 의 `py-12` 와 짝이다 — 그쪽 여백을 바꾸면 여기도 같이 바꿔야 한다.
+  const PAGE_BOTTOM_PAD = 48;
   const gridRef = useRef<HTMLDivElement | null>(null);
   const [rowMin, setRowMin] = useState<number | null>(null);
   const rowCount = cells.length / 7;
   useEffect(() => {
+    let lastW = window.innerWidth;
+    let lastH = window.innerHeight;
     const fit = () => {
       const el = gridRef.current;
       if (!el) return;
+      lastW = window.innerWidth;
+      lastH = window.innerHeight;
       const top = el.getBoundingClientRect().top + window.scrollY;
-      const avail = window.innerHeight - top - 24;
-      setRowMin(Math.max(isMobile ? 80 : 92, Math.floor(avail / rowCount)));
+      const bottomGap = isMobile ? 16 : 24; // 모바일: 판 아래 패딩만. PC: 판 패딩 + 여유
+      const avail = window.innerHeight - top - bottomGap;
+      // 소수점 둘째 자리까지 쓴다(정수로 내림하면 주 수만큼 px 가 남아 아래가 비어 보인다)
+      setRowMin(Math.max(isMobile ? 80 : 92, Math.floor((avail / rowCount) * 100) / 100));
+    };
+    // 폰 브라우저는 스크롤하면 주소창·아래 도구줄이 숨었다 나타나며 innerHeight 가 수십 px 바뀐다.
+    // 그때마다 칸 높이를 다시 잡으면 달력이 출렁이므로, 폭이 바뀌었거나(회전) 크게 바뀐 경우만 다시 맞춘다.
+    const onResize = () => {
+      if (window.innerWidth !== lastW || Math.abs(window.innerHeight - lastH) > 160) fit();
     };
     fit();
-    window.addEventListener("resize", fit);
+    window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", fit);
     return () => {
-      window.removeEventListener("resize", fit);
+      window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", fit);
     };
   }, [rowCount, isMobile, isLoading, isError]);
@@ -310,7 +324,11 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
   return (
     <div className="space-y-3">
       {/* 달력 앱처럼 연회색 바탕(#eaeaf2) 위에 달력이 떠 있게 한다. 모바일은 화면 끝까지 편다. */}
-      <div className="-mx-4 px-[5px] pt-1 pb-4 sm:mx-0 sm:rounded-2xl" style={{ background: "#eaeaf2" }}>
+      <div
+        className="-mx-4 px-[5px] pt-1 pb-4 sm:mx-0 sm:rounded-2xl"
+        // 모바일: 페이지 아래 여백(48px)만큼 내려가 연회색 판이 화면 맨 아래까지 닿게 한다
+        style={{ background: "#eaeaf2", marginBottom: isMobile ? -PAGE_BOTTOM_PAD : 0 }}
+      >
       {/* 월 이동 */}
       <div className="flex items-center justify-between gap-2 px-1 pb-1">
         <div className="flex items-center gap-0.5">
