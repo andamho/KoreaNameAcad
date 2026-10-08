@@ -211,6 +211,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
           setDraft(null); // 효과 정리에서 history.back() 이 실행된다
         } else {
           setDraft(null);
+          setDetailDate(null); // 날짜 팝업에서 더블클릭한 경우 팝업도 닫는다
           onOpenCustomer(customerId);
         }
       } else {
@@ -482,7 +483,7 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
             <DialogTitle>{detailDate ? labelDate(detailDate) : ""}</DialogTitle>
           </DialogHeader>
           <div className="text-[13px] text-gray-400 font-medium -mt-2 mb-1">
-            {detailList.length ? `일정 ${detailList.length}건` : "오늘의 일정"}
+            {detailList.length ? `일정 ${detailList.length}건 · 일정을 더블클릭하면 고객 자료로 이동` : "오늘의 일정"}
           </div>
 
           <div className="overflow-y-auto flex flex-col gap-2.5 flex-1">
@@ -492,8 +493,12 @@ export function FbCalendarView({ onOpenCustomer }: { onOpenCustomer: (id: string
               detailList.map((e, k) => (
                 <div
                   key={`${e.id}-${k}`}
-                  className="flex items-center gap-2 px-3.5 py-4"
+                  className="flex items-center gap-2 px-3.5 py-4 cursor-pointer select-none"
                   style={{ background: chipBg(e.cat), color: chipFg(e.cat), borderRadius: 18 }}
+                  // 달력 칸은 일정이 겹쳐 더블클릭이 빗나간다 → 이 팝업에서도 더블클릭으로 고객 이동
+                  title="더블클릭 = 고객 자료로 이동"
+                  onMouseEnter={() => prefetchCust(e)}
+                  onDoubleClick={() => goCustomer(e)}
                 >
                   <div className="min-w-0 flex-1">
                     <div className="font-bold text-[15px] flex items-center gap-1.5 flex-wrap">
