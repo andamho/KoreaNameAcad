@@ -19,7 +19,7 @@ import {
 } from "./instagram/reconcile";
 import { registerInstagramRoutes } from "./instagram/routes";
 import { registerYtFrameRoutes, enqueueShortsFrameTask } from "./ytFrame";
-import { buildNaverClipDescription } from "./naverClip";
+import { buildNaverClipDescription, finalizeClipDescription, NAVER_CLIP_HASHTAGS } from "./naverClip";
 import { registerSocialUploadRoutes, enqueueSocialUploads } from "./socialUpload";
 import { sendAdminOtp } from "./telegramBot";
 import { otpStore, generateOtp, computeOtpHash, verifyOtpCode, OTP_TTL_MS } from "./otpStore";
@@ -1674,7 +1674,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerYtFrameRoutes(app);
 
   // 틱톡·네이버 클립 자동 업로드: PC 워커 API. 자료 = 원본 영상(1시간 서명 주소) + 틱톡 본문(인스타와 같은 조립, 틱톡용 신청 안내)
-  // + 네이버 설명(대본 기반 AI 설명 + 필수 해시태그, 300자 이하)
+  // + 네이버 설명(배포 때 넣은 본문 그대로 + 필수 해시태그, 300자 이하)
   registerSocialUploadRoutes(app, async (videoJobId) => {
     if (!db) throw new Error("DB 없음");
     const [job] = await db.select().from(videoJobs).where(eq(videoJobs.id, videoJobId)).limit(1);
@@ -1682,13 +1682,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const title = job.title.endsWith(FIXED_HASHTAGS) ? job.title.slice(0, -FIXED_HASHTAGS.length).trim() : job.title;
     const script = String(job.caption || "").trim();
     const tiktokCaption = [script, TIKTOK_MANUAL_FOOTER, INSTAGRAM_HASHTAGS].filter(Boolean).join("\n\n");
-    let naverDescription: string;
-    try {
-      naverDescription = await buildNaverClipDescription(title, script);
-    } catch {
-      // 대본이 없으면 지어내지 않는다: 제목 + 필수 해시태그만
-      naverDescription = `${title}\n\n#한국이름학교 #와츠유어네임이름연구협회`;
-    }
+    // 네이버 클립 설명 = 인스타에 쓴 본문 그대로 + 필수 해시태그(2026-10-13 안대장님 지정, 예전엔 AI 요약).
+    // 인스타 하단 고정 문구는 300자 제한 때문에 넣지 않는다. 본문이 길면 문장 단위로 300자 안에 맞춘다.
+    // 본문이 없으면 지어내지 않는다: 제목 + 필수 해시태그만
+    const naverDescription = script ? finalizeClipDescription(script, []) : `${title}\n\n${NAVER_CLIP_HASHTAGS}`;
     const storage = new ObjectStorageService();
     const ctype = (await storage.getObjectContentType(job.videoR2Key).catch(() => null)) || "video/mp4";
     const ext = /quicktime/i.test(ctype) ? "mov" : /webm/i.test(ctype) ? "webm" : "mp4";
