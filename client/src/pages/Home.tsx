@@ -144,9 +144,24 @@ export default function Home() {
     
     // referrer 저장 (없으면 null로 초기화)
     referrerPage.current = fromPage || null;
-    
-    if (openType === "analysis" || openType === "naming") {
-      setDialogType(openType);
+
+    // 네이버 블로그 글 하단 신청서 링크가 홈(/)으로 걸려 있어, 블로그에서 들어오면 이름분석 신청서를 바로 연다.
+    // 새로고침 때 다시 열리지 않도록 탭당 한 번만.
+    let fromNaverBlog = false;
+    if (!openType && !detailType) {
+      let refHost = "";
+      try { refHost = new URL(document.referrer).hostname; } catch {}
+      if (refHost === "blog.naver.com" || refHost === "m.blog.naver.com") {
+        fromNaverBlog = true;
+        try {
+          if (sessionStorage.getItem("naverBlogAnalysisOpened")) fromNaverBlog = false;
+          else sessionStorage.setItem("naverBlogAnalysisOpened", "1");
+        } catch {}
+      }
+    }
+
+    if (openType === "analysis" || openType === "naming" || fromNaverBlog) {
+      setDialogType(openType === "naming" ? "naming" : "analysis");
       setDialogOpen(true);
       setShowExpPopup(false);
       window.history.replaceState({ modal: "consultation", from: fromPage }, "", "/");
