@@ -101,6 +101,42 @@ export function finalizeClipDescription(aiText: string, topicTags: unknown = [],
   return join(fitBody(body, room), t);
 }
 
+/** AI 를 못 쓸 때 붙이는 기본 내용 해시태그 */
+export const FALLBACK_TOPIC_TAGS = ["작명", "개명", "이름분석", "이름풀이"];
+
+const TAG_SYSTEM = `너는 '한국이름학교(와츠유어네임 이름연구협회)'의 네이버 클립 해시태그를 고른다.
+영상 대본을 읽고 이 영상 내용에 맞는 해시태그 3~5개를 JSON 으로 낸다(# 없이 짧은 단어만, 띄어쓰기 없이).
+- 영상의 주제·핵심 단어·시청자가 검색할 만한 말(예: 이름풀이, 작명, 개명, 수리운, 이름운 등 내용에 해당하는 것).
+- '한국이름학교', '와츠유어네임이름연구협회' 는 넣지 않는다(따로 붙인다).
+- 내용과 관계없는 유행어·과장 표현은 넣지 않는다.`;
+const TAG_SCHEMA = { type: "object", properties: { hashtags: { type: "array", items: { type: "string" } } }, required: ["hashtags"] };
+const tagCache = new Map<string, string[]>();
+
+/**
+ * 영상 내용에 맞는 해시태그(설명 글은 그대로 두고 해시태그만 고름). 실패하면 기본 태그.
+ * 2026-10-20: 설명을 '배포 본문 그대로'로 바꾸면서(10-13) 내용 해시태그까지 빠졌던 것을 되살림.
+ */
+export async function suggestTopicTags(
+  title: string, script: string,
+  opts: { generate?: (system: string, prompt: string) => Promise<{ hashtags: string[] }> } = {},
+): Promise<string[]> {
+  const s = String(script ?? "").trim();
+  if (!s) return FALLBACK_TOPIC_TAGS;
+  const key = crypto.createHash("sha256").update(`tags1\n${title}\n${s}`).digest("hex");
+  if (tagCache.has(key)) return tagCache.get(key)!;
+  try {
+    const gen = opts.generate ?? ((sys, p) => geminiJson(sys, [{ text: p }], TAG_SCHEMA, 300, 0.3));
+    const r = await gen(TAG_SYSTEM, `영상 제목: ${title}\n\n영상 대본:\n${s.slice(0, 6000)}`);
+    const tags = normalizeTopicTags(r?.hashtags ?? []).map((t) => t.slice(1));
+    const out = tags.length >= 2 ? tags : FALLBACK_TOPIC_TAGS;
+    tagCache.set(key, out);
+    if (tagCache.size > 50) tagCache.delete(tagCache.keys().next().value as string);
+    return out;
+  } catch {
+    return FALLBACK_TOPIC_TAGS;
+  }
+}
+
 // 같은 대본은 다시 만들지 않는다(서버 메모리 캐시, 최대 50건). "다시 쓰기"는 캐시를 건너뛴다.
 const cache = new Map<string, string>();
 

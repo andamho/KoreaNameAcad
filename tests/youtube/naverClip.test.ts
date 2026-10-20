@@ -84,3 +84,23 @@ test("같은 대본은 캐시, 다시 쓰기는 새로 생성", async () => {
   assert.ok(c.startsWith("설명 2"));
   assert.ok(c.endsWith(`${NAVER_CLIP_HASHTAGS} #이름운`));
 });
+
+// 2026-10-20: 설명을 '배포 본문 그대로'로 바꾼 뒤(10-13) 내용 해시태그가 빠졌던 것 → 해시태그만 AI 가 고르고, 실패하면 기본 태그
+test("suggestTopicTags: AI 가 고른 내용 해시태그를 정리해 돌려줌", async () => {
+  const tags = await mod.suggestTopicTags("달에 토끼가 산다고요?", "해와 달을 이름 분석하면 7수가 나옵니다.", {
+    generate: async () => ({ hashtags: ["#맹호출림", "해와 달", "한국이름학교", "이름운"] }),
+  });
+  assert.deepEqual(tags, ["맹호출림", "해와달", "이름운"]);
+});
+
+test("suggestTopicTags: AI 실패·대본 없음이면 기본 태그", async () => {
+  assert.deepEqual(await mod.suggestTopicTags("t", "대본 하나", { generate: async () => { throw new Error("x"); } }), mod.FALLBACK_TOPIC_TAGS);
+  assert.deepEqual(await mod.suggestTopicTags("t", "", {}), mod.FALLBACK_TOPIC_TAGS);
+});
+
+test("배포 본문 + 내용 해시태그: 필수 2개 뒤에 내용 태그가 붙고 300자 이하", () => {
+  const body = "\"달에 토끼가 산다고요?\"\n아닙니다. 호랑이가 삽니다.\n\n해와 달을 이름으로 분석하면 7수,\n맹호출림(猛虎出林)\n용맹한 호랑이가 숲을 박차고 나오는 기상입니다.\n\n여러분 이름에는 어떤 기상이 숨어 있을까요?\n\n바른 이름으로, 널리 세상을 이롭게\n🏫 와츠유어네임 이름연구협회\n\n📌 댓글에 '이름'이라고 남겨주시면 자세하게 안내해 드리겠습니다.";
+  const out = finalizeClipDescription(body, ["맹호출림", "해와달", "이름운", "개명"]);
+  assert.ok(out.includes(`${NAVER_CLIP_HASHTAGS} #맹호출림 #해와달`));
+  assert.ok(Array.from(out).length <= 300);
+});

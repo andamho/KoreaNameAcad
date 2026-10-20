@@ -19,7 +19,7 @@ import {
 } from "./instagram/reconcile";
 import { registerInstagramRoutes } from "./instagram/routes";
 import { registerYtFrameRoutes, enqueueShortsFrameTask } from "./ytFrame";
-import { buildNaverClipDescription, finalizeClipDescription, NAVER_CLIP_HASHTAGS } from "./naverClip";
+import { buildNaverClipDescription, finalizeClipDescription, NAVER_CLIP_HASHTAGS, suggestTopicTags } from "./naverClip";
 import { registerSocialUploadRoutes, enqueueSocialUploads } from "./socialUpload";
 import { sendAdminOtp } from "./telegramBot";
 import { otpStore, generateOtp, computeOtpHash, verifyOtpCode, OTP_TTL_MS } from "./otpStore";
@@ -1685,7 +1685,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // 네이버 클립 설명 = 인스타에 쓴 본문 그대로 + 필수 해시태그(2026-10-13 안대장님 지정, 예전엔 AI 요약).
     // 인스타 하단 고정 문구는 300자 제한 때문에 넣지 않는다. 본문이 길면 문장 단위로 300자 안에 맞춘다.
     // 본문이 없으면 지어내지 않는다: 제목 + 필수 해시태그만
-    const naverDescription = script ? finalizeClipDescription(script, []) : `${title}\n\n${NAVER_CLIP_HASHTAGS}`;
+    // 해시태그 = 필수 2개 + 영상 내용 해시태그(AI 가 고름, 실패하면 기본 태그) — 2026-10-20 안대장님 지적으로 되살림
+    const naverDescription = script
+      ? finalizeClipDescription(script, await suggestTopicTags(title, script))
+      : `${title}\n\n${NAVER_CLIP_HASHTAGS}`;
     const storage = new ObjectStorageService();
     const ctype = (await storage.getObjectContentType(job.videoR2Key).catch(() => null)) || "video/mp4";
     const ext = /quicktime/i.test(ctype) ? "mov" : /webm/i.test(ctype) ? "webm" : "mp4";
