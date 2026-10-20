@@ -5,15 +5,16 @@ import assert from "node:assert/strict";
 const mod = await import("../../server/naverClip");
 const { finalizeClipDescription, normalizeTopicTags, buildNaverClipDescription, NAVER_CLIP_HASHTAGS, MAX_TOPIC_TAGS } = mod;
 
-test("필수 2개는 항상 해시태그 맨 앞에 정확히 한 번, 그 뒤에 내용 해시태그", () => {
+test("고정 4개는 항상 해시태그 맨 앞에 정확히 한 번, 그 뒤에 내용 해시태그 1개(총 5개)", () => {
   const out = finalizeClipDescription("이름에 담긴 의미를 알려 드립니다.", ["이름풀이", "#수리운"]);
-  assert.equal(NAVER_CLIP_HASHTAGS, "#한국이름학교 #와츠유어네임이름연구협회");
-  assert.ok(out.endsWith(`\n\n${NAVER_CLIP_HASHTAGS} #이름풀이 #수리운`));
+  assert.equal(NAVER_CLIP_HASHTAGS, "#한국이름학교 #와츠유어네임이름연구협회 #이름분석 #작명");
+  assert.ok(out.endsWith(`\n\n${NAVER_CLIP_HASHTAGS} #이름풀이`));
   assert.equal(out.split("#한국이름학교").length - 1, 1);
+  assert.equal((out.match(/#/g) || []).length, 5);
 });
 
 test("내용 해시태그 정리: 공백·기호 제거, 필수·중복 제외, 최대 개수", () => {
-  assert.deepEqual(normalizeTopicTags(["이름 풀이", "#작명!", "한국이름학교", "작명", "", "#와츠유어네임이름연구협회"]), ["#이름풀이", "#작명"]);
+  assert.deepEqual(normalizeTopicTags(["한국이름학교", "#작명!", "이름분석", "", "이름 풀이", "#와츠유어네임이름연구협회", "개명"]), ["#이름풀이"]);
   assert.equal(normalizeTopicTags(Array.from({ length: 10 }, (_, i) => `태그${i}`)).length, MAX_TOPIC_TAGS);
   assert.deepEqual(normalizeTopicTags("문자열"), []);
 });
@@ -27,7 +28,7 @@ test("빈 출력이어도 필수 해시태그는 남는다", () => {
   assert.equal(finalizeClipDescription("", []), NAVER_CLIP_HASHTAGS);
 });
 
-test("300자 제한: 해시태그부터 줄이고, 그래도 넘치면 설명을 문장 단위로 줄인다(필수 2개는 유지)", () => {
+test("300자 제한: 설명을 문장 단위로 줄인다(고정 4개 + 내용 1개는 유지)", () => {
   const { charCount, MAX_TOTAL_CHARS } = mod;
   assert.equal(MAX_TOTAL_CHARS, 300);
   const sentence = "이름에는 그 사람의 삶을 비추는 여러 가지 운이 담겨 있습니다. ";
@@ -35,7 +36,7 @@ test("300자 제한: 해시태그부터 줄이고, 그래도 넘치면 설명을
   // 1) 설명이 짧으면 해시태그 전부
   const short = finalizeClipDescription(sentence.trim(), tags);
   assert.ok(charCount(short) <= 300);
-  assert.ok(short.endsWith("#이름의미"));
+  assert.ok(short.endsWith(`${NAVER_CLIP_HASHTAGS} #이름풀이`));
   // 2) 설명이 길면 결과는 항상 300자 이하, 필수 2개 유지, 문장 끝에서 잘림
   for (const n of [5, 7, 9, 20]) {
     const out = finalizeClipDescription(sentence.repeat(n).trim(), tags);
@@ -90,7 +91,7 @@ test("suggestTopicTags: AI 가 고른 내용 해시태그를 정리해 돌려줌
   const tags = await mod.suggestTopicTags("달에 토끼가 산다고요?", "해와 달을 이름 분석하면 7수가 나옵니다.", {
     generate: async () => ({ hashtags: ["#맹호출림", "해와 달", "한국이름학교", "이름운"] }),
   });
-  assert.deepEqual(tags, ["맹호출림", "해와달", "이름운"]);
+  assert.deepEqual(tags, ["맹호출림"]);   // 가장 잘 맞는 1개(고정 4개와 합쳐 5개)
 });
 
 test("suggestTopicTags: AI 실패·대본 없음이면 기본 태그", async () => {
@@ -98,9 +99,10 @@ test("suggestTopicTags: AI 실패·대본 없음이면 기본 태그", async () 
   assert.deepEqual(await mod.suggestTopicTags("t", "", {}), mod.FALLBACK_TOPIC_TAGS);
 });
 
-test("배포 본문 + 내용 해시태그: 필수 2개 뒤에 내용 태그가 붙고 300자 이하", () => {
+test("배포 본문 + 내용 해시태그: 고정 4개 뒤에 내용 태그 1개, 300자 이하", () => {
   const body = "\"달에 토끼가 산다고요?\"\n아닙니다. 호랑이가 삽니다.\n\n해와 달을 이름으로 분석하면 7수,\n맹호출림(猛虎出林)\n용맹한 호랑이가 숲을 박차고 나오는 기상입니다.\n\n여러분 이름에는 어떤 기상이 숨어 있을까요?\n\n바른 이름으로, 널리 세상을 이롭게\n🏫 와츠유어네임 이름연구협회\n\n📌 댓글에 '이름'이라고 남겨주시면 자세하게 안내해 드리겠습니다.";
   const out = finalizeClipDescription(body, ["맹호출림", "해와달", "이름운", "개명"]);
-  assert.ok(out.includes(`${NAVER_CLIP_HASHTAGS} #맹호출림 #해와달`));
+  assert.ok(out.endsWith(`${NAVER_CLIP_HASHTAGS} #맹호출림`));
+  assert.equal((out.match(/#/g) || []).length, 5);
   assert.ok(Array.from(out).length <= 300);
 });

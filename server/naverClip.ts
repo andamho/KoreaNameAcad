@@ -1,13 +1,13 @@
 // 네이버 클립 설명란 글 만들기 — 영상 대본을 읽고 시청자에게 영상 내용을 설명하는 글 + 해시태그.
-// 해시태그 = 필수 2개(코드가 항상 맨 앞에 붙임 → 빠지거나 바뀌지 않음) + 영상 내용에 맞는 해시태그(AI 제안, 코드가 정리).
+// 해시태그 = 고정 4개(코드가 항상 맨 앞에 붙임 → 빠지거나 바뀌지 않음) + 영상 내용에 맞는 해시태그 1개(AI 제안, 코드가 정리). 네이버 클립 한도 5개.
 import crypto from "crypto";
 import { geminiJson } from "./reviewPipeline/gemini";
 
-/** 설명란 해시태그 맨 앞에 항상 들어가는 2개(안대장님 지정) */
-export const NAVER_CLIP_HASHTAGS = "#한국이름학교 #와츠유어네임이름연구협회";
+/** 설명란 해시태그 맨 앞에 항상 들어가는 고정 4개(안대장님 지정). 네이버 클립은 해시태그가 5개까지라 내용 태그는 1개만(2026-10-20) */
+export const NAVER_CLIP_HASHTAGS = "#한국이름학교 #와츠유어네임이름연구협회 #이름분석 #작명";
 const REQUIRED_TAGS = NAVER_CLIP_HASHTAGS.split(" ");
-/** 내용 해시태그 최대 개수 */
-export const MAX_TOPIC_TAGS = 6;
+/** 내용 해시태그 최대 개수(고정 4개 + 1개 = 네이버 클립 한도 5개) */
+export const MAX_TOPIC_TAGS = 1;
 /** 설명란 전체(설명 + 해시태그) 최대 글자 수(안대장님 지정) */
 export const MAX_TOTAL_CHARS = 300;
 /** 글자 수(한글·이모지 모두 1자로 셈) */
@@ -24,9 +24,9 @@ description: 이 영상이 어떤 내용인지 시청자에게 설명하는 글(
 - 마지막 문장은 이름에 관심을 갖도록 부드럽게 권하는 한 문장.
 - 해시태그(#), 링크, 전화번호, 마크다운, 이모지는 쓰지 않는다.
 
-hashtags: 이 영상 내용에 맞는 해시태그 3~5개(# 없이 짧은 단어만, 띄어쓰기 없이)
+hashtags: 이 영상 내용에 맞는 해시태그 1~3개(# 없이 짧은 단어만, 띄어쓰기 없이, 가장 잘 맞는 것부터)
 - 영상의 주제·핵심 단어·시청자가 검색할 만한 말(예: 이름풀이, 작명, 개명, 수리운, 이름운 등 내용에 해당하는 것).
-- '한국이름학교', '와츠유어네임이름연구협회' 는 넣지 않는다(따로 붙인다).
+- '한국이름학교', '와츠유어네임이름연구협회', '이름분석', '작명' 은 넣지 않는다(따로 붙인다).
 - 내용과 관계없는 유행어·과장 표현은 넣지 않는다.`;
 
 const SCHEMA = {
@@ -82,8 +82,8 @@ function fitBody(body: string, max: number): string {
 }
 
 /**
- * 최종 설명란 글 = 설명 + 빈 줄 + 필수 2개 + 내용 해시태그(순수 함수). 전체 MAX_TOTAL_CHARS 이하.
- * 넘치면 ① 내용 해시태그를 뒤에서부터 줄이고(최소 2개) ② 그래도 넘치면 설명을 문장 단위로 줄인다. 필수 2개는 항상 남긴다.
+ * 최종 설명란 글 = 설명 + 빈 줄 + 고정 4개 + 내용 해시태그(순수 함수). 전체 MAX_TOTAL_CHARS 이하.
+ * 넘치면 설명을 문장 단위로 줄인다. 고정 4개와 내용 1개는 항상 남긴다.
  */
 export function finalizeClipDescription(aiText: string, topicTags: unknown = [], maxTotal = MAX_TOTAL_CHARS): string {
   const body = cleanBody(aiText);
@@ -102,12 +102,12 @@ export function finalizeClipDescription(aiText: string, topicTags: unknown = [],
 }
 
 /** AI 를 못 쓸 때 붙이는 기본 내용 해시태그 */
-export const FALLBACK_TOPIC_TAGS = ["작명", "개명", "이름분석", "이름풀이"];
+export const FALLBACK_TOPIC_TAGS = ["개명"];
 
 const TAG_SYSTEM = `너는 '한국이름학교(와츠유어네임 이름연구협회)'의 네이버 클립 해시태그를 고른다.
-영상 대본을 읽고 이 영상 내용에 맞는 해시태그 3~5개를 JSON 으로 낸다(# 없이 짧은 단어만, 띄어쓰기 없이).
+영상 대본을 읽고 이 영상 내용에 가장 잘 맞는 해시태그 1~3개를 잘 맞는 순서로 JSON 으로 낸다(# 없이 짧은 단어만, 띄어쓰기 없이).
 - 영상의 주제·핵심 단어·시청자가 검색할 만한 말(예: 이름풀이, 작명, 개명, 수리운, 이름운 등 내용에 해당하는 것).
-- '한국이름학교', '와츠유어네임이름연구협회' 는 넣지 않는다(따로 붙인다).
+- '한국이름학교', '와츠유어네임이름연구협회', '이름분석', '작명' 은 넣지 않는다(고정으로 따로 붙인다).
 - 내용과 관계없는 유행어·과장 표현은 넣지 않는다.`;
 const TAG_SCHEMA = { type: "object", properties: { hashtags: { type: "array", items: { type: "string" } } }, required: ["hashtags"] };
 const tagCache = new Map<string, string[]>();
@@ -128,7 +128,7 @@ export async function suggestTopicTags(
     const gen = opts.generate ?? ((sys, p) => geminiJson(sys, [{ text: p }], TAG_SCHEMA, 300, 0.3));
     const r = await gen(TAG_SYSTEM, `영상 제목: ${title}\n\n영상 대본:\n${s.slice(0, 6000)}`);
     const tags = normalizeTopicTags(r?.hashtags ?? []).map((t) => t.slice(1));
-    const out = tags.length >= 2 ? tags : FALLBACK_TOPIC_TAGS;
+    const out = tags.length >= 1 ? tags : FALLBACK_TOPIC_TAGS;
     tagCache.set(key, out);
     if (tagCache.size > 50) tagCache.delete(tagCache.keys().next().value as string);
     return out;
