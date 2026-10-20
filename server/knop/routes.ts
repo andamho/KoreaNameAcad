@@ -303,6 +303,8 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
         throw e;
       }
       logAttempt(true, `저장됨 id=${row.id.slice(0, 8)} | ${shape()}`);
+      // 고객정보에 없는 번호인데 연락처 이름이 기존 고객과 같으면 '새 번호' 알림(기다리지 않음)
+      import("./newNumberAlert").then((m) => m.새번호확인({ phone: row.phone, contactName: parsed.contactName })).catch(() => {});
       // 자동처리(옵션): KNOP_INTAKE_AUTO=1 → 스레드 분석. 실제 기록/이메일은 KNOP_INTAKE_LIVE=1 일 때만
       let auto: any = null;
       if ((process.env.KOP_INTAKE_AUTO || process.env.KNOP_INTAKE_AUTO) === "1") {
