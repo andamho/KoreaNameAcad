@@ -221,3 +221,33 @@ export async function extractFrameJpeg(input: Buffer, atSeconds = 0.25): Promise
     await fs.unlink(outPath).catch(() => {});
   }
 }
+
+/** 그림 파일 종류(앞부분 바이트로 판별). 모르는 형식이면 null */
+export function imageExt(buf: Buffer): ".png" | ".jpg" | ".webp" | null {
+  if (buf.length >= 8 && buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return ".png";
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return ".jpg";
+  if (buf.length >= 12 && buf.toString("ascii", 0, 4) === "RIFF" && buf.toString("ascii", 8, 12) === "WEBP") return ".webp";
+  return null;
+}
+
+/**
+ * 썸네일 그림(PNG·JPG·WebP)을 유튜브용 JPEG 로(가로 최대 1280, 유튜브 한도 2MB 안).
+ * 2026-10-22: 이미 올라간 유튜브 영상의 썸네일만 바꾸기 위해 추가.
+ */
+export async function imageToJpeg(input: Buffer, maxWidth = 1280): Promise<Buffer> {
+  const ext = imageExt(input);
+  if (!ext) throw new Error("PNG·JPG·WebP 그림만 쓸 수 있습니다.");
+  const tmp = os.tmpdir();
+  const inPath = path.join(tmp, `imin-${randomUUID()}${ext}`);
+  const outPath = path.join(tmp, `imout-${randomUUID()}.jpg`);
+  await fs.writeFile(inPath, input);
+  try {
+    await runFfmpeg(["-i", inPath, "-vf", `scale='min(${maxWidth},iw)':-2`, "-frames:v", "1", "-q:v", "2", "-y", outPath], "thumbnail-image");
+    const out = await fs.readFile(outPath);
+    if (out.length > 2 * 1024 * 1024) throw new Error(`썸네일이 2MB를 넘습니다(${Math.round(out.length / 1024)}KB).`);
+    return out;
+  } finally {
+    await fs.unlink(inPath).catch(() => {});
+    await fs.unlink(outPath).catch(() => {});
+  }
+}

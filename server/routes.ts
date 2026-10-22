@@ -41,7 +41,7 @@ const otpVerifyLimiter = rateLimit({
   message: { error: "OTP 시도가 너무 많습니다. 10분 후 다시 시도해주세요." },
 });
 import { tiktokConfigured, getTiktokAuthUrl, handleTiktokCallback, getTiktokStatus, publishTiktokVideo } from "./tiktok";
-import { extractFrameJpeg, transcodeR2VideoToH264 } from "./videoTools";
+import { extractFrameJpeg, imageToJpeg, transcodeR2VideoToH264 } from "./videoTools";
 import { ObjectStorageService, validateR2VideoKey } from "./object_storage/objectStorage";
 import { registerPagePreview } from "./pagePreview";
 import { db } from "./db";
@@ -1183,6 +1183,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(rows);
     } catch (error: any) {
       res.status(500).json({ error: error?.message || "candidates error" });
+    }
+  });
+
+  // ── 이미 올라간 유튜브 영상의 썸네일만 바꾸기(영상은 다시 올리지 않음 — 주소·조회수 유지) ──
+  // 2026-10-22: 배포 뒤 썸네일을 고쳤는데 유튜브만 예전 표지(영상 0.15초 장면)로 남던 문제(달토끼 TG7eGEzXxCI).
+  // body: { videoId, objectPath(업로드한 썸네일 그림 PNG·JPG·WebP) }
+  app.post("/api/admin/youtube/thumbnail", requireAdmin, async (req, res) => {
+    try {
+      const { videoId, objectPath } = req.body || {};
+      if (typeof videoId !== "string" || !/^[A-Za-z0-9_-]{11}$/.test(videoId)) {
+        return res.status(400).json({ error: "유효한 유튜브 videoId가 필요합니다." });
+      }
+      if (typeof objectPath !== "string" || !objectPath.startsWith("/objects/")) {
+        return res.status(400).json({ error: "유효한 썸네일 objectPath가 필요합니다." });
+      }
+      const g = await new ObjectStorageService().getObjectBuffer(objectPath.replace("/objects/", ""));
+      const image = await imageToJpeg(g.buffer);
+      const jpegSha256 = crypto.createHash("sha256").update(image).digest("hex");
+      const run = await setThumbnailWithRetry({
+        videoId,
+        image,
+        jpegSha256,
+        setThumbnail: (id, img) => setYoutubeThumbnail(id, img, "image/jpeg"),
+        getVideoState: (id) => getYoutubeVideoState(id),
+      });
+      res.status(run.ok ? 200 : 502).json({ ok: run.ok, videoId, jpegSha256, bytes: image.length, attempts: run.attempts });
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "thumbnail error" });
     }
   });
 
