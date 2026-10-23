@@ -42,6 +42,7 @@ const otpVerifyLimiter = rateLimit({
 });
 import { tiktokConfigured, getTiktokAuthUrl, handleTiktokCallback, getTiktokStatus, publishTiktokVideo } from "./tiktok";
 import { extractFrameJpeg, imageToJpeg, transcodeR2VideoToH264 } from "./videoTools";
+import { getThreadsStatus, publishThreadsVideo } from "./threads";
 import { ObjectStorageService, validateR2VideoKey } from "./object_storage/objectStorage";
 import { registerPagePreview } from "./pagePreview";
 import { db } from "./db";
@@ -1211,6 +1212,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(run.ok ? 200 : 502).json({ ok: run.ok, videoId, jpegSha256, bytes: image.length, attempts: run.attempts });
     } catch (error: any) {
       res.status(500).json({ error: error?.message || "thumbnail error" });
+    }
+  });
+
+  // ── 스레드: 연결 상태 확인 / 영상 글 올리기(+ 첫 답글 상담 링크) — 2026-10-23 ──
+  // 토큰 값은 응답에 절대 넣지 않는다(계정명·만료일만).
+  app.get("/api/admin/threads/status", requireAdmin, async (_req, res) => {
+    try {
+      res.json(await getThreadsStatus());
+    } catch (error: any) {
+      res.status(500).json({ connected: false, error: error?.message || "threads status error" });
+    }
+  });
+
+  // body: { objectPath("/objects/…" 영상) 또는 videoUrl, text, topicTag?, replyText?, replyLink? }
+  app.post("/api/admin/threads/publish", requireAdmin, async (req, res) => {
+    try {
+      const { objectPath, videoUrl, text, topicTag, replyText, replyLink } = req.body || {};
+      const url = typeof objectPath === "string" && objectPath.startsWith("/objects/")
+        ? `${PUBLIC_MEDIA_BASE_URL}${objectPath}`
+        : typeof videoUrl === "string" ? videoUrl : "";
+      if (!url) return res.status(400).json({ error: "영상 objectPath 또는 videoUrl 이 필요합니다." });
+      if (typeof text !== "string" || !text.trim()) return res.status(400).json({ error: "본문(text)이 필요합니다." });
+      const r = await publishThreadsVideo({
+        videoUrl: url,
+        text: text.trim(),
+        topicTag: typeof topicTag === "string" ? topicTag : undefined,
+        replyText: typeof replyText === "string" && replyText.trim() ? replyText.trim() : undefined,
+        replyLink: typeof replyLink === "string" && /^https:\/\//.test(replyLink) ? replyLink : undefined,
+      });
+      res.json({ ok: true, ...r });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: error?.message || "threads publish error" });
     }
   });
 
