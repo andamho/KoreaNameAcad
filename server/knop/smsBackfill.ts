@@ -54,6 +54,9 @@ type OneResult = { state: string; customerState: string; incomingId: string | nu
 // 한 건 = 한 트랜잭션. exact·레거시·쓰기·item 모두 tx 안(#1). 고객매칭만 tx 밖.
 async function processOne(runId: string, deviceId: string, dryRun: boolean, m: BackfillMsg): Promise<OneResult> {
   const d = db!;
+  // 폰 매크로 경로와 같은 줄이기 규칙 — 같아야 이미 들어온 문자와 같은 문자로 알아본다
+  const { shortenSmsBody } = await import("./intakeStore");
+  m = { ...m, body: shortenSmsBody(m.body) };
   const recv = msToNaive(m.date);
   const cust: any = await d.execute(
     sql`SELECT 1 FROM customers WHERE regexp_replace(phone,'[^0-9]','','g')=regexp_replace(${m.phone},'[^0-9]','','g') LIMIT 1`);
@@ -141,6 +144,12 @@ export async function processBackfill(input: BackfillInput): Promise<BackfillRes
       continue;
     }
     const r = await processOne(runId, input.deviceId, input.dryRun, m);
+    // 새로 들어간 '최근' 문자는 폰 매크로 경로처럼 후속 동작(답장 판독·작명장 링크 이름 변경)을 돌린다.
+    // 지난 문자를 한꺼번에 채울 때 예전 일을 다시 건드리지 않도록 이틀 안 문자만.
+    if (r.state === "new" && !input.dryRun && Date.now() - m.date < 2 * 86_400_000) {
+      const { afterSmsSaved, shortenSmsBody } = await import("./intakeStore");
+      afterSmsSaved(m.phone.replace(/\D/g, ""), m.direction, shortenSmsBody(m.body));
+    }
     (counts as any)[r.state]++;
     counts.customer_evaluated++;
     (counts as any)["customer_" + r.customerState]++;

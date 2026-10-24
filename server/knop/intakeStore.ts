@@ -24,6 +24,37 @@ export type SmsThread = {
   createdEventDate: string | null;
 };
 
+// 고객정보에 남길 때 줄이는 긴 안내 문자(원장님 지정). 앞부분만 남기고 나머지는 버린다.
+// 폰 매크로·노트북 휴대폰과 연결 두 경로가 같은 규칙을 써야 같은 문자를 같은 문자로 알아본다.
+const 줄일문자: Array<{ 시작: RegExp; 남길끝: string }> = [
+  // 2026-10-24: "✈️ 여행도 잘 알아보고 준비하고 가는 만큼 / 풍성하고 멋진 여행이 되듯이," 까지만
+  { 시작: /^\s*✈️?\s*여행도 잘 알아보고/, 남길끝: "멋진 여행이 되듯이," },
+];
+export function shortenSmsBody(body: string): string {
+  const b = String(body ?? "");
+  for (const r of 줄일문자) {
+    if (!r.시작.test(b)) continue;
+    const i = b.indexOf(r.남길끝);
+    if (i >= 0) return b.slice(0, i + r.남길끝.length).trim();
+  }
+  return b;
+}
+
+// 문자가 새로 저장된 뒤 바로 돌리는 일(폰 매크로·노트북 채우기 공통)
+export function afterSmsSaved(phone: string, direction: string, body: string): void {
+  if (direction !== "발신") {
+    // 고객이 보낸 문자면: 대기 중인 '개명 신청 확인'을 취소할지 바로 판독(그 번호에 대기 건이 있을 때만 AI 호출)
+    import("./applyNotice")
+      .then((m) => m.judgeApplyReplies(phone))
+      .catch((e) => console.error(`[KOP] 개명 신청 답장 판독 오류: ${e?.message}`));
+  } else if (/\/s\/운이술술풀리는이름/.test(body || "")) {
+    // 원장님이 작명장 링크를 보냄 = 새 이름 최종 선택 → 고객정보 이름을 '새이름(옛이름)'으로
+    import("./namingRename")
+      .then((m) => m.autoRenameFromNamingLinks({ phone, alert: true }))
+      .catch((e) => console.error(`[KOP] 작명장 링크 이름 변경 오류: ${e?.message}`));
+  }
+}
+
 export const intakeStore = {
   // 문자 1건 저장 (웹훅/가져오기). 수신·발신 모두 사용.
   // 같은 번호·방향·본문이 ±2분 안에 이미 있으면 새로 넣지 않고 기존 것을 돌려준다
@@ -34,6 +65,7 @@ export const intakeStore = {
       const phone = normalizePhone(input.phone) || input.phone;
       const direction = input.direction ?? "수신";
       const at = input.receivedAt ? new Date(input.receivedAt) : new Date();
+      input = { ...input, body: shortenSmsBody(input.body) };
       const [dup] = await d
         .select()
         .from(incomingSms)
@@ -59,17 +91,7 @@ export const intakeStore = {
           receivedAt: at,
         })
         .returning();
-      // 고객이 보낸 문자면: 대기 중인 '개명 신청 확인'을 취소할지 바로 판독(그 번호에 대기 건이 있을 때만 AI 호출)
-      if (direction !== "발신") {
-        import("./applyNotice")
-          .then((m) => m.judgeApplyReplies(phone))
-          .catch((e) => console.error(`[KOP] 개명 신청 답장 판독 오류: ${e?.message}`));
-      } else if (/\/s\/운이술술풀리는이름/.test(input.body || "")) {
-        // 원장님이 작명장 링크를 보냄 = 새 이름 최종 선택 → 고객정보 이름을 '새이름(옛이름)'으로
-        import("./namingRename")
-          .then((m) => m.autoRenameFromNamingLinks({ phone, alert: true }))
-          .catch((e) => console.error(`[KOP] 작명장 링크 이름 변경 오류: ${e?.message}`));
-      }
+      afterSmsSaved(phone, direction, input.body);
       return row;
     } catch (e) {
       fail("문자 저장", e);

@@ -40,6 +40,7 @@ import { startCourtCheckScheduler } from "./courtCheck";
 import { startApplyNoticeScheduler } from "./applyNotice";
 import { startPurifyPhoneCheckScheduler } from "./purifyPhoneCheck";
 import { startCalendarCustomerWatch } from "./calendarCustomers";
+import { startPhoneLinkReminder } from "./phoneLinkReminder";
 import { getNote, saveNote, isNoteKey } from "./notes";
 import { parseContact, analyzeThread, buildConsultEventDraft } from "./smsIntake";
 import { sendCalendarCheckNotification } from "../email";
@@ -112,6 +113,7 @@ export function registerKnopRoutes(app: Express, requireAdmin: RequestHandler) {
   startApplyNoticeScheduler(); // 작명장 링크 문자 발송 다음 날 아침 → 개명 신청 안내 문자
   startPurifyPhoneCheckScheduler(); // 정화하기 첫 문자 전날 10:00 → 전화번호 확인 알림(원장님)
   startCalendarCustomerWatch(); // 달력에 상담 일정이 잡히면 고객정보 자동 등록(달력 저장 시에만, 운영 서버만)
+  startPhoneLinkReminder(); // 노트북 휴대폰과 연결 문자 동기화가 25일 넘게 끊기면 매일 아침 메일
   startSmsHealthCheck(); // 문자 수집이 끊겼는지 아침 점검(2026-07-25 끊긴 걸 10일 뒤에 발견한 뒤 추가)
   startReportSync(); // 이름분석 폴더 자동 동기화 (로컬만; 배포는 no-op)
 

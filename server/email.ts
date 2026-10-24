@@ -322,6 +322,30 @@ ${consultation.fileName ? `📎 첨부 파일: ${consultation.fileName}\n※ 첨
   }
 }
 
+// ── 노트북 문자 연결이 오래 끊김 → 원장님께 메일 ─────────────────
+// 문자는 노트북 '휴대폰과 연결'로만 모은다(2026-10-24). 그 앱은 폰에서 최근 30일치만 가져오므로
+// 노트북을 30일 넘게 안 켜면 그 이전 문자가 빠진다. 25일째부터 매일 알린다(텔레그램은 안 볼 수 있어 메일).
+export async function sendPhoneLinkReminder(p: { days: number; lastAt: Date }): Promise<void> {
+  const left = Math.max(0, 30 - p.days);
+  const last = p.lastAt.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: RECIPIENT_EMAIL,
+    subject: `[한국이름학교] 노트북 문자 연결 ${p.days}일째 — 노트북을 켜 주세요`,
+    html: `
+      <div style="font-family:'Malgun Gothic',sans-serif;max-width:520px;margin:0 auto;padding:24px;">
+        <h2 style="color:#d9480f;margin-bottom:8px;">📱 노트북 문자 연결이 ${p.days}일째 끊겨 있습니다</h2>
+        <p style="font-size:15px;line-height:1.7;">마지막으로 문자가 올라온 때: <b>${last}</b></p>
+        <p style="font-size:15px;line-height:1.7;">
+          노트북을 켜고 <b>'휴대폰과 연결'</b>이 폰과 연결되게 해 주세요.<br>
+          ${left > 0 ? `<b>${left}일</b> 안에 연결하면 그동안 온 문자가 모두 고객정보에 들어갑니다.` : `<b>30일이 지나</b> 가장 오래된 문자부터 빠지고 있습니다. 바로 연결해 주세요.`}
+        </p>
+        <p style="color:#888;font-size:13px;">한 달 넘게 노트북을 못 쓰실 때는 폰의 문자 전달 앱을 그 기간 동안 켜 두세요.</p>
+      </div>`,
+    text: `노트북 문자 연결이 ${p.days}일째 끊겨 있습니다. 마지막: ${last}. 노트북을 켜고 휴대폰과 연결해 주세요.`,
+  });
+}
+
 // ── 새 문의 접수 → 관리자 알림 ──────────────────────────────
 export async function sendInquiryNotification(inquiry: Inquiry): Promise<void> {
   try {
