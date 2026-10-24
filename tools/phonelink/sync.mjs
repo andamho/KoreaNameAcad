@@ -10,14 +10,16 @@
 // 실행: node tools/phonelink/sync.mjs           (계속 돌며 1시간마다)
 //       node tools/phonelink/sync.mjs --once    (한 번만)
 //       node tools/phonelink/sync.mjs --once --dry (올리지 않고 결과만)
-// 설정: %LOCALAPPDATA%\kop-phonelink\config.json  { "secret": "<문자 수집 비밀값>", "base": "https://korea-name-acad.com" }
+// 설정: %USERPROFILE%\.kop-phonelink\config.json  { "secret": "<문자 수집 비밀값>", "base": "https://korea-name-acad.com" }
+// 상주: pm2 'phonelink-sync' (부팅 시 자동 실행)
 import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
 import { fileURLToPath } from "url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const WORK = path.join(process.env.LOCALAPPDATA, "kop-phonelink");
+// AppData 아래는 Claude 세션에서 쓰면 다른 프로그램(pm2)에 안 보인다(가상화) → 사용자 폴더에 둔다
+const WORK = path.join(process.env.USERPROFILE, ".kop-phonelink");
 const STATE = path.join(WORK, "state.json");
 const CONFIG = path.join(WORK, "config.json");
 const PKG = path.join(process.env.LOCALAPPDATA, "Packages", "Microsoft.YourPhone_8wekyb3d8bbwe", "LocalCache", "Indexed");
