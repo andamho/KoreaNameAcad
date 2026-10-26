@@ -497,8 +497,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // NameStory routes
-  app.post("/api/name-stories", async (req, res, next) => {
+  // NameStory routes — 쓰기(만들기·고치기·지우기)는 관리자만(2026-10-27: 관리자 확인이 빠져 누구나 지울 수 있었음). 읽기는 공개.
+  app.post("/api/name-stories", requireAdmin, async (req, res, next) => {
     try {
       const validatedData = insertNameStorySchema.parse(req.body);
       const story = await storage.createNameStory(validatedData);
@@ -528,7 +528,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/name-stories/:id", async (req, res, next) => {
+  app.put("/api/name-stories/:id", requireAdmin, async (req, res, next) => {
     try {
       const story = await storage.updateNameStory(req.params.id, req.body);
       if (!story) return res.status(404).json({ error: "Name story not found" });
@@ -538,7 +538,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/name-stories/:id", async (req, res, next) => {
+  app.delete("/api/name-stories/:id", requireAdmin, async (req, res, next) => {
     try {
       const deleted = await storage.deleteNameStory(req.params.id);
       if (!deleted) return res.status(404).json({ error: "Name story not found" });
