@@ -5,7 +5,7 @@ import { desc } from "drizzle-orm";
 import { db } from "../db";
 import { igEvents } from "@shared/schema";
 import { getIgToken, igAppId, igAppSecret, refreshIfNeeded, startIgTokenRefresh } from "./tokens";
-import { getMe, getSubscribedFields, subscribeWebhooks, getAppWebhookConfig, IgApiError } from "./client";
+import { getMe, getSubscribedFields, subscribeWebhooks, getAppWebhookConfig, IgApiError, commentOnMedia } from "./client";
 import { authorizeUrl, completeOAuth, redirectUri, verifyState, IG_SCOPES } from "./oauth";
 import { signatureMatch, normalizeWebhook, storeEvents } from "./webhook";
 import { processComment, RULE, SEND_LIVE } from "./automation";
@@ -307,6 +307,18 @@ export function registerInstagramRoutes(app: Express, requireAdmin: RequestHandl
       res.json(r);
     } catch (e) {
       handle(res, "test-send", e);
+    }
+  });
+
+  // ── 배포 뒤 첫 댓글: 내 게시물(mediaId)에 신청 방법 안내 댓글(배포 직원 deploy.py 가 부름, 2026-10-29) ──
+  app.post("/api/admin/instagram/first-comment", requireAdmin, async (req, res) => {
+    try {
+      const mediaId = String(req.body?.mediaId || "").trim();
+      const message = String(req.body?.message || "").trim();
+      if (!/^\d+$/.test(mediaId) || !message) return res.status(400).json({ error: "mediaId·message 필요" });
+      res.json({ ok: true, ...(await commentOnMedia(mediaId, message.slice(0, 2000))) });
+    } catch (e) {
+      handle(res, "first-comment", e);
     }
   });
 

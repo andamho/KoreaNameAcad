@@ -82,7 +82,8 @@ export function normalizeWebhook(body: any): NormalizedIgEvent[] {
         mediaId: v?.media?.id ? String(v.media.id) : undefined,
         parentId: v?.parent_id ? String(v.parent_id) : undefined,
         text: typeof v?.text === "string" ? v.text : undefined,
-        isEcho: false,
+        // 내 계정이 단 댓글(배포 뒤 첫 댓글 '이름 상담 및 작명…')은 자동응답 대상이 아님 — '이름' 키워드에 걸려 나에게 답글·DM 하지 않게
+        isEcho: !!igAccountId && v?.from?.id != null && String(v.from.id) === igAccountId,
         raw: JSON.stringify(change),
       });
     }

@@ -98,6 +98,13 @@ export async function replyToComment(commentId: string, message: string): Promis
   return { id: j.id };
 }
 
+/** 내 게시물에 댓글 달기(배포 뒤 첫 댓글 — 신청 방법 안내). 반환: 생성된 댓글 id */
+export async function commentOnMedia(mediaId: string, message: string): Promise<{ id: string }> {
+  const j = await igGraph(`/${mediaId}/comments`, { method: "POST", params: { message } });
+  if (!j?.id) throw new IgApiError(`댓글 실패: ${JSON.stringify(j)}`, 502);
+  return { id: j.id };
+}
+
 /**
  * 댓글 작성자에게 Private Reply DM. 댓글 후 7일 이내, 댓글당 1회만 허용.
  * recipient를 comment_id로 지정하는 게 핵심(IGSID가 아니라).
