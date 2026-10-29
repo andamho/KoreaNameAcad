@@ -139,6 +139,21 @@ export default function Admin() {
       setThreadMessages(prev => ({ ...prev, [id]: Array.isArray(data) ? data : [] }));
     } catch {}
   };
+  // 메일의 '문의 보기' 링크(?tab=inquiries&id=)로 들어오면 그 문의를 바로 펼친다(휴대폰은 전체화면으로 열림)
+  const 열었던문의 = useRef(false);
+  useEffect(() => {
+    if (열었던문의.current || !focusInquiryId || !inquiries.some(q => q.id === focusInquiryId)) return;
+    열었던문의.current = true;
+    setExpandedInquiry(focusInquiryId);
+    fetchThreadMessages(focusInquiryId);
+  }, [inquiries, focusInquiryId]);
+  // 휴대폰 전체화면 문의창이 떠 있는 동안 뒤 페이지가 같이 스크롤되지 않게
+  useEffect(() => {
+    if (!expandedInquiry || window.innerWidth >= 640) return;
+    const 이전 = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = 이전; };
+  }, [expandedInquiry]);
   // 관리자 답글(대화 메시지) 개별 수정
   const saveMsgEdit = async (inqId: string) => {
     if (!editingMsg?.text.trim()) return;
@@ -476,7 +491,13 @@ export default function Admin() {
                       </div>
                     </div>
                     {expandedInquiry === inq.id && (
-                      <div className="px-4 pb-4 pt-2 bg-muted/10 border-t border-border/30 space-y-4">
+                      <div className="fixed inset-0 z-[10000] flex flex-col bg-background sm:static sm:z-auto sm:block sm:px-4 sm:pb-4 sm:pt-2 sm:bg-muted/10 sm:border-t sm:border-border/30">
+                        {/* 휴대폰: 문의 내용과 답변 창이 화면을 꽉 채우게 — 위 막대(이름·닫기) */}
+                        <div className="sm:hidden flex items-center justify-between px-4 py-3 border-b border-border bg-card">
+                          <span className="font-medium text-sm">{inq.name} 님 · {inq.status}</span>
+                          <button type="button" onClick={() => setExpandedInquiry(null)} className="text-sm font-medium text-[#18a999]">닫기</button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 sm:p-0 sm:overflow-visible">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                           <div>
                             <p className="text-xs text-muted-foreground mb-1">성함</p>
@@ -553,8 +574,9 @@ export default function Admin() {
                           </div>
                         )}
 
-                        {/* 답변/댓글 입력 — 항상 표시(첫 답변은 문자·이메일 발송, 이후는 대화 댓글) */}
-                        <div className="space-y-2">
+                        </div>
+                        {/* 답변/댓글 입력 — 항상 표시(첫 답변은 문자·이메일 발송, 이후는 대화 댓글). 휴대폰은 아래에 고정 */}
+                        <div className="space-y-2 border-t border-border bg-card px-4 py-3 sm:mt-4 sm:border-0 sm:bg-transparent sm:p-0">
                           <p className="text-xs text-muted-foreground">
                             {inq.status === "접수완료"
                               ? `첫 답변 (${inq.contactType === "sms" ? "문자로 발송됩니다" : "이메일로 발송됩니다"})`
@@ -564,7 +586,7 @@ export default function Admin() {
                             value={replyTexts[inq.id] || ""}
                             onChange={e => setReplyTexts(prev => ({ ...prev, [inq.id]: e.target.value }))}
                             placeholder={inq.status === "접수완료" ? `${inq.name}님께 보낼 답변을 작성하세요` : "댓글을 입력하세요"}
-                            className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[100px] bg-background"
+                            className="w-full border border-border rounded-xl px-4 py-3 text-base sm:text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[30vh] sm:min-h-[100px] bg-background"
                           />
                           <div className="flex items-center justify-between">
                             <Button
