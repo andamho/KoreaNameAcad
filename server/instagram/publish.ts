@@ -52,6 +52,22 @@ export async function igCreateReelContainer(opts: {
   return { creationId: String(j.id), raw: j };
 }
 
+/** 스토리 컨테이너(영상). 9:16·60초 이하면 화면 가득. 링크·글 스티커는 API 로 붙일 수 없다(앱에서만) */
+export async function igCreateStoryContainer(opts: {
+  token: string;
+  videoUrl: string;
+}): Promise<{ creationId: string; raw: unknown }> {
+  const params = new URLSearchParams({
+    media_type: "STORIES",
+    video_url: opts.videoUrl,
+    access_token: opts.token,
+  });
+  const r = await fetch(`${IG_GRAPH}/me/media`, { method: "POST", body: params });
+  const j: any = await r.json();
+  if (!r.ok || !j?.id) throw new Error(`인스타 스토리 컨테이너 생성 실패: ${JSON.stringify(j)}`);
+  return { creationId: String(j.id), raw: j };
+}
+
 /**
  * 2단계: 컨테이너 처리 상태 조회.
  * status_code: IN_PROGRESS | FINISHED | ERROR | PUBLISHED | EXPIRED

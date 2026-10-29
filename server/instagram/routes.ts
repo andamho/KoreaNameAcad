@@ -9,6 +9,7 @@ import { getMe, getSubscribedFields, subscribeWebhooks, getAppWebhookConfig, IgA
 import { authorizeUrl, completeOAuth, redirectUri, verifyState, IG_SCOPES } from "./oauth";
 import { signatureMatch, normalizeWebhook, storeEvents } from "./webhook";
 import { processComment, RULE, SEND_LIVE } from "./automation";
+import { igToken, igCreateStoryContainer, igFetchContainerStatus, igMediaPublish } from "./publish";
 
 function handle(res: Response, route: string, e: any) {
   if (e instanceof IgApiError) {
@@ -319,6 +320,30 @@ export function registerInstagramRoutes(app: Express, requireAdmin: RequestHandl
       res.json({ ok: true, ...(await commentOnMedia(mediaId, message.slice(0, 2000))) });
     } catch (e) {
       handle(res, "first-comment", e);
+    }
+  });
+
+  // ── 스토리 올리기(영상) — 처음엔 {videoUrl}, 처리 중이면 받은 {creationId} 로 다시 부르면 이어서 게시 ──
+  app.post("/api/admin/instagram/story", requireAdmin, async (req, res) => {
+    try {
+      const token = await igToken();
+      let creationId = String(req.body?.creationId || "").trim();
+      if (!creationId) {
+        const videoUrl = String(req.body?.videoUrl || "").trim();
+        if (!/^https:\/\//.test(videoUrl)) return res.status(400).json({ error: "videoUrl(https) 또는 creationId 필요" });
+        creationId = (await igCreateStoryContainer({ token, videoUrl })).creationId;
+      } else if (!/^\d+$/.test(creationId)) return res.status(400).json({ error: "creationId 형식 오류" });
+      let status = "UNKNOWN";
+      for (let i = 0; i < 20; i++) {
+        status = (await igFetchContainerStatus({ token, creationId })).statusCode;
+        if (status === "FINISHED" || status === "PUBLISHED" || status === "EXPIRED") break;
+        await new Promise((r) => setTimeout(r, 6000));
+      }
+      if (status !== "FINISHED") return res.json({ ok: false, pending: status !== "EXPIRED", status, creationId });
+      const { mediaId } = await igMediaPublish({ token, creationId });
+      res.json({ ok: true, mediaId, creationId });
+    } catch (e) {
+      handle(res, "story", e);
     }
   });
 
