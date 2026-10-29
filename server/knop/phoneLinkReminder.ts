@@ -15,17 +15,23 @@ const START_DAYS = 25;
 
 export async function 노트북문자연결점검(): Promise<{ days: number | null; sent: boolean }> {
   if (!db) return { days: null, sent: false };
-  const r: any = await db.execute(
-    sql`SELECT max(created_at) AS last FROM sms_backfill_runs WHERE device_id = ${PHONELINK_DEVICE} AND dry_run = false`,
-  );
-  const raw = r.rows?.[0]?.last;
-  if (!raw) return { days: null, sent: false }; // 아직 노트북 동기화를 시작하지 않음
-  // DB 시각은 UTC 벽시계로 저장된다(timestamp without time zone). 운영 서버(UTC)는 Date 로 바로 맞게 읽힌다.
-  const lastAt = raw instanceof Date ? raw : new Date(String(raw).replace(" ", "T") + "Z");
-  const days = Math.floor((Date.now() - lastAt.getTime()) / 86_400_000);
+  // 일수·표시 시각을 SQL 에서 만든다. JS 로 시각을 옮겨 계산하니 NaN 이 나와
+  // 'NaN < 25' 가 거짓이 되어 매일 'NaN일째' 메일이 나갔다(2026-10-24~29). smsHealth.ts 와 같은 방식.
+  const r: any = await db.execute(sql`
+    SELECT EXTRACT(EPOCH FROM (now() - max(created_at))) / 86400 AS days,
+           to_char(max(created_at) + interval '9 hour', 'YYYY-MM-DD HH24:MI') AS last_kst
+    FROM sms_backfill_runs WHERE device_id = ${PHONELINK_DEVICE} AND dry_run = false`);
+  const row = r.rows?.[0];
+  if (row?.days == null) return { days: null, sent: false }; // 아직 노트북 동기화를 시작하지 않음
+  const days = Math.floor(Number(row.days));
+  // 숫자가 아니면 알리지 않는다 — 계산이 깨졌을 때 매일 메일이 가는 쪽보다 조용한 쪽이 낫다.
+  if (!Number.isFinite(days)) {
+    console.error(`[KOP] 노트북 문자 연결 점검: 일수 계산 실패(${row.days}) — 메일 안 보냄`);
+    return { days: null, sent: false };
+  }
   if (days < START_DAYS) return { days, sent: false };
   const { sendPhoneLinkReminder } = await import("../email");
-  await sendPhoneLinkReminder({ days, lastAt });
+  await sendPhoneLinkReminder({ days, lastKst: String(row.last_kst) });
   console.log(`[KOP] 노트북 문자 연결 ${days}일째 — 원장님께 메일`);
   return { days, sent: true };
 }

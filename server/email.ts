@@ -325,9 +325,9 @@ ${consultation.fileName ? `📎 첨부 파일: ${consultation.fileName}\n※ 첨
 // ── 노트북 문자 연결이 오래 끊김 → 원장님께 메일 ─────────────────
 // 문자는 노트북 '휴대폰과 연결'로만 모은다(2026-10-24). 그 앱은 폰에서 최근 30일치만 가져오므로
 // 노트북을 30일 넘게 안 켜면 그 이전 문자가 빠진다. 25일째부터 매일 알린다(텔레그램은 안 볼 수 있어 메일).
-export async function sendPhoneLinkReminder(p: { days: number; lastAt: Date }): Promise<void> {
+export async function sendPhoneLinkReminder(p: { days: number; lastKst: string }): Promise<void> {
   const left = Math.max(0, 30 - p.days);
-  const last = p.lastAt.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+  const last = p.lastKst;
   await resend.emails.send({
     from: FROM_EMAIL,
     to: RECIPIENT_EMAIL,
