@@ -147,13 +147,34 @@ export default function Admin() {
     setExpandedInquiry(focusInquiryId);
     fetchThreadMessages(focusInquiryId);
   }, [inquiries, focusInquiryId]);
+  // 휴대폰인지 판단 — 화면 폭만 보면 크롬 '데스크톱 사이트'·Gmail 미리보기·삼성 인터넷의
+  // 데스크톱 보기에서 폭이 넓게(≈980px) 잡혀 PC 화면으로 축소돼 보인다(2026-10-29 원장님 폰).
+  // 손가락으로 쓰는 기기이고 실제 기기 화면이 작으면 휴대폰으로 본다. 데스크톱 보기로 페이지가
+  // 통째로 축소된 경우엔 문의 창만 기기 폭에 맞춰 확대(zoom)해서 글자가 정상 크기로 보이게 한다.
+  const 휴대폰보기 = () => {
+    const 짧은변 = Math.min(window.screen.width, window.screen.height);
+    const 손가락 = window.matchMedia("(pointer: coarse)").matches;
+    const 폰 = window.innerWidth < 640 || (손가락 && 짧은변 < 768);
+    const 확대 = 폰 && window.innerWidth > window.screen.width * 1.15 ? window.innerWidth / window.screen.width : 1;
+    return { 폰, 확대, 폭: window.innerWidth, 높이: window.innerHeight };
+  };
+  const [폰화면, set폰화면] = useState(휴대폰보기);
+  useEffect(() => {
+    const 갱신 = () => set폰화면(휴대폰보기());
+    window.addEventListener("resize", 갱신);
+    window.addEventListener("orientationchange", 갱신);
+    return () => {
+      window.removeEventListener("resize", 갱신);
+      window.removeEventListener("orientationchange", 갱신);
+    };
+  }, []);
   // 휴대폰 전체화면 문의창이 떠 있는 동안 뒤 페이지가 같이 스크롤되지 않게
   useEffect(() => {
-    if (!expandedInquiry || window.innerWidth >= 640) return;
+    if (!expandedInquiry || !폰화면.폰) return;
     const 이전 = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = 이전; };
-  }, [expandedInquiry]);
+  }, [expandedInquiry, 폰화면.폰]);
   // 관리자 답글(대화 메시지) 개별 수정
   const saveMsgEdit = async (inqId: string) => {
     if (!editingMsg?.text.trim()) return;
@@ -491,14 +512,23 @@ export default function Admin() {
                       </div>
                     </div>
                     {expandedInquiry === inq.id && (
-                      <div className="fixed inset-0 z-[10000] flex flex-col bg-background sm:static sm:z-auto sm:block sm:px-4 sm:pb-4 sm:pt-2 sm:bg-muted/10 sm:border-t sm:border-border/30">
+                      <div
+                        className={폰화면.폰
+                          ? "fixed top-0 left-0 z-[10000] flex flex-col bg-background"
+                          : "px-4 pb-4 pt-2 bg-muted/10 border-t border-border/30"}
+                        style={폰화면.폰
+                          ? { width: 폰화면.폭 / 폰화면.확대, height: 폰화면.높이 / 폰화면.확대, zoom: 폰화면.확대 }
+                          : undefined}
+                      >
                         {/* 휴대폰: 문의 내용과 답변 창이 화면을 꽉 채우게 — 위 막대(이름·닫기) */}
-                        <div className="sm:hidden flex items-center justify-between px-4 py-3 border-b border-border bg-card">
+                        {폰화면.폰 && (
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
                           <span className="font-medium text-sm">{inq.name} 님 · {inq.status}</span>
                           <button type="button" onClick={() => setExpandedInquiry(null)} className="text-sm font-medium text-[#18a999]">닫기</button>
                         </div>
-                        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 sm:p-0 sm:overflow-visible">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                        )}
+                        <div className={폰화면.폰 ? "flex-1 overflow-y-auto px-4 py-3 space-y-4" : "space-y-4"}>
+                        <div className={폰화면.폰 ? "grid grid-cols-1 gap-3 text-sm" : "grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm"}>
                           <div>
                             <p className="text-xs text-muted-foreground mb-1">성함</p>
                             <p className="font-medium">{inq.name}</p>
@@ -576,7 +606,7 @@ export default function Admin() {
 
                         </div>
                         {/* 답변/댓글 입력 — 항상 표시(첫 답변은 문자·이메일 발송, 이후는 대화 댓글). 휴대폰은 아래에 고정 */}
-                        <div className="space-y-2 border-t border-border bg-card px-4 py-3 sm:mt-4 sm:border-0 sm:bg-transparent sm:p-0">
+                        <div className={폰화면.폰 ? "space-y-2 border-t border-border bg-card px-4 py-3" : "space-y-2 mt-4"}>
                           <p className="text-xs text-muted-foreground">
                             {inq.status === "접수완료"
                               ? `첫 답변 (${inq.contactType === "sms" ? "문자로 발송됩니다" : "이메일로 발송됩니다"})`
@@ -586,7 +616,9 @@ export default function Admin() {
                             value={replyTexts[inq.id] || ""}
                             onChange={e => setReplyTexts(prev => ({ ...prev, [inq.id]: e.target.value }))}
                             placeholder={inq.status === "접수완료" ? `${inq.name}님께 보낼 답변을 작성하세요` : "댓글을 입력하세요"}
-                            className="w-full border border-border rounded-xl px-4 py-3 text-base sm:text-sm outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none min-h-[30vh] sm:min-h-[100px] bg-background"
+                            className={`w-full border border-border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#18a999] transition resize-none bg-background ${폰화면.폰 ? "text-base" : "text-sm min-h-[100px]"}`}
+                            // 휴대폰: 창 높이의 30%. vh 는 확대(zoom) 때 같이 커져서 px 로 계산한다
+                            style={폰화면.폰 ? { minHeight: Math.round((폰화면.높이 / 폰화면.확대) * 0.3) } : undefined}
                           />
                           <div className="flex items-center justify-between">
                             <Button
