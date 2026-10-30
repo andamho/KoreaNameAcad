@@ -1213,7 +1213,13 @@ function VideoDeployPanel() {
           </div>
           <div className="flex items-center gap-2">
             {yt?.connected ? (
-              <Badge variant="secondary">✓ 연결됨</Badge>
+              <>
+                <Badge variant="secondary">✓ 연결됨</Badge>
+                {/* 2026-10-30 권한 추가(분석: 공유·저장·구독 취소) 뒤 다시 동의받으려고 */}
+                <Button size="sm" variant="outline" onClick={connectYoutube}>
+                  다시 연결
+                </Button>
+              </>
             ) : (
               <Button size="sm" onClick={connectYoutube} disabled={!yt?.configured}>
                 YouTube 연결
