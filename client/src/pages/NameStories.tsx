@@ -458,9 +458,8 @@ export default function NameStories({ kind = "nameStory" }: { kind?: StoryKind["
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-5 md:gap-12">
               <div className="flex-1 min-w-0" style={{ color: "#1e2a4a" }}>
-                <p className="text-[11px] md:text-sm tracking-[0.2em] text-[#8a7f66] border-b border-[#1e2a4a] pb-2">
-                  {K.eyebrow} · 와츠유어네임 이름연구협회
-                </p>
+                {/* 위 작은 글씨(NAME & LIFE · 협회 이름)는 반복이라 뺌(2026-10-30 대표님) — 신문 머리글 줄만 남김 */}
+                <div className="border-b border-[#1e2a4a]" />
                 <h1 className="text-4xl md:text-6xl font-bold my-3 md:my-5" style={{ fontFamily: "'Noto Serif KR', serif" }} data-testid="text-stories-title">
                   {K.title}
                 </h1>
