@@ -14,6 +14,7 @@ export const IG_SCOPES = [
   "instagram_business_content_publish",
   "instagram_business_manage_comments",
   "instagram_business_manage_messages",
+  "instagram_business_manage_insights", // 2026-10-30 조회수·저장·공유·팔로워 증감(통계)
 ];
 
 /** 콜백 주소. Meta 앱 대시보드에 등록한 값과 문자 하나까지 같아야 한다 */

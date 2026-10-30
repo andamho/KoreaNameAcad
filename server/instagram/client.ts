@@ -163,3 +163,70 @@ export async function getAppWebhookConfig(): Promise<
   const instagram = all.find((s: any) => s.object === "instagram") ?? null;
   return { ok: true, instagram, all };
 }
+
+// ── 통계(2026-10-30 대표님 '조회수·저장·전달·댓글, 팔로워가 몇 명에서 몇 명이 됐는지') ──
+// 권한 instagram_business_manage_insights 가 있어야 insights 가 나온다(없으면 기본 숫자만 + insightsError).
+// 지표 하나가 그 게시물 종류에 없으면 호출 전체가 실패하므로 하나씩 물어 모은다.
+const MEDIA_METRICS = ["views", "reach", "saved", "shares", "comments", "likes", "total_interactions"];
+const ACCOUNT_METRICS = ["reach", "views", "accounts_engaged", "total_interactions", "likes", "comments", "saves", "shares", "follows_and_unfollows"];
+
+async function metricValues(path: string, metrics: string[], params: Record<string, string>) {
+  const out: Record<string, number | null> = {};
+  let firstError: string | null = null;
+  for (const m of metrics) {
+    try {
+      const j = await igGraph(path, { params: { ...params, metric: m, ...(m === "follows_and_unfollows" ? { breakdown: "follow_type" } : {}) } });
+      const d = Array.isArray(j?.data) ? j.data[0] : null;
+      const tv = d?.total_value;
+      if (m === "follows_and_unfollows" && Array.isArray(tv?.breakdowns?.[0]?.results)) {
+        for (const r of tv.breakdowns[0].results) out[String(r.dimension_values?.[0] ?? "").toLowerCase()] = Number(r.value ?? 0);
+      }
+      out[m] = tv ? Number(tv.value ?? 0) : d?.values?.length ? Number(d.values[d.values.length - 1].value ?? 0) : null;
+    } catch (e: any) {
+      out[m] = null;
+      firstError ??= String(e?.message ?? e).slice(0, 200);
+    }
+  }
+  return { values: out, error: firstError };
+}
+
+/** 계정 숫자: 지금 팔로워 수 + 최근 days 일(최대 30)의 하루하루 팔로워 증감 + 기간 합계 지표 */
+export async function getAccountStats(days = 30) {
+  const me = await igGraph("/me", { params: { fields: "id,username,followers_count,follows_count,media_count" } });
+  const d = Math.min(Math.max(days, 1), 30);
+  const until = Math.floor(Date.now() / 1000), since = until - d * 86400;
+  let followerDaily: { date: string; value: number }[] = [];
+  let insightsError: string | null = null;
+  try {
+    const j = await igGraph("/me/insights", { params: { metric: "follower_count", period: "day", since: String(since), until: String(until) } });
+    followerDaily = (j?.data?.[0]?.values ?? []).map((v: any) => ({ date: String(v.end_time ?? "").slice(0, 10), value: Number(v.value ?? 0) }));
+  } catch (e: any) {
+    insightsError = String(e?.message ?? e).slice(0, 200);
+  }
+  const totals = await metricValues("/me/insights", ACCOUNT_METRICS,
+    { period: "day", metric_type: "total_value", since: String(since), until: String(until) });
+  return {
+    username: me.username, followers: Number(me.followers_count ?? 0), follows: Number(me.follows_count ?? 0), mediaCount: Number(me.media_count ?? 0),
+    days: d, followerDaily, totals: totals.values, insightsError: insightsError ?? totals.error,
+  };
+}
+
+/** 최근 게시물 limit 개(최대 50)의 숫자: 기본(좋아요·댓글) + insights(조회·도달·저장·공유…) */
+export async function getMediaStats(limit = 20) {
+  const n = Math.min(Math.max(limit, 1), 50);
+  const j = await igGraph("/me/media", {
+    params: { fields: "id,caption,media_type,media_product_type,permalink,timestamp,like_count,comments_count", limit: String(n) },
+  });
+  const items: any[] = [];
+  let insightsError: string | null = null;
+  for (const m of j?.data ?? []) {
+    const ins = await metricValues(`/${m.id}/insights`, MEDIA_METRICS, {});
+    insightsError ??= ins.error;
+    items.push({
+      id: m.id, permalink: m.permalink, timestamp: m.timestamp, type: m.media_product_type || m.media_type,
+      caption: String(m.caption ?? "").split("\n")[0].slice(0, 80),
+      likes: Number(m.like_count ?? 0), comments: Number(m.comments_count ?? 0), insights: ins.values,
+    });
+  }
+  return { items, insightsError };
+}

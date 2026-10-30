@@ -5,7 +5,7 @@ import { desc } from "drizzle-orm";
 import { db } from "../db";
 import { igEvents } from "@shared/schema";
 import { getIgToken, igAppId, igAppSecret, refreshIfNeeded, startIgTokenRefresh } from "./tokens";
-import { getMe, getSubscribedFields, subscribeWebhooks, getAppWebhookConfig, IgApiError, commentOnMedia } from "./client";
+import { getMe, getSubscribedFields, subscribeWebhooks, getAppWebhookConfig, IgApiError, commentOnMedia, getAccountStats, getMediaStats } from "./client";
 import { authorizeUrl, completeOAuth, redirectUri, verifyState, IG_SCOPES } from "./oauth";
 import { signatureMatch, normalizeWebhook, storeEvents } from "./webhook";
 import { processComment, RULE, SEND_LIVE } from "./automation";
@@ -320,6 +320,18 @@ export function registerInstagramRoutes(app: Express, requireAdmin: RequestHandl
       res.json({ ok: true, ...(await commentOnMedia(mediaId, message.slice(0, 2000))) });
     } catch (e) {
       handle(res, "first-comment", e);
+    }
+  });
+
+  // ── 통계(계정·최근 게시물) — PC 의 배포 직원이 매일 아침 기록해 월간 보고를 만든다 ──
+  app.get("/api/admin/instagram/stats", requireAdmin, async (req, res) => {
+    try {
+      const days = Number(req.query.days) || 30, limit = Number(req.query.limit) || 20;
+      const [account, media] = await Promise.all([getAccountStats(days), getMediaStats(limit)]);
+      res.json({ ok: true, at: new Date().toISOString(), account, media: media.items,
+                 insightsError: account.insightsError ?? media.insightsError ?? null });
+    } catch (e) {
+      handle(res, "stats", e);
     }
   });
 
