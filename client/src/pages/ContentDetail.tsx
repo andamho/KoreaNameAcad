@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageManager } from "@/components/ImageManager";
 import { RichTextEditor, renderFormattedText } from "@/components/RichTextEditor";
+import { renderSeoBlocks } from "@/components/SeoBlocks";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Content } from "@shared/schema";
 import { useEffect, useState } from "react";
@@ -315,6 +316,8 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
                   const text = textBuffer.join("").replace(/^\n/, "").replace(/\n+$/, "");
                   textBuffer = [];
                   if (!text) return;
+                  const seo = renderSeoBlocks(text, key, renderFormattedText);   // 한눈에 보기·자주 묻는 질문 상자
+                  if (seo) { result.push(seo); return; }
                   result.push(
                     <div key={key} className="text-foreground leading-relaxed whitespace-pre-line">
                       {renderFormattedText(text)}
