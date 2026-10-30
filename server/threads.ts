@@ -178,7 +178,8 @@ export async function getThreadsStats(limit = 20, days = 30, f: Fetch = fetch) {
     if (!r.ok || j?.error) throw new Error(String(j?.error?.message ?? `스레드 조회 실패(${r.status})`).slice(0, 200));
     return j;
   };
-  const val = (d: any) => Number(d?.total_value?.value ?? (d?.values?.length ? d.values[d.values.length - 1].value : 0) ?? 0);
+  // 계정 'views' 는 날마다 값(values)으로 옴 → 기간 합계. 그 밖은 total_value 하나(2026-10-30: 마지막 하루만 써서 30일 조회가 15로 나왔음)
+  const val = (d: any) => Number(d?.total_value?.value ?? (d?.values ?? []).reduce((a: number, v: any) => a + Number(v?.value ?? 0), 0));
   const me = await g("/me?fields=id,username");
   let account: Record<string, number> = {}, insightsError: string | null = null;
   const until = Math.floor(Date.now() / 1000), since = until - Math.min(Math.max(days, 1), 30) * 86400;

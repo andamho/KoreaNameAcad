@@ -16,6 +16,7 @@ const PROVIDER = "youtube";
 const SCOPES = [
   "https://www.googleapis.com/auth/youtube.upload",
   "https://www.googleapis.com/auth/youtube.readonly",
+  "https://www.googleapis.com/auth/yt-analytics.readonly", // 2026-10-30 공유·재생목록 저장·구독 증감(통계) — 다시 연결해야 적용
 ];
 
 /** 클라이언트 ID/SECRET이 .env에 설정돼 있는지 */
@@ -313,14 +314,41 @@ export async function getYoutubeStats(limit = 20) {
         .map((x: any) => x.contentDetails?.videoId).filter(Boolean)
     : [];
   const vids = ids.length ? (await g(`videos?part=snippet,statistics&id=${ids.join(",")}`))?.items ?? [] : [];
+
+  // 분석(yt-analytics.readonly — 2026-10-30 대표님 '저장·공유·구독 취소'): 최근 30일 공유·재생목록 저장·구독 증감, 영상별 공유·저장.
+  // 권한이 없으면(다시 연결 전) analyticsError 만 담고 나머지는 그대로. 유튜브 분석은 2~3일 늦게 집계됨.
+  const day = (d: number) => new Date(Date.now() - d * 86400000).toISOString().slice(0, 10);
+  const metrics = "views,shares,videosAddedToPlaylists,subscribersGained,subscribersLost";
+  const ga = async (q: string) => {
+    const r = await fetch(`https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&startDate=${day(30)}&endDate=${day(0)}&metrics=${metrics}${q}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } });
+    const j: any = await r.json();
+    if (!r.ok) throw new Error(`유튜브 분석 조회 실패(${r.status}): ${String(j?.error?.message ?? "").slice(0, 160)}`);
+    return j;
+  };
+  const row = (j: any, cells: any[]) => Object.fromEntries((j?.columnHeaders ?? []).map((h: any, i: number) => [h.name, cells[i]]));
+  let analytics: Record<string, number> | null = null, analyticsError: string | null = null;
+  const perVideo: Record<string, any> = {};
+  try {
+    const t = await ga("");
+    analytics = row(t, t?.rows?.[0] ?? []) as any;
+    if (ids.length) {
+      const v = await ga(`&dimensions=video&filters=video==${ids.join(",")}`);
+      for (const cells of v?.rows ?? []) { const o = row(v, cells); perVideo[o.video] = o; }
+    }
+  } catch (e: any) {
+    analyticsError = String(e?.message ?? e);
+  }
   return {
     channel: ch.snippet?.title,
     subscribers: Number(ch.statistics?.subscriberCount ?? 0),
     views: Number(ch.statistics?.viewCount ?? 0),
     videoCount: Number(ch.statistics?.videoCount ?? 0),
+    analytics, analyticsError,
     videos: vids.map((v: any) => ({
       id: v.id, url: `https://youtu.be/${v.id}`, title: v.snippet?.title, publishedAt: v.snippet?.publishedAt,
       views: Number(v.statistics?.viewCount ?? 0), likes: Number(v.statistics?.likeCount ?? 0), comments: Number(v.statistics?.commentCount ?? 0),
+      shares: perVideo[v.id]?.shares ?? null, saves: perVideo[v.id]?.videosAddedToPlaylists ?? null,
     })),
   };
 }
