@@ -26,8 +26,9 @@ export function youtubeConfigured(): boolean {
 
 /** 콜백(리디렉션) URL — 개발은 localhost, 배포는 도메인 */
 function getRedirectUri(): string {
+  // trim: 2026-10-30 다시 연결이 '400 invalid_request'(redirect_uri= https://… 앞에 공백)로 막힘 — 변수 값 앞뒤 공백 제거
   const base =
-    process.env.PUBLIC_BASE_URL ||
+    process.env.PUBLIC_BASE_URL?.trim() ||
     (process.env.NODE_ENV === "production"
       ? "https://korea-name-acad.com"
       : "http://localhost:5000");
