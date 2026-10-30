@@ -453,7 +453,7 @@ export default function NameStories({ kind = "nameStory" }: { kind?: StoryKind["
       
       {kind === "column" ? (
         /* '이름과 삶' 머리글(2026-10-30 대표님 시안 1번): 신문 칼럼 머리글 — 미색 종이, 위아래 줄, 명조 제목, 오른쪽에 대표 사진(흑백).
-           사진은 29일 영상 장면에서 핀 마이크만 지운 것(column-portrait2.webp). */
+           사진은 29일 영상 장면에서 핀 마이크만 지운 것(column-portrait3.webp). */
         <section className="bg-[#f7f4ec] py-10 md:py-16">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* 사진은 글 묶음과 같은 높이(위 NAME & LIFE 줄 ~ 아래 이중선) — 2026-10-30 대표님 '사진이 생뚱맞게 커' */}
@@ -472,7 +472,7 @@ export default function NameStories({ kind = "nameStory" }: { kind?: StoryKind["
               {/* 사진 높이 = 글 묶음 높이(NAME & LIFE 줄 ~ 이중선). 글자가 rem 이라 같이 커지고 줄도록 rem 으로 맞춤(잰 값: 모바일 130px, md 185px) */}
               <div className="relative self-center h-[8.125rem] md:h-[11.5625rem] aspect-[4/5] flex-shrink-0">
                 <img
-                  src="/column-portrait2.webp"
+                  src="/column-portrait3.webp"
                   alt="와츠유어네임 이름연구협회 대표"
                   className="absolute inset-0 w-full h-full object-cover object-top rounded-md grayscale"
                   fetchPriority="high"
