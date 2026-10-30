@@ -37,7 +37,7 @@ const PLACEHOLDER =
 export type StoryKind = { category: "nameStory" | "column"; base: string; title: string; eyebrow: string; desc: string };
 export const STORY_KINDS: Record<StoryKind["category"], StoryKind> = {
   nameStory: { category: "nameStory", base: "/name-stories", title: "흥미진진 이름이야기", eyebrow: "NAME STORIES", desc: "이름에 담긴 흥미로운 이야기들을 만나보세요" },
-  column: { category: "column", base: "/columns", title: "이름과 삶", eyebrow: "NAME & LIFE", desc: "대표가 직접 쓰는 이름과 삶의 이야기" },
+  column: { category: "column", base: "/columns", title: "이름과 삶", eyebrow: "NAME & LIFE", desc: "와츠유어네임 이름연구협회 대표 칼럼" },
 };
 
 const categoryOptions = [
@@ -453,26 +453,32 @@ export default function NameStories({ kind = "nameStory" }: { kind?: StoryKind["
       
       {kind === "column" ? (
         /* '이름과 삶' 머리글(2026-10-30 대표님 시안 1번): 신문 칼럼 머리글 — 미색 종이, 위아래 줄, 명조 제목, 오른쪽에 대표 사진(흑백).
-           사진은 29일 영상 장면에서 핀 마이크만 지운 것(column-portrait.webp). */
+           사진은 29일 영상 장면에서 핀 마이크만 지운 것(column-portrait2.webp). */
         <section className="bg-[#f7f4ec] py-10 md:py-16">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-5 md:gap-12">
+            {/* 사진은 글 묶음과 같은 높이(위 NAME & LIFE 줄 ~ 아래 이중선) — 2026-10-30 대표님 '사진이 생뚱맞게 커' */}
+            <div className="flex items-center gap-5 md:gap-10">
               <div className="flex-1 min-w-0" style={{ color: "#1e2a4a" }}>
-                {/* 위 작은 글씨(NAME & LIFE · 협회 이름)는 반복이라 뺌(2026-10-30 대표님) — 신문 머리글 줄만 남김 */}
-                <div className="border-b border-[#1e2a4a]" />
+                {/* 위 작은 글씨는 NAME & LIFE 만(협회 이름은 아래 소개와 겹쳐서 뺌, 2026-10-30) */}
+                <p className="text-[11px] md:text-sm tracking-[0.2em] text-[#8a7f66] border-b border-[#1e2a4a] pb-2">
+                  {K.eyebrow}
+                </p>
                 <h1 className="text-4xl md:text-6xl font-bold my-3 md:my-5" style={{ fontFamily: "'Noto Serif KR', serif" }} data-testid="text-stories-title">
                   {K.title}
                 </h1>
                 <p className="text-sm md:text-xl text-[#5a5446]">{K.desc}</p>
                 <div className="mt-4 md:mt-6 border-t-4 border-double border-[#1e2a4a]" />
               </div>
-              <img
-                src="/column-portrait.webp"
-                alt="와츠유어네임 이름연구협회 대표"
-                className="w-28 md:w-56 aspect-[4/5] object-cover object-top rounded-lg grayscale flex-shrink-0"
-                fetchPriority="high"
-                loading="eager"
-              />
+              {/* 사진 높이 = 글 묶음 높이(NAME & LIFE 줄 ~ 이중선). 글자가 rem 이라 같이 커지고 줄도록 rem 으로 맞춤(잰 값: 모바일 130px, md 185px) */}
+              <div className="relative self-center h-[8.125rem] md:h-[11.5625rem] aspect-[4/5] flex-shrink-0">
+                <img
+                  src="/column-portrait2.webp"
+                  alt="와츠유어네임 이름연구협회 대표"
+                  className="absolute inset-0 w-full h-full object-cover object-top rounded-md grayscale"
+                  fetchPriority="high"
+                  loading="eager"
+                />
+              </div>
             </div>
           </div>
         </section>
