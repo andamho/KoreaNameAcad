@@ -1,5 +1,8 @@
 // 개명 희망사항 후보 찾기: 고객이 보낸 문자 중 '희망사항'으로 보이는 것을 Gemini가 골라줌.
 // 하이브리드 — AI가 후보만 제시, 실제 반영(칸에 추가)은 원장님이 클릭으로 확정.
+// + 새로 들어온 문자는 자동 반영(autoWishFromSms) — 원장님 지시(2026-10-30).
+import { sql } from "drizzle-orm";
+import { db } from "../db";
 import { knopStore } from "./store";
 import { geminiJson } from "../reviewPipeline/gemini";
 
@@ -45,4 +48,50 @@ export async function findWishCandidates(customerId: string): Promise<WishCandid
     .map((m, i) => ({ i, m }))
     .filter(({ i }) => reasonBy.has(i))
     .map(({ i, m }) => ({ text: m.body, at: m.at, reason: reasonBy.get(i) || "" }));
+}
+
+// ── 자동 반영: 고객이 보낸 새 문자가 희망사항이면 고객정보 '개명 희망사항' 칸에 이어붙인다 ──
+// 원장님 지시(2026-10-30): 고객이 희망사항을 문자로 보내면 손으로 옮기지 않아도 들어가게.
+// 문자 저장 직후(afterSmsSaved — 폰 매크로·노트북 휴대폰과 연결 공통)에 한 건씩 돈다.
+// 희망사항은 길게 쓰므로 짧은 답장('네 알겠습니다' 등)은 AI 를 부르지 않는다.
+const AUTO_MIN_LEN = 40;
+
+const ONE_SCHEMA = {
+  type: "object",
+  properties: { isWish: { type: "boolean" }, reason: { type: "string" } },
+  required: ["isWish", "reason"],
+};
+
+export async function autoWishFromSms(phone: string, body: string): Promise<{ customerId: string; added: boolean } | null> {
+  const text = (body || "").trim();
+  if (!db || text.length < AUTO_MIN_LEN) return null;
+  const digits = (phone || "").replace(/\D/g, "");
+  if (digits.length < 8) return null;
+  // 같은 번호 고객이 여럿이면(가족·중복 등록) 가장 최근에 손댄 고객
+  const cu: any = await db.execute(sql`
+    SELECT id, naming_wish FROM customers
+    WHERE deleted_at IS NULL AND (normalized_phone = ${digits} OR regexp_replace(phone,'[^0-9]','','g') = ${digits})
+    ORDER BY updated_at DESC LIMIT 1`);
+  const c = cu.rows?.[0];
+  if (!c) return null;
+  if (String(c.naming_wish || "").includes(text)) return { customerId: c.id, added: false }; // 이미 들어 있음
+
+  const out = await geminiJson<{ isWish: boolean; reason: string }>(
+    SYSTEM,
+    [{ text: `고객이 보낸 문자 한 건이야. 개명 희망사항이면 isWish=true.\n\n${text}` }],
+    ONE_SCHEMA,
+    512,
+  );
+  if (!out?.isWish) return { customerId: c.id, added: false };
+
+  // 기존 내용 뒤에 한 줄 띄우고 붙인다(화면의 '희망사항에 저장'과 같은 방식). 같은 글이 있으면 다시 안 붙임.
+  const up: any = await db.execute(sql`
+    UPDATE customers
+    SET naming_wish = CASE WHEN coalesce(btrim(naming_wish),'') = '' THEN ${text} ELSE rtrim(naming_wish) || E'\n\n' || ${text} END,
+        updated_at = now()
+    WHERE id = ${c.id} AND position(${text} in coalesce(naming_wish,'')) = 0
+    RETURNING id`);
+  const added = (up.rows?.length || 0) > 0;
+  if (added) console.log(`[KOP] 개명 희망사항 자동 반영: 고객 ${c.id} (${text.length}자) — ${out.reason}`);
+  return { customerId: c.id, added };
 }

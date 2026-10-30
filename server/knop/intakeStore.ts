@@ -47,6 +47,10 @@ export function afterSmsSaved(phone: string, direction: string, body: string): v
     import("./applyNotice")
       .then((m) => m.judgeApplyReplies(phone))
       .catch((e) => console.error(`[KOP] 개명 신청 답장 판독 오류: ${e?.message}`));
+    // 희망사항을 문자로 보냈으면 고객정보 '개명 희망사항' 칸에 자동으로 붙인다(긴 문자만 AI 판독)
+    import("./wish")
+      .then((m) => m.autoWishFromSms(phone, body))
+      .catch((e) => console.error(`[KOP] 개명 희망사항 자동 반영 오류: ${e?.message}`));
   } else if (/\/s\/운이술술풀리는이름/.test(body || "")) {
     // 원장님이 작명장 링크를 보냄 = 새 이름 최종 선택 → 고객정보 이름을 '새이름(옛이름)'으로
     import("./namingRename")
