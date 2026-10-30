@@ -50,7 +50,7 @@ function HamburgerWords() {
 const categoryOptions = [
   { value: "review", label: "후기" },
   { value: "nameStory", label: "이름이야기" },
-  { value: "column", label: "이름 칼럼" },
+  { value: "column", label: "이름과 삶" },
   { value: "announcement", label: "공지사항" },
   { value: "expert", label: "한국이름학교" },
   { value: "about", label: "협회 소개" },
@@ -468,9 +468,9 @@ export function Navbar() {
     },
     {
       icon: FileText,
-      label: "이름 칼럼",
+      label: "이름과 삶",
       action: () => goToPage('/columns'),
-      description: "이름과 개명, 운과 삶 이야기"
+      description: "대표 칼럼"
     },
     { 
       icon: Building2, 

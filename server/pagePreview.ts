@@ -77,7 +77,7 @@ export function registerPagePreview(app: Express, siteUrl: string) {
 
   // 이름이야기 글: 글마다 제목과 대표 사진을 따로 내려준다.
   // 썸네일을 안 올린 글은 영상 썸네일을 쓴다(2026-09-28 원장님 지적).
-  // 이름 칼럼(/columns, 2026-10-30)도 같은 방식
+  // 이름과 삶(대표 칼럼, /columns, 2026-10-30)도 같은 방식
   app.get(["/name-stories/:id", "/columns/:id"], async (req, res, next) => {
     try {
       if (!db) return next();
@@ -88,7 +88,7 @@ export function registerPagePreview(app: Express, siteUrl: string) {
       const html = fs.readFileSync(indexPath, "utf-8");
       const desc = String(row.content || "").replace(/!\[[^\]]*\]\([^)]+\)/g, " ").replace(/[#*_>`]/g, " ").replace(/\s+/g, " ").trim().slice(0, 100);
       const base = req.path.startsWith("/columns") ? "/columns" : "/name-stories";
-      const page: Preview = { title: row.title, description: desc || (base === "/columns" ? "이름 칼럼" : "흥미진진 이름이야기"), image };
+      const page: Preview = { title: row.title, description: desc || (base === "/columns" ? "이름과 삶 — 대표 칼럼" : "흥미진진 이름이야기"), image };
       // 이름이야기는 검색에 나와야 하므로 robots 는 건드리지 않는다.
       res.type("html").send(applyPreview(html, `${base}/${row.id}`, page, siteUrl, { keepRobots: true }));
     } catch {

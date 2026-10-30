@@ -32,18 +32,18 @@ const PLACEHOLDER =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23e5e7eb' width='400' height='400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='48' fill='%239ca3af'%3E이미지%3C/text%3E%3C/svg%3E";
 
 
-// 2026-10-30 대표님: '이름 칼럼'(대표님의 생각·개명·상담·삶 이야기)을 '흥미진진 이름이야기'(단어·유명인·인기 이름 풀이)와 나눔.
+// 2026-10-30 대표님: '이름과 삶'(대표 칼럼 — 대표님의 생각·가치관·개명·상담·삶 이야기)을 '흥미진진 이름이야기'(단어·유명인·인기 이름 풀이)와 나눔.
 // 같은 목록 화면을 종류만 바꿔 쓴다(/name-stories · /columns).
 export type StoryKind = { category: "nameStory" | "column"; base: string; title: string; eyebrow: string; desc: string };
 export const STORY_KINDS: Record<StoryKind["category"], StoryKind> = {
   nameStory: { category: "nameStory", base: "/name-stories", title: "흥미진진 이름이야기", eyebrow: "NAME STORIES", desc: "이름에 담긴 흥미로운 이야기들을 만나보세요" },
-  column: { category: "column", base: "/columns", title: "이름 칼럼", eyebrow: "NAME COLUMN", desc: "이름과 개명, 운과 삶에 대한 이야기를 전합니다" },
+  column: { category: "column", base: "/columns", title: "이름과 삶", eyebrow: "NAME & LIFE", desc: "대표가 직접 쓰는 이름과 삶의 이야기" },
 };
 
 const categoryOptions = [
   { value: "review", label: "후기" },
   { value: "nameStory", label: "이름이야기" },
-  { value: "column", label: "이름 칼럼" },
+  { value: "column", label: "이름과 삶" },
   { value: "announcement", label: "공지사항" },
   { value: "expert", label: "한국이름학교" },
 ];
@@ -451,6 +451,34 @@ export default function NameStories({ kind = "nameStory" }: { kind?: StoryKind["
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       
+      {kind === "column" ? (
+        /* '이름과 삶' 머리글(2026-10-30 대표님 시안 1번): 신문 칼럼 머리글 — 미색 종이, 위아래 줄, 명조 제목, 오른쪽에 대표 사진(흑백).
+           사진은 29일 영상 장면에서 핀 마이크만 지운 것(column-portrait.webp). */
+        <section className="bg-[#f7f4ec] py-10 md:py-16">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-5 md:gap-12">
+              <div className="flex-1 min-w-0" style={{ color: "#1e2a4a" }}>
+                <p className="text-[11px] md:text-sm tracking-[0.2em] text-[#8a7f66] border-b border-[#1e2a4a] pb-2">
+                  {K.eyebrow} · 와츠유어네임 이름연구협회
+                </p>
+                <h1 className="text-4xl md:text-6xl font-bold my-3 md:my-5" style={{ fontFamily: "'Noto Serif KR', serif" }} data-testid="text-stories-title">
+                  {K.title}
+                </h1>
+                <p className="text-sm md:text-xl text-[#5a5446]">{K.desc}</p>
+                <div className="mt-4 md:mt-6 border-t-4 border-double border-[#1e2a4a]" />
+              </div>
+              <img
+                src="/column-portrait.webp"
+                alt="와츠유어네임 이름연구협회 대표"
+                className="w-28 md:w-56 aspect-[4/5] object-cover object-top rounded-lg grayscale flex-shrink-0"
+                fetchPriority="high"
+                loading="eager"
+              />
+            </div>
+          </div>
+        </section>
+      ) : (
+      <>
       {/* Hero Section with character on right */}
       {/* 배경 이미지의 하늘색과 같은 색을 깔아둔다 — 모바일에서 이미지가 위쪽을 다 못 채워도 이어져 보이게 */}
       <section className="relative overflow-hidden py-16 md:py-24 bg-[#73d8fc]">
@@ -489,6 +517,8 @@ export default function NameStories({ kind = "nameStory" }: { kind?: StoryKind["
           </div>
         </div>
       </section>
+      </>
+      )}
 
       <main className="flex-1 py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
