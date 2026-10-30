@@ -291,3 +291,36 @@ export async function checkYoutubeProcessing(videoId: string): Promise<Processin
     },
   };
 }
+
+/**
+ * 채널·최근 영상 숫자(2026-10-30 대표님 '유튜브·틱톡·클립·스레드 몽땅 조사'): 구독자·총 조회수 + 최근 영상별 조회·좋아요·댓글.
+ * 기존 youtube.readonly 스코프로 충분(Data API). 공유·구독 증감은 Analytics API(yt-analytics.readonly)가 있어야 해서 아직 안 함.
+ */
+export async function getYoutubeStats(limit = 20) {
+  const accessToken = await getAccessToken();
+  const g = async (path: string) => {
+    const r = await fetch(`https://www.googleapis.com/youtube/v3/${path}`, { headers: { Authorization: `Bearer ${accessToken}` } });
+    const j: any = await r.json();
+    if (!r.ok) throw new Error(`YouTube 조회 실패(${r.status}): ${String(j?.error?.message ?? "").slice(0, 200)}`);
+    return j;
+  };
+  const ch = (await g("channels?part=snippet,statistics,contentDetails&mine=true"))?.items?.[0];
+  if (!ch) throw new Error("YouTube 채널을 찾지 못함");
+  const uploads = ch.contentDetails?.relatedPlaylists?.uploads;
+  const n = Math.min(Math.max(limit, 1), 50);
+  const ids = uploads
+    ? ((await g(`playlistItems?part=contentDetails&maxResults=${n}&playlistId=${encodeURIComponent(uploads)}`))?.items ?? [])
+        .map((x: any) => x.contentDetails?.videoId).filter(Boolean)
+    : [];
+  const vids = ids.length ? (await g(`videos?part=snippet,statistics&id=${ids.join(",")}`))?.items ?? [] : [];
+  return {
+    channel: ch.snippet?.title,
+    subscribers: Number(ch.statistics?.subscriberCount ?? 0),
+    views: Number(ch.statistics?.viewCount ?? 0),
+    videoCount: Number(ch.statistics?.videoCount ?? 0),
+    videos: vids.map((v: any) => ({
+      id: v.id, url: `https://youtu.be/${v.id}`, title: v.snippet?.title, publishedAt: v.snippet?.publishedAt,
+      views: Number(v.statistics?.viewCount ?? 0), likes: Number(v.statistics?.likeCount ?? 0), comments: Number(v.statistics?.commentCount ?? 0),
+    })),
+  };
+}

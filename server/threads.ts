@@ -163,3 +163,40 @@ export async function publishThreadsVideo(
   }
   return { postId, permalink, replyId, replyError };
 }
+
+/**
+ * 스레드 숫자(2026-10-30 대표님 '몽땅 조사'): 계정(팔로워·조회·좋아요·답글·리포스트) + 최근 글별 숫자.
+ * threads_manage_insights 권한이 토큰에 있어야 함 — 없으면 insightsError 에 이유를 담고 글 목록만 돌려줌.
+ */
+export async function getThreadsStats(limit = 20, days = 30, f: Fetch = fetch) {
+  const t = await ensureFreshToken(f);
+  if (!t) throw new Error("THREADS_ACCESS_TOKEN 없음");
+  const tok = encodeURIComponent(t.accessToken);
+  const g = async (path: string) => {
+    const r = await f(`${THREADS_GRAPH}${path}${path.includes("?") ? "&" : "?"}access_token=${tok}`);
+    const j: any = await r.json();
+    if (!r.ok || j?.error) throw new Error(String(j?.error?.message ?? `스레드 조회 실패(${r.status})`).slice(0, 200));
+    return j;
+  };
+  const val = (d: any) => Number(d?.total_value?.value ?? (d?.values?.length ? d.values[d.values.length - 1].value : 0) ?? 0);
+  const me = await g("/me?fields=id,username");
+  let account: Record<string, number> = {}, insightsError: string | null = null;
+  const until = Math.floor(Date.now() / 1000), since = until - Math.min(Math.max(days, 1), 30) * 86400;
+  for (const m of ["followers_count", "views", "likes", "replies", "reposts", "quotes"]) {
+    try {
+      const j = await g(`/me/threads_insights?metric=${m}${m === "followers_count" ? "" : `&since=${since}&until=${until}`}`);
+      account[m] = val(j?.data?.[0]);
+    } catch (e: any) { insightsError ??= String(e?.message ?? e); }
+  }
+  const n = Math.min(Math.max(limit, 1), 50);
+  const posts: any[] = [];
+  for (const p of (await g(`/me/threads?fields=id,text,timestamp,permalink,media_type&limit=${n}`))?.data ?? []) {
+    const ins: Record<string, number | null> = {};
+    try {
+      for (const d of (await g(`/${p.id}/insights?metric=views,likes,replies,reposts,quotes,shares`))?.data ?? []) ins[d.name] = val(d);
+    } catch (e: any) { insightsError ??= String(e?.message ?? e); }
+    posts.push({ id: p.id, permalink: p.permalink, timestamp: p.timestamp, type: p.media_type,
+                 text: String(p.text ?? "").split("\n")[0].slice(0, 80), insights: ins });
+  }
+  return { username: me.username, account, posts, insightsError };
+}

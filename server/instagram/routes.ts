@@ -10,6 +10,8 @@ import { authorizeUrl, completeOAuth, redirectUri, verifyState, IG_SCOPES } from
 import { signatureMatch, normalizeWebhook, storeEvents } from "./webhook";
 import { processComment, RULE, SEND_LIVE } from "./automation";
 import { igToken, igCreateStoryContainer, igFetchContainerStatus, igMediaPublish } from "./publish";
+import { getYoutubeStats } from "../youtube";
+import { getThreadsStats } from "../threads";
 
 function handle(res: Response, route: string, e: any) {
   if (e instanceof IgApiError) {
@@ -334,6 +336,17 @@ export function registerInstagramRoutes(app: Express, requireAdmin: RequestHandl
       handle(res, "stats", e);
     }
   });
+
+  // ── 유튜브·스레드 통계도 여기서(2026-10-30) — routes.ts 를 건드리지 않으려고 같은 '통계' 묶음에 둠 ──
+  for (const [name, fn] of [["youtube", () => getYoutubeStats(30)], ["threads", () => getThreadsStats(20)]] as const) {
+    app.get(`/api/admin/stats/${name}`, requireAdmin, async (_req, res) => {
+      try {
+        res.json({ ok: true, at: new Date().toISOString(), ...(await fn()) });
+      } catch (e: any) {
+        res.status(502).json({ ok: false, error: String(e?.message ?? e).slice(0, 300) });
+      }
+    });
+  }
 
   // ── 스토리 올리기(영상) — 처음엔 {videoUrl}, 처리 중이면 받은 {creationId} 로 다시 부르면 이어서 게시 ──
   app.post("/api/admin/instagram/story", requireAdmin, async (req, res) => {
