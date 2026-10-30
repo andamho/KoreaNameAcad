@@ -77,7 +77,8 @@ export function registerPagePreview(app: Express, siteUrl: string) {
 
   // 이름이야기 글: 글마다 제목과 대표 사진을 따로 내려준다.
   // 썸네일을 안 올린 글은 영상 썸네일을 쓴다(2026-09-28 원장님 지적).
-  app.get("/name-stories/:id", async (req, res, next) => {
+  // 이름 칼럼(/columns, 2026-10-30)도 같은 방식
+  app.get(["/name-stories/:id", "/columns/:id"], async (req, res, next) => {
     try {
       if (!db) return next();
       const [row] = await db.select().from(contents).where(eq(contents.id, String(req.params.id)));
@@ -86,9 +87,10 @@ export function registerPagePreview(app: Express, siteUrl: string) {
       if (!image) return next(); // 쓸 사진이 없으면 평소대로(홈 대표 이미지)
       const html = fs.readFileSync(indexPath, "utf-8");
       const desc = String(row.content || "").replace(/!\[[^\]]*\]\([^)]+\)/g, " ").replace(/[#*_>`]/g, " ").replace(/\s+/g, " ").trim().slice(0, 100);
-      const page: Preview = { title: row.title, description: desc || "흥미진진 이름이야기", image };
+      const base = req.path.startsWith("/columns") ? "/columns" : "/name-stories";
+      const page: Preview = { title: row.title, description: desc || (base === "/columns" ? "이름 칼럼" : "흥미진진 이름이야기"), image };
       // 이름이야기는 검색에 나와야 하므로 robots 는 건드리지 않는다.
-      res.type("html").send(applyPreview(html, `/name-stories/${row.id}`, page, siteUrl, { keepRobots: true }));
+      res.type("html").send(applyPreview(html, `${base}/${row.id}`, page, siteUrl, { keepRobots: true }));
     } catch {
       next();
     }

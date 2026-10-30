@@ -138,8 +138,10 @@ function Router() {
         {(params) => <ContentDetail backPath="/reviews" backLabel="후기 목록" />}
       </Route>
       <Route path="/pricing" component={Pricing}/>
-      <Route path="/name-stories" component={NameStories}/>
+      <Route path="/name-stories">{() => <NameStories />}</Route>
       <Route path="/name-stories/:id" component={NameStoryDetail}/>
+      <Route path="/columns">{() => <NameStories kind="column" />}</Route>
+      <Route path="/columns/:id" component={NameStoryDetail}/>
       <Route path="/terms" component={Terms}/>
       <Route path="/privacy" component={Privacy}/>
       <Route path="/notice" component={Notice}/>
@@ -277,7 +279,7 @@ function App() {
     const preloadContentImages = async () => {
       try {
         // 모든 카테고리 동시에 fetch
-        const categories = ['review', 'nameStory', 'announcement', 'expert', 'about'];
+        const categories = ['review', 'nameStory', 'column', 'announcement', 'expert', 'about'];
         const results = await Promise.all(
           categories.map(cat => 
             fetch(`/api/contents?category=${cat}`)

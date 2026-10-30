@@ -32,9 +32,18 @@ const PLACEHOLDER =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23e5e7eb' width='400' height='400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='48' fill='%239ca3af'%3E이미지%3C/text%3E%3C/svg%3E";
 
 
+// 2026-10-30 대표님: '이름 칼럼'(대표님의 생각·개명·상담·삶 이야기)을 '흥미진진 이름이야기'(단어·유명인·인기 이름 풀이)와 나눔.
+// 같은 목록 화면을 종류만 바꿔 쓴다(/name-stories · /columns).
+export type StoryKind = { category: "nameStory" | "column"; base: string; title: string; eyebrow: string; desc: string };
+export const STORY_KINDS: Record<StoryKind["category"], StoryKind> = {
+  nameStory: { category: "nameStory", base: "/name-stories", title: "흥미진진 이름이야기", eyebrow: "NAME STORIES", desc: "이름에 담긴 흥미로운 이야기들을 만나보세요" },
+  column: { category: "column", base: "/columns", title: "이름 칼럼", eyebrow: "NAME COLUMN", desc: "이름과 개명, 운과 삶에 대한 이야기를 전합니다" },
+};
+
 const categoryOptions = [
   { value: "review", label: "후기" },
   { value: "nameStory", label: "이름이야기" },
+  { value: "column", label: "이름 칼럼" },
   { value: "announcement", label: "공지사항" },
   { value: "expert", label: "한국이름학교" },
 ];
@@ -44,7 +53,7 @@ function formatDate(dateValue: string | Date) {
   return `${date.getFullYear()}. ${String(date.getMonth() + 1).padStart(2, '0')}. ${String(date.getDate()).padStart(2, '0')}.`;
 }
 
-function StoryCard({ story, index = 0 }: { story: Content; index?: number }) {
+function StoryCard({ story, index = 0, base = "/name-stories" }: { story: Content; index?: number; base?: string }) {
   const { isAdmin, token } = useAdmin();
   const { toast } = useToast();
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -201,7 +210,7 @@ function StoryCard({ story, index = 0 }: { story: Content; index?: number }) {
 
   return (
     <>
-    <Link href={`/name-stories/${story.id}`} onClick={() => saveScrollPosition("/name-stories")}>
+    <Link href={`${base}/${story.id}`} onClick={() => saveScrollPosition(base)}>
       <Card 
         className="group overflow-hidden hover-elevate active-elevate-2 cursor-pointer relative story-card"
         data-testid={`card-story-${story.id}`}
@@ -397,16 +406,17 @@ function StorySkeleton() {
   );
 }
 
-export default function NameStories() {
+export default function NameStories({ kind = "nameStory" }: { kind?: StoryKind["category"] } = {}) {
+  const K = STORY_KINDS[kind];
   const { isAdmin, token, isVerifying } = useAdmin();
 
   // 스크롤 위치 복원
-  useScrollRestore("/name-stories");
+  useScrollRestore(K.base);
   
   const { data: stories, isLoading, isError, error } = useQuery<Content[]>({
-    queryKey: ["/api/contents", "nameStory"],
+    queryKey: ["/api/contents", K.category],
     queryFn: async () => {
-      const response = await fetch("/api/contents?category=nameStory");
+      const response = await fetch(`/api/contents?category=${K.category}`);
       if (response.status === 503) throw new Error("DATABASE_UNAVAILABLE");
       if (!response.ok) throw new Error("Failed to fetch stories");
       return response.json();
@@ -462,18 +472,18 @@ export default function NameStories() {
             {/* Character - on top for mobile, right for desktop */}
             <img 
               src={storiesCharacterImage}
-              alt="이름이야기 캐릭터"
+              alt={`${K.title} 캐릭터`}
               className="w-auto h-40 md:h-56 flex-shrink-0 order-1 md:order-2"
             />
             {/* Title, description, and button as one unit */}
             <div className="text-center md:text-left order-2 md:order-1">
-              <p className="text-sm font-medium tracking-wide text-slate-600 mb-2">NAME STORIES</p>
+              <p className="text-sm font-medium tracking-wide text-slate-600 mb-2">{K.eyebrow}</p>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4" style={{ color: '#1e2a4a' }} data-testid="text-stories-title">
-                흥미진진 이름이야기
+                {K.title}
               </h1>
               {/* '전체보기' 는 머리글에서 빼고 목록 맨 아래로 옮겼다. */}
               <p className="text-[1rem] md:text-2xl text-slate-700">
-                이름에 담긴 흥미로운 이야기들을 만나보세요
+                {K.desc}
               </p>
             </div>
           </div>
@@ -495,14 +505,14 @@ export default function NameStories() {
           ) : stories && stories.length > 0 ? (
             <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-2 sm:gap-4">
               {stories.map((story, idx) => (
-                <StoryCard key={story.id} story={story} index={idx} />
+                <StoryCard key={story.id} story={story} index={idx} base={K.base} />
               ))}
             </div>
           ) : null}
 
           {/* 머리글에 있던 '전체보기' — 다 읽고 난 자리에 둔다.
               색은 다른 페이지 버튼과 같은 것(#18a999 바탕 / 흰 글자). */}
-          <div className="mt-12 text-center">
+          {kind === "nameStory" && <div className="mt-12 text-center">
             <a
               href="https://m.blog.naver.com/whats_ur_name_777?categoryNo=10&tab=1#contentslist_block"
               target="_blank"
@@ -513,7 +523,7 @@ export default function NameStories() {
               <span>전체보기</span>
               <span className="text-base">›</span>
             </a>
-          </div>
+          </div>}
         </div>
       </main>
 

@@ -11,6 +11,8 @@ function getCategoryPath(category: string): string {
       return "/reviews";
     case "nameStory":
       return "/name-stories";
+    case "column":
+      return "/columns";
     default:
       return "/reviews";
   }
@@ -22,6 +24,8 @@ function getCategoryDetailPath(category: string, id: string): string {
       return `/reviews/${id}`;
     case "nameStory":
       return `/name-stories/${id}`;
+    case "column":
+      return `/columns/${id}`;
     default:
       return `/reviews/${id}`;
   }

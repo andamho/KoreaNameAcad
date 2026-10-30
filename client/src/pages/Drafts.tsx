@@ -27,6 +27,7 @@ const categoryOptions = [
   { value: "all", label: "전체" },
   { value: "review", label: "후기" },
   { value: "nameStory", label: "이름이야기" },
+  { value: "column", label: "이름 칼럼" },
   { value: "announcement", label: "공지사항" },
   { value: "expert", label: "한국이름학교" },
 ];
@@ -34,6 +35,7 @@ const categoryOptions = [
 const editCategoryOptions = [
   { value: "review", label: "후기" },
   { value: "nameStory", label: "이름이야기" },
+  { value: "column", label: "이름 칼럼" },
   { value: "announcement", label: "공지사항" },
   { value: "expert", label: "한국이름학교" },
 ];

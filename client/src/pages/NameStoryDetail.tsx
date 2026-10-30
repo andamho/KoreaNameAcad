@@ -44,6 +44,7 @@ export default function NameStoryDetail() {
   const categoryOptions = [
     { value: "review", label: "후기" },
     { value: "nameStory", label: "이름이야기" },
+    { value: "column", label: "이름 칼럼" },
     { value: "announcement", label: "공지사항" },
     { value: "expert", label: "한국이름학교" },
     { value: "about", label: "협회 소개" },
@@ -103,6 +104,10 @@ export default function NameStoryDetail() {
     },
     enabled: !!id,
   });
+  // 목록으로 돌아가기: 이름 칼럼 글이면 칼럼 목록으로(2026-10-30)
+  const isColumn = story?.category === "column" || (typeof window !== "undefined" && window.location.pathname.startsWith("/columns"));
+  const backPath = isColumn ? "/columns" : "/name-stories";
+  const backLabel = isColumn ? "이름 칼럼" : "이름이야기";
 
   const updateMutation = useMutation({
     mutationFn: async (data: typeof editForm) => {
@@ -209,9 +214,9 @@ export default function NameStoryDetail() {
             <h1 className="text-2xl font-bold text-foreground mb-4">
               콘텐츠를 찾을 수 없습니다
             </h1>
-            <Link href="/name-stories" data-testid="button-back-list">
+            <Link href={backPath} data-testid="button-back-list">
               <span className="text-muted-foreground hover:text-foreground transition-colors text-sm">
-                &lt; 이름이야기 목록
+                &lt; {backLabel} 목록
               </span>
             </Link>
           </div>
@@ -230,9 +235,9 @@ export default function NameStoryDetail() {
       <main className="flex-1 py-12 md:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between mb-6">
-            <Link href="/name-stories" data-testid="button-back">
+            <Link href={backPath} data-testid="button-back">
               <span className="text-muted-foreground hover:text-foreground transition-colors kna-back-link" style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>
-                &lt; 이름이야기 목록
+                &lt; {backLabel} 목록
               </span>
             </Link>
             {isAdmin && (
