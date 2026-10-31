@@ -452,34 +452,45 @@ export default function NameStories({ kind = "nameStory" }: { kind?: StoryKind["
       <Navbar />
       
       {kind === "column" ? (
-        /* '이름과 삶' 머리글(2026-10-30 대표님 시안 1번): 신문 칼럼 머리글 — 미색 종이, 위아래 줄, 명조 제목, 오른쪽에 대표 사진(흑백).
-           사진은 29일 영상 장면에서 핀 마이크만 지운 것(column-portrait3.webp). */
-        <section className="bg-[#f7f4ec] py-10 md:py-16">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* 사진은 글 묶음과 같은 높이(위 NAME & LIFE 줄 ~ 아래 이중선) — 2026-10-30 대표님 '사진이 생뚱맞게 커' */}
-            <div className="flex items-center gap-5 md:gap-10">
-              <div className="flex-1 min-w-0" style={{ color: "#1e2a4a" }}>
-                {/* 위 작은 글씨는 NAME & LIFE 만(협회 이름은 아래 소개와 겹쳐서 뺌, 2026-10-30) */}
-                <p className="text-[11px] md:text-sm tracking-[0.2em] text-[#8a7f66] border-b border-[#1e2a4a] pb-2">
-                  {K.eyebrow}
-                </p>
-                <h1 className="text-4xl md:text-6xl font-bold my-3 md:my-5" style={{ fontFamily: "'Noto Serif KR', serif" }} data-testid="text-stories-title">
-                  {K.title}
-                </h1>
-                <p className="text-sm md:text-xl text-[#5a5446]">{K.desc}</p>
-                <div className="mt-4 md:mt-6 border-t-4 border-double border-[#1e2a4a]" />
-              </div>
-              {/* 사진 높이 = 글 묶음 높이(NAME & LIFE 줄 ~ 이중선). 글자가 rem 이라 같이 커지고 줄도록 rem 으로 맞춤(잰 값: 모바일 130px, md 185px) */}
-              <div className="relative self-center h-[8.125rem] md:h-[11.5625rem] aspect-[4/5] flex-shrink-0">
-                <img
-                  src="/column-portrait3.webp"
-                  alt="와츠유어네임 이름연구협회 대표"
-                  className="absolute inset-0 w-full h-full object-cover object-top rounded-md grayscale"
-                  fetchPriority="high"
-                  loading="eager"
-                />
-              </div>
+        /* '이름과 삶' 머리글(2026-10-31 대표님 시안 '밤의 서재'): 다른 페이지처럼 그라데이션 배경 + 서 있는 인물, 높이도 같게(26rem).
+           깊은 남색에 대표님 뒤로 청록·금빛이 은은하게. 인물은 column-portrait3 에서 사람만 오려 벽에 묻은 흰 테를 걷어낸 것(column-portrait-cut.webp),
+           어깨 아래는 흐려지게 해서 사진 틀이 보이지 않게. */
+        <section
+          className="relative overflow-hidden h-[28rem] md:h-[26rem]"
+          style={{
+            background:
+              "radial-gradient(38% 70% at 74% 70%, rgba(0,184,169,.42) 0%, transparent 70%)," +
+              "radial-gradient(30% 55% at 88% 20%, rgba(232,184,107,.30) 0%, transparent 70%)," +
+              "linear-gradient(160deg, #0a1a33, #0d2342 60%, #0a1a33)",
+          }}
+        >
+          {/* 고운 입자(그라데이션 띠무늬 막기) */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 pointer-events-none opacity-[0.18] mix-blend-overlay"
+            style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")" }}
+          />
+          <div className="relative h-full max-w-5xl mx-auto px-5 md:px-8">
+            <div className="relative z-10 pt-9 md:pt-0 md:h-full md:flex md:flex-col md:justify-center">
+              <p className="text-sm font-medium tracking-wide text-[#7fe3d8]">{K.eyebrow}</p>
+              <h1 className="text-[2.625rem] md:text-6xl lg:text-[4rem] font-extrabold tracking-tight leading-tight text-white mt-2 md:mt-3" data-testid="text-stories-title">
+                {K.title}
+              </h1>
+              <p className="text-[1.0625rem] md:text-[1.3125rem] text-[#b9c6d8] mt-3 md:mt-4">{K.desc}</p>
+              <span aria-hidden="true" className="block w-14 h-[3px] mt-5 rounded-sm" style={{ background: "linear-gradient(90deg, #00b8a9, #e8b86b)" }} />
             </div>
+            <img
+              src="/column-portrait-cut.webp"
+              alt="와츠유어네임 이름연구협회 대표"
+              className="absolute bottom-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-[6.875rem] h-[15.5rem] md:h-[22.5rem] w-auto"
+              style={{
+                filter: "saturate(.85)",
+                WebkitMaskImage: "radial-gradient(115% 100% at 50% 22%, #000 58%, transparent 80%)",
+                maskImage: "radial-gradient(115% 100% at 50% 22%, #000 58%, transparent 80%)",
+              }}
+              fetchPriority="high"
+              loading="eager"
+            />
           </div>
         </section>
       ) : (
