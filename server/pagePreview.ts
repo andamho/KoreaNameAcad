@@ -95,6 +95,19 @@ export function registerPagePreview(app: Express, siteUrl: string) {
       next();
     }
   });
+  // 이름과 삶 목록(2026-10-31): 제목·검색 정보는 그대로 두고 첫 화면 사진만 먼저 받게 한다.
+  // index.html 이 홈 사진 여러 장을 먼저 받으라고 해서 머리글 대표 사진이 늦게 떴다.
+  app.get("/columns", (_req, res, next) => {
+    try {
+      const html = fs.readFileSync(indexPath, "utf-8")
+        .split("\n").filter((l) => !/<link rel="preload" as="image"/i.test(l)).join("\n")
+        .replace(/<\/head>/i, `  <link rel="preload" as="image" fetchpriority="high" href="/column-portrait-cut-v3.webp">
+  </head>`);
+      res.type("html").send(html);
+    } catch {
+      next();
+    }
+  });
   for (const url of Object.keys(PAGES)) {
     app.get(url, (_req, res, next) => {
       try {

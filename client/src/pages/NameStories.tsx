@@ -453,8 +453,10 @@ export default function NameStories({ kind = "nameStory" }: { kind?: StoryKind["
       
       {kind === "column" ? (
         /* '이름과 삶' 머리글(2026-10-31 대표님 시안 '밤의 서재'): 다른 페이지처럼 그라데이션 배경 + 서 있는 인물, 높이도 같게(26rem).
-           깊은 남색에 대표님 뒤로 청록·금빛이 은은하게. 인물은 column-portrait3 에서 사람만 오려 벽에 묻은 흰 테를 걷어낸 것(column-portrait-cut.webp),
-           어깨 아래는 흐려지게 해서 사진 틀이 보이지 않게. */
+           깊은 남색에 대표님 뒤로 청록·금빛이 은은하게. 인물은 column-portrait3 에서 사람만 오려 벽에 묻은 흰 테를 걷어낸 것,
+           어깨 아래는 흐려지게 해서 사진 틀이 보이지 않게.
+           v3(2026-10-31): 경계가 지저분해 대표님이 GPT 로 직접 배경을 지운 사진으로 바꿈(column-portrait-cut-v3.webp). 이름을 바꿔 예전 사진이 캐시에 남지 않게.
+           server/pagePreview.ts 가 /columns 에서 이 사진을 먼저 받게 한다(늦게 뜨던 것). */
         <section
           className="relative overflow-hidden h-[28rem] md:h-[26rem]"
           style={{
@@ -480,13 +482,14 @@ export default function NameStories({ kind = "nameStory" }: { kind?: StoryKind["
               <span aria-hidden="true" className="block w-14 h-[3px] mt-5 rounded-sm" style={{ background: "linear-gradient(90deg, #00b8a9, #e8b86b)" }} />
             </div>
             <img
-              src="/column-portrait-cut.webp"
+              src="/column-portrait-cut-v3.webp"
               alt="와츠유어네임 이름연구협회 대표"
               className="absolute bottom-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-[6.875rem] h-[15.5rem] md:h-[22.5rem] w-auto"
               style={{
                 filter: "saturate(.85)",
-                WebkitMaskImage: "radial-gradient(115% 100% at 50% 22%, #000 58%, transparent 80%)",
-                maskImage: "radial-gradient(115% 100% at 50% 22%, #000 58%, transparent 80%)",
+                // 옆으로 좁은 타원: 사진 양옆 끝(팔이 잘린 세로선)까지 확실히 사라지게
+                WebkitMaskImage: "radial-gradient(85% 100% at 50% 22%, #000 55%, transparent 78%)",
+                maskImage: "radial-gradient(85% 100% at 50% 22%, #000 55%, transparent 78%)",
               }}
               fetchPriority="high"
               loading="eager"
