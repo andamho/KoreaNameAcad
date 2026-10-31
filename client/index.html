@@ -131,6 +131,12 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
+      // 직원 기기 표시(2026-10-31 원장님: 통계에서 직원 방문 빼기) — 관리자 화면을 한 번이라도 연 기기,
+      // 또는 주소 끝에 ?staff=1 을 붙여 연 기기는 'internal' 로 보낸다. GA '내부 트래픽' 필터가 이것으로 거른다.
+      try {
+        if (location.pathname.indexOf('/admin') === 0 || /[?&]staff=1/.test(location.search)) localStorage.setItem('kna_staff', '1');
+        if (localStorage.getItem('kna_staff') === '1') gtag('set', { traffic_type: 'internal' });
+      } catch (e) {}
       gtag('config', 'G-CZX143K6V6');
     </script>
   </head>

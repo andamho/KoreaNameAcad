@@ -23,19 +23,29 @@ export async function runReport(body) {
 }
 
 const range = [{ startDate: `${days}daysAgo`, endDate: "today" }];
+// 직원 방문 빼기(2026-10-31 원장님 지시):
+//  · 태안군 = 사무실(관리자 화면 방문의 대부분). 고객이 태안에서 들어오는 경우는 드물어 통째로 뺀다.
+//  · /admin 화면 조회
+//  · 직원 기기 표시(index.html 의 traffic_type=internal → GA '내부 트래픽' 필터, 테스트 상태)
+const 직원아님 = [
+  { notExpression: { filter: { fieldName: "city", stringFilter: { matchType: "EXACT", value: "Taean-gun" } } } },
+  { notExpression: { filter: { fieldName: "pagePath", stringFilter: { matchType: "BEGINS_WITH", value: "/admin" } } } },
+  { notExpression: { filter: { fieldName: "testDataFilterName", stringFilter: { matchType: "EXACT", value: "Internal Traffic" } } } },
+];
+const 거르기 = (f) => ({ andGroup: { expressions: f ? [f, ...직원아님] : 직원아님 } });
 const 한글 = (p) => { try { return decodeURIComponent(p); } catch { return p; } };
 
 // 1) 페이지별 조회수
-const pages = await runReport({ dateRanges: range, dimensions: [{ name: "pagePath" }], metrics: [{ name: "screenPageViews" }, { name: "activeUsers" }], orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }], limit: 25 });
-console.log(`\n■ 페이지별 조회수 (최근 ${days}일)  [조회수 · 사용자]`);
+const pages = await runReport({ dateRanges: range, dimensions: [{ name: "pagePath" }], metrics: [{ name: "screenPageViews" }, { name: "activeUsers" }], dimensionFilter: 거르기(), orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }], limit: 25 });
+console.log(`\n■ 페이지별 조회수 (최근 ${days}일, 직원 제외)  [조회수 · 사용자]`);
 for (const [p, v, u] of pages) console.log(`  ${String(v).padStart(5)} · ${String(u).padStart(4)}  ${한글(p)}`);
 
 // 2) 홈 다음 페이지: 직전 페이지(pageReferrer)가 홈인 조회
 const next = await runReport({
   dateRanges: range, dimensions: [{ name: "pagePath" }], metrics: [{ name: "screenPageViews" }],
-  dimensionFilter: { filter: { fieldName: "pageReferrer", stringFilter: { matchType: "FULL_REGEXP", value: "https://(www[.])?korea-name-acad[.]com/?([?#].*)?" } } },
+  dimensionFilter: 거르기({ filter: { fieldName: "pageReferrer", stringFilter: { matchType: "FULL_REGEXP", value: "https://(www[.])?korea-name-acad[.]com/?([?#].*)?" } } }),
   orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }], limit: 20,
 });
 const 합 = next.filter(([p]) => p !== "/").reduce((s, [, v]) => s + v, 0);
-console.log(`\n■ 홈 다음에 간 페이지 (최근 ${days}일, 홈→홈 새로고침 제외 ${합}회)`);
+console.log(`\n■ 홈 다음에 간 페이지 (최근 ${days}일, 직원 제외, 홈→홈 새로고침 제외 ${합}회)`);
 for (const [p, v] of next) if (p !== "/") console.log(`  ${String(v).padStart(5)}  ${(v / 합 * 100).toFixed(0).padStart(3)}%  ${한글(p)}`);
