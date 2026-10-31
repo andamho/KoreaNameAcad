@@ -247,7 +247,7 @@ figcaption{padding:8px 12px;font-size:13px;color:#666}
 .savetip svg{width:15px;height:15px;flex-shrink:0;margin-top:2.5px}
 .empty{padding:60px 0;text-align:center;color:#aaa}
 </style></head><body><div class="wrap">
-<header><img src="/new-logo.png" alt="" ><div class="brand"><div class="b1">한국이름학교</div><div class="b2">와츠유어네임 이름연구협회</div></div></header>
+<header><img src="/new-logo.webp" alt="" ><div class="brand"><div class="b1">한국이름학교</div><div class="b2">와츠유어네임 이름연구협회</div></div></header>
 ${blocks || '<div class="empty">준비 중입니다.</div>'}
 ${assets.some((a) => a.kind === "video" || a.kind === "videolink") ? '<div class="credit">이 영상들은 한국이름학교와 무관합니다.<br>‘미용감사’ 하시는데 도움되실 거 같아 소개해드립니다.</div>' : ""}
 </div></body></html>`;

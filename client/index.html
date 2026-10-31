@@ -11,7 +11,7 @@
     <link rel="preload" as="image" href="/academy-bg.webp" type="image/webp" fetchpriority="high">
     <link rel="preload" as="image" href="/astronot.webp" type="image/webp" fetchpriority="high">
     <!-- 2순위: 내비바/UI 필수 요소 -->
-    <link rel="preload" as="image" href="/new-logo.png" fetchpriority="high">
+    <link rel="preload" as="image" href="/new-logo.webp" type="image/webp" fetchpriority="high">
     <link rel="preload" as="image" href="/gradbg2.png" fetchpriority="high">
     <!-- 3순위: 기타 페이지 이미지 -->
     <link rel="preload" as="image" href="/pagebg.webp" type="image/webp">
@@ -25,7 +25,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700&display=swap" rel="stylesheet">
     <script>
       // 내비바 로고 즉시 로드 (전체 버전 + 작은 버전)
-      (new Image()).src = '/new-logo.png';
+      (new Image()).src = '/new-logo.webp';
       // 홈 히어로 배경 이미지 프리로드 (최우선)
       (new Image()).src = '/hero-bg-opt.webp';
       // 상담폼 배경 이미지 프리로드
@@ -139,7 +139,7 @@
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PS6PGW9L"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    <img src="/new-logo.png" alt="" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" fetchpriority="high" loading="eager" decoding="sync">
+    <img src="/new-logo.webp" alt="" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" fetchpriority="high" loading="eager" decoding="sync">
     <img src="/about-character-opt.webp" alt="" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" fetchpriority="high" loading="eager" decoding="sync">
     <img src="/experience-zone-character-opt.webp" alt="" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" fetchpriority="high" loading="eager" decoding="sync">
     <div id="root"></div>

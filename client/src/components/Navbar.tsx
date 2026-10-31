@@ -13,7 +13,7 @@ import { RichTextEditor } from "@/components/RichTextEditor";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-const logoImage = "/new-logo.png";
+const logoImage = "/new-logo.webp";
 
 // 삼선 세 줄 안에 넣는 문구. 눈에 잘 안 띄게 아주 작은 회색 글씨로 한 줄씩 들어간다.
 // SVG 로 넣는 이유: 줄 크기가 화면마다 다르다(모바일 21×1.5px, 데스크탑 22×3px).
