@@ -7,6 +7,13 @@ const TOP = "📌 한눈에 보기";
 const FAQ = "❓ 자주 묻는 질문";
 const ABOUT = "🏫 협회 소개";
 
+// 상자 안 글 줄 나눔(2026-11-01 대표님 '휴대폰에서 볼 때 한눈에 보기 줄바꿈이 엉망'): 글에는 블로그용으로 30자쯤마다 줄이 나뉘어 들어와서
+// 휴대폰의 좁은 상자에서 그 줄이 또 꺾이며 길고 짧게 들쭉날쭉 → 문장이 끝나는 곳에서만 줄을 바꾸고, 나머지는 이어 붙여 화면 폭대로 흐르게.
+const flow = (t: string) =>
+  t.split("\n").map((s) => s.trim()).filter(Boolean)
+    .reduce((acc, line) => (!acc ? line : /[.?!…。][”"’')\]]*$/.test(acc.split("\n").pop() || "") ? `${acc}\n${line}` : `${acc} ${line}`), "");
+const keepWords = { wordBreak: "keep-all" as const, overflowWrap: "anywhere" as const };   // 한글 낱말 중간에서 안 끊음
+
 export function renderSeoBlocks(text: string, key: string, render: (t: string) => ReactNode): JSX.Element | null {
   if (!text.includes(TOP) && !text.includes(FAQ)) return null;
   const paras = text.replace(/\r/g, "").split(/\n[ \t]*\n/);   // 윈도 줄끝(\r\n)으로 올라간 글도 있음(30일 글)
@@ -32,7 +39,7 @@ export function renderSeoBlocks(text: string, key: string, render: (t: string) =
         <div key={`${key}-top${i}`} className="not-prose">
           <div className="rounded-xl border border-sky-200 bg-sky-50 px-5 py-4 dark:border-sky-900 dark:bg-sky-950/40">
             <div className="mb-2 font-bold text-sky-900 dark:text-sky-200">{first}</div>
-            <div className="text-foreground leading-relaxed whitespace-pre-line">{render(p.split("\n").slice(1).join("\n"))}</div>
+            <div className="text-foreground leading-relaxed whitespace-pre-line" style={keepWords}>{render(flow(p.split("\n").slice(1).join("\n")))}</div>
           </div>
           <hr className="my-6 border-t border-border" />
         </div>
@@ -55,8 +62,8 @@ export function renderSeoBlocks(text: string, key: string, render: (t: string) =
       const a = k > 0 ? lines.slice(k).join("\n") : lines.slice(1).join("\n");
       out.push(
         <div key={`${key}-qa${i}`} className="not-prose mb-3 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 dark:border-amber-900 dark:bg-amber-950/30">
-          <div className="mb-1 font-bold text-foreground">{q}</div>
-          <div className="text-foreground leading-relaxed whitespace-pre-line">{render(a)}</div>
+          <div className="mb-1 font-bold text-foreground" style={keepWords}>{q}</div>
+          <div className="text-foreground leading-relaxed whitespace-pre-line" style={keepWords}>{render(flow(a))}</div>
         </div>
       );
       return;
@@ -69,7 +76,7 @@ export function renderSeoBlocks(text: string, key: string, render: (t: string) =
       out.push(
         <div key={`${key}-about${i}`} className="not-prose my-4 rounded-xl border border-stone-200 bg-stone-100 px-5 py-4 dark:border-stone-700 dark:bg-stone-800/50">
           {head && <div className="mb-2 font-bold text-foreground">{first}</div>}
-          <div className="text-foreground leading-relaxed whitespace-pre-line">{render(head ? p.split("\n").slice(1).join("\n") : p)}</div>
+          <div className="text-foreground leading-relaxed whitespace-pre-line" style={keepWords}>{render(flow(head ? p.split("\n").slice(1).join("\n") : p))}</div>
         </div>
       );
       return;
