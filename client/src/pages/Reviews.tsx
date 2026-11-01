@@ -28,6 +28,7 @@ const categoryOptions = [
 import reviewsCharacterImage from "@assets/KakaoTalk_20251226_140721227_1766725962281.png";
 import reviewbgImage from "@/assets/reviewbg";
 import { useLocation, Link } from "wouter";
+import ReviewsFaq from "@/components/ReviewsFaq";
 
 const _heroBgPreload = new Image();
 _heroBgPreload.src = reviewbgImage;
@@ -707,6 +708,9 @@ export default function Reviews() {
           </div>
         </div>
       </section>
+
+      {/* 상담 자주 묻는 질문 — 후기 전체에 딱 한 번(2026-11-01 대표님) */}
+      <ReviewsFaq />
 
       {/* Stats Section */}
       <section className="py-12 bg-muted/30">
