@@ -1,15 +1,14 @@
 // 노트북 '휴대폰과 연결'에 들어온 문자를 고객정보(사이트 문자 수집함)로 올린다.
 //
 // 원장님 결정(2026-10-24): 폰 매크로 앱 대신 노트북 휴대폰과 연결로 문자를 모은다.
-//  · 10분마다 휴대폰과 연결 DB 를 복사해 문자를 읽는다(이 PC 안에서만 — 요금 없음).
-//    2026-11-04 원장님이 폰 매크로를 끔 → 문자 수집은 이것 하나. 답장 판독·희망사항 자동 반영이
-//    1시간씩 늦지 않게 60분 → 10분. 사이트 DB 는 새 문자가 있을 때만 깨우므로 매크로(문자마다 즉시)보다 적게 깨운다.
+//  · 1시간마다 휴대폰과 연결 DB 를 복사해 문자를 읽는다(이 PC 안에서만 — 요금 없음).
+//    2026-11-04 원장님이 폰 매크로를 끔 → 문자 수집은 이것 하나. 주기는 1시간 유지(원장님: 10분일 이유 없음).
 //  · 아직 안 올린 문자가 있을 때만 사이트로 보낸다 → 사이트 DB 는 새 문자가 있을 때만 깬다.
 //  · 하루 한 번은 문자가 없어도 '살아 있음' 을 남긴다 → 사이트가 25일 넘게 끊기면 메일로 알린다.
 //  · 사진은 올리지 않는다(사진 문자는 적힌 글자만).
 //  · 사이트 쪽 채우기 기능이 같은 문자를 두 번 넣지 않는다(번호·방향·내용·2분 이내 같으면 연결만).
 //
-// 실행: node tools/phonelink/sync.mjs           (계속 돌며 10분마다)
+// 실행: node tools/phonelink/sync.mjs           (계속 돌며 1시간마다)
 //       node tools/phonelink/sync.mjs --once    (한 번만)
 //       node tools/phonelink/sync.mjs --once --dry (올리지 않고 결과만)
 // 설정: %USERPROFILE%\.kop-phonelink\config.json  { "secret": "<문자 수집 비밀값>", "base": "https://korea-name-acad.com" }
@@ -26,7 +25,7 @@ const STATE = path.join(WORK, "state.json");
 const CONFIG = path.join(WORK, "config.json");
 const PKG = path.join(process.env.LOCALAPPDATA, "Packages", "Microsoft.YourPhone_8wekyb3d8bbwe", "LocalCache", "Indexed");
 const DEVICE = "5f0e11c0-ba5e-4c0d-8e01-00000000f11c"; // 노트북 휴대폰과 연결 전용 고정 번호 — 사이트 phoneLinkReminder.ts 와 같아야 함
-const EVERY_MS = 10 * 60 * 1000;
+const EVERY_MS = 60 * 60 * 1000;
 const DAYS = 31;
 
 const args = new Set(process.argv.slice(2));
