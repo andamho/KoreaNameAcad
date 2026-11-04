@@ -68,6 +68,43 @@ export async function igCreateStoryContainer(opts: {
   return { creationId: String(j.id), raw: j };
 }
 
+/** 캐러셀(여러 장 게시물)의 한 장 컨테이너 — 영상(video_url) 또는 사진(image_url). 2026-11-04 카드뉴스 자동 업로드 */
+export async function igCreateCarouselItem(opts: {
+  token: string;
+  videoUrl?: string;
+  imageUrl?: string;
+}): Promise<{ creationId: string; raw: unknown }> {
+  const params = new URLSearchParams({ is_carousel_item: "true", access_token: opts.token });
+  if (opts.videoUrl) {
+    params.set("media_type", "VIDEO");
+    params.set("video_url", opts.videoUrl);
+  } else if (opts.imageUrl) {
+    params.set("image_url", opts.imageUrl);
+  } else throw new Error("캐러셀 항목에 videoUrl 또는 imageUrl 필요");
+  const r = await fetch(`${IG_GRAPH}/me/media`, { method: "POST", body: params });
+  const j: any = await r.json();
+  if (!r.ok || !j?.id) throw new Error(`인스타 캐러셀 항목 생성 실패: ${JSON.stringify(j)}`);
+  return { creationId: String(j.id), raw: j };
+}
+
+/** 캐러셀 묶음 컨테이너(항목 2~10개, 본문은 여기에) */
+export async function igCreateCarouselContainer(opts: {
+  token: string;
+  children: string[];
+  caption: string;
+}): Promise<{ creationId: string; raw: unknown }> {
+  const params = new URLSearchParams({
+    media_type: "CAROUSEL",
+    children: opts.children.join(","),
+    caption: opts.caption || "",
+    access_token: opts.token,
+  });
+  const r = await fetch(`${IG_GRAPH}/me/media`, { method: "POST", body: params });
+  const j: any = await r.json();
+  if (!r.ok || !j?.id) throw new Error(`인스타 캐러셀 생성 실패: ${JSON.stringify(j)}`);
+  return { creationId: String(j.id), raw: j };
+}
+
 /**
  * 2단계: 컨테이너 처리 상태 조회.
  * status_code: IN_PROGRESS | FINISHED | ERROR | PUBLISHED | EXPIRED

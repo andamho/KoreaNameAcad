@@ -9,7 +9,7 @@ import { getMe, getSubscribedFields, subscribeWebhooks, getAppWebhookConfig, IgA
 import { authorizeUrl, completeOAuth, redirectUri, verifyState, IG_SCOPES } from "./oauth";
 import { signatureMatch, normalizeWebhook, storeEvents } from "./webhook";
 import { processComment, RULE, SEND_LIVE } from "./automation";
-import { igToken, igCreateStoryContainer, igFetchContainerStatus, igMediaPublish } from "./publish";
+import { igToken, igCreateStoryContainer, igFetchContainerStatus, igMediaPublish, igCreateCarouselItem, igCreateCarouselContainer } from "./publish";
 import { getYoutubeStats } from "../youtube";
 import { getThreadsStats } from "../threads";
 
@@ -369,6 +369,54 @@ export function registerInstagramRoutes(app: Express, requireAdmin: RequestHandl
       res.json({ ok: true, mediaId, creationId });
     } catch (e) {
       handle(res, "story", e);
+    }
+  });
+
+  // ── 캐러셀(카드뉴스 여러 장) 게시 — 2026-11-04 원장님 '카드뉴스 인스타 자동 업로드' ──
+  // body: { items: [{ videoUrl } | { imageUrl }](2~10개, https), caption }
+  //   처리가 오래 걸리면 { ok:false, pending:true, childIds | creationId } 를 돌려줌 → 같은 값을 다시 보내 이어서 진행(중복 생성 없음).
+  app.post("/api/admin/instagram/carousel", requireAdmin, async (req, res) => {
+    try {
+      const token = await igToken();
+      const caption = String(req.body?.caption || "");
+      const wait = async (ids: string[]) => {
+        let left = ids.slice();
+        for (let i = 0; i < 25 && left.length; i++) {
+          const still: string[] = [];
+          for (const id of left) {
+            const s = (await igFetchContainerStatus({ token, creationId: id })).statusCode;
+            if (s === "EXPIRED") throw new Error(`컨테이너 ${id} 만료 — 처음부터 다시`);
+            if (s !== "FINISHED") still.push(id);
+          }
+          left = still;
+          if (left.length) await new Promise((r) => setTimeout(r, 6000));
+        }
+        return left;
+      };
+      let creationId = String(req.body?.creationId || "").trim();
+      if (creationId && !/^\d+$/.test(creationId)) return res.status(400).json({ error: "creationId 형식 오류" });
+      if (!creationId) {
+        let childIds: string[] = Array.isArray(req.body?.childIds) ? req.body.childIds.map(String) : [];
+        if (childIds.some((id) => !/^\d+$/.test(id))) return res.status(400).json({ error: "childIds 형식 오류" });
+        if (!childIds.length) {
+          const items = Array.isArray(req.body?.items) ? req.body.items : [];
+          if (items.length < 2 || items.length > 10) return res.status(400).json({ error: "items 는 2~10개" });
+          for (const it of items) {
+            const videoUrl = String(it?.videoUrl || "").trim(), imageUrl = String(it?.imageUrl || "").trim();
+            if (!/^https:\/\//.test(videoUrl || imageUrl)) return res.status(400).json({ error: "각 항목에 https videoUrl 또는 imageUrl 필요" });
+            childIds.push((await igCreateCarouselItem({ token, videoUrl: videoUrl || undefined, imageUrl: imageUrl || undefined })).creationId);
+          }
+        }
+        const notYet = await wait(childIds);
+        if (notYet.length) return res.json({ ok: false, pending: true, stage: "items", childIds, notYet });
+        creationId = (await igCreateCarouselContainer({ token, children: childIds, caption })).creationId;
+      }
+      const notYet = await wait([creationId]);
+      if (notYet.length) return res.json({ ok: false, pending: true, stage: "carousel", creationId });
+      const { mediaId } = await igMediaPublish({ token, creationId });
+      res.json({ ok: true, mediaId, creationId });
+    } catch (e) {
+      handle(res, "carousel", e);
     }
   });
 
