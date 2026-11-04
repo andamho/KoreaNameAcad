@@ -127,21 +127,25 @@ export async function waitContainer(
 /**
  * 영상 글 올리기(+ 선택: 첫 답글에 링크).
  * videoUrl 은 공개 HTTPS 주소(우리 서버 /objects/…). 글은 500자 이하.
+ * videoUrl 이 없으면 글만 올림(2026-11-04 대표님 '스레드 글 30개 중 1·2번 오늘 올려').
  */
 export async function publishThreadsVideo(
-  opts: { videoUrl: string; text: string; topicTag?: string; replyText?: string; replyLink?: string },
+  opts: { videoUrl?: string; text: string; topicTag?: string; replyText?: string; replyLink?: string },
   deps: { f?: Fetch; sleep?: (ms: number) => Promise<void>; waitOpts?: { firstWaitMs?: number; everyMs?: number; maxMs?: number } } = {},
 ): Promise<{ postId: string; permalink?: string; replyId?: string; replyError?: string }> {
   const f = deps.f ?? fetch;
-  if (!/^https:\/\//.test(opts.videoUrl)) throw new Error("영상 주소는 https:// 공개 주소여야 합니다.");
+  if (opts.videoUrl && !/^https:\/\//.test(opts.videoUrl)) throw new Error("영상 주소는 https:// 공개 주소여야 합니다.");
   if (textLength(opts.text) > MAX_TEXT) throw new Error(`스레드 본문이 ${MAX_TEXT}자를 넘습니다(${textLength(opts.text)}자).`);
   if (opts.replyText && textLength(opts.replyText) > MAX_TEXT) throw new Error(`첫 답글이 ${MAX_TEXT}자를 넘습니다.`);
   const t = await ensureFreshToken(f);
   if (!t) throw new Error("스레드 토큰 없음 — Railway 변수 THREADS_ACCESS_TOKEN 확인");
   const tok = t.accessToken;
 
-  const cid = await post(f, "/me/threads", { media_type: "VIDEO", video_url: opts.videoUrl, text: opts.text, topic_tag: cleanTopicTag(opts.topicTag) }, tok);
-  await waitContainer(cid, tok, { f, sleep: deps.sleep, ...deps.waitOpts });
+  const cid = opts.videoUrl
+    ? await post(f, "/me/threads", { media_type: "VIDEO", video_url: opts.videoUrl, text: opts.text, topic_tag: cleanTopicTag(opts.topicTag) }, tok)
+    : await post(f, "/me/threads", { media_type: "TEXT", text: opts.text, topic_tag: cleanTopicTag(opts.topicTag) }, tok);
+  await waitContainer(cid, tok, opts.videoUrl ? { f, sleep: deps.sleep, ...deps.waitOpts }
+    : { f, sleep: deps.sleep, firstWaitMs: 2_000, everyMs: 3_000, maxMs: 60_000 });
   const postId = await post(f, "/me/threads_publish", { creation_id: cid }, tok);
 
   let permalink: string | undefined;

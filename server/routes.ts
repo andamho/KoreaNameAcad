@@ -1232,10 +1232,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const url = typeof objectPath === "string" && objectPath.startsWith("/objects/")
         ? `${PUBLIC_MEDIA_BASE_URL}${objectPath}`
         : typeof videoUrl === "string" ? videoUrl : "";
-      if (!url) return res.status(400).json({ error: "영상 objectPath 또는 videoUrl 이 필요합니다." });
+      if (!url && !req.body?.textOnly) return res.status(400).json({ error: "영상 objectPath 또는 videoUrl(글만이면 textOnly: true)이 필요합니다." });
       if (typeof text !== "string" || !text.trim()) return res.status(400).json({ error: "본문(text)이 필요합니다." });
       const r = await publishThreadsVideo({
-        videoUrl: url,
+        videoUrl: url || undefined,
         text: text.trim(),
         topicTag: typeof topicTag === "string" ? topicTag : undefined,
         replyText: typeof replyText === "string" && replyText.trim() ? replyText.trim() : undefined,
