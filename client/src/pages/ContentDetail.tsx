@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ImageManager } from "@/components/ImageManager";
 import { RichTextEditor, renderFormattedText } from "@/components/RichTextEditor";
 import { renderSeoBlocks } from "@/components/SeoBlocks";
+import { renderArticleBlocks, isStructuredArticle } from "@/components/ArticleBlocks";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Content } from "@shared/schema";
 import { useEffect, useState } from "react";
@@ -310,6 +311,7 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
               {(() => {
                 // 이미지 마커를 기준으로 분리 (줄 위치 상관없이 처리)
                 const parts = content.content.split(/(!\[[^\]]*\]\([^)]+\))/);
+                const structured = isStructuredArticle(content.content);   // '## ' 쓴 글은 읽기 좋은 모양(ArticleBlocks)
                 const result: JSX.Element[] = [];
                 let textBuffer: string[] = [];
 
@@ -317,6 +319,8 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
                   const text = textBuffer.join("").replace(/^\n/, "").replace(/\n+$/, "");
                   textBuffer = [];
                   if (!text) return;
+                  const art = renderArticleBlocks(text, key, renderFormattedText, structured);
+                  if (art) { result.push(art); return; }
                   const seo = renderSeoBlocks(text, key, renderFormattedText);   // 한눈에 보기·자주 묻는 질문 상자
                   if (seo) { result.push(seo); return; }
                   result.push(

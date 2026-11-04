@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ImageManager } from "@/components/ImageManager";
 import { RichTextEditor, renderFormattedText } from "@/components/RichTextEditor";
 import { renderSeoBlocks } from "@/components/SeoBlocks";
+import { renderNameCompare } from "@/components/NameCompareTable";
+import { renderArticleBlocks, isStructuredArticle } from "@/components/ArticleBlocks";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { queryClient } from "@/lib/queryClient";
@@ -294,6 +296,7 @@ export default function NameStoryDetail() {
               <div className="kna-nanum-editor kna-detail-body prose dark:prose-invert max-w-none">
                 {(() => {
                   const parts = story.content.split(/(!\[[^\]]*\]\([^)]+\))/);
+                  const structured = isStructuredArticle(story.content);   // '## ' 쓴 글은 읽기 좋은 모양(ArticleBlocks)
                   const result: JSX.Element[] = [];
                   let textBuffer: string[] = [];
 
@@ -301,6 +304,14 @@ export default function NameStoryDetail() {
                     const text = textBuffer.join("").replace(/^\n+|\n+$/g, "");
                     textBuffer = [];
                     if (!text) return;
+                    const art = renderArticleBlocks(text, key, renderFormattedText, structured);
+                    if (art) { result.push(art); return; }
+                    // {{비교표:홍길동}} 자리에 코드로 그린 비교표(앞뒤 글은 평소처럼)
+                    const cmp = renderNameCompare(text, key, (t, k) =>
+                      renderSeoBlocks(t, k, renderFormattedText) ?? (
+                        <div key={k} className="text-foreground leading-relaxed whitespace-pre-line">{renderFormattedText(t)}</div>
+                      ));
+                    if (cmp) { result.push(cmp); return; }
                     const seo = renderSeoBlocks(text, key, renderFormattedText);   // 한눈에 보기·자주 묻는 질문 상자
                     if (seo) { result.push(seo); return; }
                     result.push(
