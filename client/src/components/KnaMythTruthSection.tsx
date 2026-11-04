@@ -94,9 +94,9 @@ export default function KnaMythTruthSection() {
 
           {/* 버튼 영역 */}
           <div className="flex items-center gap-4 mt-10">
-            <a href="https://blog.naver.com/whats_ur_name_777/221277653666" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-white px-4 py-1.5 text-sm font-medium text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
+            <Link href="/naming#rename" className="inline-flex items-center justify-center rounded-full bg-gray-900 dark:bg-white px-4 py-1.5 text-sm font-medium text-white dark:text-gray-900 transition hover:bg-gray-800 dark:hover:bg-gray-100">
               개명 안내 <span className="ml-1">›</span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>

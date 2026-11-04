@@ -15,6 +15,7 @@ import Admin from "@/pages/Admin";
 import Services from "@/pages/Services";
 import Reviews from "@/pages/Reviews";
 import Pricing from "@/pages/Pricing";
+import NamingGuide from "@/pages/NamingGuide";
 import NameStories from "@/pages/NameStories";
 import NameStoryDetail from "@/pages/NameStoryDetail";
 import Terms from "@/pages/Terms";
@@ -138,6 +139,7 @@ function Router() {
         {(params) => <ContentDetail backPath="/reviews" backLabel="후기 목록" />}
       </Route>
       <Route path="/pricing" component={Pricing}/>
+      <Route path="/naming" component={NamingGuide}/>
       <Route path="/name-stories">{() => <NameStories />}</Route>
       <Route path="/name-stories/:id" component={NameStoryDetail}/>
       <Route path="/columns">{() => <NameStories kind="column" />}</Route>
