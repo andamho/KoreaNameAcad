@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { renderSeoBlocks } from "@/components/SeoBlocks";
-import { NameCompareTable } from "@/components/NameCompareTable";
+import { NameCompareTable, NameSimpleTable } from "@/components/NameCompareTable";
+import { FiveEnergies } from "@/components/NameAnalysisBlocks";
 
 // 긴 글을 읽기 좋게(2026-11-04 대표님 '글이 너무 많은데 보기 좋게 한 것 같지 않아').
 // 글 안에 '## ' 로 시작하는 줄이 하나라도 있는 글만 이 모양으로 그린다(그 전 글 63편엔 없음 → 예전 그대로).
@@ -37,6 +38,14 @@ export function renderArticleBlocks(text: string, key: string, render: (t: strin
     }
     if (p.trim() === "{{비교표:홍길동}}") {
       out.push(<NameCompareTable key={k} />);
+      return;
+    }
+    if (p.trim() === "{{분석표:홍길동}}") {
+      out.push(<NameSimpleTable key={k} />);
+      return;
+    }
+    if (p.trim() === "{{다섯에너지}}") {
+      out.push(<FiveEnergies key={k} />);
       return;
     }
     const lines = p.split("\n");

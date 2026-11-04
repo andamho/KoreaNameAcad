@@ -112,6 +112,21 @@ export function NameCompareTable() {
   );
 }
 
+// {{분석표:홍길동}} — 협회 쪽 칸 하나만(2026-11-04 대표님 '자세하게 적지 말고 심플하게, 비교표 왼쪽 것으로')
+export function NameSimpleTable() {
+  return (
+    <figure className="not-prose my-10 max-w-md">
+      <style>{`
+        .kna-nanum-editor .kna-cmp-hanja,.kna-cmp-hanja{font-family:'Noto Sans KR',sans-serif !important}
+      `}</style>
+      <figcaption className="mb-4 text-[1.3rem] font-extrabold leading-snug text-foreground sm:text-[1.45rem]" style={{ wordBreak: "keep-all" }}>
+        홍길동 이름분석표
+      </figcaption>
+      <Side ours />
+    </figure>
+  );
+}
+
 // 예전 모양 글(## 없는 글)에서 {{비교표:홍길동}} 이 있으면 앞뒤 글과 표를 나눠 그린다. 없으면 null.
 export function renderNameCompare(text: string, key: string, renderText: (t: string, k: string) => ReactNode): JSX.Element | null {
   if (!MARK.test(text)) return null;
