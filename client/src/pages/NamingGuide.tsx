@@ -72,10 +72,9 @@ export default function NamingGuide() {
   const [, setLocation] = useLocation();
   const [kind, setKind] = useState<Kind>(() => (typeof window === "undefined" ? "rename" : kindFromHash()));
 
+  // 갈래(#baby 등)로 들어와도 맨 위부터 보여 준다(2026-11-04 대표님 '중간쯤이 나옴') — 갈래 선택만 미리 해 둠
   useEffect(() => {
-    if (window.location.hash) {
-      setTimeout(() => document.getElementById("kinds")?.scrollIntoView({ block: "start" }), 100);
-    } else if (!window.history.state?.scrollY) {
+    if (!window.history.state?.scrollY) {
       window.scrollTo(0, 0);
     }
   }, []);
@@ -119,7 +118,11 @@ export default function NamingGuide() {
             >
               개명 후기 보기
             </button>
-            <p className="text-center text-sm text-muted-foreground">18년간 45만 명 임상 · 사주 없이 한글·한자 이름만으로</p>
+            <p className="text-center text-sm text-muted-foreground">
+              18년간 45만 명 임상<br />
+              사주 없이 한글·한자 이름만으로 운명상담<br />
+              <span className="font-semibold text-[#0b7f82] dark:text-[#58C4C4]">[정확도 80% 이상]</span>
+            </p>
           </div>
         </div>
       </section>
