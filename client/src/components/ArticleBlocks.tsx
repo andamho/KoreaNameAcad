@@ -1,13 +1,14 @@
 import type { ReactNode } from "react";
 import { renderSeoBlocks } from "@/components/SeoBlocks";
 import { NameCompareTable, NameSimpleTable } from "@/components/NameCompareTable";
-import { FiveEnergies } from "@/components/NameAnalysisBlocks";
+import { FiveEnergies, NameNumbers, isNameNumbers } from "@/components/NameAnalysisBlocks";
 
 // 긴 글을 읽기 좋게(2026-11-04 대표님 '글이 너무 많은데 보기 좋게 한 것 같지 않아').
 // 글 안에 '## ' 로 시작하는 줄이 하나라도 있는 글만 이 모양으로 그린다(그 전 글 63편엔 없음 → 예전 그대로).
 //   ## 제목 / ## 1. 제목   → 구역 제목(앞에 가는 선). 숫자는 정말 순서인 글에만 쓴다.
 //   > 문장                  → 핵심 한 줄(명조 큰 글씨, 왼쪽 청록 선)
 //   - 항목                  → 목록
+//   {{이름표 … }}           → 이름 숫자표(NameAnalysisBlocks, 2026-11-05)
 //   그 밖의 문단            → 블로그식 짧은 줄바꿈을 문장 끝에서만 끊고 이어 붙여 화면 폭대로 흐르게
 // 📌 한눈에 보기 문단과 ❓ 자주 묻는 질문(그 뒤 🏫 협회 소개까지)은 SeoBlocks 가 그대로 그린다.
 
@@ -42,6 +43,10 @@ export function renderArticleBlocks(text: string, key: string, render: (t: strin
     }
     if (p.trim() === "{{분석표:홍길동}}") {
       out.push(<NameSimpleTable key={k} />);
+      return;
+    }
+    if (isNameNumbers(p)) {
+      out.push(<NameNumbers key={k} text={p} />);
       return;
     }
     if (p.trim() === "{{다섯에너지}}") {

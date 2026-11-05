@@ -43,3 +43,53 @@ export function FiveEnergies() {
     </figure>
   );
 }
+
+// 글 속 이름 숫자표(2026-11-05 대표님 '모든 홈페이지 글에 같은 디자인') — 예전 글의 굵은 숫자 줄을 표로.
+//   {{이름표
+//   김선태 40세 | 11 10 11 16 | 택화혁 택화혁 택뢰수
+//   金善泰 | 21 20 17 29 | 뇌풍항 뇌천대장 뇌풍항
+//   }}
+// 한 줄 = 한 이름. 둘째 칸 = 숫자(크게), 셋째 칸 = 괘. 칸 수는 글마다 달라도 됨.
+export const isNameNumbers = (p: string) => /^\{\{이름표\s*\n[\s\S]*\}\}\s*$/.test(p.trim());
+
+const cellOn = "bg-[#e8f5f4] text-[#0b5f62] dark:bg-[#56D5DB]/15 dark:text-[#7fe0e4]";
+
+function Row({ items, big }: { items: string[]; big?: boolean }) {
+  return (
+    <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
+      {items.map((t, i) => (
+        <div
+          key={i}
+          className={`flex items-center justify-center rounded px-1 text-center ${cellOn} ${
+            big ? "h-12 text-xl font-extrabold tabular-nums sm:h-14 sm:text-[1.6rem]" : "min-h-10 py-1 text-[0.9rem] font-bold leading-tight sm:min-h-11 sm:text-base"
+          }`}
+          style={keep}
+        >
+          {t}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function NameNumbers({ text }: { text: string }) {
+  const rows = text
+    .trim()
+    .replace(/^\{\{이름표\s*/, "")
+    .replace(/\}\}\s*$/, "")
+    .split("\n")
+    .map((l) => l.split("|").map((c) => c.trim()))
+    .filter((c) => c[0]);
+  return (
+    <figure className="not-prose my-8 max-w-md border border-slate-200 border-t-[3px] border-t-[#0b7f82] bg-white px-4 pb-5 pt-2 sm:px-5 dark:border-slate-700 dark:border-t-[#58C4C4] dark:bg-slate-900">
+      {rows.map(([name, nums = "", gwae = ""], i) => (
+        <div key={i} className="mt-3 flex flex-col gap-1">
+          <div className={`mb-1 text-lg font-extrabold text-foreground ${/[\u4e00-\u9fff]/.test(name) ? "kna-cmp-hanja" : ""}`}>{name}</div>
+          {nums && <Row items={nums.split(/\s+/)} big />}
+          {gwae && <Row items={gwae.split(/\s+/)} />}
+        </div>
+      ))}
+      <style>{`.kna-nanum-editor .kna-cmp-hanja,.kna-cmp-hanja{font-family:'Noto Sans KR',sans-serif !important}`}</style>
+    </figure>
+  );
+}
