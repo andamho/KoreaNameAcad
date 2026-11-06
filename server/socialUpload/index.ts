@@ -31,6 +31,7 @@ function setHint(sec: number | null) {
   timer.unref?.();
 }
 async function alertTask(t: Pick<SocialTask, "video_job_id" | "platform" | "attempts">, head: string, reason: string) {
+  if (t.platform === "tiktok") return; // 2026-11-06 대표님: 틱톡은 직접 올림 — 틱톡 자동 업로드 알림은 보내지 않음
   try {
     const r = await q().query(`select title, yt_video_id from video_jobs where id = $1`, [t.video_job_id]);
     const job = r.rows[0] ?? {};
@@ -73,7 +74,8 @@ export async function enqueueSocialUploads(videoJobId: string): Promise<void> {
   if (!socialEnabled()) return;
   try {
     let any = false;
-    for (const p of PLATFORMS) any = (await enqueueSocial(q(), videoJobId, p)).created || any;
+    // 2026-11-05 대표님: 틱톡 자동 발행 중지(조회수 급감) — 틱톡은 직접 올림. 다시 켜려면 환경변수 TIKTOK_AUTO=1
+    for (const p of PLATFORMS) { if (p === "tiktok" && process.env.TIKTOK_AUTO !== "1") continue; any = (await enqueueSocial(q(), videoJobId, p)).created || any; }
     if (any) { console.log(`[SOCIAL] 등록 ${videoJobId}`); setHint(0); }
   } catch (e: any) {
     console.error(`[SOCIAL] 등록 실패 ${videoJobId}: ${e?.message}`);
@@ -151,7 +153,7 @@ export async function startSocialUpload(scheduleDaily: (name: string, fn: () => 
   try { await refreshHint(); } catch (e: any) { console.error(`[SOCIAL] 부팅 복원 실패: ${e?.message}`); }
   scheduleDaily("틱톡·클립 업로드 대기 점검", async () => {
     await refreshHint();
-    const r = await q().query(`select video_job_id, platform, state from social_upload_tasks where state in ('queued','running') and created_at < now() - interval '6 hours' limit 10`);
+    const r = await q().query(`select video_job_id, platform, state from social_upload_tasks where state in ('queued','running') and platform <> 'tiktok' and created_at < now() - interval '6 hours' limit 10`);
     if (r.rows.length) {
       await sendAlert(`📤 <b>틱톡·클립 자동 업로드 ${r.rows.length}건이 6시간 넘게 남아 있음</b>\n이 PC 의 업로드 워커가 꺼져 있는지 확인하세요.\n` +
         r.rows.map((x: any) => `• ${esc(PNAME[x.platform as Platform])} ${esc(x.video_job_id)} — ${esc(x.state)}`).join("\n"));

@@ -108,6 +108,9 @@ function transcodeArgs(inPath: string, outPath: string): string[] {
     "-i", inPath,
     "-vf", "scale=w='min(iw,1080)':h='min(ih,1920)':force_original_aspect_ratio=decrease:force_divisible_by=2",
     "-c:v", "libx264", "-pix_fmt", "yuv420p",
+    // 2026-11-06: 입력이 이미 높은 화질(초당 16Mbps, 106초 → 출력 204MB)이면 상한(200MB)에 걸려 인스타가 실패 → crf 20 + 화질 상한(초당 14Mbps).
+    // 실측(106초 영상): 144MB · 원본 대비 SSIM 0.953 (상한 없음 204MB·0.979 / 10M 상한 101MB·0.928). 인스타가 어차피 다시 압축함.
+    "-crf", "20", "-maxrate", "14M", "-bufsize", "28M",
     "-c:a", "aac", "-b:a", "128k",
     "-movflags", "+faststart",
     "-y", outPath,
@@ -115,7 +118,7 @@ function transcodeArgs(inPath: string, outPath: string): string[] {
 }
 
 // 출력 파일 크기 상한(비정상 폭주 방지). 1080p 60초면 보통 수십 MB.
-const MAX_OUTPUT_BYTES = 200 * 1024 * 1024;
+const MAX_OUTPUT_BYTES = 250 * 1024 * 1024; // 2026-11-06: 200→250MB(인스타 릴스 한도 300MB 안, 2분 넘는 영상 여유)
 
 // ── 동시 대용량 변환 제한(1개) — 같은 서버에서 여러 변환 동시 실행 방지(메모리/CPU 폭주 방지) ──
 let transcodeInFlight = 0;

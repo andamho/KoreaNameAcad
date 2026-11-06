@@ -74,7 +74,9 @@ export function createFrameService(deps: FrameServiceDeps) {
       (task.expected_title ? `제목: ${esc(task.expected_title)}\n` : "") +
       `단계: ${esc(stage)}\n이유: ${esc(reason)}\n` +
       `시도: ${task.attempts}/${MAX_ATTEMPTS}${extra}`;
-    try { await deps.alert(html); } catch (e: any) { log(`알림 실패: ${e?.message}`); }
+    // 2026-11-06 대표님 '쇼츠 썸네일 장면 선택 실패 알림은 앞으로 안 오게' — 텔레그램은 보내지 않고 기록만(재시도는 그대로)
+    log(`쇼츠 썸네일 장면 선택 실패(알림 끔): ${task.video_id} ${stage} ${reason}`);
+    void html;
   }
 
   async function safeCheck(videoId: string): Promise<ProcessingCheck> {
