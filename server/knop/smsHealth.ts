@@ -71,6 +71,14 @@ export async function runSmsHealthCheck(): Promise<void> {
   lines.push("", "휴대폰 매크로가 정상 실행돼도 서버 저장에서 막힐 수 있습니다.");
   const text = lines.join("\n");
 
+  // 2026-11-06 원장님: 문자는 이제 휴대폰 매크로가 아니라 노트북 '휴대폰과 연결'로 모은다.
+  // 매크로 기준의 이 점검이 아침 08:40마다 텔레그램으로 '문자 수집 이상'을 보내 혼란을 줘서 알림은 끈다(기록만 남김).
+  // 노트북 연결이 오래 끊기는 경우는 phoneLinkReminder.ts 가 메일로 따로 알린다.
+  if (process.env.SMS_HEALTH_TELEGRAM !== "1") {
+    console.log("[KOP] 문자 수집 이상 감지(텔레그램 알림 꺼짐):", text.replace(/<[^>]+>/g, "").replace(/\n+/g, " "));
+    return;
+  }
+
   // 같은 알림을 반복해서 보내지 않는다.
   // 이 점검은 서버가 뜰 때도 한 번 도는데, 배포가 잦은 날엔 재시작마다 같은 알림이 나갔다(2026-08-05).
   // 12시간에 한 번만 보낸다 — 하루 한 번 아침 점검에는 영향 없다.
