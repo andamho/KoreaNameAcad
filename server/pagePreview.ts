@@ -101,7 +101,7 @@ export function registerPagePreview(app: Express, siteUrl: string) {
     try {
       const html = fs.readFileSync(indexPath, "utf-8")
         .split("\n").filter((l) => !/<link rel="preload" as="image"/i.test(l)).join("\n")
-        .replace(/<\/head>/i, `  <link rel="preload" as="image" fetchpriority="high" href="/column-portrait-cut-v4.webp">
+        .replace(/<\/head>/i, `  <link rel="preload" as="image" fetchpriority="high" href="/column-portrait-circle-v5.webp">
   </head>`);
       res.type("html").send(html);
     } catch {

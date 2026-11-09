@@ -482,16 +482,13 @@ export default function NameStories({ kind = "nameStory" }: { kind?: StoryKind["
               <p className="text-[1.0625rem] md:text-[1.3125rem] text-[#b9c6d8] mt-3 md:mt-4">{K.desc}</p>
               <span aria-hidden="true" className="block w-14 h-[3px] mt-5 rounded-sm" style={{ background: "linear-gradient(90deg, #00b8a9, #e8b86b)" }} />
             </div>
+            {/* v5(2026-11-09 대표님 '동그랗게 잘라서 바깥쪽을 살짝 그라데이션 — 모자 위 여백 넉넉히'): 배경을 지우지 않은 원본 사진을 원으로 자르고
+                바깥쪽 10%만 흐리게 한 것을 사진 파일 자체에 담음(column-portrait-circle-v5.webp). 누끼(v3·v4)는 모자 테두리가 거칠어 그만둠.
+                PC 는 오른쪽 가운데, 휴대폰은 제목 아래. */}
             <img
-              src="/column-portrait-cut-v4.webp"
+              src="/column-portrait-circle-v5.webp"
               alt="와츠유어네임 이름연구협회 대표"
-              className="absolute bottom-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-[6.875rem] h-[15.5rem] md:h-[22.5rem] w-auto"
-              style={{
-                filter: "saturate(.85)",
-                // 옆으로 좁은 타원: 사진 양옆 끝(팔이 잘린 세로선)까지 확실히 사라지게
-                WebkitMaskImage: "radial-gradient(85% 100% at 50% 22%, #000 55%, transparent 78%)",
-                maskImage: "radial-gradient(85% 100% at 50% 22%, #000 55%, transparent 78%)",
-              }}
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-auto md:translate-x-0 md:-translate-y-1/2 md:right-[5.5rem] h-[13.5rem] md:h-[21rem] w-auto"
               fetchPriority="high"
               loading="eager"
             />
