@@ -229,12 +229,13 @@ export function NameAnalysisPhone() {
         .phone-half.left::before { right: 6px; left: auto; }
         .phone-half.right::before { left: 6px; right: auto; }
         
-        .wm-hong::before { content: '홍'; }
-        .wm-gil::before { content: '길'; }
-        .wm-dong::before { content: '동'; }
-        .wm-h-hong::before { content: '洪'; }
-        .wm-h-gil::before { content: '吉'; }
-        .wm-h-dong::before { content: '童'; }
+        /* 2026-11-10 대표님 '홍길동 대신 아무개(我無改)' — 이름 바탕 글자도 아무개·我無改 */
+        .wm-hong::before { content: '아'; }
+        .wm-gil::before { content: '무'; }
+        .wm-dong::before { content: '개'; }
+        .wm-h-hong::before { content: '我'; }
+        .wm-h-gil::before { content: '無'; }
+        .wm-h-dong::before { content: '改'; }
         
         .phone-val-num {
           font-size: 26px;
@@ -363,9 +364,9 @@ export function NameAnalysisPhone() {
             <div className="phone-scroll-content">
               <div className="phone-header">
                 <span className="phone-super-tag">SUPERHERO DNA</span>
-                <h2 className="phone-name-title">홍길동</h2>
+                <h2 className="phone-name-title">아무개</h2>
                 <div className="phone-section-title" style={{ marginTop: '8px' }}>NAME ANALYSIS (오행운)</div>
-                <div className="phone-element-info" style={{ marginTop: '4px', display: 'block' }}><span style={{ color: '#f97316', fontWeight: 600 }}>토/목</span>{">"}<span>화</span></div>
+                <div className="phone-element-info" style={{ marginTop: '4px', display: 'block' }}><span style={{ color: '#f97316', fontWeight: 600 }}>토/수</span>{">"}<span>목</span></div>
                 <div className="phone-element-info" style={{ marginTop: '2px', display: 'block' }}>ㆍ인간관계운 <span style={{ color: '#f97316' }}>상극</span>{"&"}상생</div>
               </div>
 
@@ -375,10 +376,10 @@ export function NameAnalysisPhone() {
                 <div className="phone-card-header">~19세 (초년)</div>
                 <div className="phone-card-body">
                   <div className="phone-half left wm-hong">
-                    <span className="phone-tag t-excellent">Excellent</span>
-                    <div className="phone-val-num">11</div>
-                    <div className="phone-desc-text">인기순조</div>
-                    <span className="phone-like-badge">Like 유재석</span>
+                    <span className="phone-tag t-great">Great</span>
+                    <div className="phone-val-num">9</div>
+                    <div className="phone-desc-text">다재다능</div>
+                    <span className="phone-like-badge">Like 조수미</span>
                   </div>
                   <div className="phone-divider"></div>
                   <div className="phone-half right wm-h-hong">
@@ -395,16 +396,16 @@ export function NameAnalysisPhone() {
                 <div className="phone-card-body">
                   <div className="phone-half left wm-gil">
                     <span className="phone-tag t-great">Great</span>
-                    <div className="phone-val-num">13</div>
-                    <div className="phone-desc-text">학습창조</div>
-                    <span className="phone-like-badge">Like 삼성</span>
+                    <div className="phone-val-num">9</div>
+                    <div className="phone-desc-text">다재다능</div>
+                    <span className="phone-like-badge">Like 조수미</span>
                   </div>
                   <div className="phone-divider"></div>
                   <div className="phone-half right wm-h-gil">
-                    <span className="phone-tag t-good">Good</span>
-                    <div className="phone-val-num">16</div>
-                    <div className="phone-desc-text">인자배려</div>
-                    <span className="phone-like-badge">Like 이정재</span>
+                    <span className="phone-tag t-risk">Risk</span>
+                    <div className="phone-val-num c-risk">19</div>
+                    <div className="phone-desc-text">고독비참</div>
+                    <span className="phone-like-badge">내면의 고독</span>
                   </div>
                 </div>
               </div>
@@ -413,17 +414,17 @@ export function NameAnalysisPhone() {
                 <div className="phone-card-header">40~59세 (중년)</div>
                 <div className="phone-card-body">
                   <div className="phone-half left wm-dong">
+                    <span className="phone-tag t-excellent">Excellent</span>
+                    <div className="phone-val-num">8</div>
+                    <div className="phone-desc-text">재물계획</div>
+                    <span className="phone-like-badge">Like 이길여</span>
+                  </div>
+                  <div className="phone-divider"></div>
+                  <div className="phone-half right wm-h-dong">
                     <span className="phone-tag t-danger">Danger</span>
                     <div className="phone-val-num c-danger">14</div>
                     <div className="phone-desc-text">이산파멸</div>
                     <span className="phone-like-badge">Like 전쟁</span>
-                  </div>
-                  <div className="phone-divider"></div>
-                  <div className="phone-half right wm-h-dong">
-                    <span className="phone-tag t-peak">Peak</span>
-                    <div className="phone-val-num c-peak">23</div>
-                    <div className="phone-desc-text">일약출세</div>
-                    <span className="phone-like-badge">Like Hero</span>
                   </div>
                 </div>
               </div>
@@ -432,17 +433,17 @@ export function NameAnalysisPhone() {
                 <div className="phone-card-header">60세~ (말년)</div>
                 <div className="phone-card-body">
                   <div className="phone-half left">
-                    <span className="phone-tag t-risk">Risk</span>
-                    <div className="phone-val-num c-risk">19</div>
-                    <div className="phone-desc-text">고독비참</div>
+                    <span className="phone-tag t-great">Great</span>
+                    <div className="phone-val-num">13</div>
+                    <div className="phone-desc-text">학습창조</div>
                     <span className="phone-like-badge">총운</span>
                   </div>
                   <div className="phone-divider"></div>
                   <div className="phone-half right">
-                    <span className="phone-tag t-excellent">Power</span>
-                    <div className="phone-val-num c-excellent">29</div>
-                    <div className="phone-desc-text">권력재물</div>
-                    <span className="phone-like-badge">Like 배민</span>
+                    <span className="phone-tag t-peak">Peak</span>
+                    <div className="phone-val-num c-peak">26</div>
+                    <div className="phone-desc-text">영웅지모</div>
+                    <span className="phone-like-badge">Like 최영</span>
                   </div>
                 </div>
               </div>
@@ -453,17 +454,17 @@ export function NameAnalysisPhone() {
                 <div className="phone-card-header">~32세</div>
                 <div className="phone-card-body">
                   <div className="phone-half left wm-hong">
-                    <span className="phone-tag t-excellent">Excellent</span>
-                    <div className="phone-val-text">풍화가인</div>
-                    <div className="phone-desc-text">매력화합</div>
-                    <span className="phone-like-badge">Like 송중기</span>
+                    <span className="phone-tag t-danger">Danger</span>
+                    <div className="phone-val-text c-danger">건위천</div>
+                    <div className="phone-desc-text">영적지존</div>
+                    <span className="phone-like-badge">Like 조용기</span>
                   </div>
                   <div className="phone-divider"></div>
                   <div className="phone-half right wm-h-hong">
-                    <span className="phone-tag t-risk">Risk</span>
-                    <div className="phone-val-text">지화명이</div>
-                    <div className="phone-desc-text">성장발전</div>
-                    <span className="phone-like-badge">실패 주의</span>
+                    <span className="phone-tag t-excellent">Excellent</span>
+                    <div className="phone-val-text">이위화</div>
+                    <div className="phone-desc-text">인기화려</div>
+                    <span className="phone-like-badge">Like 김연아</span>
                   </div>
                 </div>
               </div>
@@ -472,17 +473,17 @@ export function NameAnalysisPhone() {
                 <div className="phone-card-header">33~52세</div>
                 <div className="phone-card-body">
                   <div className="phone-half left wm-gil">
-                    <span className="phone-tag t-danger">Danger</span>
-                    <div className="phone-val-text c-danger">풍수환</div>
-                    <div className="phone-desc-text">영적개혁</div>
-                    <span className="phone-like-badge">Like 문선명</span>
+                    <span className="phone-tag t-risk">Risk</span>
+                    <div className="phone-val-text c-risk">천지비</div>
+                    <div className="phone-desc-text">단절불통</div>
+                    <span className="phone-like-badge">소통 주의</span>
                   </div>
                   <div className="phone-divider"></div>
                   <div className="phone-half right wm-h-gil">
-                    <span className="phone-tag t-good">Good</span>
-                    <div className="phone-val-text">지산겸</div>
-                    <div className="phone-desc-text">겸손배려</div>
-                    <span className="phone-like-badge">무난함</span>
+                    <span className="phone-tag t-great">Great</span>
+                    <div className="phone-val-text">화수미제</div>
+                    <div className="phone-desc-text">대경영주</div>
+                    <span className="phone-like-badge">Like 비</span>
                   </div>
                 </div>
               </div>
@@ -492,16 +493,16 @@ export function NameAnalysisPhone() {
                 <div className="phone-card-body">
                   <div className="phone-half left wm-dong">
                     <span className="phone-tag t-danger">Danger</span>
-                    <div className="phone-val-text c-danger">풍천소축</div>
-                    <div className="phone-desc-text">축소다툼</div>
-                    <span className="phone-like-badge">병고 주의</span>
+                    <div className="phone-val-text c-danger">건위천</div>
+                    <div className="phone-desc-text">영적지존</div>
+                    <span className="phone-like-badge">Like 조용기</span>
                   </div>
                   <div className="phone-divider"></div>
                   <div className="phone-half right wm-h-dong">
-                    <span className="phone-tag t-peak">Peak</span>
-                    <div className="phone-val-text c-peak">지풍승</div>
-                    <div className="phone-desc-text">EV성공</div>
-                    <span className="phone-like-badge">Like 노무현</span>
+                    <span className="phone-tag t-danger">Danger</span>
+                    <div className="phone-val-text c-danger">화택규</div>
+                    <div className="phone-desc-text">고집시비</div>
+                    <span className="phone-like-badge">병고 주의</span>
                   </div>
                 </div>
               </div>

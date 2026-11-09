@@ -119,7 +119,7 @@ export function SizeProbe() {
         })()}`,
         `이름표 ${(() => {
           const a = Array.prototype.slice.call(document.querySelectorAll(".anchor")).find(
-            (e) => (e.textContent || "").trim() === "홍길동"
+            (e) => ["홍길동", "아무개"].includes((e.textContent || "").trim())
           );
           if (!a) return "-";
           const r = a.getBoundingClientRect();

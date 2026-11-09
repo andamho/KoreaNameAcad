@@ -6,11 +6,13 @@ import type { ReactNode } from "react";
 // 좌우 표는 칸 높이를 고정해 크기가 똑같다. 휴대폰은 위아래, 넓은 화면은 좌우.
 // 같은 날 디자인 점검: 바깥 상자·제목 위 작은 글·제목 속 색 강조·그림자를 빼고, 가는 테두리 두 칸 + 협회 쪽만 위에 청록 선.
 
-const MARK = /\{\{비교표:홍길동\}\}/;
+// 2026-11-10 대표님 '홍길동 대신 아무개(我無改)': 표 이름을 아무개로. 예전 글에 남은 {{비교표:홍길동}} 도 같은 표로 그림
+const MARK = /\{\{비교표:(?:홍길동|아무개)\}\}/;
 
+// 아무개 我無改 — 한글 4·5·4획, 한자 我7·無12·改7(대표님이 주신 값 = 협회 엔진 결과), 오행은 대표님 지정 '토/수 → 목'
 const HONG = {
-  han: { name: "홍길동", ohaeng: "토 / 목 → 화", nums: ["11", "13", "14", "19"], gwae: ["풍화가인", "풍수환", "풍천소축"] },
-  hanja: { name: "洪吉童", nums: ["18", "16", "22", "28"], gwae: ["지택림", "지수사", "지뢰복"] },
+  han: { name: "아무개", ohaeng: "토 / 수 → 목", nums: ["9", "9", "8", "13"], gwae: ["건위천", "천지비", "건위천"] },
+  hanja: { name: "我無改", nums: ["19", "19", "14", "26"], gwae: ["이위화", "화수미제", "화택규"] },
 };
 
 const filled = "bg-[#e8f5f4] text-[#0b5f62] dark:bg-[#56D5DB]/15 dark:text-[#7fe0e4]";
@@ -99,7 +101,7 @@ export function NameCompareTable() {
         .kna-nanum-editor .kna-cmp-hanja,.kna-cmp-hanja{font-family:'Noto Sans KR',sans-serif !important}
       `}</style>
       <figcaption className="mb-4 text-[1.3rem] font-extrabold leading-snug text-foreground sm:text-[1.45rem]" style={{ wordBreak: "keep-all" }}>
-        같은 홍길동, 보는 운이 다릅니다
+        같은 아무개, 보는 운이 다릅니다
       </figcaption>
       <div className="grid gap-3 md:grid-cols-2">
         <Side ours />
@@ -120,7 +122,7 @@ export function NameSimpleTable() {
         .kna-nanum-editor .kna-cmp-hanja,.kna-cmp-hanja{font-family:'Noto Sans KR',sans-serif !important}
       `}</style>
       <figcaption className="mb-4 text-[1.3rem] font-extrabold leading-snug text-foreground sm:text-[1.45rem]" style={{ wordBreak: "keep-all" }}>
-        홍길동 이름분석표
+        아무개 이름분석표
       </figcaption>
       <Side ours />
     </figure>

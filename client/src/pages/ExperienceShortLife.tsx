@@ -372,9 +372,9 @@ export default function ExperienceShortLife() {
 
             {/* 예시 */}
             <div className="relative px-7 py-6">
-              <p className="text-[0.625rem] font-bold tracking-[0.3em] text-white/25 uppercase mb-4">Example · 홍길동</p>
+              <p className="text-[0.625rem] font-bold tracking-[0.3em] text-white/25 uppercase mb-4">Example · 아무개</p>
               <div className="grid grid-cols-3 gap-2 mb-3">
-                {[{ char:'홍', stroke:8 }, { char:'길', stroke:5 }, { char:'동', stroke:6 }].map(({ char, stroke }) => (
+                {[{ char:'아', stroke:4 }, { char:'무', stroke:5 }, { char:'개', stroke:4 }].map(({ char, stroke }) => (
                   <div key={char} className="rounded-xl px-3 py-3 text-center" style={{ background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)' }}>
                     <p className="text-white font-black text-xl">{char}</p>
                     <p className="text-[#56D5DB] text-sm font-bold mt-1">{stroke}획</p>
@@ -382,8 +382,8 @@ export default function ExperienceShortLife() {
                 ))}
               </div>
               <div className="rounded-xl px-4 py-3 text-center" style={{ background:'rgba(86,213,219,0.08)',border:'1px solid rgba(86,213,219,0.2)' }}>
-                <p className="text-[#56D5DB] font-bold text-sm">8 + 5 + 6 = 총운 <span className="text-xl font-black">19획</span></p>
-                <p className="text-white/30 text-xs mt-1">19는 독신운 — 단명수는 10·12·14·20</p>
+                <p className="text-[#56D5DB] font-bold text-sm">4 + 5 + 4 = 총운 <span className="text-xl font-black">13획</span></p>
+                <p className="text-white/30 text-xs mt-1">13은 학습창조 — 단명수는 10·12·14·20</p>
               </div>
             </div>
           </div>
@@ -403,7 +403,7 @@ export default function ExperienceShortLife() {
                 <input
                   value={name} onChange={e => { setName(e.target.value); setCalculated(false); }}
                   onKeyDown={e => e.key === 'Enter' && !isAnalyzing && (isAdmin || usageCount < MAX_DAILY) && calculate()}
-                  placeholder="이름을 입력하세요 (예: 홍길동)"
+                  placeholder="이름을 입력하세요 (예: 아무개)"
                   disabled={isAnalyzing || (!isAdmin && usageCount >= MAX_DAILY)}
                   className="w-full bg-white/10 text-white placeholder-white/30 rounded-xl px-4 py-4 text-lg font-medium outline-none focus:ring-2 focus:ring-[#18a999] transition disabled:opacity-50"
                   maxLength={6}

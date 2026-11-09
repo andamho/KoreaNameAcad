@@ -37,11 +37,11 @@ export function renderArticleBlocks(text: string, key: string, render: (t: strin
       out.push(<div key={k}>{renderSeoBlocks(p, k, render)}</div>);
       return;
     }
-    if (p.trim() === "{{비교표:홍길동}}") {
+    if (p.trim() === "{{비교표:홍길동}}" || p.trim() === "{{비교표:아무개}}") {   // 2026-11-10 대표님 '홍길동 대신 아무개(我無改)'
       out.push(<NameCompareTable key={k} />);
       return;
     }
-    if (p.trim() === "{{분석표:홍길동}}") {
+    if (p.trim() === "{{분석표:홍길동}}" || p.trim() === "{{분석표:아무개}}") {
       out.push(<NameSimpleTable key={k} />);
       return;
     }

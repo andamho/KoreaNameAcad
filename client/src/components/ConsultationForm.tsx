@@ -544,7 +544,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                     </label>
                     <input 
                       className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring backdrop-blur-sm" 
-                      placeholder="예: 홍길동"
+                      placeholder="예: 아무개"
                       value={person.name}
                       onChange={(e) => updatePersonData(index, "name", e.target.value)}
                       data-testid={`input-name-${index}`}
@@ -660,7 +660,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                             <label className="text-base font-bold text-slate-600 block mb-2">개명 전 한글</label>
                             <input 
                               className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
-                              placeholder="홍길동"
+                              placeholder="아무개"
                               value={data.koreanName}
                               onChange={(e) => updateNameChangeData(index, "koreanName", e.target.value)}
                               data-testid={`input-korean-name-${index}`}
@@ -835,7 +835,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                         <label className="text-base font-bold text-slate-600 block mb-2">한글 이름</label>
                         <input 
                           className="w-full rounded-xl border border-slate-200 bg-white/50 px-4 py-3 text-base form-focus-ring" 
-                          placeholder="홍길동"
+                          placeholder="아무개"
                           value={data.koreanName}
                           onChange={(e) => updateEvaluationNameData(index, "koreanName", e.target.value)}
                           data-testid={`eval-korean-name-${index}`}
@@ -931,7 +931,7 @@ export function ConsultationForm({ type, onSuccess, onOpenFamilyPolicy }: Consul
                   <p className="text-sm text-slate-500 mb-4">소개해 주신 분 성함을 적어 주세요.</p>
                   <input 
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base form-focus-ring mb-4"
-                    placeholder="홍길동"
+                    placeholder="아무개"
                     value={referrerName}
                     onChange={(e) => setReferrerName(e.target.value)}
                     autoFocus
