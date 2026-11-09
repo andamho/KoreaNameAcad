@@ -456,7 +456,8 @@ export default function NameStories({ kind = "nameStory" }: { kind?: StoryKind["
            깊은 남색에 대표님 뒤로 청록·금빛이 은은하게. 인물은 column-portrait3 에서 사람만 오려 벽에 묻은 흰 테를 걷어낸 것,
            어깨 아래는 흐려지게 해서 사진 틀이 보이지 않게.
            v3(2026-10-31): 경계가 지저분해 대표님이 GPT 로 직접 배경을 지운 사진으로 바꿈(column-portrait-cut-v3.webp). 이름을 바꿔 예전 사진이 캐시에 남지 않게.
-           server/pagePreview.ts 가 /columns 에서 이 사진을 먼저 받게 한다(늦게 뜨던 것). */
+           server/pagePreview.ts 가 /columns 에서 이 사진을 먼저 받게 한다(늦게 뜨던 것).
+           v4(2026-11-09): 대표님 '오늘 찍은 노란색 옷 영상 썸네일로 교체' — 색 보정 영상 첫 화면을 대표님이 GPT 로 배경 지운 사진(column-portrait-cut-v4.webp). */
         <section
           className="relative overflow-hidden h-[28rem] md:h-[26rem]"
           style={{
@@ -482,7 +483,7 @@ export default function NameStories({ kind = "nameStory" }: { kind?: StoryKind["
               <span aria-hidden="true" className="block w-14 h-[3px] mt-5 rounded-sm" style={{ background: "linear-gradient(90deg, #00b8a9, #e8b86b)" }} />
             </div>
             <img
-              src="/column-portrait-cut-v3.webp"
+              src="/column-portrait-cut-v4.webp"
               alt="와츠유어네임 이름연구협회 대표"
               className="absolute bottom-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-[6.875rem] h-[15.5rem] md:h-[22.5rem] w-auto"
               style={{
