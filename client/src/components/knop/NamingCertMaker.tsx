@@ -30,6 +30,14 @@ type Job = { id: string; step: "plan" | "make"; status: "queued" | "working" | "
 const CLASH = new Set(["목금", "금목", "목토", "토목", "화금", "금화", "화수", "수화", "토수", "수토", "화화", "수수", "금금"]);
 const clash = (a?: string, b?: string) => !!a && !!b && CLASH.has(a + b);
 const relWord = (a?: string, b?: string) => (!a || !b ? "" : clash(a, b) ? (a === b ? `같은 ${a}끼리` : "상극") : a === b ? "같은 오행" : "상생");
+// 오행 동그라미 색(2026-11-11 대표님: '자원오행' 글자 대신 색 동그라미 안에 목·화·토·금·수). 전통 오방색: 목 푸름·화 붉음·토 누름·금 흼·수 검음
+const EL_CHIP: Record<string, string> = {
+  목: "bg-emerald-600 text-white",
+  화: "bg-red-600 text-white",
+  토: "bg-amber-400 text-black",
+  금: "bg-white text-slate-800 ring-2 ring-inset ring-slate-400",
+  수: "bg-slate-900 text-white",
+};
 const errText = (e: unknown) => String((e as Error)?.message || e).replace(/^\d{3}:\s*/, "").replace(/^\{"error":"(.*)"\}$/, "$1");
 
 function useJob(id: string | null) {
@@ -156,7 +164,8 @@ export function NamingCertMaker() {
 
       {/* ① 정보 입력 */}
       <Card className="p-5 space-y-4">
-        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
+        {/* 이름 · 한자 획수 · 찾기 버튼을 한 줄에. 획수 칸에서 엔터를 치면 바로 찾는다(2026-11-11 대표님) */}
+        <form className="grid gap-3 items-end sm:grid-cols-[minmax(0,1fr)_auto_auto]" onSubmit={(e) => { e.preventDefault(); startPlan(); }}>
           <div className="space-y-2">
             <Label htmlFor="nc-name">이름 (한글)</Label>
             <Input id="nc-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 이시안" className="h-11 text-lg font-semibold" />
@@ -164,14 +173,17 @@ export function NamingCertMaker() {
           <div className="space-y-2">
             <Label htmlFor="nc-hj" className="font-semibold text-primary">한자 획수</Label>
             <Input id="nc-hj" inputMode="decimal" value={hjText} onChange={(e) => setHjText(cleanStrokes(e.target.value))} placeholder="예: 7 11 14"
-              className="h-11 w-44 text-lg font-semibold tracking-wide border-2 border-primary" />
-            <p className="text-xs text-muted-foreground min-h-[1rem]">
-              {hj.length === 0 ? "세 숫자를 띄어서 (점·쉼표도 됨)" : validStrokes(hj)
-                ? [0, 1, 2].map((i) => `${letters[i] || ["성", "둘째", "셋째"][i]} ${hj[i]}획`).join(" · ")
-                : `숫자가 ${hj.length}개입니다 — 세 개를 넣어 주세요`}
-            </p>
+              enterKeyHint="search" className="h-11 w-full sm:w-44 text-lg font-semibold tracking-wide border-2 border-primary" />
           </div>
-        </div>
+          <Button type="submit" disabled={planJob?.status === "queued" || planJob?.status === "working"} className="h-11">
+            {planJob && planJob.status !== "done" && planJob.status !== "error" ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />PC에서 찾는 중</> : "한자·문단 찾기"}
+          </Button>
+        </form>
+        <p className="text-xs text-muted-foreground min-h-[1rem] sm:text-right">
+          {hj.length === 0 ? "한자 획수는 세 숫자를 띄어서 넣고 엔터 (점·쉼표도 됨)" : validStrokes(hj)
+            ? [0, 1, 2].map((i) => `${letters[i] || ["성", "둘째", "셋째"][i]} ${hj[i]}획`).join(" · ")
+            : `숫자가 ${hj.length}개입니다 — 세 개를 넣어 주세요`}
+        </p>
 
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -205,9 +217,6 @@ export function NamingCertMaker() {
         )}
 
         {formErr && <p className="text-sm text-red-600">{formErr}</p>}
-        <Button onClick={startPlan} disabled={planJob?.status === "queued" || planJob?.status === "working"} className="h-11">
-          {planJob && planJob.status !== "done" && planJob.status !== "error" ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />PC에서 찾는 중</> : "한자·문단 찾기"}
-        </Button>
         {planJob?.status === "error" && <p className="text-sm text-red-600">{planJob.error}</p>}
       </Card>
 
@@ -287,10 +296,13 @@ function CandList({ title, list, value, onPick, against }: { title: string; list
         return (
           <label key={c.한자} className={`flex items-center gap-3 rounded-md border p-3 min-h-[52px] ${bad ? "opacity-60 bg-muted/40" : "cursor-pointer"} ${value === c.한자 ? "border-primary border-2 bg-primary/5" : ""}`}>
             <input type="radio" name={title} className="w-5 h-5 accent-[hsl(var(--primary))]" checked={value === c.한자} disabled={bad} onChange={() => onPick(c.한자)} />
+            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold ${EL_CHIP[c.오행] || "bg-muted text-muted-foreground"}`}>
+              {c.오행 || "?"}
+            </span>
             <span className="text-3xl leading-none font-serif">{c.한자}</span>
             <span className="flex-1 min-w-0">
               <span className="font-medium">{c.뜻}</span>
-              <span className="block text-xs text-muted-foreground truncate">{c.획}획 · 자원오행 {c.오행 || "모름"}{c.확인 ? " · 시트에 확인 표시" : ""}</span>
+              <span className="block text-xs text-muted-foreground truncate">{c.획}획{c.확인 ? " · 시트에 확인 표시" : ""}</span>
             </span>
             {rel && <span className={`text-xs font-semibold ${bad ? "text-red-600" : "text-emerald-600"}`}>{bad ? `${rel} — 뺌` : rel}</span>}
           </label>
