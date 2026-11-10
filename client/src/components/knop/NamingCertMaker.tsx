@@ -54,13 +54,17 @@ function useJob(id: string | null) {
   return job;
 }
 
-const numInput = "h-11 w-14 text-center text-lg";
+// 한자 획수는 한 칸에 '7 11 14' 처럼 넣는다(2026-11-11 대표님). 띄어쓰기·점·쉼표 어느 것으로 나눠도 됨.
+const strokesOf = (s: string) => s.split(/\D+/).filter(Boolean);
+const cleanStrokes = (s: string) => s.replace(/[^\d\s.,·/-]/g, "").slice(0, 12);
+const validStrokes = (a: string[]) => a.length === 3 && a.every((v) => /^\d{1,2}$/.test(v) && +v >= 1);
 
 export function NamingCertMaker() {
   const [name, setName] = useState("");
-  const [hj, setHj] = useState(["", "", ""]);
+  const [hjText, setHjText] = useState("");
+  const hj = strokesOf(hjText);
   const [famOn, setFamOn] = useState(false);
-  const [fam, setFam] = useState([{ 이름: "", 한자: ["", "", ""] }]);
+  const [fam, setFam] = useState([{ 이름: "", 한자: "" }]);
   const [formErr, setFormErr] = useState("");
   const [planId, setPlanId] = useState<string | null>(null);
   const [makeId, setMakeId] = useState<string | null>(null);
@@ -100,13 +104,14 @@ export function NamingCertMaker() {
   const order = () => ({
     이름: name.replace(/\s/g, ""),
     한자: hj.map(Number),
-    가족: famOn ? fam.filter((f) => f.이름.trim()).map((f) => ({ 이름: f.이름.replace(/\s/g, ""), 한자: f.한자.map(Number) })) : [],
+    가족: famOn ? fam.filter((f) => f.이름.trim()).map((f) => ({ 이름: f.이름.replace(/\s/g, ""), 한자: strokesOf(f.한자).map(Number) })) : [],
   });
 
   const startPlan = async () => {
     setFormErr(""); setMakeId(null);
     if (letters.length !== 3) return setFormErr("지금은 세 글자 이름(성 한 글자 + 이름 두 글자)만 만들 수 있습니다.");
-    if (hj.some((v) => !/^\d{1,2}$/.test(v) || +v < 1)) return setFormErr("한자 획수 세 개를 숫자로 넣어 주세요.");
+    if (!validStrokes(hj)) return setFormErr("한자 획수 세 개를 띄어서 넣어 주세요. 예: 7 11 14");
+    if (famOn && fam.some((f) => f.이름.trim() && !validStrokes(strokesOf(f.한자)))) return setFormErr("가족 이름마다 한자 획수 세 개를 띄어서 넣어 주세요. 예: 7 9 8");
     try {
       const r = (await (await apiRequest("POST", `${API}/plan`, order())).json()) as { id: string };
       setPlanId(r.id);
@@ -156,17 +161,16 @@ export function NamingCertMaker() {
             <Label htmlFor="nc-name">이름 (한글)</Label>
             <Input id="nc-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 이시안" className="h-11 text-lg font-semibold" />
           </div>
-          <fieldset className="space-y-2 rounded-md border-2 border-primary px-4 pb-3 pt-1">
-            <legend className="px-1 text-sm font-semibold text-primary">한자 획수</legend>
-            <div className="flex gap-3">
-              {[0, 1, 2].map((i) => (
-                <label key={i} className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
-                  {letters[i] || ["성", "둘째", "셋째"][i]}
-                  <Input id={`nc-hj-${i}`} inputMode="numeric" value={hj[i]} onChange={(e) => setHj(hj.map((v, k) => (k === i ? e.target.value.replace(/\D/g, "").slice(0, 2) : v)))} className={numInput} aria-label={`${["성", "둘째 글자", "셋째 글자"][i]} 한자 획수`} />
-                </label>
-              ))}
-            </div>
-          </fieldset>
+          <div className="space-y-2">
+            <Label htmlFor="nc-hj" className="font-semibold text-primary">한자 획수</Label>
+            <Input id="nc-hj" inputMode="decimal" value={hjText} onChange={(e) => setHjText(cleanStrokes(e.target.value))} placeholder="예: 7 11 14"
+              className="h-11 w-44 text-lg font-semibold tracking-wide border-2 border-primary" />
+            <p className="text-xs text-muted-foreground min-h-[1rem]">
+              {hj.length === 0 ? "세 숫자를 띄어서 (점·쉼표도 됨)" : validStrokes(hj)
+                ? [0, 1, 2].map((i) => `${letters[i] || ["성", "둘째", "셋째"][i]} ${hj[i]}획`).join(" · ")
+                : `숫자가 ${hj.length}개입니다 — 세 개를 넣어 주세요`}
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center justify-between gap-3">
@@ -184,17 +188,18 @@ export function NamingCertMaker() {
                   <Label htmlFor={`nc-fam-${i}`} className="text-xs text-muted-foreground">가족 이름</Label>
                   <Input id={`nc-fam-${i}`} value={f.이름} onChange={(e) => setFam(fam.map((x, k) => (k === i ? { ...x, 이름: e.target.value } : x)))} placeholder="예: 이시유" className="h-11 w-32" />
                 </div>
-                {[0, 1, 2].map((j) => (
-                  <Input key={j} inputMode="numeric" value={f.한자[j]} aria-label={`가족 ${i + 1} 한자 획수 ${j + 1}`} placeholder="획"
-                    onChange={(e) => setFam(fam.map((x, k) => (k === i ? { ...x, 한자: x.한자.map((v, m) => (m === j ? e.target.value.replace(/\D/g, "").slice(0, 2) : v)) } : x)))} className={numInput} />
-                ))}
+                <div className="space-y-1">
+                  <Label htmlFor={`nc-fam-hj-${i}`} className="text-xs text-muted-foreground">한자 획수</Label>
+                  <Input id={`nc-fam-hj-${i}`} inputMode="decimal" value={f.한자} placeholder="예: 7 9 8"
+                    onChange={(e) => setFam(fam.map((x, k) => (k === i ? { ...x, 한자: cleanStrokes(e.target.value) } : x)))} className="h-11 w-36 text-lg" />
+                </div>
                 {fam.length > 1 && (
                   <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="가족 줄 지우기" onClick={() => setFam(fam.filter((_, k) => k !== i))}><X className="w-4 h-4" /></Button>
                 )}
               </div>
             ))}
             {fam.length < 6 && (
-              <Button variant="outline" size="sm" onClick={() => setFam([...fam, { 이름: "", 한자: ["", "", ""] }])}><Plus className="w-4 h-4 mr-1" />가족 추가</Button>
+              <Button variant="outline" size="sm" onClick={() => setFam([...fam, { 이름: "", 한자: "" }])}><Plus className="w-4 h-4 mr-1" />가족 추가</Button>
             )}
           </div>
         )}
