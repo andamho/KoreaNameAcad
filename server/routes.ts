@@ -7,6 +7,7 @@ import { sendSMS } from "./sms";
 import crypto from "crypto";
 import { registerObjectStorageRoutes } from "./object_storage";
 import { registerKnopRoutes } from "./knop/routes";
+import { registerNamingCertRoutes } from "./knop/namingCert";
 import { ensureShortLink } from "./knop/gaemyeong";
 import { knopStore } from "./knop/store";
 import { youtubeConfigured, getYoutubeAuthUrl, handleYoutubeCallback, getYoutubeStatus, uploadYoutubeVideo, setYoutubeThumbnail, getYoutubeVideoState } from "./youtube";
@@ -1727,6 +1728,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // KNOP 운영 플랫폼 라우트 (관리자 전용)
   registerKnopRoutes(app, requireAdmin);
+  // 작명장 만들기 주문 창구 (관리자 화면 ↔ PC 워커)
+  registerNamingCertRoutes(app, requireAdmin);
 
   // 인스타 자동화: 웹훅 수신(공개) + 연결/진단(관리자)
   registerInstagramRoutes(app, requireAdmin);

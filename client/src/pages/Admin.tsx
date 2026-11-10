@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { ImageManager } from "@/components/ImageManager";
 import { KnopApp } from "@/components/knop/KnopApp";
+import { NamingCertMaker } from "@/components/knop/NamingCertMaker";
 import { InstagramPanel } from "@/components/instagram/InstagramPanel";
 import { NaverClipPanel } from "@/components/NaverClipPanel";
 import { TiktokManualPanel } from "@/components/TiktokManualPanel";
@@ -445,7 +446,15 @@ export default function Admin() {
               <Instagram className="w-3.5 h-3.5 mr-1.5" />
               인스타 자동화
             </TabsTrigger>
+            <TabsTrigger value="naming-cert" data-testid="tab-naming-cert">
+              작명장 만들기
+            </TabsTrigger>
           </TabsList>
+
+          {/* ── 작명장 만들기 탭 (이름+한자 획수 → PC 워커가 PDF·링크) ─────── */}
+          <TabsContent value="naming-cert">
+            <NamingCertMaker />
+          </TabsContent>
 
           {/* ── 인스타 자동화 탭 ────────────────────────────── */}
           <TabsContent value="instagram">

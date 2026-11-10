@@ -15,7 +15,9 @@ const PY = (process.env.KOP_WHISPER_PY || process.env.KNOP_WHISPER_PY)?.trim()
   || "C:/Users/iimoo/Desktop/test-app/video-caption-bot/venv/Scripts/python.exe";
 const RENDER = fileURLToPath(new URL("./py/render_pdf_pages.py", import.meta.url));
 
-const PDF_DIR = (process.env.KOP_NAMING_PDF_DIR || "C:/Users/iimoo/Desktop/작명장/PDF").trim();
+// 2026-11-10: 바탕화면 'PDF' 폴더를 대표님이 지우셨다(PDF작명장 하나만 쓰심) → 중간 복사 폴더를 눈에 안 띄는 곳으로 옮기고
+// 없으면 저절로 만든다. 대표님이 만지는 폴더는 PDF작명장 하나뿐.
+const PDF_DIR = (process.env.KOP_NAMING_PDF_DIR || path.join(os.homedir(), "AppData", "Local", "kop-naming", "PDF")).trim();
 // 한글에서 PDF 를 실제로 내보내는 폴더(보관용 173건). 여기에 새로 생긴 것만 위 PDF_DIR 로 복사해
 // 링크가 자동으로 만들어지게 한다. 보관본은 그대로 두므로 원장님 기존 습관은 그대로.
 const INTAKE_DIR = (process.env.KOP_NAMING_INTAKE_DIR || "C:/Users/iimoo/Desktop/작명장/PDF작명장").trim();
@@ -26,10 +28,47 @@ const store = new ObjectStorageService();
 
 export function namingAvailable(): boolean {
   try {
-    return fs.existsSync(PDF_DIR) && fs.statSync(PDF_DIR).isDirectory();
+    if (fs.existsSync(PDF_DIR) && fs.statSync(PDF_DIR).isDirectory()) return true;
+    if (!intakeAvailable()) return false;
+    ensureWorkDir();
+    return fs.existsSync(PDF_DIR);
   } catch {
     return false;
   }
+}
+
+// 작업 폴더(PDF_DIR)를 새로 만들 때, 이미 링크가 있는 PDF 는 같은 시각으로 복사해 둔다 —
+// 그래야 '처음 보는 파일'로 여겨 다시 그리거나 텔레그램을 또 보내지 않고, 나중에 고친 본이 와도 같은 주소를 이어 쓴다.
+function ensureWorkDir() {
+  if (fs.existsSync(PDF_DIR)) return;
+  fs.mkdirSync(PDF_DIR, { recursive: true });
+  let n = 0;
+  for (const [f, s] of Object.entries(loadState())) {
+    const src = path.join(INTAKE_DIR, f);
+    try {
+      const st = fs.statSync(src);
+      if (st.size !== s.size) continue;
+      const dest = path.join(PDF_DIR, f);
+      fs.copyFileSync(src, dest);
+      fs.utimesSync(dest, st.atime, new Date(s.mtime));
+      n++;
+    } catch { /* 보관 폴더에 없으면 건너뜀 */ }
+  }
+  console.log(`[작명장] 작업 폴더 새로 만듦: ${PDF_DIR} (링크 있던 ${n}건 이어받음)`);
+}
+
+// 지켜보던 폴더가 지워지면 fs.watch 가 'error' 를 내며 워커 전체가 죽었다(2026-11-10 EPERM) → 잡아서 기록만.
+function safeWatch(dir: string, label: string, onPdf: () => void) {
+  let timer: NodeJS.Timeout | null = null;
+  const w = fs.watch(dir, (_ev, file) => {
+    if (!file || !/\.pdf$/i.test(String(file))) return;
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(onPdf, 8000); // 한글이 PDF 를 다 쓸 때까지 여유
+  });
+  w.on("error", (e: any) => {
+    console.error(`[작명장] ${label} 감시 끊김: ${e?.message} — 아침 점검 때 다시 훑습니다`);
+    try { w.close(); } catch { /* noop */ }
+  });
 }
 
 // 파일명 → 링크 슬러그(괄호 포함): "운이 술술 풀리는 이름 [김이나]" → "운이술술풀리는이름[김이나]"
@@ -151,6 +190,23 @@ async function ensureAlias(alias: string, target: string, label: string): Promis
   }
 }
 
+async function notifyLink(base: string, url: string, updated: boolean): Promise<void> {
+  try {
+    const { sendAlert, esc } = await import("./alertBot");
+    await sendAlert(
+      [
+        updated
+          ? "📜 <b>작명장 링크 — 수정본</b> (주소는 그대로, 그림만 새것)"
+          : "📜 <b>작명장 링크 새로 만듦</b>",
+        esc(base), // 대표님만 받는 알림이라 고객 이름까지(링크 미리보기 카드에는 이름이 안 나감)
+      ].join("\n"),
+    );
+    await sendAlert(esc(url)); // 주소만 한 통 — 길게 눌러 통째로 복사
+  } catch (e: any) {
+    console.error(`[작명장] 텔레그램 알림 실패: ${e?.message}`);
+  }
+}
+
 async function processPdf(file: string, state: NamingState): Promise<"made" | "updated" | "skipped" | "failed"> {
   const abs = path.join(PDF_DIR, file);
   const base = file.replace(/\.pdf$/i, "");
@@ -159,7 +215,8 @@ async function processPdf(file: string, state: NamingState): Promise<"made" | "u
   try { st = fs.statSync(abs); } catch { return "skipped"; }
 
   const prev = state[file];
-  const unchanged = prev && prev.mtime === st.mtimeMs && prev.size === st.size;
+  // 시각은 2초까지 같은 것으로(복사할 때 1ms 아래 자리가 깎임 — 2026-11-10 정확히 같아야 해서 11건을 다시 그리고 텔레그램을 보냄)
+  const unchanged = prev && Math.abs(prev.mtime - st.mtimeMs) < 2000 && prev.size === st.size;
   if (unchanged && fs.existsSync(linkFile)) return "skipped";
 
   // 내용은 그대로인데 링크 파일만 없어진 경우 → 다시 렌더하지 않고 파일만 복구
@@ -199,6 +256,9 @@ async function processPdf(file: string, state: NamingState): Promise<"made" | "u
     fs.writeFileSync(linkFile, url, "utf-8");
     state[file] = { mtime: st.mtimeMs, size: st.size, slug, url };
     console.log(`[작명장] 링크 ${updated ? "갱신" : "생성"}: ${base}.txt → ${url} (${Math.round(buf.length / 1024)}KB)`);
+    // 대표님 요청(2026-11-10): PDF작명장에 새 PDF 가 저장되면 링크를 텔레그램으로 바로 — 링크 폴더를 열 필요 없이
+    // 휴대폰에서 길게 눌러 복사해 카톡·문자에 붙여넣는다. 주소는 따로 한 줄(복사하기 쉽게). 실패해도 링크 생성은 그대로.
+    await notifyLink(base, url, updated);
     return updated ? "updated" : "made";
   } catch (e: any) {
     console.error(`[작명장] 링크 생성 실패 ${file}: ${e?.message}`);
@@ -243,7 +303,25 @@ export async function syncNamingIntake(): Promise<{ copied: number }> {
     }
     const seen = new Set(state.seen);
     for (const f of files) {
-      if (seen.has(f)) continue;
+      if (seen.has(f)) {
+        // 2026-11-10: 같은 이름으로 다시 내보낸 수정본 — 링크가 있던 파일이면 작업 폴더 것을 새것으로 바꿔
+        // 같은 주소에 그림만 바뀌게 한다(예전엔 손으로 옮기셨음).
+        const dest = path.join(PDF_DIR, f);
+        try {
+          if (fs.existsSync(dest)) {
+            const a = fs.statSync(path.join(INTAKE_DIR, f)), b = fs.statSync(dest);
+            if (a.size !== b.size || Math.abs(a.mtimeMs - b.mtimeMs) > 2000) {
+              fs.copyFileSync(path.join(INTAKE_DIR, f), dest);
+              fs.utimesSync(dest, a.atime, a.mtime);
+              res.copied++;
+              console.log(`[작명장] 수정본 반입: ${f}`);
+            }
+          }
+        } catch (e: any) {
+          console.error(`[작명장] 수정본 반입 실패 ${f}: ${e?.message}`);
+        }
+        continue;
+      }
       const src = path.join(INTAKE_DIR, f);
       const dest = path.join(PDF_DIR, f);
       try {
@@ -251,6 +329,7 @@ export async function syncNamingIntake(): Promise<{ copied: number }> {
           seen.add(f); // 이미 손으로 옮겨둔 건 복사하지 않고 본 것으로만 표시
           continue;
         }
+        if (!fs.existsSync(PDF_DIR)) ensureWorkDir();
         fs.copyFileSync(src, dest);
         seen.add(f);
         res.copied++;
@@ -274,12 +353,9 @@ export function startNamingIntake() {
   if (_intakeWatching || !intakeAvailable() || !namingAvailable()) return;
   _intakeWatching = true;
   try {
-    let timer: NodeJS.Timeout | null = null;
-    fs.watch(INTAKE_DIR, (_ev, file) => {
-      if (!file || !/\.pdf$/i.test(String(file))) return;
-      if (timer) clearTimeout(timer);
-      // 한글이 PDF 를 다 쓸 때까지 여유를 준다. 복사가 끝나면 PDF 폴더 감시가 이어받아 링크를 만든다.
-      timer = setTimeout(() => { syncNamingIntake().catch(() => {}); }, 8000);
+    // 복사가 끝나면 바로 링크까지(작업 폴더는 대표님이 안 여시므로 감시 대신 여기서 이어 부름)
+    safeWatch(INTAKE_DIR, "PDF작명장", () => {
+      syncNamingIntake().then((r) => (r.copied ? syncNamingLinks() : null)).catch(() => {});
     });
     console.log("[작명장] 새 PDF 반입 감시 시작:", INTAKE_DIR, "→", PDF_DIR);
   } catch (e: any) {
@@ -321,12 +397,7 @@ export function startNamingSync() {
   if (_watching || !namingAvailable()) return; // 폴더 없는 PC/배포 서버는 no-op
   _watching = true;
   try {
-    let timer: NodeJS.Timeout | null = null;
-    fs.watch(PDF_DIR, (_ev, file) => {
-      if (!file || !/\.pdf$/i.test(String(file))) return;
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => { syncNamingLinks().catch(() => {}); }, 6000); // 복사 끝날 때까지 대기
-    });
+    safeWatch(PDF_DIR, "작업 폴더", () => { syncNamingLinks().catch(() => {}); });
     console.log("[작명장] PDF 폴더 감시 시작:", PDF_DIR, "→ 링크:", LINK_DIR);
   } catch (e: any) {
     console.error("[작명장] 폴더 감시 실패:", e?.message);

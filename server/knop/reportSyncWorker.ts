@@ -6,6 +6,7 @@ import { startReportSync, syncReports, syncReportLinks } from "./reportSync";
 import { reportsAvailable, reportsDir } from "./reports";
 import { startNamingSync, syncNamingLinks, namingAvailable, startNamingIntake, syncNamingIntake, intakeAvailable } from "./namingSync";
 import { scheduleDaily } from "./dailyCheckpoint";
+import { startNamingCertWorker } from "./namingCertWorker";
 
 async function main() {
   console.log("========================================");
@@ -55,6 +56,9 @@ async function main() {
   } else {
     console.log("[작명장] PDF 폴더가 없어 건너뜀");
   }
+
+  // 관리자 화면 '작명장 만들기' 주문을 받아 PDF 를 만든다(2026-11-10). 서버에 길게 물어보기만 하고 DB 는 안 씀.
+  startNamingCertWorker();
 }
 
 process.on("SIGINT", () => { console.log("[이름분석표 워커] 종료(SIGINT)"); process.exit(0); });
