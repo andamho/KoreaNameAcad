@@ -420,7 +420,8 @@ export default function Admin() {
           }}
           className="space-y-6"
         >
-          <TabsList>
+          {/* 휴대폰에서는 탭이 한 줄에 다 안 들어가 뒤쪽(숏폼 배포·작명장 만들기 등)이 잘렸다 → 좁은 화면에서는 여러 줄로 접는다(2026-11-11 대표님) */}
+          <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 sm:inline-flex sm:w-auto max-sm:[&>button]:min-h-[40px]">
             <TabsTrigger value="knop" data-testid="tab-knop">
               <LayoutDashboard className="w-3.5 h-3.5 mr-1.5" />
               운영 (KOP)
