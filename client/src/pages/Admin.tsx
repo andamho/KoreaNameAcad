@@ -64,6 +64,9 @@ const categoryOptions = [
   { value: "about", label: "협회 소개" },
 ];
 
+// 탭 줄에서 감춘 탭(2026-11-11 대표님: 콘텐츠 관리·숏폼 배포·인스타 자동화는 안 보이게). 화면 내용은 그대로 두고 탭 단추만 뺀다.
+const HIDDEN_TABS = ["contents", "video", "instagram"];
+
 export default function Admin() {
   const { toast } = useToast();
   // 관리자 화면에서만 가로 넘침을 'clip' 으로 막는다(index.css html.kna-admin).
@@ -81,11 +84,14 @@ export default function Admin() {
     const q = params.get("tab");
     if (q) return q;
     try {
-      return sessionStorage.getItem("admin:last-tab") || "knop";
+      const last = sessionStorage.getItem("admin:last-tab") || "knop";
+      return HIDDEN_TABS.includes(last) ? "knop" : last;   // 감춘 탭을 마지막으로 봤으면 운영 탭으로
     } catch {
       return "knop";
     }
   })();
+  // 감춘 탭은 주소(?tab=video 등)로 직접 열었을 때만 탭 줄에 보인다
+  const showTab = (v: string) => !HIDDEN_TABS.includes(v) || initialTab === v;
   const focusInquiryId = params.get("id") || "";
   const [contentDialogOpen, setContentDialogOpen] = useState(false);
   const [editingContent, setEditingContent] = useState<Content | null>(null);
@@ -437,16 +443,22 @@ export default function Admin() {
                 : consultations?.length || 0}
               )
             </TabsTrigger>
-            <TabsTrigger value="contents" data-testid="tab-contents">
-              콘텐츠 관리 ({contents?.length || 0})
-            </TabsTrigger>
-            <TabsTrigger value="video" data-testid="tab-video">
-              숏폼 배포
-            </TabsTrigger>
-            <TabsTrigger value="instagram" data-testid="tab-instagram">
-              <Instagram className="w-3.5 h-3.5 mr-1.5" />
-              인스타 자동화
-            </TabsTrigger>
+            {showTab("contents") && (
+              <TabsTrigger value="contents" data-testid="tab-contents">
+                콘텐츠 관리 ({contents?.length || 0})
+              </TabsTrigger>
+            )}
+            {showTab("video") && (
+              <TabsTrigger value="video" data-testid="tab-video">
+                숏폼 배포
+              </TabsTrigger>
+            )}
+            {showTab("instagram") && (
+              <TabsTrigger value="instagram" data-testid="tab-instagram">
+                <Instagram className="w-3.5 h-3.5 mr-1.5" />
+                인스타 자동화
+              </TabsTrigger>
+            )}
             <TabsTrigger value="naming-cert" data-testid="tab-naming-cert">
               작명장 만들기
             </TabsTrigger>
