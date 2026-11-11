@@ -134,7 +134,7 @@ export function NamingCertMaker() {
           </Button>
         </form>
         <p className="text-xs text-muted-foreground min-h-[1rem] sm:text-right">
-          {hj.length === 0 ? "한자 획수는 세 숫자를 띄어서 넣고 엔터 (점·쉼표도 됨)" : validStrokes(hj)
+          {hj.length === 0 ? "세 숫자를 띄어서 넣고 엔터 · 휴대폰은 점(.)을 누르면 띄어집니다" : validStrokes(hj)
             ? [0, 1, 2].map((i) => `${letters[i] || ["성", "둘째", "셋째"][i]} ${hj[i]}획`).join(" · ")
             : `숫자가 ${hj.length}개입니다 — 세 개를 넣어 주세요`}
         </p>

@@ -144,7 +144,7 @@ export function NamingCertFamily() {
             </Button>
           </div>
         </form>
-        <p className="text-xs text-muted-foreground">성씨가 달라도 됩니다. 획수 칸에서 엔터를 치면 모두 찾습니다.</p>
+        <p className="text-xs text-muted-foreground">성씨가 달라도 됩니다. 휴대폰에서는 점(.)을 누르면 띄어지고, 두 자리를 넣으면 저절로 띄어집니다. 획수 칸에서 엔터를 치면 모두 찾습니다.</p>
         {formErr && <p className="text-sm text-red-600">{formErr}</p>}
       </Card>
 

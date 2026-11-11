@@ -57,8 +57,20 @@ export function useJob(id: string | null) {
 }
 
 // 한자 획수는 한 칸에 '7 11 14' 처럼 넣는다(2026-11-11 대표님). 띄어쓰기·점·쉼표 어느 것으로 나눠도 됨.
+// 휴대폰 숫자 자판에는 띄어쓰기 키가 없다(2026-11-11 대표님 "띄어쓰기가 안 돼") →
+//   점·쉼표 같은 나눔 글자는 띄어쓰기로 바꿔 보여 주고, 획수는 두 자리까지라 두 자리를 넣으면 저절로 띄운다.
 export const strokesOf = (s: string) => s.split(/\D+/).filter(Boolean);
-export const cleanStrokes = (s: string) => s.replace(/[^\d\s.,·/-]/g, "").slice(0, 12);
+export const cleanStrokes = (s: string) => {
+  let out = "", run = 0, groups = 0;
+  for (const ch of s) {
+    if (ch >= "0" && ch <= "9") {
+      if (run === 2) { if (groups === 3) break; out += " "; run = 0; }
+      if (run === 0) { if (groups === 3) break; groups++; }
+      out += ch; run++;
+    } else if (run > 0) { out += " "; run = 0; if (groups === 3) break; }   // 세 숫자 뒤에 나눔 글자를 치면 칸을 닫아 더 받지 않는다
+  }
+  return out;
+};
 export const validStrokes = (a: string[]) => a.length === 3 && a.every((v) => /^\d{1,2}$/.test(v) && +v >= 1);
 
 export function CandList({ title, list, value, onPick, against }: { title: string; list: Cand[]; value: string; onPick: (v: string) => void; against?: Cand }) {
