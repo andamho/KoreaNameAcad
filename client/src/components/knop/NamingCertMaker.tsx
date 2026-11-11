@@ -7,72 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { AlertTriangle, Check, Copy, Loader2, Plus, X } from "lucide-react";
+import { AlertTriangle, Check, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { API, LIFE, CandList, LinkLine, clash, cleanStrokes, errText, strokesOf, useJob, validStrokes, type Row } from "./namingCertShared";
+import { NamingCertFamily } from "./NamingCertFamily";
 
-const API = "/api/knop/naming-cert";
-const LIFE = ["초년", "청년", "중년", "총운"];
-
-type Cand = { 한자: string; 뜻: string; 뜻전체?: string; 오행: string; 획: number; 확인?: boolean };
-type Variant = { idx: number; 판: string; 제목: string; 글: string; 쓴횟수: number; 확인: string };
-type Row = { 수: number; 운: string; 이름: string; 넣음: boolean; 뺀이유: string; 가족겹침: boolean; 기본판: number; 판목록: Variant[] };
-type Plan = {
-  이름: string; 성한자: string; 한글획수: number[]; 한자획수: number[]; 한글수리: number[]; 한자수리: number[];
-  오행: { 순서: string[]; 기호: string[]; 격: string; 글: string };
-  후보: { 구역: string; 찾음: boolean; 둘째: Cand[]; 셋째: Cand[]; 메모: string[] };
-  둘째: Cand | null; 셋째: Cand | null;
-  전체: { 한글: Row[]; 한자: Row[] };
-  선택필요: string[]; 경고: string[];
-};
-type Job = { id: string; step: "plan" | "make"; status: "queued" | "working" | "done" | "error"; plan?: Plan; pdf?: string; url?: string; error?: string };
-
-// 이름분석 프로그램과 같은 기준: 상극이거나 같은 화·수·금끼리면 함께 못 씀
-const CLASH = new Set(["목금", "금목", "목토", "토목", "화금", "금화", "화수", "수화", "토수", "수토", "화화", "수수", "금금"]);
-const clash = (a?: string, b?: string) => !!a && !!b && CLASH.has(a + b);
-const relWord = (a?: string, b?: string) => (!a || !b ? "" : clash(a, b) ? (a === b ? `같은 ${a}끼리` : "상극") : a === b ? "같은 오행" : "상생");
-// 오행 동그라미 색(2026-11-11 대표님: '자원오행' 글자 대신 색 동그라미 안에 목·화·토·금·수). 전통 오방색: 목 푸름·화 붉음·토 누름·금 흼·수 검음
-const EL_CHIP: Record<string, string> = {
-  목: "bg-emerald-600 text-white",
-  화: "bg-red-600 text-white",
-  토: "bg-amber-400 text-black",
-  금: "bg-white text-slate-800 ring-2 ring-inset ring-slate-400",
-  수: "bg-slate-900 text-white",
-};
-const errText = (e: unknown) => String((e as Error)?.message || e).replace(/^\d{3}:\s*/, "").replace(/^\{"error":"(.*)"\}$/, "$1");
-
-function useJob(id: string | null) {
-  const [job, setJob] = useState<Job | null>(null);
-  useEffect(() => {
-    setJob(null);
-    if (!id) return;
-    let stop = false;
-    const tick = async () => {
-      try {
-        const j = (await (await apiRequest("GET", `${API}/job/${id}`)).json()) as Job;
-        if (stop) return;
-        setJob(j);
-        if (j.status === "queued" || j.status === "working") setTimeout(tick, 1500);
-      } catch (e) {
-        if (!stop) setJob({ id, step: "plan", status: "error", error: errText(e) });
-      }
-    };
-    tick();
-    return () => { stop = true; };
-  }, [id]);
-  return job;
-}
-
-// 한자 획수는 한 칸에 '7 11 14' 처럼 넣는다(2026-11-11 대표님). 띄어쓰기·점·쉼표 어느 것으로 나눠도 됨.
-const strokesOf = (s: string) => s.split(/\D+/).filter(Boolean);
-const cleanStrokes = (s: string) => s.replace(/[^\d\s.,·/-]/g, "").slice(0, 12);
-const validStrokes = (a: string[]) => a.length === 3 && a.every((v) => /^\d{1,2}$/.test(v) && +v >= 1);
 
 export function NamingCertMaker() {
   const [name, setName] = useState("");
   const [hjText, setHjText] = useState("");
   const hj = strokesOf(hjText);
   const [famOn, setFamOn] = useState(false);
-  const [fam, setFam] = useState([{ 이름: "", 한자: "" }]);
   const [formErr, setFormErr] = useState("");
   const [planId, setPlanId] = useState<string | null>(null);
   const [makeId, setMakeId] = useState<string | null>(null);
@@ -112,14 +57,13 @@ export function NamingCertMaker() {
   const order = () => ({
     이름: name.replace(/\s/g, ""),
     한자: hj.map(Number),
-    가족: famOn ? fam.filter((f) => f.이름.trim()).map((f) => ({ 이름: f.이름.replace(/\s/g, ""), 한자: strokesOf(f.한자).map(Number) })) : [],
+    가족: [],
   });
 
   const startPlan = async () => {
     setFormErr(""); setMakeId(null);
     if (letters.length !== 3) return setFormErr("지금은 세 글자 이름(성 한 글자 + 이름 두 글자)만 만들 수 있습니다.");
     if (!validStrokes(hj)) return setFormErr("한자 획수 세 개를 띄어서 넣어 주세요. 예: 7 11 14");
-    if (famOn && fam.some((f) => f.이름.trim() && !validStrokes(strokesOf(f.한자)))) return setFormErr("가족 이름마다 한자 획수 세 개를 띄어서 넣어 주세요. 예: 7 9 8");
     try {
       const r = (await (await apiRequest("POST", `${API}/plan`, order())).json()) as { id: string };
       setPlanId(r.id);
@@ -145,7 +89,7 @@ export function NamingCertMaker() {
   const offline = worker.data && !worker.data.online;
 
   return (
-    <div className="space-y-4 max-w-4xl">
+    <div className={`space-y-4 ${famOn ? "max-w-7xl" : "max-w-4xl"}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-lg font-semibold mb-1">작명장 만들기</h2>
@@ -162,6 +106,16 @@ export function NamingCertMaker() {
         </p>
       )}
 
+      {/* 가족작명: 켜면 가족을 한 판에 놓고 고르는 화면으로 바뀐다(2026-11-11 대표님) */}
+      <Card className="p-4 flex items-center justify-between gap-3">
+        <div>
+          <div className="font-medium text-sm">가족작명</div>
+          <p className="text-xs text-muted-foreground">가족을 한 판에 놓고, 같은 글이 겹치지 않게 저절로 나눠 넣습니다.</p>
+        </div>
+        <Switch checked={famOn} onCheckedChange={setFamOn} aria-label="가족작명" />
+      </Card>
+
+      {famOn ? <NamingCertFamily /> : (<>
       {/* ① 정보 입력 */}
       <Card className="p-5 space-y-4">
         {/* 이름 · 한자 획수 · 찾기 버튼을 한 줄에. 획수 칸에서 엔터를 치면 바로 찾는다(2026-11-11 대표님) */}
@@ -184,37 +138,6 @@ export function NamingCertMaker() {
             ? [0, 1, 2].map((i) => `${letters[i] || ["성", "둘째", "셋째"][i]} ${hj[i]}획`).join(" · ")
             : `숫자가 ${hj.length}개입니다 — 세 개를 넣어 주세요`}
         </p>
-
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <div className="font-medium text-sm">가족작명</div>
-            <p className="text-xs text-muted-foreground">가족 이름에서 나온 수리운과 가능한 한 겹치지 않게 문단을 고릅니다.</p>
-          </div>
-          <Switch checked={famOn} onCheckedChange={setFamOn} aria-label="가족작명" />
-        </div>
-        {famOn && (
-          <div className="space-y-2">
-            {fam.map((f, i) => (
-              <div key={i} className="flex flex-wrap items-end gap-2">
-                <div className="space-y-1">
-                  <Label htmlFor={`nc-fam-${i}`} className="text-xs text-muted-foreground">가족 이름</Label>
-                  <Input id={`nc-fam-${i}`} value={f.이름} onChange={(e) => setFam(fam.map((x, k) => (k === i ? { ...x, 이름: e.target.value } : x)))} placeholder="예: 이시유" className="h-11 w-32" />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor={`nc-fam-hj-${i}`} className="text-xs text-muted-foreground">한자 획수</Label>
-                  <Input id={`nc-fam-hj-${i}`} inputMode="decimal" value={f.한자} placeholder="예: 7 9 8"
-                    onChange={(e) => setFam(fam.map((x, k) => (k === i ? { ...x, 한자: cleanStrokes(e.target.value) } : x)))} className="h-11 w-36 text-lg" />
-                </div>
-                {fam.length > 1 && (
-                  <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="가족 줄 지우기" onClick={() => setFam(fam.filter((_, k) => k !== i))}><X className="w-4 h-4" /></Button>
-                )}
-              </div>
-            ))}
-            {fam.length < 6 && (
-              <Button variant="outline" size="sm" onClick={() => setFam([...fam, { 이름: "", 한자: "" }])}><Plus className="w-4 h-4 mr-1" />가족 추가</Button>
-            )}
-          </div>
-        )}
 
         {formErr && <p className="text-sm text-red-600">{formErr}</p>}
         {planJob?.status === "error" && <p className="text-sm text-red-600">{planJob.error}</p>}
@@ -281,34 +204,8 @@ export function NamingCertMaker() {
           </Card>
         </>
       )}
+      </>)}
     </div>
-  );
-}
-
-function CandList({ title, list, value, onPick, against }: { title: string; list: Cand[]; value: string; onPick: (v: string) => void; against?: Cand }) {
-  return (
-    <fieldset className="space-y-2">
-      <legend className="text-sm font-medium mb-1">{title}</legend>
-      {list.length === 0 && <p className="text-sm text-muted-foreground">시트에 후보가 없습니다.</p>}
-      {list.map((c) => {
-        const bad = against ? clash(against.오행, c.오행) : false;
-        const rel = against ? relWord(against.오행, c.오행) : "";
-        return (
-          <label key={c.한자} className={`flex items-center gap-3 rounded-md border p-3 min-h-[52px] ${bad ? "opacity-60 bg-muted/40" : "cursor-pointer"} ${value === c.한자 ? "border-primary border-2 bg-primary/5" : ""}`}>
-            <input type="radio" name={title} className="w-5 h-5 accent-[hsl(var(--primary))]" checked={value === c.한자} disabled={bad} onChange={() => onPick(c.한자)} />
-            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold ${EL_CHIP[c.오행] || "bg-muted text-muted-foreground"}`}>
-              {c.오행 || "?"}
-            </span>
-            <span className="text-3xl leading-none font-serif">{c.한자}</span>
-            <span className="flex-1 min-w-0">
-              <span className="font-medium">{c.뜻}</span>
-              <span className="block text-xs text-muted-foreground truncate">{c.획}획{c.확인 ? " · 시트에 확인 표시" : ""}</span>
-            </span>
-            {rel && <span className={`text-xs font-semibold ${bad ? "text-red-600" : "text-emerald-600"}`}>{bad ? `${rel} — 뺌` : rel}</span>}
-          </label>
-        );
-      })}
-    </fieldset>
   );
 }
 
@@ -357,18 +254,6 @@ function ParaPicker({ title, rows, on, setOn, pan, setPan, blocked }: { title: s
           </div>
         );
       })}
-    </div>
-  );
-}
-
-function LinkLine({ url }: { url: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <a href={url} target="_blank" rel="noreferrer" className="underline break-all">{url}</a>
-      <Button variant="outline" size="sm" onClick={async () => { try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* 주소를 길게 눌러 복사 */ } }}>
-        <Copy className="w-3.5 h-3.5 mr-1" />{copied ? "복사됨" : "주소 복사"}
-      </Button>
     </div>
   );
 }
