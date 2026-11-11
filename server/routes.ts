@@ -1773,8 +1773,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const DEFAULT_VIEWER_TITLE = "이름분석표";
   const escHtml = (v: string) =>
     v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-  const imageViewerHtml = (src: string, title?: string) => {
+  // og = 카톡·문자 링크 카드에 뜨는 그림(선택). 작명장은 첫 장 맨 위만 자른 미리보기를 따로 넘긴다 —
+  // 전체 그림을 쓰면 카드가 가운데를 잘라 손님 이름·풀이가 보이기 때문(2026-11-11). 없으면 전처럼 전체 그림.
+  const OBJECT_PATH = /^\/objects\/[A-Za-z0-9._/-]+$/;
+  const imageViewerHtml = (src: string, title?: string, og?: string) => {
     const safe = src.replace(/"/g, "%22");
+    const card = og && OBJECT_PATH.test(og) ? og : safe;
     const t = escHtml((title || DEFAULT_VIEWER_TITLE).slice(0, 80));
     return `<!doctype html><html lang="ko"><head>
 <meta charset="utf-8">
@@ -1783,7 +1787,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 <meta property="og:type" content="website">
 <meta property="og:title" content="${t}">
 <meta property="og:description" content="여기를 눌러 확인하세요.">
-<meta property="og:image" content="${SITE_URL}${safe}">
+<meta property="og:image" content="${SITE_URL}${card}">
 <style>
   html,body{margin:0;height:100%;background:#f1f3f5;-webkit-text-size-adjust:100%}
   #wrap{position:fixed;inset:0;overflow:auto;-webkit-overflow-scrolling:touch;text-align:center}
@@ -1793,13 +1797,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 </body></html>`;
   };
   // 짧은링크 target 에서 이미지 경로와 제목(t)을 뽑는다. 제목은 없으면 기본값.
-  const imgViewOfTarget = (t: string): { src: string; title?: string } | null => {
+  const imgViewOfTarget = (t: string): { src: string; title?: string; og?: string } | null => {
     if (!/^\/img\?src=/.test(t)) return null;
     try {
       const q = new URLSearchParams(t.replace(/^\/img\?/, ""));
       const s = q.get("src") || "";
       if (!/^\/objects\/[A-Za-z0-9._/-]+$/.test(s)) return null;
-      return { src: s, title: q.get("t") || undefined };
+      return { src: s, title: q.get("t") || undefined, og: q.get("og") || undefined };
     } catch {
       return null;
     }
@@ -1808,7 +1812,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/img", (req, res) => {
     const src = String(req.query.src || "");
     if (!/^\/objects\/[A-Za-z0-9._/-]+$/.test(src)) return res.status(400).send("잘못된 이미지 주소");
-    res.type("html").send(imageViewerHtml(src, String(req.query.t || "") || undefined));
+    res.type("html").send(imageViewerHtml(src, String(req.query.t || "") || undefined, String(req.query.og || "") || undefined));
   });
 
   // 짧은링크 공통 처리: 이미지 뷰어 대상이면 '리다이렉트 없이 그 자리에서' 이미지 표시
@@ -1816,7 +1820,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const serveShortLink = (row: any, req: any, res: any) => {
     db!.update(shortLinks).set({ clicks: (row.clicks ?? 0) + 1 }).where(eq(shortLinks.id, row.id)).catch(() => {});
     const view = imgViewOfTarget(row.target);
-    if (view) return res.type("html").send(imageViewerHtml(view.src, view.title));
+    if (view) return res.type("html").send(imageViewerHtml(view.src, view.title, view.og));
     // req.protocol 은 프록시(Railway) 뒤에서 http 로 잡혀 https 사이트로 한 번 더 튕긴다 → SITE_URL 사용
     const target = row.target.startsWith("/") ? `${SITE_URL}${row.target}` : row.target;
     return res.redirect(302, target);

@@ -319,14 +319,17 @@ function ParaPicker({ title, rows, on, setOn, pan, setPan, blocked }: { title: s
     <div className="space-y-2">
       <div className="flex items-baseline justify-between">
         <h4 className="font-medium text-sm">{title}</h4>
-        <span className={`text-xs ${count === 3 ? "text-emerald-600" : "text-amber-600"}`}>{count}개 고름</span>
+        <span className={`text-xs font-medium ${count === 3 ? "text-emerald-600" : count > 3 ? "text-red-600" : "text-amber-600"}`}>
+          {count > 3 ? `${count}개 고름 — 3개만 넣을 수 있어요. 하나를 빼 주세요` : `${count}개 고름`}
+        </span>
       </div>
       {rows.map((r, i) => {
         const dup = firstIdx[i] !== i;
         const inHangul = blocked.includes(r.수);
         const v = r.판목록[pan[r.수] ?? r.기본판] || r.판목록[0];
         const noText = !v || !v.글;
-        const disabled = dup || inHangul || noText || (!on[i] && count >= 3);
+        // 3개가 이미 골라져 있어도 네 번째 칸을 막지 않는다(2026-11-11 대표님: 네 개 다 누를 수 있게, 앞 3개만 미리 체크). 4개가 되면 위에서 하나 빼라고 알린다.
+        const disabled = dup || inHangul || noText;
         const why = dup ? `${LIFE[firstIdx[i]]}과 같은 숫자` : inHangul ? "한글 쪽에 나온 숫자" : noText ? "수리운 정리에 글이 없음" : r.가족겹침 ? "가족 이름과 겹침" : "";
         return (
           <div key={i} className={`rounded-md border p-3 ${on[i] ? "border-primary/60 bg-primary/5" : ""}`}>

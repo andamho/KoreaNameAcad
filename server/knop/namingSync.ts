@@ -100,20 +100,26 @@ function slugFromFile(fileName: string): string {
   return bracketSlugFromFile(fileName).replace(/[[\]()]/g, "");
 }
 
-// 전체 페이지를 세로로 이어붙인 PNG 로 렌더
-function renderPng(pdfAbs: string): Promise<Buffer> {
+// 전체 페이지를 세로로 이어붙인 PNG 로 렌더 + 링크 카드용 미리보기(첫 장 맨 위만 자른 1200x600 JPG).
+// 미리보기를 따로 두는 이유: 전체 그림을 카드 그림으로 쓰면 카톡이 가운데를 잘라 보여 줘서
+// 손님 이름·풀이가 카드에 보인다(2026-11-11 대표님 지적). 맨 위는 협회 로고·이름뿐이다.
+function renderPng(pdfAbs: string): Promise<{ png: Buffer; thumb: Buffer | null }> {
   return new Promise((resolve, reject) => {
-    const tmp = path.join(os.tmpdir(), `knopnaming_${crypto.randomUUID()}.png`);
-    const p = spawn(PY, [RENDER, pdfAbs, tmp], { windowsHide: true });
+    const id = crypto.randomUUID();
+    const tmp = path.join(os.tmpdir(), `knopnaming_${id}.png`);
+    const tmpThumb = path.join(os.tmpdir(), `knopnaming_${id}_og.jpg`);
+    const p = spawn(PY, [RENDER, pdfAbs, tmp, "4", tmpThumb], { windowsHide: true });
     let err = "";
     p.stderr.on("data", (d) => (err += d.toString()));
     p.on("error", reject);
     p.on("close", (code) => {
       try {
+        let thumb: Buffer | null = null;
+        if (fs.existsSync(tmpThumb)) { thumb = fs.readFileSync(tmpThumb); fs.unlinkSync(tmpThumb); }
         if (code === 0 && fs.existsSync(tmp)) {
           const b = fs.readFileSync(tmp);
           fs.unlinkSync(tmp);
-          resolve(b);
+          resolve({ png: b, thumb });
         } else {
           if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
           reject(new Error("render 실패: " + err.slice(-160)));
@@ -229,11 +235,18 @@ async function processPdf(file: string, state: NamingState): Promise<"made" | "u
   if (!desired) { console.error(`[작명장] 슬러그를 만들 수 없는 파일명: ${file}`); return "failed"; }
 
   try {
-    const buf = await renderPng(abs);
-    const key = `uploads/${crypto.randomUUID()}.png`;
+    const { png: buf, thumb } = await renderPng(abs);
+    const id = crypto.randomUUID();
+    const key = `uploads/${id}.png`;
     await store.putObject(key, buf, "image/png");
     const title = displayTitleFromFile(file);
-    const target = `/img?src=${encodeURIComponent(`/objects/${key}`)}&t=${encodeURIComponent(title)}`;
+    let target = `/img?src=${encodeURIComponent(`/objects/${key}`)}&t=${encodeURIComponent(title)}`;
+    if (thumb) {
+      // 카드용 미리보기는 따로 올리고 주소에 og= 로 붙인다. 서버가 og 를 모르는 옛 판이어도 그냥 무시되어 전처럼 열린다.
+      const ogKey = `uploads/${id}_og.jpg`;
+      await store.putObject(ogKey, thumb, "image/jpeg");
+      target += `&og=${encodeURIComponent(`/objects/${ogKey}`)}`;
+    }
 
     let slug: string | null;
     let updated = false;

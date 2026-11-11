@@ -73,11 +73,16 @@ export function startNamingCertWorker() {
           quiet = false;
         } else if (r.status === 204) {
           quiet = false;
-        } else {
+        } else if (r.status === 404) {
           // 404 = 서버에 아직 이 기능이 올라가지 않음(푸시 전). 조용히 5분 뒤 다시.
-          if (!quiet) log(`서버 응답 ${r.status} — 5분마다 다시 확인`);
+          if (!quiet) log(`서버 응답 404 — 5분마다 다시 확인`);
           quiet = true;
           await sleep(5 * 60_000);
+        } else {
+          // 502·503 = 서버가 배포로 다시 켜지는 중. 금방 돌아오니 20초 뒤 다시(2026-11-11: 5분을 기다려 배포 뒤 한동안 '응답 없음'이던 것)
+          if (!quiet) log(`서버 응답 ${r.status} — 20초마다 다시 확인`);
+          quiet = true;
+          await sleep(20_000);
         }
       } catch {
         await sleep(20_000);
