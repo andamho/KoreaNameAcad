@@ -163,7 +163,17 @@ export default function Services() {
     }
     isClosingFromBackButton.current = false;
   };
-  
+
+  // 링크(/services#familyPolicy)로 바로 들어오면 가족상담 원칙을 바로 연다 (2026-11-12 대표님 '링크를 붙여넣으면 원칙이 안 보인다').
+  // 전엔 버튼을 눌러야만 열려서 링크로 오면 서비스 페이지 맨 위만 보였음. 닫기·뒤로 가기는 이 서비스 페이지로 돌아오게
+  // 해시 없는 주소를 먼저 깔고(replaceState) 그 위에 #familyPolicy 를 쌓는다(openFamilyPolicy 의 pushState).
+  useEffect(() => {
+    if (window.location.hash === "#familyPolicy") {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      openFamilyPolicy();
+    }
+  }, []);
+
   // 페이지 진입 시 스크롤 처리 (모달에서 돌아올 때는 카드 영역으로)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
