@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useHashScroll } from '@/hooks/useHashScroll';
+import { CommentFocusModal } from "@/components/CommentFocusModal";
 import { Linkify } from "@/lib/linkify";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -937,6 +938,8 @@ export default function ExperienceAloneFate() {
         </div>
       </main>
 
+      {/* 댓글 알림 메일(?open=댓글id)로 들어오면 그 댓글을 큰 창으로 */}
+      <CommentFocusModal comments={comments} isAdmin={isAdmin} onUpdated={u => setComments(prev => prev.map(c => c.id === u.id ? u : c))} />
       <Footer />
     </div>
   );

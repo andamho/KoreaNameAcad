@@ -68,7 +68,8 @@ export async function sendCommentNotification(comment: {
 }): Promise<void> {
   try {
     const pageName = PAGE_NAMES[comment.pageId] ?? comment.pageId;
-    const pageUrl = `${SITE_URL}/experience-zone/${comment.pageId}#comment-${comment.id}`;
+    // ?open= → 페이지가 그 댓글을 큰 창(답글 칸 포함)으로 띄운다(CommentFocusModal)
+    const pageUrl = `${SITE_URL}/experience-zone/${comment.pageId}?open=${comment.id}#comment-${comment.id}`;
 
     await resend.emails.send({
       from: FROM_EMAIL,
