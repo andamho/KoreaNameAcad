@@ -103,8 +103,8 @@ export function CommentFocusModal<T extends FocusComment>({
   const replies = c.reply ? parseReplies(c.reply) : [];
 
   return (
-    // 사이트 메뉴줄(Navbar z-[200])보다 위 — 휴대폰에서 이름·닫기 줄을 가렸다
-    <div className="fixed inset-0 z-[300] flex items-stretch sm:items-center justify-center bg-black/50 sm:p-6" onClick={close}>
+    // 사이트 메뉴줄(nav 실제 z-index 9999)보다 위 — 휴대폰에서 이름·닫기 줄을 가렸다
+    <div className="fixed inset-0 z-[10000] flex items-stretch sm:items-center justify-center bg-black/50 sm:p-6" onClick={close}>
       <div
         className="relative w-full sm:max-w-2xl bg-background sm:rounded-2xl shadow-2xl flex flex-col max-h-full sm:max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
