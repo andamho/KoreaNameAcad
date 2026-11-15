@@ -235,6 +235,7 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
   }
 
   const embedUrl = content.videoUrl ? getYouTubeEmbedUrl(content.videoUrl) : null;
+  const directVideoUrl = content.videoUrl && /^\/objects\/|\.mp4(\?|$)/i.test(content.videoUrl) ? content.videoUrl : null;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -277,7 +278,19 @@ export default function ContentDetail({ backPath, backLabel }: ContentDetailProp
               </span>
             </div>
 
-            {content.isVideo && embedUrl ? (
+            {content.isVideo && directVideoUrl ? (
+              // 유튜브에 없는 영상(인스타 릴스 등)은 저장소에 올린 mp4 를 세로 화면으로 바로 재생
+              <div className="mb-8 flex justify-center">
+                <video
+                  src={directVideoUrl}
+                  poster={content.thumbnail || undefined}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="w-full max-w-[400px] aspect-[9/16] rounded-lg bg-black object-contain"
+                />
+              </div>
+            ) : content.isVideo && embedUrl ? (
               <div className="aspect-video mb-8 rounded-lg overflow-hidden bg-muted">
                 <iframe
                   src={embedUrl}
