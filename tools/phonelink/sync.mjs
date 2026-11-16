@@ -1,14 +1,14 @@
 // 노트북 '휴대폰과 연결'에 들어온 문자를 고객정보(사이트 문자 수집함)로 올린다.
 //
 // 원장님 결정(2026-10-24): 폰 매크로 앱 대신 노트북 휴대폰과 연결로 문자를 모은다.
-//  · 1시간마다 휴대폰과 연결 DB 를 복사해 문자를 읽는다(이 PC 안에서만 — 요금 없음).
-//    2026-11-04 원장님이 폰 매크로를 끔 → 문자 수집은 이것 하나. 주기는 1시간 유지(원장님: 10분일 이유 없음).
+//  · 2026-11-04 원장님이 폰 매크로를 끔 → 문자 수집은 이것 하나.
+//  · 2026-11-17 원장님: 1시간마다 말고, 노트북을 열면 하루 한 번만(맨 아래 하루한번).
 //  · 아직 안 올린 문자가 있을 때만 사이트로 보낸다 → 사이트 DB 는 새 문자가 있을 때만 깬다.
 //  · 하루 한 번은 문자가 없어도 '살아 있음' 을 남긴다 → 사이트가 25일 넘게 끊기면 메일로 알린다.
 //  · 사진은 올리지 않는다(사진 문자는 적힌 글자만).
 //  · 사이트 쪽 채우기 기능이 같은 문자를 두 번 넣지 않는다(번호·방향·내용·2분 이내 같으면 연결만).
 //
-// 실행: node tools/phonelink/sync.mjs           (계속 돌며 1시간마다)
+// 실행: node tools/phonelink/sync.mjs           (계속 떠 있으며 노트북을 열면 하루 한 번)
 //       node tools/phonelink/sync.mjs --once    (한 번만)
 //       node tools/phonelink/sync.mjs --once --dry (올리지 않고 결과만)
 // 설정: %USERPROFILE%\.kop-phonelink\config.json  { "secret": "<문자 수집 비밀값>", "base": "https://korea-name-acad.com" }
@@ -26,7 +26,6 @@ const STATE = path.join(WORK, "state.json");
 const CONFIG = path.join(WORK, "config.json");
 const PKG = path.join(process.env.LOCALAPPDATA, "Packages", "Microsoft.YourPhone_8wekyb3d8bbwe", "LocalCache", "Indexed");
 const DEVICE = "5f0e11c0-ba5e-4c0d-8e01-00000000f11c"; // 노트북 휴대폰과 연결 전용 고정 번호 — 사이트 phoneLinkReminder.ts 와 같아야 함
-const EVERY_MS = 60 * 60 * 1000;
 const DAYS = 31;
 
 const args = new Set(process.argv.slice(2));
@@ -181,9 +180,41 @@ async function 돌기() {
   try { await 한번(); } catch (e) { log("오류:", e.message); }
 }
 
+// 원장님 결정(2026-11-17): 1시간마다 돌지 않는다. 노트북을 열면(깨어나면·켜면) 그날 한 번만 모은다.
+//  · 1분마다 '오늘 모았나'만 본다(화면·사이트 안 건드림). 안 모았으면 모은다.
+//  · 깨어난 직후 3분은 기다린다 — 휴대폰과 연결이 폰과 다시 이어질 시간.
+//  · 실패하면(폰 연결 안 됨 등) 15분 뒤 다시. 성공한 날짜는 lastrun.txt 에.
+const RUN_FILE = path.join(WORK, "lastrun.txt");
+const WAKE_WAIT_MS = 3 * 60e3;
+const RETRY_MS = 15 * 60e3;
+let lastTick = Date.now();
+let wokeAt = Date.now();
+let lastTry = 0;
+let busy = false;
+async function 하루한번() {
+  const now = Date.now();
+  if (now - lastTick > 3 * 60e3) wokeAt = now; // 1분 틱이 3분 넘게 비었으면 잠자다 깨어난 것
+  lastTick = now;
+  if (busy) return;
+  let done = "";
+  try { done = fs.readFileSync(RUN_FILE, "utf8").trim(); } catch {}
+  if (done === today()) return;
+  if (now - wokeAt < WAKE_WAIT_MS || now - lastTry < RETRY_MS) return;
+  busy = true;
+  lastTry = now;
+  try {
+    await 한번();
+    fs.mkdirSync(WORK, { recursive: true });
+    fs.writeFileSync(RUN_FILE, today(), "utf8");
+  } catch (e) {
+    log("오류(15분 뒤 다시):", e.message);
+  } finally {
+    busy = false;
+  }
+}
+
 if (ONCE) await 돌기();
 else {
-  log(`휴대폰과 연결 문자 동기화 시작 — ${EVERY_MS / 60000}분마다`);
-  await 돌기();
-  setInterval(돌기, EVERY_MS);
+  log("휴대폰과 연결 문자 수집 대기 — 노트북을 열면 하루 한 번");
+  setInterval(() => void 하루한번(), 60e3);
 }
