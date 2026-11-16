@@ -477,8 +477,8 @@ export const knopStore = {
           pd = [];
         }
       }
-      // 등본이 첨부된 가족이면 엄마(여자 어른) 이름으로 — 자동분석 PDF 첫 사람과 같게(familyOrder.ts)
-      if (Array.isArray(pd) && c.fileData && pd.length >= 2) pd = orderFamilyWomanFirst(pd);
+      // 가족이면 엄마(여자 어른) 이름으로 — 등본 유무 상관없이, 자동분석 PDF 첫 사람과 같게(familyOrder.ts)
+      if (Array.isArray(pd) && pd.length >= 2) pd = orderFamilyWomanFirst(pd);
       if (Array.isArray(pd) && pd[0]?.name) name = pd[0].name;
       const code = await nextCode(d);
       const [row] = await d
