@@ -16,6 +16,7 @@
 import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
+import crypto from "crypto";
 import { fileURLToPath } from "url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -31,6 +32,12 @@ const DAYS = 31;
 const args = new Set(process.argv.slice(2));
 const ONCE = args.has("--once");
 const DRY = args.has("--dry");
+// 2026-11-06 휴대폰과 연결 업데이트로 phone.db 가 암호화(AesGcm)돼 못 읽음 → 화면 글자 읽기(uia-read.ps1)가 기본(2026-11-17).
+// --db 를 주면 예전 DB 읽기. 두 방법을 섞으면 같은 문자가 두 번 들어가므로(서버는 이미 연결된 문자에 다시 연결하지 않음) 섞지 말 것.
+const USE_DB = args.has("--db");
+// 화면 읽기는 사이트에 들어간 마지막 문자(11/4 03:56 KST, 이미 DB 경로와 연결됨) 뒤 문자만.
+// 그 전 문자는 모두 연결돼 있어 다시 보내면 서버가 새 문자로 또 넣는다(중복). 11/4~11/17 빈 기간은 이 값 덕에 채워진다.
+const UIA_FROM = Date.parse("2026-11-04T03:57:00+09:00");
 
 const log = (...a) => console.log(`[${new Date().toLocaleString("ko-KR")}]`, ...a);
 const today = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
@@ -89,6 +96,41 @@ function 읽기() {
   return msgs;
 }
 
+// 화면 글자 읽기: 휴대폰과 연결 창의 대화방을 차례로 '선택'해 문자를 읽는다(마우스·키보드 안 씀, 읽지 않은 대화방은 안 엶).
+const 맑게 = (s) => String(s || "").replace(/[‎‏‪-‮]/g, "");
+function 화면읽기() {
+  const since = Math.max(UIA_FROM, Date.now() - DAYS * 86400e3);
+  fs.mkdirSync(WORK, { recursive: true });
+  const out = path.join(WORK, "uia.json");
+  try { fs.unlinkSync(out); } catch {}
+  execFileSync("powershell", ["-NoProfile", "-STA", "-ExecutionPolicy", "Bypass", "-File", path.join(HERE, "uia-read.ps1"), "-SinceMs", String(since), "-Out", out],
+    { windowsHide: true, timeout: 15 * 60e3 });
+  const j = JSON.parse(fs.readFileSync(out, "utf8").replace(/^﻿/, ""));
+  try { fs.unlinkSync(out); } catch {}
+  if (!j.ok) throw new Error(j.error || "화면 읽기 실패");
+  if (j.skipped?.length) log(`읽지 않은 대화방은 건너뜀(읽으신 뒤 다음 번에 가져옴): ${j.skipped.join(", ")}`);
+  const msgs = [];
+  for (const c of j.conversations || []) {
+    const phone = 번호(c.phone);
+    if (phone.length < 8) continue;
+    const 횟수 = {};
+    for (const m of c.messages || []) {
+      if (!m.body || !m.ms || m.ms < since) continue; // 글자 없는 사진 문자는 건너뜀
+      const nm = 맑게(m.name);
+      const direction = /%4의 메시지/.test(nm) ? "수신" : /\d{4}-\d{1,2}-\d{1,2} (오전|오후) \d{1,2}:\d{2}의 메시지/.test(nm) ? "발신" : null;
+      if (!direction) continue;
+      const body = String(m.body).replace(/\r\n?/g, "\n").trim();
+      if (!body) continue;
+      // 화면에는 문자 번호가 없다 → 번호·방향·분·내용으로 고정 번호를 만든다(같은 분에 같은 문자 여러 통이면 순번).
+      const key = `${phone}|${direction}|${m.ms}|${body}`;
+      const n = (횟수[key] = (횟수[key] || 0) + 1);
+      const h = BigInt("0x" + crypto.createHash("sha256").update(key + "|" + n).digest("hex").slice(0, 15)) % 10n ** 15n;
+      msgs.push({ providerType: "sms", providerId: "7" + h.toString().padStart(15, "0"), direction, date: Math.round(m.ms), phone, body: body.slice(0, 2000) });
+    }
+  }
+  return msgs;
+}
+
 async function 보내기(cfg, messages) {
   const url = `${cfg.base.replace(/\/+$/, "")}/api/kop/sms-backfill`;
   const res = await fetch(url, {
@@ -105,7 +147,7 @@ async function 한번() {
   const cfg = { base: "https://korea-name-acad.com", ...readJson(CONFIG, {}) };
   if (!cfg.secret) throw new Error(`설정 파일에 secret 이 없음: ${CONFIG}`);
   const state = readJson(STATE, { sent: {}, lastBeat: "" });
-  const all = 읽기();
+  const all = USE_DB ? 읽기() : 화면읽기();
   const fresh = all.filter((m) => !state.sent[m.providerId]);
   const needBeat = state.lastBeat !== today();
   if (!fresh.length && !needBeat) { log(`새 문자 없음 (최근 ${DAYS}일 ${all.length}건)`); return; }
@@ -120,9 +162,16 @@ async function 한번() {
   }
   if (!DRY) {
     state.lastBeat = today();
-    // 31일 넘은 id 는 휴대폰과 연결에서도 사라지므로 기록도 정리
-    const keep = new Set(all.map((m) => m.providerId));
-    for (const id of Object.keys(state.sent)) if (!keep.has(id)) delete state.sent[id];
+    if (USE_DB) {
+      // 31일 넘은 id 는 휴대폰과 연결에서도 사라지므로 기록도 정리
+      const keep = new Set(all.map((m) => m.providerId));
+      for (const id of Object.keys(state.sent)) if (!keep.has(id)) delete state.sent[id];
+    } else {
+      // 화면 읽기는 매번 일부 대화방만 읽으므로 '이번에 안 보였다'로 지우지 않고 문자 날짜로 정리(33일)
+      for (const m of fresh) state.sent[m.providerId] = m.date;
+      const old = Date.now() - (DAYS + 2) * 86400e3;
+      for (const [id, v] of Object.entries(state.sent)) if (v === 1 || v < old) delete state.sent[id];
+    }
     fs.writeFileSync(STATE, JSON.stringify(state), "utf8");
   }
   log(`${DRY ? "[미리보기] " : ""}올림 ${fresh.length}건 → 새로 들어감 ${total.new} · 기존 문자와 연결 ${total.legacy_linked} · 이미 있음 ${total.existing_exact} · 애매 ${total.ambiguous} · 형식오류 ${total.invalid}`);
