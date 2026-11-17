@@ -7,9 +7,33 @@
 #  · 결과(JSON)는 -Out 파일에. 해석(날짜·방향)은 sync.mjs 가 한다.
 #
 # 사용: powershell -NoProfile -STA -ExecutionPolicy Bypass -File uia-read.ps1 -SinceMs <ms> -Out <json>
-param([double]$SinceMs = 0, [string]$Out, [int]$MaxConvs = 80)
+#
+# 등본 사진(2026-11-17): -ImagePhones 의 번호(등본 대기 고객) 대화방에서는 고객이 보낸 사진을
+#  사진의 메뉴(Shift+F10) → '복사' 로 받아 -ImageDir\<번호>\<시각ms>_<순번>.jpg 로 저장한다.
+#  이때만 휴대폰과 연결 창이 잠깐 앞으로 나온다(끝나면 원래 창·클립보드 글자를 되돌린다).
+param([double]$SinceMs = 0, [string]$Out, [int]$MaxConvs = 80, [string]$ImagePhones = '', [string]$ImageDir = '', [double]$ImageSinceMs = 0)
 $ErrorActionPreference = 'Stop'
-Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
+Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, System.Windows.Forms
+Add-Type @"
+using System; using System.Runtime.InteropServices;
+public static class PLW {
+  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll")] public static extern void keybd_event(byte k, byte s, uint f, IntPtr e);
+}
+"@
+$imagePhoneSet = @{}
+foreach ($p in ($ImagePhones -split ',')) { if ($p.Trim()) { $imagePhoneSet[$p.Trim()] = 1 } }
+$captured = 0
+$captureErrors = New-Object System.Collections.Generic.List[string]
+$prevFg = [IntPtr]::Zero
+$prevClip = $null
+$clipSaved = $false
+function Digits([string]$p) {
+  $d = ($p -replace '\D', '')
+  if ($d.StartsWith('82') -and ($d.Length -eq 11 -or $d.Length -eq 12)) { $d = '0' + $d.Substring(2) }
+  return $d
+}
 $AE = [System.Windows.Automation.AutomationElement]
 $TS = [System.Windows.Automation.TreeScope]
 $CT = [System.Windows.Automation.ControlType]
@@ -44,6 +68,66 @@ if (-not $proc) {
   Start-Sleep -Seconds 3
 }
 $win = $AE::FromHandle($proc.MainWindowHandle)
+
+# 사진 하나를 '복사' 메뉴로 받아 임시 파일 경로를 돌려준다(휴대폰과 연결이 TempState 에 원본을 써 준다)
+function CopyImage($im) {
+  if (-not $script:clipSaved) {
+    $script:prevFg = [PLW]::GetForegroundWindow()
+    try { if ([System.Windows.Forms.Clipboard]::ContainsText()) { $script:prevClip = [System.Windows.Forms.Clipboard]::GetText() } } catch {}
+    $script:clipSaved = $true
+  }
+  try { $im.GetCurrentPattern([System.Windows.Automation.ScrollItemPattern]::Pattern).ScrollIntoView() } catch {}
+  Start-Sleep -Milliseconds 500
+  [PLW]::SetForegroundWindow($proc.MainWindowHandle) | Out-Null
+  Start-Sleep -Milliseconds 200
+  try { $im.SetFocus() } catch { return $null }
+  Start-Sleep -Milliseconds 200
+  try { [System.Windows.Forms.Clipboard]::Clear() } catch {}
+  [PLW]::keybd_event(0x10, 0, 0, [IntPtr]::Zero); [PLW]::keybd_event(0x79, 0, 0, [IntPtr]::Zero)
+  [PLW]::keybd_event(0x79, 0, 2, [IntPtr]::Zero); [PLW]::keybd_event(0x10, 0, 2, [IntPtr]::Zero)
+  $copy = $null
+  for ($i = 0; $i -lt 25 -and -not $copy; $i++) {
+    Start-Sleep -Milliseconds 200
+    foreach ($mi in @($AE::RootElement.FindAll($TS::Descendants, (Cond $AE::ControlTypeProperty $CT::MenuItem)))) {
+      if ($mi.Current.ProcessId -eq $proc.Id -and $mi.Current.Name -eq '복사') { $copy = $mi; break }
+    }
+  }
+  if (-not $copy) { [PLW]::keybd_event(0x1B, 0, 0, [IntPtr]::Zero); [PLW]::keybd_event(0x1B, 0, 2, [IntPtr]::Zero); return $null }
+  $copy.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+  for ($i = 0; $i -lt 30; $i++) {
+    Start-Sleep -Milliseconds 300
+    try {
+      $files = [System.Windows.Forms.Clipboard]::GetFileDropList()
+      if ($files -and $files.Count -gt 0 -and (Test-Path $files[0])) { return $files[0] }
+    } catch {}
+  }
+  return $null
+}
+
+# 고객이 보낸(수신) 사진만, -ImageSinceMs 이후 것만 저장. 이미 저장한 것(같은 시각·순번)은 건너뜀.
+function CaptureImages($ml, [string]$digits) {
+  $dir = Join-Path $ImageDir $digits
+  New-Item -ItemType Directory -Force -Path $dir | Out-Null
+  $perMs = @{}
+  foreach ($mi in @($ml.FindAll($TS::Children, (Cond $AE::ControlTypeProperty $CT::ListItem)))) {
+    $nm = $mi.Current.Name
+    if ($nm -notmatch '%4의 메시지') { continue }
+    $ms = ItemMs $nm
+    if ($ms -le 0 -or $ms -lt $ImageSinceMs) { continue }
+    foreach ($im in @($mi.FindAll($TS::Descendants, (Cond $AE::AutomationIdProperty 'ImagePresenter')))) {
+      $key = [string][int64]$ms
+      $perMs[$key] = 1 + [int]$perMs[$key]
+      $base = '{0}_{1}' -f $key, $perMs[$key]
+      if (@(Get-ChildItem -Path $dir -Filter "$base.*" -ErrorAction SilentlyContinue).Count -gt 0) { continue }
+      $f = CopyImage $im
+      if ($f) {
+        $ext = [System.IO.Path]::GetExtension($f); if (-not $ext) { $ext = '.jpg' }
+        Copy-Item -LiteralPath $f -Destination (Join-Path $dir ($base + $ext))
+        $script:captured++
+      } else { $script:captureErrors.Add("$digits $base") }
+    }
+  }
+}
 
 # 메시지 탭으로
 $tab = $win.FindFirst($TS::Descendants, (Cond $AE::AutomationIdProperty 'MessagingNodeAutomationId'))
@@ -126,6 +210,9 @@ foreach ($it in $items) {
   }
   if ($mlist) {
     $minMs = Collect
+    # 등본 대기 고객이면 고객이 보낸 사진을 저장(목록이 맨 아래=최근을 보여 줄 때, 위로 넘기기 전에)
+    $digits = Digits $phone
+    if ($ImageDir -and $digits -and $imagePhoneSet.ContainsKey($digits)) { CaptureImages $mlist $digits }
     $sp = $null
     try { $sp = $mlist.GetCurrentPattern([System.Windows.Automation.ScrollPattern]::Pattern) } catch {}
     for ($up = 0; $up -lt 40 -and $sp -and $minMs -ge $SinceMs; $up++) {
@@ -146,4 +233,9 @@ if ($prevSel) {
     if ($it.Current.Name -eq $prevSel) { try { $it.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select() } catch {}; break }
   }
 }
-Done @{ ok = $true; conversations = $convs; skipped = $skipped; listed = $items.Count }
+# 사진을 받느라 바꾼 클립보드 글자·앞 창을 되돌린다
+if ($clipSaved) {
+  try { if ($prevClip) { [System.Windows.Forms.Clipboard]::SetText($prevClip) } else { [System.Windows.Forms.Clipboard]::Clear() } } catch {}
+  if ($prevFg -ne [IntPtr]::Zero) { [PLW]::SetForegroundWindow($prevFg) | Out-Null }
+}
+Done @{ ok = $true; conversations = $convs; skipped = $skipped; listed = $items.Count; imagesCaptured = $captured; imageErrors = $captureErrors }

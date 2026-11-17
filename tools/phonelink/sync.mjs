@@ -97,21 +97,41 @@ function 읽기() {
 
 // 화면 글자 읽기: 휴대폰과 연결 창의 대화방을 차례로 '선택'해 문자를 읽는다(마우스·키보드 안 씀, 읽지 않은 대화방은 안 엶).
 const 맑게 = (s) => String(s || "").replace(/[‎‏‪-‮]/g, "");
+// 등본 대기 고객(신청서에 등본이 없어 한자가 빠진 신청) — test-app/email-automator 가 적어 둔다(2026-11-17).
+// 이 번호들 대화방에서는 고객이 보낸 사진과 한자가 섞인 문자를 ~/.kop-deungbon/<번호>/ 에 저장 → 자동 이름분석.
+const DEUNGBON_DIR = path.join(process.env.USERPROFILE, ".kop-deungbon");
+const 등본대기 = () => readJson(path.join(DEUNGBON_DIR, "waiting.json"), []).filter((w) => w.phone && w.since);
+
 function 화면읽기() {
   const since = Math.max(UIA_FROM, Date.now() - DAYS * 86400e3);
   fs.mkdirSync(WORK, { recursive: true });
   const out = path.join(WORK, "uia.json");
   try { fs.unlinkSync(out); } catch {}
-  execFileSync("powershell", ["-NoProfile", "-STA", "-ExecutionPolicy", "Bypass", "-File", path.join(HERE, "uia-read.ps1"), "-SinceMs", String(since), "-Out", out],
+  const 대기 = 등본대기();
+  const 대기args = 대기.length
+    ? ["-ImagePhones", 대기.map((w) => w.phone).join(","), "-ImageDir", DEUNGBON_DIR, "-ImageSinceMs", String(Math.min(...대기.map((w) => w.since)) - 3600e3)]
+    : [];
+  execFileSync("powershell", ["-NoProfile", "-STA", "-ExecutionPolicy", "Bypass", "-File", path.join(HERE, "uia-read.ps1"), "-SinceMs", String(since), "-Out", out, ...대기args],
     { windowsHide: true, timeout: 15 * 60e3 });
   const j = JSON.parse(fs.readFileSync(out, "utf8").replace(/^﻿/, ""));
   try { fs.unlinkSync(out); } catch {}
   if (!j.ok) throw new Error(j.error || "화면 읽기 실패");
   if (j.skipped?.length) log(`읽지 않은 대화방은 건너뜀(읽으신 뒤 다음 번에 가져옴): ${j.skipped.join(", ")}`);
+  if (대기.length) log(`등본 대기 ${대기.length}명 — 사진 ${j.imagesCaptured || 0}장 저장${j.imageErrors?.length ? ` · 못 받은 사진 ${j.imageErrors.length}장` : ""}`);
+  const 대기번호 = new Map(대기.map((w) => [w.phone, w.since]));
   const msgs = [];
   for (const c of j.conversations || []) {
     const phone = 번호(c.phone);
     if (phone.length < 8) continue;
+    // 등본 대기 고객이 보낸 한자 섞인 문자(예: "李浩錫")도 자동 이름분석 재료로 저장
+    if (대기번호.has(phone)) {
+      for (const m of c.messages || []) {
+        if (!m.body || !m.ms || m.ms < 대기번호.get(phone) - 3600e3) continue;
+        if (!/%4의 메시지/.test(맑게(m.name)) || !/[㐀-鿿豈-﫿]/.test(m.body)) continue;
+        const f = path.join(DEUNGBON_DIR, phone, `${Math.round(m.ms)}_txt_${crypto.createHash("sha1").update(m.body).digest("hex").slice(0, 8)}.txt`);
+        if (!fs.existsSync(f)) { fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, m.body, "utf8"); }
+      }
+    }
     const 횟수 = {};
     for (const m of c.messages || []) {
       if (!m.body || !m.ms || m.ms < since) continue; // 글자 없는 사진 문자는 건너뜀
