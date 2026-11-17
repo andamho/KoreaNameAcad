@@ -11,7 +11,7 @@
 # 등본 사진(2026-11-17): -ImagePhones 의 번호(등본 대기 고객) 대화방에서는 고객이 보낸 사진을
 #  사진의 메뉴(Shift+F10) → '복사' 로 받아 -ImageDir\<번호>\<시각ms>_<순번>.jpg 로 저장한다.
 #  이때만 휴대폰과 연결 창이 잠깐 앞으로 나온다(끝나면 원래 창·클립보드 글자를 되돌린다).
-param([double]$SinceMs = 0, [string]$Out, [int]$MaxConvs = 80, [string]$ImagePhones = '', [string]$ImageDir = '', [double]$ImageSinceMs = 0)
+param([double]$SinceMs = 0, [string]$Out, [int]$MaxConvs = 80, [string]$ImagePhones = '', [string]$ImageDir = '', [double]$ImageSinceMs = 0, [string]$OnlyTitle = '')
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, System.Windows.Forms
 Add-Type @"
@@ -154,7 +154,9 @@ foreach ($it in $items) {
   if ($n -ge $MaxConvs -or $oldStreak -ge 3) { break }
   $name = $it.Current.Name
   $title = ($name -split '와의 대화')[0]
-  if ($name -match '읽지 않') { $skipped.Add($title); continue }
+  # -OnlyTitle: 원장님이 지정한 대화방 하나만(읽지 않았어도 연다 — 원장님 요청일 때만 씀)
+  if ($OnlyTitle) { if ($title -notlike "*$OnlyTitle*") { continue } }
+  elseif ($name -match '읽지 않') { $skipped.Add($title); continue }
   $n++
   try { $it.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select() } catch { continue }
 
