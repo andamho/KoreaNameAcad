@@ -64,7 +64,6 @@ export function renderArticleBlocks(text: string, key: string, render: (t: strin
               src={`https://www.youtube.com/embed/${id}`}
               title="영상"
               className="h-full w-full"
-              loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
