@@ -53,6 +53,26 @@ export function renderArticleBlocks(text: string, key: string, render: (t: strin
       out.push(<FiveEnergies key={k} />);
       return;
     }
+    // {{영상:유튜브주소}} → 글 안에서 바로 재생(2026-11-19 대표님 '각 법칙 영상을 글에서 바로 보게'). 쇼츠라 세로(9:16)
+    const vid = p.trim().match(/^\{\{영상:\s*(\S+?)\s*\}\}$/);
+    if (vid) {
+      const id = vid[1].match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([\w-]{6,})/)?.[1];
+      if (id) {
+        out.push(
+          <div key={k} className="not-prose my-6 w-full max-w-[340px] overflow-hidden rounded-xl bg-black shadow-sm" style={{ aspectRatio: "9 / 16" }}>
+            <iframe
+              src={`https://www.youtube.com/embed/${id}`}
+              title="영상"
+              className="h-full w-full"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        );
+        return;
+      }
+    }
     const lines = p.split("\n");
     if (/^##\s+/.test(lines[0])) {
       const title = lines[0].replace(/^##\s+/, "");
